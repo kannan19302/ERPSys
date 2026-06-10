@@ -71,7 +71,7 @@ export default function CrmPage() {
 
     // Fetch Customers
     try {
-      const res = await fetch('http://localhost:3001/api/v1/crm/customers', {
+      const res = await fetch('/api/v1/crm/customers', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error();
@@ -121,7 +121,7 @@ export default function CrmPage() {
 
     // Fetch Vendors
     try {
-      const res = await fetch('http://localhost:3001/api/v1/crm/vendors', {
+      const res = await fetch('/api/v1/crm/vendors', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error();
@@ -182,7 +182,7 @@ export default function CrmPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/crm/customers', {
+      const res = await fetch('/api/v1/crm/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ export default function CrmPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/crm/vendors', {
+      const res = await fetch('/api/v1/crm/vendors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

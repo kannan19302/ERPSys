@@ -76,7 +76,7 @@ export default function InventoryPage() {
 
     // Fetch Products
     try {
-      const res = await fetch('http://localhost:3001/api/v1/inventory/products', {
+      const res = await fetch('/api/v1/inventory/products', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error();
@@ -128,7 +128,7 @@ export default function InventoryPage() {
 
     // Fetch Stock Levels
     try {
-      const res = await fetch('http://localhost:3001/api/v1/inventory/stock', {
+      const res = await fetch('/api/v1/inventory/stock', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error();
@@ -171,7 +171,7 @@ export default function InventoryPage() {
 
     // Fetch Warehouses
     try {
-      const res = await fetch('http://localhost:3001/api/v1/inventory/warehouses', {
+      const res = await fetch('/api/v1/inventory/warehouses', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error();
@@ -224,7 +224,7 @@ export default function InventoryPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/inventory/products', {
+      const res = await fetch('/api/v1/inventory/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

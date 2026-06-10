@@ -56,7 +56,7 @@ export default function AdminUsersPage() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/admin/users', {
+      const res = await fetch('/api/v1/admin/users', {
         headers: {
           Authorization: `Bearer ${token || ''}`,
         },
@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/admin/users', {
+      const res = await fetch('/api/v1/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

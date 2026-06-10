@@ -81,7 +81,7 @@ export default function FinancePage() {
     
     // Fetch Invoices
     try {
-      const res = await fetch('http://localhost:3001/api/v1/finance/invoices', {
+      const res = await fetch('/api/v1/finance/invoices', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error('Could not fetch invoices');
@@ -144,7 +144,7 @@ export default function FinancePage() {
 
     // Fetch Customers
     try {
-      const res = await fetch('http://localhost:3001/api/v1/crm/customers', {
+      const res = await fetch('/api/v1/crm/customers', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (res.ok) {
@@ -210,7 +210,7 @@ export default function FinancePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/finance/invoices', {
+      const res = await fetch('/api/v1/finance/invoices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -295,7 +295,7 @@ export default function FinancePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/finance/payments', {
+      const res = await fetch('/api/v1/finance/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -70,7 +70,7 @@ export default function HrPage() {
 
     // Fetch Employees
     try {
-      const res = await fetch('http://localhost:3001/api/v1/hr/employees', {
+      const res = await fetch('/api/v1/hr/employees', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error('Could not fetch employees');
@@ -136,7 +136,7 @@ export default function HrPage() {
 
     // Fetch Departments (mock fallback or real)
     try {
-      await fetch('http://localhost:3001/api/v1/admin/settings', {
+      await fetch('/api/v1/admin/settings', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       // Try resolving departments list, else fallback
@@ -188,7 +188,7 @@ export default function HrPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/hr/employees', {
+      const res = await fetch('/api/v1/hr/employees', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -264,7 +264,7 @@ export default function HrPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/hr/employees/${selectedEmployee.id}`, {
+      const res = await fetch(`/api/v1/hr/employees/${selectedEmployee.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
