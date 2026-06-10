@@ -1,0 +1,31 @@
+{
+  "name": "@unerp/shared",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared types, validators, constants, and utilities",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./types": "./dist/types/index.js",
+    "./validators": "./dist/validators/index.js",
+    "./constants": "./dist/constants/index.js",
+    "./utils": "./dist/utils/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@unerp/config": "workspace:*",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0",
+    "rimraf": "^6.0.0"
+  }
+}

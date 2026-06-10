@@ -1,0 +1,417 @@
+// ─────────────────────────────────────────────────
+// Prisma Schema — Universal ERP System
+// ─────────────────────────────────────────────────
+// This is the single source of truth for the database schema.
+// All entities follow the patterns defined in .ai/DATA_MODEL.md
+// ─────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ════════════════════════════════════════════════
+// MULTI-TENANCY & AUTH
+// ════════════════════════════════════════════════
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("free")
+  status    String   @default("ACTIVE")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  organizations Organization[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  email        String
+  passwordHash String?   @map("password_hash")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  avatar       String?
+  status       String    @default("ACTIVE")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  tenant Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roles  UserRole[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  isSystem    Boolean  @default(false) @map("is_system")
+  permissions Json     @default("[]")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users UserRole[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+model UserRole {
+  userId     String   @map("user_id")
+  roleId     String   @map("role_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+// ════════════════════════════════════════════════
+// ORGANIZATION STRUCTURE
+// ════════════════════════════════════════════════
+
+model Organization {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  legalName       String?  @map("legal_name")
+  taxId           String?  @map("tax_id")
+  email           String?
+  phone           String?
+  website         String?
+  logo            String?
+  address         Json?
+  currency        String   @default("USD")
+  timezone        String   @default("UTC")
+  fiscalYearStart Int      @default(1) @map("fiscal_year_start")
+  settings        Json     @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  departments Department[]
+  customers   Customer[]
+  vendors     Vendor[]
+  products    Product[]
+  warehouses  Warehouse[]
+
+  @@index([tenantId])
+  @@map("organizations")
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  orgId     String   @map("org_id")
+  name      String
+  code      String
+  parentId  String?  @map("parent_id")
+  managerId String?  @map("manager_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  parent       Department?  @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children     Department[] @relation("DeptHierarchy")
+  employees    Employee[]
+
+  @@unique([tenantId, orgId, code])
+  @@index([tenantId])
+  @@map("departments")
+}
+
+// ════════════════════════════════════════════════
+// HR MODULE
+// ════════════════════════════════════════════════
+
+model Employee {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  orgId        String    @map("org_id")
+  userId       String?   @map("user_id")
+  departmentId String?   @map("department_id")
+  employeeCode String    @map("employee_code")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  email        String
+  phone        String?
+  designation  String?
+  dateOfBirth  DateTime? @map("date_of_birth")
+  dateOfJoining DateTime @map("date_of_joining")
+  dateOfLeaving DateTime? @map("date_of_leaving")
+  employmentType String  @default("FULL_TIME") @map("employment_type")
+  status       String    @default("ACTIVE")
+  address      Json?
+  bankDetails  Json?     @map("bank_details")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  @@unique([tenantId, orgId, employeeCode])
+  @@index([tenantId])
+  @@map("employees")
+}
+
+// ════════════════════════════════════════════════
+// CRM MODULE
+// ════════════════════════════════════════════════
+
+model Customer {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  type            String    @default("COMPANY")
+  name            String
+  email           String?
+  phone           String?
+  taxId           String?   @map("tax_id")
+  billingAddress  Json?     @map("billing_address")
+  shippingAddress Json?     @map("shipping_address")
+  creditLimit     Decimal?  @map("credit_limit") @db.Decimal(15, 2)
+  paymentTerms    Int       @default(30) @map("payment_terms")
+  status          String    @default("ACTIVE")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invoices     Invoice[]
+
+  @@index([tenantId])
+  @@index([tenantId, orgId])
+  @@map("customers")
+}
+
+model Vendor {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  orgId        String    @map("org_id")
+  type         String    @default("COMPANY")
+  name         String
+  email        String?
+  phone        String?
+  taxId        String?   @map("tax_id")
+  address      Json?
+  paymentTerms Int       @default(30) @map("payment_terms")
+  status       String    @default("ACTIVE")
+  notes        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("vendors")
+}
+
+// ════════════════════════════════════════════════
+// INVENTORY MODULE
+// ════════════════════════════════════════════════
+
+model Product {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  sku         String
+  name        String
+  description String?
+  type        String    @default("GOODS")
+  category    String?
+  unit        String    @default("EACH")
+  costPrice   Decimal   @map("cost_price") @db.Decimal(15, 2)
+  sellPrice   Decimal   @map("sell_price") @db.Decimal(15, 2)
+  taxCategory String?   @map("tax_category")
+  isActive    Boolean   @default(true) @map("is_active")
+  images      Json      @default("[]")
+  attributes  Json      @default("{}")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  organization   Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inventoryItems InventoryItem[]
+  invoiceLines   InvoiceLineItem[]
+
+  @@unique([tenantId, orgId, sku])
+  @@index([tenantId])
+  @@map("products")
+}
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  orgId     String   @map("org_id")
+  name      String
+  code      String
+  address   Json?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization   Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inventoryItems InventoryItem[]
+
+  @@unique([tenantId, orgId, code])
+  @@index([tenantId])
+  @@map("warehouses")
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  productId   String   @map("product_id")
+  warehouseId String   @map("warehouse_id")
+  quantity    Decimal  @default(0) @db.Decimal(15, 3)
+  reorderPoint Decimal? @map("reorder_point") @db.Decimal(15, 3)
+  reorderQty  Decimal? @map("reorder_qty") @db.Decimal(15, 3)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([tenantId, productId, warehouseId])
+  @@index([tenantId])
+  @@map("inventory_items")
+}
+
+// ════════════════════════════════════════════════
+// FINANCE MODULE
+// ════════════════════════════════════════════════
+
+model Invoice {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  customerId        String    @map("customer_id")
+  invoiceNumber     String    @map("invoice_number")
+  status            String    @default("DRAFT")
+  issueDate         DateTime  @default(now()) @map("issue_date")
+  dueDate           DateTime  @map("due_date")
+  subtotal          Decimal   @default(0) @db.Decimal(15, 2)
+  taxAmount         Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  discountAmount    Decimal   @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  totalAmount       Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
+  paidAmount        Decimal   @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  currency          String    @default("USD")
+  exchangeRate      Decimal   @default(1) @map("exchange_rate") @db.Decimal(15, 6)
+  notes             String?
+  internalNotes     String?   @map("internal_notes")
+  paidAt            DateTime? @map("paid_at")
+  sentAt            DateTime? @map("sent_at")
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  customer  Customer          @relation(fields: [customerId], references: [id])
+  lineItems InvoiceLineItem[]
+  payments  Payment[]
+
+  @@unique([tenantId, orgId, invoiceNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id          String  @id @default(cuid())
+  tenantId    String  @map("tenant_id")
+  invoiceId   String  @map("invoice_id")
+  productId   String? @map("product_id")
+  description String
+  quantity    Decimal @db.Decimal(15, 3)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
+  taxRate     Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  taxAmount   Decimal @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount Decimal @map("total_amount") @db.Decimal(15, 2)
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  invoiceId     String   @map("invoice_id")
+  amount        Decimal  @db.Decimal(15, 2)
+  currency      String   @default("USD")
+  method        String   @default("BANK_TRANSFER")
+  reference     String?
+  notes         String?
+  paidAt        DateTime @default(now()) @map("paid_at")
+  createdBy     String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+// ════════════════════════════════════════════════
+// AUDIT & SYSTEM
+// ════════════════════════════════════════════════
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  userId     String   @map("user_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  changes    Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, userId])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  key       String
+  value     Json
+  category  String   @default("general")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, key])
+  @@index([tenantId, category])
+  @@map("settings")
+}

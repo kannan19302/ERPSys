@@ -1,0 +1,42 @@
+{
+  "name": "@unerp/api",
+  "version": "0.0.1",
+  "private": true,
+  "description": "UniERP Backend API — NestJS",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,test}/**/*.ts\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/event-emitter": "^3.0.0",
+    "@nestjs/throttler": "^6.0.0",
+    "@unerp/shared": "workspace:*",
+    "@unerp/database": "workspace:*",
+    "@unerp/auth": "workspace:*",
+    "@prisma/client": "^6.2.0",
+    "helmet": "^8.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/testing": "^11.0.0",
+    "@unerp/config": "workspace:*",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0",
+    "rimraf": "^6.0.0"
+  }
+}
