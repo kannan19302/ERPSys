@@ -1,0 +1,132 @@
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { prisma } from '@unerp/database';
+
+@Injectable()
+export class WorkflowService {
+  async getWorkflows(tenantId: string) {
+    return prisma.workflow.findMany({
+      where: { tenantId },
+      include: { steps: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createWorkflow(
+    tenantId: string,
+    dto: { name: string; triggerType: string; steps: { stepOrder: number; actionType: string; assigneeRole: string }[] }
+  ) {
+    const existing = await prisma.workflow.findFirst({
+      where: { tenantId, name: dto.name },
+    });
+    if (existing) throw new BadRequestException(`Workflow named ${dto.name} already exists.`);
+
+    return prisma.$transaction(async (tx) => {
+      const flow = await tx.workflow.create({
+        data: {
+          tenantId,
+          name: dto.name,
+          triggerType: dto.triggerType,
+          status: 'ACTIVE',
+        },
+      });
+
+      for (const step of dto.steps) {
+        await tx.workflowStep.create({
+          data: {
+            tenantId,
+            workflowId: flow.id,
+            stepOrder: step.stepOrder,
+            actionType: step.actionType,
+            assigneeRole: step.assigneeRole,
+          },
+        });
+      }
+
+      return tx.workflow.findUnique({
+        where: { id: flow.id },
+        include: { steps: true },
+      });
+    });
+  }
+
+  async getApprovalChains(tenantId: string) {
+    return prisma.approvalChain.findMany({
+      where: { tenantId },
+      include: { step: { include: { workflow: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async triggerWorkflow(
+    tenantId: string,
+    dto: { triggerType: string; entityType: string; entityId: string }
+  ) {
+    const flow = await prisma.workflow.findFirst({
+      where: { tenantId, triggerType: dto.triggerType, status: 'ACTIVE' },
+      include: { steps: { orderBy: { stepOrder: 'asc' } } },
+    });
+    if (!flow || flow.steps.length === 0) return null; // No workflow configured for this trigger
+
+    const firstStep = flow.steps[0];
+    if (!firstStep) return null;
+
+    return prisma.approvalChain.create({
+      data: {
+        tenantId,
+        entityType: dto.entityType,
+        entityId: dto.entityId,
+        stepId: firstStep.id,
+        status: 'PENDING',
+      },
+      include: { step: true },
+    });
+  }
+
+  async submitApprovalAction(
+    tenantId: string,
+    chainId: string,
+    dto: { status: 'APPROVED' | 'REJECTED'; comments?: string },
+    userId: string
+  ) {
+    const chain = await prisma.approvalChain.findFirst({
+      where: { id: chainId, tenantId },
+      include: { step: { include: { workflow: { include: { steps: { orderBy: { stepOrder: 'asc' } } } } } } },
+    });
+    if (!chain) throw new NotFoundException('Approval step not found');
+    if (chain.status !== 'PENDING') throw new BadRequestException('This step has already been actioned.');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.approvalChain.update({
+        where: { id: chainId },
+        data: {
+          status: dto.status,
+          actionBy: userId,
+          actionAt: new Date(),
+          comments: dto.comments || null,
+        },
+      });
+
+      // If approved, trigger next step in workflow if it exists
+      if (dto.status === 'APPROVED') {
+        const currentStepOrder = chain.step.stepOrder;
+        const allSteps = chain.step.workflow.steps;
+        const nextStep = allSteps.find(s => s.stepOrder === currentStepOrder + 1);
+
+        if (nextStep) {
+          // Create next step in approval chain
+          await tx.approvalChain.create({
+            data: {
+              tenantId,
+              entityType: chain.entityType,
+              entityId: chain.entityId,
+              stepId: nextStep.id,
+              status: 'PENDING',
+            },
+          });
+        }
+      }
+
+      return updated;
+    });
+  }
+}

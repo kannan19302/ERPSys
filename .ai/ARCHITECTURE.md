@@ -1,6 +1,6 @@
 # Architecture Reference — Universal ERP System
 
-> Last updated: 2026-06-10 | Phase: 0 — Foundation
+> Last updated: 2026-06-11 | Phase: 2 — Procurement, Sales & Supply Chain
 
 ---
 
@@ -440,11 +440,13 @@ Request → JWT Decode → Extract tenant_id → Set PostgreSQL session variable
 The modular monolith is designed to evolve:
 
 ```
-Phase 0-2: Modular Monolith (single NestJS app, all modules in-process)
+Phase 0-2:   Modular Monolith (single NestJS app, all modules in-process)
     ↓
-Phase 3+:  Extract high-traffic modules to microservices (if needed)
+Phase 3-8:   Enhanced Monolith (workflow engine, advanced modules, event-driven)
     ↓
-Future:    Event-driven microservices with message broker (RabbitMQ/Kafka)
+Phase 9-15:  Extract high-traffic modules to microservices (if needed)
+    ↓
+Phase 16-20: Enterprise SaaS Platform (API platform, i18n, PWA, CI/CD, billing)
 ```
 
 Because modules communicate via events (not direct imports), extracting a module to a separate service only requires:

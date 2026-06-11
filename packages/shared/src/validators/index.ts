@@ -189,3 +189,130 @@ export const createPaymentSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
+
+// ── Procurement Schemas ──
+
+export const createPurchaseOrderLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unitPrice: z.number().nonnegative('Unit price must be non-negative'),
+  taxRate: z.number().min(0).max(100).default(0),
+});
+
+export const createPurchaseOrderSchema = z.object({
+  vendorId: z.string().min(1, 'Vendor is required'),
+  poNumber: z.string().min(1, 'PO number is required').max(50),
+  expectedDate: z.string().optional(),
+  shippingAddress: addressSchema.optional(),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(createPurchaseOrderLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreatePurchaseOrderInput = z.infer<typeof createPurchaseOrderSchema>;
+
+export const updatePurchaseOrderStatusSchema = z.object({
+  status: z.enum(['DRAFT', 'SUBMITTED', 'APPROVED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CANCELLED']),
+});
+export type UpdatePurchaseOrderStatusInput = z.infer<typeof updatePurchaseOrderStatusSchema>;
+
+export const createPurchaseReceiptLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  receivedQty: z.number().positive('Received quantity must be greater than zero'),
+  acceptedQty: z.number().nonnegative('Accepted quantity must be non-negative'),
+  rejectedQty: z.number().nonnegative().default(0),
+});
+
+export const createPurchaseReceiptSchema = z.object({
+  purchaseOrderId: z.string().min(1, 'Purchase order is required'),
+  receiptNumber: z.string().min(1, 'Receipt number is required').max(50),
+  warehouseId: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(createPurchaseReceiptLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreatePurchaseReceiptInput = z.infer<typeof createPurchaseReceiptSchema>;
+
+// ── Sales Schemas ──
+
+export const createQuotationLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unitPrice: z.number().nonnegative('Unit price must be non-negative'),
+  taxRate: z.number().min(0).max(100).default(0),
+});
+
+export const createQuotationSchema = z.object({
+  customerId: z.string().min(1, 'Customer is required'),
+  quotationNumber: z.string().min(1, 'Quotation number is required').max(50),
+  validUntil: z.string().min(1, 'Valid until date is required'),
+  notes: z.string().max(2000).optional(),
+  termsConditions: z.string().max(5000).optional(),
+  lineItems: z.array(createQuotationLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreateQuotationInput = z.infer<typeof createQuotationSchema>;
+
+export const createSalesOrderLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unitPrice: z.number().nonnegative('Unit price must be non-negative'),
+  taxRate: z.number().min(0).max(100).default(0),
+});
+
+export const createSalesOrderSchema = z.object({
+  customerId: z.string().min(1, 'Customer is required'),
+  orderNumber: z.string().min(1, 'Order number is required').max(50),
+  deliveryDate: z.string().optional(),
+  shippingAddress: addressSchema.optional(),
+  notes: z.string().max(2000).optional(),
+  quotationId: z.string().optional(),
+  lineItems: z.array(createSalesOrderLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreateSalesOrderInput = z.infer<typeof createSalesOrderSchema>;
+
+export const updateSalesOrderStatusSchema = z.object({
+  status: z.enum(['DRAFT', 'CONFIRMED', 'PROCESSING', 'PARTIALLY_DELIVERED', 'DELIVERED', 'CANCELLED']),
+});
+export type UpdateSalesOrderStatusInput = z.infer<typeof updateSalesOrderStatusSchema>;
+
+export const createDeliveryNoteLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  deliveredQty: z.number().positive('Delivered quantity must be greater than zero'),
+});
+
+export const createDeliveryNoteSchema = z.object({
+  salesOrderId: z.string().min(1, 'Sales order is required'),
+  deliveryNumber: z.string().min(1, 'Delivery number is required').max(50),
+  warehouseId: z.string().optional(),
+  carrierName: z.string().max(200).optional(),
+  trackingNumber: z.string().max(100).optional(),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(createDeliveryNoteLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreateDeliveryNoteInput = z.infer<typeof createDeliveryNoteSchema>;
+
+// ── Supply Chain Schemas ──
+
+export const createShipmentSchema = z.object({
+  shipmentNumber: z.string().min(1, 'Shipment number is required').max(50),
+  type: z.enum(['INBOUND', 'OUTBOUND', 'TRANSFER']).default('OUTBOUND'),
+  carrierName: z.string().max(200).optional(),
+  trackingNumber: z.string().max(100).optional(),
+  trackingUrl: z.string().url().optional(),
+  originAddress: addressSchema.optional(),
+  destAddress: addressSchema.optional(),
+  weight: z.number().nonnegative().optional(),
+  weightUnit: z.enum(['KG', 'LB']).default('KG'),
+  shippingCost: z.number().nonnegative().optional(),
+  estimatedDelivery: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+});
+export type CreateShipmentInput = z.infer<typeof createShipmentSchema>;
+
+export const updateShipmentStatusSchema = z.object({
+  status: z.enum(['PENDING', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'RETURNED', 'CANCELLED']),
+});
+export type UpdateShipmentStatusInput = z.infer<typeof updateShipmentStatusSchema>;
+

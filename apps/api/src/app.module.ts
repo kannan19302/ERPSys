@@ -8,6 +8,30 @@ import { FinanceModule } from './modules/finance/finance.module';
 import { HrModule } from './modules/hr/hr.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { ProcurementModule } from './modules/procurement/procurement.module';
+import { SalesModule } from './modules/sales/sales.module';
+import { SupplyChainModule } from './modules/supply-chain/supply-chain.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { ManufacturingModule } from './modules/manufacturing/manufacturing.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { DocumentsModule } from './modules/documents/documents.module';
+import { CommunicationModule } from './modules/communication/communication.module';
+import { PosModule } from './modules/pos/pos.module';
+import { AdvancedFinanceModule } from './modules/advanced-finance/advanced-finance.module';
+import { AdvancedHrModule } from './modules/advanced-hr/advanced-hr.module';
+import { WorkflowModule } from './modules/workflow/workflow.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { StorageModule } from './modules/storage/storage.module';
+import { ReportingModule } from './modules/reporting/reporting.module';
+import { HealthcareModule } from './modules/healthcare/healthcare.module';
+import { EducationModule } from './modules/education/education.module';
+import { RealEstateModule } from './modules/real-estate/real-estate.module';
+import { FieldServiceModule } from './modules/field-service/field-service.module';
+import { ApiPlatformModule } from './modules/api-platform/api-platform.module';
+import { LocalizationModule } from './modules/localization/localization.module';
+import { PwaModule } from './modules/pwa/pwa.module';
+import { DevopsModule } from './modules/devops/devops.module';
+import { SaasModule } from './modules/saas/saas.module';
 
 @Module({
   imports: [
@@ -32,15 +56,78 @@ import { InventoryModule } from './modules/inventory/inventory.module';
       },
     ]),
 
-    // Register ERP Foundation & Core Modules
+    // Register ERP Foundation & Core Modules (Phase 0-1)
     AuthModule,
     AdminModule,
     FinanceModule,
     HrModule,
     CrmModule,
     InventoryModule,
+
+    // Phase 2 — Procurement, Sales & Supply Chain
+    ProcurementModule,
+    SalesModule,
+    SupplyChainModule,
+
+    // Phase 3 — Projects & Manufacturing (MRP)
+    ProjectsModule,
+    ManufacturingModule,
+
+    // Phase 4 — BI, Documents & Communication
+    AnalyticsModule,
+    DocumentsModule,
+    CommunicationModule,
+
+    // Phase 5 — POS & Retail
+    PosModule,
+
+    // Phase 6 — Advanced Finance
+    AdvancedFinanceModule,
+
+    // Phase 7 — Advanced HR
+    AdvancedHrModule,
+
+    // Phase 8 — Workflow Engine
+    WorkflowModule,
+
+    // Phase 9 — Notifications
+    NotificationsModule,
+
+    // Phase 10 — Storage
+    StorageModule,
+
+    // Phase 11 — Advanced Reporting
+    ReportingModule,
+
+    // Phase 12 — Healthcare
+    HealthcareModule,
+
+    // Phase 13 — Education
+    EducationModule,
+
+    // Phase 14 — Real Estate
+    RealEstateModule,
+
+    // Phase 15 — Field Service
+    FieldServiceModule,
+
+    // Phase 16 — API Platform & Integrations
+    ApiPlatformModule,
+
+    // Phase 17 — Localization (i18n)
+    LocalizationModule,
+
+    // Phase 18 — PWA & Offline Sync
+    PwaModule,
+
+    // Phase 19 — DevOps & Monitoring
+    DevopsModule,
+
+    // Phase 20 — SaaS Platform & Billing
+    SaasModule,
   ],
   controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}
+

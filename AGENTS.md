@@ -11,7 +11,7 @@
 - **Name**: Universal ERP System (UniERP)
 - **Mission**: A fully-packed, composable, industry-agnostic Enterprise Resource Planning system
 - **Architecture**: Monorepo (Turborepo + pnpm) with composable modules
-- **Current Phase**: Phase 0 — Foundation
+- **Current Phase**: Phase 2 — Procurement, Sales & Supply Chain
 - **Methodology**: AI-Agent Driven Development (AADD)
 
 ---
@@ -168,27 +168,228 @@ When building a new ERP module, follow these steps in order:
 
 ## 🎯 Current Sprint Context
 
-**Phase**: 1 — Finance, HR & CRM Modules
-**Goal**: Build core business modules starting with Finance & Accounting, Human Resources, and CRM
-**Status**: In Progress
+**Phase**: 11-20 — Advanced Roadmap & UI/UX Overhaul
+**Goal**: Plan and implement advanced reporting, industry modules, integration API hub, PWA, and SaaS portal
+**Status**: Planning & Designing
 
 ### Completed
-- ✅ Phase 0 — Architecture Design & AI Agent Instruction Framework
-- ✅ Phase 0 — Monorepo scaffold & ESLint base configuration
-- ✅ Phase 0 — Design system (packages/ui) with theme & component tokens
-- ✅ Phase 0 — Multi-tenancy isolation (Prisma extended client + PostgreSQL RLS)
-- ✅ Phase 0 — JWT/RBAC security, guards, and NestJS AuthModule
-- ✅ Phase 0 — NestJS AdminModule user registry, setting, and roles APIs
-- ✅ Phase 0 — Next.js 15 pages (login, registration, dashboard shell, user administration)
-- ✅ Phase 0 — Verification (build, lint, Vitest unit tests)
+- ✅ Phase 0 — Foundation (Monorepo, Auth, Admin, multi-tenancy, design system)
+- ✅ Phase 1 — Core Business Modules (Finance, HR, CRM, Inventory)
+- ✅ Phase 2 — Procurement, Sales & Supply Chain
+- ✅ Phase 3 — Project Management & Manufacturing (MRP)
+- ✅ Phase 4 — BI, Documents & Communication
+- ✅ Phase 5 — POS & Advanced Inventory
+- ✅ Phase 6 — Advanced Finance
+- ✅ Phase 7 — Advanced HR
+- ✅ Phase 8 — Workflow Engine & Approvals
+- ✅ Phase 9 — Notifications & Real-Time Events
+- ✅ Phase 10 — File Storage & Document Templates
+- ✅ Phase 2–10 full compilation check and unit test suite verification
 
 ### In Progress
-- 🔄 Phase 1 — Finance & Accounting module setup (charts of accounts, billing/invoicing)
+- 🔄 Phase 11–20 Advanced roadmaps mapping and 5-phase breakdown
+- 🔄 UI/UX revamp specification design (Odoo & ERPNext/Frappe style layout docs)
 
 ### Next
-- ⬜ Finance & Accounting module
-- ⬜ Human Resources module
-- ⬜ CRM module
+- ⬜ Phase 11 — Advanced Reporting & Dashboards
+- ⬜ Phase 12 — Healthcare Industry Module
+- ⬜ Phase 13 — Education Industry Module
+- ⬜ Phase 14 — Real Estate Industry Module
+- ⬜ Phase 15 — Field Service Industry Module
+- ⬜ Phase 16 — API Platform & Integration Hub
+- ⬜ Phase 17 — Multi-Language (i18n) & Localization
+- ⬜ Phase 18 — Mobile Responsive & PWA
+- ⬜ Phase 19 — DevOps, CI/CD & Monitoring
+- ⬜ Phase 20 — Enterprise SaaS Platform
+
+---
+
+## 📋 Full Phase Roadmap (Phase 0–20)
+
+> Each phase builds on the previous ones. Dependencies are noted per phase.
+
+### Phase 0 — Foundation ✅
+**Goal**: Monorepo, auth, admin, design system, multi-tenancy
+- Turborepo + pnpm monorepo scaffold
+- Next.js 15 App Router frontend shell
+- NestJS modular backend with DI, guards, pipes
+- PostgreSQL + Prisma ORM with tenant isolation (RLS)
+- JWT/RBAC authentication and authorization
+- Admin module (users, roles, settings)
+- Design system with theme tokens, CSS custom properties
+- Vitest unit testing framework
+
+### Phase 1 — Core Business Modules ✅
+**Goal**: Finance, HR, CRM, Inventory — the four pillars of any ERP
+- **Finance & Accounting**: Invoices, payments, line items, payment tracking
+- **Human Resources**: Employee directory, departments, onboarding
+- **CRM**: Customer/vendor registry, account management, contact details
+- **Inventory & Warehouse**: Products (SKU), warehouses, stock levels, reorder points
+- Seed data for all modules, full unit test suite
+
+### Phase 2 — Procurement, Sales & Supply Chain 🔄
+**Goal**: Complete the order-to-cash and procure-to-pay cycles
+**Depends on**: Phase 1 (Finance, Inventory, CRM)
+- **Procurement**: Vendor management, Request for Quotation (RFQ), Purchase Orders, Purchase Receipts, Goods Receipt Notes
+- **Sales & Orders**: Quotations, Sales Orders, Delivery Notes, Returns/Credit Notes, Sales pipelines
+- **Supply Chain**: Shipment tracking, carrier management, demand forecasting, reorder automation
+- **Domain Events**: `order.confirmed → inventory.reserve`, `purchase.received → inventory.increase`, `invoice.auto-create`
+- Cross-module event wiring between Sales ↔ Inventory ↔ Finance
+
+### Phase 3 — Project Management & Manufacturing
+**Goal**: Time-based and production-based workflows
+**Depends on**: Phase 2 (Sales, Inventory, Procurement)
+- **Project Management**: Projects, tasks, milestones, Gantt charts, timesheets, project budgets
+- **Manufacturing (MRP)**: Bill of Materials (BOM), work orders, production planning, routing, scrap tracking
+- **Integration**: Projects → HR (timesheets), Manufacturing → Inventory (raw materials → finished goods)
+
+### Phase 4 — BI, Documents & Communication
+**Goal**: Analytics, document lifecycle, and internal messaging
+**Depends on**: Phase 1–3 (reads from all modules)
+- **Business Intelligence**: Custom dashboards, report builder, KPI widgets, scheduled reports, data export (CSV/PDF)
+- **Document Management**: Document upload/storage, folder hierarchy, version control, templates, e-signatures (placeholder)
+- **Communication**: Internal messaging, channels/groups, notification center, email template builder
+
+### Phase 5 — POS & Advanced Inventory
+**Goal**: Retail operations and advanced warehouse management
+**Depends on**: Phase 2 (Sales, Inventory)
+- **POS & Retail**: Point-of-sale terminal UI, barcode scanning, receipt printing, cash register, shift management
+- **Advanced Inventory**: Serial number tracking, batch/lot tracking, FIFO/LIFO/weighted average costing, bin/location management, cycle counting, inventory valuation reports
+
+### Phase 6 — Advanced Finance
+**Goal**: Full-featured accounting engine
+**Depends on**: Phase 1 (Finance), Phase 2 (Sales, Procurement)
+- Multi-currency with exchange rate management
+- Chart of Accounts (full double-entry bookkeeping)
+- General Ledger, Trial Balance, Balance Sheet, Profit & Loss
+- Budget management (budgets vs. actuals)
+- Bank reconciliation (import bank statements, auto-match)
+- Tax management (multiple tax rates, GST/VAT, tax returns)
+- Accounts Payable / Accounts Receivable aging reports
+- Financial year close, opening balances
+
+### Phase 7 — Advanced HR
+**Goal**: Full HRMS with payroll, leave, attendance, and performance
+**Depends on**: Phase 1 (HR), Phase 6 (Finance for payroll → GL)
+- Payroll engine (salary structures, components, deductions, tax calculation)
+- Leave management (leave types, accrual policies, approval workflows)
+- Attendance tracking (check-in/out, overtime, shift scheduling)
+- Performance appraisals (goals, reviews, 360° feedback)
+- Training & certification tracking
+- Org chart visualization
+- Employee self-service portal
+
+### Phase 8 — Workflow Engine & Approvals
+**Goal**: Configurable, rule-based approval workflows for all modules
+**Depends on**: Phase 1–7 (applies to all modules)
+- Visual workflow builder (drag-and-drop, conditions, branches)
+- Approval chains (sequential, parallel, conditional)
+- Delegation rules (out-of-office, escalation)
+- Workflow templates for common flows (PO approval, leave request, invoice approval)
+- Audit trail for all workflow transitions
+- SLA tracking and breach notifications
+
+### Phase 9 — Notifications & Real-Time Events
+**Goal**: Multi-channel notification system
+**Depends on**: Phase 4 (Communication), Phase 8 (Workflows)
+- WebSocket-based real-time updates (dashboards, notifications)
+- Email notifications (transactional via Nodemailer + React Email)
+- In-app notification center with read/unread/archive
+- Push notifications (web push API)
+- Notification preferences (per user, per module, per event)
+- Digest/batching (hourly/daily summaries)
+- SMS integration (Twilio/SNS placeholder)
+
+### Phase 10 — File Storage & Document Templates
+**Goal**: Centralized file management and document generation
+**Depends on**: Phase 4 (Documents), Phase 6 (Finance for PDF invoices)
+- S3-compatible file storage (MinIO for dev, AWS S3 for prod)
+- File upload with type/size validation, virus scanning placeholder
+- Document templates (invoices, purchase orders, payslips, contracts)
+- PDF generation engine (React-PDF)
+- Template customization (logo, colors, fields, layout)
+- Bulk document generation (e.g., monthly payslips)
+- Document sharing with expiring links
+
+### Phase 11 — Advanced Reporting & Dashboards
+**Goal**: Self-service analytics and executive dashboards (Depends on: Phase 4, Phase 6, all data modules)
+- **Phase 11.1**: Pivot table matrix view engine allowing drag-and-drop grouping, row-column swapping, and aggregations (Sum, Avg, Min, Max).
+- **Phase 11.2**: Drag-and-drop dashboard builder with customizable widgets (line, bar, donut, gauge, funnel charts) powered by ChartJS/Recharts.
+- **Phase 11.3**: Advanced custom SQL/Query Builder UI with drag-and-drop filters, sorting, and conditional formatting rules.
+- **Phase 11.4**: Automated report delivery engine supporting scheduled exports (PDF/CSV/XLSX) sent via email templates.
+- **Phase 11.5**: Role-based executive dashboards (CEO, CFO, Operations Director) with drill-down exploration paths to origin documents.
+
+### Phase 12 — Healthcare Industry Module
+**Goal**: Hospital/clinic/pharma management extension (Depends on: Phase 7, Phase 5, Phase 6)
+- **Phase 12.1**: Patient EHR/EMR (Electronic Health Record) system, patient intake registry, vitals tracking, and allergy charts.
+- **Phase 12.2**: Multi-resource appointment scheduling calendar supporting clinics, practitioner shifts, and patient self-booking templates.
+- **Phase 12.3**: Digital prescription management (e-prescribing) and lab order/results reporting with PDF attachments.
+- **Phase 12.4**: Pharmacy inventory control with drug batch tracing, barcode verification, expiry alerts, and controlled substance logging.
+- **Phase 12.5**: Insurance claims validation workflow (encounters to claims processing) and HIPAA-compliant audit trails.
+
+### Phase 13 — Education Industry Module
+**Goal**: School/university management extension (Depends on: Phase 7, Phase 6, Phase 4)
+- **Phase 13.1**: Student/Parent information registry, admissions wizard, dynamic enrollment tracking, and gradebook management.
+- **Phase 13.2**: Academic course setup, master timetable scheduler (handling rooms, professors, conflict-resolution), and syllabus tracking.
+- **Phase 13.3**: Fee structure configuration, automated fee collection runs, scholarship credits, and parent payment gateways.
+- **Phase 13.4**: Attendance management dashboard (student daily roster, RFID/barcode integration hooks, staff rosters).
+- **Phase 13.5**: Library circulation manager (book registers, barcode scanning, check-in/out, automated fine calculations).
+
+### Phase 14 — Real Estate Industry Module
+**Goal**: Property and construction management extension (Depends on: Phase 6, Phase 1, Phase 3)
+- **Phase 14.1**: Property registry tree structure (Portfolios ➔ Buildings ➔ Floors ➔ Units) with property specifications, amenities, and floor plans.
+- **Phase 14.2**: Tenant lease agreement lifecycle management (lease creation, automated rent invoicing, security deposits, renewals).
+- **Phase 14.3**: Tenant portal for maintenance work orders, maintenance dispatch flow, and vendor invoice logging.
+- **Phase 14.4**: Commission engine for sales/leasing agents, commission split setups, and integration into Finance general ledger.
+- **Phase 14.5**: Property valuation modeller, net operating income (NOI) calculators, and real estate investment yield charts.
+
+### Phase 15 — Field Service Industry Module
+**Goal**: Maintenance, utilities, and on-site service management (Depends on: Phase 7, Phase 5, Phase 3)
+- **Phase 15.1**: Customer service request ticket system and service level agreement (SLA) status trackers.
+- **Phase 15.2**: Technician dispatcher scheduling panel (interactive calendar + map routes overlay showing locations).
+- **Phase 15.3**: Technician mobile web view showing checklist forms, inventory check-out (from service van), and customer signature capture.
+- **Phase 15.4**: Service contract management, preventative maintenance scheduling (cron-based recurring service tickets).
+- **Phase 15.5**: Auto-invoicing for parts and labor, integrating timesheets directly with CRM billing accounts.
+
+### Phase 16 — API Platform & Integration Hub
+**Goal**: Open API platform for third-party integrations (Depends on: All core modules)
+- **Phase 16.1**: Developer console in admin settings for public API key management (generate, rotate, revoke, name).
+- **Phase 16.2**: Webhooks manager allowing subscriptions to system-wide domain events, webhook retries log, and payload customization.
+- **Phase 16.3**: OpenAPI/Swagger interactive developer documentation hosted on `/docs` and API rate-limiting guard.
+- **Phase 16.4**: Pre-built integration templates / placeholders for major external apps (QuickBooks, Stripe, Salesforce, Shopify).
+- **Phase 16.5**: Data import/export wizards with CSV/Excel column-mapping validation templates.
+
+### Phase 17 — Multi-Language (i18n) & Localization
+**Goal**: Full internationalization support (Depends on: All UI modules)
+- **Phase 17.1**: Integration of next-intl framework and JSON file dictionary structure (en, es, fr, de, ar, zh, hi, ja).
+- **Phase 17.2**: Global language switcher widget in navbar and dynamic Right-to-Left (RTL) CSS layouts support.
+- **Phase 17.3**: Regional localization parameters for dates, times, currencies, and numeric formats based on active locale.
+- **Phase 17.4**: UI-based translation editor in admin modules allowing administrators to override localization text in-database.
+- **Phase 17.5**: Database multi-lingual record translation support (localized product descriptions, invoice terms, etc.).
+
+### Phase 18 — Mobile Responsive & PWA
+**Goal**: Mobile-first optimizations and offline capability (Depends on: Phase 17, all UI modules)
+- **Phase 18.1**: Comprehensive CSS responsive audits and touch-target enhancement for all dashboard layout screens.
+- **Phase 18.2**: Progressive Web App (PWA) configuration (manifest, icons, service workers) for installation on iOS/Android home screens.
+- **Phase 18.3**: Service worker caching engine supporting offline access to critical workflows (POS, attendance registers).
+- **Phase 18.4**: Offline data synchronization queue using IndexDB with automatic reconciliation upon reconnection.
+- **Phase 18.5**: Device native hardware access hooks (camera for barcode scanning, GPS geolocation for field service).
+
+### Phase 19 — DevOps, CI/CD & Monitoring
+**Goal**: Production-grade deployment and observability (Depends on: All modules)
+- **Phase 19.1**: GitHub Actions YAML pipelines for automated build checking, ESLint vetting, and unit testing runs.
+- **Phase 19.2**: Multi-stage production Dockerfile optimization and Kubernetes/Docker-compose staging configuration.
+- **Phase 19.3**: OpenTelemetry (APM) telemetry instrumentation, logging integration with structured JSON formats, and Grafana dashboard alerts.
+- **Phase 19.4**: Database zero-downtime migration protocols, backup validation scripts, and replica failover plans.
+- **Phase 19.5**: Sentry error tracking integration and uptime performance status indicators.
+
+### Phase 20 — Enterprise SaaS Platform
+**Goal**: Multi-tenant SaaS with subscription billing and marketplace (Depends on: All previous phases)
+- **Phase 20.1**: Stripe pricing plan configurations, subscription billing cycles, and automated portal checkouts.
+- **Phase 20.2**: Usage-based metering service (API endpoints, disk space, active user count billing restrictions).
+- **Phase 20.3**: Dynamic tenant setup wizard allowing organization provisioning on workspace onboarding.
+- **Phase 20.4**: Tenant domain mapping router (reverse proxy support for custom domains mapping to tenant subdomains).
+- **Phase 20.5**: Admin Super-Panel (SuperAdmin Dashboard) monitoring cross-tenant usage metrics, server health, and subscription statuses.
 
 ---
 
