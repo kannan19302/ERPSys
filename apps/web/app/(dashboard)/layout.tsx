@@ -53,7 +53,7 @@ interface SidebarItem {
 }
 
 const getAppSpecificNavigation = (pathname: string): { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } => {
-  const switchAppItem: SidebarItem = { name: 'Apps Hub', href: '/apps', icon: LayoutGrid };
+  const switchAppItem: SidebarItem = { name: 'Applications', href: '/apps', icon: LayoutGrid };
   
   if (pathname.startsWith('/finance')) {
     return {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, PageHeader } from '@unerp/ui';
+import { Card } from '@unerp/ui';
 import {
   Home,
   CreditCard,
@@ -37,8 +37,6 @@ import {
   LayoutGrid,
   ShoppingBag,
   Folder as FolderIcon,
-  ChevronRight,
-  ArrowLeft,
 } from 'lucide-react';
 
 interface AppDefinition {
@@ -82,6 +80,7 @@ const applications: AppDefinition[] = [
   { id: 'devops', name: 'DevOps & Telemetry', description: 'System metrics, APM, and health checks', href: '/admin/devops', icon: Server, color: '#16a34a', category: 'Platform', installed: true },
   { id: 'saas', name: 'SaaS Portal', description: 'Subscription plans, billing, and usage meters', href: '/saas/portal', icon: Cloud, color: '#9333ea', category: 'Platform', installed: true },
   { id: 'admin', name: 'Administration', description: 'User management and security settings', href: '/admin/users', icon: ShieldAlert, color: '#dc2626', category: 'Core', installed: true },
+  { id: 'app-store', name: 'App Store', description: 'Browse additional apps and modules', href: '/apps/store', icon: ShoppingBag, color: '#7c3aed', category: 'Platform', installed: true },
 ];
 
 interface FolderDefinition {
@@ -141,6 +140,14 @@ export default function AppsHubPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [installedIds, setInstalledIds] = useState<string[]>([]);
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
+  const [folderSearch, setFolderSearch] = useState('');
+  const [defaultApp, setDefaultApp] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('defaultApp');
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -165,6 +172,15 @@ export default function AppsHubPage() {
     fetchInstalled();
   }, []);
 
+  const setAsDefault = (appId: string) => {
+    try {
+      localStorage.setItem('defaultApp', appId);
+      setDefaultApp(appId);
+    } catch {
+      // ignore
+    }
+  };
+
   const isAppVisible = (app: AppDefinition) => {
     // Core/system apps are always visible
     if (app.category !== 'Industry') {
@@ -184,145 +200,17 @@ export default function AppsHubPage() {
     return matchesSearch && isAppVisible(app);
   });
 
-  const handleBackToFolders = () => {
-    setActiveFolder(null);
-  };
-
   const selectedFolderObj = folders.find((f) => f.name === activeFolder);
   const activeFolderApps = selectedFolderObj ? getInstalledAppsInFolder(selectedFolderObj) : [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
-      <PageHeader
-        title={activeFolder ? activeFolder : 'Applications Hub'}
-        description={
-          activeFolder
-            ? selectedFolderObj?.description
-            : 'Access your active ERP applications. Grouped into categories for a clean enterprise interface.'
-        }
-        breadcrumbs={activeFolder ? [{ label: 'Apps', href: '/apps' }, { label: activeFolder }] : [{ label: 'Apps' }]}
-        actions={
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            {activeFolder && (
-              <button
-                onClick={handleBackToFolders}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  padding: 'var(--space-2) var(--space-4)',
-                  background: 'var(--color-bg-elevated)',
-                  color: 'var(--color-text)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                  fontWeight: 'var(--weight-semibold)',
-                  fontSize: 'var(--text-sm)',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.15s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
-              >
-                <ArrowLeft size={16} /> Back to Folders
-              </button>
-            )}
-            <Link
-              href="/apps/store"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 'var(--space-2)',
-                padding: 'var(--space-2) var(--space-4)',
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                color: '#fff',
-                borderRadius: 'var(--radius-md)',
-                fontWeight: 'var(--weight-semibold)',
-                fontSize: 'var(--text-sm)',
-                textDecoration: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(99, 102, 241, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.3)';
-              }}
-            >
-              <ShoppingBag size={16} /> App Store
-            </Link>
-          </div>
-        }
-      />
-
-      {/* Search Bar - Premium CSS Glassmorphic Focus */}
-      <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search
-            size={18}
-            style={{
-              position: 'absolute',
-              left: 'var(--space-3)',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--color-text-tertiary)',
-            }}
-          />
-          <input
-            id="apps-search-input"
-            type="text"
-            placeholder="Search applications..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              if (activeFolder) setActiveFolder(null); // Bypass folder mode during search
-            }}
-            style={{
-              width: '100%',
-              padding: 'var(--space-3) var(--space-4) var(--space-3) var(--space-10)',
-              borderRadius: 'var(--radius-lg)',
-              border: '2px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              fontSize: 'var(--text-sm)',
-              outline: 'none',
-              color: 'var(--color-text)',
-              transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--color-primary)';
-              e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'var(--color-border)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-      </Card>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out', position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
 
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
           <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '3px solid var(--color-primary-light)', borderTopColor: 'var(--color-primary)', animation: 'spin 1s linear infinite' }} />
         </div>
-      ) : searchQuery ? (
-        /* Flat Grid View during active search */
-        <div>
-          <h3 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>
-            Search Results ({filteredApps.length})
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 'var(--space-4)' }}>
-            {filteredApps.map((app) => (
-              <AppCard key={app.id} app={app} />
-            ))}
-          </div>
-          {filteredApps.length === 0 && <EmptyState />}
-        </div>
       ) : activeFolder ? (
-        /* Folder Contents Grid View */
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 'var(--space-4)' }}>
             {activeFolderApps.map((app) => (
@@ -332,111 +220,46 @@ export default function AppsHubPage() {
           {activeFolderApps.length === 0 && <EmptyState />}
         </div>
       ) : (
-        /* Desktop-style Collapsible Group Folders Landing Page */
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-5)' }}>
-          {folders.map((folder) => {
-            const apps = getInstalledAppsInFolder(folder);
-            return (
-              <Card
-                key={folder.name}
-                padding="lg"
-                style={{
-                  cursor: 'pointer',
-                  border: '1px solid var(--color-border)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--space-4)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: 'var(--color-bg-elevated)',
-                }}
-                onClick={() => setActiveFolder(folder.name)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                  e.currentTarget.style.borderColor = folder.color;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.borderColor = 'var(--color-border)';
-                }}
-              >
-                {/* Folder Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: 'var(--radius-lg)',
-                      background: `${folder.color}15`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: folder.color,
-                    }}
-                  >
-                    <FolderIcon size={24} fill={`${folder.color}25`} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>
-                      {folder.name}
-                    </h3>
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                      {apps.length} active application{apps.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  <ChevronRight size={18} style={{ color: 'var(--color-text-tertiary)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '70vh' }}>
+            <Card padding="lg" style={{ width: '920px', textAlign: 'center', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', position: 'relative' }}>
+              {/* Compact search in top-right */}
+              <div style={{ position: 'absolute', top: '16px', right: '16px', width: '220px' }}>
+                <div style={{ position: 'relative' }}>
+                  <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search apps..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: '13px' }}
+                  />
                 </div>
-
-                <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: '1.5', flex: 1 }}>
-                  {folder.description}
-                </p>
-
-                {/* Previews of apps inside this folder */}
-                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--color-border)' }}>
-                  {apps.slice(0, 5).map((app) => (
-                    <div
-                      key={app.id}
-                      title={app.name}
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: 'var(--radius-md)',
-                        background: `${app.color}12`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: app.color,
-                      }}
-                    >
-                      <app.icon size={15} />
+              </div>
+              <h3 style={{ margin: '0 0 18px 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>Select an app to continue</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 88px)', gap: '12px', justifyContent: 'center' }}>
+                {filteredApps.map((app) => (
+                  <div key={app.id} style={{ width: '88px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <Link href={app.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div style={{ width: '72px', height: '72px', borderRadius: '18px', background: app.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <app.icon size={36} style={{ color: app.color }} />
+                        </div>
+                      </Link>
+                      {defaultApp === app.id && (
+                        <div title="Default app" style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: 999, background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}>
+                          ✓
+                        </div>
+                      )}
                     </div>
-                  ))}
-                  {apps.length > 5 && (
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--color-bg-sunken)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        fontWeight: 'var(--weight-bold)',
-                        color: 'var(--color-text-secondary)',
-                      }}
-                    >
-                      +{apps.length - 5}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                    <span style={{ fontSize: '13px', color: 'var(--color-text)', whiteSpace: 'normal', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center', lineHeight: '1.2' }}>{app.name}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '18px' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login'; }} style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}>⇢ Logout</a>
+              </div>
+            </Card>
+          </div>
       )}
 
       {/* Modern Popover/Modal overlay showing active folder applications */}
@@ -501,6 +324,9 @@ export default function AppsHubPage() {
                   <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
                     {selectedFolderObj.description}
                   </p>
+                  <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+                    Quick access to tools — inspired by popular ERP dashboards (Odoo / ERPNext).
+                  </p>
                 </div>
               </div>
               <button
@@ -529,10 +355,56 @@ export default function AppsHubPage() {
 
             {/* Modal Content - Apps Grid */}
             <div style={{ padding: 'var(--space-6)', maxHeight: '450px', overflowY: 'auto' }}>
+              {/* Folder-level search */}
+              <div style={{ marginBottom: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search size={12} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search within folder..."
+                    value={folderSearch}
+                    onChange={(e) => setFolderSearch(e.target.value)}
+                    style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-8)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)' }}
+                  />
+                </div>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 'var(--space-4)' }}>
-                {activeFolderApps.map((app) => (
-                  <AppCard key={app.id} app={app} />
-                ))}
+                  {activeFolderApps
+                    .filter((a) => a.name.toLowerCase().includes(folderSearch.toLowerCase()) || a.description.toLowerCase().includes(folderSearch.toLowerCase()))
+                    .map((app) => (
+                      <div key={app.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ position: 'relative' }}>
+                          <Link href={app.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <div style={{ width: '72px', height: '72px', borderRadius: '12px', background: app.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <app.icon size={36} style={{ color: app.color }} />
+                            </div>
+                          </Link>
+                          <button
+                            title={defaultApp === app.id ? 'Default app' : 'Set as default'}
+                            onClick={() => setAsDefault(app.id)}
+                            style={{
+                              position: 'absolute',
+                              top: -8,
+                              right: -8,
+                              width: 22,
+                              height: 22,
+                              borderRadius: 999,
+                              border: 'none',
+                              background: defaultApp === app.id ? '#10b981' : '#fff',
+                              color: defaultApp === app.id ? '#fff' : '#10b981',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {defaultApp === app.id ? '✓' : '○'}
+                          </button>
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{app.name}</span>
+                      </div>
+                    ))}
               </div>
               {activeFolderApps.length === 0 && <EmptyState />}
             </div>
@@ -578,8 +450,8 @@ function AppCard({ app }: { app: AppDefinition }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div
             style={{
-              width: '44px',
-              height: '44px',
+              width: '36px',
+              height: '36px',
               borderRadius: 'var(--radius-lg)',
               background: `${app.color}18`,
               display: 'flex',
@@ -588,7 +460,7 @@ function AppCard({ app }: { app: AppDefinition }) {
               flexShrink: 0,
             }}
           >
-            <app.icon size={22} style={{ color: app.color }} />
+            <app.icon size={18} style={{ color: app.color }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3
@@ -615,6 +487,17 @@ function AppCard({ app }: { app: AppDefinition }) {
             >
               {app.category}
             </span>
+            <div style={{ marginTop: '6px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {app.installed ? (
+                <span style={{ fontSize: '11px', padding: '2px 8px', background: 'var(--color-bg-sunken)', borderRadius: '999px', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                  Installed
+                </span>
+              ) : (
+                <span style={{ fontSize: '11px', padding: '2px 8px', background: app.color + '12', borderRadius: '999px', color: app.color, border: '1px solid ' + app.color + '22' }}>
+                  Available
+                </span>
+              )}
+            </div>
           </div>
           {app.category !== 'Industry' && (
             <Star
