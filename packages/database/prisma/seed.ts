@@ -1023,6 +1023,24 @@ async function main() {
       ],
     });
 
+    // Seed default installed apps
+    const defaultApps = ['healthcare', 'education', 'real-estate', 'field-service'];
+    for (const appId of defaultApps) {
+      await prisma.installedApp.upsert({
+        where: {
+          tenantId_appId: {
+            tenantId: tenant.id,
+            appId,
+          },
+        },
+        update: {},
+        create: {
+          tenantId: tenant.id,
+          appId,
+        },
+      });
+    }
+
     console.log('Phase 16-20 (API Platform, i18n, PWA, SaaS) seed data complete.');
   }
 

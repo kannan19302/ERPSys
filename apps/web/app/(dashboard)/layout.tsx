@@ -52,38 +52,227 @@ interface SidebarItem {
   icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
 }
 
-const navigation: SidebarItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Finance & Accounting', href: '/finance', icon: CreditCard },
-  { name: 'Human Resources', href: '/hr', icon: Users },
-  { name: 'CRM & Sales', href: '/crm', icon: BarChart3 },
-  { name: 'Inventory & Stock', href: '/inventory', icon: Package },
-  { name: 'Procurement', href: '/procurement', icon: ShoppingCart },
-  { name: 'Sales & Orders', href: '/sales', icon: ClipboardList },
-  { name: 'Supply Chain', href: '/supply-chain', icon: Truck },
-  { name: 'Project Management', href: '/projects', icon: Briefcase },
-  { name: 'Manufacturing', href: '/manufacturing', icon: Hammer },
-  { name: 'Business Intelligence', href: '/analytics', icon: PieChart },
-  { name: 'Document Management', href: '/documents', icon: FolderOpen },
-  { name: 'Communication', href: '/communication', icon: MessageSquare },
-  { name: 'POS & Retail', href: '/pos', icon: Store },
-  { name: 'Advanced Finance', href: '/finance/advanced', icon: Wallet },
-  { name: 'Advanced HR', href: '/hr/advanced', icon: FileSliders },
-  { name: 'Workflows', href: '/workflows', icon: GitFork },
-  { name: 'Files & Storage', href: '/storage', icon: HardDrive },
-  { name: 'Advanced Reporting', href: '/analytics/advanced', icon: PieChart },
-  { name: 'Healthcare', href: '/healthcare', icon: Activity },
-  { name: 'Education', href: '/education', icon: GraduationCap },
-  { name: 'Real Estate', href: '/real-estate', icon: Building2 },
-  { name: 'Field Service', href: '/field-service', icon: Wrench },
-  { name: 'API Platform', href: '/admin/api-keys', icon: Key },
-  { name: 'Localization', href: '/admin/localization', icon: Globe },
-  { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
-  { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
-  { name: 'SaaS Portal', href: '/saas/portal', icon: Cloud },
-  { name: 'Administration', href: '/admin/users', icon: ShieldAlert },
-  { name: 'Apps Hub', href: '/apps', icon: LayoutGrid },
-];
+const getAppSpecificNavigation = (pathname: string): { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } => {
+  const switchAppItem: SidebarItem = { name: 'Apps Hub', href: '/apps', icon: LayoutGrid };
+  
+  if (pathname.startsWith('/finance')) {
+    return {
+      title: 'Finance & Accounting',
+      icon: CreditCard,
+      items: [
+        switchAppItem,
+        { name: 'Overview', href: '/finance', icon: Home },
+        { name: 'Advanced Ledger', href: '/finance/advanced', icon: Wallet }
+      ]
+    };
+  }
+  if (pathname.startsWith('/hr')) {
+    return {
+      title: 'Human Resources',
+      icon: Users,
+      items: [
+        switchAppItem,
+        { name: 'Employee Directory', href: '/hr', icon: Users },
+        { name: 'Payroll & Attendance', href: '/hr/advanced', icon: FileSliders }
+      ]
+    };
+  }
+  if (pathname.startsWith('/crm')) {
+    return {
+      title: 'CRM & Sales',
+      icon: BarChart3,
+      items: [
+        switchAppItem,
+        { name: 'CRM Overview', href: '/crm', icon: BarChart3 }
+      ]
+    };
+  }
+  if (pathname.startsWith('/inventory')) {
+    return {
+      title: 'Inventory & Stock',
+      icon: Package,
+      items: [
+        switchAppItem,
+        { name: 'Inventory & Stock', href: '/inventory', icon: Package }
+      ]
+    };
+  }
+  if (pathname.startsWith('/procurement')) {
+    return {
+      title: 'Procurement',
+      icon: ShoppingCart,
+      items: [
+        switchAppItem,
+        { name: 'Procurement & POs', href: '/procurement', icon: ShoppingCart }
+      ]
+    };
+  }
+  if (pathname.startsWith('/sales')) {
+    return {
+      title: 'Sales & Orders',
+      icon: ClipboardList,
+      items: [
+        switchAppItem,
+        { name: 'Sales & Orders', href: '/sales', icon: ClipboardList }
+      ]
+    };
+  }
+  if (pathname.startsWith('/supply-chain')) {
+    return {
+      title: 'Supply Chain',
+      icon: Truck,
+      items: [
+        switchAppItem,
+        { name: 'Supply Chain Operations', href: '/supply-chain', icon: Truck }
+      ]
+    };
+  }
+  if (pathname.startsWith('/projects')) {
+    return {
+      title: 'Project Management',
+      icon: Briefcase,
+      items: [
+        switchAppItem,
+        { name: 'Gantt & Tasks', href: '/projects', icon: Briefcase }
+      ]
+    };
+  }
+  if (pathname.startsWith('/manufacturing')) {
+    return {
+      title: 'Manufacturing',
+      icon: Hammer,
+      items: [
+        switchAppItem,
+        { name: 'Manufacturing Operations', href: '/manufacturing', icon: Hammer }
+      ]
+    };
+  }
+  if (pathname.startsWith('/analytics')) {
+    return {
+      title: 'Business Intelligence',
+      icon: PieChart,
+      items: [
+        switchAppItem,
+        { name: 'BI Analytics', href: '/analytics', icon: PieChart },
+        { name: 'Advanced Reporting', href: '/analytics/advanced', icon: PieChart }
+      ]
+    };
+  }
+  if (pathname.startsWith('/documents') || pathname.startsWith('/storage')) {
+    return {
+      title: 'Document Management',
+      icon: FolderOpen,
+      items: [
+        switchAppItem,
+        { name: 'Documents & Folders', href: '/documents', icon: FolderOpen },
+        { name: 'Files & Storage', href: '/storage', icon: HardDrive }
+      ]
+    };
+  }
+  if (pathname.startsWith('/communication')) {
+    return {
+      title: 'Communication',
+      icon: MessageSquare,
+      items: [
+        switchAppItem,
+        { name: 'Internal Chats', href: '/communication', icon: MessageSquare }
+      ]
+    };
+  }
+  if (pathname.startsWith('/pos')) {
+    return {
+      title: 'POS & Retail',
+      icon: Store,
+      items: [
+        switchAppItem,
+        { name: 'POS Terminals', href: '/pos', icon: Store }
+      ]
+    };
+  }
+  if (pathname.startsWith('/workflows')) {
+    return {
+      title: 'Workflows',
+      icon: GitFork,
+      items: [
+        switchAppItem,
+        { name: 'Approval Workflows', href: '/workflows', icon: GitFork }
+      ]
+    };
+  }
+  if (pathname.startsWith('/healthcare')) {
+    return {
+      title: 'Healthcare',
+      icon: Activity,
+      items: [
+        switchAppItem,
+        { name: 'Patient EHR & Vitals', href: '/healthcare', icon: Activity }
+      ]
+    };
+  }
+  if (pathname.startsWith('/education')) {
+    return {
+      title: 'Education',
+      icon: GraduationCap,
+      items: [
+        switchAppItem,
+        { name: 'Student Registry', href: '/education', icon: GraduationCap }
+      ]
+    };
+  }
+  if (pathname.startsWith('/real-estate')) {
+    return {
+      title: 'Real Estate',
+      icon: Building2,
+      items: [
+        switchAppItem,
+        { name: 'Property Registry', href: '/real-estate', icon: Building2 }
+      ]
+    };
+  }
+  if (pathname.startsWith('/field-service')) {
+    return {
+      title: 'Field Service',
+      icon: Wrench,
+      items: [
+        switchAppItem,
+        { name: 'Dispatch Board', href: '/field-service', icon: Wrench }
+      ]
+    };
+  }
+  if (pathname.startsWith('/admin')) {
+    return {
+      title: 'Administration',
+      icon: ShieldAlert,
+      items: [
+        switchAppItem,
+        { name: 'Users List', href: '/admin/users', icon: ShieldAlert },
+        { name: 'API Platform', href: '/admin/api-keys', icon: Key },
+        { name: 'Localization', href: '/admin/localization', icon: Globe },
+        { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
+        { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server }
+      ]
+    };
+  }
+  if (pathname.startsWith('/saas')) {
+    return {
+      title: 'SaaS Portal',
+      icon: Cloud,
+      items: [
+        switchAppItem,
+        { name: 'Subscription Plans', href: '/saas/portal', icon: Cloud }
+      ]
+    };
+  }
+  
+  return {
+    title: 'UniERP Hub',
+    icon: Building,
+    items: [
+      switchAppItem,
+      { name: 'Dashboard', href: '/dashboard', icon: Home }
+    ]
+  };
+};
 
 export default function DashboardLayout({
   children,
@@ -97,7 +286,6 @@ export default function DashboardLayout({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [tenantDropdownOpen, setTenantDropdownOpen] = useState(false);
   
-  // Dummy Session State
   const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; avatar?: string } | null>(null);
   const [currentTenant, setCurrentTenant] = useState({ name: 'Acme Corp', slug: 'acme' });
   const tenants = [
@@ -107,7 +295,6 @@ export default function DashboardLayout({
   ];
 
   useEffect(() => {
-    // Check local storage for session
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
     
@@ -115,18 +302,44 @@ export default function DashboardLayout({
       try {
         setUser(JSON.parse(storedUser));
       } catch {
-        setUser({ firstName: 'Super', lastName: 'Admin', email: 'admin@uni-erp.com' });
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        router.push('/login');
+        return;
+      }
+
+      // Check client-side app installation guard for industry/premium paths
+      const segments = pathname.split('/');
+      const activeSegment = segments[1];
+      const industryApps = ['healthcare', 'education', 'real-estate', 'field-service'];
+
+      if (activeSegment && industryApps.includes(activeSegment)) {
+        const verifyInstalled = async () => {
+          try {
+            const res = await fetch('/api/v1/saas/installed-apps', {
+              headers: { 'Authorization': `Bearer ${storedToken}` }
+            });
+            if (res.ok) {
+              const installedList: string[] = await res.json();
+              if (!installedList.includes(activeSegment)) {
+                // Not installed! Redirect back to Apps landing
+                router.push('/apps');
+              }
+            }
+          } catch {
+            // failed to verify app installation state
+          }
+        };
+        verifyInstalled();
       }
     } else {
-      // Default dummy fallback for display if not logged in
-      setUser({ firstName: 'Super', lastName: 'Admin', email: 'admin@uni-erp.com' });
+      router.push('/login');
     }
 
-    // Sync theme
     const html = document.documentElement;
     const currentTheme = html.getAttribute('data-theme') as 'light' | 'dark' || 'light';
     setTheme(currentTheme);
-  }, []);
+  }, [router, pathname]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
@@ -143,8 +356,10 @@ export default function DashboardLayout({
   const handleTenantSwitch = (t: typeof currentTenant) => {
     setCurrentTenant(t);
     setTenantDropdownOpen(false);
-    // In a real app we might reload page or trigger context update
   };
+
+  const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
+  const appNav = getAppSpecificNavigation(pathname);
 
   return (
     <div
@@ -157,200 +372,213 @@ export default function DashboardLayout({
       }}
     >
       {/* Sidebar Section */}
-      <aside
-        style={{
-          width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
-          background: 'var(--color-sidebar-bg)',
-          borderRight: '1px solid var(--color-sidebar-border)',
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'width var(--duration-normal) var(--ease-default)',
-          zIndex: 100,
-          position: 'relative',
-        }}
-      >
-        {/* Sidebar Header / Brand Logo */}
-        <div
+      {!isAppsLanding && (
+        <aside
           style={{
-            height: 'var(--header-height)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'space-between',
-            padding: '0 var(--space-4)',
-            borderBottom: '1px solid var(--color-sidebar-border)',
-          }}
-        >
-          {!collapsed && (
-            <Link
-              href="/dashboard"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-2)',
-                textDecoration: 'none',
-                fontWeight: 'var(--weight-bold)',
-                fontSize: 'var(--text-lg)',
-                background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              <Building size={20} style={{ stroke: 'url(#brand-grad)' }} />
-              <span>UniERP</span>
-            </Link>
-          )}
-          {collapsed && (
-            <Building size={22} style={{ color: 'var(--color-primary)' }} />
-          )}
-
-          {!collapsed && (
-            <button
-              onClick={() => setCollapsed(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-sidebar-text)',
-                cursor: 'pointer',
-                padding: 'var(--space-1)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-sidebar-hover)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
-            >
-              <ChevronLeft size={18} />
-            </button>
-          )}
-        </div>
-
-        {/* Navigation Items */}
-        <nav
-          style={{
-            flex: 1,
-            padding: 'var(--space-4) var(--space-2)',
+            width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
+            background: 'var(--color-sidebar-bg)',
+            borderRight: '1px solid var(--color-sidebar-border)',
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--space-1)',
+            transition: 'width var(--duration-normal) var(--ease-default)',
+            zIndex: 100,
+            position: 'relative',
           }}
         >
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
+          {/* Sidebar Header / Brand Logo */}
+          <div
+            style={{
+              height: 'var(--header-height)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'space-between',
+              padding: '0 var(--space-4)',
+              borderBottom: '1px solid var(--color-sidebar-border)',
+            }}
+          >
+            {!collapsed && (
+              <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 'var(--space-3)',
-                  padding: 'var(--space-2.5) var(--space-3)',
-                  borderRadius: 'var(--radius-md)',
-                  color: isActive ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)',
-                  background: isActive ? 'var(--color-sidebar-active)' : 'transparent',
-                  textDecoration: 'none',
+                  gap: 'var(--space-2)',
+                  fontWeight: 'var(--weight-bold)',
                   fontSize: 'var(--text-sm)',
-                  fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
-                  transition: 'all var(--duration-fast) var(--ease-default)',
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = 'var(--color-sidebar-hover)';
-                    e.currentTarget.style.color = 'var(--color-sidebar-text-active)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = 'var(--color-sidebar-text)';
-                  }
+                  color: 'var(--color-sidebar-text-active)',
                 }}
               >
-                <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />
-                {!collapsed && <span>{item.name}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Sidebar Footer */}
-        <div
-          style={{
-            padding: 'var(--space-4)',
-            borderTop: '1px solid var(--color-sidebar-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'space-between',
-            gap: 'var(--space-3)',
-          }}
-        >
-          {collapsed ? (
-            <button
-              onClick={() => setCollapsed(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-sidebar-text)',
-                cursor: 'pointer',
-                padding: 'var(--space-1)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            >
-              <Menu size={18} />
-            </button>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2.5)', minWidth: 0 }}>
-              <div
+                <appNav.icon size={18} style={{ color: 'var(--color-primary)' }} />
+                <span>{appNav.title}</span>
+              </div>
+            )}
+            {collapsed ? (
+              <button
+                onClick={() => setCollapsed(false)}
                 style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--color-primary-light)',
-                  color: 'var(--color-primary)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-sidebar-text)',
+                  cursor: 'pointer',
+                  padding: 'var(--space-1)',
+                  borderRadius: 'var(--radius-sm)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 'var(--weight-bold)',
-                  fontSize: 'var(--text-xs)',
-                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-sidebar-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+              >
+                <Menu size={18} />
+              </button>
+            ) : (
+              <button
+                onClick={() => setCollapsed(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-sidebar-text)',
+                  cursor: 'pointer',
+                  padding: 'var(--space-1)',
+                  borderRadius: 'var(--radius-sm)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-sidebar-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+              >
+                <ChevronLeft size={18} />
+              </button>
+            )}
+          </div>
+
+          {/* Navigation Items */}
+          <nav
+            style={{
+              flex: 1,
+              padding: 'var(--space-4) var(--space-2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-1)',
+            }}
+          >
+            {appNav.items.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-3)',
+                    padding: 'var(--space-2.5) var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    color: isActive ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)',
+                    background: isActive ? 'var(--color-sidebar-active)' : 'transparent',
+                    textDecoration: 'none',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
+                    transition: 'all var(--duration-fast) var(--ease-default)',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'var(--color-sidebar-hover)';
+                      e.currentTarget.style.color = 'var(--color-sidebar-text-active)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'var(--color-sidebar-text)';
+                    }
+                  }}
+                >
+                  <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />
+                  {!collapsed && <span>{item.name}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div
+            style={{
+              padding: 'var(--space-4)',
+              borderTop: '1px solid var(--color-sidebar-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'space-between',
+              gap: 'var(--space-3)',
+            }}
+          >
+            {collapsed ? (
+              <button
+                onClick={() => setCollapsed(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-sidebar-text)',
+                  cursor: 'pointer',
+                  padding: 'var(--space-1)',
+                  borderRadius: 'var(--radius-sm)',
                 }}
               >
-                {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <p
+                <Menu size={18} />
+              </button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2.5)', minWidth: 0 }}>
+                <div
                   style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--color-primary-light)',
+                    color: 'var(--color-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'var(--weight-bold)',
                     fontSize: 'var(--text-xs)',
-                    fontWeight: 'var(--weight-semibold)',
-                    color: 'var(--color-sidebar-text-active)',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    flexShrink: 0,
                   }}
                 >
-                  {user ? `${user.firstName} ${user.lastName}` : 'Super Admin'}
-                </p>
-                <p
-                  style={{
-                    fontSize: '10px',
-                    color: 'var(--color-sidebar-text)',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {user ? user.email : 'admin@uni-erp.com'}
-                </p>
+                  {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: 'var(--weight-semibold)',
+                      color: 'var(--color-sidebar-text-active)',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {user ? `${user.firstName} ${user.lastName}` : 'Super Admin'}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: '10px',
+                      color: 'var(--color-sidebar-text)',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {user ? user.email : 'admin@uni-erp.com'}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </aside>
+            )}
+          </div>
+        </aside>
+      )}
 
       {/* Main Workspace Section */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -369,6 +597,30 @@ export default function DashboardLayout({
         >
           {/* Top Left: Search & Mobile Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1 }}>
+            {!isAppsLanding && collapsed && (
+              <button
+                onClick={() => setCollapsed(false)}
+                style={{
+                  background: 'var(--color-bg)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  cursor: 'pointer',
+                  padding: 'var(--space-1.5) var(--space-2.5)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1.5)',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 'var(--weight-semibold)',
+                  transition: 'background-color 0.15s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg)')}
+              >
+                <Menu size={16} />
+                <span>Menu</span>
+              </button>
+            )}
             <div
               style={{
                 position: 'relative',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button, Card, Spinner } from '@unerp/ui';
@@ -13,6 +13,13 @@ export default function LoginPage() {
   const [tenantSlug, setTenantSlug] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/apps');
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +53,7 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      router.push('/dashboard');
+      router.push('/apps');
     } catch (err: unknown) {
       // Fallback local mock user registration if server is down in dev mode for demo purposes
       if (email === 'admin@uni-erp.com' && password === 'AdminPass123!') {
@@ -58,7 +65,7 @@ export default function LoginPage() {
           email: 'admin@uni-erp.com',
           roles: ['Super Admin'],
         }));
-        router.push('/dashboard');
+        router.push('/apps');
       } else {
         const message = err instanceof Error ? err.message : 'Connection to authentication service failed.';
         setError(message);
@@ -136,6 +143,7 @@ export default function LoginPage() {
               </label>
               <div style={{ position: 'relative' }}>
                 <Mail
+                  className="input-icon"
                   size={16}
                   style={{
                     position: 'absolute',
@@ -143,6 +151,7 @@ export default function LoginPage() {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: 'var(--color-text-tertiary)',
+                    transition: 'color 0.2s ease',
                   }}
                 />
                 <input
@@ -155,11 +164,24 @@ export default function LoginPage() {
                     width: '100%',
                     padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
+                    border: '2px solid var(--color-border)',
                     background: 'var(--color-bg)',
                     fontSize: 'var(--text-sm)',
                     outline: 'none',
                     color: 'var(--color-text)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
+                    const icon = e.currentTarget.previousSibling as HTMLElement;
+                    if (icon) icon.style.color = 'var(--color-primary)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    const icon = e.currentTarget.previousSibling as HTMLElement;
+                    if (icon) icon.style.color = 'var(--color-text-tertiary)';
                   }}
                 />
               </div>
@@ -172,6 +194,7 @@ export default function LoginPage() {
               </label>
               <div style={{ position: 'relative' }}>
                 <Lock
+                  className="input-icon"
                   size={16}
                   style={{
                     position: 'absolute',
@@ -179,6 +202,7 @@ export default function LoginPage() {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: 'var(--color-text-tertiary)',
+                    transition: 'color 0.2s ease',
                   }}
                 />
                 <input
@@ -191,11 +215,24 @@ export default function LoginPage() {
                     width: '100%',
                     padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
+                    border: '2px solid var(--color-border)',
                     background: 'var(--color-bg)',
                     fontSize: 'var(--text-sm)',
                     outline: 'none',
                     color: 'var(--color-text)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
+                    const icon = e.currentTarget.previousSibling as HTMLElement;
+                    if (icon) icon.style.color = 'var(--color-primary)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    const icon = e.currentTarget.previousSibling as HTMLElement;
+                    if (icon) icon.style.color = 'var(--color-text-tertiary)';
                   }}
                 />
               </div>
@@ -208,6 +245,7 @@ export default function LoginPage() {
               </label>
               <div style={{ position: 'relative' }}>
                 <Building
+                  className="input-icon"
                   size={16}
                   style={{
                     position: 'absolute',
@@ -215,6 +253,7 @@ export default function LoginPage() {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: 'var(--color-text-tertiary)',
+                    transition: 'color 0.2s ease',
                   }}
                 />
                 <input
@@ -226,11 +265,24 @@ export default function LoginPage() {
                     width: '100%',
                     padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
+                    border: '2px solid var(--color-border)',
                     background: 'var(--color-bg)',
                     fontSize: 'var(--text-sm)',
                     outline: 'none',
                     color: 'var(--color-text)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
+                    const icon = e.currentTarget.previousSibling as HTMLElement;
+                    if (icon) icon.style.color = 'var(--color-primary)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    const icon = e.currentTarget.previousSibling as HTMLElement;
+                    if (icon) icon.style.color = 'var(--color-text-tertiary)';
                   }}
                 />
               </div>

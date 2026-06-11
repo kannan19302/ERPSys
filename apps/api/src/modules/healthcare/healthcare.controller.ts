@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
+import { AppInstalledGuard } from '../../common/guards/app-installed.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { HealthcareService } from './healthcare.service';
 
@@ -16,7 +17,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Controller('healthcare')
-@UseGuards(JwtAuthGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, RbacGuard, AppInstalledGuard)
 export class HealthcareController {
   constructor(private readonly service: HealthcareService) {}
 

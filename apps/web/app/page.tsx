@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@unerp/ui';
 import {
   Building2,
@@ -11,6 +13,17 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/apps');
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
   return (
     <main
       style={{

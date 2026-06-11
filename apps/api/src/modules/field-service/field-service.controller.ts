@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
+import { AppInstalledGuard } from '../../common/guards/app-installed.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { FieldServiceService } from './field-service.service';
 
@@ -16,7 +17,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Controller('field-service')
-@UseGuards(JwtAuthGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, RbacGuard, AppInstalledGuard)
 export class FieldServiceController {
   constructor(private readonly service: FieldServiceService) {}
 

@@ -41,4 +41,22 @@ export class SaasController {
   async stripeWebhook(@Body() event: any) {
     return this.saasService.handleStripeWebhook(event);
   }
+
+  @Get('installed-apps')
+  @UseGuards(JwtAuthGuard)
+  async getInstalledApps(@Req() req: AuthenticatedRequest) {
+    return this.saasService.getInstalledApps(req.user.tenantId);
+  }
+
+  @Post('install')
+  @UseGuards(JwtAuthGuard)
+  async installApp(@Req() req: AuthenticatedRequest, @Body() body: { appId: string }) {
+    return this.saasService.installApp(req.user.tenantId, body.appId);
+  }
+
+  @Post('uninstall')
+  @UseGuards(JwtAuthGuard)
+  async uninstallApp(@Req() req: AuthenticatedRequest, @Body() body: { appId: string }) {
+    return this.saasService.uninstallApp(req.user.tenantId, body.appId);
+  }
 }

@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, PageHeader, Badge } from '@unerp/ui';
 import {
   Search,
   ArrowLeft,
   Download,
-  CheckCircle,
   Star,
   TrendingUp,
   Heart,
@@ -54,7 +53,7 @@ const storeApps: StoreApp[] = [
     category: 'Industry',
     rating: 4.8,
     reviews: 142,
-    installed: true,
+    installed: false,
     price: 'Included',
     publisher: 'UniERP Core',
     version: '1.0.0',
@@ -69,7 +68,7 @@ const storeApps: StoreApp[] = [
     category: 'Industry',
     rating: 4.7,
     reviews: 98,
-    installed: true,
+    installed: false,
     price: 'Included',
     publisher: 'UniERP Core',
     version: '1.0.0',
@@ -84,7 +83,7 @@ const storeApps: StoreApp[] = [
     category: 'Industry',
     rating: 4.6,
     reviews: 67,
-    installed: true,
+    installed: false,
     price: 'Included',
     publisher: 'UniERP Core',
     version: '1.0.0',
@@ -99,7 +98,7 @@ const storeApps: StoreApp[] = [
     category: 'Industry',
     rating: 4.5,
     reviews: 53,
-    installed: true,
+    installed: false,
     price: 'Included',
     publisher: 'UniERP Core',
     version: '1.0.0',
@@ -262,18 +261,76 @@ const storeCategories = ['All', 'Industry', 'Integration', 'Intelligence', 'Fina
 export default function AppStorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [installedApps, setInstalledApps] = useState<Set<string>>(
-    new Set(storeApps.filter((a) => a.installed).map((a) => a.id))
-  );
+  const [installedApps, setInstalledApps] = useState<Set<string>>(new Set());
   const [installingId, setInstallingId] = useState<string | null>(null);
+  const [uninstallingId, setUninstallingId] = useState<string | null>(null);
 
-  const handleInstall = (appId: string) => {
+  useEffect(() => {
+    const fetchInstalled = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/v1/saas/installed-apps', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Merge core-installed apps and DB-installed apps
+          const coreInstalled = storeApps.filter(a => a.installed).map(a => a.id);
+          setInstalledApps(new Set([...coreInstalled, ...data]));
+        }
+      } catch {
+        // failed to load installed apps
+      }
+    };
+    fetchInstalled();
+  }, []);
+
+  const handleInstall = async (appId: string) => {
     setInstallingId(appId);
-    // Simulate install
-    setTimeout(() => {
-      setInstalledApps((prev) => new Set([...prev, appId]));
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/saas/install', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ appId })
+      });
+      if (res.ok) {
+        setInstalledApps((prev) => new Set([...prev, appId]));
+      }
+    } catch {
+      // failed to install app
+    } finally {
       setInstallingId(null);
-    }, 1500);
+    }
+  };
+
+  const handleUninstall = async (appId: string) => {
+    setUninstallingId(appId);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/saas/uninstall', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ appId })
+      });
+      if (res.ok) {
+        setInstalledApps((prev) => {
+          const next = new Set(prev);
+          next.delete(appId);
+          return next;
+        });
+      }
+    } catch {
+      // failed to uninstall app
+    } finally {
+      setUninstallingId(null);
+    }
   };
 
   const filtered = storeApps.filter((app) => {
@@ -516,24 +573,54 @@ export default function AppStorePage() {
               <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
                 {isInstalled ? (
                   <button
-                    disabled
+                    onClick={() => handleUninstall(app.id)}
+                    disabled={uninstallingId === app.id}
                     style={{
                       width: '100%',
                       padding: 'var(--space-2)',
                       borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-success)',
+                      border: '1px solid var(--color-danger)',
                       background: 'transparent',
-                      color: 'var(--color-success)',
+                      color: 'var(--color-danger)',
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--weight-semibold)',
-                      cursor: 'default',
+                      cursor: uninstallingId === app.id ? 'wait' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 'var(--space-2)',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (uninstallingId !== app.id) {
+                        e.currentTarget.style.background = 'var(--color-danger)';
+                        e.currentTarget.style.color = '#fff';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (uninstallingId !== app.id) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = 'var(--color-danger)';
+                      }
                     }}
                   >
-                    <CheckCircle size={15} /> Installed
+                    {uninstallingId === app.id ? (
+                      <>
+                        <div
+                          style={{
+                            width: '14px',
+                            height: '14px',
+                            borderRadius: '50%',
+                            border: '2px solid var(--color-danger)',
+                            borderTopColor: 'transparent',
+                            animation: 'spin 0.8s linear infinite',
+                          }}
+                        />
+                        Uninstalling...
+                      </>
+                    ) : (
+                      <>Uninstall</>
+                    )}
                   </button>
                 ) : (
                   <button

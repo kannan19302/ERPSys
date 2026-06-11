@@ -99,4 +99,31 @@ export class SaasService {
 
     return { received: true };
   }
+
+  async getInstalledApps(tenantId: string) {
+    const installed = await prisma.installedApp.findMany({
+      where: { tenantId },
+      select: { appId: true },
+    });
+    return installed.map((i) => i.appId);
+  }
+
+  async installApp(tenantId: string, appId: string) {
+    return prisma.installedApp.upsert({
+      where: {
+        tenantId_appId: { tenantId, appId },
+      },
+      update: {},
+      create: {
+        tenantId,
+        appId,
+      },
+    });
+  }
+
+  async uninstallApp(tenantId: string, appId: string) {
+    return prisma.installedApp.deleteMany({
+      where: { tenantId, appId },
+    });
+  }
 }

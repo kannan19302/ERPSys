@@ -31,6 +31,7 @@ model Tenant {
   users         User[]
   organizations Organization[]
   subscription  TenantSubscription?
+  installedApps InstalledApp[]
 
   @@map("tenants")
 }
@@ -2164,6 +2165,19 @@ model UsageRecord {
   @@unique([tenantId, metric])
   @@index([tenantId])
   @@map("usage_records")
+}
+
+model InstalledApp {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  appId       String   @map("app_id")
+  installedAt DateTime @default(now()) @map("installed_at")
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, appId])
+  @@index([tenantId])
+  @@map("installed_apps")
 }
 
 
