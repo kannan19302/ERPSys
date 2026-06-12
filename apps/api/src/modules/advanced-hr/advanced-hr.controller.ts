@@ -22,7 +22,7 @@ export class AdvancedHrController {
 
   @Get('salaries')
   @Permissions('hr.employee.read')
-  async getSalaryStructures(@Req() req: AuthenticatedRequest) {
+  async getSalaryStructures(@Req() req: AuthenticatedRequest): Promise<any> {
     return this.hrService.getSalaryStructures(req.user.tenantId);
   }
 
@@ -31,13 +31,13 @@ export class AdvancedHrController {
   async createSalaryStructure(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { employeeId: string; baseSalary: number; allowances?: any; deductions?: any }
-  ) {
+  ): Promise<any> {
     return this.hrService.createSalaryStructure(req.user.tenantId, dto);
   }
 
   @Get('payroll')
   @Permissions('hr.payroll.read')
-  async getPayrollRuns(@Req() req: AuthenticatedRequest) {
+  async getPayrollRuns(@Req() req: AuthenticatedRequest): Promise<any> {
     return this.hrService.getPayrollRuns(req.user.tenantId);
   }
 
@@ -46,7 +46,7 @@ export class AdvancedHrController {
   async runPayroll(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { periodStart: string; periodEnd: string }
-  ) {
+  ): Promise<any> {
     return this.hrService.runPayroll(req.user.tenantId, dto);
   }
 

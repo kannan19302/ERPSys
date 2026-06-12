@@ -23,14 +23,14 @@ export class FinanceController {
 
   @Get('invoices')
   @Permissions('finance.invoice.read')
-  async getInvoices(@Req() req: AuthenticatedRequest) {
+  async getInvoices(@Req() req: AuthenticatedRequest): Promise<any> {
     const tenantId = req.user.tenantId;
     return this.financeService.getInvoices(tenantId);
   }
 
   @Post('invoices')
   @Permissions('finance.invoice.create')
-  async createInvoice(@Req() req: AuthenticatedRequest, @Body() dto: CreateInvoiceInput) {
+  async createInvoice(@Req() req: AuthenticatedRequest, @Body() dto: CreateInvoiceInput): Promise<any> {
     const tenantId = req.user.tenantId;
     const orgId = req.user.orgId || 'org-system-default'; 
     return this.financeService.createInvoice(tenantId, orgId, dto, req.user.userId || 'system');
@@ -38,7 +38,7 @@ export class FinanceController {
 
   @Post('payments')
   @Permissions('finance.payment.create')
-  async createPayment(@Req() req: AuthenticatedRequest, @Body() dto: CreatePaymentInput) {
+  async createPayment(@Req() req: AuthenticatedRequest, @Body() dto: CreatePaymentInput): Promise<any> {
     const tenantId = req.user.tenantId;
     return this.financeService.createPayment(tenantId, dto, req.user.userId || 'system');
   }

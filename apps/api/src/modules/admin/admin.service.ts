@@ -143,7 +143,7 @@ export class AdminService {
   /**
    * Returns all roles in the tenant.
    */
-  async getRoles(tenantId: string) {
+  async getRoles(tenantId: string): Promise<any> {
     return prisma.role.findMany({
       where: { tenantId },
     });
@@ -152,7 +152,7 @@ export class AdminService {
   /**
    * Returns the tenant configurations and settings.
    */
-  async getSettings(tenantId: string) {
+  async getSettings(tenantId: string): Promise<any> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
     });
@@ -182,7 +182,7 @@ export class AdminService {
   /**
    * Updates the tenant's configuration settings.
    */
-  async updateSettings(tenantId: string, settings: Record<string, unknown>) {
+  async updateSettings(tenantId: string, settings: Record<string, unknown>): Promise<any> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
     });

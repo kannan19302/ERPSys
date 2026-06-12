@@ -512,24 +512,24 @@ export default function FinancePage() {
                   )}
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                      <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Invoice Number *</label>
+                    <div className="frappe-form-group">
+                      <label className="frappe-label">Invoice Number *</label>
                       <input
                         type="text"
                         required
+                        className="frappe-input"
                         placeholder="INV-2026-004"
                         value={invoiceNumber}
                         onChange={(e) => setInvoiceNumber(e.target.value)}
-                        style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                      <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Customer Account *</label>
+                    <div className="frappe-form-group">
+                      <label className="frappe-label">Customer Account *</label>
                       <select
                         required
+                        className="frappe-input"
                         value={customerId}
                         onChange={(e) => setCustomerId(e.target.value)}
-                        style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       >
                         <option value="">-- Choose Customer --</option>
                         {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -538,24 +538,24 @@ export default function FinancePage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                      <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Due Date *</label>
+                    <div className="frappe-form-group">
+                      <label className="frappe-label">Due Date *</label>
                       <input
                         type="date"
                         required
+                        className="frappe-input"
                         value={dueDate}
                         onChange={(e) => setDueDate(e.target.value)}
-                        style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                      <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Notes (Invoice Footer)</label>
+                    <div className="frappe-form-group">
+                      <label className="frappe-label">Notes (Invoice Footer)</label>
                       <input
                         type="text"
+                        className="frappe-input"
                         placeholder="Thank you for your business!"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       />
                     </div>
                   </div>
@@ -575,37 +575,37 @@ export default function FinancePage() {
                           <input
                             type="text"
                             required
+                            className="frappe-input"
                             placeholder="Description"
                             value={item.description}
                             onChange={(e) => handleLineItemChange(idx, 'description', e.target.value)}
-                            style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-xs)', color: 'var(--color-text)' }}
                           />
                           <input
                             type="number"
                             required
                             min="1"
+                            className="frappe-input"
                             placeholder="Qty"
                             value={item.quantity}
                             onChange={(e) => handleLineItemChange(idx, 'quantity', parseInt(e.target.value) || 0)}
-                            style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-xs)', color: 'var(--color-text)' }}
                           />
                           <input
                             type="number"
                             required
                             min="0.01"
                             step="0.01"
+                            className="frappe-input"
                             placeholder="Price"
                             value={item.unitPrice}
                             onChange={(e) => handleLineItemChange(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-xs)', color: 'var(--color-text)' }}
                           />
                           <input
                             type="number"
                             required
+                            className="frappe-input"
                             placeholder="Tax %"
                             value={item.taxRate}
                             onChange={(e) => handleLineItemChange(idx, 'taxRate', parseFloat(e.target.value) || 0)}
-                            style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-xs)', color: 'var(--color-text)' }}
                           />
                           <button
                             type="button"
@@ -673,26 +673,26 @@ export default function FinancePage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Payment Amount ($) *</label>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Payment Amount ($) *</label>
                     <input
                       type="number"
                       required
                       min="0.01"
                       step="0.01"
+                      className="frappe-input"
                       max={selectedInvoice.totalAmount - selectedInvoice.paidAmount}
                       value={paymentAmount}
                       onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Payment Method</label>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Payment Method</label>
                     <select
+                      className="frappe-input"
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                     >
                       <option value="BANK_TRANSFER">Bank Wire Transfer</option>
                       <option value="CREDIT_CARD">Credit Card</option>
@@ -701,25 +701,25 @@ export default function FinancePage() {
                     </select>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Reference ID / Tx Hash</label>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Reference ID / Tx Hash</label>
                     <input
                       type="text"
+                      className="frappe-input"
                       placeholder="TXN-1294801"
                       value={paymentRef}
                       onChange={(e) => setPaymentRef(e.target.value)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Notes</label>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Notes</label>
                     <input
                       type="text"
+                      className="frappe-input"
                       placeholder="Processed by banking clearance desk"
                       value={paymentNotes}
                       onChange={(e) => setPaymentNotes(e.target.value)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                     />
                   </div>
 

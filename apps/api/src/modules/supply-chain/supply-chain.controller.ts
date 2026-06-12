@@ -29,13 +29,13 @@ export class SupplyChainController {
 
   @Get('shipments/:id')
   @Permissions('supply-chain.shipment.read')
-  async getShipmentById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+  async getShipmentById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<any> {
     return this.supplyChainService.getShipmentById(req.user.tenantId, id);
   }
 
   @Post('shipments')
   @Permissions('supply-chain.shipment.create')
-  async createShipment(@Req() req: AuthenticatedRequest, @Body() dto: CreateShipmentInput) {
+  async createShipment(@Req() req: AuthenticatedRequest, @Body() dto: CreateShipmentInput): Promise<any> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.supplyChainService.createShipment(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
@@ -46,7 +46,7 @@ export class SupplyChainController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateShipmentStatusInput,
-  ) {
+  ): Promise<any> {
     return this.supplyChainService.updateShipmentStatus(req.user.tenantId, id, dto.status);
   }
 

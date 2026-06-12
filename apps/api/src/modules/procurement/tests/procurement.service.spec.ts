@@ -1,6 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProcurementService } from '../procurement.service';
 
+// Mock @prisma/client
+vi.mock('@prisma/client', () => ({
+  Prisma: {
+    Decimal: class Decimal {
+      constructor(value: any) {
+        return Number(value);
+      }
+    },
+    JsonNull: 'JsonNull',
+  },
+}));
+
 // Mock @unerp/database
 vi.mock('@unerp/database', () => ({
   prisma: {

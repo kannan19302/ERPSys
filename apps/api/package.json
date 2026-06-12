@@ -17,13 +17,13 @@
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
     "@nestjs/event-emitter": "^3.0.0",
+    "@nestjs/platform-express": "^11.0.0",
     "@nestjs/throttler": "^6.0.0",
-    "@unerp/shared": "workspace:*",
-    "@unerp/database": "workspace:*",
-    "@unerp/auth": "workspace:*",
     "@prisma/client": "^6.2.0",
+    "@unerp/auth": "workspace:*",
+    "@unerp/database": "workspace:*",
+    "@unerp/shared": "workspace:*",
     "helmet": "^8.0.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.0",
@@ -32,11 +32,12 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
     "@nestjs/testing": "^11.0.0",
-    "@unerp/config": "workspace:*",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
+    "@unerp/config": "workspace:*",
+    "@vitest/coverage-v8": "^2.1.9",
+    "rimraf": "^6.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^2.1.0",
-    "rimraf": "^6.0.0"
+    "vitest": "^2.1.0"
   }
 }

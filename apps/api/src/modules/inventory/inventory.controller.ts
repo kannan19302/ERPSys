@@ -23,14 +23,14 @@ export class InventoryController {
 
   @Get('products')
   @Permissions('inventory.product.read')
-  async getProducts(@Req() req: AuthenticatedRequest) {
+  async getProducts(@Req() req: AuthenticatedRequest): Promise<any> {
     const tenantId = req.user.tenantId;
     return this.inventoryService.getProducts(tenantId);
   }
 
   @Post('products')
   @Permissions('inventory.product.create')
-  async createProduct(@Req() req: AuthenticatedRequest, @Body() dto: CreateProductInput) {
+  async createProduct(@Req() req: AuthenticatedRequest, @Body() dto: CreateProductInput): Promise<any> {
     const tenantId = req.user.tenantId;
     const orgId = req.user.orgId || 'org-system-default';
     return this.inventoryService.createProduct(tenantId, orgId, dto);
@@ -38,21 +38,21 @@ export class InventoryController {
 
   @Get('warehouses')
   @Permissions('inventory.warehouse.read')
-  async getWarehouses(@Req() req: AuthenticatedRequest) {
+  async getWarehouses(@Req() req: AuthenticatedRequest): Promise<any> {
     const tenantId = req.user.tenantId;
     return this.inventoryService.getWarehouses(tenantId);
   }
 
   @Get('stock')
   @Permissions('inventory.stock.read')
-  async getStockLevels(@Req() req: AuthenticatedRequest) {
+  async getStockLevels(@Req() req: AuthenticatedRequest): Promise<any> {
     const tenantId = req.user.tenantId;
     return this.inventoryService.getStockLevels(tenantId);
   }
 
   @Get('serial-numbers')
   @Permissions('inventory.stock.read')
-  async getSerialNumbers(@Req() req: AuthenticatedRequest) {
+  async getSerialNumbers(@Req() req: AuthenticatedRequest): Promise<any> {
     return this.inventoryService.getSerialNumbers(req.user.tenantId);
   }
 
@@ -67,7 +67,7 @@ export class InventoryController {
 
   @Get('batches')
   @Permissions('inventory.stock.read')
-  async getBatches(@Req() req: AuthenticatedRequest) {
+  async getBatches(@Req() req: AuthenticatedRequest): Promise<any> {
     return this.inventoryService.getBatches(req.user.tenantId);
   }
 
@@ -76,7 +76,7 @@ export class InventoryController {
   async createBatch(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { productId: string; batchNumber: string; expiryDate?: string; quantity: number; costPrice?: number }
-  ) {
+  ): Promise<any> {
     return this.inventoryService.createBatch(req.user.tenantId, dto);
   }
 
@@ -103,7 +103,7 @@ export class InventoryController {
 
   @Get('cycle-counts/:id')
   @Permissions('inventory.stock.read')
-  async getCycleCountById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+  async getCycleCountById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<any> {
     return this.inventoryService.getCycleCountById(req.user.tenantId, id);
   }
 
@@ -112,7 +112,7 @@ export class InventoryController {
   async createCycleCount(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { warehouseId: string; notes?: string; items: { productId: string; expectedQty: number; countedQty: number }[] }
-  ) {
+  ): Promise<any> {
     return this.inventoryService.createCycleCount(req.user.tenantId, dto, req.user.userId || 'system');
   }
 

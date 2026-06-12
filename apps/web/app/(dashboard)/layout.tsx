@@ -58,8 +58,19 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Finance & Accounting',
       icon: CreditCard,
       items: [
-        { name: 'Overview', href: '/finance', icon: Home },
-        { name: 'Advanced Ledger', href: '/finance/advanced', icon: Wallet }
+        { name: 'Dashboard', href: '/finance', icon: Home },
+        { name: 'Chart of Accounts', href: '/finance/advanced/chart-of-accounts', icon: CreditCard },
+        { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders },
+        { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity },
+        { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2 },
+        { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet },
+        { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart },
+        { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList },
+        { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart },
+        { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork },
+        { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert },
+        { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3 },
+        { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen },
       ]
     };
   }
@@ -266,8 +277,6 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Document Management', href: '/documents', icon: FolderOpen, type: 'App' },
   { name: 'Communication', href: '/communication', icon: MessageSquare, type: 'App' },
   { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
-  { name: 'Advanced Finance', href: '/finance/advanced', icon: Wallet, type: 'App' },
-  { name: 'Advanced HR', href: '/hr/advanced', icon: FileSliders, type: 'App' },
   { name: 'Workflows', href: '/workflows', icon: GitFork, type: 'App' },
   { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
   { name: 'API Platform', href: '/admin/api-keys', icon: Key, type: 'App' },
@@ -276,6 +285,18 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
   { name: 'Create Invoice', href: '/finance/invoices/new', icon: CreditCard, type: 'Action' },
   { name: 'Add Product', href: '/inventory/products/new', icon: Package, type: 'Action' },
+  { name: 'Chart of Accounts', href: '/finance/advanced/chart-of-accounts', icon: CreditCard, type: 'Action' },
+  { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders, type: 'Action' },
+  { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity, type: 'Action' },
+  { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2, type: 'Action' },
+  { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet, type: 'Action' },
+  { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart, type: 'Action' },
+  { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList, type: 'Action' },
+  { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart, type: 'Action' },
+  { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork, type: 'Action' },
+  { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert, type: 'Action' },
+  { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3, type: 'Action' },
+  { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen, type: 'Action' },
 ];
 
 export default function DashboardLayout({

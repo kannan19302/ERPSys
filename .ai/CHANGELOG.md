@@ -5,6 +5,67 @@
 
 ---
 
+## [2026-06-12] Phase 6 Stage 5 (Treasury & Global Search) Implementation
+
+### Added
+- **Database Architecture**: Implemented models for `InvestmentPortfolio` (bonds, equities tracking), `TreasuryTransaction` (forex, sweeps, hedging log), and `InterCompanyTransfer` (multi-tenant shared ledger movements).
+- **Backend API**: Delivered controller endpoints and business services in `advanced-finance.controller.ts` and `advanced-finance.service.ts` for managing corporate cash flow transactions.
+- **Frontend UI (Next.js)**:
+  - `treasury/page.tsx` constructed for a comprehensive cash management and investments tracking view.
+- **Global Layout & Search Improvements**:
+  - Removed restrictive guards blocking the main `Search` component across specialized apps. The dynamic, instant-feedback search bar is now globally accessible.
+  - Validated adherence to ERPNext layout styles and verified single-key stroke search execution capability.
+- **Build Checks**: Verified robust Next.js compilation success. Backend Prisma compilation deferred pending release of local locks.
+
+## [2026-06-12] Phase 6 Stage 4 (Tax Engine & Statutory Compliance) Implementation
+
+### Added
+- **Database Architecture**: Implemented robust tax schema comprising `TaxRule`, `TaxComponent` (supporting GST structures like CGST/SGST/IGST), `WithholdingTax` for TDS/TCS deductions, and `TaxFiling` to log regulatory compliance payloads (e.g., GSTR returns).
+- **Backend API**: Delivered controller endpoints and business services in `advanced-finance.controller.ts` and `advanced-finance.service.ts` for automated Tax Rules querying and Withholding (TDS) thresholds processing.
+- **Frontend UI (Next.js)**:
+  - `tax-engine/page.tsx` for configuring split Tax Components and TDS rates mapping to distinct AP/AR workflows.
+  - `tax-filing/page.tsx` to handle historical and drafted compliance registers for statutory reporting periods.
+- **Build Checks**: Verified robust Next.js compilation success. Backend Prisma compilation deferred pending release of local locks.
+
+## [2026-06-12] Phase 6 Stage 3 (Budgeting, Planning & Advanced Reporting) Implementation
+
+### Added
+- **Database Architecture**: Added `ForecastScenario` model for rolling forecasts and what-if modelling. Updated `Budget` model to support dimensional tagging (`costCenterId`, `projectId`) allowing for precise department-level and project-level budgeting tracking.
+- **Backend API**: 
+  - Created endpoints in `advanced-finance.controller.ts` for Budgeting and Scenarios.
+  - Implemented initial financial statement reporting hooks (Profit & Loss, Balance Sheet, Cash Flow) within `advanced-finance.service.ts`.
+- **Frontend UI (Next.js)**:
+  - `budgeting/page.tsx` constructed for budget allocation, linking Cost Centers and Projects to GL Accounts within defined Forecast Scenarios.
+  - `reports/page.tsx` delivered for dynamic Financial Statements viewing, configured with standard JSON rendering trees.
+- **Build Checks**: Verified robust Next.js compilation success. Backend Prisma compilation deferred pending release of local locks.
+
+## [2026-06-12] Phase 6 Stage 2 (Advanced AP & AR Automation) Implementation
+
+### Added
+- **Database Architecture**: Appended models for `DebitNote`, `CreditNote`, `DunningLevel`, `DunningRun`, `PaymentSchedule`, and `PaymentRun` with reverse relationships integrated into `Organization`, `Customer`, `Vendor`, etc.
+- **Backend API**: Engineered services and controller endpoints for AP/AR processes (`advanced-finance.service.ts` & `advanced-finance.controller.ts`) supporting 3-way matching hooks, duplicate invoice checks, and dunning engine logic.
+- **Frontend UI (Next.js)**:
+  - `ap-automation/page.tsx` for AP 3-Way PO Matching schedules and batch Payment Runs.
+  - `ar-automation/page.tsx` for AR Dunning Levels and Reminder Runs, built with a dashboard aesthetic mirroring Frappe/ERPNext UI tokens.
+- **Build Checks**: Verified robust Next.js compilation success. Backend Prisma compilation deferred pending release of local locks.
+
+## [2026-06-12] Phase 6 Stage 1 (Advanced Finance Infrastructure) Implementation
+
+### Added
+- **Database Architecture**: Added models for `FinancialPeriod`, `RecurringJournal`, `FixedAsset`, `AssetDepreciation`, and `BankAccount` with relational linking to the Chart of Accounts and Multi-Tenancy.
+- **Backend API**: Created full NestJS CRUD controllers and services for advanced finance modules (Financial Periods, Recurring Journals CRON setup, Fixed Assets valuation (SLM/WDV), Bank Accounts).
+- **Frontend UI (Next.js)**: 
+  - `financial-periods/page.tsx` for fiscal year period control (Open/Close).
+  - `fixed-assets/page.tsx` for registering corporate fixed assets and linking accumulation depreciation accounts.
+  - `bank-accounts/page.tsx` for registering bank and treasury properties.
+
+## [2026-06-12] Phase 6.1 (Core Accounting Engine) Implementation
+
+### Added
+- **Phase 6.1 Database**: Updated `schema.prisma` with `CostCenter`, `TaxRule`, and added dimensional tags (`departmentId`, `costCenterId`, `projectId`) to `JournalEntry` (which acts as the line item for Journals).
+- **Phase 6.1 API**: Updated `advanced-finance` NestJS module with endpoints for `CostCenters`, and extended the `/journals` endpoint to parse and persist dimensional tags.
+- **Phase 6.1 UI**: Created dedicated `/finance/advanced/chart-of-accounts` with a hierarchical tree-view rendering and `/finance/advanced/journal-entries` with an inline line-item list/form that includes Cost Center dimension tagging.
+
 ## [2026-06-11] Phase 11 (Advanced Reporting) to Phase 15 (Field Service) Implementation
 
 ### Added
