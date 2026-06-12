@@ -181,7 +181,7 @@ export default function WorkflowsPage() {
                 <button 
                   onClick={handleCreateWorkflow}
                   style={{
-                    background: 'var(--color-primary)', color: '#ffffff', border: 'none',
+                    background: 'var(--color-primary)', color: 'var(--color-bg-elevated)', border: 'none',
                     padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-md)',
                     cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold'
                   }}
@@ -195,13 +195,13 @@ export default function WorkflowsPage() {
                   <div key={wf.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                       <span style={{ fontWeight: 'bold' }}>{wf.name}</span>
-                      <span style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: '4px', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontWeight: 'bold' }}>Trigger: {wf.triggerType}</span>
+                      <span style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontWeight: 'bold' }}>Trigger: {wf.triggerType}</span>
                     </div>
                     <div>
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Steps Chain:</span>
                       <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-1)', flexWrap: 'wrap' }}>
                         {wf.steps?.map((step: WorkflowStep) => (
-                          <div key={step.id} style={{ padding: '4px 10px', border: '1px solid var(--color-border)', borderRadius: '4px', fontSize: '10px', background: 'var(--color-bg)' }}>
+                          <div key={step.id} style={{ padding: 'var(--space-1) var(--space-2.5)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', fontSize: '10px', background: 'var(--color-bg)' }}>
                             Step {step.stepOrder}: {step.actionType} ({step.assigneeRole})
                           </div>
                         ))}
@@ -233,7 +233,7 @@ export default function WorkflowsPage() {
                         </>
                       ) : (
                         <span style={{
-                          fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px',
+                          fontSize: '11px', fontWeight: 'bold', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)',
                           background: app.status === 'APPROVED' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
                           color: app.status === 'APPROVED' ? 'var(--color-success)' : 'var(--color-danger)'
                         }}>{app.status}</span>
@@ -251,7 +251,7 @@ export default function WorkflowsPage() {
 
         {/* Side Panel: Rules info */}
         <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
             <AlertCircle size={16} style={{ color: 'var(--color-primary)' }} />
             Workflow Engine Rationale
           </h3>

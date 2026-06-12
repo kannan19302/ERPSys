@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wrench, 
   RefreshCw, 
-  Plus, 
+   
   UserCheck, 
   ShieldAlert, 
   ClipboardList
@@ -166,7 +166,7 @@ export default function FieldServicePage() {
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
-            <Plus size={16} /> Log Ticket
+            Log Ticket
           </button>
         </div>
       </div>

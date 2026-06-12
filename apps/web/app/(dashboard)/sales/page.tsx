@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
 import {
   ClipboardList,
-  Plus,
+  
   AlertCircle,
   CheckCircle,
   X,
@@ -201,7 +201,7 @@ export default function SalesPage() {
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Sales & Orders' }]}
         actions={
           <Button variant="primary" onClick={() => setIsOrderModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={16} /> Create Sales Order
+            Create Sales Order
           </Button>
         }
       />

@@ -255,7 +255,7 @@ export default function ManufacturingPage() {
 
               <div>
                 <span style={{
-                  padding: '2px 8px',
+                  padding: 'var(--space-1) var(--space-2)',
                   borderRadius: 'var(--radius-full)',
                   fontSize: 'var(--text-xs)',
                   fontWeight: 'var(--weight-bold)',
@@ -292,7 +292,7 @@ export default function ManufacturingPage() {
                 {wo.status === 'PLANNED' && (
                   <button
                     onClick={() => handleUpdateStatus(wo.id, 'IN_PROGRESS')}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: 'var(--space-1.5) var(--space-3)', fontSize: 'var(--text-xs)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--weight-semibold)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-1.5) var(--space-3)', fontSize: 'var(--text-xs)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--weight-semibold)' }}
                   >
                     <Play size={10} fill="white" /> Start Production
                   </button>
@@ -300,13 +300,13 @@ export default function ManufacturingPage() {
                 {wo.status === 'IN_PROGRESS' && (
                   <button
                     onClick={() => handleUpdateStatus(wo.id, 'COMPLETED')}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: 'var(--space-1.5) var(--space-3)', fontSize: 'var(--text-xs)', background: 'var(--color-success)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--weight-semibold)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-1.5) var(--space-3)', fontSize: 'var(--text-xs)', background: 'var(--color-success)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'var(--weight-semibold)' }}
                   >
                     <CheckCircle2 size={12} /> Complete & Consume
                   </button>
                 )}
                 {wo.status === 'COMPLETED' && (
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                     <CheckCircle2 size={12} style={{ color: 'var(--color-success)' }} /> Finished
                   </span>
                 )}
@@ -323,7 +323,7 @@ export default function ManufacturingPage() {
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>Code: {bom.code}</p>
               </div>
               <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)' }}>
-                <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', marginBottom: '4px' }}>ITEMS</p>
+                <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-1)' }}>ITEMS</p>
                 {bom.items && bom.items.map((item, idx) => {
                   const p = products.find((pr) => pr.id === item.productId);
                   return (
@@ -348,17 +348,17 @@ export default function ManufacturingPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Formula Name</label>
-                <input required type="text" placeholder="e.g. Laptop assembly" value={newBOM.name} onChange={(e) => setNewBOM({ ...newBOM, name: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+                <input required type="text" placeholder="e.g. Laptop assembly" value={newBOM.name} onChange={(e) => setNewBOM({ ...newBOM, name: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
               </div>
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>BOM Code</label>
-                <input required type="text" placeholder="e.g. BOM-LAP-001" value={newBOM.code} onChange={(e) => setNewBOM({ ...newBOM, code: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+                <input required type="text" placeholder="e.g. BOM-LAP-001" value={newBOM.code} onChange={(e) => setNewBOM({ ...newBOM, code: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
               </div>
             </div>
 
             <div>
               <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product to Manufacture</label>
-              <select required value={newBOM.productId} onChange={(e) => setNewBOM({ ...newBOM, productId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }}>
+              <select required value={newBOM.productId} onChange={(e) => setNewBOM({ ...newBOM, productId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }}>
                 <option value="">Select Target Product...</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
@@ -429,7 +429,7 @@ export default function ManufacturingPage() {
             
             <div>
               <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Select Formula (BOM)</label>
-              <select required value={newWO.bomId} onChange={(e) => setNewWO({ ...newWO, bomId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }}>
+              <select required value={newWO.bomId} onChange={(e) => setNewWO({ ...newWO, bomId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }}>
                 <option value="">Select BOM...</option>
                 {boms.map((b) => (
                   <option key={b.id} value={b.id}>{b.name} ({b.code})</option>
@@ -439,17 +439,17 @@ export default function ManufacturingPage() {
 
             <div>
               <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Work Order Number</label>
-              <input required type="text" placeholder="e.g. WO-2026-001" value={newWO.workOrderNumber} onChange={(e) => setNewWO({ ...newWO, workOrderNumber: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+              <input required type="text" placeholder="e.g. WO-2026-001" value={newWO.workOrderNumber} onChange={(e) => setNewWO({ ...newWO, workOrderNumber: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Quantity</label>
-                <input required type="number" min="1" value={newWO.quantity} onChange={(e) => setNewWO({ ...newWO, quantity: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+                <input required type="number" min="1" value={newWO.quantity} onChange={(e) => setNewWO({ ...newWO, quantity: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
               </div>
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Start Date</label>
-                <input type="date" value={newWO.startDate} onChange={(e) => setNewWO({ ...newWO, startDate: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+                <input type="date" value={newWO.startDate} onChange={(e) => setNewWO({ ...newWO, startDate: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
               </div>
             </div>
 

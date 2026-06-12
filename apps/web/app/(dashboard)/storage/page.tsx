@@ -157,7 +157,7 @@ export default function StoragePage() {
           <button onClick={handleUploadFile} style={{
             display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
             background: 'var(--color-primary)', border: 'none',
-            color: '#ffffff', padding: 'var(--space-2) var(--space-4)',
+            color: 'var(--color-bg-elevated)', padding: 'var(--space-2) var(--space-4)',
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
@@ -255,7 +255,7 @@ export default function StoragePage() {
                       <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Template: {g.templateId}</p>
                       <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Date: {new Date(g.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <a href={g.fileUrl} target="_blank" rel="noreferrer" style={{ background: 'var(--color-primary-light)', padding: '6px 12px', borderRadius: '4px', textDecoration: 'none', fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                    <a href={g.fileUrl} target="_blank" rel="noreferrer" style={{ background: 'var(--color-primary-light)', padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-sm)', textDecoration: 'none', fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--color-primary)' }}>
                       Download PDF
                     </a>
                   </div>
@@ -270,7 +270,7 @@ export default function StoragePage() {
 
         {/* Side Panel: Rules info */}
         <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
             <Sparkles size={16} style={{ color: 'var(--color-primary)' }} />
             MinIO & AWS S3 Buckets
           </h3>

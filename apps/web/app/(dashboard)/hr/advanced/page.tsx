@@ -243,7 +243,7 @@ export default function AdvancedHRPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Payroll History</h2>
-                <button onClick={handleRunPayroll} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: 'var(--space-2) var(--space-4)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-xs)' }}>
+                <button onClick={handleRunPayroll} style={{ background: 'var(--color-primary)', color: 'var(--color-bg-elevated)', border: 'none', padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-xs)' }}>
                   Execute Payroll Run
                 </button>
               </div>
@@ -253,7 +253,7 @@ export default function AdvancedHRPage() {
                   <div key={run.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                       <span style={{ fontWeight: 'bold' }}>Period: {new Date(run.periodStart).toLocaleDateString()} - {new Date(run.periodEnd).toLocaleDateString()}</span>
-                      <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'var(--color-success-light)', color: 'var(--color-success)', fontWeight: 'bold' }}>{run.status}</span>
+                      <span style={{ fontSize: '11px', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)', background: 'var(--color-success-light)', color: 'var(--color-success)', fontWeight: 'bold' }}>{run.status}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
                       <span>Gross: ${(parseFloat(run.totalGross)).toFixed(2)}</span>
@@ -286,7 +286,7 @@ export default function AdvancedHRPage() {
                         </>
                       ) : (
                         <span style={{
-                          fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px',
+                          fontSize: '11px', fontWeight: 'bold', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)',
                           background: req.status === 'APPROVED' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
                           color: req.status === 'APPROVED' ? 'var(--color-success)' : 'var(--color-danger)'
                         }}>{req.status}</span>
@@ -333,7 +333,7 @@ export default function AdvancedHRPage() {
               
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Select Employee</label>
-                <select value={selectedEmp} onChange={(e) => setSelectedEmp(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
+                <select value={selectedEmp} onChange={(e) => setSelectedEmp(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
                   {employees.map(emp => (
                     <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                   ))}
@@ -342,10 +342,10 @@ export default function AdvancedHRPage() {
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Base Monthly Salary ($)</label>
-                <input type="number" value={baseSalary} onChange={(e) => setBaseSalary(parseFloat(e.target.value))} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="number" value={baseSalary} onChange={(e) => setBaseSalary(parseFloat(e.target.value))} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
-              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', padding: 'var(--space-2.5)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
+              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)', padding: 'var(--space-2.5)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
                 Set Structure
               </button>
             </form>
@@ -357,7 +357,7 @@ export default function AdvancedHRPage() {
               
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Select Employee</label>
-                <select value={selectedEmp} onChange={(e) => setSelectedEmp(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
+                <select value={selectedEmp} onChange={(e) => setSelectedEmp(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
                   {employees.map(emp => (
                     <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                   ))}
@@ -366,15 +366,15 @@ export default function AdvancedHRPage() {
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Start Date/Time</label>
-                <input type="datetime-local" value={shiftStart} onChange={(e) => setShiftStart(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="datetime-local" value={shiftStart} onChange={(e) => setShiftStart(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>End Date/Time</label>
-                <input type="datetime-local" value={shiftEnd} onChange={(e) => setShiftEnd(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="datetime-local" value={shiftEnd} onChange={(e) => setShiftEnd(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
-              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', padding: 'var(--space-2.5)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
+              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)', padding: 'var(--space-2.5)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
                 Allocate Shift
               </button>
             </form>

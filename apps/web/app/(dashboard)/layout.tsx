@@ -53,14 +53,11 @@ interface SidebarItem {
 }
 
 const getAppSpecificNavigation = (pathname: string): { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } => {
-  const switchAppItem: SidebarItem = { name: 'Applications', href: '/apps', icon: LayoutGrid };
-  
   if (pathname.startsWith('/finance')) {
     return {
       title: 'Finance & Accounting',
       icon: CreditCard,
       items: [
-        switchAppItem,
         { name: 'Overview', href: '/finance', icon: Home },
         { name: 'Advanced Ledger', href: '/finance/advanced', icon: Wallet }
       ]
@@ -71,7 +68,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Human Resources',
       icon: Users,
       items: [
-        switchAppItem,
         { name: 'Employee Directory', href: '/hr', icon: Users },
         { name: 'Payroll & Attendance', href: '/hr/advanced', icon: FileSliders }
       ]
@@ -82,7 +78,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'CRM & Sales',
       icon: BarChart3,
       items: [
-        switchAppItem,
         { name: 'CRM Overview', href: '/crm', icon: BarChart3 }
       ]
     };
@@ -92,7 +87,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Inventory & Stock',
       icon: Package,
       items: [
-        switchAppItem,
         { name: 'Inventory & Stock', href: '/inventory', icon: Package }
       ]
     };
@@ -102,7 +96,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Procurement',
       icon: ShoppingCart,
       items: [
-        switchAppItem,
         { name: 'Procurement & POs', href: '/procurement', icon: ShoppingCart }
       ]
     };
@@ -112,7 +105,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Sales & Orders',
       icon: ClipboardList,
       items: [
-        switchAppItem,
         { name: 'Sales & Orders', href: '/sales', icon: ClipboardList }
       ]
     };
@@ -122,7 +114,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Supply Chain',
       icon: Truck,
       items: [
-        switchAppItem,
         { name: 'Supply Chain Operations', href: '/supply-chain', icon: Truck }
       ]
     };
@@ -132,7 +123,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Project Management',
       icon: Briefcase,
       items: [
-        switchAppItem,
         { name: 'Gantt & Tasks', href: '/projects', icon: Briefcase }
       ]
     };
@@ -142,7 +132,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Manufacturing',
       icon: Hammer,
       items: [
-        switchAppItem,
         { name: 'Manufacturing Operations', href: '/manufacturing', icon: Hammer }
       ]
     };
@@ -152,7 +141,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Business Intelligence',
       icon: PieChart,
       items: [
-        switchAppItem,
         { name: 'BI Analytics', href: '/analytics', icon: PieChart },
         { name: 'Advanced Reporting', href: '/analytics/advanced', icon: PieChart }
       ]
@@ -163,7 +151,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Document Management',
       icon: FolderOpen,
       items: [
-        switchAppItem,
         { name: 'Documents & Folders', href: '/documents', icon: FolderOpen },
         { name: 'Files & Storage', href: '/storage', icon: HardDrive }
       ]
@@ -174,7 +161,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Communication',
       icon: MessageSquare,
       items: [
-        switchAppItem,
         { name: 'Internal Chats', href: '/communication', icon: MessageSquare }
       ]
     };
@@ -184,7 +170,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'POS & Retail',
       icon: Store,
       items: [
-        switchAppItem,
         { name: 'POS Terminals', href: '/pos', icon: Store }
       ]
     };
@@ -194,7 +179,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Workflows',
       icon: GitFork,
       items: [
-        switchAppItem,
         { name: 'Approval Workflows', href: '/workflows', icon: GitFork }
       ]
     };
@@ -204,7 +188,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Healthcare',
       icon: Activity,
       items: [
-        switchAppItem,
         { name: 'Patient EHR & Vitals', href: '/healthcare', icon: Activity }
       ]
     };
@@ -214,7 +197,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Education',
       icon: GraduationCap,
       items: [
-        switchAppItem,
         { name: 'Student Registry', href: '/education', icon: GraduationCap }
       ]
     };
@@ -224,7 +206,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Real Estate',
       icon: Building2,
       items: [
-        switchAppItem,
         { name: 'Property Registry', href: '/real-estate', icon: Building2 }
       ]
     };
@@ -234,7 +215,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Field Service',
       icon: Wrench,
       items: [
-        switchAppItem,
         { name: 'Dispatch Board', href: '/field-service', icon: Wrench }
       ]
     };
@@ -244,7 +224,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Administration',
       icon: ShieldAlert,
       items: [
-        switchAppItem,
         { name: 'Users List', href: '/admin/users', icon: ShieldAlert },
         { name: 'API Platform', href: '/admin/api-keys', icon: Key },
         { name: 'Localization', href: '/admin/localization', icon: Globe },
@@ -258,7 +237,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'SaaS Portal',
       icon: Cloud,
       items: [
-        switchAppItem,
         { name: 'Subscription Plans', href: '/saas/portal', icon: Cloud }
       ]
     };
@@ -268,11 +246,37 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
     title: 'UniERP Hub',
     icon: Building,
     items: [
-      switchAppItem,
       { name: 'Dashboard', href: '/dashboard', icon: Home }
     ]
   };
 };
+
+const GLOBAL_SEARCH_ITEMS = [
+  { name: 'Dashboard', href: '/dashboard', icon: Home, type: 'App' },
+  { name: 'Finance & Accounting', href: '/finance', icon: CreditCard, type: 'App' },
+  { name: 'Human Resources', href: '/hr', icon: Users, type: 'App' },
+  { name: 'CRM & Sales', href: '/crm', icon: BarChart3, type: 'App' },
+  { name: 'Inventory & Stock', href: '/inventory', icon: Package, type: 'App' },
+  { name: 'Procurement', href: '/procurement', icon: ShoppingCart, type: 'App' },
+  { name: 'Sales & Orders', href: '/sales', icon: ClipboardList, type: 'App' },
+  { name: 'Supply Chain', href: '/supply-chain', icon: Truck, type: 'App' },
+  { name: 'Project Management', href: '/projects', icon: Briefcase, type: 'App' },
+  { name: 'Manufacturing', href: '/manufacturing', icon: Hammer, type: 'App' },
+  { name: 'Business Intelligence', href: '/analytics', icon: PieChart, type: 'App' },
+  { name: 'Document Management', href: '/documents', icon: FolderOpen, type: 'App' },
+  { name: 'Communication', href: '/communication', icon: MessageSquare, type: 'App' },
+  { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
+  { name: 'Advanced Finance', href: '/finance/advanced', icon: Wallet, type: 'App' },
+  { name: 'Advanced HR', href: '/hr/advanced', icon: FileSliders, type: 'App' },
+  { name: 'Workflows', href: '/workflows', icon: GitFork, type: 'App' },
+  { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
+  { name: 'API Platform', href: '/admin/api-keys', icon: Key, type: 'App' },
+  { name: 'Administration', href: '/admin/users', icon: ShieldAlert, type: 'App' },
+  // Actions
+  { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
+  { name: 'Create Invoice', href: '/finance/invoices/new', icon: CreditCard, type: 'Action' },
+  { name: 'Add Product', href: '/inventory/products/new', icon: Package, type: 'Action' },
+];
 
 export default function DashboardLayout({
   children,
@@ -285,6 +289,14 @@ export default function DashboardLayout({
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [tenantDropdownOpen, setTenantDropdownOpen] = useState(false);
+  const [appsDropdownOpen, setAppsDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const userDropdownRef = React.useRef<HTMLDivElement>(null);
+  const tenantDropdownRef = React.useRef<HTMLDivElement>(null);
+  const appsDropdownRef = React.useRef<HTMLDivElement>(null);
+  const searchDropdownRef = React.useRef<HTMLDivElement>(null);
   
   const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; avatar?: string } | null>(null);
   const [currentTenant, setCurrentTenant] = useState({ name: 'Acme Corp', slug: 'acme' });
@@ -293,6 +305,28 @@ export default function DashboardLayout({
     { name: 'Stark Industries', slug: 'stark' },
     { name: 'Wayne Enterprises', slug: 'wayne' },
   ];
+
+  // Click outside listener for all dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+      if (tenantDropdownRef.current && !tenantDropdownRef.current.contains(event.target as Node)) {
+        setTenantDropdownOpen(false);
+      }
+      if (appsDropdownRef.current && !appsDropdownRef.current.contains(event.target as Node)) {
+        setAppsDropdownOpen(false);
+      }
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -597,38 +631,17 @@ export default function DashboardLayout({
         >
           {/* Top Left: Search & Mobile Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1 }}>
-            {!isAppsLanding && collapsed && (
-              <button
-                onClick={() => setCollapsed(false)}
+
+            {!isAppsLanding && (
+              <div
+                ref={searchDropdownRef}
                 style={{
-                  background: 'var(--color-bg)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  cursor: 'pointer',
-                  padding: 'var(--space-1.5) var(--space-2.5)',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-1.5)',
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 'var(--weight-semibold)',
-                  transition: 'background-color 0.15s ease',
+                  position: 'relative',
+                  maxWidth: '20rem',
+                  width: '100%',
+                  display: 'block', 
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg)')}
               >
-                <Menu size={16} />
-                <span>Menu</span>
-              </button>
-            )}
-            <div
-              style={{
-                position: 'relative',
-                maxWidth: '320px',
-                width: '100%',
-                display: 'none', // Can show on large screens
-              }}
-            >
               <Search
                 size={16}
                 style={{
@@ -641,10 +654,15 @@ export default function DashboardLayout({
               />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search apps, actions..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchOpen(e.target.value.length > 0);
+                }}
                 style={{
                   width: '100%',
-                  padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)',
+                  padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-8)',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--color-border)',
                   background: 'var(--color-bg)',
@@ -652,18 +670,97 @@ export default function DashboardLayout({
                   outline: 'none',
                   color: 'var(--color-text)',
                 }}
+                onFocus={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-elevated)';
+                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--color-primary-light)';
+                  if (searchQuery.length > 0) setSearchOpen(true);
+                }}
               />
+              
+              {/* Dynamic Search Dropdown Results */}
+              {searchOpen && searchQuery.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: 'var(--space-1.5)',
+                    background: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 150,
+                    padding: 'var(--space-1.5)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-1)',
+                    maxHeight: '400px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: 'var(--weight-semibold)',
+                      color: 'var(--color-text-tertiary)',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Search Results
+                  </p>
+                  {GLOBAL_SEARCH_ITEMS.filter(item => 
+                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).slice(0, 10).map((result) => (
+                    <button
+                      key={result.name}
+                      onClick={() => { router.push(result.href); setSearchOpen(false); setSearchQuery(''); }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: 'var(--space-2) var(--space-2.5)',
+                        border: 'none',
+                        background: 'transparent',
+                        color: 'var(--color-text)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: 'var(--text-sm)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-2)',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <result.icon size={15} style={{ color: result.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 'var(--weight-medium)' }}>{result.name}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{result.type}</span>
+                      </div>
+                    </button>
+                  ))}
+                  {GLOBAL_SEARCH_ITEMS.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <div style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+                      No results found for "{searchQuery}"
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+            )}
             
-            {/* Tenant Selector Dropdown */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              {!isAppsLanding && (
+                <>
+                  {/* Apps Home Button */}
+                  <button
+                    onClick={() => router.push('/apps')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--space-2)',
-                  background: 'var(--color-bg)',
+                  background: 'transparent',
                   border: '1px solid var(--color-border)',
                   padding: 'var(--space-1.5) var(--space-3)',
                   borderRadius: 'var(--radius-md)',
@@ -672,6 +769,147 @@ export default function DashboardLayout({
                   color: 'var(--color-text)',
                   cursor: 'pointer',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <LayoutGrid size={15} style={{ color: 'var(--color-text-secondary)' }} />
+                <span>Apps Home</span>
+              </button>
+
+              {/* Apps Switcher Dropdown */}
+              <div style={{ position: 'relative' }} ref={appsDropdownRef}>
+                <button
+                  onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)',
+                    background: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    padding: 'var(--space-1.5) var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-semibold)',
+                    color: 'var(--color-text)',
+                    cursor: 'pointer',
+                    boxShadow: 'var(--shadow-sm)',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
+                >
+                  <LayoutGrid size={15} style={{ color: 'var(--color-primary)' }} />
+                  <span>Switch App</span>
+                  <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                </button>
+                {appsDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: 'var(--space-1.5)',
+                      background: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-lg)',
+                      width: '16rem',
+                      maxHeight: '70vh',
+                      overflowY: 'auto',
+                      zIndex: 110,
+                      padding: 'var(--space-1.5)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 'var(--space-1)',
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
+                        fontSize: 'var(--text-xs)',
+                        fontWeight: 'var(--weight-semibold)',
+                        color: 'var(--color-text-tertiary)',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Core Modules
+                    </p>
+                    {GLOBAL_SEARCH_ITEMS.filter(item => item.type === 'App').map((app) => (
+                      <button
+                        key={app.name}
+                        onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: 'var(--space-2) var(--space-2.5)',
+                          border: 'none',
+                          background: pathname.startsWith(app.href) ? 'var(--color-primary-light)' : 'transparent',
+                          color: pathname.startsWith(app.href) ? 'var(--color-primary)' : 'var(--color-text)',
+                          borderRadius: 'var(--radius-md)',
+                          fontSize: 'var(--text-sm)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 'var(--space-2)',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'var(--color-bg-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'transparent';
+                        }}
+                      >
+                        <app.icon size={15} />
+                        {app.name}
+                      </button>
+                    ))}
+                    <div style={{ borderTop: '1px solid var(--color-border)', margin: 'var(--space-1) 0' }} />
+                    <button
+                      onClick={() => { router.push('/apps/store'); setAppsDropdownOpen(false); }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: 'var(--space-2) var(--space-2.5)',
+                        border: 'none',
+                        background: 'transparent',
+                        color: 'var(--color-text)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: 'var(--text-sm)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-2)',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <LayoutGrid size={15} /> All Applications...
+                    </button>
+                  </div>
+                )}
+              </div>
+              </>
+              )}
+
+              {/* Tenant Selector Dropdown */}
+              <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
+              <button
+                onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-2)',
+                  background: 'var(--color-bg-elevated)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-1.5) var(--space-3)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--weight-semibold)',
+                  color: 'var(--color-text)',
+                  cursor: 'pointer',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
               >
                 <Building size={15} style={{ color: 'var(--color-primary)' }} />
                 <span>{currentTenant.name}</span>
@@ -688,7 +926,7 @@ export default function DashboardLayout({
                     border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'var(--shadow-lg)',
-                    width: '180px',
+                    width: '12rem',
                     zIndex: 110,
                     padding: 'var(--space-1.5)',
                   }}
@@ -696,7 +934,7 @@ export default function DashboardLayout({
                   <p
                     style={{
                       margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
-                      fontSize: '10px',
+                      fontSize: 'var(--text-xs)',
                       fontWeight: 'var(--weight-semibold)',
                       color: 'var(--color-text-tertiary)',
                       textTransform: 'uppercase',
@@ -736,6 +974,7 @@ export default function DashboardLayout({
                 </div>
               )}
             </div>
+          </div>
           </div>
 
           {/* Top Right: System settings, Notification, Dark mode, Profiler */}
@@ -797,7 +1036,7 @@ export default function DashboardLayout({
             <div style={{ width: '1px', height: '24px', background: 'var(--color-border)', margin: '0 var(--space-1)' }} />
 
             {/* User Dropdown */}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} ref={userDropdownRef}>
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 style={{

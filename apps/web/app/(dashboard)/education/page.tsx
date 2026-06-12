@@ -174,7 +174,7 @@ export default function EducationPage() {
           <button onClick={handleCreateStudent} style={{
             display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
             background: 'var(--color-primary)', border: 'none',
-            color: '#ffffff', padding: 'var(--space-2) var(--space-4)',
+            color: 'var(--color-bg-elevated)', padding: 'var(--space-2) var(--space-4)',
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
@@ -320,7 +320,7 @@ export default function EducationPage() {
 
         {/* Side Panel: Rules info */}
         <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
             <Sparkles size={16} style={{ color: 'var(--color-primary)' }} />
             Timetable Scheduler
           </h3>

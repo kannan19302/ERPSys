@@ -6,7 +6,7 @@ import {
   UserPlus,
   User,
   Search,
-  Filter,
+  
   CheckCircle,
   AlertCircle,
   X,
@@ -234,7 +234,7 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Filter and Search Panel */}
+      {/* and Search Panel */}
       <Card padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
           <Search
@@ -267,8 +267,7 @@ export default function AdminUsersPage() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <Button variant="outline" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Filter size={15} /> Filter
-          </Button>
+            </Button>
         </div>
       </Card>
 

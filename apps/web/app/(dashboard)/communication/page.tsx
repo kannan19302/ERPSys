@@ -7,7 +7,7 @@ import {
   Send, 
   Bell, 
   Mail, 
-  Plus, 
+   
   User
 } from 'lucide-react';
 
@@ -225,8 +225,7 @@ export default function CommunicationPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Channels</span>
                 <button onClick={handleCreateChannel} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}>
-                  <Plus size={16} />
-                </button>
+                  </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                 {channels.map(ch => (
@@ -344,7 +343,7 @@ export default function CommunicationPage() {
                 cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)',
                 display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
               }}>
-                <Plus size={16} /> Create Template
+                Create Template
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>

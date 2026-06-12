@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   RefreshCw, 
-  Plus, 
+   
   FileText, 
   Sparkles,
   Search
@@ -171,7 +171,7 @@ export default function RealEstatePage() {
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
-            <Plus size={16} /> Add Property
+            Add Property
           </button>
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function RealEstatePage() {
                 <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                 <input 
                   type="text" 
-                  placeholder="Filter properties..."
+                  placeholder="properties..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{

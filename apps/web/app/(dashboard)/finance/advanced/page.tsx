@@ -220,7 +220,7 @@ export default function AdvancedFinancePage() {
                 <button 
                   onClick={() => setShowAccountForm(!showAccountForm)}
                   style={{
-                    background: 'var(--color-primary)', color: '#ffffff', border: 'none',
+                    background: 'var(--color-primary)', color: 'var(--color-bg-elevated)', border: 'none',
                     padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-md)',
                     cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold'
                   }}
@@ -233,15 +233,15 @@ export default function AdvancedFinancePage() {
                 <form onSubmit={handleCreateAccount} style={{ padding: 'var(--space-4)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                   <div style={{ flex: 1, minWidth: '150px' }}>
                     <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>Code</label>
-                    <input type="text" placeholder="1010" value={accountCode} onChange={(e) => setAccountCode(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text)', borderRadius: '4px', fontSize: 'var(--text-xs)' }} />
+                    <input type="text" placeholder="1010" value={accountCode} onChange={(e) => setAccountCode(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-xs)' }} />
                   </div>
                   <div style={{ flex: 2, minWidth: '200px' }}>
                     <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>Account Name</label>
-                    <input type="text" placeholder="Petty Cash" value={accountName} onChange={(e) => setAccountName(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text)', borderRadius: '4px', fontSize: 'var(--text-xs)' }} />
+                    <input type="text" placeholder="Petty Cash" value={accountName} onChange={(e) => setAccountName(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-xs)' }} />
                   </div>
                   <div>
                     <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>Type</label>
-                    <select value={accountType} onChange={(e) => setAccountType(e.target.value)} style={{ width: '120px', padding: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text)', borderRadius: '4px', fontSize: 'var(--text-xs)' }}>
+                    <select value={accountType} onChange={(e) => setAccountType(e.target.value)} style={{ width: '120px', padding: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-xs)' }}>
                       <option value="ASSET">Asset</option>
                       <option value="LIABILITY">Liability</option>
                       <option value="EQUITY">Equity</option>
@@ -249,7 +249,7 @@ export default function AdvancedFinancePage() {
                       <option value="EXPENSE">Expense</option>
                     </select>
                   </div>
-                  <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', padding: 'var(--space-2) var(--space-4)', borderRadius: '4px', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>
+                  <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)', padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>
                     Save
                   </button>
                 </form>
@@ -270,7 +270,7 @@ export default function AdvancedFinancePage() {
                       <td style={{ padding: 'var(--space-2.5)', fontWeight: 'bold' }}>{acc.code}</td>
                       <td style={{ padding: 'var(--space-2.5)' }}>{acc.name}</td>
                       <td style={{ padding: 'var(--space-2.5)' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}>{acc.type}</span>
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)', background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}>{acc.type}</span>
                       </td>
                       <td style={{ padding: 'var(--space-2.5)', textAlign: 'right', fontWeight: 'bold' }}>${parseFloat(acc.balance).toFixed(2)}</td>
                     </tr>
@@ -293,7 +293,7 @@ export default function AdvancedFinancePage() {
                     <p style={{ margin: '0 0 var(--space-2) 0', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Notes: {j.notes}</p>
                     
                     {/* Entry lines */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                       {j.entries?.map((e: JournalEntryLine) => (
                         <div key={e.id} style={{ display: 'flex', justifyItems: 'space-between', fontSize: 'var(--text-xs)' }}>
                           <span style={{ flex: 2 }}>{e.account?.name} ({e.account?.code})</span>
@@ -365,7 +365,7 @@ export default function AdvancedFinancePage() {
 
         {/* Side Panel: Exchange Rates */}
         <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
             <Percent size={16} style={{ color: 'var(--color-primary)' }} />
             Currency Exchange Rates
           </h3>

@@ -337,3 +337,30 @@ function calculateInvoiceTax(
   // ...
 }
 ```
+
+---
+
+## 8. UI/UX & CSS Standards
+
+### 8.1 Aesthetic Philosophy (Frappe / ERPNext Style)
+
+All AI agents must adhere to the following human-computer interaction (HCI) psychological principles when designing or modifying UI components:
+
+1. **Hick's Law (Reduce Cognitive Load)**
+   - **No unnecessary icons.** Only use icons if they provide immediate semantic value. Do not use generic icons (like a building for a tenant selector or a grid for an app switcher) unless explicitly required.
+   - Text with a simple chevron is preferred for dropdowns.
+
+2. **Fitts's Law (Reachability & Sizing)**
+   - Inputs and interactive buttons must have a minimum comfortable height (e.g., `32px` for dense enterprise interfaces, `40px` for standard interactions).
+   - Clickable areas (padding) must extend to the edges of containers.
+
+3. **Gestalt Principles (Figure-Ground & Proximity)**
+   - **Softer Borders:** UI structural elements (borders, shadows) must be highly subdued (e.g., `#e2e8f0` for borders, `0.04` to `0.05` opacity for shadows) so that the actual business data stands out as the primary figure.
+   - **Sharp & Professional:** Use `--radius-md` (6px) or `--radius-sm` (4px) for most elements to maintain a crisp, enterprise software look rather than a bubbly consumer app look.
+
+### 8.2 CSS Tokens
+
+Always use the design system tokens defined in `packages/ui/src/tokens/design-tokens.css`.
+- **Never hardcode hex colors** (e.g., `color: #ffffff`). Use `color: var(--color-bg-elevated)`.
+- **Never hardcode pixel padding** (e.g., `padding: 16px`). Use `padding: var(--space-4)`.
+- Keep button hover states clean and subtle: `background: transparent` transitioning to `var(--color-bg-hover)` is preferred over hard boxed borders.

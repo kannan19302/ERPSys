@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
 import {
-  Plus,
+  
   AlertCircle,
   CheckCircle,
   X,
@@ -188,7 +188,7 @@ export default function ProcurementPage() {
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Procurement' }]}
         actions={
           <Button variant="primary" onClick={() => setIsPoModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={16} /> Create PO
+            Create PO
           </Button>
         }
       />

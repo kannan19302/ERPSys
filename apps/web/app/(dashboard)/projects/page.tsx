@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Plus, Clock, Calendar, DollarSign, Activity } from 'lucide-react';
+import { Briefcase,  Clock, Calendar, DollarSign, Activity } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -221,7 +221,6 @@ export default function ProjectsPage() {
             cursor: 'pointer',
           }}
         >
-          <Plus size={18} />
           New Project
         </button>
       </div>
@@ -325,7 +324,7 @@ export default function ProjectsPage() {
                   onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-hover)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                 >
-                  <Plus size={14} /> Add Task
+                  Add Task
                 </button>
               </div>
 

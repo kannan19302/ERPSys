@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Folder, 
   FileText, 
-  Plus, 
+   
   Upload, 
   CheckCircle, 
   Clock, 
@@ -146,7 +146,7 @@ export default function DocumentsPage() {
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
-            <Plus size={16} /> New Folder
+            New Folder
           </button>
           <button onClick={handleUpload} style={{
             display: 'flex', alignItems: 'center', gap: 'var(--space-2)',

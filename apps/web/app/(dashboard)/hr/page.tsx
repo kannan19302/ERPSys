@@ -5,8 +5,8 @@ import { Card, PageHeader, StatusBadge, Button, Spinner, Badge } from '@unerp/ui
 import {
   Users,
   Search,
-  Filter,
-  Plus,
+  
+  
   Briefcase,
   Calendar,
   AlertCircle,
@@ -344,7 +344,7 @@ export default function HrPage() {
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'HR Management' }]}
         actions={
           <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={16} /> Onboard Employee
+            Onboard Employee
           </Button>
         }
       />
@@ -395,7 +395,7 @@ export default function HrPage() {
         </Card>
       </div>
 
-      {/* Filter and Search Panel */}
+      {/* and Search Panel */}
       <Card padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
           <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
@@ -408,8 +408,7 @@ export default function HrPage() {
           />
         </div>
         <Button variant="outline" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <Filter size={15} /> Filter
-        </Button>
+          </Button>
       </Card>
 
       {/* Employee List Table */}

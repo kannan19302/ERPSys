@@ -59,24 +59,27 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 3. **Never commit `console.log` statements.** Use the structured logger (`@unerp/shared/logger`).
 4. **All business logic MUST have unit tests.** No exceptions. Target 80%+ coverage.
 
+### UI/UX Aesthetics
+5. **Always follow the Frappe/ERPNext UI aesthetic** outlined in Section 8 of `.ai/CONVENTIONS.md`. Apply psychological HCI principles (Hick's Law, Fitts's Law) by removing unnecessary icons, keeping borders soft, and avoiding hardcoded pixels or hex colors. Use `design-tokens.css` strictly.
+
 ### Architecture
-5. **Never import directly between ERP modules.** Modules communicate via domain events only. Read [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 4 (Event-Driven Communication).
-6. **Never modify `packages/database/prisma/migrations/` manually.** Always use `pnpm db:migrate` to generate migrations from schema changes.
-7. **Every database table MUST include `tenant_id`.** Multi-tenancy is enforced at the data layer via Row-Level Security. Read [.ai/SECURITY.md](.ai/SECURITY.md).
-8. **Follow the Module Structure Template exactly.** Every new module must match the pattern in [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 3.
+6. **Never import directly between ERP modules.** Modules communicate via domain events only. Read [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 4 (Event-Driven Communication).
+7. **Never modify `packages/database/prisma/migrations/` manually.** Always use `pnpm db:migrate` to generate migrations from schema changes.
+8. **Every database table MUST include `tenant_id`.** Multi-tenancy is enforced at the data layer via Row-Level Security. Read [.ai/SECURITY.md](.ai/SECURITY.md).
+9. **Follow the Module Structure Template exactly.** Every new module must match the pattern in [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 3.
 
 ### Dependencies & Security
-9. **Never add npm dependencies without documenting rationale** in the commit message and updating [.ai/TECH_STACK.md](.ai/TECH_STACK.md).
-10. **Never store secrets in code.** Use environment variables. Reference `.env.example` for the required variables.
-11. **Never disable CORS, rate limiting, or security headers** without explicit approval.
+10. **Never add npm dependencies without documenting rationale** in the commit message and updating [.ai/TECH_STACK.md](.ai/TECH_STACK.md).
+11. **Never store secrets in code.** Use environment variables. Reference `.env.example` for the required variables.
+12. **Never disable CORS, rate limiting, or security headers** without explicit approval.
 
 ### Process
-12. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules.
-13. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
-14. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
+13. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules.
+14. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
+15. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
 
 ### Dev Environment Startup (MANDATORY BEFORE ANY DEV WORK)
-15. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
+16. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
     - **One-command start**: `.\scripts\dev-start.ps1` (from the project root in PowerShell)
     - This script automatically: starts Docker, runs Postgres + Redis, applies migrations, seeds data, and opens the API + Web dev servers.
     - **Manual steps** (if the script cannot be run):
@@ -90,7 +93,7 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
       - URL: `http://localhost:3000`
       - Email: `admin@unerp.dev`
       - Password: `admin123`
-16. **Always verify both servers are running** before asking the user to test. Confirm port 3001 (API) and 3000 (Web) are listening.
+17. **Always verify both servers are running** before asking the user to test. Confirm port 3001 (API) and 3000 (Web) are listening.
 
 ---
 

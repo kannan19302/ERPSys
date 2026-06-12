@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   FileText, 
-  Plus, 
+   
   Download, 
   RefreshCw,
   Calendar,
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
-            <Plus size={16} /> Add Widget
+            Add Widget
           </button>
         </div>
       </div>

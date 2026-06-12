@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, Button, StatusBadge, Badge } from '@unerp/ui';
 import {
   Key,
-  Plus,
+  
   Trash2,
   Copy,
   Webhook,
@@ -103,7 +103,7 @@ export default function ApiKeysPage() {
         breadcrumbs={[{ label: 'Administration' }, { label: 'API Platform' }]}
         actions={
           <Button variant="primary" onClick={() => setShowCreateKey(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={16} /> Generate API Key
+            Generate API Key
           </Button>
         }
       />

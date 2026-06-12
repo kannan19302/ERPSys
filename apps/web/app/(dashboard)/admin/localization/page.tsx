@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, PageHeader, Button, Badge } from '@unerp/ui';
-import { Globe, Plus, Trash2, X, Search } from 'lucide-react';
+import { Globe,  Trash2, X, Search } from 'lucide-react';
 
 interface LanguageInfo {
   code: string;
@@ -71,7 +71,7 @@ export default function LocalizationPage() {
         breadcrumbs={[{ label: 'Administration' }, { label: 'Localization' }]}
         actions={
           <Button variant="primary" onClick={() => setShowAddModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={16} /> Add Override
+            Add Override
           </Button>
         }
       />
@@ -123,8 +123,7 @@ export default function LocalizationPage() {
         </div>
         {filterLocale !== 'All' && (
           <Button variant="outline" onClick={() => setFilterLocale('All')} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-            <X size={14} /> Clear Filter
-          </Button>
+            <X size={14} /> Clear </Button>
         )}
       </Card>
 

@@ -279,7 +279,7 @@ export default function POSPage() {
             <button 
               onClick={handleOpenRegister}
               style={{
-                background: 'var(--color-primary)', color: '#ffffff', border: 'none',
+                background: 'var(--color-primary)', color: 'var(--color-bg-elevated)', border: 'none',
                 padding: 'var(--space-2.5)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)'
               }}
@@ -313,7 +313,7 @@ export default function POSPage() {
               {/* Shift tracker action */}
               {!shiftOpen ? (
                 <button onClick={handleStartShift} style={{
-                  background: 'var(--color-primary)', border: 'none', color: '#fff',
+                  background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)',
                   padding: '0 var(--space-4)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                   fontSize: 'var(--text-xs)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)'
                 }}>
@@ -321,7 +321,7 @@ export default function POSPage() {
                 </button>
               ) : (
                 <button onClick={handleEndShift} style={{
-                  background: 'var(--color-warning)', border: 'none', color: '#fff',
+                  background: 'var(--color-warning)', border: 'none', color: 'var(--color-bg-elevated)',
                   padding: '0 var(--space-4)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                   fontSize: 'var(--text-xs)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)'
                 }}>
@@ -330,7 +330,7 @@ export default function POSPage() {
               )}
 
               <button onClick={handleCloseRegister} style={{
-                background: 'var(--color-danger)', border: 'none', color: '#fff',
+                background: 'var(--color-danger)', border: 'none', color: 'var(--color-bg-elevated)',
                 padding: '0 var(--space-4)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 fontSize: 'var(--text-xs)', fontWeight: 'bold'
               }}>
@@ -376,7 +376,7 @@ export default function POSPage() {
             <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
               <ShoppingCart size={18} style={{ color: 'var(--color-primary)' }} />
               <h2 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Checkout Cart</h2>
-              <span style={{ marginLeft: 'auto', background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: '50%', fontSize: '10px', fontWeight: 'bold' }}>
+              <span style={{ marginLeft: 'auto', background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: 'var(--space-1) var(--space-2)', borderRadius: '50%', fontSize: '10px', fontWeight: 'bold' }}>
                 {cart.reduce((acc, item) => acc + item.quantity, 0)}
               </span>
             </div>
@@ -390,9 +390,9 @@ export default function POSPage() {
                     <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>${parseFloat(item.sellPrice).toFixed(2)} each</p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <button onClick={() => updateQuantity(item.id, -1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: '4px', display: 'flex', padding: '2px' }}><Minus size={12} /></button>
+                    <button onClick={() => updateQuantity(item.id, -1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', display: 'flex', padding: '2px' }}><Minus size={12} /></button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: '4px', display: 'flex', padding: '2px' }}><Plus size={12} /></button>
+                    <button onClick={() => updateQuantity(item.id, 1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', display: 'flex', padding: '2px' }}></button>
                     <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', display: 'flex' }}><Trash2 size={14} /></button>
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export default function POSPage() {
                 disabled={cart.length === 0}
                 style={{
                   background: cart.length > 0 ? 'var(--color-primary)' : 'var(--color-border)',
-                  color: '#ffffff', border: 'none', padding: 'var(--space-3)',
+                  color: 'var(--color-bg-elevated)', border: 'none', padding: 'var(--space-3)',
                   borderRadius: 'var(--radius-lg)', cursor: cart.length > 0 ? 'pointer' : 'default',
                   fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-sm)', display: 'flex',
                   alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)'

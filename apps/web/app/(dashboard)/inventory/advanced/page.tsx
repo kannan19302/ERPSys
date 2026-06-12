@@ -320,7 +320,7 @@ export default function AdvancedInventoryPage() {
                       <td style={{ padding: 'var(--space-2.5)' }}>{sn.product?.name}</td>
                       <td style={{ padding: 'var(--space-2.5)' }}>
                         <span style={{
-                          fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px',
+                          fontSize: '10px', fontWeight: 'bold', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)',
                           background: sn.status === 'AVAILABLE' ? 'var(--color-success-light)' : 'var(--color-border)',
                           color: sn.status === 'AVAILABLE' ? 'var(--color-success)' : 'var(--color-text-secondary)'
                         }}>{sn.status}</span>
@@ -391,7 +391,7 @@ export default function AdvancedInventoryPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Stock Count Audits</h2>
                 <button onClick={handleCreateCycleCount} style={{
-                  background: 'var(--color-primary)', border: 'none', color: '#fff',
+                  background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)',
                   padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-md)',
                   cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold'
                 }}>
@@ -413,7 +413,7 @@ export default function AdvancedInventoryPage() {
                       <td style={{ padding: 'var(--space-2.5)' }}>{new Date(cc.createdAt).toLocaleString()}</td>
                       <td style={{ padding: 'var(--space-2.5)' }}>
                         <span style={{
-                          fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px',
+                          fontSize: '10px', fontWeight: 'bold', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)',
                           background: cc.status === 'COMPLETED' ? 'var(--color-success-light)' : 'var(--color-warning-light)',
                           color: cc.status === 'COMPLETED' ? 'var(--color-success)' : 'var(--color-warning)'
                         }}>{cc.status}</span>
@@ -424,8 +424,8 @@ export default function AdvancedInventoryPage() {
                           <button 
                             onClick={() => handleCompleteCount(cc.id)}
                             style={{
-                              background: 'var(--color-success)', color: '#fff', border: 'none',
-                              padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '2px'
+                              background: 'var(--color-success)', color: 'var(--color-bg-elevated)', border: 'none',
+                              padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '2px'
                             }}
                           >
                             <CheckCircle size={10} /> Complete count
@@ -448,7 +448,7 @@ export default function AdvancedInventoryPage() {
               
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Product</label>
-                <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
+                <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
                   {products.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -457,7 +457,7 @@ export default function AdvancedInventoryPage() {
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Warehouse</label>
-                <select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
+                <select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
                   {warehouses.map(w => (
                     <option key={w.id} value={w.id}>{w.name}</option>
                   ))}
@@ -466,10 +466,10 @@ export default function AdvancedInventoryPage() {
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Serial Number String</label>
-                <input type="text" value={inputVal1} onChange={(e) => setInputVal1(e.target.value)} placeholder="e.g. SN-8829-X" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="text" value={inputVal1} onChange={(e) => setInputVal1(e.target.value)} placeholder="e.g. SN-8829-X" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
-              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', padding: 'var(--space-2.5)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
+              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)', padding: 'var(--space-2.5)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
                 Register Serial
               </button>
             </form>
@@ -481,7 +481,7 @@ export default function AdvancedInventoryPage() {
               
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Product</label>
-                <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
+                <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
                   {products.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -490,20 +490,20 @@ export default function AdvancedInventoryPage() {
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Batch Number ID</label>
-                <input type="text" value={inputVal1} onChange={(e) => setInputVal1(e.target.value)} placeholder="e.g. LOT-2026-A" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="text" value={inputVal1} onChange={(e) => setInputVal1(e.target.value)} placeholder="e.g. LOT-2026-A" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Batch Quantity</label>
-                <input type="number" value={inputVal2} onChange={(e) => setInputVal2(e.target.value)} placeholder="e.g. 150" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="number" value={inputVal2} onChange={(e) => setInputVal2(e.target.value)} placeholder="e.g. 150" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Expiry Date (Optional)</label>
-                <input type="date" value={inputVal3} onChange={(e) => setInputVal3(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="date" value={inputVal3} onChange={(e) => setInputVal3(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
-              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', padding: 'var(--space-2.5)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
+              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)', padding: 'var(--space-2.5)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
                 Create Batch
               </button>
             </form>
@@ -515,7 +515,7 @@ export default function AdvancedInventoryPage() {
               
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Warehouse</label>
-                <select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
+                <select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }}>
                   {warehouses.map(w => (
                     <option key={w.id} value={w.id}>{w.name}</option>
                   ))}
@@ -524,20 +524,20 @@ export default function AdvancedInventoryPage() {
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Location Name</label>
-                <input type="text" value={inputVal1} onChange={(e) => setInputVal1(e.target.value)} placeholder="e.g. Row-12-Shelf-4" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="text" value={inputVal1} onChange={(e) => setInputVal1(e.target.value)} placeholder="e.g. Row-12-Shelf-4" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Zone (Optional)</label>
-                <input type="text" value={inputVal2} onChange={(e) => setInputVal2(e.target.value)} placeholder="e.g. Zone-B" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="text" value={inputVal2} onChange={(e) => setInputVal2(e.target.value)} placeholder="e.g. Zone-B" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Shelf ID (Optional)</label>
-                <input type="text" value={inputVal3} onChange={(e) => setInputVal3(e.target.value)} placeholder="e.g. Shelf-4" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
+                <input type="text" value={inputVal3} onChange={(e) => setInputVal3(e.target.value)} placeholder="e.g. Shelf-4" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)' }} />
               </div>
 
-              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', padding: 'var(--space-2.5)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
+              <button type="submit" style={{ background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)', padding: 'var(--space-2.5)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>
                 Add Location
               </button>
             </form>

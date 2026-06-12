@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
 import {
   Truck,
-  Plus,
+  
   AlertCircle,
   CheckCircle,
   X,
@@ -161,7 +161,7 @@ export default function SupplyChainPage() {
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Supply Chain' }]}
         actions={
           <Button variant="primary" onClick={() => setIsShipmentModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={16} /> New Shipment
+            New Shipment
           </Button>
         }
       />

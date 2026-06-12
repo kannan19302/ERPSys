@@ -62,11 +62,11 @@ export default function DevopsPage() {
   const errorRate = metrics.apiRequestsTotal > 0 ? ((metrics.apiErrorsTotal / metrics.apiRequestsTotal) * 100).toFixed(2) : '0';
 
   const statCards = [
-    { label: 'Uptime', value: formatUptime(metrics.uptimeSeconds), icon: Activity, color: '#22c55e' },
+    { label: 'Uptime', value: formatUptime(metrics.uptimeSeconds), icon: Activity, color: 'var(--color-success)' },
     { label: 'Avg Latency', value: `${metrics.latencyMs}ms`, icon: Wifi, color: '#3b82f6' },
     { label: 'API Requests', value: metrics.apiRequestsTotal.toLocaleString(), icon: Server, color: '#8b5cf6' },
-    { label: 'Error Rate', value: `${errorRate}%`, icon: RefreshCw, color: Number(errorRate) > 1 ? '#ef4444' : '#22c55e' },
-    { label: 'Heap Used', value: `${metrics.memory.heapUsed} MB`, icon: Cpu, color: '#f59e0b' },
+    { label: 'Error Rate', value: `${errorRate}%`, icon: RefreshCw, color: Number(errorRate) > 1 ? 'var(--color-danger)' : 'var(--color-success)' },
+    { label: 'Heap Used', value: `${metrics.memory.heapUsed} MB`, icon: Cpu, color: 'var(--color-warning)' },
     { label: 'DB Connections', value: String(metrics.dbConnections), icon: Database, color: '#06b6d4' },
   ];
 
@@ -91,7 +91,7 @@ export default function DevopsPage() {
           background: 'linear-gradient(135deg, #065f46, #047857, #059669)',
           borderRadius: 'var(--radius-xl)',
           padding: 'var(--space-5) var(--space-6)',
-          color: '#fff',
+          color: 'var(--color-bg-elevated)',
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--space-4)',
@@ -130,7 +130,7 @@ export default function DevopsPage() {
             { label: 'Heap Used', value: metrics.memory.heapUsed, max: metrics.memory.heapTotal },
           ].map((bar) => (
             <div key={bar.label}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-1)' }}>
                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{bar.label}</span>
                 <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)' }}>{bar.value} MB / {bar.max} MB</span>
               </div>
@@ -139,7 +139,7 @@ export default function DevopsPage() {
                   style={{
                     height: '100%',
                     width: `${Math.min((bar.value / bar.max) * 100, 100)}%`,
-                    background: (bar.value / bar.max) > 0.8 ? '#ef4444' : (bar.value / bar.max) > 0.6 ? '#f59e0b' : '#22c55e',
+                    background: (bar.value / bar.max) > 0.8 ? 'var(--color-danger)' : (bar.value / bar.max) > 0.6 ? 'var(--color-warning)' : 'var(--color-success)',
                     borderRadius: 'var(--radius-full)',
                     transition: 'width 0.5s ease',
                   }}

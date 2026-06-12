@@ -9,8 +9,7 @@ import {
   FileDown, 
   Search,
   Sparkles,
-  Plus
-} from 'lucide-react';
+  } from 'lucide-react';
 
 interface ReportWidget {
   id: string;
@@ -161,7 +160,7 @@ export default function AdvancedReportingPage() {
             borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)'
           }}>
-            <Plus size={16} /> Add Chart Widget
+            Add Chart Widget
           </button>
         </div>
       </div>
@@ -203,7 +202,7 @@ export default function AdvancedReportingPage() {
                 <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
                 <input 
                   type="text" 
-                  placeholder="Filter widgets..."
+                  placeholder="widgets..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{

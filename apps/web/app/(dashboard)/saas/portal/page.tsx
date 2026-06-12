@@ -65,9 +65,9 @@ export default function SaasPortalPage() {
   ];
 
   const usageMeters: UsageMeter[] = [
-    { metric: 'USERS_COUNT', label: 'Active Users', icon: Users, currentValue: 12, limitValue: 50, color: '#6366f1' },
-    { metric: 'STORAGE_MB', label: 'Storage Used', icon: HardDrive, currentValue: 2048, limitValue: 10240, color: '#f59e0b' },
-    { metric: 'API_CALLS_COUNT', label: 'API Calls (Month)', icon: Zap, currentValue: 450, limitValue: 10000, color: '#22c55e' },
+    { metric: 'USERS_COUNT', label: 'Active Users', icon: Users, currentValue: 12, limitValue: 50, color: 'var(--color-primary)' },
+    { metric: 'STORAGE_MB', label: 'Storage Used', icon: HardDrive, currentValue: 2048, limitValue: 10240, color: 'var(--color-warning)' },
+    { metric: 'API_CALLS_COUNT', label: 'API Calls (Month)', icon: Zap, currentValue: 450, limitValue: 10000, color: 'var(--color-success)' },
   ];
 
   const formatStorage = (mb: number) => {
@@ -89,7 +89,7 @@ export default function SaasPortalPage() {
           background: 'linear-gradient(135deg, #312e81, #4338ca, #6366f1)',
           borderRadius: 'var(--radius-xl)',
           padding: 'var(--space-6) var(--space-8)',
-          color: '#fff',
+          color: 'var(--color-bg-elevated)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -109,10 +109,10 @@ export default function SaasPortalPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <button style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.3)', background: 'transparent', color: '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}>
+            <button style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.3)', background: 'transparent', color: 'var(--color-bg-elevated)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', cursor: 'pointer' }}>
               Manage Billing
             </button>
-            <button style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: 'none', background: '#fff', color: '#4338ca', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: 'pointer' }}>
+            <button style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-bg-elevated)', color: '#4338ca', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: 'pointer' }}>
               Upgrade Plan
             </button>
           </div>
@@ -137,7 +137,7 @@ export default function SaasPortalPage() {
                   <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{meter.label}</div>
                   <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{displayCurrent} / {displayLimit}</div>
                 </div>
-                <span style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', color: pct > 80 ? '#ef4444' : meter.color }}>
+                <span style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', color: pct > 80 ? 'var(--color-danger)' : meter.color }}>
                   {pct.toFixed(0)}%
                 </span>
               </div>
@@ -146,7 +146,7 @@ export default function SaasPortalPage() {
                   style={{
                     height: '100%',
                     width: `${Math.min(pct, 100)}%`,
-                    background: pct > 80 ? '#ef4444' : pct > 60 ? '#f59e0b' : meter.color,
+                    background: pct > 80 ? 'var(--color-danger)' : pct > 60 ? 'var(--color-warning)' : meter.color,
                     borderRadius: 'var(--radius-full)',
                     transition: 'width 0.5s ease',
                   }}
@@ -172,7 +172,7 @@ export default function SaasPortalPage() {
             }}
           >
             {plan.recommended && (
-              <div style={{ position: 'absolute', top: '-1px', right: 'var(--space-4)', background: 'var(--color-primary)', color: '#fff', fontSize: '10px', fontWeight: 'var(--weight-bold)', padding: '2px 10px', borderRadius: '0 0 var(--radius-sm) var(--radius-sm)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <div style={{ position: 'absolute', top: '-1px', right: 'var(--space-4)', background: 'var(--color-primary)', color: 'var(--color-bg-elevated)', fontSize: '10px', fontWeight: 'var(--weight-bold)', padding: '2px 10px', borderRadius: '0 0 var(--radius-sm) var(--radius-sm)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Current
               </div>
             )}
@@ -191,7 +191,7 @@ export default function SaasPortalPage() {
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', flex: 1 }}>
               {plan.features.map((feat) => (
                 <li key={feat} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                  <CheckCircle size={13} style={{ color: '#22c55e', flexShrink: 0 }} />
+                  <CheckCircle size={13} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
                   {feat}
                 </li>
               ))}
@@ -204,7 +204,7 @@ export default function SaasPortalPage() {
                 borderRadius: 'var(--radius-md)',
                 border: plan.isCurrent ? '1px solid var(--color-border)' : 'none',
                 background: plan.isCurrent ? 'transparent' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                color: plan.isCurrent ? 'var(--color-text-secondary)' : '#fff',
+                color: plan.isCurrent ? 'var(--color-text-secondary)' : 'var(--color-bg-elevated)',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 'var(--weight-semibold)',
                 cursor: plan.isCurrent ? 'default' : 'pointer',

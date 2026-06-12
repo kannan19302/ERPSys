@@ -5,8 +5,8 @@ import { Card, PageHeader, StatusBadge, Button, Spinner } from '@unerp/ui';
 import {
   Users,
   Search,
-  Filter,
-  Plus,
+  
+  
   Mail,
   Phone,
   AlertCircle,
@@ -332,7 +332,7 @@ export default function CrmPage() {
             onClick={() => (activeTab === 'customers' ? setIsCustomerModalOpen(true) : setIsVendorModalOpen(true))}
             style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
           >
-            <Plus size={16} /> Add {activeTab === 'customers' ? 'Customer' : 'Vendor'}
+            Add {activeTab === 'customers' ? 'Customer' : 'Vendor'}
           </Button>
         }
       />
@@ -411,7 +411,7 @@ export default function CrmPage() {
         )}
       </div>
 
-      {/* Filter and Search Panel */}
+      {/* and Search Panel */}
       <Card padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
           <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
@@ -424,8 +424,7 @@ export default function CrmPage() {
           />
         </div>
         <Button variant="outline" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <Filter size={15} /> Filter
-        </Button>
+          </Button>
       </Card>
 
       {/* Contacts List Table */}

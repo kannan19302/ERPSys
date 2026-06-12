@@ -51,9 +51,9 @@ interface AppDefinition {
 }
 
 const applications: AppDefinition[] = [
-  { id: 'dashboard', name: 'Dashboard', description: 'Overview of key metrics and KPIs', href: '/dashboard', icon: Home, color: '#6366f1', category: 'Core', installed: true },
+  { id: 'dashboard', name: 'Dashboard', description: 'Overview of key metrics and KPIs', href: '/dashboard', icon: Home, color: 'var(--color-primary)', category: 'Core', installed: true },
   { id: 'finance', name: 'Finance & Accounting', description: 'Invoices, payments, and ledger management', href: '/finance', icon: CreditCard, color: '#10b981', category: 'Core', installed: true },
-  { id: 'hr', name: 'Human Resources', description: 'Employee records, departments, and onboarding', href: '/hr', icon: Users, color: '#f59e0b', category: 'Core', installed: true },
+  { id: 'hr', name: 'Human Resources', description: 'Employee records, departments, and onboarding', href: '/hr', icon: Users, color: 'var(--color-warning)', category: 'Core', installed: true },
   { id: 'crm', name: 'CRM & Sales', description: 'Customer relationships and pipeline management', href: '/crm', icon: BarChart3, color: '#3b82f6', category: 'Core', installed: true },
   { id: 'inventory', name: 'Inventory & Stock', description: 'Warehouses, products, and stock levels', href: '/inventory', icon: Package, color: '#8b5cf6', category: 'Core', installed: true },
   { id: 'procurement', name: 'Procurement', description: 'Vendor management and purchase orders', href: '/procurement', icon: ShoppingCart, color: '#ec4899', category: 'Operations', installed: true },
@@ -63,14 +63,14 @@ const applications: AppDefinition[] = [
   { id: 'manufacturing', name: 'Manufacturing', description: 'BOM, work orders, and production planning', href: '/manufacturing', icon: Hammer, color: '#84cc16', category: 'Operations', installed: true },
   { id: 'analytics', name: 'Business Intelligence', description: 'Custom dashboards and analytics reports', href: '/analytics', icon: PieChart, color: '#a855f7', category: 'Intelligence', installed: true },
   { id: 'documents', name: 'Document Management', description: 'File storage, folders, and version control', href: '/documents', icon: FolderOpen, color: '#eab308', category: 'Intelligence', installed: true },
-  { id: 'communication', name: 'Communication', description: 'Channels, messaging, and notifications', href: '/communication', icon: MessageSquare, color: '#22c55e', category: 'Intelligence', installed: true },
+  { id: 'communication', name: 'Communication', description: 'Channels, messaging, and notifications', href: '/communication', icon: MessageSquare, color: 'var(--color-success)', category: 'Intelligence', installed: true },
   { id: 'pos', name: 'POS & Retail', description: 'Point of sale terminals and cash registers', href: '/pos', icon: Store, color: '#e11d48', category: 'Commerce', installed: true },
   { id: 'finance-advanced', name: 'Advanced Finance', description: 'Multi-currency, chart of accounts, and budgets', href: '/finance/advanced', icon: Wallet, color: '#059669', category: 'Advanced', installed: true },
   { id: 'hr-advanced', name: 'Advanced HR', description: 'Payroll, leave, attendance, and performance', href: '/hr/advanced', icon: FileSliders, color: '#d946ef', category: 'Advanced', installed: true },
   { id: 'workflows', name: 'Workflows', description: 'Approval chains and automation engine', href: '/workflows', icon: GitFork, color: '#0ea5e9', category: 'Platform', installed: true },
   { id: 'storage', name: 'Files & Storage', description: 'Document templates and PDF generation', href: '/storage', icon: HardDrive, color: '#64748b', category: 'Platform', installed: true },
   { id: 'reporting', name: 'Advanced Reporting', description: 'Pivot tables, scheduled reports, and dashboards', href: '/analytics/advanced', icon: PieChart, color: '#7c3aed', category: 'Intelligence', installed: true },
-  { id: 'healthcare', name: 'Healthcare Module', description: 'Patient records, appointments, and pharmacy', href: '/healthcare', icon: Activity, color: '#ef4444', category: 'Industry', installed: false },
+  { id: 'healthcare', name: 'Healthcare Module', description: 'Patient records, appointments, and pharmacy', href: '/healthcare', icon: Activity, color: 'var(--color-danger)', category: 'Industry', installed: false },
   { id: 'education', name: 'Education Module', description: 'Students, courses, fees, and library', href: '/education', icon: GraduationCap, color: '#2563eb', category: 'Industry', installed: false },
   { id: 'real-estate', name: 'Real Estate Module', description: 'Properties, leases, and maintenance', href: '/real-estate', icon: Building2, color: '#ca8a04', category: 'Industry', installed: false },
   { id: 'field-service', name: 'Field Service Module', description: 'Tickets, dispatch, and technician management', href: '/field-service', icon: Wrench, color: '#78716c', category: 'Industry', installed: false },
@@ -95,7 +95,7 @@ const folders: FolderDefinition[] = [
   {
     name: 'Core Business',
     description: 'Finance, HR, CRM, and basic business configurations',
-    color: '#6366f1',
+    color: 'var(--color-primary)',
     categories: ['Core'],
     appIds: ['dashboard', 'finance', 'hr', 'crm', 'inventory', 'admin'],
   },
@@ -123,7 +123,7 @@ const folders: FolderDefinition[] = [
   {
     name: 'Industry Specific Modules',
     description: 'Healthcare EHR, university registries, leasing, and field dispatching',
-    color: '#f59e0b',
+    color: 'var(--color-warning)',
     categories: ['Industry'],
     appIds: ['healthcare', 'education', 'real-estate', 'field-service'],
   },
@@ -231,14 +231,14 @@ export default function AppsHubPage() {
                     placeholder="Search apps..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: '13px' }}
                   />
                 </div>
               </div>
               <h3 style={{ margin: '0 0 18px 0', fontSize: '16px', color: 'var(--color-text-secondary)' }}>Select an app to continue</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 88px)', gap: '12px', justifyContent: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 88px)', gap: 'var(--space-3)', justifyContent: 'center' }}>
                 {filteredApps.map((app) => (
-                  <div key={app.id} style={{ width: '88px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <div key={app.id} style={{ width: '88px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <div style={{ position: 'relative' }}>
                       <Link href={app.href} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div style={{ width: '72px', height: '72px', borderRadius: '18px', background: app.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -246,7 +246,7 @@ export default function AppsHubPage() {
                         </div>
                       </Link>
                       {defaultApp === app.id && (
-                        <div title="Default app" style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: 999, background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}>
+                        <div title="Default app" style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: 999, background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-bg-elevated)', fontSize: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}>
                           ✓
                         </div>
                       )}
@@ -372,10 +372,10 @@ export default function AppsHubPage() {
                   {activeFolderApps
                     .filter((a) => a.name.toLowerCase().includes(folderSearch.toLowerCase()) || a.description.toLowerCase().includes(folderSearch.toLowerCase()))
                     .map((app) => (
-                      <div key={app.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <div key={app.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
                         <div style={{ position: 'relative' }}>
                           <Link href={app.href} style={{ textDecoration: 'none', color: 'inherit' }}>
-                            <div style={{ width: '72px', height: '72px', borderRadius: '12px', background: app.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '72px', height: '72px', borderRadius: 'var(--radius-lg)', background: app.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <app.icon size={36} style={{ color: app.color }} />
                             </div>
                           </Link>
@@ -390,8 +390,8 @@ export default function AppsHubPage() {
                               height: 22,
                               borderRadius: 999,
                               border: 'none',
-                              background: defaultApp === app.id ? '#10b981' : '#fff',
-                              color: defaultApp === app.id ? '#fff' : '#10b981',
+                              background: defaultApp === app.id ? '#10b981' : 'var(--color-bg-elevated)',
+                              color: defaultApp === app.id ? 'var(--color-bg-elevated)' : '#10b981',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -487,13 +487,13 @@ function AppCard({ app }: { app: AppDefinition }) {
             >
               {app.category}
             </span>
-            <div style={{ marginTop: '6px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ marginTop: '6px', display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
               {app.installed ? (
-                <span style={{ fontSize: '11px', padding: '2px 8px', background: 'var(--color-bg-sunken)', borderRadius: '999px', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                <span style={{ fontSize: '11px', padding: 'var(--space-1) var(--space-2)', background: 'var(--color-bg-sunken)', borderRadius: '999px', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
                   Installed
                 </span>
               ) : (
-                <span style={{ fontSize: '11px', padding: '2px 8px', background: app.color + '12', borderRadius: '999px', color: app.color, border: '1px solid ' + app.color + '22' }}>
+                <span style={{ fontSize: '11px', padding: 'var(--space-1) var(--space-2)', background: app.color + '12', borderRadius: '999px', color: app.color, border: '1px solid ' + app.color + '22' }}>
                   Available
                 </span>
               )}
@@ -502,8 +502,8 @@ function AppCard({ app }: { app: AppDefinition }) {
           {app.category !== 'Industry' && (
             <Star
               size={13}
-              style={{ color: '#f59e0b', flexShrink: 0 }}
-              fill="#f59e0b"
+              style={{ color: 'var(--color-warning)', flexShrink: 0 }}
+              fill="var(--color-warning)"
             />
           )}
         </div>

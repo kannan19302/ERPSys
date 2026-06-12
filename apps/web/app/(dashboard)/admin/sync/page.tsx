@@ -34,9 +34,9 @@ export default function SyncMonitorPage() {
 
   const statusIcon = (status: string) => {
     switch (status) {
-      case 'PENDING': return <Clock size={15} style={{ color: '#f59e0b' }} />;
-      case 'RECONCILED': return <CheckCircle size={15} style={{ color: '#22c55e' }} />;
-      case 'CONFLICT': return <AlertTriangle size={15} style={{ color: '#ef4444' }} />;
+      case 'PENDING': return <Clock size={15} style={{ color: 'var(--color-warning)' }} />;
+      case 'RECONCILED': return <CheckCircle size={15} style={{ color: 'var(--color-success)' }} />;
+      case 'CONFLICT': return <AlertTriangle size={15} style={{ color: 'var(--color-danger)' }} />;
       default: return null;
     }
   };
@@ -57,15 +57,15 @@ export default function SyncMonitorPage() {
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
         <Card padding="lg" style={{ textAlign: 'center', borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: '#f59e0b' }}>{pendingCount}</div>
+          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-warning)' }}>{pendingCount}</div>
           <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Pending</div>
         </Card>
         <Card padding="lg" style={{ textAlign: 'center', borderLeft: '4px solid #22c55e' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: '#22c55e' }}>{reconciledCount}</div>
+          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-success)' }}>{reconciledCount}</div>
           <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Reconciled</div>
         </Card>
         <Card padding="lg" style={{ textAlign: 'center', borderLeft: '4px solid #ef4444' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: '#ef4444' }}>{conflictCount}</div>
+          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-danger)' }}>{conflictCount}</div>
           <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Conflicts</div>
         </Card>
       </div>

@@ -49,7 +49,7 @@ const storeApps: StoreApp[] = [
     description: 'Patient EHR, appointments, pharmacy, and insurance claims.',
     longDescription: 'Complete healthcare management with electronic health records, prescription management, lab orders, and HIPAA-compliant audit trails.',
     icon: Heart,
-    color: '#ef4444',
+    color: 'var(--color-danger)',
     category: 'Industry',
     rating: 4.8,
     reviews: 142,
@@ -125,7 +125,7 @@ const storeApps: StoreApp[] = [
     description: 'Sync orders from Shopify, WooCommerce, and Amazon.',
     longDescription: 'Bi-directional sync engine connecting your ERP inventory and pricing to major e-commerce platforms with real-time stock level updates.',
     icon: ShoppingBag,
-    color: '#22c55e',
+    color: 'var(--color-success)',
     category: 'Integration',
     rating: 4.7,
     reviews: 312,
@@ -380,7 +380,7 @@ export default function AppStorePage() {
           background: 'linear-gradient(135deg, #1e1b4b, #312e81, #4338ca)',
           borderRadius: 'var(--radius-xl)',
           padding: 'var(--space-8)',
-          color: '#fff',
+          color: 'var(--color-bg-elevated)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -467,7 +467,7 @@ export default function AppStorePage() {
                 borderRadius: 'var(--radius-full)',
                 border: selectedCategory === cat ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
                 background: selectedCategory === cat ? 'var(--color-primary)' : 'transparent',
-                color: selectedCategory === cat ? '#fff' : 'var(--color-text-secondary)',
+                color: selectedCategory === cat ? 'var(--color-bg-elevated)' : 'var(--color-text-secondary)',
                 fontSize: 'var(--text-xs)',
                 fontWeight: 'var(--weight-medium)',
                 cursor: 'pointer',
@@ -556,8 +556,8 @@ export default function AppStorePage() {
                     <Star
                       key={s}
                       size={12}
-                      style={{ color: s <= Math.floor(app.rating) ? '#f59e0b' : 'var(--color-border)' }}
-                      fill={s <= Math.floor(app.rating) ? '#f59e0b' : 'none'}
+                      style={{ color: s <= Math.floor(app.rating) ? 'var(--color-warning)' : 'var(--color-border)' }}
+                      fill={s <= Math.floor(app.rating) ? 'var(--color-warning)' : 'none'}
                     />
                   ))}
                 </div>
@@ -594,7 +594,7 @@ export default function AppStorePage() {
                     onMouseEnter={(e) => {
                       if (uninstallingId !== app.id) {
                         e.currentTarget.style.background = 'var(--color-danger)';
-                        e.currentTarget.style.color = '#fff';
+                        e.currentTarget.style.color = 'var(--color-bg-elevated)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -634,7 +634,7 @@ export default function AppStorePage() {
                       background: isInstalling
                         ? 'var(--color-bg-sunken)'
                         : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                      color: isInstalling ? 'var(--color-text-secondary)' : '#fff',
+                      color: isInstalling ? 'var(--color-text-secondary)' : 'var(--color-bg-elevated)',
                       fontSize: 'var(--text-sm)',
                       fontWeight: 'var(--weight-semibold)',
                       cursor: isInstalling ? 'wait' : 'pointer',
