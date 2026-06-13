@@ -254,8 +254,8 @@ describe('AdvancedFinanceService', () => {
       expect(result.netProfit).toBe(4000);
       expect(result.revenueBreakdown).toHaveLength(1);
       expect(result.expenseBreakdown).toHaveLength(1);
-      expect(result.revenueBreakdown[0].name).toBe('Sales Revenue');
-      expect(result.expenseBreakdown[0].name).toBe('Salaries');
+      expect(result.revenueBreakdown?.[0]?.name).toBe('Sales Revenue');
+      expect(result.expenseBreakdown?.[0]?.name).toBe('Salaries');
       expect(result.period).toBeDefined();
     });
   });
@@ -294,9 +294,9 @@ describe('AdvancedFinanceService', () => {
 
       // Mock accounts
       vi.mocked(prisma.account.findMany).mockResolvedValueOnce([
-        { id: 'rev-1', code: '4000', name: 'Sales', type: 'REVENUE', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0, createdAt: new Date(), updatedAt: new Date() },
-        { id: 'exp-1', code: '5000', name: 'Rent', type: 'EXPENSE', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0, createdAt: new Date(), updatedAt: new Date() },
-        { id: 'ast-2', code: '1500', name: 'Equipment', type: 'ASSET', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0, createdAt: new Date(), updatedAt: new Date() },
+        { id: 'rev-1', code: '4000', name: 'Sales', type: 'REVENUE', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0 as never, createdAt: new Date(), updatedAt: new Date() },
+        { id: 'exp-1', code: '5000', name: 'Rent', type: 'EXPENSE', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0 as never, createdAt: new Date(), updatedAt: new Date() },
+        { id: 'ast-2', code: '1500', name: 'Equipment', type: 'ASSET', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0 as never, createdAt: new Date(), updatedAt: new Date() },
       ]);
 
       // Mock journals with entries
@@ -334,14 +334,14 @@ describe('AdvancedFinanceService', () => {
 
       // Mock accounts
       vi.mocked(prisma.account.findMany).mockResolvedValueOnce([
-        { id: 'acc-1', code: '1000', name: 'Cash', type: 'ASSET', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0, createdAt: new Date(), updatedAt: new Date() },
-        { id: 'acc-2', code: '2000', name: 'AP', type: 'LIABILITY', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0, createdAt: new Date(), updatedAt: new Date() },
+        { id: 'acc-1', code: '1000', name: 'Cash', type: 'ASSET', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0 as never, createdAt: new Date(), updatedAt: new Date() },
+        { id: 'acc-2', code: '2000', name: 'AP', type: 'LIABILITY', tenantId: 't', orgId: 'org-1', parentId: null, isActive: true, balance: 0 as never, createdAt: new Date(), updatedAt: new Date() },
       ]);
 
       // Mock journal entries
       vi.mocked(prisma.journalEntry.findMany).mockResolvedValueOnce([
-        { id: 'je-1', tenantId: 't', journalId: 'j-1', accountId: 'acc-1', debit: 5000, credit: 0, description: null, departmentId: null, costCenterId: null, projectId: null, createdAt: new Date() },
-        { id: 'je-2', tenantId: 't', journalId: 'j-1', accountId: 'acc-2', debit: 0, credit: 5000, description: null, departmentId: null, costCenterId: null, projectId: null, createdAt: new Date() },
+        { id: 'je-1', tenantId: 't', journalId: 'j-1', accountId: 'acc-1', debit: 5000 as never, credit: 0 as never, description: null, departmentId: null, costCenterId: null, projectId: null, createdAt: new Date() },
+        { id: 'je-2', tenantId: 't', journalId: 'j-1', accountId: 'acc-2', debit: 0 as never, credit: 5000 as never, description: null, departmentId: null, costCenterId: null, projectId: null, createdAt: new Date() },
       ]);
 
       const result = await service.getTrialBalance('t', 'org-1', '2026-12-31');
@@ -373,19 +373,19 @@ describe('AdvancedFinanceService', () => {
         {
           id: 'inv-1', tenantId: 't', orgId: 'org-1', customerId: 'c-1', invoiceNumber: 'INV-001',
           status: 'SENT', issueDate: daysAgo(60), dueDate: daysAgo(45),
-          subtotal: 1000, taxAmount: 100, discountAmount: 0, totalAmount: 1100, paidAmount: 0,
-          currency: 'USD', exchangeRate: 1, notes: null, internalNotes: null,
+          subtotal: 1000 as never, taxAmount: 100 as never, discountAmount: 0 as never, totalAmount: 1100 as never, paidAmount: 0 as never,
+          currency: 'USD', exchangeRate: 1 as never, notes: null, internalNotes: null,
           paidAt: null, sentAt: null, createdBy: null, createdAt: new Date(), updatedAt: new Date(), deletedAt: null,
-          customer: { id: 'c-1', name: 'Acme Corp' } as never,
-        },
+          customer: { id: 'c-1', name: 'Acme Corp' }
+        } as never,
         {
           id: 'inv-2', tenantId: 't', orgId: 'org-1', customerId: 'c-2', invoiceNumber: 'INV-002',
           status: 'SENT', issueDate: daysAgo(120), dueDate: daysAgo(95),
-          subtotal: 2000, taxAmount: 200, discountAmount: 0, totalAmount: 2200, paidAmount: 500,
-          currency: 'USD', exchangeRate: 1, notes: null, internalNotes: null,
+          subtotal: 2000 as never, taxAmount: 200 as never, discountAmount: 0 as never, totalAmount: 2200 as never, paidAmount: 500 as never,
+          currency: 'USD', exchangeRate: 1 as never, notes: null, internalNotes: null,
           paidAt: null, sentAt: null, createdBy: null, createdAt: new Date(), updatedAt: new Date(), deletedAt: null,
-          customer: { id: 'c-2', name: 'Beta Inc' } as never,
-        },
+          customer: { id: 'c-2', name: 'Beta Inc' }
+        } as never,
       ]);
 
       const result = await service.getAgingReport('t', 'org-1', 'AR', today.toISOString());
@@ -395,8 +395,8 @@ describe('AdvancedFinanceService', () => {
       expect(result.totalItems).toBe(2);
       expect(result.bucketTotals['31-60']).toBeDefined();
       expect(result.bucketTotals['90+']).toBeDefined();
-      expect(result.bucketTotals['31-60'].count).toBe(1);
-      expect(result.bucketTotals['90+'].count).toBe(1);
+      expect(result.bucketTotals['31-60']?.count).toBe(1);
+      expect(result.bucketTotals['90+']?.count).toBe(1);
     });
 
     it('should return AP aging report', async () => {
@@ -413,11 +413,11 @@ describe('AdvancedFinanceService', () => {
         {
           id: 'po-1', tenantId: 't', orgId: 'org-1', vendorId: 'v-1', poNumber: 'PO-001',
           status: 'SUBMITTED', orderDate: daysAgo(45), expectedDate: null,
-          subtotal: 500, taxAmount: 50, discountAmount: 0, totalAmount: 550,
+          subtotal: 500 as never, taxAmount: 50 as never, discountAmount: 0 as never, totalAmount: 550 as never,
           currency: 'USD', shippingAddress: null, notes: null, internalNotes: null,
           approvedBy: null, approvedAt: null, createdBy: null, createdAt: daysAgo(45), updatedAt: new Date(), deletedAt: null,
-          vendor: { id: 'v-1', name: 'Vendor XYZ' } as never,
-        },
+          vendor: { id: 'v-1', name: 'Vendor XYZ' }
+        } as never,
       ]);
 
       const result = await service.getAgingReport('t', 'org-1', 'AP', today.toISOString());
@@ -425,7 +425,7 @@ describe('AdvancedFinanceService', () => {
       expect(result).toBeDefined();
       expect(result.type).toBe('AP');
       expect(result.totalItems).toBe(1);
-      expect(result.bucketTotals['31-60'].count).toBe(1);
+      expect(result.bucketTotals['31-60']?.count).toBe(1);
     });
   });
 });

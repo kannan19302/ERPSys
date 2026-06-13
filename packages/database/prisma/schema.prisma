@@ -186,8 +186,9 @@ model Employee {
   updatedAt      DateTime  @updatedAt @map("updated_at")
   deletedAt      DateTime? @map("deleted_at")
 
-  department    Department?    @relation(fields: [departmentId], references: [id])
-  practitioners Practitioner[]
+  department          Department?          @relation(fields: [departmentId], references: [id])
+  practitioners       Practitioner[]
+  trainingEnrollments TrainingEnrollment[]
 
   @@unique([tenantId, orgId, employeeCode])
   @@index([tenantId])
@@ -1545,6 +1546,8 @@ model OnboardingItem {
   isCompleted  Boolean   @default(false) @map("is_completed")
   completedAt  DateTime? @map("completed_at")
   sortOrder    Int       @default(0) @map("sort_order")
+  status       String    @default("PENDING") // PENDING, ON_HOLD, COMPLETED
+  comments     String?   @db.Text
 
   checklist OnboardingChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 
@@ -1576,6 +1579,8 @@ model OffboardingItem {
   isCompleted  Boolean   @default(false) @map("is_completed")
   completedAt  DateTime? @map("completed_at")
   sortOrder    Int       @default(0) @map("sort_order")
+  status       String    @default("PENDING") // PENDING, ON_HOLD, COMPLETED
+  comments     String?   @db.Text
 
   checklist OffboardingChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 
@@ -1679,10 +1684,28 @@ model Goal {
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   keyResults KeyResult[]
+  comments   GoalComment[]
 
   @@index([tenantId])
   @@index([tenantId, employeeId])
   @@map("goals")
+}
+
+model GoalComment {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  goalId     String   @map("goal_id")
+  comment    String   @db.Text
+  authorName String   @default("System Admin") @map("author_name")
+  fileUrl    String?  @map("file_url")
+  fileName   String?  @map("file_name")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([goalId])
+  @@map("goal_comments")
 }
 
 model KeyResult {
@@ -1944,18 +1967,39 @@ model Appraisal {
 }
 
 model Training {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  name        String
-  description String?
-  instructor  String?
-  startDate   DateTime @map("start_date")
-  endDate     DateTime @map("end_date")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                 String               @id @default(cuid())
+  tenantId           String               @map("tenant_id")
+  name               String
+  description        String?
+  instructor         String?
+  startDate          DateTime             @map("start_date")
+  endDate            DateTime             @map("end_date")
+  capacity           Int?
+  enrollmentDeadline DateTime?            @map("enrollment_deadline")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  enrollments        TrainingEnrollment[]
 
   @@index([tenantId])
   @@map("trainings")
+}
+
+model TrainingEnrollment {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  trainingId String   @map("training_id")
+  employeeId String   @map("employee_id")
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+  status     String   @default("ENROLLED") // ENROLLED, COMPLETED, CANCELLED
+
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, trainingId, employeeId])
+  @@index([tenantId])
+  @@index([trainingId])
+  @@index([employeeId])
+  @@map("training_enrollments")
 }
 
 // ════════════════════════════════════════════════

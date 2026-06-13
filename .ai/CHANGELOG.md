@@ -5,6 +5,40 @@
 
 ---
 
+## [2026-06-13] Advanced HR Subpages, Checklists, & Visual Dashboards
+
+### Added
+- **Backend NestJS API**: Exposed 17 new endpoint mappings in `AdvancedHrController` for managing assets, documents, onboarding/offboarding checklists, recruitment pipelines, goals/OKRs, feedback, succession plans, skills matrix, appraisals, trainings, workforce analytics, helpdesk ticketing, and engagement surveys.
+- **Backend Unit Tests**: Wrote 23 unit tests in `advanced-hr.controller.spec.ts` matching all newly added API controller mappings.
+- **Sidebar Layout Grouping**: Updated `SidebarItem` interface and `SidebarNavigation` layout in `layout.tsx` to support uppercase section headers and recursive nested indentation of sub-items. Grouped HR menu items under Talent Management, Operations & Service, and Compensation & BI.
+- **Advanced HR Frontend (Next.js)**: Created 14 visually stunning Next.js workspace pages under `/hr/advanced/...` matching the Frappe/ERPNext aesthetic:
+  - Payroll & Salaries (`/hr/advanced/payroll`)
+  - Leave Management (`/hr/advanced/leaves`)
+  - Shift Scheduling (`/hr/advanced/shifts`)
+  - Performance Appraisals (`/hr/advanced/appraisals`)
+  - Trainings & Certs (`/hr/advanced/trainings`)
+  - Documents Manager (`/hr/advanced/documents`)
+  - Onboarding Checklists (`/hr/advanced/onboarding`)
+  - Offboarding Checklists (`/hr/advanced/offboarding`)
+  - 360° Feedback (`/hr/advanced/feedback`)
+  - Succession Plan (`/hr/advanced/succession`)
+  - Skills Matrix (`/hr/advanced/skills`)
+  - Workforce Analytics (`/hr/advanced/analytics`)
+  - HR Helpdesk (`/hr/advanced/tickets`)
+  - Engagement Surveys (`/hr/advanced/surveys`)
+- **Visual Enhancements & Interactive Pipeline**:
+  - Added Kanban Board visual toggle view in Recruitment pipeline tracking.
+  - Implemented interactive inline task editing, status selections (`PENDING`, `ONHOLD`, `COMPLETED`), hold comments/reasons registry, and inline task quick-adds/deletions in Onboarding & Offboarding.
+  - Developed OKRs Efforts Log comments and Base64-encoded PDF/Image completion proof upload mechanism with simulated direct downloads.
+  - Built comprehensive analytics dashboards for Appraisals (Average score, Self vs Manager calibration, 5-Star distribution chart), Trainings (dynamic status pills, participant indicators with initials stacks), Leaves (status quick-filters, pending/approved totals), and Shifts (name search bar, timing filters).
+- **Build Checks**: Verified compilation and successful build checks across both the Next.js frontend and NestJS backend modules under strict mode.
+
+### Fixed
+- **Express Payload Size Limit**: Resolved comment posting failure with large file attachments (resulting in `413 Payload Too Large` error) by raising the default JSON and URL-encoded body limit options to `50mb` in the NestJS backend [main.ts](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/main.ts). Verified end-to-end functionality via programmatical E2E verification test and UI visual checks.
+- **Documents Manager Local Upload & Encryption**: Integrated local file upload field and built a symmetric **AES-256-CBC** encryption pipeline in [advanced-hr.service.ts](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/modules/advanced-hr/advanced-hr.service.ts). File content base64 payloads are encrypted securely prior to database storage, decrypted transparently on API read, and downloaded in the UI using a secure browser same-origin `Blob` Object URL downloader.
+
+
+
 ## [2026-06-12] Phase 6 Stage 5 (Treasury & Global Search) Implementation
 
 ### Added

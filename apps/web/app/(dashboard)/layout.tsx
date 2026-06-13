@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Award, Coffee, CalendarDays, DollarSign } from 'lucide-react';
+import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare } from 'lucide-react';
 import {
   Home,
   CreditCard,
@@ -49,8 +49,10 @@ import {
 
 interface SidebarItem {
   name: string;
-  href: string;
-  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  href?: string;
+  icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  isHeader?: boolean;
+  items?: SidebarItem[];
 }
 
 const getAppSpecificNavigation = (pathname: string): { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } => {
@@ -81,12 +83,43 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: Users,
       items: [
         { name: 'Employee Directory', href: '/hr', icon: Users },
-        { name: 'Payroll & Salaries', href: '/hr/advanced?tab=payroll', icon: DollarSign },
-        { name: 'Leave Management', href: '/hr/advanced?tab=leaves', icon: Coffee },
-        { name: 'Shift Scheduling', href: '/hr/advanced?tab=shifts', icon: CalendarDays },
-        { name: 'Performance Appraisals', href: '/hr/advanced?tab=appraisals', icon: Award },
-        { name: 'Trainings & Certs', href: '/hr/advanced?tab=trainings', icon: GraduationCap }
-      ]
+        {
+          name: 'Talent Management',
+          isHeader: true,
+          items: [
+            { name: 'Recruitment', href: '/hr/advanced/recruitment', icon: Briefcase },
+            { name: 'Onboarding Checklists', href: '/hr/advanced/onboarding', icon: UserPlus },
+            { name: 'Offboarding Checklists', href: '/hr/advanced/offboarding', icon: UserMinus },
+            { name: 'Goals & OKRs', href: '/hr/advanced/goals', icon: Target },
+            { name: 'Skills Matrix', href: '/hr/advanced/skills', icon: Star },
+            { name: 'Performance Appraisals', href: '/hr/advanced/appraisals', icon: Award },
+            { name: '360° Feedback', href: '/hr/advanced/feedback', icon: MessageSquare },
+            { name: 'Succession Plan', href: '/hr/advanced/succession', icon: TrendingUp },
+          ]
+        },
+        {
+          name: 'Operations & Service',
+          isHeader: true,
+          items: [
+            { name: 'Attendance Record', href: '/hr/advanced/attendance', icon: Clock },
+            { name: 'Shift Scheduling', href: '/hr/advanced/shifts', icon: CalendarDays },
+            { name: 'Asset Management', href: '/hr/advanced/assets', icon: Monitor },
+            { name: 'Documents Manager', href: '/hr/advanced/documents', icon: FileText },
+            { name: 'Trainings & Certs', href: '/hr/advanced/trainings', icon: GraduationCap },
+            { name: 'HR Helpdesk', href: '/hr/advanced/tickets', icon: HelpCircle },
+            { name: 'Engagement Surveys', href: '/hr/advanced/surveys', icon: CheckSquare },
+          ]
+        },
+        {
+          name: 'Compensation & BI',
+          isHeader: true,
+          items: [
+            { name: 'Payroll & Salaries', href: '/hr/advanced/payroll', icon: DollarSign },
+            { name: 'Leave Management', href: '/hr/advanced/leaves', icon: Coffee },
+            { name: 'Workforce Analytics', href: '/hr/advanced/analytics', icon: BarChart3 },
+          ]
+        }
+      ] as SidebarItem[]
     };
   }
   if (pathname.startsWith('/crm')) {
@@ -306,62 +339,89 @@ const GLOBAL_SEARCH_ITEMS = [
 
 function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] }; pathname: string; collapsed: boolean }) {
   const searchParams = useSearchParams();
+
+  const renderItem = (item: SidebarItem, isSub = false) => {
+    if (item.isHeader) {
+      if (collapsed) {
+        return <div key={item.name} style={{ height: '1px', background: 'var(--color-border)', margin: 'var(--space-4) 0' }} />;
+      }
+      return (
+        <div key={item.name} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', marginTop: 'var(--space-4)' }}>
+          <div style={{
+            fontSize: '9px',
+            textTransform: 'uppercase',
+            fontWeight: 'var(--weight-bold)',
+            color: 'var(--color-text-tertiary)',
+            letterSpacing: '0.05em',
+            padding: 'var(--space-1) var(--space-3)',
+          }}>
+            {item.name}
+          </div>
+          {item.items?.map(sub => renderItem(sub, true))}
+        </div>
+      );
+    }
+
+    const href = item.href || '#';
+    const isActive = (() => {
+      const parts = href.split('?');
+      const itemPath = parts[0] || '';
+      const itemQuery = parts[1] || '';
+      const isPathMatch = pathname === itemPath || pathname.startsWith(itemPath + '/');
+      if (!isPathMatch) return false;
+      
+      if (itemPath.includes('/hr/advanced') && itemQuery) {
+        const activeTab = searchParams.get('tab') || 'payroll';
+        const itemParams = new URLSearchParams(itemQuery);
+        const itemTab = itemParams.get('tab') || 'payroll';
+        return pathname === itemPath && activeTab === itemTab;
+      }
+      
+      return true;
+    })();
+    const Icon = item.icon;
+
+    return (
+      <Link
+        key={item.name}
+        href={href}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-3)',
+          padding: 'var(--space-2.5) var(--space-3)',
+          paddingLeft: isSub && !collapsed ? 'var(--space-5)' : 'var(--space-3)',
+          borderRadius: 'var(--radius-md)',
+          color: isActive ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)',
+          background: isActive ? 'var(--color-sidebar-active)' : 'transparent',
+          textDecoration: 'none',
+          fontSize: 'var(--text-sm)',
+          fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
+          transition: 'all var(--duration-fast) var(--ease-default)',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.background = 'var(--color-sidebar-hover)';
+            e.currentTarget.style.color = 'var(--color-sidebar-text-active)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'var(--color-sidebar-text)';
+          }
+        }}
+      >
+        {Icon && <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />}
+        {!collapsed && <span>{item.name}</span>}
+      </Link>
+    );
+  };
+
   return (
     <>
-      {appNav.items.map((item: SidebarItem) => {
-        const isActive = (() => {
-          const parts = item.href.split('?');
-          const itemPath = parts[0] || '';
-          const itemQuery = parts[1] || '';
-          const isPathMatch = pathname === itemPath || pathname.startsWith(itemPath + '/');
-          if (!isPathMatch) return false;
-          
-          if (itemPath.includes('/hr/advanced') || itemPath.includes('/finance/advanced')) {
-            const activeTab = searchParams.get('tab') || 'payroll';
-            const itemParams = new URLSearchParams(itemQuery);
-            const itemTab = itemParams.get('tab') || 'payroll';
-            return pathname === itemPath && activeTab === itemTab;
-          }
-          
-          return true;
-        })();
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.name}
-            href={item.href}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-3)',
-              padding: 'var(--space-2.5) var(--space-3)',
-              borderRadius: 'var(--radius-md)',
-              color: isActive ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)',
-              background: isActive ? 'var(--color-sidebar-active)' : 'transparent',
-              textDecoration: 'none',
-              fontSize: 'var(--text-sm)',
-              fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
-              transition: 'all var(--duration-fast) var(--ease-default)',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.background = 'var(--color-sidebar-hover)';
-                e.currentTarget.style.color = 'var(--color-sidebar-text-active)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = 'var(--color-sidebar-text)';
-              }
-            }}
-          >
-            <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />
-            {!collapsed && <span>{item.name}</span>}
-          </Link>
-        );
-      })}
+      {appNav.items.map(item => renderItem(item))}
     </>
   );
 }

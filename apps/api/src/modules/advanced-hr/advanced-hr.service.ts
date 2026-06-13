@@ -1,6 +1,36 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
+import * as crypto from 'crypto';
+
+const ALGORITHM = 'aes-256-cbc';
+const SECRET_KEY = crypto.createHash('sha256').update(process.env.NEXTAUTH_SECRET || 'fallback-secret-key-12345').digest();
+
+function encrypt(text: string): string {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return `${iv.toString('hex')}:${encrypted}`;
+}
+
+function decrypt(text: string): string {
+  try {
+    const parts = text.split(':');
+    if (parts.length < 2) return text;
+    const part0 = parts[0];
+    const part1 = parts[1];
+    if (!part0 || !part1) return text;
+    const iv = Buffer.from(part0, 'hex');
+    const encryptedText = Buffer.from(part1, 'hex');
+    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString('utf8');
+  } catch {
+    return text;
+  }
+}
 
 @Injectable()
 export class AdvancedHrService {
@@ -63,10 +93,50 @@ export class AdvancedHrService {
   }
 
   // ── TIER 1: Employee Documents ──
-  async getEmployeeDocuments(tenantId: string, employeeId: string) { return prisma.employeeDocument.findMany({ where: { tenantId, employeeId } }); }
+  async getEmployeeDocuments(tenantId: string, employeeId: string) {
+    const docs = await prisma.employeeDocument.findMany({ where: { tenantId, employeeId } });
+    return docs.map(doc => {
+      if (doc.fileUrl) {
+        const decrypted = decrypt(doc.fileUrl);
+        try {
+          const parsed = JSON.parse(decrypted);
+          if (parsed && typeof parsed === 'object' && parsed.fileUrl) {
+            return {
+              ...doc,
+              fileUrl: parsed.fileUrl,
+              fileName: parsed.fileName || 'document'
+            };
+          }
+        } catch {}
+        return {
+          ...doc,
+          fileUrl: decrypted,
+          fileName: doc.name
+        };
+      }
+      return doc;
+    });
+  }
 
-  async createEmployeeDocument(tenantId: string, employeeId: string, dto: { name: string; docType: string; fileUrl?: string; expiryDate?: string }) {
-    return prisma.employeeDocument.create({ data: { tenantId, employeeId, name: dto.name, docType: dto.docType, fileUrl: dto.fileUrl || null, expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null } });
+  async createEmployeeDocument(tenantId: string, employeeId: string, dto: { name: string; docType: string; fileUrl?: string; fileName?: string; expiryDate?: string }) {
+    let finalFileUrl = dto.fileUrl || null;
+    if (finalFileUrl && finalFileUrl.startsWith('data:')) {
+      const payload = JSON.stringify({
+        fileUrl: finalFileUrl,
+        fileName: dto.fileName || 'attached_document'
+      });
+      finalFileUrl = encrypt(payload);
+    }
+    return prisma.employeeDocument.create({
+      data: {
+        tenantId,
+        employeeId,
+        name: dto.name,
+        docType: dto.docType,
+        fileUrl: finalFileUrl,
+        expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null
+      }
+    });
   }
 
   // ── TIER 1: Asset Assignments ──
@@ -76,7 +146,7 @@ export class AdvancedHrService {
     return prisma.assetAssignment.create({ data: { tenantId, employeeId: dto.employeeId, assetType: dto.assetType, assetName: dto.assetName, serialNumber: dto.serialNumber || null, status: 'ASSIGNED' } });
   }
 
-  async returnAsset(tenantId: string, id: string) {
+  async returnAsset(_tenantId: string, id: string) {
     return prisma.assetAssignment.update({ where: { id }, data: { status: 'RETURNED', returnedDate: new Date() } });
   }
 
@@ -116,7 +186,7 @@ export class AdvancedHrService {
     return prisma.leaveRequest.create({ data: { tenantId, employeeId: dto.employeeId, policyId: dto.policyId, startDate: new Date(dto.startDate), endDate: new Date(dto.endDate), reason: dto.reason || null, status: 'PENDING' } });
   }
 
-  async approveLeaveRequest(tenantId: string, id: string, status: 'APPROVED' | 'REJECTED', approverId: string) {
+  async approveLeaveRequest(_tenantId: string, id: string, status: 'APPROVED' | 'REJECTED', approverId: string) {
     return prisma.leaveRequest.update({ where: { id }, data: { status, approvedBy: approverId, approvedAt: new Date() } });
   }
 
@@ -124,18 +194,88 @@ export class AdvancedHrService {
   async getOnboardingChecklists(tenantId: string) { return prisma.onboardingChecklist.findMany({ where: { tenantId }, include: { items: { orderBy: { sortOrder: 'asc' } } } }); }
 
   async createOnboardingChecklist(tenantId: string, dto: { employeeId: string; templateName: string; items: Array<{ task: string; category: string; sortOrder: number }> }) {
-    return prisma.onboardingChecklist.create({ data: { tenantId, employeeId: dto.employeeId, templateName: dto.templateName, items: { create: dto.items.map(i => ({ tenantId, task: i.task, category: i.category, sortOrder: i.sortOrder })) } }, include: { items: true } });
+    return prisma.onboardingChecklist.create({ data: { tenantId, employeeId: dto.employeeId, templateName: dto.templateName, items: { create: dto.items.map(i => ({ tenantId, task: i.task, category: i.category, sortOrder: i.sortOrder, status: 'PENDING' })) } }, include: { items: true } });
   }
 
-  async completeOnboardingItem(tenantId: string, itemId: string) {
-    return prisma.onboardingItem.update({ where: { id: itemId }, data: { isCompleted: true, completedAt: new Date() } });
+  async completeOnboardingItem(_tenantId: string, itemId: string) {
+    return prisma.onboardingItem.update({ where: { id: itemId }, data: { isCompleted: true, completedAt: new Date(), status: 'COMPLETED' } });
+  }
+
+  async updateOnboardingItem(_tenantId: string, itemId: string, dto: { task?: string; category?: string; status?: string; comments?: string; isCompleted?: boolean }) {
+    const data: Prisma.OnboardingItemUpdateInput = {};
+    if (dto.task !== undefined) data.task = dto.task;
+    if (dto.category !== undefined) data.category = dto.category;
+    if (dto.status !== undefined) {
+      data.status = dto.status;
+      data.isCompleted = dto.status === 'COMPLETED';
+      data.completedAt = dto.status === 'COMPLETED' ? new Date() : null;
+    } else if (dto.isCompleted !== undefined) {
+      data.isCompleted = dto.isCompleted;
+      data.status = dto.isCompleted ? 'COMPLETED' : 'PENDING';
+      data.completedAt = dto.isCompleted ? new Date() : null;
+    }
+    if (dto.comments !== undefined) data.comments = dto.comments;
+    return prisma.onboardingItem.update({ where: { id: itemId }, data });
+  }
+
+  async addOnboardingItem(tenantId: string, checklistId: string, dto: { task: string; category?: string }) {
+    const lastItem = await prisma.onboardingItem.findFirst({ where: { checklistId }, orderBy: { sortOrder: 'desc' } });
+    const sortOrder = lastItem ? lastItem.sortOrder + 1 : 1;
+    return prisma.onboardingItem.create({
+      data: {
+        tenantId,
+        checklistId,
+        task: dto.task,
+        category: dto.category || 'GENERAL',
+        sortOrder,
+        status: 'PENDING'
+      }
+    });
+  }
+
+  async deleteOnboardingItem(_tenantId: string, itemId: string) {
+    return prisma.onboardingItem.delete({ where: { id: itemId } });
   }
 
   // ── TIER 2: Offboarding ──
   async getOffboardingChecklists(tenantId: string) { return prisma.offboardingChecklist.findMany({ where: { tenantId }, include: { items: { orderBy: { sortOrder: 'asc' } } } }); }
 
   async createOffboardingChecklist(tenantId: string, dto: { employeeId: string; exitDate: string; exitReason?: string; items: Array<{ task: string; sortOrder: number }> }) {
-    return prisma.offboardingChecklist.create({ data: { tenantId, employeeId: dto.employeeId, exitDate: new Date(dto.exitDate), exitReason: dto.exitReason || null, items: { create: dto.items.map(i => ({ tenantId, task: i.task, sortOrder: i.sortOrder })) } }, include: { items: true } });
+    return prisma.offboardingChecklist.create({ data: { tenantId, employeeId: dto.employeeId, exitDate: new Date(dto.exitDate), exitReason: dto.exitReason || null, items: { create: dto.items.map(i => ({ tenantId, task: i.task, sortOrder: i.sortOrder, status: 'PENDING' })) } }, include: { items: true } });
+  }
+
+  async updateOffboardingItem(_tenantId: string, itemId: string, dto: { task?: string; status?: string; comments?: string; isCompleted?: boolean }) {
+    const data: Prisma.OffboardingItemUpdateInput = {};
+    if (dto.task !== undefined) data.task = dto.task;
+    if (dto.status !== undefined) {
+      data.status = dto.status;
+      data.isCompleted = dto.status === 'COMPLETED';
+      data.completedAt = dto.status === 'COMPLETED' ? new Date() : null;
+    } else if (dto.isCompleted !== undefined) {
+      data.isCompleted = dto.isCompleted;
+      data.status = dto.isCompleted ? 'COMPLETED' : 'PENDING';
+      data.completedAt = dto.isCompleted ? new Date() : null;
+    }
+    if (dto.comments !== undefined) data.comments = dto.comments;
+    return prisma.offboardingItem.update({ where: { id: itemId }, data });
+  }
+
+  async addOffboardingItem(tenantId: string, checklistId: string, dto: { task: string }) {
+    const lastItem = await prisma.offboardingItem.findFirst({ where: { checklistId }, orderBy: { sortOrder: 'desc' } });
+    const sortOrder = lastItem ? lastItem.sortOrder + 1 : 1;
+    return prisma.offboardingItem.create({
+      data: {
+        tenantId,
+        checklistId,
+        task: dto.task,
+        sortOrder,
+        status: 'PENDING'
+      }
+    });
+  }
+
+  async deleteOffboardingItem(_tenantId: string, itemId: string) {
+    return prisma.offboardingItem.delete({ where: { id: itemId } });
   }
 
   // ── TIER 3: Recruitment ──
@@ -157,7 +297,7 @@ export class AdvancedHrService {
     return prisma.applicant.create({ data: { tenantId, jobPostingId: dto.jobPostingId, firstName: dto.firstName, lastName: dto.lastName, email: dto.email, phone: dto.phone || null, resumeUrl: dto.resumeUrl || null, coverLetter: dto.coverLetter || null, status: 'ACTIVE', currentStage: 'APPLIED' } });
   }
 
-  async advanceApplicant(tenantId: string, id: string, stage: string) {
+  async advanceApplicant(_tenantId: string, id: string, stage: string) {
     return prisma.applicant.update({ where: { id }, data: { currentStage: stage, status: stage === 'HIRED' ? 'HIRED' : stage === 'REJECTED' ? 'REJECTED' : 'ACTIVE' } });
   }
 
@@ -171,15 +311,32 @@ export class AdvancedHrService {
   async getGoals(tenantId: string, employeeId?: string) {
     const where: Record<string, unknown> = { tenantId };
     if (employeeId) where.employeeId = employeeId;
-    return prisma.goal.findMany({ where: where as never, include: { keyResults: true }, orderBy: { createdAt: 'desc' } });
+    return prisma.goal.findMany({ where: where as never, include: { keyResults: true, comments: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
   }
 
   async createGoal(tenantId: string, dto: { employeeId: string; title: string; description?: string; category?: string; type?: string; startDate: string; endDate: string; weight?: number; keyResults?: Array<{ title: string; target: number; unit?: string }> }) {
     return prisma.goal.create({ data: { tenantId, employeeId: dto.employeeId, title: dto.title, description: dto.description || null, category: dto.category || 'INDIVIDUAL', type: dto.type || 'QUARTERLY', startDate: new Date(dto.startDate), endDate: new Date(dto.endDate), weight: dto.weight || 100, keyResults: dto.keyResults ? { create: dto.keyResults.map(kr => ({ tenantId, title: kr.title, target: kr.target, unit: kr.unit || 'percentage' })) } : undefined }, include: { keyResults: true } });
   }
 
-  async updateKeyResultProgress(tenantId: string, krId: string, current: number) {
+  async updateKeyResultProgress(_tenantId: string, krId: string, current: number) {
     return prisma.keyResult.update({ where: { id: krId }, data: { current } });
+  }
+
+  async getGoalComments(tenantId: string, goalId: string) {
+    return prisma.goalComment.findMany({ where: { tenantId, goalId }, orderBy: { createdAt: 'asc' } });
+  }
+
+  async createGoalComment(tenantId: string, goalId: string, dto: { comment: string; authorName?: string; fileUrl?: string; fileName?: string }) {
+    return prisma.goalComment.create({
+      data: {
+        tenantId,
+        goalId,
+        comment: dto.comment,
+        authorName: dto.authorName || 'System Admin',
+        fileUrl: dto.fileUrl || null,
+        fileName: dto.fileName || null
+      }
+    });
   }
 
   // ── TIER 3: 360° Feedback ──
@@ -229,10 +386,119 @@ export class AdvancedHrService {
   }
 
   // ── TIER 3: Trainings ──
-  async getTrainings(tenantId: string) { return prisma.training.findMany({ where: { tenantId }, orderBy: { startDate: 'asc' } }); }
+  async getTrainings(tenantId: string) {
+    return prisma.training.findMany({
+      where: { tenantId },
+      include: {
+        enrollments: {
+          include: {
+            employee: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                employeeCode: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { startDate: 'asc' }
+    });
+  }
 
-  async createTraining(tenantId: string, dto: { name: string; description?: string; instructor?: string; startDate: string; endDate: string }) {
-    return prisma.training.create({ data: { tenantId, name: dto.name, description: dto.description || null, instructor: dto.instructor || null, startDate: new Date(dto.startDate), endDate: new Date(dto.endDate) } });
+  async createTraining(tenantId: string, dto: { name: string; description?: string; instructor?: string; startDate: string; endDate: string; capacity?: number; enrollmentDeadline?: string }) {
+    return prisma.training.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        description: dto.description || null,
+        instructor: dto.instructor || null,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+        capacity: dto.capacity ? Number(dto.capacity) : null,
+        enrollmentDeadline: dto.enrollmentDeadline ? new Date(dto.enrollmentDeadline) : null
+      },
+      include: {
+        enrollments: {
+          include: {
+            employee: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                employeeCode: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  async enrollParticipant(tenantId: string, trainingId: string, employeeId: string) {
+    const training = await prisma.training.findFirst({
+      where: { id: trainingId, tenantId },
+      include: { enrollments: true }
+    });
+    if (!training) throw new NotFoundException('Training session not found');
+
+    if (training.enrollmentDeadline && new Date() > new Date(training.enrollmentDeadline)) {
+      throw new BadRequestException('Enrollment deadline has passed for this training');
+    }
+
+    if (training.capacity) {
+      const activeEnrollmentsCount = training.enrollments.filter(e => e.status !== 'CANCELLED').length;
+      if (activeEnrollmentsCount >= training.capacity) {
+        throw new BadRequestException('Course capacity limit has been reached');
+      }
+    }
+
+    const existing = await prisma.trainingEnrollment.findFirst({
+      where: { tenantId, trainingId, employeeId }
+    });
+    if (existing) {
+      if (existing.status === 'ENROLLED') {
+        throw new BadRequestException('Employee is already enrolled in this training');
+      }
+      return prisma.trainingEnrollment.update({
+        where: { id: existing.id },
+        data: { status: 'ENROLLED', enrolledAt: new Date() }
+      });
+    }
+
+    return prisma.trainingEnrollment.create({
+      data: {
+        tenantId,
+        trainingId,
+        employeeId,
+        status: 'ENROLLED'
+      }
+    });
+  }
+
+  async unenrollParticipant(tenantId: string, trainingId: string, employeeId: string) {
+    const enrollment = await prisma.trainingEnrollment.findFirst({
+      where: { tenantId, trainingId, employeeId }
+    });
+    if (!enrollment) throw new NotFoundException('Enrollment record not found');
+    
+    return prisma.trainingEnrollment.update({
+      where: { id: enrollment.id },
+      data: { status: 'CANCELLED' }
+    });
+  }
+
+  async updateEnrollmentStatus(tenantId: string, trainingId: string, employeeId: string, status: string) {
+    const enrollment = await prisma.trainingEnrollment.findFirst({
+      where: { tenantId, trainingId, employeeId }
+    });
+    if (!enrollment) throw new NotFoundException('Enrollment record not found');
+    
+    return prisma.trainingEnrollment.update({
+      where: { id: enrollment.id },
+      data: { status }
+    });
   }
 
   // ── TIER 4: Employee Dashboard (self-service) ──
@@ -247,7 +513,28 @@ export class AdvancedHrService {
       prisma.employeeDocument.findMany({ where: { tenantId, employeeId } }),
     ]);
     if (!employee) throw new NotFoundException('Employee not found');
-    return { employee: { name: `${employee.firstName} ${employee.lastName}`, code: employee.employeeCode, designation: employee.designation, department: employee.department?.name || 'N/A', dateOfJoining: employee.dateOfJoining }, recentPayslips: payslips, pendingLeaves: leaves.filter(l => l.status === 'PENDING'), activeGoals: goals, skills, assignedAssets: assets, documents };
+    const decryptedDocs = documents.map(doc => {
+      if (doc.fileUrl) {
+        const decrypted = decrypt(doc.fileUrl);
+        try {
+          const parsed = JSON.parse(decrypted);
+          if (parsed && typeof parsed === 'object' && parsed.fileUrl) {
+            return {
+              ...doc,
+              fileUrl: parsed.fileUrl,
+              fileName: parsed.fileName || 'document'
+            };
+          }
+        } catch {}
+        return {
+          ...doc,
+          fileUrl: decrypted,
+          fileName: doc.name
+        };
+      }
+      return doc;
+    });
+    return { employee: { name: `${employee.firstName} ${employee.lastName}`, code: employee.employeeCode, designation: employee.designation, department: employee.department?.name || 'N/A', dateOfJoining: employee.dateOfJoining }, recentPayslips: payslips, pendingLeaves: leaves.filter(l => l.status === 'PENDING'), activeGoals: goals, skills, assignedAssets: assets, documents: decryptedDocs };
   }
 
   // ── TIER 4: HR Analytics ──
@@ -296,7 +583,7 @@ export class AdvancedHrService {
     return prisma.hRTicket.create({ data: { tenantId, employeeId: dto.employeeId, category: dto.category, title: dto.title, description: dto.description || null, priority: dto.priority || 'MEDIUM', status: 'OPEN' } });
   }
 
-  async resolveHRTicket(tenantId: string, id: string, resolution: string) {
+  async resolveHRTicket(_tenantId: string, id: string, resolution: string) {
     return prisma.hRTicket.update({ where: { id }, data: { status: 'RESOLVED', resolution, resolvedAt: new Date() } });
   }
 

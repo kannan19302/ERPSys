@@ -555,7 +555,7 @@ export class AdvancedFinanceService {
   async getCashPosition(tenantId: string, orgId: string) {
     let resolvedOrgId = orgId;
     if (!orgId || orgId === 'org-system-default') { const org = await prisma.organization.findFirst({ where: { tenantId } }); if (org) resolvedOrgId = org.id; }
-    const bankAccounts = await prisma.bankAccount.findMany({ where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' }, include: { account: { include: { journalEntries: false } } } });
+    const bankAccounts = await prisma.bankAccount.findMany({ where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' } });
     const cashAccounts = await prisma.account.findMany({ where: { tenantId, orgId: resolvedOrgId, type: 'ASSET', code: { startsWith: '1' }, isActive: true } });
     const bankBalances = bankAccounts.map(ba => { const glAccount = cashAccounts.find(a => a.id === ba.accountId); return { bankName: ba.bankName, accountNumber: ba.accountNumber, currency: ba.currency, balance: glAccount ? Number(glAccount.balance) : 0 }; });
     const totalCash = bankBalances.reduce((s, b) => s + b.balance, 0);
@@ -577,7 +577,7 @@ export class AdvancedFinanceService {
     const getBalance = (type: string) => accounts.filter(a => a.type === type).reduce((s, a) => s + Number(a.balance), 0);
     const currentAssets = accounts.filter(a => a.type === 'ASSET' && a.code.startsWith('1')).reduce((s, a) => s + Number(a.balance), 0);
     const currentLiabilities = accounts.filter(a => a.type === 'LIABILITY' && a.code.startsWith('2')).reduce((s, a) => s + Number(a.balance), 0);
-    const totalAssets = getBalance('ASSET'); const totalLiabilities = getBalance('LIABILITY'); const totalEquity = getBalance('EQUITY');
+    const totalLiabilities = getBalance('LIABILITY'); const totalEquity = getBalance('EQUITY');
     const totalRevenue = accounts.filter(a => a.type === 'REVENUE').reduce((s, a) => s + Number(a.balance), 0);
     const totalExpenses = accounts.filter(a => a.type === 'EXPENSE').reduce((s, a) => s + Number(a.balance), 0);
     const netProfit = totalRevenue - totalExpenses;
@@ -620,8 +620,8 @@ export class AdvancedFinanceService {
   // TIER 4: Finance Audit Trail
   // ════════════════════════════════════════════════
 
-  private async logFinanceAudit(txOrPrisma: typeof prisma, tenantId: string, entityType: string, entityId: string, action: string, changes: Record<string, unknown>, userId: string) {
-    try { await (txOrPrisma as typeof prisma).financeAuditLog.create({ data: { tenantId, entityType, entityId, action, changes, userId } }); } catch { /* silent */ }
+  private async logFinanceAudit(txOrPrisma: unknown, tenantId: string, entityType: string, entityId: string, action: string, changes: Record<string, unknown>, userId: string) {
+    try { await (txOrPrisma as { financeAuditLog: { create: (args: unknown) => Promise<unknown> } }).financeAuditLog.create({ data: { tenantId, entityType, entityId, action, changes, userId } }); } catch { /* silent */ }
   }
 
   async getFinanceAuditLogs(tenantId: string, entityType?: string, entityId?: string) {
