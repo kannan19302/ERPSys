@@ -249,25 +249,12 @@ export default function AdminUsersPage() {
           />
           <input
             type="text"
+            className="frappe-input"
             placeholder="Search users by name, email, or role..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              fontSize: 'var(--text-sm)',
-              outline: 'none',
-              color: 'var(--color-text)',
-            }}
+            style={{ paddingLeft: 'var(--space-9)' }}
           />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <Button variant="outline" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            </Button>
         </div>
       </Card>
 

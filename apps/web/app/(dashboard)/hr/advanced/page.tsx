@@ -5,11 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { 
   FileSliders, 
   Loader2, 
-  Coffee, 
-  DollarSign, 
-  CalendarDays,
-  Award,
-  GraduationCap,
   Check
 } from 'lucide-react';
 
@@ -134,12 +129,6 @@ function AdvancedHRContent() {
     }
   }, [searchParams]);
 
-  const handleTabChange = (newTab: 'payroll' | 'leaves' | 'shifts' | 'appraisals' | 'trainings') => {
-    setActiveTab(newTab);
-    const params = new URLSearchParams(window.location.search);
-    params.set('tab', newTab);
-    window.history.pushState(null, '', `?${params.toString()}`);
-  };
 
   const loadData = async () => {
     try {
@@ -467,39 +456,6 @@ function AdvancedHRContent() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-border gap-4 overflow-x-auto">
-        <button 
-          onClick={() => handleTabChange('payroll')}
-          className={`px-4 py-2 border-b-2 font-medium cursor-pointer flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'payroll' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <DollarSign size={16} /> Payroll & Salaries
-        </button>
-        <button 
-          onClick={() => handleTabChange('leaves')}
-          className={`px-4 py-2 border-b-2 font-medium cursor-pointer flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'leaves' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <Coffee size={16} /> Leave Management
-        </button>
-        <button 
-          onClick={() => handleTabChange('shifts')}
-          className={`px-4 py-2 border-b-2 font-medium cursor-pointer flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'shifts' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <CalendarDays size={16} /> Shift Scheduling
-        </button>
-        <button 
-          onClick={() => handleTabChange('appraisals')}
-          className={`px-4 py-2 border-b-2 font-medium cursor-pointer flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'appraisals' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <Award size={16} /> Performance Appraisals
-        </button>
-        <button 
-          onClick={() => handleTabChange('trainings')}
-          className={`px-4 py-2 border-b-2 font-medium cursor-pointer flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'trainings' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <GraduationCap size={16} /> Trainings & Certs
-        </button>
-      </div>
 
       {/* Main layout grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
