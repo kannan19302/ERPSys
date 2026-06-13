@@ -1,65 +1,67 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmService } from '../crm.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-// Mock prisma
-const mockPrisma = {
+// Hoist mock object to resolve Vitest order-of-initialization hoisting
+const mockPrisma = vi.hoisted(() => ({
   customer: {
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
   vendor: {
-    findMany: jest.fn(),
-    create: jest.fn(),
+    findMany: vi.fn(),
+    create: vi.fn(),
   },
   contact: {
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
   leadSource: {
-    findMany: jest.fn(),
+    findMany: vi.fn(),
   },
   lead: {
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
   salesPipeline: {
-    findMany: jest.fn(),
-    updateMany: jest.fn(),
-    create: jest.fn(),
+    findMany: vi.fn(),
+    updateMany: vi.fn(),
+    create: vi.fn(),
   },
   opportunity: {
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    count: vi.fn(),
   },
   activity: {
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
   emailTemplate: {
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
   organization: {
-    findFirst: jest.fn(),
+    findFirst: vi.fn(),
   },
-  $transaction: jest.fn((cb: any) => cb(mockPrisma)),
-};
+  $transaction: vi.fn((cb: (tx: unknown) => unknown) => cb(mockPrisma)),
+}));
 
-jest.mock('@unerp/database', () => ({
+vi.mock('@unerp/database', () => ({
   prisma: mockPrisma,
 }));
 
@@ -72,7 +74,7 @@ describe('CrmService', () => {
     }).compile();
 
     service = module.get<CrmService>(CrmService);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Default org mock
     mockPrisma.organization.findFirst.mockResolvedValue({ id: 'org-1', tenantId: 'tenant-1', name: 'Test Org' });
@@ -210,11 +212,11 @@ describe('CrmService', () => {
       mockPrisma.lead.findFirst.mockResolvedValue({
         id: 'l1', tenantId, status: 'NEW', firstName: 'Tony', lastName: 'Stark', company: 'Stark Industries', email: 'tony@stark.com', phone: '+1-555'
       });
-      mockPrisma.$transaction.mockImplementation(async (cb: any) => {
+      mockPrisma.$transaction.mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) => {
         const tx = {
-          customer: { create: jest.fn().mockResolvedValue({ id: 'c-new', name: 'Stark Industries' }) },
-          opportunity: { create: jest.fn().mockResolvedValue({ id: 'o-new', name: 'Test Opp' }) },
-          lead: { update: jest.fn().mockResolvedValue({ id: 'l1', status: 'CONVERTED' }) },
+          customer: { create: vi.fn().mockResolvedValue({ id: 'c-new', name: 'Stark Industries' }) },
+          opportunity: { create: vi.fn().mockResolvedValue({ id: 'o-new', name: 'Test Opp' }) },
+          lead: { update: vi.fn().mockResolvedValue({ id: 'l1', status: 'CONVERTED' }) },
         };
         return cb(tx);
       });
@@ -256,6 +258,7 @@ describe('CrmService', () => {
     it('getOpportunities should filter by pipeline', async () => {
       mockPrisma.opportunity.findMany.mockResolvedValue([{ id: 'o1', name: 'Test Deal', tenantId, deletedAt: null }]);
       const result = await service.getOpportunities(tenantId, 'p1');
+      expect(result).toBeDefined();
       expect(mockPrisma.opportunity.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { tenantId, deletedAt: null, pipelineId: 'p1' } })
       );
@@ -277,6 +280,7 @@ describe('CrmService', () => {
     it('getActivities should filter by leadId', async () => {
       mockPrisma.activity.findMany.mockResolvedValue([{ id: 'a1', type: 'CALL', subject: 'Test Call', tenantId }]);
       const result = await service.getActivities(tenantId, 'l1');
+      expect(result).toBeDefined();
       expect(mockPrisma.activity.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { tenantId, leadId: 'l1' } })
       );

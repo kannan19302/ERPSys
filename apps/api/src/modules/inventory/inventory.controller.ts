@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { InventoryService } from './inventory.service';
-import { CreateProductInput } from '@unerp/shared';
+import { CreateProductInput, CreateStockEntryInput, CreateQualityInspectionInput } from '@unerp/shared';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -123,5 +123,65 @@ export class InventoryController {
     @Param('id') id: string
   ) {
     return this.inventoryService.completeCycleCount(req.user.tenantId, id);
+  }
+
+  // ════════════════════════════════════════════════
+  // EXTENDED LOGISTICS TRANSACTIONS
+  // ════════════════════════════════════════════════
+
+  @Get('stock-entries')
+  @Permissions('inventory.stock.read')
+  async getStockEntries(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getStockEntries(req.user.tenantId);
+  }
+
+  @Post('stock-entries')
+  @Permissions('inventory.stock.create')
+  async createStockEntry(@Req() req: AuthenticatedRequest, @Body() dto: CreateStockEntryInput) {
+    return this.inventoryService.createStockEntry(
+      req.user.tenantId,
+      req.user.orgId || 'org-system-default',
+      dto,
+      req.user.userId || 'system'
+    );
+  }
+
+  @Put('stock-entries/:id/submit')
+  @Permissions('inventory.stock.create')
+  async submitStockEntry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.submitStockEntry(req.user.tenantId, id);
+  }
+
+  @Get('stock-ledger')
+  @Permissions('inventory.stock.read')
+  async getStockLedger(
+    @Req() req: AuthenticatedRequest,
+    @Query('productId') productId?: string,
+    @Query('warehouseId') warehouseId?: string
+  ) {
+    return this.inventoryService.getStockLedger(req.user.tenantId, { productId, warehouseId });
+  }
+
+  @Get('valuation-report')
+  @Permissions('inventory.stock.read')
+  async getValuationReport(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getValuationReport(req.user.tenantId);
+  }
+
+  @Get('quality-inspections')
+  @Permissions('inventory.stock.read')
+  async getQualityInspections(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getQualityInspections(req.user.tenantId);
+  }
+
+  @Post('quality-inspections')
+  @Permissions('inventory.stock.create')
+  async createQualityInspection(@Req() req: AuthenticatedRequest, @Body() dto: CreateQualityInspectionInput) {
+    return this.inventoryService.createQualityInspection(
+      req.user.tenantId,
+      req.user.orgId || 'org-system-default',
+      dto,
+      req.user.userId || 'system'
+    );
   }
 }

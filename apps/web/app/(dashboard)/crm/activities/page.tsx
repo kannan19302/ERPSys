@@ -13,8 +13,16 @@ const ACTIVITY_COLORS: Record<string, string> = {
     TASK: '#10b981', QUOTE_SENT: '#f97316', ORDER_PLACED: '#ef4444'
 };
 
+interface Activity {
+    id: string;
+    type: string;
+    subject: string;
+    description?: string;
+    createdAt: string;
+}
+
 export default function ActivitiesPage() {
-    const [activities, setActivities] = useState<any[]>([]);
+    const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
     const [form, setForm] = useState({ type: 'NOTE', subject: '', description: '' });

@@ -46,6 +46,13 @@ import {
   Server,
   Cloud,
   LayoutGrid,
+  History,
+  ShieldCheck,
+  QrCode,
+  MapPin,
+  ClipboardCheck,
+  Warehouse,
+  Layers,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -189,8 +196,36 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Inventory & Stock',
       icon: Package,
       items: [
-        { name: 'Inventory & Stock', href: '/inventory', icon: Package }
-      ]
+        { name: 'Products Catalog', href: '/inventory', icon: Package },
+        { name: 'Warehouse Stock Levels', href: '/inventory/stock-levels', icon: Layers },
+        { name: 'Warehouse Directory', href: '/inventory/warehouses', icon: Warehouse },
+        {
+          name: 'Material Transactions',
+          isHeader: true,
+          items: [
+            { name: 'Stock Entries', href: '/inventory/stock-entries', icon: FileText },
+            { name: 'Stock Ledger', href: '/inventory/stock-ledger', icon: History },
+            { name: 'Valuation Costing', href: '/inventory/valuations', icon: TrendingUp },
+          ]
+        },
+        {
+          name: 'Quality & Control',
+          isHeader: true,
+          items: [
+            { name: 'QA Inspections', href: '/inventory/qa-inspections', icon: ShieldCheck },
+            { name: 'Serial Numbers', href: '/inventory/serial-numbers', icon: QrCode },
+            { name: 'Batch & Lot Control', href: '/inventory/batches', icon: Package },
+          ]
+        },
+        {
+          name: 'Storage & Audit',
+          isHeader: true,
+          items: [
+            { name: 'Bin Configurations', href: '/inventory/bin-locations', icon: MapPin },
+            { name: 'Cycle Count Audits', href: '/inventory/cycle-counts', icon: ClipboardCheck },
+          ]
+        }
+      ] as SidebarItem[]
     };
   }
   if (pathname.startsWith('/procurement')) {
@@ -198,7 +233,12 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Procurement',
       icon: ShoppingCart,
       items: [
-        { name: 'Procurement & POs', href: '/procurement', icon: ShoppingCart }
+        { name: 'Procurement Dashboard', href: '/procurement', icon: ShoppingCart },
+        { name: 'Purchase Orders', href: '/procurement/purchase-orders', icon: FileText },
+        { name: 'Purchase Receipts (GRN)', href: '/procurement/purchase-receipts', icon: Truck },
+        { name: 'Sourcing (RFQs)', href: '/procurement/rfqs', icon: ClipboardList },
+        { name: 'Supplier Bids', href: '/procurement/supplier-quotations', icon: FileText },
+        { name: 'Supplier Directory', href: '/procurement/vendors', icon: Building2 }
       ]
     };
   }
@@ -207,8 +247,11 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Sales & Orders',
       icon: ClipboardList,
       items: [
-        { name: 'Sales & Orders', href: '/sales', icon: ClipboardList }
-      ]
+        { name: 'Sales Dashboard', href: '/sales', icon: Home },
+        { name: 'Customer Quotations', href: '/sales/quotations', icon: FileText },
+        { name: 'Sales Orders', href: '/sales/orders', icon: ClipboardList },
+        { name: 'Delivery Notes', href: '/sales/delivery-notes', icon: Truck }
+      ] as SidebarItem[]
     };
   }
   if (pathname.startsWith('/supply-chain')) {
@@ -424,13 +467,17 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
       const parts = href.split('?');
       const itemPath = parts[0] || '';
       const itemQuery = parts[1] || '';
-      const isPathMatch = pathname === itemPath || pathname.startsWith(itemPath + '/');
+      
+      const isPathMatch = itemPath === '/inventory' 
+        ? pathname === '/inventory' 
+        : (pathname === itemPath || pathname.startsWith(itemPath + '/'));
+        
       if (!isPathMatch) return false;
 
-      if (itemPath.includes('/hr/advanced') && itemQuery) {
-        const activeTab = searchParams.get('tab') || 'payroll';
+      if ((itemPath.includes('/hr/advanced') || itemPath.includes('/inventory/advanced')) && itemQuery) {
+        const activeTab = searchParams.get('tab') || (itemPath.includes('/hr/advanced') ? 'payroll' : 'entries');
         const itemParams = new URLSearchParams(itemQuery);
-        const itemTab = itemParams.get('tab') || 'payroll';
+        const itemTab = itemParams.get('tab');
         return pathname === itemPath && activeTab === itemTab;
       }
 
@@ -939,21 +986,8 @@ export default function DashboardLayout({
                   {/* Apps Home Button */}
                   <button
                     onClick={() => router.push('/apps')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--space-2)',
-                      background: 'transparent',
-                      border: '1px solid var(--color-border)',
-                      padding: 'var(--space-1.5) var(--space-3)',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 'var(--weight-semibold)',
-                      color: 'var(--color-text)',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    className="frappe-btn frappe-btn-secondary"
+                    style={{ padding: 'var(--space-1.5) var(--space-3)' }}
                   >
                     <LayoutGrid size={15} style={{ color: 'var(--color-text-secondary)' }} />
                     <span>Apps Home</span>
@@ -963,22 +997,8 @@ export default function DashboardLayout({
                   <div style={{ position: 'relative' }} ref={appsDropdownRef}>
                     <button
                       onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                        background: 'var(--color-bg-elevated)',
-                        border: '1px solid var(--color-border)',
-                        padding: 'var(--space-1.5) var(--space-3)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--weight-semibold)',
-                        color: 'var(--color-text)',
-                        cursor: 'pointer',
-                        boxShadow: 'var(--shadow-sm)',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
+                      className="frappe-btn frappe-btn-secondary"
+                      style={{ padding: 'var(--space-1.5) var(--space-3)' }}
                     >
                       <LayoutGrid size={15} style={{ color: 'var(--color-primary)' }} />
                       <span>Switch App</span>
@@ -1077,22 +1097,8 @@ export default function DashboardLayout({
               <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
                 <button
                   onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-2)',
-                    background: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    padding: 'var(--space-1.5) var(--space-3)',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--weight-semibold)',
-                    color: 'var(--color-text)',
-                    cursor: 'pointer',
-                    boxShadow: 'var(--shadow-sm)',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
+                  className="frappe-btn frappe-btn-secondary"
+                  style={{ padding: 'var(--space-1.5) var(--space-3)' }}
                 >
                   <Building size={15} style={{ color: 'var(--color-primary)' }} />
                   <span>{currentTenant.name}</span>

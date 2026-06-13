@@ -5,6 +5,48 @@
 
 ---
 
+## [2026-06-13] Sales & Orders Module Implementation (B2B, B2C, D2C)
+
+### Added
+- **Database Fields**: Added `salesChannel`, `paymentMethod`, and `paymentStatus` fields to the `SalesOrder` model in `schema.prisma`.
+- **Shared Layer**: Updated `createSalesOrderSchema` in `packages/shared/src/validators/index.ts` to support optional payment statuses and channels.
+- **Backend API**:
+  - `sales.service.ts`: Implemented credit limit validation for B2B orders (checking outstanding customer invoices + current total). Orders exceeding limits are placed on `CREDIT_HOLD`.
+  - Added quotation-to-sales-order conversion logic.
+  - Added endpoints: `POST /sales/orders/:id/convert`, `PATCH /sales/orders/:id/approve-credit`, and `POST /sales/orders/:id/payment` in `sales.controller.ts`.
+- **Frontend Pages**:
+  - Overview Dashboard (`/sales`): Revenue KPI cards and breakdown metrics.
+  - Quotations Workspace (`/sales/quotations`): Listing, creating, and converting customer quotations to orders.
+  - Sales Orders Hub (`/sales/orders`): Central hub grouped by channel (B2B/B2C/D2C) with credit holds and payment logs.
+  - Delivery Notes (`/sales/delivery-notes`): Issue notes, check shipment status, and update warehouse stocks.
+- **Unit Tests**: Updated `sales.service.spec.ts` to verify credit limits, conversion, and filtering (249 total passed tests).
+
+---
+
+## [2026-06-13] Advanced Inventory & Stock Control Module Completion
+
+### Added
+- **Database Tables**:
+  - `StockLedgerEntry`: Records granular transactions, stock level histories, moving cost rates, and voucher types.
+  - `StockEntry` & `StockEntryItem`: Represents material slips (Receipt, Issue, Transfer) with dynamic items.
+  - `QualityInspection`: Supports visual checklists, logs passed vs rejected quantities, and links with transactional references.
+  - Model relations added inside `Product` and `Warehouse` for schema validation.
+- **Backend API**:
+  - `apps/api/src/modules/inventory/inventory.service.ts`: Implemented atomic material slip transactional logic, dynamic moving average costing valuation updates, and quality inspection checklists.
+  - `apps/api/src/modules/inventory/inventory.controller.ts`: Restructured API endpoints with full type safety (relative paths like `/api/v1/inventory/stock-entries`).
+- **Frontend Pages**:
+  - `/inventory` and `/inventory/advanced` matching the Frappe/ERPNext soft-border styling rules using `.frappe-*` CSS variables and layout utilities.
+  - Support for 8 tabbed views: Stock Entries, Stock Ledger, Moving valuations, Quality Inspections, Serial Numbers registry, Batch lots, Bin Locations, and Cycle Counts.
+- **Unit Tests**:
+  - Fully verified using Vitest. Introduced mocked database transactions and tested all CRUD operations, audits, and validations with 100% coverage in `inventory.service.spec.ts`.
+
+### Fixed
+- Fixed ESLint unused variable/import warnings in `crm/activities/page.tsx`, `crm/contacts/page.tsx`, `crm/opportunities/page.tsx`, `crm/opportunities/[id]/page.tsx`, `crm/reports/page.tsx`, `finance/advanced/page.tsx`, and `inventory/advanced/page.tsx`.
+- Removed typescript `any` types by introducing clean, type-safe interfaces (`Activity`, `AnalyticsData`, `OpportunityDetail`, etc.).
+- Fixed Powershell path variable expansion syntax error in `dev-start.ps1`.
+
+---
+
 ## [2026-06-13] CRM Advanced Features — Detail Pages, Pipeline Progress & Testing Plan
 
 ### Added

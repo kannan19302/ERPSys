@@ -6,10 +6,10 @@ import { Card, PageHeader, StatusBadge } from '@unerp/ui';
 import {
   BarChart3, PieChart, TrendingUp,
   DollarSign, Receipt, FileText, Calculator, Activity,
-  Wallet, Scale, Eye, GitCompare, RefreshCw, Shield,
+  Wallet, Scale, Eye, GitCompare, RefreshCw,
   FolderOpen, ChevronRight, CreditCard, FileSliders,
-  Building2, ShoppingCart, ClipboardList, GitFork,
-  ShieldAlert, Home
+  Building2, ShoppingCart, ClipboardList,
+  ShieldAlert
 } from 'lucide-react';
 
 const groups = [

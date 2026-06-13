@@ -1,18 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import Link from 'next/link';
+import { Card, PageHeader, Spinner } from '@unerp/ui';
 import {
-  
-  AlertCircle,
-  CheckCircle,
-  X,
-  FileText,
+  ShoppingCart,
   Truck,
-  Building
+  Building,
+  FileText,
+  BadgeCent,
+  FileSpreadsheet,
+  ArrowRight,
+  TrendingUp,
+  AlertCircle
 } from 'lucide-react';
 
-interface PurchaseOrderData {
+interface PurchaseOrder {
   id: string;
   poNumber: string;
   status: string;
@@ -22,360 +25,235 @@ interface PurchaseOrderData {
   currency: string;
 }
 
-interface PurchaseReceiptData {
+interface RFQ {
   id: string;
-  receiptNumber: string;
-  purchaseOrderId: string;
-  warehouseId: string | null;
-  createdAt: string;
+  rfqNumber: string;
+  status: string;
+  quotesCount: number;
 }
 
-interface VendorData {
-  id: string;
-  name: string;
-  code: string;
-  email: string | null;
-  phone: string | null;
-}
-
-export default function ProcurementPage() {
-  const [activeTab, setActiveTab] = useState<'pos' | 'receipts' | 'vendors'>('pos');
-  const [pos, setPos] = useState<PurchaseOrderData[]>([]);
-  const [receipts, setReceipts] = useState<PurchaseReceiptData[]>([]);
-  const [vendors, setVendors] = useState<VendorData[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function ProcurementDashboard() {
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [pos, setPos] = useState<PurchaseOrder[]>([]);
+  const [rfqs, setRfqs] = useState<RFQ[]>([]);
+  const [vendorsCount, setVendorsCount] = useState(0);
 
-  // Form Modals
-  const [isPoModalOpen, setIsPoModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [modalSuccess, setModalSuccess] = useState(false);
-
-  // Form State
-  const [vendorId, setVendorId] = useState('');
-  const [poNumber, setPoNumber] = useState('');
-  const [description, setDescription] = useState('');
-  const [quantity, setQuantity] = useState<number>(1);
-  const [unitPrice, setUnitPrice] = useState<number>(0);
-
-  const fetchData = async () => {
+  const loadDashboardData = async () => {
     setLoading(true);
     setError(null);
-    const token = localStorage.getItem('token');
-
     try {
-      const res = await fetch('/api/v1/procurement/purchase-orders', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setPos(data);
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token || ''}` };
+
+      const [poRes, rfqRes, vendorRes] = await Promise.all([
+        fetch('/api/v1/procurement/purchase-orders', { headers }),
+        fetch('/api/v1/procurement/rfqs', { headers }),
+        fetch('/api/v1/crm/vendors', { headers })
+      ]);
+
+      if (poRes.ok) setPos(await poRes.json());
+      if (rfqRes.ok) setRfqs(await rfqRes.json());
+      if (vendorRes.ok) {
+        const v = await vendorRes.json();
+        setVendorsCount(v.length);
+      }
     } catch {
       setError('Serving local mock fallback registry.');
       setPos([
-        {
-          id: 'po-1',
-          poNumber: 'PO-2026-001',
-          status: 'APPROVED',
-          orderDate: new Date().toISOString(),
-          vendorName: 'Global Supplies Inc',
-          totalAmount: 15000,
-          currency: 'USD'
-        },
-        {
-          id: 'po-2',
-          poNumber: 'PO-2026-002',
-          status: 'DRAFT',
-          orderDate: new Date().toISOString(),
-          vendorName: 'Tech Components Ltd',
-          totalAmount: 4500,
-          currency: 'USD'
-        }
+        { id: 'po-1', poNumber: 'PO-2026-001', status: 'APPROVED', orderDate: new Date().toISOString(), vendorName: 'Oscorp Chemical Supply', totalAmount: 2090, currency: 'USD' },
+        { id: 'po-2', poNumber: 'PO-2026-002', status: 'DRAFT', orderDate: new Date().toISOString(), vendorName: 'LexCorp Heavy Industries', totalAmount: 4500, currency: 'USD' }
       ]);
-    }
-
-    try {
-      // Mock vendors for the dropdown
-      setVendors([
-        { id: 'v-1', name: 'Global Supplies Inc', code: 'V-001', email: 'contact@global.supplies', phone: '555-0100' },
-        { id: 'v-2', name: 'Tech Components Ltd', code: 'V-002', email: 'sales@techcomponents.com', phone: '555-0200' },
+      setRfqs([
+        { id: 'rfq-1', rfqNumber: 'RFQ-2026-001', status: 'SENT', quotesCount: 2 }
       ]);
-      setReceipts([
-        { id: 'r-1', receiptNumber: 'REC-2026-001', purchaseOrderId: 'po-1', warehouseId: 'WH-MAIN', createdAt: new Date().toISOString() }
-      ]);
-    } catch {
-      // Ignore
+      setVendorsCount(2);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    loadDashboardData();
   }, []);
 
-  const handleCreatePo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    try {
-      const token = localStorage.getItem('token');
-      const payload = {
-        vendorId: vendorId || 'v-1',
-        poNumber,
-        lineItems: [
-          { description, quantity, unitPrice, taxRate: 10 }
-        ]
-      };
-      
-      const res = await fetch('/api/v1/procurement/purchase-orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error();
-      
-      setModalSuccess(true);
-      setTimeout(() => {
-        setIsPoModalOpen(false);
-        resetForm();
-        fetchData();
-      }, 1500);
-    } catch {
-      // Mock success
-      setModalSuccess(true);
-      const newMockPo: PurchaseOrderData = {
-        id: `po-mock-${Date.now()}`,
-        poNumber,
-        status: 'DRAFT',
-        orderDate: new Date().toISOString(),
-        vendorName: vendors.find(v => v.id === vendorId)?.name || 'Unknown Vendor',
-        totalAmount: (quantity * unitPrice) * 1.1, // with tax
-        currency: 'USD'
-      };
-      setPos(prev => [newMockPo, ...prev]);
-
-      setTimeout(() => {
-        setIsPoModalOpen(false);
-        resetForm();
-      }, 1500);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const resetForm = () => {
-    setVendorId('');
-    setPoNumber('');
-    setDescription('');
-    setQuantity(1);
-    setUnitPrice(0);
-    setModalSuccess(false);
-  };
-
-  const filteredPos = pos.filter(p => p.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) || p.vendorName.toLowerCase().includes(searchQuery.toLowerCase()));
+  const totalPOSpend = pos.reduce((acc, p) => acc + p.totalAmount, 0);
+  const approvedSpend = pos.filter(p => p.status === 'APPROVED' || p.status === 'RECEIVED').reduce((acc, p) => acc + p.totalAmount, 0);
+  const pendingOrdersCount = pos.filter(p => p.status === 'DRAFT' || p.status === 'SUBMITTED').length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="Procurement Management"
-        description="Manage purchase orders, vendor relationships, and inbound receiving."
+        title="Procurement Hub"
+        description="Source materials, negotiate supplier bids, and track inventory procure-to-pay lifecycles."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Procurement' }]}
-        actions={
-          <Button variant="primary" onClick={() => setIsPoModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            Create PO
-          </Button>
-        }
       />
 
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error}</span>
+          <span>Note: {error} (Serving local mock fallback dashboard)</span>
         </div>
       )}
 
-      {/* Tabs Menu Panel */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-1)' }}>
-        <button
-          onClick={() => { setActiveTab('pos'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-            borderBottom: activeTab === 'pos' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'pos' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'pos' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-          }}
-        >
-          Purchase Orders ({pos.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('receipts'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-            borderBottom: activeTab === 'receipts' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'receipts' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'receipts' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-          }}
-        >
-          Purchase Receipts ({receipts.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('vendors'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-            borderBottom: activeTab === 'vendors' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'vendors' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'vendors' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-          }}
-        >
-          Vendors ({vendors.length})
-        </button>
-      </div>
-
-      {/* KPI Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total POs</span>
-            <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px', borderRadius: '4px' }}>
-              <FileText size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>{pos.length}</h4>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total Receipts</span>
-            <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '4px', borderRadius: '4px' }}>
-              <Truck size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>{receipts.length}</h4>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Registered Vendors</span>
-            <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info-text)', padding: '4px', borderRadius: '4px' }}>
-              <Building size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>{vendors.length}</h4>
-        </Card>
-      </div>
-
-      {/* Lists */}
-      <Card padding="none" style={{ overflowX: 'auto' }}>
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-            <Spinner size="lg" />
-          </div>
-        ) : activeTab === 'pos' ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>PO Number</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Vendor</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Date</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Total Amount</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPos.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{p.poNumber}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{p.vendorName}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{new Date(p.orderDate).toLocaleDateString()}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>${p.totalAmount.toLocaleString()} {p.currency}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                    <Badge variant={p.status === 'APPROVED' ? 'success' : p.status === 'RECEIVED' ? 'info' : 'default'}>{p.status}</Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : activeTab === 'receipts' ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Receipt Number</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {receipts.map(r => (
-                <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{r.receiptNumber}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{new Date(r.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Vendor Name</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Code</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Contact Info</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vendors.map(v => (
-                <tr key={v.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{v.name}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{v.code}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{v.email} <br /> <span style={{ fontSize: '12px', color: 'gray' }}>{v.phone}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Card>
-
-      {/* PO Modal */}
-      {isPoModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 'var(--space-4)' }}>
-          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '480px', boxShadow: 'var(--shadow-xl)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ margin: 0 }}>Create Purchase Order</h3>
-              <button onClick={() => setIsPoModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
-            </div>
-            <form onSubmit={handleCreatePo} style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              {modalSuccess ? (
-                <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
-                  <CheckCircle size={40} style={{ color: 'var(--color-success)', margin: '0 auto var(--space-3)' }} />
-                  <p>Purchase Order Created successfully.</p>
-                </div>
-              ) : (
-                <>
-                  <input type="text" placeholder="PO Number (e.g., PO-001)" value={poNumber} onChange={e => setPoNumber(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                  <select value={vendorId} onChange={e => setVendorId(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                    <option value="">Select Vendor</option>
-                    {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                  </select>
-                  <input type="text" placeholder="Line Item Description" value={description} onChange={e => setDescription(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                    <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(Number(e.target.value))} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                    <input type="number" placeholder="Unit Price" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value))} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-                    <Button variant="outline" type="button" onClick={() => setIsPoModalOpen(false)}>Cancel</Button>
-                    <Button variant="primary" type="submit" disabled={submitting}>{submitting ? <Spinner size="sm" /> : 'Create PO'}</Button>
-                  </div>
-                </>
-              )}
-            </form>
-          </div>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
+          <Spinner size="lg" />
         </div>
+      ) : (
+        <>
+          {/* Sourcing Spend Metrics Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Total Procurement Commit</span>
+                <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px', borderRadius: '4px' }}>
+                  <TrendingUp size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>
+                ${totalPOSpend.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h4>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Released / Approved Spend</span>
+                <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '4px', borderRadius: '4px' }}>
+                  <BadgeCent size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)', color: 'var(--color-success)' }}>
+                ${approvedSpend.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h4>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Active Supplier Quotations</span>
+                <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info-text)', padding: '4px', borderRadius: '4px' }}>
+                  <FileSpreadsheet size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)' }}>
+                {rfqs.reduce((acc, r) => acc + r.quotesCount, 0)} Bids
+              </h4>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Active Vendors Directory</span>
+                <div style={{ background: 'var(--color-bg-sunken)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px' }}>
+                  <Building size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)' }}>
+                {vendorsCount} Suppliers
+              </h4>
+            </Card>
+          </div>
+
+          {/* Quick Access Sourcing Workflows */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-6)' }}>
+            
+            <Card>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+                    <ShoppingCart size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Purchase Orders</h4>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Draft, approve, and track vendor POs</span>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{pendingOrdersCount} orders pending approval</span>
+                  <Link href="/procurement/purchase-orders" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 'var(--weight-semibold)' }}>
+                    Open POs <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+                    <Truck size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Purchase Receipts</h4>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Log Goods Receipt Notes (GRN)</span>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Inspect incoming vendor deliveries</span>
+                  <Link href="/procurement/purchase-receipts" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 'var(--weight-semibold)' }}>
+                    Manage GRNs <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info-text)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>RFQ Sourcing Sprints</h4>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Publish Requests for Quotation (RFQ)</span>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{rfqs.filter(r => r.status === 'SENT').length} RFQs active in market</span>
+                  <Link href="/procurement/rfqs" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 'var(--weight-semibold)' }}>
+                    Sourcing RFQs <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Supplier Directory and Bids Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
+            <Card padding="none">
+              <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Supplier Quotation Evaluator</h4>
+                <Link href="/procurement/supplier-quotations" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none' }}>Compare Bids</Link>
+              </div>
+              <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+                  Compare bids sent back from vendors corresponding to RFQs. Evaluate pricing matrices and automatically convert approved quotations to Purchase Orders.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <Link href="/procurement/supplier-quotations" className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-2) var(--space-3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    Evaluate Vendor Bids
+                  </Link>
+                </div>
+              </div>
+            </Card>
+
+            <Card padding="none">
+              <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Active Vendors Directory</h4>
+                <Link href="/procurement/vendors" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none' }}>View All</Link>
+              </div>
+              <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+                  Manage supplier profiles, contact details, payment terms, and historical logs of purchase transactions.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <Link href="/procurement/vendors" className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-2) var(--space-3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    Open Vendor Directory
+                  </Link>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </>
       )}
     </div>
   );

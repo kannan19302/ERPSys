@@ -1,398 +1,341 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import Link from 'next/link';
+import { Card, PageHeader, Spinner } from '@unerp/ui';
 import {
   ClipboardList,
-  
-  AlertCircle,
-  CheckCircle,
-  X,
   FileText,
-  Users
+  Truck,
+  TrendingUp,
+  AlertCircle,
+  Building,
+  Smartphone,
+  Globe,
+  ArrowRight,
+  ShieldAlert
 } from 'lucide-react';
 
-interface QuotationData {
-  id: string;
-  quotationNumber: string;
-  status: string;
-  validUntil: string;
-  customerName: string;
-  totalAmount: number;
-  currency: string;
-}
-
-interface SalesOrderData {
+interface SalesOrder {
   id: string;
   orderNumber: string;
   status: string;
   orderDate: string;
-  deliveryDate: string | null;
   customerName: string;
   totalAmount: number;
   currency: string;
+  salesChannel: string;
+  paymentStatus: string;
 }
 
-interface CustomerData {
+interface Quotation {
   id: string;
-  name: string;
-  code: string;
-  email: string | null;
-  phone: string | null;
+  quotationNumber: string;
+  status: string;
+  totalAmount: number;
 }
 
-export default function SalesPage() {
-  const [activeTab, setActiveTab] = useState<'quotes' | 'orders' | 'customers'>('orders');
-  const [quotes, setQuotes] = useState<QuotationData[]>([]);
-  const [orders, setOrders] = useState<SalesOrderData[]>([]);
-  const [customers, setCustomers] = useState<CustomerData[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function SalesDashboard() {
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [orders, setOrders] = useState<SalesOrder[]>([]);
+  const [quotes, setQuotes] = useState<Quotation[]>([]);
 
-  // Form Modals
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [modalSuccess, setModalSuccess] = useState(false);
-
-  // Form State
-  const [customerId, setCustomerId] = useState('');
-  const [orderNumber, setOrderNumber] = useState('');
-  const [description, setDescription] = useState('');
-  const [quantity, setQuantity] = useState<number>(1);
-  const [unitPrice, setUnitPrice] = useState<number>(0);
-
-  const fetchData = async () => {
+  const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
     const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token || ''}` };
 
     try {
-      const res = await fetch('/api/v1/sales/orders', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setOrders(data);
+      const [orderRes, quoteRes] = await Promise.all([
+        fetch('/api/v1/sales/orders', { headers }),
+        fetch('/api/v1/sales/quotations', { headers }),
+      ]);
+
+      if (orderRes.ok) setOrders(await orderRes.json());
+      if (quoteRes.ok) setQuotes(await quoteRes.json());
     } catch {
       setError('Serving local mock fallback registry.');
+      // Local fallback data
       setOrders([
-        {
-          id: 'so-1',
-          orderNumber: 'SO-2026-001',
-          status: 'CONFIRMED',
-          orderDate: new Date().toISOString(),
-          deliveryDate: new Date().toISOString(),
-          customerName: 'Acme Corp',
-          totalAmount: 25000,
-          currency: 'USD'
-        },
-        {
-          id: 'so-2',
-          orderNumber: 'SO-2026-002',
-          status: 'DRAFT',
-          orderDate: new Date().toISOString(),
-          deliveryDate: null,
-          customerName: 'Stark Industries',
-          totalAmount: 120000,
-          currency: 'USD'
-        }
+        { id: 'so-1', orderNumber: 'SO-2026-001', status: 'CONFIRMED', orderDate: new Date().toISOString(), customerName: 'Acme Corp', totalAmount: 25000, currency: 'USD', salesChannel: 'B2B', paymentStatus: 'UNPAID' },
+        { id: 'so-2', orderNumber: 'SO-2026-002', status: 'CREDIT_HOLD', orderDate: new Date().toISOString(), customerName: 'Wayne Enterprises', totalAmount: 85000, currency: 'USD', salesChannel: 'B2B', paymentStatus: 'UNPAID' },
+        { id: 'so-3', orderNumber: 'SO-2026-003', status: 'DELIVERED', orderDate: new Date().toISOString(), customerName: 'John Doe (Direct)', totalAmount: 1200, currency: 'USD', salesChannel: 'D2C', paymentStatus: 'PAID' },
+        { id: 'so-4', orderNumber: 'SO-2026-004', status: 'CONFIRMED', orderDate: new Date().toISOString(), customerName: 'Retail Customer #12', totalAmount: 450, currency: 'USD', salesChannel: 'B2C', paymentStatus: 'PAID' }
       ]);
-    }
-
-    try {
       setQuotes([
-        {
-          id: 'qt-1',
-          quotationNumber: 'QT-2026-001',
-          status: 'DRAFT',
-          validUntil: new Date().toISOString(),
-          customerName: 'Acme Corp',
-          totalAmount: 5000,
-          currency: 'USD'
-        }
+        { id: 'qt-1', quotationNumber: 'QT-2026-001', status: 'SENT', totalAmount: 95000 }
       ]);
-      setCustomers([
-        { id: 'c-1', name: 'Acme Corp', code: 'C-001', email: 'billing@acme.corp', phone: '555-0900' },
-        { id: 'c-2', name: 'Stark Industries', code: 'C-002', email: 'procurement@stark.com', phone: '555-0999' },
-      ]);
-    } catch {
-      // Ignore
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchDashboardData();
   }, []);
 
-  const handleCreateOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  // Compute stats
+  const totalRevenue = orders
+    .filter(o => o.status === 'CONFIRMED' || o.status === 'DELIVERED')
+    .reduce((sum, o) => sum + o.totalAmount, 0);
 
-    try {
-      const token = localStorage.getItem('token');
-      const payload = {
-        customerId: customerId || 'c-1',
-        orderNumber,
-        lineItems: [
-          { description, quantity, unitPrice, taxRate: 10 }
-        ]
-      };
-      
-      const res = await fetch('/api/v1/sales/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error();
-      
-      setModalSuccess(true);
-      setTimeout(() => {
-        setIsOrderModalOpen(false);
-        resetForm();
-        fetchData();
-      }, 1500);
-    } catch {
-      // Mock success
-      setModalSuccess(true);
-      const newMockOrder: SalesOrderData = {
-        id: `so-mock-${Date.now()}`,
-        orderNumber,
-        status: 'DRAFT',
-        orderDate: new Date().toISOString(),
-        deliveryDate: null,
-        customerName: customers.find(c => c.id === customerId)?.name || 'Unknown Customer',
-        totalAmount: (quantity * unitPrice) * 1.1, // with tax
-        currency: 'USD'
-      };
-      setOrders(prev => [newMockOrder, ...prev]);
+  const b2bRevenue = orders
+    .filter(o => o.salesChannel === 'B2B' && (o.status === 'CONFIRMED' || o.status === 'DELIVERED'))
+    .reduce((sum, o) => sum + o.totalAmount, 0);
 
-      setTimeout(() => {
-        setIsOrderModalOpen(false);
-        resetForm();
-      }, 1500);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const b2cRevenue = orders
+    .filter(o => o.salesChannel === 'B2C' && (o.status === 'CONFIRMED' || o.status === 'DELIVERED'))
+    .reduce((sum, o) => sum + o.totalAmount, 0);
 
-  const resetForm = () => {
-    setCustomerId('');
-    setOrderNumber('');
-    setDescription('');
-    setQuantity(1);
-    setUnitPrice(0);
-    setModalSuccess(false);
-  };
+  const d2cRevenue = orders
+    .filter(o => o.salesChannel === 'D2C' && (o.status === 'CONFIRMED' || o.status === 'DELIVERED'))
+    .reduce((sum, o) => sum + o.totalAmount, 0);
 
-  const filteredOrders = orders.filter(o => o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName.toLowerCase().includes(searchQuery.toLowerCase()));
+  const creditHolds = orders.filter(o => o.status === 'CREDIT_HOLD');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="Sales & Orders"
-        description="Manage customer quotations, sales orders, and delivery fulfillment."
+        title="Sales & Orders Dashboard"
+        description="Monitor corporate accounts, B2C retail checkouts, and D2C online channels."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Sales & Orders' }]}
-        actions={
-          <Button variant="primary" onClick={() => setIsOrderModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            Create Sales Order
-          </Button>
-        }
       />
 
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error}</span>
+          <span>Note: {error} (Serving local mock fallback dashboard)</span>
         </div>
       )}
 
-      {/* Tabs Menu Panel */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-1)' }}>
-        <button
-          onClick={() => { setActiveTab('orders'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-            borderBottom: activeTab === 'orders' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'orders' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'orders' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-          }}
-        >
-          Sales Orders ({orders.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('quotes'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-            borderBottom: activeTab === 'quotes' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'quotes' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'quotes' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-          }}
-        >
-          Quotations ({quotes.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('customers'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-            borderBottom: activeTab === 'customers' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'customers' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'customers' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-          }}
-        >
-          Customers ({customers.length})
-        </button>
-      </div>
-
-      {/* KPI Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total Sales Orders</span>
-            <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px', borderRadius: '4px' }}>
-              <FileText size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>{orders.length}</h4>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Quotations</span>
-            <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '4px', borderRadius: '4px' }}>
-              <ClipboardList size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>{quotes.length}</h4>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Active Customers</span>
-            <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info-text)', padding: '4px', borderRadius: '4px' }}>
-              <Users size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>{customers.length}</h4>
-        </Card>
-      </div>
-
-      {/* Lists */}
-      <Card padding="none" style={{ overflowX: 'auto' }}>
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-            <Spinner size="lg" />
-          </div>
-        ) : activeTab === 'orders' ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Order Number</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Customer</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Date</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Total Amount</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map(o => (
-                <tr key={o.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{o.orderNumber}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{o.customerName}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{new Date(o.orderDate).toLocaleDateString()}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>${o.totalAmount.toLocaleString()} {o.currency}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                    <Badge variant={o.status === 'CONFIRMED' ? 'success' : o.status === 'DELIVERED' ? 'info' : 'default'}>{o.status}</Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : activeTab === 'quotes' ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Quote Number</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Customer</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Valid Until</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {quotes.map(q => (
-                <tr key={q.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{q.quotationNumber}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{q.customerName}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{new Date(q.validUntil).toLocaleDateString()}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>${q.totalAmount.toLocaleString()} {q.currency}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Customer Name</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Code</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Contact Info</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map(c => (
-                <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{c.name}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{c.code}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{c.email} <br /> <span style={{ fontSize: '12px', color: 'gray' }}>{c.phone}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Card>
-
-      {/* Sales Order Modal */}
-      {isOrderModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 'var(--space-4)' }}>
-          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '480px', boxShadow: 'var(--shadow-xl)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ margin: 0 }}>Create Sales Order</h3>
-              <button onClick={() => setIsOrderModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
-            </div>
-            <form onSubmit={handleCreateOrder} style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              {modalSuccess ? (
-                <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
-                  <CheckCircle size={40} style={{ color: 'var(--color-success)', margin: '0 auto var(--space-3)' }} />
-                  <p>Sales Order Created successfully.</p>
-                </div>
-              ) : (
-                <>
-                  <input type="text" placeholder="Order Number (e.g., SO-001)" value={orderNumber} onChange={e => setOrderNumber(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                  <select value={customerId} onChange={e => setCustomerId(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                    <option value="">Select Customer</option>
-                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                  <input type="text" placeholder="Line Item Description" value={description} onChange={e => setDescription(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                    <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(Number(e.target.value))} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                    <input type="number" placeholder="Unit Price" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value))} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-                    <Button variant="outline" type="button" onClick={() => setIsOrderModalOpen(false)}>Cancel</Button>
-                    <Button variant="primary" type="submit" disabled={submitting}>{submitting ? <Spinner size="sm" /> : 'Create Order'}</Button>
-                  </div>
-                </>
-              )}
-            </form>
-          </div>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
+          <Spinner size="lg" />
         </div>
+      ) : (
+        <>
+          {/* Credit Hold Warning Banner */}
+          {creditHolds.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-4)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--color-error)', borderRadius: 'var(--radius-lg)', color: 'var(--color-error-text)' }}>
+              <ShieldAlert size={20} style={{ flexShrink: 0 }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '100%' }}>
+                <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Attention Needed: Credit Hold Orders Detected</span>
+                <span style={{ fontSize: 'var(--text-xs)', opacity: 0.85 }}>{creditHolds.length} B2B order(s) are blocked because customers have exceeded their credit limits.</span>
+              </div>
+              <Link href="/sales/orders?status=CREDIT_HOLD" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-error-text)', textDecoration: 'underline', fontWeight: 'var(--weight-semibold)', whiteSpace: 'nowrap' }}>
+                Release Holds
+              </Link>
+            </div>
+          )}
+
+          {/* Metrics Panel */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Confirmed Sales Revenue</span>
+                <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px', borderRadius: '4px' }}>
+                  <TrendingUp size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)' }}>
+                ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h4>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>B2B Corporate Revenue</span>
+                <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '4px', borderRadius: '4px' }}>
+                  <Building size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)', color: 'var(--color-success)' }}>
+                ${b2bRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h4>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>D2C eCommerce Channel</span>
+                <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info-text)', padding: '4px', borderRadius: '4px' }}>
+                  <Globe size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)' }}>
+                ${d2cRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h4>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>B2C Retail / POS</span>
+                <div style={{ background: 'var(--color-warning-light)', color: 'var(--color-warning-text)', padding: '4px', borderRadius: '4px' }}>
+                  <Smartphone size={14} />
+                </div>
+              </div>
+              <h4 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0 0', fontWeight: 'var(--weight-bold)' }}>
+                ${b2cRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </h4>
+            </Card>
+          </div>
+
+          {/* Quick Access Sourcing Workflows */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-6)' }}>
+            <Card>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+                    <ClipboardList size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Sales Orders Hub</h4>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Manage B2B, B2C, and D2C orders</span>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{orders.filter(o => o.status === 'DRAFT').length} orders in draft</span>
+                  <Link href="/sales/orders" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 'var(--weight-semibold)' }}>
+                    Open Orders <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Customer Quotations</h4>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Create & convert client quotations</span>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{quotes.filter(q => q.status === 'SENT').length} quotations active</span>
+                  <Link href="/sales/quotations" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 'var(--weight-semibold)' }}>
+                    Open Quotations <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info-text)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+                    <Truck size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Fulfillment & Delivery</h4>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Track shipments and inventory dispatch</span>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Manage goods delivery notes</span>
+                  <Link href="/sales/delivery-notes" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 'var(--weight-semibold)' }}>
+                    Open Delivery Notes <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Channels Overview Table */}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
+            <Card padding="none">
+              <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+                <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Recent Sales Actions</h4>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                      <th style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>Order No</th>
+                      <th style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>Customer</th>
+                      <th style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>Channel</th>
+                      <th style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>Amount</th>
+                      <th style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>Payment</th>
+                      <th style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.slice(0, 5).map((order) => (
+                      <tr key={order.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{order.orderNumber}</td>
+                        <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{order.customerName}</td>
+                        <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                          <span style={{ fontSize: 'var(--text-xs)', padding: '2px 6px', borderRadius: '4px', background: 'var(--color-bg-sunken)', fontWeight: 'var(--weight-semibold)' }}>
+                            {order.salesChannel}
+                          </span>
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-4)' }}>${order.totalAmount.toLocaleString()}</td>
+                        <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                          <span style={{ color: order.paymentStatus === 'PAID' ? 'var(--color-success)' : 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>
+                            {order.paymentStatus}
+                          </span>
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                          <span style={{
+                            padding: '2px 8px', borderRadius: '12px', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)',
+                            background: order.status === 'CONFIRMED' ? 'var(--color-success-light)' : order.status === 'CREDIT_HOLD' ? 'var(--color-error-light)' : 'var(--color-bg-sunken)',
+                            color: order.status === 'CONFIRMED' ? 'var(--color-success)' : order.status === 'CREDIT_HOLD' ? 'var(--color-error-text)' : 'var(--color-text)'
+                          }}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            <Card>
+              <h4 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Sales Channels Share</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', marginBottom: '4px' }}>
+                    <span>B2B (Corporate Accounts)</span>
+                    <span style={{ fontWeight: 'var(--weight-semibold)' }}>
+                      {totalRevenue > 0 ? Math.round((b2bRevenue / totalRevenue) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--color-bg-sunken)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: 'var(--color-success)', width: `${totalRevenue > 0 ? (b2bRevenue / totalRevenue) * 100 : 0}%` }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', marginBottom: '4px' }}>
+                    <span>D2C (Online Store)</span>
+                    <span style={{ fontWeight: 'var(--weight-semibold)' }}>
+                      {totalRevenue > 0 ? Math.round((d2cRevenue / totalRevenue) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--color-bg-sunken)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: 'var(--color-primary)', width: `${totalRevenue > 0 ? (d2cRevenue / totalRevenue) * 100 : 0}%` }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', marginBottom: '4px' }}>
+                    <span>B2C (Retail & POS)</span>
+                    <span style={{ fontWeight: 'var(--weight-semibold)' }}>
+                      {totalRevenue > 0 ? Math.round((b2cRevenue / totalRevenue) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--color-bg-sunken)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: 'var(--color-warning)', width: `${totalRevenue > 0 ? (b2cRevenue / totalRevenue) * 100 : 0}%` }}></div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </>
       )}
     </div>
   );

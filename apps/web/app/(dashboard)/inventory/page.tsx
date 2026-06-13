@@ -5,13 +5,11 @@ import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
 import {
   Package,
   Search,
-  
-  
   AlertCircle,
   CheckCircle,
   X,
-  Warehouse,
-  ShieldAlert
+  Plus,
+  Boxes
 } from 'lucide-react';
 
 interface ProductData {
@@ -26,27 +24,8 @@ interface ProductData {
   sellPrice: number;
 }
 
-interface StockLevelData {
-  id: string;
-  productName: string;
-  sku: string;
-  warehouseName: string;
-  quantity: number;
-  reorderLevel: number;
-}
-
-interface WarehouseData {
-  id: string;
-  code: string;
-  name: string;
-  address: string | null;
-}
-
 export default function InventoryPage() {
-  const [activeTab, setActiveTab] = useState<'products' | 'stock' | 'warehouses'>('products');
   const [products, setProducts] = useState<ProductData[]>([]);
-  const [stockLevels, setStockLevels] = useState<StockLevelData[]>([]);
-  const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,74 +103,6 @@ export default function InventoryPage() {
           sellPrice: 150
         }
       ]);
-    }
-
-    // Fetch Stock Levels
-    try {
-      const res = await fetch('/api/v1/inventory/stock', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      interface StockPayload {
-        id: string;
-        product: { name: string; sku: string };
-        warehouse: { name: string };
-        quantity: string | number;
-      }
-      const typedData = data as StockPayload[];
-      setStockLevels(typedData.map((s) => ({
-        id: s.id,
-        productName: s.product.name,
-        sku: s.product.sku,
-        warehouseName: s.warehouse.name,
-        quantity: Number(s.quantity),
-        reorderLevel: 10 // Mock default reorder level
-      })));
-    } catch {
-      setStockLevels([
-        {
-          id: 'stock-1',
-          productName: 'Refined Vibranium Alloy Ingot',
-          sku: 'SKU-VIB-001',
-          warehouseName: 'Schenectady Central Depot',
-          quantity: 45,
-          reorderLevel: 10
-        },
-        {
-          id: 'stock-2',
-          productName: 'Tactical Kevlar Micro-Weave',
-          sku: 'SKU-KEV-404',
-          warehouseName: 'Schenectady Central Depot',
-          quantity: 8,
-          reorderLevel: 15
-        }
-      ]);
-    }
-
-    // Fetch Warehouses
-    try {
-      const res = await fetch('/api/v1/inventory/warehouses', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setWarehouses(data);
-    } catch {
-      setWarehouses([
-        {
-          id: 'wh-1',
-          code: 'WH-NY-01',
-          name: 'Schenectady Central Depot',
-          address: '404 Industrial Blvd, Schenectady, NY'
-        },
-        {
-          id: 'wh-2',
-          code: 'WH-CA-02',
-          name: 'Oakland Hub Terminal',
-          address: '89 Logistics Way, Oakland, CA'
-        }
-      ]);
     } finally {
       setLoading(false);
     }
@@ -258,19 +169,6 @@ export default function InventoryPage() {
 
       setProducts(prev => [newMockProd, ...prev]);
 
-      // Mock update stock level as well
-      if (type === 'STORABLE') {
-        const newMockStock: StockLevelData = {
-          id: `stock-mock-${Date.now()}`,
-          productName: name,
-          sku,
-          warehouseName: warehouses[0]?.name || 'Primary Depot',
-          quantity: 0,
-          reorderLevel: 5
-        };
-        setStockLevels(prev => [...prev, newMockStock]);
-      }
-
       setTimeout(() => {
         setIsProductModalOpen(false);
         resetProductForm();
@@ -293,27 +191,21 @@ export default function InventoryPage() {
     setModalError(null);
   };
 
-  const filterList = () => {
-    const query = searchQuery.toLowerCase();
-    if (activeTab === 'products') {
-      return products.filter(p => p.sku.toLowerCase().includes(query) || p.name.toLowerCase().includes(query) || (p.category && p.category.toLowerCase().includes(query)));
-    } else if (activeTab === 'stock') {
-      return stockLevels.filter(s => s.sku.toLowerCase().includes(query) || s.productName.toLowerCase().includes(query) || s.warehouseName.toLowerCase().includes(query));
-    } else {
-      return warehouses.filter(w => w.code.toLowerCase().includes(query) || w.name.toLowerCase().includes(query));
-    }
-  };
-
-  const filteredItems = filterList();
+  const filteredItems = products.filter(p =>
+    p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="Inventory & Stock Control"
-        description="Catalog product SKUs, adjust warehouse logistics configurations, and track real-time raw materials stock counts."
+        title="Products Catalog"
+        description="Catalog product SKUs, adjust pricing structures, and manage storable assets."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory' }]}
         actions={
           <Button variant="primary" onClick={() => setIsProductModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <Plus size={14} />
             Catalog Product
           </Button>
         }
@@ -326,59 +218,7 @@ export default function InventoryPage() {
         </div>
       )}
 
-      {/* Tabs Menu Panel */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-1)' }}>
-        <button
-          onClick={() => { setActiveTab('products'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'products' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'products' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'products' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer',
-            fontSize: 'var(--text-sm)',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          Product Catalog ({products.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('stock'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'stock' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'stock' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'stock' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer',
-            fontSize: 'var(--text-sm)',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          Warehouse Stock Levels ({stockLevels.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('warehouses'); setSearchQuery(''); }}
-          style={{
-            padding: 'var(--space-3) var(--space-5)',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'warehouses' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            color: activeTab === 'warehouses' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeTab === 'warehouses' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-            cursor: 'pointer',
-            fontSize: 'var(--text-sm)',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          Warehouse Directory ({warehouses.length})
-        </button>
-      </div>
-
-      {/* Stock Stats Summaries */}
+      {/* Product Stats Summaries */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -394,37 +234,37 @@ export default function InventoryPage() {
 
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total Depots</span>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Storable Assets</span>
             <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '4px', borderRadius: '4px' }}>
-              <Warehouse size={14} />
+              <Boxes size={14} />
             </div>
           </div>
           <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            {warehouses.length}
+            {products.filter(p => p.type === 'STORABLE').length}
           </h4>
         </Card>
 
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Reorder Alerts</span>
-            <div style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger-text)', padding: '4px', borderRadius: '4px' }}>
-              <ShieldAlert size={14} />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Service Items</span>
+            <div style={{ background: 'var(--color-info-light)', color: 'var(--color-info)', padding: '4px', borderRadius: '4px' }}>
+              <Package size={14} style={{ opacity: 0.6 }} />
             </div>
           </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-danger-text)', margin: 'var(--space-2) 0 0' }}>
-            {stockLevels.filter(s => s.quantity <= s.reorderLevel).length}
+          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
+            {products.filter(p => p.type === 'SERVICE').length}
           </h4>
         </Card>
       </div>
 
-      {/* and Search Panel */}
+      {/* Search Panel */}
       <Card padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
           <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
           <input
             type="text"
             className="frappe-input"
-            placeholder={`Search ${activeTab}...`}
+            placeholder="Search products by SKU, name, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ paddingLeft: 'var(--space-9)' }}
@@ -432,7 +272,7 @@ export default function InventoryPage() {
         </div>
       </Card>
 
-      {/* Dynamic Tab List Content */}
+      {/* Product Catalog List */}
       <Card padding="none" style={{ overflowX: 'auto' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
@@ -447,97 +287,45 @@ export default function InventoryPage() {
             </p>
           </div>
         ) : (
-          activeTab === 'products' ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>SKU Code</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product Name</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Type</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Category</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Cost Price</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Sell Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(filteredItems as ProductData[]).map((p) => (
-                  <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{p.sku}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 'var(--weight-semibold)' }}>{p.name}</span>
-                        {p.description && (
-                          <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                            {p.description}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                      <Badge variant={p.type === 'STORABLE' ? 'success' : 'info'}>{p.type}</Badge>
-                    </td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text)' }}>{p.category || 'General'}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                      ${p.costPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })} / {p.unit}
-                    </td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>
-                      ${p.sellPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : activeTab === 'stock' ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>SKU</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Warehouse Depot</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Qty on Hand</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status Alert</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(filteredItems as StockLevelData[]).map((s) => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{s.sku}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>{s.productName}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{s.warehouseName}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: s.quantity <= s.reorderLevel ? 'var(--color-danger-text)' : 'inherit' }}>
-                      {s.quantity}
-                    </td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                      {s.quantity <= s.reorderLevel ? (
-                        <Badge variant="danger">LOW STOCK (Reorder: {s.reorderLevel})</Badge>
-                      ) : (
-                        <Badge variant="success">IN STOCK</Badge>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>SKU Code</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product Name</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Type</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Category</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Cost Price</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Sell Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.map((p) => (
+                <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{p.sku}</td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontWeight: 'var(--weight-semibold)' }}>{p.name}</span>
+                      {p.description && (
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                          {p.description}
+                        </span>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Code</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Depot Name</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Logistics Address</th>
+                    </div>
+                  </td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                    <Badge variant={p.type === 'STORABLE' ? 'success' : 'info'}>{p.type}</Badge>
+                  </td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text)' }}>{p.category || 'General'}</td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                    ${p.costPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })} / {p.unit}
+                  </td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>
+                    ${p.sellPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {(filteredItems as WarehouseData[]).map((w) => (
-                  <tr key={w.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{w.code}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>{w.name}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{w.address || 'Central Address'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
+              ))}
+            </tbody>
+          </table>
         )}
       </Card>
 

@@ -175,7 +175,7 @@ Write-Host ""
 # Step 6: Start NestJS API (new window)
 # --------------------------------------------------------
 Write-Step "Step 6/7 - Launching NestJS API (port 3001) in a new window..."
-$pathReload = "\$env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','User') + ';' + [System.Environment]::GetEnvironmentVariable('PATH','Machine')"
+$pathReload = '$env:PATH = [System.Environment]::GetEnvironmentVariable(''PATH'',''User'') + '';'' + [System.Environment]::GetEnvironmentVariable(''PATH'',''Machine'')'
 $apiCmd = "$pathReload; Set-Location '$ROOT'; Write-Host '--- UniERP API  http://localhost:3001/api/v1 ---' -ForegroundColor Green; pnpm dev:api; Read-Host 'Press Enter to close'"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $apiCmd
 Write-Ok "API window launched."

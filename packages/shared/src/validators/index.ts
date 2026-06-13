@@ -232,6 +232,45 @@ export const createPurchaseReceiptSchema = z.object({
 });
 export type CreatePurchaseReceiptInput = z.infer<typeof createPurchaseReceiptSchema>;
 
+// ── RFQ and Supplier Quotation Schemas ──
+
+export const createRFQLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+});
+
+export const createRFQSchema = z.object({
+  rfqNumber: z.string().min(1, 'RFQ number is required').max(50),
+  expectedDate: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(createRFQLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreateRFQInput = z.infer<typeof createRFQSchema>;
+
+export const createSupplierQuotationLineSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unitPrice: z.number().nonnegative('Unit price must be non-negative'),
+  taxRate: z.number().min(0).max(100).default(0),
+});
+
+export const createSupplierQuotationSchema = z.object({
+  rfqId: z.string().optional(),
+  vendorId: z.string().min(1, 'Vendor is required'),
+  quotationNumber: z.string().min(1, 'Quotation number is required').max(50),
+  validUntil: z.string().min(1, 'Valid until date is required'),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(createSupplierQuotationLineSchema).min(1, 'At least one line item is required'),
+});
+export type CreateSupplierQuotationInput = z.infer<typeof createSupplierQuotationSchema>;
+
+export const updateSupplierQuotationStatusSchema = z.object({
+  status: z.enum(['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED']),
+});
+export type UpdateSupplierQuotationStatusInput = z.infer<typeof updateSupplierQuotationStatusSchema>;
+
 // ── Sales Schemas ──
 
 export const createQuotationLineSchema = z.object({
@@ -267,6 +306,9 @@ export const createSalesOrderSchema = z.object({
   shippingAddress: addressSchema.optional(),
   notes: z.string().max(2000).optional(),
   quotationId: z.string().optional(),
+  salesChannel: z.enum(['B2B', 'B2C', 'D2C', 'POS']).default('B2B').optional(),
+  paymentMethod: z.string().optional(),
+  paymentStatus: z.enum(['UNPAID', 'PAID', 'PARTIALLY_PAID']).default('UNPAID').optional(),
   lineItems: z.array(createSalesOrderLineSchema).min(1, 'At least one line item is required'),
 });
 export type CreateSalesOrderInput = z.infer<typeof createSalesOrderSchema>;
@@ -469,3 +511,38 @@ export const updateAdminSettingsSchema = z.object({
   modules: z.record(z.boolean()).optional(),
 });
 export type UpdateAdminSettingsInput = z.infer<typeof updateAdminSettingsSchema>;
+
+// ── Extended Inventory Schemas ──
+
+export const createStockEntryItemSchema = z.object({
+  productId: z.string().min(1, 'Product is required'),
+  qty: z.number().positive('Quantity must be greater than zero'),
+  batchNumber: z.string().optional(),
+  serialNumber: z.string().optional(),
+});
+
+export const createStockEntrySchema = z.object({
+  purpose: z.enum(['MATERIAL_RECEIPT', 'MATERIAL_ISSUE', 'MATERIAL_TRANSFER']),
+  fromWarehouseId: z.string().optional(),
+  toWarehouseId: z.string().optional(),
+  remarks: z.string().max(2000).optional(),
+  items: z.array(createStockEntryItemSchema).min(1, 'At least one item is required'),
+});
+export type CreateStockEntryInput = z.infer<typeof createStockEntrySchema>;
+
+export const qualityChecklistItemSchema = z.object({
+  parameter: z.string().min(1, 'Parameter name is required'),
+  status: z.enum(['PASS', 'FAIL']),
+  reading: z.string().optional(),
+});
+
+export const createQualityInspectionSchema = z.object({
+  referenceType: z.string().min(1, 'Reference type is required'),
+  referenceId: z.string().min(1, 'Reference ID is required'),
+  productId: z.string().min(1, 'Product is required'),
+  inspectedQty: z.number().positive('Inspected quantity must be greater than zero'),
+  passedQty: z.number().nonnegative('Passed quantity must be non-negative'),
+  rejectedQty: z.number().nonnegative().default(0),
+  checklist: z.array(qualityChecklistItemSchema).default([]),
+});
+export type CreateQualityInspectionInput = z.infer<typeof createQualityInspectionSchema>;

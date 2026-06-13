@@ -23,7 +23,7 @@ export default function ContactsPage() {
                 fetch('/api/v1/crm/customers', { headers: { Authorization: `Bearer ${token || ''}` } }),
             ]);
             if (res.ok) setContacts(await res.json());
-            if (custRes.ok) setCustomers((await custRes.json()).map((c: any) => ({ id: c.id, name: c.name })));
+            if (custRes.ok) setCustomers((await custRes.json()).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
         } catch {
             setCustomers([{ id: 'c1', name: 'Stark Industries' }, { id: 'c2', name: 'Wayne Enterprises' }]);
             setContacts([

@@ -49,7 +49,7 @@ export default function OpportunitiesPage() {
                 fetch('/api/v1/crm/customers', { headers: { Authorization: `Bearer ${token || ''}` } }),
             ]);
             if (oppsRes.ok) setOpportunities(await oppsRes.json());
-            if (customersRes.ok) setCustomers((await customersRes.json()).map((c: any) => ({ id: c.id, name: c.name })));
+            if (customersRes.ok) setCustomers((await customersRes.json()).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
         } catch {
             setError('Using demo data');
             setCustomers([{ id: 'c1', name: 'Stark Industries' }, { id: 'c2', name: 'Wayne Enterprises' }]);

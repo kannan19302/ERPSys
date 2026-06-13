@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CommunicationService {
@@ -121,7 +122,7 @@ export class CommunicationService {
   async createEmailTemplate(
     tenantId: string,
     dto: { name: string; subject: string; bodyHtml: string; bodyText?: string },
-    createdBy: string
+    _createdBy: string
   ) {
     const existing = await prisma.emailTemplate.findFirst({
       where: { tenantId, name: dto.name },
@@ -133,10 +134,9 @@ export class CommunicationService {
         tenantId,
         name: dto.name,
         subject: dto.subject,
-        bodyHtml: dto.bodyHtml,
-        bodyText: dto.bodyText || null,
-        createdBy,
-      } as any,
+        body: dto.bodyHtml || dto.bodyText || '',
+        variables: [] as Prisma.InputJsonValue,
+      },
     });
   }
 }

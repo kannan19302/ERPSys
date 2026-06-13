@@ -107,11 +107,19 @@ export class SalesService {
   // ─── SALES ORDER METHODS ───────────────────────────
 
   /**
-   * Fetch all sales orders scoped to tenantId.
+   * Fetch all sales orders scoped to tenantId. Supports optional filtering by channel and status.
    */
-  async getSalesOrders(tenantId: string) {
+  async getSalesOrders(tenantId: string, channel?: string, status?: string) {
+    const whereClause: Prisma.SalesOrderWhereInput = { tenantId, deletedAt: null };
+    if (channel) {
+      whereClause.salesChannel = channel;
+    }
+    if (status) {
+      whereClause.status = status;
+    }
+
     const orders = (await prisma.salesOrder.findMany({
-      where: { tenantId, deletedAt: null },
+      where: whereClause,
       include: { customer: true, lineItems: true, deliveryNotes: true },
       orderBy: { createdAt: 'desc' },
     })) as unknown as Array<
@@ -129,6 +137,9 @@ export class SalesService {
       totalAmount: Number(so.totalAmount),
       currency: so.currency,
       customerName: so.customer.name,
+      salesChannel: so.salesChannel,
+      paymentMethod: so.paymentMethod,
+      paymentStatus: so.paymentStatus,
       lineItemCount: so.lineItems.length,
       deliveryNotesCount: so.deliveryNotes.length,
     }));
@@ -151,7 +162,7 @@ export class SalesService {
   }
 
   /**
-   * Create new sales order.
+   * Create new sales order with multi-channel and B2B credit validations.
    */
   async createSalesOrder(tenantId: string, orgId: string, dto: CreateSalesOrderInput, createdBy: string) {
     let resolvedOrgId = orgId;
@@ -169,16 +180,55 @@ export class SalesService {
     const customer = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
     if (!customer) throw new NotFoundException('Customer not found');
 
-    return prisma.$transaction(async (tx) => {
-      let subtotal = 0;
-      let totalTax = 0;
+    const salesChannel = dto.salesChannel || 'B2B';
+    const paymentMethod = dto.paymentMethod || null;
+    const paymentStatus = dto.paymentStatus || 'UNPAID';
 
+    // Calculate total order amount
+    let orderSubtotal = 0;
+    let orderTax = 0;
+    dto.lineItems.forEach((item) => {
+      const lineSubtotal = item.quantity * item.unitPrice;
+      orderSubtotal += lineSubtotal;
+      orderTax += lineSubtotal * (item.taxRate / 100);
+    });
+    const orderTotal = orderSubtotal + orderTax;
+
+    let initialStatus = 'DRAFT';
+
+    // B2B Credit Limit Check
+    if (salesChannel === 'B2B' && customer.creditLimit !== undefined && customer.creditLimit !== null) {
+      const creditLimit = Number(customer.creditLimit);
+      
+      const unpaidInvoices = await prisma.invoice.findMany({
+        where: {
+          tenantId,
+          customerId: dto.customerId,
+          status: { not: 'PAID' },
+          deletedAt: null,
+        },
+      });
+
+      const outstandingBalance = unpaidInvoices.reduce(
+        (sum, inv) => sum + (Number(inv.totalAmount) - Number(inv.paidAmount)),
+        0
+      );
+
+      if (outstandingBalance + orderTotal > creditLimit) {
+        initialStatus = 'CREDIT_HOLD';
+      }
+    }
+
+    // Auto-confirm B2C/D2C orders if fully paid
+    if ((salesChannel === 'B2C' || salesChannel === 'D2C') && paymentStatus === 'PAID') {
+      initialStatus = 'CONFIRMED';
+    }
+
+    return prisma.$transaction(async (tx) => {
       const linesData = dto.lineItems.map((item, index) => {
         const lineSubtotal = item.quantity * item.unitPrice;
         const lineTax = lineSubtotal * (item.taxRate / 100);
         const lineTotal = lineSubtotal + lineTax;
-        subtotal += lineSubtotal;
-        totalTax += lineTax;
 
         return {
           tenantId,
@@ -201,13 +251,16 @@ export class SalesService {
           customerId: dto.customerId,
           orderNumber: dto.orderNumber,
           deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : null,
-          subtotal: new Prisma.Decimal(subtotal),
-          taxAmount: new Prisma.Decimal(totalTax),
-          totalAmount: new Prisma.Decimal(subtotal + totalTax),
+          subtotal: new Prisma.Decimal(orderSubtotal),
+          taxAmount: new Prisma.Decimal(orderTax),
+          totalAmount: new Prisma.Decimal(orderTotal),
+          salesChannel,
+          paymentMethod,
+          paymentStatus,
           shippingAddress: dto.shippingAddress ? (dto.shippingAddress as Prisma.InputJsonObject) : Prisma.JsonNull,
           notes: dto.notes || null,
           quotationId: dto.quotationId || null,
-          status: 'DRAFT',
+          status: initialStatus,
           createdBy,
         },
       });
@@ -236,6 +289,139 @@ export class SalesService {
       });
     }
     return updated;
+  }
+
+  /**
+   * Approve a credit hold on a B2B sales order.
+   */
+  async approveCreditHold(tenantId: string, orderId: string, _userId: string) {
+    const so = await prisma.salesOrder.findFirst({ where: { id: orderId, tenantId } });
+    if (!so) throw new NotFoundException('Sales order not found');
+    if (so.status !== 'CREDIT_HOLD') {
+      throw new BadRequestException('Sales order is not on credit hold');
+    }
+
+    const updated = await prisma.salesOrder.update({
+      where: { id: orderId },
+      data: { status: 'CONFIRMED' },
+    });
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit('sales.order.confirmed', {
+        tenantId,
+        salesOrderId: orderId,
+        orderNumber: so.orderNumber,
+      });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Record payment for B2C/D2C or general orders.
+   */
+  async recordOrderPayment(tenantId: string, orderId: string, amount: number, method: string, _userId: string) {
+    const so = await prisma.salesOrder.findFirst({ where: { id: orderId, tenantId } });
+    if (!so) throw new NotFoundException('Sales order not found');
+
+    const newPaymentStatus = amount >= Number(so.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
+    
+    const updateData: Prisma.SalesOrderUpdateInput = {
+      paymentStatus: newPaymentStatus,
+      paymentMethod: method,
+    };
+    if (so.status === 'DRAFT' && newPaymentStatus === 'PAID') {
+      updateData.status = 'CONFIRMED';
+    }
+
+    const updated = await prisma.salesOrder.update({
+      where: { id: orderId },
+      data: updateData,
+    });
+
+    if (updateData.status === 'CONFIRMED' && this.eventEmitter) {
+      this.eventEmitter.emit('sales.order.confirmed', {
+        tenantId,
+        salesOrderId: orderId,
+        orderNumber: so.orderNumber,
+      });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Convert customer quotation to Sales Order.
+   */
+  async convertQuotationToOrder(tenantId: string, quotationId: string, createdBy: string) {
+    const quotation = await prisma.quotation.findFirst({
+      where: { id: quotationId, tenantId, deletedAt: null },
+      include: { lineItems: true, customer: true },
+    });
+    if (!quotation) throw new NotFoundException('Quotation not found');
+    if (quotation.status === 'CONVERTED') {
+      throw new BadRequestException('Quotation has already been converted to an order');
+    }
+
+    const orderNumber = `SO-QT-${quotation.quotationNumber.replace('QT-', '')}-${Math.floor(Math.random() * 1000)}`;
+
+    const result = await prisma.$transaction(async (tx) => {
+      const salesOrder = await tx.salesOrder.create({
+        data: {
+          tenantId,
+          orgId: quotation.orgId,
+          customerId: quotation.customerId,
+          orderNumber,
+          deliveryDate: quotation.validUntil,
+          subtotal: quotation.subtotal,
+          taxAmount: quotation.taxAmount,
+          totalAmount: quotation.totalAmount,
+          salesChannel: 'B2B',
+          paymentStatus: 'UNPAID',
+          quotationId: quotation.id,
+          status: 'CONFIRMED',
+          createdBy,
+        },
+      });
+
+      for (const line of quotation.lineItems) {
+        await tx.salesOrderItem.create({
+          data: {
+            tenantId,
+            salesOrderId: salesOrder.id,
+            productId: line.productId,
+            description: line.description,
+            quantity: line.quantity,
+            deliveredQty: new Prisma.Decimal(0),
+            unitPrice: line.unitPrice,
+            taxRate: line.taxRate,
+            taxAmount: line.taxAmount,
+            totalAmount: line.totalAmount,
+            sortOrder: line.sortOrder,
+          },
+        });
+      }
+
+      await tx.quotation.update({
+        where: { id: quotationId },
+        data: {
+          status: 'CONVERTED',
+          convertedToOrderId: salesOrder.id,
+        },
+      });
+
+      return salesOrder;
+    });
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit('sales.order.confirmed', {
+        tenantId,
+        salesOrderId: result.id,
+        orderNumber: result.orderNumber,
+      });
+    }
+
+    return result;
   }
 
   // ─── DELIVERY NOTE METHODS ─────────────────────────

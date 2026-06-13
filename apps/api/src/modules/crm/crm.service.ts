@@ -110,7 +110,7 @@ export class CrmService {
   // ════════════════════════════════════════════════
 
   async getContacts(tenantId: string, customerId?: string) {
-    const where: any = { tenantId, deletedAt: null };
+    const where: Prisma.ContactWhereInput = { tenantId, deletedAt: null };
     if (customerId) where.customerId = customerId;
     return prisma.contact.findMany({ where, orderBy: { firstName: 'asc' } });
   }
@@ -142,7 +142,7 @@ export class CrmService {
   async updateContact(tenantId: string, id: string, dto: UpdateContactInput) {
     const existing = await prisma.contact.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Contact not found');
-    return prisma.contact.update({ where: { id }, data: dto as any });
+    return prisma.contact.update({ where: { id }, data: dto as Prisma.ContactUpdateInput });
   }
 
   async deleteContact(tenantId: string, id: string) {
@@ -164,7 +164,7 @@ export class CrmService {
   // ════════════════════════════════════════════════
 
   async getLeads(tenantId: string, status?: string) {
-    const where: any = { tenantId, deletedAt: null };
+    const where: Prisma.LeadWhereInput = { tenantId, deletedAt: null };
     if (status) where.status = status;
     return prisma.lead.findMany({
       where,
@@ -207,7 +207,7 @@ export class CrmService {
   async updateLead(tenantId: string, id: string, dto: UpdateLeadInput) {
     const existing = await prisma.lead.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Lead not found');
-    return prisma.lead.update({ where: { id }, data: dto as any });
+    return prisma.lead.update({ where: { id }, data: dto as Prisma.LeadUpdateInput });
   }
 
   async updateLeadStatus(tenantId: string, id: string, status: string) {
@@ -294,7 +294,7 @@ export class CrmService {
       data: {
         tenantId,
         name: dto.name,
-        stages: dto.stages as any,
+        stages: dto.stages as Prisma.InputJsonValue,
         isDefault: dto.isDefault || false,
       },
     });
@@ -305,7 +305,7 @@ export class CrmService {
   // ════════════════════════════════════════════════
 
   async getOpportunities(tenantId: string, pipelineId?: string, stage?: string) {
-    const where: any = { tenantId, deletedAt: null };
+    const where: Prisma.OpportunityWhereInput = { tenantId, deletedAt: null };
     if (pipelineId) where.pipelineId = pipelineId;
     if (stage) where.stage = stage;
     return prisma.opportunity.findMany({
@@ -364,7 +364,7 @@ export class CrmService {
   async updateOpportunity(tenantId: string, id: string, dto: UpdateOpportunityInput) {
     const existing = await prisma.opportunity.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Opportunity not found');
-    const data: any = { ...dto };
+    const data: Prisma.OpportunityUpdateInput = { ...dto };
     if (dto.expectedCloseDate) data.expectedCloseDate = new Date(dto.expectedCloseDate);
     return prisma.opportunity.update({ where: { id }, data });
   }
@@ -372,7 +372,7 @@ export class CrmService {
   async updateOpportunityStage(tenantId: string, id: string, stage: string, probability?: number, actualCloseDate?: string, lossReason?: string) {
     const existing = await prisma.opportunity.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Opportunity not found');
-    const data: any = { stage };
+    const data: Prisma.OpportunityUpdateInput = { stage };
     if (probability !== undefined) data.probability = probability;
     if (actualCloseDate) data.actualCloseDate = new Date(actualCloseDate);
     if (lossReason !== undefined) data.lossReason = lossReason;
@@ -390,7 +390,7 @@ export class CrmService {
   // ════════════════════════════════════════════════
 
   async getActivities(tenantId: string, leadId?: string, opportunityId?: string, customerId?: string) {
-    const where: any = { tenantId };
+    const where: Prisma.ActivityWhereInput = { tenantId };
     if (leadId) where.leadId = leadId;
     if (opportunityId) where.opportunityId = opportunityId;
     if (customerId) where.customerId = customerId;
@@ -451,15 +451,15 @@ export class CrmService {
         category: dto.category || 'GENERAL',
         subject: dto.subject,
         body: dto.body,
-        variables: dto.variables || [],
-      } as any,
+        variables: dto.variables as Prisma.InputJsonValue || [],
+      },
     });
   }
 
   async updateEmailTemplate(tenantId: string, id: string, dto: UpdateEmailTemplateInput) {
     const existing = await prisma.emailTemplate.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Email template not found');
-    return prisma.emailTemplate.update({ where: { id }, data: dto as any });
+    return prisma.emailTemplate.update({ where: { id }, data: dto as Prisma.EmailTemplateUpdateInput });
   }
 
   async deleteEmailTemplate(tenantId: string, id: string) {

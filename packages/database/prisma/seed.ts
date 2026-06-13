@@ -371,6 +371,100 @@ async function main() {
     console.log('Finance Invoices & Payments seeded.');
   }
 
+  // 9.5. Create Sourcing RFQs & Supplier Quotations
+  const oscorp = await prisma.vendor.findFirst({ where: { tenantId: tenant.id, name: 'Oscorp Chemical Supply' } });
+  const lexcorp = await prisma.vendor.findFirst({ where: { tenantId: tenant.id, name: 'LexCorp Heavy Industries' } });
+  const monitorId = productMap['SKU-MON-002'];
+
+  if (oscorp && lexcorp && monitorId) {
+    const existingRfq = await prisma.rFQ.findFirst({
+      where: { tenantId: tenant.id, rfqNumber: 'RFQ-2026-001' },
+    });
+    if (!existingRfq) {
+      const rfq = await prisma.rFQ.create({
+        data: {
+          tenantId: tenant.id,
+          orgId: org.id,
+          rfqNumber: 'RFQ-2026-001',
+          status: 'SENT',
+          expectedDate: new Date(),
+          notes: 'Quotation request for office monitor upgrade',
+        },
+      });
+
+      await prisma.rFQItem.create({
+        data: {
+          tenantId: tenant.id,
+          rfqId: rfq.id,
+          productId: monitorId,
+          description: '4K IPS Curved Monitor 32"',
+          quantity: 10,
+        },
+      });
+
+      // Seed Supplier Quotations
+      const quote1 = await prisma.supplierQuotation.create({
+        data: {
+          tenantId: tenant.id,
+          orgId: org.id,
+          rfqId: rfq.id,
+          vendorId: oscorp.id,
+          quotationNumber: 'SQ-OSC-001',
+          status: 'APPROVED',
+          validUntil: new Date(Date.now() + 30 * 24 * 3600 * 1000),
+          subtotal: 1900.00,
+          taxAmount: 190.00,
+          totalAmount: 2090.00,
+          notes: 'Special offer with bulk discount',
+        },
+      });
+
+      await prisma.supplierQuotationItem.create({
+        data: {
+          tenantId: tenant.id,
+          supplierQuotationId: quote1.id,
+          productId: monitorId,
+          description: '4K IPS Curved Monitor 32" - Bulk Promo',
+          quantity: 10,
+          unitPrice: 190.00,
+          taxRate: 10,
+          taxAmount: 190.00,
+          totalAmount: 2090.00,
+        },
+      });
+
+      const quote2 = await prisma.supplierQuotation.create({
+        data: {
+          tenantId: tenant.id,
+          orgId: org.id,
+          rfqId: rfq.id,
+          vendorId: lexcorp.id,
+          quotationNumber: 'SQ-LEX-999',
+          status: 'DRAFT',
+          validUntil: new Date(Date.now() + 15 * 24 * 3600 * 1000),
+          subtotal: 2100.00,
+          taxAmount: 210.00,
+          totalAmount: 2310.00,
+          notes: 'Standard commercial pricing',
+        },
+      });
+
+      await prisma.supplierQuotationItem.create({
+        data: {
+          tenantId: tenant.id,
+          supplierQuotationId: quote2.id,
+          productId: monitorId,
+          description: '4K IPS Curved Monitor 32"',
+          quantity: 10,
+          unitPrice: 210.00,
+          taxRate: 10,
+          taxAmount: 210.00,
+          totalAmount: 2310.00,
+        },
+      });
+    }
+  }
+
   // 10. Create Phase 3 Project Management & Manufacturing seed data
   const existingProject = await prisma.project.findFirst({
     where: { tenantId: tenant.id, code: 'PRJ-ERP' },

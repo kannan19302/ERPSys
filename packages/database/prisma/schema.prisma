@@ -132,6 +132,11 @@ model Organization {
   incomingTransfers    InterCompanyTransfer[] @relation("ToOrganization")
   investmentPortfolios InvestmentPortfolio[]
   treasuryTransactions TreasuryTransaction[]
+  rfqs                 RFQ[]
+  supplierQuotations   SupplierQuotation[]
+  campaigns            Campaign[]
+  salesReturns         SalesReturn[]
+  purchaseReturns      PurchaseReturn[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -226,6 +231,7 @@ model Customer {
   contacts     Contact[] // Added for inverse relation
   opportunities Opportunity[] // Added for inverse relation
   activities   Activity[] // Added for inverse relation
+  salesReturns  SalesReturn[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -253,6 +259,8 @@ model Vendor {
   purchaseOrders   PurchaseOrder[]
   debitNotes       DebitNote[]
   paymentSchedules PaymentSchedule[]
+  supplierQuotations SupplierQuotation[]
+  purchaseReturns  PurchaseReturn[]
 
   @@index([tenantId])
   @@map("vendors")
@@ -327,12 +335,16 @@ model Lead {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   deletedAt     DateTime? @map("deleted_at")
 
+  campaignId    String?   @map("campaign_id")
+
   source       LeadSource?   @relation(fields: [sourceId], references: [id])
+  campaign     Campaign?     @relation(fields: [campaignId], references: [id])
   activities   Activity[]
   opportunities Opportunity[] @relation("LeadOpportunity")
 
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([campaignId])
   @@index([assignedToId])
   @@map("leads")
 }
@@ -463,6 +475,14 @@ model Product {
   salesOrderItems    SalesOrderItem[]
   serialNumbers      SerialNumber[]
   batches            Batch[]
+  stockLedgerEntries StockLedgerEntry[]
+  stockEntryItems    StockEntryItem[]
+  qualityInspections QualityInspection[]
+  cycleCountItems    CycleCountItem[]
+  rfqItems           RFQItem[]
+  supplierQuotationItems SupplierQuotationItem[]
+  salesReturnItems   SalesReturnItem[]
+  purchaseReturnItems PurchaseReturnItem[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -480,8 +500,9 @@ model Warehouse {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organization   Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  inventoryItems InventoryItem[]
+  organization       Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inventoryItems     InventoryItem[]
+  stockLedgerEntries StockLedgerEntry[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -653,7 +674,12 @@ model PurchaseOrder {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
+  rfqId               String?             @map("rfq_id")
+  supplierQuotationId String?             @map("supplier_quotation_id")
+
   vendor           Vendor              @relation(fields: [vendorId], references: [id])
+  rfq              RFQ?                @relation(fields: [rfqId], references: [id])
+  supplierQuotation SupplierQuotation?  @relation(fields: [supplierQuotationId], references: [id])
   lineItems        PurchaseOrderItem[]
   receipts         PurchaseReceipt[]
   debitNotes       DebitNote[]
@@ -723,6 +749,94 @@ model PurchaseReceiptItem {
   @@index([tenantId])
   @@index([purchaseReceiptId])
   @@map("purchase_receipt_items")
+}
+
+model RFQ {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  orgId        String    @map("org_id")
+  rfqNumber    String    @map("rfq_number")
+  status       String    @default("DRAFT") // DRAFT, SENT, COMPLETED, CANCELLED
+  expectedDate DateTime? @map("expected_date")
+  notes        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  organization      Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lineItems         RFQItem[]
+  supplierQuotations SupplierQuotation[]
+  purchaseOrders    PurchaseOrder[]
+
+  @@unique([tenantId, orgId, rfqNumber])
+  @@index([tenantId])
+  @@map("rfqs")
+}
+
+model RFQItem {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  rfqId       String   @map("rfq_id")
+  productId   String?  @map("product_id")
+  description String
+  quantity    Decimal  @db.Decimal(15, 3)
+
+  rfq     RFQ      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([rfqId])
+  @@map("rfq_items")
+}
+
+model SupplierQuotation {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  rfqId           String?   @map("rfq_id")
+  vendorId        String    @map("vendor_id")
+  quotationNumber String    @map("quotation_number")
+  status          String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, EXPIRED, CONVERTED
+  validUntil      DateTime  @map("valid_until")
+  subtotal        Decimal   @default(0) @db.Decimal(15, 2)
+  taxAmount       Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount     Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
+  currency        String    @default("USD")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  rfq            RFQ?                    @relation(fields: [rfqId], references: [id])
+  vendor         Vendor                  @relation(fields: [vendorId], references: [id])
+  lineItems      SupplierQuotationItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([tenantId, orgId, quotationNumber])
+  @@index([tenantId])
+  @@index([rfqId])
+  @@index([vendorId])
+  @@map("supplier_quotations")
+}
+
+model SupplierQuotationItem {
+  id                  String  @id @default(cuid())
+  tenantId            String  @map("tenant_id")
+  supplierQuotationId String  @map("supplier_quotation_id")
+  productId           String? @map("product_id")
+  description         String
+  quantity            Decimal @db.Decimal(15, 3)
+  unitPrice           Decimal @map("unit_price") @db.Decimal(15, 2)
+  taxRate             Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  taxAmount           Decimal @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount         Decimal @map("total_amount") @db.Decimal(15, 2)
+
+  supplierQuotation SupplierQuotation @relation(fields: [supplierQuotationId], references: [id], onDelete: Cascade)
+  product           Product?          @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([supplierQuotationId])
+  @@map("supplier_quotation_items")
 }
 
 // ════════════════════════════════════════════════
@@ -795,6 +909,9 @@ model SalesOrder {
   discountAmount  Decimal   @default(0) @map("discount_amount") @db.Decimal(15, 2)
   totalAmount     Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
   currency        String    @default("USD")
+  salesChannel    String    @default("B2B") @map("sales_channel")
+  paymentMethod   String?   @map("payment_method")
+  paymentStatus   String    @default("UNPAID") @map("payment_status")
   shippingAddress Json?     @map("shipping_address")
   notes           String?
   internalNotes   String?   @map("internal_notes")
@@ -1402,6 +1519,7 @@ model CycleCountItem {
   variance     Decimal @db.Decimal(15, 3)
 
   cycleCount CycleCount @relation(fields: [cycleCountId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@map("cycle_count_items")
@@ -3300,4 +3418,96 @@ model InterCompanyTransfer {
 
   @@index([tenantId])
   @@map("inter_company_transfers")
+}
+
+// ════════════════════════════════════════════════
+// EXTENDED INVENTORY MODULE
+// ════════════════════════════════════════════════
+
+model StockLedgerEntry {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  productId     String   @map("product_id")
+  warehouseId   String   @map("warehouse_id")
+  quantity      Decimal  @db.Decimal(15, 3)
+  valuationRate Decimal  @map("valuation_rate") @db.Decimal(15, 2)
+  voucherType   String   @map("voucher_type") // STOCK_ENTRY, PURCHASE_RECEIPT, DELIVERY_NOTE, CYCLE_COUNT
+  voucherId     String   @map("voucher_id")
+  batchNumber   String?  @map("batch_number")
+  serialNumber  String?  @map("serial_number")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([productId])
+  @@index([warehouseId])
+  @@map("stock_ledger_entries")
+}
+
+model StockEntry {
+  id              String           @id @default(cuid())
+  tenantId        String           @map("tenant_id")
+  orgId           String           @map("org_id")
+  entryNumber     String           @map("entry_number")
+  purpose         String           @default("MATERIAL_TRANSFER") // MATERIAL_RECEIPT, MATERIAL_ISSUE, MATERIAL_TRANSFER
+  postingDate     DateTime         @default(now()) @map("posting_date")
+  status          String           @default("DRAFT") // DRAFT, SUBMITTED, CANCELLED
+  remarks         String?
+  fromWarehouseId String?          @map("from_warehouse_id")
+  toWarehouseId   String?          @map("to_warehouse_id")
+  createdBy       String?          @map("created_by")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  items           StockEntryItem[]
+
+  @@unique([tenantId, orgId, entryNumber])
+  @@index([tenantId])
+  @@map("stock_entries")
+}
+
+model StockEntryItem {
+  id            String     @id @default(cuid())
+  tenantId      String     @map("tenant_id")
+  stockEntryId  String     @map("stock_entry_id")
+  productId     String     @map("product_id")
+  qty           Decimal    @db.Decimal(15, 3)
+  valuationRate Decimal    @map("valuation_rate") @db.Decimal(15, 2)
+  amount        Decimal    @db.Decimal(15, 2)
+  batchNumber   String?    @map("batch_number")
+  serialNumber  String?    @map("serial_number")
+
+  stockEntry    StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([stockEntryId])
+  @@map("stock_entry_items")
+}
+
+model QualityInspection {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  orgId            String   @map("org_id")
+  inspectionNumber String   @map("inspection_number")
+  referenceType    String   @map("reference_type") // e.g. "Stock Entry", "Purchase Receipt"
+  referenceId      String   @map("reference_id")
+  productId        String   @map("product_id")
+  status           String   @default("PENDING") // PENDING, PASSED, FAILED
+  inspectedQty     Decimal  @map("inspected_qty") @db.Decimal(15, 3)
+  passedQty        Decimal  @map("passed_qty") @db.Decimal(15, 3)
+  rejectedQty      Decimal  @default(0) @map("rejected_qty") @db.Decimal(15, 3)
+  inspectedBy      String   @map("inspected_by")
+  inspectedDate    DateTime @default(now()) @map("inspected_date")
+  checklist        Json     @default("[]") // Array of checklist item details
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, orgId, inspectionNumber])
+  @@index([tenantId])
+  @@map("quality_inspections")
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req, Query } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
@@ -45,8 +45,12 @@ export class SalesController {
 
   @Get('orders')
   @Permissions('sales.order.read')
-  async getSalesOrders(@Req() req: AuthenticatedRequest) {
-    return this.salesService.getSalesOrders(req.user.tenantId);
+  async getSalesOrders(
+    @Req() req: AuthenticatedRequest,
+    @Query('channel') channel?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.salesService.getSalesOrders(req.user.tenantId, channel, status);
   }
 
   @Get('orders/:id')
@@ -70,6 +74,40 @@ export class SalesController {
     @Body() dto: UpdateSalesOrderStatusInput,
   ): Promise<unknown> {
     return this.salesService.updateSalesOrderStatus(req.user.tenantId, id, dto.status);
+  }
+
+  @Post('orders/:id/convert')
+  @Permissions('sales.order.create')
+  async convertQuotation(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    return this.salesService.convertQuotationToOrder(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  @Patch('orders/:id/approve-credit')
+  @Permissions('sales.order.update')
+  async approveCreditHold(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    return this.salesService.approveCreditHold(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  @Post('orders/:id/payment')
+  @Permissions('sales.order.update')
+  async recordOrderPayment(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { amount: number; method: string },
+  ): Promise<unknown> {
+    return this.salesService.recordOrderPayment(
+      req.user.tenantId,
+      id,
+      dto.amount,
+      dto.method,
+      req.user.userId || 'system',
+    );
   }
 
   // ─── Delivery Notes ────────────────────────────────

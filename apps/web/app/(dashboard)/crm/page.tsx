@@ -82,7 +82,7 @@ export default function CrmDashboard() {
         leadStatusBreakdown: statusBreakdown,
         opportunityStageBreakdown: stageBreakdown,
       });
-    } catch (err) {
+    } catch {
       setError('Could not load CRM data. Using demo mode.');
       setStats({
         totalCustomers: 3, totalVendors: 2, totalLeads: 12, totalOpportunities: 8,

@@ -12,7 +12,7 @@ interface OpportunityDetail {
     lossReason: string | null; notes: string | null; createdAt: string;
     customer?: { id: string; name: string } | null;
     lead?: { id: string; firstName: string; lastName: string } | null;
-    pipeline?: { id: string; name: string; stages: any } | null;
+    pipeline?: { id: string; name: string; stages: unknown } | null;
     activities?: Array<{ id: string; type: string; subject: string; description: string | null; createdAt: string }>;
 }
 
