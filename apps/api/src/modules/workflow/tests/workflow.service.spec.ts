@@ -35,7 +35,7 @@ describe('WorkflowService', () => {
   it('should get workflows', async () => {
     const { prisma } = await import('@unerp/database');
     const mockWorkflows = [{ id: 'wf-1', name: 'PO Approval Workflow' }];
-    vi.mocked(prisma.workflow.findMany).mockResolvedValue(mockWorkflows as any);
+    vi.mocked(prisma.workflow.findMany).mockResolvedValue(mockWorkflows as never);
 
     const res = await service.getWorkflows('tenant-123');
     expect(res).toBeDefined();

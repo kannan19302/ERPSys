@@ -1,30 +1,33 @@
 import { PrismaClient } from '@prisma/client';
+import { logger } from '@unerp/shared/logger';
 
 const prisma = new PrismaClient();
 
 async function checkDb() {
-  console.log('--- DIAGNOSTIC START ---');
+  logger.info('--- DIAGNOSTIC START ---');
   try {
     const tenants = await prisma.tenant.findMany();
-    console.log('Tenants:', tenants.map(t => ({ id: t.id, name: t.name })));
+    logger.info('Tenants:', { tenants: tenants.map(t => ({ id: t.id, name: t.name })) });
     
-    if (tenants.length === 0) {
-      console.error('No tenants found!');
+    const firstTenant = tenants[0];
+    if (!firstTenant) {
+      logger.error('No tenants found!');
       return;
     }
     
-    const tenantId = tenants[0].id;
+    const tenantId = firstTenant.id;
     const orgs = await prisma.organization.findMany({ where: { tenantId } });
-    console.log('Organizations:', orgs.map(o => ({ id: o.id, name: o.name })));
+    logger.info('Organizations:', { orgs: orgs.map(o => ({ id: o.id, name: o.name })) });
     
-    if (orgs.length === 0) {
-      console.error('No organizations found!');
+    const firstOrg = orgs[0];
+    if (!firstOrg) {
+      logger.error('No organizations found!');
       return;
     }
     
-    const orgId = orgs[0].id;
+    const orgId = firstOrg.id;
     const code = 'TEST-' + Math.floor(Math.random() * 10000);
-    console.log(`Attempting to create account ${code} for tenant ${tenantId} and org ${orgId}...`);
+    logger.info(`Attempting to create account ${code} for tenant ${tenantId} and org ${orgId}...`);
     
     const newAcc = await prisma.account.create({
       data: {
@@ -36,12 +39,12 @@ async function checkDb() {
         balance: 0,
       }
     });
-    console.log('Account created successfully:', newAcc);
-  } catch (err: any) {
-    console.error('DATABASE ERROR DETECTED:', err);
+    logger.info('Account created successfully:', { account: newAcc });
+  } catch (err: unknown) {
+    logger.error('DATABASE ERROR DETECTED:', err);
   } finally {
     await prisma.$disconnect();
-    console.log('--- DIAGNOSTIC END ---');
+    logger.info('--- DIAGNOSTIC END ---');
   }
 }
 

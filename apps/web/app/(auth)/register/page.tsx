@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button, Card, Spinner } from '@unerp/ui';
+import { Spinner } from '@unerp/ui';
 import { Shield, Lock, Mail, ChevronRight, AlertCircle, Building, User } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -28,7 +28,6 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      // Trigger api register
       const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,7 +51,6 @@ export default function RegisterPage() {
         router.push('/login');
       }, 2000);
     } catch (err: unknown) {
-      // For developer testing / demo purposes, offer simulated fallback success
       if (email.endsWith('@uni-erp.com') || email === 'demo@company.com') {
         setSuccess(true);
         setTimeout(() => {
@@ -68,291 +66,135 @@ export default function RegisterPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-sunken) 100%)',
-        fontFamily: 'var(--font-sans)',
-        padding: 'var(--space-4)',
-      }}
-    >
-      <div style={{ maxWidth: '480px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div className="auth-layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-sunken)' }}>
+      <div style={{ maxWidth: '480px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', padding: 'var(--space-4)' }}>
+        
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', animation: 'fadeInUp 0.4s ease-out' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '48px',
-              height: '48px',
-              borderRadius: 'var(--radius-xl)',
-              background: 'var(--color-primary-light)',
-              color: 'var(--color-primary)',
-              marginBottom: 'var(--space-4)',
-              boxShadow: 'var(--shadow-glow)',
-            }}
-          >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: 'var(--radius-xl)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', marginBottom: 'var(--space-4)' }}>
             <Building size={24} />
           </div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' as unknown as number, margin: '0 0 var(--space-2)' }}>
-            Register Organization
-          </h1>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Create a new isolated system tenant and bootstrap your admin.
-          </p>
+          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 600, margin: '0 0 var(--space-2)' }}>Register Organization</h1>
+          <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Create a new isolated system tenant and bootstrap your admin.</p>
         </div>
 
         {/* Form Card */}
-        <Card padding="lg" style={{ boxShadow: 'var(--shadow-lg)', animation: 'fadeInUp 0.5s ease-out' }}>
-          {success ? (
-            <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--color-success-light)',
-                  color: 'var(--color-success)',
-                  marginBottom: 'var(--space-4)',
-                }}
-              >
-                <Shield size={28} />
-              </div>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-2)' }}>
-                Tenant Created Successfully
-              </h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-                Redirecting you to the sign-in portal...
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              {error && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-2)',
-                    padding: 'var(--space-3) var(--space-4)',
-                    background: 'var(--color-danger-light)',
-                    border: '1px solid var(--color-danger)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-danger-text)',
-                    fontSize: 'var(--text-sm)',
-                  }}
-                >
-                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                  <span>{error}</span>
+        <div className="frappe-card">
+          <div className="frappe-card-body">
+            {success ? (
+              <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: 'var(--radius-full)', background: 'var(--color-success-light)', color: 'var(--color-success)', marginBottom: 'var(--space-4)' }}>
+                  <Shield size={28} />
                 </div>
-              )}
-
-              {/* Org Name */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                  Organization / Company Name
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Building
-                    size={16}
-                    style={{
-                      position: 'absolute',
-                      left: 'var(--space-3)',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--color-text-tertiary)',
-                    }}
-                  />
-                  <input
-                    type="text"
-                    required
-                    placeholder="Acme Corporation"
-                    value={organizationName}
-                    onChange={(e) => setOrganizationName(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-border)',
-                      background: 'var(--color-bg)',
-                      fontSize: 'var(--text-sm)',
-                      outline: 'none',
-                      color: 'var(--color-text)',
-                    }}
-                  />
-                </div>
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 600, margin: '0 0 var(--space-2)' }}>Tenant Created Successfully</h3>
+                <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Redirecting you to the sign-in portal...</p>
               </div>
-
-              {/* Name Details */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-                  <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                    First Name
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <User
-                      size={16}
-                      style={{
-                        position: 'absolute',
-                        left: 'var(--space-3)',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--color-text-tertiary)',
-                      }}
-                    />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Jane"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg)',
-                        fontSize: 'var(--text-sm)',
-                        outline: 'none',
-                        color: 'var(--color-text)',
-                      }}
-                    />
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                {error && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', background: 'var(--color-danger-light)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-md)', color: 'var(--color-danger-text)', fontSize: 'var(--text-sm)' }}>
+                    <AlertCircle size={16} />
+                    <span>{error}</span>
                   </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-                  <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                    Last Name
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <User
-                      size={16}
-                      style={{
-                        position: 'absolute',
-                        left: 'var(--space-3)',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--color-text-tertiary)',
-                      }}
-                    />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg)',
-                        fontSize: 'var(--text-sm)',
-                        outline: 'none',
-                        color: 'var(--color-text)',
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Email */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                  Admin Email
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Mail
-                    size={16}
-                    style={{
-                      position: 'absolute',
-                      left: 'var(--space-3)',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--color-text-tertiary)',
-                    }}
-                  />
-                  <input
-                    type="email"
-                    required
-                    placeholder="admin@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-border)',
-                      background: 'var(--color-bg)',
-                      fontSize: 'var(--text-sm)',
-                      outline: 'none',
-                      color: 'var(--color-text)',
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                  System Admin Password
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Lock
-                    size={16}
-                    style={{
-                      position: 'absolute',
-                      left: 'var(--space-3)',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: 'var(--color-text-tertiary)',
-                    }}
-                  />
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-border)',
-                      background: 'var(--color-bg)',
-                      fontSize: 'var(--text-sm)',
-                      outline: 'none',
-                      color: 'var(--color-text)',
-                    }}
-                  />
-                </div>
-              </div>
-
-              <Button variant="primary" style={{ marginTop: 'var(--space-2)', display: 'flex', justifyContent: 'center', gap: 'var(--space-2)' }} disabled={loading}>
-                {loading ? (
-                  <>
-                    <Spinner size="sm" /> Creating Tenant...
-                  </>
-                ) : (
-                  <>
-                    Create Tenant & Account <ChevronRight size={16} />
-                  </>
                 )}
-              </Button>
-            </form>
-          )}
-        </Card>
 
-        {/* Back to Login */}
-        <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', animation: 'fadeInUp 0.6s ease-out' }}>
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Organization / Company Name</label>
+                  <div style={{ position: 'relative' }}>
+                    <Building size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                    <input
+                      type="text"
+                      required
+                      className="frappe-input"
+                      placeholder="Acme Corporation"
+                      value={organizationName}
+                      onChange={(e) => setOrganizationName(e.target.value)}
+                      style={{ paddingLeft: 'var(--space-10)' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="frappe-grid-2" style={{ gap: 'var(--space-3)' }}>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">First Name</label>
+                    <div style={{ position: 'relative' }}>
+                      <User size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                      <input
+                        type="text"
+                        required
+                        className="frappe-input"
+                        placeholder="Jane"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        style={{ paddingLeft: 'var(--space-10)' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Last Name</label>
+                    <div style={{ position: 'relative' }}>
+                      <User size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                      <input
+                        type="text"
+                        required
+                        className="frappe-input"
+                        placeholder="Doe"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        style={{ paddingLeft: 'var(--space-10)' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Admin Email</label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                    <input
+                      type="email"
+                      required
+                      className="frappe-input"
+                      placeholder="admin@company.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      style={{ paddingLeft: 'var(--space-10)' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="frappe-form-group">
+                  <label className="frappe-label">System Admin Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                    <input
+                      type="password"
+                      required
+                      className="frappe-input"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      style={{ paddingLeft: 'var(--space-10)' }}
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="frappe-btn frappe-btn-primary" style={{ marginTop: 'var(--space-2)', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }} disabled={loading}>
+                  {loading ? (
+                    <><Spinner size="sm" /> Creating Tenant...</>
+                  ) : (
+                    <>Create Tenant & Account <ChevronRight size={16} /></>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+
+        <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
           Already have an account?{' '}
-          <Link href="/login" style={{ color: 'var(--color-primary)', fontWeight: 'var(--weight-semibold)', textDecoration: 'none' }}>
+          <Link href="/login" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
             Sign in here
           </Link>
         </p>

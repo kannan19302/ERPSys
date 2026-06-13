@@ -42,7 +42,7 @@ describe('ManufacturingService', () => {
   describe('getBOMs', () => {
     it('should return all BOMs', async () => {
       const mockBOMs = [{ id: 'bom-1', name: 'Laptop Assembly', code: 'BOM-LAP' }];
-      vi.mocked(prisma.bOM.findMany).mockResolvedValue(mockBOMs as any);
+      vi.mocked(prisma.bOM.findMany).mockResolvedValue(mockBOMs as never);
 
       const result = await service.getBOMs('tenant-1');
       expect(result).toHaveLength(1);

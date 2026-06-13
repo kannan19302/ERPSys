@@ -13,7 +13,7 @@ export class PwaService {
   async pushOfflineOperations(
     tenantId: string,
     clientId: string,
-    operations: Array<{ operation: string; entityType: string; payload: any }>
+    operations: Array<{ operation: string; entityType: string; payload: unknown }>
   ) {
     const records = [];
     for (const op of operations) {

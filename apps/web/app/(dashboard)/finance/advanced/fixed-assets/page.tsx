@@ -1,15 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Building, Loader2, ArrowRight } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface FixedAsset {
+  id: string;
+  name: string;
+  assetCode: string;
+  status: string;
+  purchaseValue: number | string;
+  currentValue: number | string;
+  depreciationMethod: string;
+  usefulLifeYears: number;
+  purchaseDate: string;
+}
+
+interface GLAccount {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+}
+
 export default function FixedAssetsPage() {
-  const [assets, setAssets] = useState<any[]>([]);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [assets, setAssets] = useState<FixedAsset[]>([]);
+  const [accounts, setAccounts] = useState<GLAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -36,10 +53,12 @@ export default function FixedAssetsPage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/accounts', { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
-      if (assetsRes.ok) setAssets(await assetsRes.json());
+      if (assetsRes.ok) {
+        setAssets((await assetsRes.json()) as FixedAsset[]);
+      }
       if (accountsRes.ok) {
-        const data = await accountsRes.json();
-        setAccounts(data.filter((a: any) => a.type === 'ASSET' || a.type === 'EXPENSE'));
+        const data = (await accountsRes.json()) as GLAccount[];
+        setAccounts(data.filter((a) => a.type === 'ASSET' || a.type === 'EXPENSE'));
       }
     } catch (e) {
       console.error(e);

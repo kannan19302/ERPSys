@@ -335,14 +335,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createCreditNote(tenantId: string, orgId: string, dto: any) {
+  async createCreditNote(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.creditNote.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -353,14 +353,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createDebitNote(tenantId: string, orgId: string, dto: any) {
+  async createDebitNote(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.debitNote.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -372,14 +372,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createDunningLevel(tenantId: string, orgId: string, dto: any) {
+  async createDunningLevel(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.dunningLevel.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -415,14 +415,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createPaymentSchedule(tenantId: string, orgId: string, dto: any) {
+  async createPaymentSchedule(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.paymentSchedule.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -434,14 +434,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createPaymentRun(tenantId: string, orgId: string, dto: any) {
+  async createPaymentRun(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.paymentRun.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -455,14 +455,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createForecastScenario(tenantId: string, orgId: string, dto: any) {
+  async createForecastScenario(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.forecastScenario.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -507,14 +507,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createTaxRule(tenantId: string, orgId: string, dto: any) {
+  async createTaxRule(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.taxRule.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -525,14 +525,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createWithholdingTax(tenantId: string, orgId: string, dto: any) {
+  async createWithholdingTax(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.withholdingTax.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -543,14 +543,14 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createTaxFiling(tenantId: string, orgId: string, dto: any) {
+  async createTaxFiling(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.taxFiling.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
@@ -578,25 +578,25 @@ export class AdvancedFinanceService {
     });
   }
 
-  async createInvestmentPortfolio(tenantId: string, orgId: string, dto: any) {
+  async createInvestmentPortfolio(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.investmentPortfolio.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 
-  async createTreasuryTransaction(tenantId: string, orgId: string, dto: any) {
+  async createTreasuryTransaction(tenantId: string, orgId: string, dto: unknown) {
     let resolvedOrgId = orgId;
     if (!resolvedOrgId) {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
     return prisma.treasuryTransaction.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId }
+      data: { ...(dto as Record<string, unknown>), tenantId, orgId: resolvedOrgId } as never
     });
   }
 

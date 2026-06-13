@@ -26,7 +26,7 @@ describe('LocalizationService', () => {
     vi.mocked(prisma.languageOverride.findMany).mockResolvedValue([
       { id: 'lo-1', tenantId: 't1', locale: 'es', key: 'dashboard.welcome', translation: '¡Bienvenido!' },
       { id: 'lo-2', tenantId: 't1', locale: 'fr', key: 'dashboard.welcome', translation: 'Bienvenue!' },
-    ] as any);
+    ] as never);
 
     const overrides = await service.getOverrides('t1');
     expect(overrides).toHaveLength(2);
@@ -38,7 +38,7 @@ describe('LocalizationService', () => {
     vi.mocked(prisma.languageOverride.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.languageOverride.create).mockResolvedValue({
       id: 'lo-new', tenantId: 't1', locale: 'de', key: 'dashboard.title', translation: 'Armaturenbrett',
-    } as any);
+    } as never);
 
     const result = await service.createOrUpdateOverride('t1', {
       locale: 'de',

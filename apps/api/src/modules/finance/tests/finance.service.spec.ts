@@ -7,7 +7,7 @@ vi.mock('@prisma/client', () => {
   return {
     Prisma: {
       Decimal: class Decimal {
-        constructor(value: any) {
+        constructor(value: unknown) {
           return Number(value);
         }
       }
@@ -112,7 +112,7 @@ describe('FinanceService', () => {
         },
       ];
 
-      vi.mocked(prisma.invoice.findMany).mockResolvedValue(mockInvoices as any);
+      vi.mocked(prisma.invoice.findMany).mockResolvedValue(mockInvoices as never);
 
       const result = await financeService.getInvoices('tenant-123');
 
@@ -138,11 +138,11 @@ describe('FinanceService', () => {
 
     it('should create an invoice successfully', async () => {
       const { prisma } = await import('@unerp/database');
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
       vi.mocked(prisma.invoice.findFirst).mockResolvedValue(null);
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: 'cust-1' } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: 'cust-1' } as never);
 
-      const result = await financeService.createInvoice('tenant-123', 'org-1', defaultDto as any, 'user-1');
+      const result = await financeService.createInvoice('tenant-123', 'org-1', defaultDto as never, 'user-1');
 
       expect(result).toBeDefined();
       expect(prisma.customer.findFirst).toHaveBeenCalledWith({ where: { id: 'cust-1', tenantId: 'tenant-123' } });
@@ -151,11 +151,11 @@ describe('FinanceService', () => {
 
     it('should resolve orgId if org-system-default is passed', async () => {
       const { prisma } = await import('@unerp/database');
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'resolved-org' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'resolved-org' } as never);
       vi.mocked(prisma.invoice.findFirst).mockResolvedValue(null);
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: 'cust-1' } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: 'cust-1' } as never);
 
-      await financeService.createInvoice('tenant-123', 'org-system-default', defaultDto as any, 'user-1');
+      await financeService.createInvoice('tenant-123', 'org-system-default', defaultDto as never, 'user-1');
 
       expect(prisma.organization.findFirst).toHaveBeenCalledWith({ where: { tenantId: 'tenant-123' } });
       expect(prisma.invoice.findFirst).toHaveBeenCalledWith(expect.objectContaining({
@@ -167,26 +167,26 @@ describe('FinanceService', () => {
       const { prisma } = await import('@unerp/database');
       vi.mocked(prisma.organization.findFirst).mockResolvedValue(null);
 
-      await expect(financeService.createInvoice('tenant-123', 'org-system-default', defaultDto as any, 'user-1'))
+      await expect(financeService.createInvoice('tenant-123', 'org-system-default', defaultDto as never, 'user-1'))
         .rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if invoice number exists', async () => {
       const { prisma } = await import('@unerp/database');
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as any);
-      vi.mocked(prisma.invoice.findFirst).mockResolvedValue({ id: 'existing-inv' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
+      vi.mocked(prisma.invoice.findFirst).mockResolvedValue({ id: 'existing-inv' } as never);
 
-      await expect(financeService.createInvoice('tenant-123', 'org-1', defaultDto as any, 'user-1'))
+      await expect(financeService.createInvoice('tenant-123', 'org-1', defaultDto as never, 'user-1'))
         .rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if customer does not exist', async () => {
       const { prisma } = await import('@unerp/database');
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
       vi.mocked(prisma.invoice.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.customer.findFirst).mockResolvedValue(null);
 
-      await expect(financeService.createInvoice('tenant-123', 'org-1', defaultDto as any, 'user-1'))
+      await expect(financeService.createInvoice('tenant-123', 'org-1', defaultDto as never, 'user-1'))
         .rejects.toThrow(NotFoundException);
     });
   });
@@ -204,9 +204,9 @@ describe('FinanceService', () => {
         id: 'inv-1',
         paidAmount: 50,
         totalAmount: 200
-      } as any);
+      } as never);
 
-      const result = await financeService.createPayment('tenant-123', defaultDto as any, 'user-1');
+      const result = await financeService.createPayment('tenant-123', defaultDto as never, 'user-1');
 
       expect(result).toBeDefined();
       expect(prisma.$transaction).toHaveBeenCalled();
@@ -218,9 +218,9 @@ describe('FinanceService', () => {
         id: 'inv-1',
         paidAmount: 50,
         totalAmount: 150
-      } as any);
+      } as never);
 
-      await financeService.createPayment('tenant-123', defaultDto as any, 'user-1');
+      await financeService.createPayment('tenant-123', defaultDto as never, 'user-1');
 
       expect(prisma.$transaction).toHaveBeenCalled();
       // Implementation inside transaction mock checks for this
@@ -230,7 +230,7 @@ describe('FinanceService', () => {
       const { prisma } = await import('@unerp/database');
       vi.mocked(prisma.invoice.findFirst).mockResolvedValue(null);
 
-      await expect(financeService.createPayment('tenant-123', defaultDto as any, 'user-1'))
+      await expect(financeService.createPayment('tenant-123', defaultDto as never, 'user-1'))
         .rejects.toThrow(NotFoundException);
     });
 
@@ -240,9 +240,9 @@ describe('FinanceService', () => {
         id: 'inv-1',
         paidAmount: 150,
         totalAmount: 200
-      } as any);
+      } as never);
 
-      await expect(financeService.createPayment('tenant-123', defaultDto as any, 'user-1'))
+      await expect(financeService.createPayment('tenant-123', defaultDto as never, 'user-1'))
         .rejects.toThrow(BadRequestException);
     });
   });

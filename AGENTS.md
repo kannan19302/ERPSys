@@ -80,6 +80,7 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 13. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules.
 14. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
 15. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
+16. **Always develop End-to-End.** When requested to "develop" or "build" a page or feature, AI agents MUST provide a completely end-to-end working implementation. This includes the database schema (Prisma), backend API (NestJS Controllers/Services), and the frontend (Next.js) hooked up to the API. Do not just build frontend mocks unless explicitly requested.
 
 ### Dev Environment Startup (MANDATORY BEFORE ANY DEV WORK)
 16. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.

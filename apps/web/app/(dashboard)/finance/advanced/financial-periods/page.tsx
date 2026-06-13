@@ -1,14 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Calendar, Lock, Unlock, Loader2 } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface FinancialPeriod {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
 export default function FinancialPeriodsPage() {
-  const [periods, setPeriods] = useState<any[]>([]);
+  const [periods, setPeriods] = useState<FinancialPeriod[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', startDate: '', endDate: '' });

@@ -47,11 +47,11 @@ export class SaasService {
     });
   }
 
-  async handleStripeWebhook(event: { type: string; data: { object: any } }) {
+  async handleStripeWebhook(event: { type: string; data: { object: unknown } }) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const tenantId = session.client_reference_id;
-      const stripePriceId = session.metadata?.stripePriceId;
+      const tenantId = (session as Record<string, unknown>).client_reference_id as string;
+      const stripePriceId = ((session as Record<string, unknown>).metadata as Record<string, unknown>)?.stripePriceId as string;
 
       if (!tenantId || !stripePriceId) {
         throw new BadRequestException('Missing tenantId or stripePriceId metadata');

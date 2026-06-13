@@ -20,7 +20,7 @@ describe('FinanceEventHandler', () => {
 
   beforeEach(() => {
     financeService = new FinanceService();
-    vi.spyOn(financeService, 'createInvoice').mockResolvedValue({ id: 'inv-1', invoiceNumber: 'INV-AUTO-DEL-1' } as any);
+    vi.spyOn(financeService, 'createInvoice').mockResolvedValue({ id: 'inv-1', invoiceNumber: 'INV-AUTO-DEL-1' } as never);
     eventHandler = new FinanceEventHandler(financeService);
     vi.clearAllMocks();
   });
@@ -42,7 +42,7 @@ describe('FinanceEventHandler', () => {
       lineItems: [
         { productId: 'prod-1', unitPrice: 100, taxRate: 10 },
       ],
-    } as any);
+    } as never);
 
     await eventHandler.handleSalesDeliveryCreated(mockEvent);
 

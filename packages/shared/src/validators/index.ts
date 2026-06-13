@@ -316,3 +316,32 @@ export const updateShipmentStatusSchema = z.object({
 });
 export type UpdateShipmentStatusInput = z.infer<typeof updateShipmentStatusSchema>;
 
+// ── User Profile Schemas ──
+
+export const updateProfileSchema = z.object({
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  currentPassword: z.string().optional(),
+  newPassword: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+    .optional(),
+  preferences: z.record(z.unknown()).optional(),
+});
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+// ── Admin Settings Schemas ──
+
+export const updateAdminSettingsSchema = z.object({
+  companyName: z.string().min(1).max(200).optional(),
+  taxId: z.string().max(50).optional(),
+  currency: z.string().length(3).optional(),
+  timezone: z.string().optional(),
+  address: addressSchema.optional(),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/i).optional(),
+  modules: z.record(z.boolean()).optional(),
+});
+export type UpdateAdminSettingsInput = z.infer<typeof updateAdminSettingsSchema>;

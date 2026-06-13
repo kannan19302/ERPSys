@@ -1,17 +1,36 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Settings, ShieldCheck, CreditCard, ArrowRight, CheckCircle2, Loader2, Plus, RefreshCw } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface APSchedule {
+  id: string;
+  amount: number;
+  dueDate: string;
+  status: string;
+  vendor?: {
+    name: string;
+  };
+}
+
+interface APRun {
+  id: string;
+  runDate: string;
+  totalAmount: number;
+  status: string;
+  bankAccount?: {
+    bankName: string;
+    accountNumber: string;
+  };
+}
+
 export default function APAutomationPage() {
-  const [schedules, setSchedules] = useState<any[]>([]);
-  const [runs, setRuns] = useState<any[]>([]);
-  const [vendors, setVendors] = useState<any[]>([]);
-  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+  const [schedules, setSchedules] = useState<APSchedule[]>([]);
+  const [runs, setRuns] = useState<APRun[]>([]);
+  const [vendors, setVendors] = useState<{ id: string; name: string }[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<{ id: string; bankName: string; accountNumber: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Forms visibility
@@ -80,9 +99,9 @@ export default function APAutomationPage() {
         const err = await res.json().catch(() => ({}));
         alert('Failed to save payment schedule: ' + (err.message || 'Error'));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert('Error saving payment schedule: ' + err.message);
+      alert('Error saving payment schedule: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -111,9 +130,9 @@ export default function APAutomationPage() {
         const err = await res.json().catch(() => ({}));
         alert('Failed to save payment run: ' + (err.message || 'Error'));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert('Error saving payment run: ' + err.message);
+      alert('Error saving payment run: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -125,7 +144,7 @@ export default function APAutomationPage() {
     }
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('admin_token') || '';
-      const sampleVendor = vendors[0];
+      const sampleVendor = vendors[0] as { id: string; name: string };
       const payload = {
         vendorId: sampleVendor.id,
         amount: Math.floor(Math.random() * 5000) + 500,
@@ -145,9 +164,9 @@ export default function APAutomationPage() {
       } else {
         alert('Matching engine run failed.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert('Error running matching engine: ' + err.message);
+      alert('Error running matching engine: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 

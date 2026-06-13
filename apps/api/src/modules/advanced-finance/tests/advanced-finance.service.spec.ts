@@ -7,7 +7,7 @@ vi.mock('@prisma/client', () => {
   return {
     Prisma: {
       Decimal: class Decimal {
-        constructor(value: any) {
+        constructor(value: unknown) {
           return Number(value);
         }
       }
@@ -121,12 +121,12 @@ describe('AdvancedFinanceService', () => {
       const { prisma } = await import('@unerp/database');
       // Mocking whatever entity model might be called inside by generically making all findMany return []
       Object.keys(prisma).forEach((key) => {
-        if ((prisma as any)[key]?.findMany) {
-          vi.mocked((prisma as any)[key].findMany).mockResolvedValue([]);
+        if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.findMany) {
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.findMany!).mockResolvedValue([]);
         }
       });
 
-      const res = await (service as any)[method]('tenant-123');
+      const res = await (service as unknown as Record<string, import("vitest").Mock>)[method]!("tenant-123");
       expect(res).toBeDefined();
     });
   });
@@ -156,26 +156,26 @@ describe('AdvancedFinanceService', () => {
     it(`should run ${method} without errors`, async () => {
       const { prisma } = await import('@unerp/database');
       Object.keys(prisma).forEach((key) => {
-        if ((prisma as any)[key]?.create) {
-          vi.mocked((prisma as any)[key].create).mockResolvedValue({ id: 'new-id' });
+        if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.create) {
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.create!).mockResolvedValue({ id: 'new-id' });
         }
-        if ((prisma as any)[key]?.findFirst) {
-          vi.mocked((prisma as any)[key].findFirst).mockResolvedValue(null);
+        if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.findFirst) {
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.findFirst!).mockResolvedValue(null);
         }
-        if ((prisma as any)[key]?.update) {
-          vi.mocked((prisma as any)[key].update).mockResolvedValue({ id: 'updated-id' });
+        if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.update) {
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.update!).mockResolvedValue({ id: 'updated-id' });
         }
       });
       // specific mock for org
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
 
-      const res = await (service as any)[method](...args);
+      const res = await (service as unknown as Record<string, import("vitest").Mock>)[method]!(...args);
       expect(res).toBeDefined();
     });
 
     it(`should run ${method} with fallback orgId without errors`, async () => {
       const { prisma } = await import('@unerp/database');
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-fallback' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-fallback' } as never);
 
       // pass undefined/null for orgId to trigger lines 568-570, 579-581, etc.
       const modifiedArgs = [...args];
@@ -183,7 +183,7 @@ describe('AdvancedFinanceService', () => {
         modifiedArgs[1] = '';
       }
       
-      const res = await (service as any)[method](...modifiedArgs);
+      const res = await (service as unknown as Record<string, import("vitest").Mock>)[method]!(...modifiedArgs);
       expect(res).toBeDefined();
     });
   });
@@ -193,7 +193,7 @@ describe('AdvancedFinanceService', () => {
   describe('createJournal', () => {
     it('should create a journal successfully', async () => {
       const { prisma } = await import('@unerp/database');
-      vi.mocked(prisma.account.findUnique).mockResolvedValue({ id: 'acc-1', type: 'ASSET' } as any);
+      vi.mocked(prisma.account.findUnique).mockResolvedValue({ id: 'acc-1', type: 'ASSET' } as never);
 
       const dto = {
         entryNumber: 'J-1',

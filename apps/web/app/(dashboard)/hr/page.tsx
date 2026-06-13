@@ -61,6 +61,7 @@ export default function HrPage() {
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [modalSaveStatus, setModalSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
   // Fetch Data
   const fetchData = async () => {
@@ -246,20 +247,19 @@ export default function HrPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateEmployee = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateEmployee = async (updatedFields?: Partial<EmployeeData>) => {
     if (!selectedEmployee) return;
 
-    setSubmitting(true);
+    setModalSaveStatus('saving');
     setModalError(null);
 
     const payload = {
-      firstName,
-      lastName,
-      designation: designation || undefined,
-      departmentId: departmentId || undefined,
-      employmentType,
-      status
+      firstName: (updatedFields?.hasOwnProperty('firstName') ? updatedFields.firstName : firstName) as string,
+      lastName: (updatedFields?.hasOwnProperty('lastName') ? updatedFields.lastName : lastName) as string,
+      designation: (updatedFields?.hasOwnProperty('designation') ? updatedFields.designation : designation) as string | null,
+      departmentId: (updatedFields?.hasOwnProperty('departmentId') ? updatedFields.departmentId : departmentId) as string | null,
+      employmentType: (updatedFields?.hasOwnProperty('employmentType') ? updatedFields.employmentType : employmentType) as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN',
+      status: (updatedFields?.hasOwnProperty('status') ? updatedFields.status : status) as 'ACTIVE' | 'INVITED' | 'TERMINATED' | 'LEAVE'
     };
 
     try {
@@ -270,43 +270,39 @@ export default function HrPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token || ''}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          designation: payload.designation || undefined,
+          departmentId: payload.departmentId || undefined,
+          employmentType: payload.employmentType,
+          status: payload.status
+        })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Update request failed');
 
-      setModalSuccess(true);
-      setTimeout(() => {
-        setIsEditModalOpen(false);
-        resetForm();
-        fetchData();
-      }, 1500);
+      setModalSaveStatus('saved');
+      fetchData();
     } catch {
       // Local mock update
-      setModalSuccess(true);
-      const chosenDept = departments.find(d => d.id === departmentId);
+      const chosenDept = departments.find(d => d.id === payload.departmentId);
       setEmployees(prev => prev.map(emp => {
         if (emp.id === selectedEmployee.id) {
           return {
             ...emp,
-            firstName,
-            lastName,
-            designation: designation || null,
-            employmentType,
-            status,
+            firstName: payload.firstName,
+            lastName: payload.lastName,
+            designation: payload.designation || null,
+            employmentType: payload.employmentType,
+            status: payload.status,
             departmentName: chosenDept ? chosenDept.name : 'Unassigned',
-            departmentId: departmentId || null
+            departmentId: payload.departmentId || null
           };
         }
         return emp;
       }));
-
-      setTimeout(() => {
-        setIsEditModalOpen(false);
-        resetForm();
-      }, 1500);
-    } finally {
-      setSubmitting(false);
+      setModalSaveStatus('saved');
     }
   };
 
@@ -623,13 +619,20 @@ export default function HrPage() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 'var(--space-4)' }}>
           <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', boxShadow: 'var(--shadow-xl)', display: 'flex', flexDirection: 'column', margin: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>Modify Profile Settings</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>Modify Profile Settings</h3>
+                <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'normal' }}>
+                  {modalSaveStatus === 'saving' && <span style={{ color: 'var(--color-warning-text)' }}>Saving...</span>}
+                  {modalSaveStatus === 'saved' && <span style={{ color: 'var(--color-success)' }}>Saved</span>}
+                  {modalSaveStatus === 'error' && <span style={{ color: 'var(--color-danger)' }}>Error</span>}
+                </span>
+              </div>
               <button onClick={() => { setIsEditModalOpen(false); resetForm(); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleUpdateEmployee} style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <form onSubmit={(e) => e.preventDefault()} style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               {modalSuccess ? (
                 <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
                   <CheckCircle size={40} style={{ color: 'var(--color-success)', marginBottom: 'var(--space-3)' }} />
@@ -648,6 +651,7 @@ export default function HrPage() {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
+                        onBlur={() => handleUpdateEmployee()}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       />
                     </div>
@@ -658,6 +662,7 @@ export default function HrPage() {
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
+                        onBlur={() => handleUpdateEmployee()}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       />
                     </div>
@@ -670,6 +675,7 @@ export default function HrPage() {
                         type="text"
                         value={designation}
                         onChange={(e) => setDesignation(e.target.value)}
+                        onBlur={() => handleUpdateEmployee()}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       />
                     </div>
@@ -677,7 +683,11 @@ export default function HrPage() {
                       <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Org Department</label>
                       <select
                         value={departmentId}
-                        onChange={(e) => setDepartmentId(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setDepartmentId(val);
+                          handleUpdateEmployee({ departmentId: val });
+                        }}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       >
                         <option value="">-- Choose Department --</option>
@@ -691,7 +701,11 @@ export default function HrPage() {
                       <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Employment Type</label>
                       <select
                         value={employmentType}
-                        onChange={(e) => setEmploymentType(e.target.value as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN')}
+                        onChange={(e) => {
+                          const val = e.target.value as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN';
+                          setEmploymentType(val);
+                          handleUpdateEmployee({ employmentType: val });
+                        }}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       >
                         <option value="FULL_TIME">Full Time</option>
@@ -704,7 +718,11 @@ export default function HrPage() {
                       <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>HR Status</label>
                       <select
                         value={status}
-                        onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'INVITED' | 'TERMINATED' | 'LEAVE')}
+                        onChange={(e) => {
+                          const val = e.target.value as 'ACTIVE' | 'INVITED' | 'TERMINATED' | 'LEAVE';
+                          setStatus(val);
+                          handleUpdateEmployee({ status: val });
+                        }}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                       >
                         <option value="ACTIVE">Active Employee</option>
@@ -716,11 +734,8 @@ export default function HrPage() {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
-                    <Button variant="outline" type="button" onClick={() => { setIsEditModalOpen(false); resetForm(); }}>
-                      Cancel
-                    </Button>
-                    <Button variant="primary" type="submit" disabled={submitting}>
-                      {submitting ? <Spinner size="sm" /> : 'Apply Adjustments'}
+                    <Button variant="primary" type="button" onClick={() => { setIsEditModalOpen(false); resetForm(); }}>
+                      Close
                     </Button>
                   </div>
                 </>

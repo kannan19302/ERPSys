@@ -3,23 +3,23 @@ import { AdvancedFinanceController } from '../advanced-finance.controller';
 
 describe('AdvancedFinanceController', () => {
   let controller: AdvancedFinanceController;
-  let service: any;
+  let service: unknown;
 
   beforeEach(() => {
-    const mocks: any = {};
+    const mocks: unknown = {};
     service = new Proxy({}, {
       get: (_target, prop: string) => {
-        if (!mocks[prop]) {
-          mocks[prop] = vi.fn().mockResolvedValue({});
+        if (!(mocks as Record<string, unknown>)[prop]) {
+          (mocks as Record<string, unknown>)[prop] = vi.fn().mockResolvedValue({});
         }
-        return mocks[prop];
+        return (mocks as Record<string, unknown>)[prop];
       }
     });
     
-    controller = new AdvancedFinanceController(service);
+    controller = new AdvancedFinanceController(service as never);
   });
 
-  const mockReq = { user: { tenantId: 'tenant-1', orgId: 'org-1', userId: 'user-1' } } as any;
+  const mockReq = { user: { tenantId: 'tenant-1', orgId: 'org-1', userId: 'user-1' } } as unknown as Record<string, import("vitest").Mock>;
 
   const getEndpoints = [
     'getExchangeRates',
@@ -48,24 +48,24 @@ describe('AdvancedFinanceController', () => {
 
   getEndpoints.forEach((method) => {
     it(`should call service.${method} successfully`, async () => {
-      await (controller as any)[method](mockReq);
-      expect(service[method]).toHaveBeenCalledWith('tenant-1');
+      await (controller as unknown as Record<string, Function>)[method]!(mockReq);
+      expect((service as unknown as Record<string, import("vitest").Mock>)[method]).toHaveBeenCalledWith('tenant-1');
     });
   });
 
   it('should call getProfitAndLoss', async () => {
-    await controller.getProfitAndLoss(mockReq, 'start', 'end');
-    expect(service.getProfitAndLoss).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
+    await controller.getProfitAndLoss(mockReq as never, "start", "end");
+    expect((service as unknown as Record<string, Function>).getProfitAndLoss).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
   });
 
   it('should call getBalanceSheet', async () => {
-    await controller.getBalanceSheet(mockReq, 'date');
-    expect(service.getBalanceSheet).toHaveBeenCalledWith('tenant-1', 'org-1', 'date');
+    await controller.getBalanceSheet(mockReq as never, "date");
+    expect((service as unknown as Record<string, Function>).getBalanceSheet).toHaveBeenCalledWith('tenant-1', 'org-1', 'date');
   });
 
   it('should call getCashFlow', async () => {
-    await controller.getCashFlow(mockReq, 'start', 'end');
-    expect(service.getCashFlow).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
+    await controller.getCashFlow(mockReq as never, "start", "end");
+    expect((service as unknown as Record<string, Function>).getCashFlow).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
   });
 
   const postEndpoints = [
@@ -93,8 +93,8 @@ describe('AdvancedFinanceController', () => {
 
   postEndpoints.forEach(({ method, args, expectedArgs }) => {
     it(`should call service.${method} successfully`, async () => {
-      await (controller as any)[method](...args);
-      expect(service[method]).toHaveBeenCalledWith(...expectedArgs);
+      await (controller as unknown as Record<string, Function>)[method]!(...args);
+      expect((service as unknown as Record<string, import("vitest").Mock>)[method]).toHaveBeenCalledWith(...expectedArgs);
     });
   });
 

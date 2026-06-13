@@ -1,16 +1,43 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Target, TrendingUp, Plus, PieChart, Layers, Loader2 } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface GLAccount {
+  id: string;
+  code: string;
+  name: string;
+}
+
+interface BudgetScenario {
+  id: string;
+  name: string;
+  status: string;
+  description?: string;
+}
+
+interface BudgetAllocation {
+  id: string;
+  startDate: string;
+  endDate: string;
+  amount: number;
+  account?: {
+    name: string;
+  };
+  costCenter?: {
+    name: string;
+  };
+  project?: {
+    name: string;
+  };
+}
+
 export default function BudgetingPage() {
-  const [budgets, setBudgets] = useState<any[]>([]);
-  const [scenarios, setScenarios] = useState<any[]>([]);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [budgets, setBudgets] = useState<BudgetAllocation[]>([]);
+  const [scenarios, setScenarios] = useState<BudgetScenario[]>([]);
+  const [accounts, setAccounts] = useState<GLAccount[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [showBudgetForm, setShowBudgetForm] = useState(false);

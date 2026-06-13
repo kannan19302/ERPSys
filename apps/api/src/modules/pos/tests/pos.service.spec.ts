@@ -44,7 +44,7 @@ describe('PosService', () => {
   it('should fetch terminals', async () => {
     const { prisma } = await import('@unerp/database');
     const mockTerminals = [{ id: 't-1', name: 'Main Terminal', code: 'TERM-01' }];
-    vi.mocked(prisma.pOSTerminal.findMany).mockResolvedValue(mockTerminals as any);
+    vi.mocked(prisma.pOSTerminal.findMany).mockResolvedValue(mockTerminals as never);
 
     const res = await posService.getTerminals('tenant-123');
     expect(res).toBeDefined();
@@ -54,7 +54,7 @@ describe('PosService', () => {
   it('should fetch register sessions', async () => {
     const { prisma } = await import('@unerp/database');
     const mockRegisters = [{ id: 'reg-1', status: 'OPEN', startingCash: 250 }];
-    vi.mocked(prisma.pOSRegister.findMany).mockResolvedValue(mockRegisters as any);
+    vi.mocked(prisma.pOSRegister.findMany).mockResolvedValue(mockRegisters as never);
 
     const res = await posService.getRegisters('tenant-123');
     expect(res).toBeDefined();

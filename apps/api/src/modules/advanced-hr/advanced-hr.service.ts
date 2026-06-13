@@ -13,7 +13,7 @@ export class AdvancedHrService {
 
   async createSalaryStructure(
     tenantId: string,
-    dto: { employeeId: string; baseSalary: number; allowances?: any; deductions?: any }
+    dto: { employeeId: string; baseSalary: number; allowances?: unknown; deductions?: unknown }
   ) {
     const existing = await prisma.salaryStructure.findFirst({
       where: { tenantId, employeeId: dto.employeeId },
@@ -192,6 +192,83 @@ export class AdvancedHrService {
         startTime: new Date(dto.startTime),
         endTime: new Date(dto.endTime),
         note: dto.note || null,
+      },
+    });
+  }
+
+  async getAppraisals(tenantId: string) {
+    const appraisals = await prisma.appraisal.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const employeeIds = appraisals.map(a => a.employeeId);
+    const reviewerIds = appraisals.map(a => a.reviewerId);
+
+    const [employees, reviewers] = await Promise.all([
+      prisma.employee.findMany({
+        where: { tenantId, id: { in: employeeIds } },
+        select: { id: true, firstName: true, lastName: true },
+      }),
+      prisma.user.findMany({
+        where: { tenantId, id: { in: reviewerIds } },
+        select: { id: true, firstName: true, lastName: true },
+      }),
+    ]);
+
+    const employeeMap = new Map(employees.map(e => [e.id, `${e.firstName} ${e.lastName}`]));
+    const reviewerMap = new Map(reviewers.map(r => [r.id, `${r.firstName} ${r.lastName}`]));
+
+    return appraisals.map(app => ({
+      id: app.id,
+      employeeId: app.employeeId,
+      reviewerId: app.reviewerId,
+      appraisalPeriod: app.appraisalPeriod,
+      score: parseFloat(app.score.toString()),
+      feedback: app.feedback,
+      status: app.status,
+      createdAt: app.createdAt,
+      employeeName: employeeMap.get(app.employeeId) || 'Unknown Employee',
+      reviewerName: reviewerMap.get(app.reviewerId) || 'System / Admin',
+    }));
+  }
+
+  async createAppraisal(
+    tenantId: string,
+    dto: { employeeId: string; reviewerId: string; appraisalPeriod: string; score: number; feedback?: string }
+  ) {
+    return prisma.appraisal.create({
+      data: {
+        tenantId,
+        employeeId: dto.employeeId,
+        reviewerId: dto.reviewerId,
+        appraisalPeriod: dto.appraisalPeriod,
+        score: new Prisma.Decimal(dto.score),
+        feedback: dto.feedback || null,
+        status: 'COMPLETED',
+      },
+    });
+  }
+
+  async getTrainings(tenantId: string) {
+    return prisma.training.findMany({
+      where: { tenantId },
+      orderBy: { startDate: 'asc' },
+    });
+  }
+
+  async createTraining(
+    tenantId: string,
+    dto: { name: string; description?: string; instructor?: string; startDate: string; endDate: string }
+  ) {
+    return prisma.training.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        description: dto.description || null,
+        instructor: dto.instructor || null,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
       },
     });
   }

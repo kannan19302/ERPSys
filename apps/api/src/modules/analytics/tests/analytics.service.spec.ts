@@ -44,7 +44,7 @@ describe('AnalyticsService', () => {
   it('should fetch dashboards', async () => {
     const { prisma } = await import('@unerp/database');
     const mockDash = [{ id: 'd-1', name: 'Sales Dash' }];
-    vi.mocked(prisma.dashboard.findMany).mockResolvedValue(mockDash as any);
+    vi.mocked(prisma.dashboard.findMany).mockResolvedValue(mockDash as never);
 
     const res = await analyticsService.getDashboards('tenant-123');
     expect(res).toBeDefined();
@@ -54,7 +54,7 @@ describe('AnalyticsService', () => {
   it('should fetch reports', async () => {
     const { prisma } = await import('@unerp/database');
     const mockReports = [{ id: 'r-1', name: 'Inventory Report' }];
-    vi.mocked(prisma.report.findMany).mockResolvedValue(mockReports as any);
+    vi.mocked(prisma.report.findMany).mockResolvedValue(mockReports as never);
 
     const res = await analyticsService.getReports('tenant-123');
     expect(res).toBeDefined();
@@ -64,7 +64,7 @@ describe('AnalyticsService', () => {
   it('should fetch KPIs', async () => {
     const { prisma } = await import('@unerp/database');
     const mockKPIs = [{ id: 'k-1', code: 'TOTAL_REVENUE', value: '$10,000', trend: '[]' }];
-    vi.mocked(prisma.kPI.findMany).mockResolvedValue(mockKPIs as any);
+    vi.mocked(prisma.kPI.findMany).mockResolvedValue(mockKPIs as never);
 
     const res = await analyticsService.getKPIs('tenant-123');
     expect(res).toBeDefined();

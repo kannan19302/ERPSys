@@ -43,7 +43,7 @@ describe('HealthcareService', () => {
   it('should get patients list', async () => {
     const { prisma } = await import('@unerp/database');
     const mockPatients = [{ id: 'p-1', firstName: 'John', lastName: 'Doe' }];
-    vi.mocked(prisma.patient.findMany).mockResolvedValue(mockPatients as any);
+    vi.mocked(prisma.patient.findMany).mockResolvedValue(mockPatients as never);
 
     const res = await service.getPatients('tenant-123');
     expect(res).toBeDefined();
@@ -53,7 +53,7 @@ describe('HealthcareService', () => {
   it('should get practitioner list', async () => {
     const { prisma } = await import('@unerp/database');
     const mockPracts = [{ id: 'pract-1', specialty: 'Cardiology' }];
-    vi.mocked(prisma.practitioner.findMany).mockResolvedValue(mockPracts as any);
+    vi.mocked(prisma.practitioner.findMany).mockResolvedValue(mockPracts as never);
 
     const res = await service.getPractitioners('tenant-123');
     expect(res).toBeDefined();

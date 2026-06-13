@@ -27,7 +27,7 @@ export class AdminController {
 
   @Get('users')
   @Permissions('admin.user.read')
-  async getUsers(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getUsers(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.adminService.getUsers(req.user.tenantId);
   }
 
@@ -36,7 +36,7 @@ export class AdminController {
   async createUser(
     @Req() req: AuthenticatedRequest,
     @Body(new ZodValidationPipe(createUserSchema)) dto: CreateUserInput,
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.adminService.createUser(req.user.tenantId, dto);
   }
 
@@ -46,25 +46,32 @@ export class AdminController {
     @Req() req: AuthenticatedRequest,
     @Param('id') userId: string,
     @Body(new ZodValidationPipe(updateUserSchema)) dto: UpdateUserInput,
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.adminService.updateUser(req.user.tenantId, userId, dto);
   }
 
   @Get('roles')
   @Permissions('admin.role.read')
-  async getRoles(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getRoles(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.adminService.getRoles(req.user.tenantId);
   }
 
   @Get('settings')
   @Permissions('admin.setting.read')
-  async getSettings(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getSettings(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.adminService.getSettings(req.user.tenantId);
   }
 
   @Patch('settings')
   @Permissions('admin.setting.update')
-  async updateSettings(@Req() req: AuthenticatedRequest, @Body() settings: Record<string, unknown>): Promise<any> {
-    return this.adminService.updateSettings(req.user.tenantId, settings);
+  async updateSettings(
+    @Req() req: AuthenticatedRequest, 
+    @Body() body: Record<string, unknown>
+  ): Promise<unknown> {
+    const validationPipe = new ZodValidationPipe(
+      require('@unerp/shared').updateAdminSettingsSchema,
+    );
+    const dto = validationPipe.transform(body, { type: 'body', metatype: Object });
+    return this.adminService.updateSettings(req.user.tenantId, dto);
   }
 }

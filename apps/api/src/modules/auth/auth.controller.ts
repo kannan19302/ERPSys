@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -44,5 +44,18 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req: AuthenticatedRequest) {
     return this.authService.getProfile(req.user.userId);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: Record<string, unknown>,
+  ) {
+    const validationPipe = new ZodValidationPipe(
+      require('@unerp/shared').updateProfileSchema,
+    );
+    const dto = validationPipe.transform(body, { type: 'body', metatype: Object });
+    return this.authService.updateProfile(req.user.userId, dto);
   }
 }

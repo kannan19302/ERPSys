@@ -18,9 +18,20 @@ export default function HomePage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      router.push('/apps');
-    } else {
-      router.push('/login');
+      if (token !== 'mock-token-xyz') {
+        fetch('/api/v1/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(res => {
+          if (res.ok) {
+            router.push('/apps');
+          } else {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
+        }).catch(() => {});
+      } else {
+        router.push('/apps');
+      }
     }
   }, [router]);
 

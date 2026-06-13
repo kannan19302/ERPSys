@@ -36,7 +36,7 @@ export class AnalyticsController {
   @Permissions('analytics.dashboard.create')
   async createDashboard(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; description?: string; layout?: any }
+    @Body() dto: { name: string; description?: string; layout?: unknown }
   ) {
     const orgId = req.user.orgId || 'org-system-default';
     return this.analyticsService.createDashboard(req.user.tenantId, orgId, dto);
@@ -52,7 +52,7 @@ export class AnalyticsController {
   @Permissions('analytics.report.create')
   async createReport(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; description?: string; query?: any; type?: string }
+    @Body() dto: { name: string; description?: string; query?: unknown; type?: string }
   ) {
     const orgId = req.user.orgId || 'org-system-default';
     return this.analyticsService.createReport(req.user.tenantId, orgId, dto);

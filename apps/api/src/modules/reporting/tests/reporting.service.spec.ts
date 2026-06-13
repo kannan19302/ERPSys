@@ -27,7 +27,7 @@ describe('ReportingService', () => {
   it('should get report widgets', async () => {
     const { prisma } = await import('@unerp/database');
     const mockWidgets = [{ id: 'w-1', title: 'Sales Report', chartType: 'BAR' }];
-    vi.mocked(prisma.reportWidget.findMany).mockResolvedValue(mockWidgets as any);
+    vi.mocked(prisma.reportWidget.findMany).mockResolvedValue(mockWidgets as never);
 
     const res = await service.getWidgets('tenant-123');
     expect(res).toBeDefined();

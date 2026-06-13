@@ -31,7 +31,7 @@ describe('NotificationsService', () => {
   it('should get channels', async () => {
     const { prisma } = await import('@unerp/database');
     const mockChannels = [{ id: 'ch-1', name: 'Web', isEnabled: true }];
-    vi.mocked(prisma.notificationChannel.findMany).mockResolvedValue(mockChannels as any);
+    vi.mocked(prisma.notificationChannel.findMany).mockResolvedValue(mockChannels as never);
 
     const res = await service.getChannels('tenant-123');
     expect(res).toBeDefined();

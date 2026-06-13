@@ -24,7 +24,7 @@ describe('PwaService', () => {
     const { prisma } = await import('@unerp/database');
     vi.mocked(prisma.offlineSyncQueue.findMany).mockResolvedValue([
       { id: 'sync-1', tenantId: 't1', clientId: 'device-1', operation: 'CREATE', entityType: 'ServiceTicket', status: 'PENDING' },
-    ] as any);
+    ] as never);
 
     const queue = await service.getSyncQueue('t1');
     expect(queue).toHaveLength(1);
@@ -33,8 +33,8 @@ describe('PwaService', () => {
 
   it('should push offline operations', async () => {
     const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.offlineSyncQueue.create).mockImplementation((args: any) =>
-      Promise.resolve({ id: 'sync-new', ...args.data }) as any,
+    vi.mocked(prisma.offlineSyncQueue.create).mockImplementation((args: unknown) =>
+      Promise.resolve({ id: 'sync-new', ...(args as Record<string, unknown>).data as Record<string, unknown> }) as never,
     );
 
     const records = await service.pushOfflineOperations('t1', 'device-1', [
@@ -45,8 +45,8 @@ describe('PwaService', () => {
 
   it('should reconcile an operation', async () => {
     const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.offlineSyncQueue.findFirst).mockResolvedValue({ id: 'sync-1', tenantId: 't1', status: 'PENDING' } as any);
-    vi.mocked(prisma.offlineSyncQueue.update).mockResolvedValue({ id: 'sync-1', status: 'RECONCILED', reconciledAt: new Date() } as any);
+    vi.mocked(prisma.offlineSyncQueue.findFirst).mockResolvedValue({ id: 'sync-1', tenantId: 't1', status: 'PENDING' } as never);
+    vi.mocked(prisma.offlineSyncQueue.update).mockResolvedValue({ id: 'sync-1', status: 'RECONCILED', reconciledAt: new Date() } as never);
 
     const result = await service.reconcileOperation('t1', 'sync-1', 'RECONCILED');
     expect(result.status).toBe('RECONCILED');

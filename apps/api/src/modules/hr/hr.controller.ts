@@ -23,14 +23,14 @@ export class HrController {
 
   @Get('employees')
   @Permissions('hr.employee.read')
-  async getEmployees(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getEmployees(@Req() req: AuthenticatedRequest): Promise<unknown> {
     const tenantId = req.user.tenantId;
     return this.hrService.getEmployees(tenantId);
   }
 
   @Post('employees')
   @Permissions('hr.employee.create')
-  async createEmployee(@Req() req: AuthenticatedRequest, @Body() dto: CreateEmployeeInput): Promise<any> {
+  async createEmployee(@Req() req: AuthenticatedRequest, @Body() dto: CreateEmployeeInput): Promise<unknown> {
     const tenantId = req.user.tenantId;
     const orgId = req.user.orgId || 'org-system-default';
     return this.hrService.createEmployee(tenantId, orgId, dto);
@@ -42,7 +42,7 @@ export class HrController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: Partial<CreateEmployeeInput>,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const tenantId = req.user.tenantId;
     return this.hrService.updateEmployee(tenantId, id, dto);
   }

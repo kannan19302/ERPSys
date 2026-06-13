@@ -22,7 +22,7 @@ export class AdvancedHrController {
 
   @Get('salaries')
   @Permissions('hr.employee.read')
-  async getSalaryStructures(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getSalaryStructures(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.hrService.getSalaryStructures(req.user.tenantId);
   }
 
@@ -30,14 +30,14 @@ export class AdvancedHrController {
   @Permissions('hr.employee.create')
   async createSalaryStructure(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { employeeId: string; baseSalary: number; allowances?: any; deductions?: any }
-  ): Promise<any> {
+    @Body() dto: { employeeId: string; baseSalary: number; allowances?: unknown; deductions?: unknown }
+  ): Promise<unknown> {
     return this.hrService.createSalaryStructure(req.user.tenantId, dto);
   }
 
   @Get('payroll')
   @Permissions('hr.payroll.read')
-  async getPayrollRuns(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getPayrollRuns(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.hrService.getPayrollRuns(req.user.tenantId);
   }
 
@@ -46,7 +46,7 @@ export class AdvancedHrController {
   async runPayroll(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { periodStart: string; periodEnd: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.hrService.runPayroll(req.user.tenantId, dto);
   }
 
@@ -104,5 +104,42 @@ export class AdvancedHrController {
     @Body() dto: { employeeId: string; startTime: string; endTime: string; note?: string }
   ) {
     return this.hrService.createShiftSchedule(req.user.tenantId, dto);
+  }
+
+  @Get('appraisals')
+  @Permissions('hr.employee.read')
+  async getAppraisals(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getAppraisals(req.user.tenantId);
+  }
+
+  @Post('appraisals')
+  @Permissions('hr.employee.create')
+  async createAppraisal(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { employeeId: string; reviewerId?: string; appraisalPeriod: string; score: number; feedback?: string }
+  ) {
+    const reviewerId = dto.reviewerId || req.user.userId || 'system';
+    return this.hrService.createAppraisal(req.user.tenantId, {
+      employeeId: dto.employeeId,
+      reviewerId,
+      appraisalPeriod: dto.appraisalPeriod,
+      score: dto.score,
+      feedback: dto.feedback
+    });
+  }
+
+  @Get('trainings')
+  @Permissions('hr.employee.read')
+  async getTrainings(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getTrainings(req.user.tenantId);
+  }
+
+  @Post('trainings')
+  @Permissions('hr.employee.create')
+  async createTraining(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { name: string; description?: string; instructor?: string; startDate: string; endDate: string }
+  ) {
+    return this.hrService.createTraining(req.user.tenantId, dto);
   }
 }

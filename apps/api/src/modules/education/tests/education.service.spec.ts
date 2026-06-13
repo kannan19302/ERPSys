@@ -52,7 +52,7 @@ describe('EducationService', () => {
   it('should get students list', async () => {
     const { prisma } = await import('@unerp/database');
     const mockStudents = [{ id: 'stu-1', firstName: 'Alice', lastName: 'Smith' }];
-    vi.mocked(prisma.student.findMany).mockResolvedValue(mockStudents as any);
+    vi.mocked(prisma.student.findMany).mockResolvedValue(mockStudents as never);
 
     const res = await service.getStudents('tenant-123');
     expect(res).toBeDefined();

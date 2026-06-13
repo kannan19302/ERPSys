@@ -29,13 +29,13 @@ export class ProcurementController {
 
   @Get('purchase-orders/:id')
   @Permissions('procurement.purchase-order.read')
-  async getPurchaseOrderById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<any> {
+  async getPurchaseOrderById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.procurementService.getPurchaseOrderById(req.user.tenantId, id);
   }
 
   @Post('purchase-orders')
   @Permissions('procurement.purchase-order.create')
-  async createPurchaseOrder(@Req() req: AuthenticatedRequest, @Body() dto: CreatePurchaseOrderInput): Promise<any> {
+  async createPurchaseOrder(@Req() req: AuthenticatedRequest, @Body() dto: CreatePurchaseOrderInput): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.procurementService.createPurchaseOrder(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
@@ -46,7 +46,7 @@ export class ProcurementController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdatePurchaseOrderStatusInput,
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.procurementService.updatePurchaseOrderStatus(req.user.tenantId, id, dto.status, req.user.userId || 'system');
   }
 

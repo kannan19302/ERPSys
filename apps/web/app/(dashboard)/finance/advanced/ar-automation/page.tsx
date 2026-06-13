@@ -1,15 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { MailWarning, AlertTriangle, Play, Loader2, RefreshCw } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface DunningLevel {
+  id: string;
+  levelName: string;
+  daysOverdue: number;
+  feeAmount: number;
+}
+
+interface DunningRun {
+  id: string;
+  runDate: string;
+  status: string;
+  totalInvoices: number;
+}
+
 export default function ARAutomationPage() {
-  const [levels, setLevels] = useState<any[]>([]);
-  const [runs, setRuns] = useState<any[]>([]);
+  const [levels, setLevels] = useState<DunningLevel[]>([]);
+  const [runs, setRuns] = useState<DunningRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLevelForm, setShowLevelForm] = useState(false);
   const [levelData, setLevelData] = useState({ levelName: '', daysOverdue: '', feeAmount: '' });

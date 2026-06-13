@@ -22,13 +22,13 @@ export class ProjectsController {
 
   @Get()
   @Permissions('projects.project.read')
-  async getProjects(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getProjects(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.projectsService.getProjects(req.user.tenantId);
   }
 
   @Get(':id')
   @Permissions('projects.project.read')
-  async getProjectById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<any> {
+  async getProjectById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.projectsService.getProjectById(req.user.tenantId, id);
   }
 
@@ -37,14 +37,14 @@ export class ProjectsController {
   async createProject(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.projectsService.createProject(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 
   @Get(':id/tasks')
   @Permissions('projects.project.read')
-  async getTasks(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<any> {
+  async getTasks(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.projectsService.getTasks(req.user.tenantId, id);
   }
 
@@ -54,7 +54,7 @@ export class ProjectsController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: { name: string; description?: string; priority?: string; dueDate?: string; assignedToId?: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.projectsService.createTask(req.user.tenantId, id, dto);
   }
 
@@ -64,7 +64,7 @@ export class ProjectsController {
     @Req() req: AuthenticatedRequest,
     @Param('taskId') taskId: string,
     @Body() dto: { employeeId: string; date: string; hours: number; notes?: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.projectsService.logTime(req.user.tenantId, taskId, dto);
   }
 }

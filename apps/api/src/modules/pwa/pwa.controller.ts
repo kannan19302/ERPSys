@@ -29,7 +29,7 @@ export class PwaController {
   @Permissions('admin.sync.create')
   async pushOfflineOperations(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { clientId: string; operations: Array<{ operation: string; entityType: string; payload: any }> }
+    @Body() dto: { clientId: string; operations: Array<{ operation: string; entityType: string; payload: unknown }> }
   ) {
     return this.pwaService.pushOfflineOperations(req.user.tenantId, dto.clientId, dto.operations);
   }

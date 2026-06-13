@@ -19,7 +19,7 @@ export class AnalyticsService {
   async createDashboard(
     tenantId: string,
     orgId: string,
-    dto: { name: string; description?: string; layout?: any }
+    dto: { name: string; description?: string; layout?: unknown }
   ) {
     let resolvedOrgId = orgId;
     if (!orgId || orgId === 'org-system-default') {
@@ -49,7 +49,7 @@ export class AnalyticsService {
   async createReport(
     tenantId: string,
     orgId: string,
-    dto: { name: string; description?: string; query?: any; type?: string }
+    dto: { name: string; description?: string; query?: unknown; type?: string }
   ) {
     let resolvedOrgId = orgId;
     if (!orgId || orgId === 'org-system-default') {

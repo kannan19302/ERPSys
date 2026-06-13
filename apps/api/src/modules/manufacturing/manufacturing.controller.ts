@@ -22,7 +22,7 @@ export class ManufacturingController {
 
   @Get('boms')
   @Permissions('manufacturing.bom.read')
-  async getBOMs(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getBOMs(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getBOMs(req.user.tenantId);
   }
 
@@ -31,13 +31,13 @@ export class ManufacturingController {
   async createBOM(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { productId: string; name: string; code: string; items: Array<{ productId: string; quantity: number }> }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.manufacturingService.createBOM(req.user.tenantId, dto);
   }
 
   @Get('work-orders')
   @Permissions('manufacturing.work-order.read')
-  async getWorkOrders(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getWorkOrders(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getWorkOrders(req.user.tenantId);
   }
 
@@ -46,7 +46,7 @@ export class ManufacturingController {
   async createWorkOrder(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { bomId: string; workOrderNumber: string; quantity: number; startDate?: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.manufacturingService.createWorkOrder(req.user.tenantId, dto);
   }
 
@@ -56,7 +56,7 @@ export class ManufacturingController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: { status: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.manufacturingService.updateWorkOrderStatus(req.user.tenantId, id, dto.status);
   }
 }

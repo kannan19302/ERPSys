@@ -38,8 +38,8 @@ export class SaasController {
   }
 
   @Post('webhooks/stripe')
-  async stripeWebhook(@Body() event: any) {
-    return this.saasService.handleStripeWebhook(event);
+  async stripeWebhook(@Body() event: unknown) {
+    return this.saasService.handleStripeWebhook(event as never);
   }
 
   @Get('installed-apps')

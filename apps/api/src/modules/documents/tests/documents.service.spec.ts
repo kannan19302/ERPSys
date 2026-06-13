@@ -48,7 +48,7 @@ describe('DocumentsService', () => {
   it('should fetch folders', async () => {
     const { prisma } = await import('@unerp/database');
     const mockFolders = [{ id: 'f-1', name: 'Billing' }];
-    vi.mocked(prisma.folder.findMany).mockResolvedValue(mockFolders as any);
+    vi.mocked(prisma.folder.findMany).mockResolvedValue(mockFolders as never);
 
     const res = await documentsService.getFolders('tenant-123');
     expect(res).toBeDefined();
@@ -58,7 +58,7 @@ describe('DocumentsService', () => {
   it('should fetch documents', async () => {
     const { prisma } = await import('@unerp/database');
     const mockDocs = [{ id: 'd-1', name: 'Contract.pdf' }];
-    vi.mocked(prisma.document.findMany).mockResolvedValue(mockDocs as any);
+    vi.mocked(prisma.document.findMany).mockResolvedValue(mockDocs as never);
 
     const res = await documentsService.getDocuments('tenant-123');
     expect(res).toBeDefined();

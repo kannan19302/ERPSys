@@ -27,7 +27,7 @@ describe('StorageService', () => {
   it('should get stored files', async () => {
     const { prisma } = await import('@unerp/database');
     const mockFiles = [{ id: 'file-1', name: 'Invoice.pdf', bucket: 'tenant-bucket' }];
-    vi.mocked(prisma.storedFile.findMany).mockResolvedValue(mockFiles as any);
+    vi.mocked(prisma.storedFile.findMany).mockResolvedValue(mockFiles as never);
 
     const res = await service.getFiles('tenant-123');
     expect(res).toBeDefined();

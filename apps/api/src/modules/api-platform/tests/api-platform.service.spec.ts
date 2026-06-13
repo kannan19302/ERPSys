@@ -34,7 +34,7 @@ describe('ApiPlatformService', () => {
     const mockKeys = [
       { id: 'key-1', tenantId: 't1', name: 'Test Key', prefix: 'ue_live_', status: 'ACTIVE', rateLimit: 120 },
     ];
-    vi.mocked(prisma.apiKey.findMany).mockResolvedValue(mockKeys as any);
+    vi.mocked(prisma.apiKey.findMany).mockResolvedValue(mockKeys as never);
 
     const keys = await service.getApiKeys('t1');
     expect(keys).toHaveLength(1);
@@ -43,7 +43,7 @@ describe('ApiPlatformService', () => {
 
   it('should create an API key', async () => {
     const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.apiKey.create).mockResolvedValue({ id: 'key-new', name: 'New Key', prefix: 'ue_live_', status: 'ACTIVE' } as any);
+    vi.mocked(prisma.apiKey.create).mockResolvedValue({ id: 'key-new', name: 'New Key', prefix: 'ue_live_', status: 'ACTIVE' } as never);
 
     const key = await service.createApiKey('t1', { name: 'New Key' });
     expect(key).toBeDefined();
@@ -52,8 +52,8 @@ describe('ApiPlatformService', () => {
 
   it('should revoke an API key', async () => {
     const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.apiKey.findFirst).mockResolvedValue({ id: 'key-1', tenantId: 't1', status: 'ACTIVE' } as any);
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({ id: 'key-1', status: 'REVOKED' } as any);
+    vi.mocked(prisma.apiKey.findFirst).mockResolvedValue({ id: 'key-1', tenantId: 't1', status: 'ACTIVE' } as never);
+    vi.mocked(prisma.apiKey.update).mockResolvedValue({ id: 'key-1', status: 'REVOKED' } as never);
 
     const revoked = await service.revokeApiKey('t1', 'key-1');
     expect(revoked.status).toBe('REVOKED');
@@ -63,7 +63,7 @@ describe('ApiPlatformService', () => {
     const { prisma } = await import('@unerp/database');
     vi.mocked(prisma.webhookSubscription.findMany).mockResolvedValue([
       { id: 'wh-1', tenantId: 't1', name: 'Invoice Hook', status: 'ACTIVE' },
-    ] as any);
+    ] as never);
 
     const subs = await service.getWebhookSubscriptions('t1');
     expect(subs).toHaveLength(1);
@@ -73,7 +73,7 @@ describe('ApiPlatformService', () => {
     const { prisma } = await import('@unerp/database');
     vi.mocked(prisma.webhookDeliveryLog.findMany).mockResolvedValue([
       { id: 'log-1', event: 'invoice.paid', status: 'SUCCESS', responseStatus: 200 },
-    ] as any);
+    ] as never);
 
     const logs = await service.getWebhookDeliveryLogs('t1');
     expect(logs).toHaveLength(1);

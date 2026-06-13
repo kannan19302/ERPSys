@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +8,7 @@ import { Card, Button } from '@unerp/ui';
 export default function AdvancedReportsPage() {
   const [activeReport, setActiveReport] = useState('pnl');
   const [loading, setLoading] = useState(false);
-  const [reportData, setReportData] = useState<any>(null);
+  const [reportData, setReportData] = useState<unknown>(null);
 
   const generateReport = async () => {
     setLoading(true);
@@ -97,7 +95,7 @@ export default function AdvancedReportsPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               )}
-              {reportData && !loading && (
+              {!!reportData && !loading && (
                 <div className="space-y-6 animate-in fade-in duration-500">
                   <div className="text-center pb-6 border-b">
                     <h2 className="text-2xl font-bold uppercase tracking-widest">

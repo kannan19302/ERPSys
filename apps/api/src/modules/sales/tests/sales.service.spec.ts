@@ -5,7 +5,7 @@ import { SalesService } from '../sales.service';
 vi.mock('@prisma/client', () => ({
   Prisma: {
     Decimal: class Decimal {
-      constructor(value: any) {
+      constructor(value: unknown) {
         return Number(value);
       }
     },

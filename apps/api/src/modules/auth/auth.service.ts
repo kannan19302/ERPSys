@@ -292,11 +292,53 @@ export class AuthService {
       avatar: user.avatar,
       roles,
       permissions,
+      preferences: user.preferences,
       tenant: {
         id: user.tenant.id,
         name: user.tenant.name,
         slug: user.tenant.slug,
       },
+    };
+  }
+
+  /**
+   * Updates profile data of the currently authenticated user.
+   */
+  async updateProfile(userId: string, dto: import('@unerp/shared').UpdateProfileInput) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.currentPassword && dto.newPassword) {
+      if (!user.passwordHash) throw new BadRequestException('Account does not have a password.');
+      const isPasswordValid = await comparePassword(dto.currentPassword, user.passwordHash);
+      if (!isPasswordValid) throw new UnauthorizedException('Invalid current password');
+    }
+
+    const updateData: any = {};
+    if (dto.firstName) updateData.firstName = dto.firstName;
+    if (dto.lastName) updateData.lastName = dto.lastName;
+    if (dto.newPassword) updateData.passwordHash = await hashPassword(dto.newPassword);
+    
+    if (dto.preferences) {
+      const currentPrefs = user.preferences as Record<string, unknown>;
+      updateData.preferences = { ...currentPrefs, ...dto.preferences };
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    return {
+      id: updatedUser.id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      preferences: updatedUser.preferences,
     };
   }
 }

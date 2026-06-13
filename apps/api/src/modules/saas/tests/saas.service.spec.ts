@@ -34,7 +34,7 @@ describe('SaasService', () => {
     vi.mocked(prisma.saaSPlan.findMany).mockResolvedValue([
       { id: 'plan-1', name: 'Starter', stripePriceId: 'price_starter', maxUsers: 5, maxStorage: 1024 },
       { id: 'plan-2', name: 'Growth', stripePriceId: 'price_growth', maxUsers: 50, maxStorage: 10240 },
-    ] as any);
+    ] as never);
 
     const plans = await service.getPlans();
     expect(plans).toHaveLength(2);
@@ -49,7 +49,7 @@ describe('SaasService', () => {
       planId: 'plan-2',
       status: 'ACTIVE',
       plan: { name: 'Growth', maxUsers: 50 },
-    } as any);
+    } as never);
 
     const sub = await service.getSubscription('t1');
     expect(sub).toBeDefined();
@@ -61,7 +61,7 @@ describe('SaasService', () => {
     vi.mocked(prisma.usageRecord.findMany).mockResolvedValue([
       { id: 'ur-1', tenantId: 't1', metric: 'USERS_COUNT', currentValue: 12, limitValue: 50 },
       { id: 'ur-2', tenantId: 't1', metric: 'STORAGE_MB', currentValue: 2048, limitValue: 10240 },
-    ] as any);
+    ] as never);
 
     const records = await service.getUsageRecords('t1');
     expect(records).toHaveLength(2);
@@ -71,8 +71,8 @@ describe('SaasService', () => {
   it('should create usage record when none exists', async () => {
     const { prisma } = await import('@unerp/database');
     vi.mocked(prisma.usageRecord.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.usageRecord.create).mockImplementation((args: any) =>
-      Promise.resolve({ id: 'ur-new', ...args.data }) as any,
+    vi.mocked(prisma.usageRecord.create).mockImplementation((args: unknown) =>
+      Promise.resolve({ id: 'ur-new', ...(args as Record<string, unknown>).data as Record<string, unknown> }) as never,
     );
 
     const result = await service.updateUsage('t1', 'API_CALLS_COUNT', 100, 10000);

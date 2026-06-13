@@ -38,7 +38,7 @@ export class PosController {
 
   @Get('registers')
   @Permissions('pos.register.read')
-  async getRegisters(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getRegisters(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.posService.getRegisters(req.user.tenantId);
   }
 
@@ -47,7 +47,7 @@ export class PosController {
   async openRegister(
     @Req() req: AuthenticatedRequest,
     @Body() dto: { terminalId: string; startingCash: number }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.posService.openRegister(req.user.tenantId, dto, req.user.userId || 'system');
   }
 
@@ -57,7 +57,7 @@ export class PosController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: { endingCash: number; actualCash: number }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.posService.closeRegister(req.user.tenantId, id, dto);
   }
 
@@ -85,7 +85,7 @@ export class PosController {
 
   @Get('registers/:registerId/cash-entries')
   @Permissions('pos.cash-entry.read')
-  async getCashEntries(@Req() req: AuthenticatedRequest, @Param('registerId') registerId: string): Promise<any> {
+  async getCashEntries(@Req() req: AuthenticatedRequest, @Param('registerId') registerId: string): Promise<unknown> {
     return this.posService.getCashEntries(req.user.tenantId, registerId);
   }
 
@@ -95,7 +95,7 @@ export class PosController {
     @Req() req: AuthenticatedRequest,
     @Param('registerId') registerId: string,
     @Body() dto: { type: 'IN' | 'OUT'; amount: number; reason?: string }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.posService.addCashEntry(req.user.tenantId, registerId, dto, req.user.userId || 'system');
   }
 }

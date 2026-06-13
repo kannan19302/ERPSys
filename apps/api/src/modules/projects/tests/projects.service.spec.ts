@@ -37,7 +37,7 @@ describe('ProjectsService', () => {
       const mockProjects = [
         { id: 'p-1', name: 'Test Project', code: 'PRJ-1', status: 'ACTIVE' },
       ];
-      vi.mocked(prisma.project.findMany).mockResolvedValue(mockProjects as any);
+      vi.mocked(prisma.project.findMany).mockResolvedValue(mockProjects as never);
 
       const result = await service.getProjects('tenant-1');
       expect(result).toHaveLength(1);
@@ -47,9 +47,9 @@ describe('ProjectsService', () => {
 
   describe('createProject', () => {
     it('should create a project successfully', async () => {
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
       vi.mocked(prisma.project.findFirst).mockResolvedValue(null);
-      vi.mocked(prisma.project.create).mockResolvedValue({ id: 'p-1', name: 'New Project', code: 'PRJ-NEW' } as any);
+      vi.mocked(prisma.project.create).mockResolvedValue({ id: 'p-1', name: 'New Project', code: 'PRJ-NEW' } as never);
 
       const dto = { name: 'New Project', code: 'PRJ-NEW' };
       const result = await service.createProject('tenant-1', 'org-1', dto, 'user-1');

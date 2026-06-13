@@ -23,14 +23,14 @@ export class CrmController {
 
   @Get('customers')
   @Permissions('crm.contact.read')
-  async getCustomers(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getCustomers(@Req() req: AuthenticatedRequest): Promise<unknown> {
     const tenantId = req.user.tenantId;
     return this.crmService.getCustomers(tenantId);
   }
 
   @Post('customers')
   @Permissions('crm.contact.create')
-  async createCustomer(@Req() req: AuthenticatedRequest, @Body() dto: CreateCustomerInput): Promise<any> {
+  async createCustomer(@Req() req: AuthenticatedRequest, @Body() dto: CreateCustomerInput): Promise<unknown> {
     const tenantId = req.user.tenantId;
     const orgId = req.user.orgId || 'org-system-default';
     return this.crmService.createCustomer(tenantId, orgId, dto);
@@ -38,14 +38,14 @@ export class CrmController {
 
   @Get('vendors')
   @Permissions('procurement.vendor.read')
-  async getVendors(@Req() req: AuthenticatedRequest): Promise<any> {
+  async getVendors(@Req() req: AuthenticatedRequest): Promise<unknown> {
     const tenantId = req.user.tenantId;
     return this.crmService.getVendors(tenantId);
   }
 
   @Post('vendors')
   @Permissions('procurement.vendor.create')
-  async createVendor(@Req() req: AuthenticatedRequest, @Body() dto: CreateVendorInput): Promise<any> {
+  async createVendor(@Req() req: AuthenticatedRequest, @Body() dto: CreateVendorInput): Promise<unknown> {
     const tenantId = req.user.tenantId;
     const orgId = req.user.orgId || 'org-system-default';
     return this.crmService.createVendor(tenantId, orgId, dto);

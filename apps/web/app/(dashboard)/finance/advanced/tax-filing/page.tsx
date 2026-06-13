@@ -1,14 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { UploadCloud, CheckCircle, FileText, Send, Loader2 } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface TaxFiling {
+  id: string;
+  filingType: string;
+  periodStart: string;
+  periodEnd: string;
+  status: string;
+}
+
 export default function TaxFilingPage() {
-  const [filings, setFilings] = useState<any[]>([]);
+  const [filings, setFilings] = useState<TaxFiling[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [showFilingForm, setShowFilingForm] = useState(false);
@@ -22,7 +28,7 @@ export default function TaxFilingPage() {
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('admin_token') || '';
       const res = await fetch('http://localhost:3001/api/v1/advanced-finance/tax-filings', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setFilings(await res.json());
+      if (res.ok) setFilings((await res.json()) as TaxFiling[]);
     } catch (e) {
       console.error(e);
     } finally {

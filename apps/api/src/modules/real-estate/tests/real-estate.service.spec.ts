@@ -35,7 +35,7 @@ describe('RealEstateService', () => {
   it('should get properties list', async () => {
     const { prisma } = await import('@unerp/database');
     const mockProps = [{ id: 'prop-1', name: 'Apartment 4B' }];
-    vi.mocked(prisma.property.findMany).mockResolvedValue(mockProps as any);
+    vi.mocked(prisma.property.findMany).mockResolvedValue(mockProps as never);
 
     const res = await service.getProperties('tenant-123');
     expect(res).toBeDefined();

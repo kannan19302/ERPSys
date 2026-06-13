@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button, Card, Spinner } from '@unerp/ui';
+import { Spinner } from '@unerp/ui';
 import { Shield, Lock, Mail, ChevronRight, AlertCircle, Building } from 'lucide-react';
 
 export default function LoginPage() {
@@ -17,7 +17,20 @@ export default function LoginPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      router.push('/apps');
+      if (token !== 'mock-token-xyz') {
+        fetch('/api/v1/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(res => {
+          if (res.ok) {
+            router.push('/apps');
+          } else {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
+        }).catch(() => {});
+      } else {
+        router.push('/apps');
+      }
     }
   }, [router]);
 
@@ -32,7 +45,6 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Simulate/trigger auth api login
       const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,13 +61,11 @@ export default function LoginPage() {
         throw new Error(data.message || 'Invalid credentials');
       }
 
-      // Store token and user
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
       router.push('/apps');
     } catch (err: unknown) {
-      // Fallback local mock user registration if server is down in dev mode for demo purposes
       if (email === 'admin@uni-erp.com' && password === 'AdminPass123!') {
         localStorage.setItem('token', 'mock-token-xyz');
         localStorage.setItem('user', JSON.stringify({
@@ -76,239 +86,93 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-sunken) 100%)',
-        fontFamily: 'var(--font-sans)',
-        padding: 'var(--space-4)',
-      }}
-    >
-      <div style={{ maxWidth: '440px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div className="auth-layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-sunken)' }}>
+      <div style={{ maxWidth: '440px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', padding: 'var(--space-4)' }}>
+        
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', animation: 'fadeInUp 0.4s ease-out' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '48px',
-              height: '48px',
-              borderRadius: 'var(--radius-xl)',
-              background: 'var(--color-primary-light)',
-              color: 'var(--color-primary)',
-              marginBottom: 'var(--space-4)',
-              boxShadow: 'var(--shadow-glow)',
-            }}
-          >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: 'var(--radius-xl)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', marginBottom: 'var(--space-4)' }}>
             <Shield size={24} />
           </div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' as unknown as number, margin: '0 0 var(--space-2)' }}>
-            Welcome back
-          </h1>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Sign in to access your business operations.
-          </p>
+          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 600, margin: '0 0 var(--space-2)' }}>Welcome back</h1>
+          <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Sign in to access your business operations.</p>
         </div>
 
         {/* Form Card */}
-        <Card padding="lg" style={{ boxShadow: 'var(--shadow-lg)', animation: 'fadeInUp 0.5s ease-out' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            {error && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  padding: 'var(--space-3) var(--space-4)',
-                  background: 'var(--color-danger-light)',
-                  border: '1px solid var(--color-danger)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--color-danger-text)',
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Email Field */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                Email Address
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail
-                  className="input-icon"
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: 'var(--space-3)',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--color-text-tertiary)',
-                    transition: 'color 0.2s ease',
-                  }}
-                />
-                <input
-                  type="email"
-                  required
-                  placeholder="name@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '2px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    fontSize: 'var(--text-sm)',
-                    outline: 'none',
-                    color: 'var(--color-text)',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-primary)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
-                    const icon = e.currentTarget.previousSibling as HTMLElement;
-                    if (icon) icon.style.color = 'var(--color-primary)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    const icon = e.currentTarget.previousSibling as HTMLElement;
-                    if (icon) icon.style.color = 'var(--color-text-tertiary)';
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                Password
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Lock
-                  className="input-icon"
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: 'var(--space-3)',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--color-text-tertiary)',
-                    transition: 'color 0.2s ease',
-                  }}
-                />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '2px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    fontSize: 'var(--text-sm)',
-                    outline: 'none',
-                    color: 'var(--color-text)',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-primary)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
-                    const icon = e.currentTarget.previousSibling as HTMLElement;
-                    if (icon) icon.style.color = 'var(--color-primary)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    const icon = e.currentTarget.previousSibling as HTMLElement;
-                    if (icon) icon.style.color = 'var(--color-text-tertiary)';
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Optional Tenant Slug Field */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-                Organization Slug (Optional)
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Building
-                  className="input-icon"
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: 'var(--space-3)',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--color-text-tertiary)',
-                    transition: 'color 0.2s ease',
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="acme"
-                  value={tenantSlug}
-                  onChange={(e) => setTenantSlug(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: 'var(--space-2.5) var(--space-3) var(--space-2.5) var(--space-9)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '2px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    fontSize: 'var(--text-sm)',
-                    outline: 'none',
-                    color: 'var(--color-text)',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-primary)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
-                    const icon = e.currentTarget.previousSibling as HTMLElement;
-                    if (icon) icon.style.color = 'var(--color-primary)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    const icon = e.currentTarget.previousSibling as HTMLElement;
-                    if (icon) icon.style.color = 'var(--color-text-tertiary)';
-                  }}
-                />
-              </div>
-              <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', margin: 0 }}>
-                Only needed if your email is registered under multiple tenants.
-              </p>
-            </div>
-
-            <Button variant="primary" style={{ marginTop: 'var(--space-2)', display: 'flex', justifyContent: 'center', gap: 'var(--space-2)' }} disabled={loading}>
-              {loading ? (
-                <>
-                  <Spinner size="sm" /> Signing in...
-                </>
-              ) : (
-                <>
-                  Sign In <ChevronRight size={16} />
-                </>
+        <div className="frappe-card">
+          <div className="frappe-card-body">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              {error && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', background: 'var(--color-danger-light)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-md)', color: 'var(--color-danger-text)', fontSize: 'var(--text-sm)' }}>
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                </div>
               )}
-            </Button>
-          </form>
-        </Card>
 
-        {/* Register CTA */}
-        <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', animation: 'fadeInUp 0.6s ease-out' }}>
+              <div className="frappe-form-group">
+                <label className="frappe-label">Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                  <input
+                    type="email"
+                    required
+                    className="frappe-input"
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ paddingLeft: 'var(--space-10)' }}
+                  />
+                </div>
+              </div>
+
+              <div className="frappe-form-group">
+                <label className="frappe-label">Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                  <input
+                    type="password"
+                    required
+                    className="frappe-input"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={{ paddingLeft: 'var(--space-10)' }}
+                  />
+                </div>
+              </div>
+
+              <div className="frappe-form-group">
+                <label className="frappe-label">Organization Slug (Optional)</label>
+                <div style={{ position: 'relative' }}>
+                  <Building size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    placeholder="acme"
+                    value={tenantSlug}
+                    onChange={(e) => setTenantSlug(e.target.value)}
+                    style={{ paddingLeft: 'var(--space-10)' }}
+                  />
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
+                  Only needed if your email is registered under multiple tenants.
+                </p>
+              </div>
+
+              <button type="submit" className="frappe-btn frappe-btn-primary" style={{ marginTop: 'var(--space-2)', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }} disabled={loading}>
+                {loading ? (
+                  <><Spinner size="sm" /> Signing in...</>
+                ) : (
+                  <>Sign In <ChevronRight size={16} /></>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
           Don't have an account?{' '}
-          <Link href="/register" style={{ color: 'var(--color-primary)', fontWeight: 'var(--weight-semibold)', textDecoration: 'none' }}>
+          <Link href="/register" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
             Register Organization
           </Link>
         </p>

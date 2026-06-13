@@ -1,16 +1,37 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Landmark, ArrowRightLeft, TrendingUp, ShieldCheck, Loader2 } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+}
+
+interface Portfolio {
+  id: string;
+  name: string;
+  assetClass: string;
+  yieldRate: number | string;
+  currentValue: number | string;
+}
+
+interface TreasuryTransaction {
+  id: string;
+  type: string;
+  currency: string;
+  date: string;
+  amount: number | string;
+  status: string;
+}
+
 export default function TreasuryPage() {
-  const [portfolios, setPortfolios] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [transactions, setTransactions] = useState<TreasuryTransaction[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
@@ -30,9 +51,9 @@ export default function TreasuryPage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/treasury-transactions', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('http://localhost:3001/api/v1/advanced-finance/bank-accounts', { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      if (portRes.ok) setPortfolios(await portRes.json());
-      if (transRes.ok) setTransactions(await transRes.json());
-      if (bankRes.ok) setBankAccounts(await bankRes.json());
+      if (portRes.ok) setPortfolios((await portRes.json()) as Portfolio[]);
+      if (transRes.ok) setTransactions((await transRes.json()) as TreasuryTransaction[]);
+      if (bankRes.ok) setBankAccounts((await bankRes.json()) as BankAccount[]);
     } catch (e) {
       console.error(e);
     } finally {

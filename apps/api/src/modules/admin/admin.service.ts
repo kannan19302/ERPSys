@@ -143,7 +143,7 @@ export class AdminService {
   /**
    * Returns all roles in the tenant.
    */
-  async getRoles(tenantId: string): Promise<any> {
+  async getRoles(tenantId: string): Promise<unknown> {
     return prisma.role.findMany({
       where: { tenantId },
     });
@@ -152,7 +152,7 @@ export class AdminService {
   /**
    * Returns the tenant configurations and settings.
    */
-  async getSettings(tenantId: string): Promise<any> {
+  async getSettings(tenantId: string): Promise<unknown> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
     });
@@ -182,7 +182,7 @@ export class AdminService {
   /**
    * Updates the tenant's configuration settings.
    */
-  async updateSettings(tenantId: string, settings: Record<string, unknown>): Promise<any> {
+  async updateSettings(tenantId: string, dto: import('@unerp/shared').UpdateAdminSettingsInput): Promise<unknown> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
     });
@@ -191,17 +191,53 @@ export class AdminService {
       throw new NotFoundException('Tenant not found');
     }
 
-    const currentSettings = tenant.settings as Record<string, unknown>;
-    const updatedSettings = {
-      ...currentSettings,
-      ...settings,
-    };
+    return prisma.$transaction(async (tx) => {
+      // 1. Update Organization Profile if any fields match
+      if (dto.companyName || dto.taxId || dto.currency || dto.timezone || dto.address) {
+        const orgs = await tx.organization.findMany({ where: { tenantId } });
+        const org = orgs[0];
+        if (org) {
+          const updateData: any = {};
+          if (dto.companyName) updateData.name = dto.companyName;
+          if (dto.taxId) updateData.taxId = dto.taxId;
+          if (dto.currency) updateData.currency = dto.currency;
+          if (dto.timezone) updateData.timezone = dto.timezone;
+          if (dto.address) updateData.address = dto.address;
+          
+          await tx.organization.update({
+            where: { id: org.id },
+            data: updateData,
+          });
+        }
+      }
 
-    return prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        settings: updatedSettings,
-      },
+      // 2. Update Tenant Settings (branding, modules)
+      const currentSettings = tenant.settings as Record<string, unknown>;
+      const newSettingsData: Record<string, unknown> = {};
+      
+      if (dto.primaryColor) newSettingsData.primaryColor = dto.primaryColor;
+      if (dto.modules) newSettingsData.modules = dto.modules;
+
+      const updatedSettings = {
+        ...currentSettings,
+        ...newSettingsData,
+      };
+
+      const updatedTenant = await tx.tenant.update({
+        where: { id: tenantId },
+        data: {
+          settings: updatedSettings,
+        },
+      });
+
+      return {
+        tenant: {
+          id: updatedTenant.id,
+          name: updatedTenant.name,
+          settings: updatedTenant.settings,
+        },
+        message: 'Settings updated successfully',
+      };
     });
   }
 }

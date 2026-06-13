@@ -1,15 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Percent, ShieldAlert, Plus, Settings, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface TaxRule {
+  id: string;
+  name: string;
+  components?: { length: number }[];
+  status: string;
+}
+
+interface WithholdingTax {
+  id: string;
+  name: string;
+  rate: number | string;
+  threshold?: number | string;
+}
+
 export default function TaxEnginePage() {
-  const [rules, setRules] = useState<any[]>([]);
-  const [withholding, setWithholding] = useState<any[]>([]);
+  const [rules, setRules] = useState<TaxRule[]>([]);
+  const [withholding, setWithholding] = useState<WithholdingTax[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [showRuleForm, setShowRuleForm] = useState(false);
@@ -28,8 +40,8 @@ export default function TaxEnginePage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/tax-rules', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('http://localhost:3001/api/v1/advanced-finance/withholding-taxes', { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      if (rulesRes.ok) setRules(await rulesRes.json());
-      if (wTaxesRes.ok) setWithholding(await wTaxesRes.json());
+      if (rulesRes.ok) setRules((await rulesRes.json()) as TaxRule[]);
+      if (wTaxesRes.ok) setWithholding((await wTaxesRes.json()) as WithholdingTax[]);
     } catch (e) {
       console.error(e);
     } finally {

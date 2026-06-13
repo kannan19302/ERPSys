@@ -1,15 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Wallet, Landmark, Loader2, ArrowRight } from 'lucide-react';
 import { Card, Button } from '@unerp/ui';
 
+interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  currency: string;
+  status: string;
+  accountId?: string;
+}
+
+interface GLAccount {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+}
+
 export default function BankAccountsPage() {
-  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
-  const [glAccounts, setGlAccounts] = useState<any[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [glAccounts, setGlAccounts] = useState<GLAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,7 +48,8 @@ export default function BankAccountsPage() {
       if (banksRes.ok) setBankAccounts(await banksRes.json());
       if (glRes.ok) {
         const data = await glRes.json();
-        setGlAccounts(data.filter((a: any) => a.type === 'ASSET'));
+        const assetAccounts = (data as GLAccount[]).filter(a => a.type === 'ASSET');
+        setGlAccounts(assetAccounts);
       }
     } catch (e) {
       console.error(e);

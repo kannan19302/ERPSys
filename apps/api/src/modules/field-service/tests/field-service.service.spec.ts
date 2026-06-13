@@ -35,7 +35,7 @@ describe('FieldServiceService', () => {
   it('should get service tickets list', async () => {
     const { prisma } = await import('@unerp/database');
     const mockTickets = [{ id: 't-1', title: 'AC Leak' }];
-    vi.mocked(prisma.serviceTicket.findMany).mockResolvedValue(mockTickets as any);
+    vi.mocked(prisma.serviceTicket.findMany).mockResolvedValue(mockTickets as never);
 
     const res = await service.getTickets('tenant-123');
     expect(res).toBeDefined();

@@ -592,7 +592,32 @@ async function main() {
           baseSalary: 4500.00,
         },
       });
+
+      // Seed Appraisal
+      await prisma.appraisal.create({
+        data: {
+          tenantId: tenant.id,
+          employeeId: emp.id,
+          reviewerId: adminUser.id,
+          appraisalPeriod: 'FY 2026 Q1',
+          score: 4.5,
+          feedback: 'Excellent performance in core modules integration and type resolutions.',
+          status: 'COMPLETED',
+        },
+      });
     }
+
+    // Seed Training
+    await prisma.training.create({
+      data: {
+        tenantId: tenant.id,
+        name: 'Advanced ERP Development and Compliance',
+        description: 'Comprehensive bootcamp on Turborepo, NestJS, and Statutory Audit practices.',
+        instructor: 'Dr. Jane Foster',
+        startDate: new Date('2026-07-10T09:00:00Z'),
+        endDate: new Date('2026-07-12T17:00:00Z'),
+      },
+    });
 
     const sickLeave = await prisma.leavePolicy.create({
       data: {

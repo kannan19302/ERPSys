@@ -56,7 +56,7 @@ export class ApiPlatformService {
         tenantId,
         name: dto.name,
         targetUrl: dto.targetUrl,
-        events: JSON.stringify(dto.events) as any,
+        events: JSON.stringify(dto.events) as never,
         secret: dto.secret,
         status: 'ACTIVE',
       },

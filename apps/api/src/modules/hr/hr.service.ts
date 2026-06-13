@@ -36,7 +36,7 @@ export class HrService {
   /**
    * Register a new employee.
    */
-  async createEmployee(tenantId: string, orgId: string, dto: CreateEmployeeInput): Promise<any> {
+  async createEmployee(tenantId: string, orgId: string, dto: CreateEmployeeInput): Promise<unknown> {
     let resolvedOrgId = orgId;
     if (!orgId || orgId === 'org-system-default') {
       const org = await prisma.organization.findFirst({
@@ -77,7 +77,7 @@ export class HrService {
   /**
    * Update employee designation or status.
    */
-  async updateEmployee(tenantId: string, employeeId: string, dto: Partial<CreateEmployeeInput>): Promise<any> {
+  async updateEmployee(tenantId: string, employeeId: string, dto: Partial<CreateEmployeeInput>): Promise<unknown> {
     const employee = await prisma.employee.findFirst({
       where: { id: employeeId, tenantId },
     });

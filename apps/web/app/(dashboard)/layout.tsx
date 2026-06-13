@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Award, Coffee, CalendarDays, DollarSign } from 'lucide-react';
 import {
   Home,
   CreditCard,
@@ -80,7 +81,11 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: Users,
       items: [
         { name: 'Employee Directory', href: '/hr', icon: Users },
-        { name: 'Payroll & Attendance', href: '/hr/advanced', icon: FileSliders }
+        { name: 'Payroll & Salaries', href: '/hr/advanced?tab=payroll', icon: DollarSign },
+        { name: 'Leave Management', href: '/hr/advanced?tab=leaves', icon: Coffee },
+        { name: 'Shift Scheduling', href: '/hr/advanced?tab=shifts', icon: CalendarDays },
+        { name: 'Performance Appraisals', href: '/hr/advanced?tab=appraisals', icon: Award },
+        { name: 'Trainings & Certs', href: '/hr/advanced?tab=trainings', icon: GraduationCap }
       ]
     };
   }
@@ -299,6 +304,68 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen, type: 'Action' },
 ];
 
+function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] }; pathname: string; collapsed: boolean }) {
+  const searchParams = useSearchParams();
+  return (
+    <>
+      {appNav.items.map((item: SidebarItem) => {
+        const isActive = (() => {
+          const parts = item.href.split('?');
+          const itemPath = parts[0] || '';
+          const itemQuery = parts[1] || '';
+          const isPathMatch = pathname === itemPath || pathname.startsWith(itemPath + '/');
+          if (!isPathMatch) return false;
+          
+          if (itemPath.includes('/hr/advanced') || itemPath.includes('/finance/advanced')) {
+            const activeTab = searchParams.get('tab') || 'payroll';
+            const itemParams = new URLSearchParams(itemQuery);
+            const itemTab = itemParams.get('tab') || 'payroll';
+            return pathname === itemPath && activeTab === itemTab;
+          }
+          
+          return true;
+        })();
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.name}
+            href={item.href}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-3)',
+              padding: 'var(--space-2.5) var(--space-3)',
+              borderRadius: 'var(--radius-md)',
+              color: isActive ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)',
+              background: isActive ? 'var(--color-sidebar-active)' : 'transparent',
+              textDecoration: 'none',
+              fontSize: 'var(--text-sm)',
+              fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
+              transition: 'all var(--duration-fast) var(--ease-default)',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.background = 'var(--color-sidebar-hover)';
+                e.currentTarget.style.color = 'var(--color-sidebar-text-active)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--color-sidebar-text)';
+              }
+            }}
+          >
+            <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />
+            {!collapsed && <span>{item.name}</span>}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -363,6 +430,19 @@ export default function DashboardLayout({
         return;
       }
 
+      // Verify token with backend
+      if (storedToken !== 'mock-token-xyz') {
+        fetch('/api/v1/auth/me', {
+          headers: { 'Authorization': `Bearer ${storedToken}` }
+        }).then(res => {
+          if (res.status === 401) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            router.push('/login');
+          }
+        }).catch(() => {});
+      }
+
       // Check client-side app installation guard for industry/premium paths
       const segments = pathname.split('/');
       const activeSegment = segments[1];
@@ -414,6 +494,7 @@ export default function DashboardLayout({
   };
 
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
+  const hideSidebar = isAppsLanding || pathname === '/profile' || pathname.startsWith('/profile/');
   const appNav = getAppSpecificNavigation(pathname);
 
   return (
@@ -427,7 +508,7 @@ export default function DashboardLayout({
       }}
     >
       {/* Sidebar Section */}
-      {!isAppsLanding && (
+      {!hideSidebar && (
         <aside
           style={{
             width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
@@ -517,45 +598,9 @@ export default function DashboardLayout({
               gap: 'var(--space-1)',
             }}
           >
-            {appNav.items.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-3)',
-                    padding: 'var(--space-2.5) var(--space-3)',
-                    borderRadius: 'var(--radius-md)',
-                    color: isActive ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)',
-                    background: isActive ? 'var(--color-sidebar-active)' : 'transparent',
-                    textDecoration: 'none',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
-                    transition: 'all var(--duration-fast) var(--ease-default)',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'var(--color-sidebar-hover)';
-                      e.currentTarget.style.color = 'var(--color-sidebar-text-active)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = 'var(--color-sidebar-text)';
-                    }
-                  }}
-                >
-                  <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />
-                  {!collapsed && <span>{item.name}</span>}
-                </Link>
-              );
-            })}
+            <Suspense fallback={<div className="flex-1" />}>
+              <SidebarNavigation appNav={appNav} pathname={pathname} collapsed={collapsed} />
+            </Suspense>
           </nav>
 
           {/* Sidebar Footer */}

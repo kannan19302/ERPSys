@@ -42,7 +42,7 @@ describe('CommunicationService', () => {
   it('should fetch channels', async () => {
     const { prisma } = await import('@unerp/database');
     const mockChannels = [{ id: 'ch-1', name: 'General' }];
-    vi.mocked(prisma.channel.findMany).mockResolvedValue(mockChannels as any);
+    vi.mocked(prisma.channel.findMany).mockResolvedValue(mockChannels as never);
 
     const res = await commService.getChannels('tenant-123');
     expect(res).toBeDefined();
@@ -52,7 +52,7 @@ describe('CommunicationService', () => {
   it('should fetch notifications', async () => {
     const { prisma } = await import('@unerp/database');
     const mockNotifications = [{ id: 'n-1', title: 'Alert' }];
-    vi.mocked(prisma.notification.findMany).mockResolvedValue(mockNotifications as any);
+    vi.mocked(prisma.notification.findMany).mockResolvedValue(mockNotifications as never);
 
     const res = await commService.getNotifications('tenant-123', 'user-456');
     expect(res).toBeDefined();

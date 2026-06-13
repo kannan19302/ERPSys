@@ -36,7 +36,7 @@ export class SalesController {
 
   @Post('quotations')
   @Permissions('sales.quotation.create')
-  async createQuotation(@Req() req: AuthenticatedRequest, @Body() dto: CreateQuotationInput): Promise<any> {
+  async createQuotation(@Req() req: AuthenticatedRequest, @Body() dto: CreateQuotationInput): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.salesService.createQuotation(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
@@ -51,13 +51,13 @@ export class SalesController {
 
   @Get('orders/:id')
   @Permissions('sales.order.read')
-  async getSalesOrderById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<any> {
+  async getSalesOrderById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.salesService.getSalesOrderById(req.user.tenantId, id);
   }
 
   @Post('orders')
   @Permissions('sales.order.create')
-  async createSalesOrder(@Req() req: AuthenticatedRequest, @Body() dto: CreateSalesOrderInput): Promise<any> {
+  async createSalesOrder(@Req() req: AuthenticatedRequest, @Body() dto: CreateSalesOrderInput): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.salesService.createSalesOrder(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
@@ -68,7 +68,7 @@ export class SalesController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateSalesOrderStatusInput,
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.salesService.updateSalesOrderStatus(req.user.tenantId, id, dto.status);
   }
 
