@@ -319,7 +319,7 @@ export class AuthService {
       if (!isPasswordValid) throw new UnauthorizedException('Invalid current password');
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (dto.firstName) updateData.firstName = dto.firstName;
     if (dto.lastName) updateData.lastName = dto.lastName;
     if (dto.newPassword) updateData.passwordHash = await hashPassword(dto.newPassword);

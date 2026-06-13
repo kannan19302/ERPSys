@@ -197,7 +197,7 @@ export class AdminService {
         const orgs = await tx.organization.findMany({ where: { tenantId } });
         const org = orgs[0];
         if (org) {
-          const updateData: any = {};
+          const updateData: Record<string, unknown> = {};
           if (dto.companyName) updateData.name = dto.companyName;
           if (dto.taxId) updateData.taxId = dto.taxId;
           if (dto.currency) updateData.currency = dto.currency;
