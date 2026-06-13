@@ -36,6 +36,7 @@ import {
   GitFork,
   HardDrive,
   Activity,
+  Mail,
   GraduationCap,
   Building2,
   Wrench,
@@ -62,18 +63,42 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: CreditCard,
       items: [
         { name: 'Dashboard', href: '/finance', icon: Home },
-        { name: 'Chart of Accounts', href: '/finance/advanced/chart-of-accounts', icon: CreditCard },
-        { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders },
-        { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity },
-        { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2 },
-        { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet },
-        { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart },
-        { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList },
-        { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart },
-        { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork },
-        { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert },
-        { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3 },
-        { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen },
+        {
+          name: 'Core Accounting',
+          isHeader: true,
+          items: [
+            { name: 'Chart of Accounts', href: '/finance/advanced/chart-of-accounts', icon: CreditCard },
+            { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders },
+            { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity },
+            { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2 },
+          ]
+        },
+        {
+          name: 'Payables & Treasury',
+          isHeader: true,
+          items: [
+            { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet },
+            { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart },
+            { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList },
+            { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3 },
+          ]
+        },
+        {
+          name: 'Tax & Compliance',
+          isHeader: true,
+          items: [
+            { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork },
+            { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert },
+          ]
+        },
+        {
+          name: 'Planning & Reporting',
+          isHeader: true,
+          items: [
+            { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart },
+            { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen },
+          ]
+        },
       ]
     };
   }
@@ -127,8 +152,36 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'CRM & Sales',
       icon: BarChart3,
       items: [
-        { name: 'CRM Overview', href: '/crm', icon: BarChart3 }
-      ]
+        { name: 'Dashboard', href: '/crm', icon: Home },
+        {
+          name: 'Account Management',
+          isHeader: true,
+          items: [
+            { name: 'Customers', href: '/crm/customers', icon: Users },
+            { name: 'Vendors', href: '/crm/vendors', icon: Building },
+            { name: 'Contacts', href: '/crm/contacts', icon: Users },
+          ]
+        },
+        {
+          name: 'Sales Pipeline',
+          isHeader: true,
+          items: [
+            { name: 'Leads', href: '/crm/leads', icon: TrendingUp },
+            { name: 'Opportunities', href: '/crm/opportunities', icon: BarChart3 },
+            { name: 'Quotations', href: '/crm/quotations', icon: FileText },
+            { name: 'Sales Orders', href: '/crm/sales-orders', icon: ClipboardList },
+          ]
+        },
+        {
+          name: 'Activities & Analytics',
+          isHeader: true,
+          items: [
+            { name: 'Activities', href: '/crm/activities', icon: Activity },
+            { name: 'Email Templates', href: '/crm/email-templates', icon: Mail },
+            { name: 'CRM Reports', href: '/crm/reports', icon: PieChart },
+          ]
+        },
+      ] as SidebarItem[]
     };
   }
   if (pathname.startsWith('/inventory')) {
@@ -290,7 +343,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       ]
     };
   }
-  
+
   return {
     title: 'UniERP Hub',
     icon: Building,
@@ -319,21 +372,25 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
   { name: 'API Platform', href: '/admin/api-keys', icon: Key, type: 'App' },
   { name: 'Administration', href: '/admin/users', icon: ShieldAlert, type: 'App' },
-  // Actions
+  // Actions — General
   { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
-  { name: 'Create Invoice', href: '/finance/invoices/new', icon: CreditCard, type: 'Action' },
+  { name: 'Create Invoice', href: '/finance', icon: CreditCard, type: 'Action' },
   { name: 'Add Product', href: '/inventory/products/new', icon: Package, type: 'Action' },
+  // Finance — Core Accounting
   { name: 'Chart of Accounts', href: '/finance/advanced/chart-of-accounts', icon: CreditCard, type: 'Action' },
   { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders, type: 'Action' },
   { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity, type: 'Action' },
   { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2, type: 'Action' },
+  // Finance — Payables & Treasury
   { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet, type: 'Action' },
   { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart, type: 'Action' },
   { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList, type: 'Action' },
-  { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart, type: 'Action' },
+  { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3, type: 'Action' },
+  // Finance — Tax & Compliance
   { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork, type: 'Action' },
   { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert, type: 'Action' },
-  { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3, type: 'Action' },
+  // Finance — Planning & Reporting
+  { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart, type: 'Action' },
   { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen, type: 'Action' },
 ];
 
@@ -369,14 +426,14 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
       const itemQuery = parts[1] || '';
       const isPathMatch = pathname === itemPath || pathname.startsWith(itemPath + '/');
       if (!isPathMatch) return false;
-      
+
       if (itemPath.includes('/hr/advanced') && itemQuery) {
         const activeTab = searchParams.get('tab') || 'payroll';
         const itemParams = new URLSearchParams(itemQuery);
         const itemTab = itemParams.get('tab') || 'payroll';
         return pathname === itemPath && activeTab === itemTab;
       }
-      
+
       return true;
     })();
     const Icon = item.icon;
@@ -440,12 +497,12 @@ export default function DashboardLayout({
   const [appsDropdownOpen, setAppsDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
   const tenantDropdownRef = React.useRef<HTMLDivElement>(null);
   const appsDropdownRef = React.useRef<HTMLDivElement>(null);
   const searchDropdownRef = React.useRef<HTMLDivElement>(null);
-  
+
   const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; avatar?: string } | null>(null);
   const [currentTenant, setCurrentTenant] = useState({ name: 'Acme Corp', slug: 'acme' });
   const tenants = [
@@ -479,7 +536,7 @@ export default function DashboardLayout({
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    
+
     if (storedUser && storedToken) {
       try {
         setUser(JSON.parse(storedUser));
@@ -500,7 +557,7 @@ export default function DashboardLayout({
             localStorage.removeItem('token');
             router.push('/login');
           }
-        }).catch(() => {});
+        }).catch(() => { });
       }
 
       // Check client-side app installation guard for industry/premium paths
@@ -765,147 +822,261 @@ export default function DashboardLayout({
                   position: 'relative',
                   maxWidth: '20rem',
                   width: '100%',
-                  display: 'block', 
+                  display: 'block',
                 }}
               >
-              <Search
-                size={16}
-                style={{
-                  position: 'absolute',
-                  left: 'var(--space-3)',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--color-text-tertiary)',
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Search apps, actions..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchOpen(e.target.value.length > 0);
-                }}
-                style={{
-                  width: '100%',
-                  padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-8)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border)',
-                  background: 'var(--color-bg)',
-                  fontSize: 'var(--text-sm)',
-                  outline: 'none',
-                  color: 'var(--color-text)',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.background = 'var(--color-bg-elevated)';
-                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--color-primary-light)';
-                  if (searchQuery.length > 0) setSearchOpen(true);
-                }}
-              />
-              
-              {/* Dynamic Search Dropdown Results */}
-              {searchOpen && searchQuery.length > 0 && (
-                <div
+                <Search
+                  size={16}
                   style={{
                     position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    marginTop: 'var(--space-1.5)',
-                    background: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-lg)',
-                    zIndex: 150,
-                    padding: 'var(--space-1.5)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--space-1)',
-                    maxHeight: '400px',
-                    overflowY: 'auto',
+                    left: 'var(--space-3)',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-text-tertiary)',
                   }}
-                >
-                  <p
+                />
+                <input
+                  type="text"
+                  placeholder="Search apps, actions..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSearchOpen(e.target.value.length > 0);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-8)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg)',
+                    fontSize: 'var(--text-sm)',
+                    outline: 'none',
+                    color: 'var(--color-text)',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.background = 'var(--color-bg-elevated)';
+                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--color-primary-light)';
+                    if (searchQuery.length > 0) setSearchOpen(true);
+                  }}
+                />
+
+                {/* Dynamic Search Dropdown Results */}
+                {searchOpen && searchQuery.length > 0 && (
+                  <div
                     style={{
-                      margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
-                      fontSize: 'var(--text-xs)',
-                      fontWeight: 'var(--weight-semibold)',
-                      color: 'var(--color-text-tertiary)',
-                      textTransform: 'uppercase',
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      marginTop: 'var(--space-1.5)',
+                      background: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-lg)',
+                      zIndex: 150,
+                      padding: 'var(--space-1.5)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 'var(--space-1)',
+                      maxHeight: '400px',
+                      overflowY: 'auto',
                     }}
                   >
-                    Search Results
-                  </p>
-                  {GLOBAL_SEARCH_ITEMS.filter(item => 
-                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                  ).slice(0, 10).map((result) => (
-                    <button
-                      key={result.name}
-                      onClick={() => { router.push(result.href); setSearchOpen(false); setSearchQuery(''); }}
+                    <p
                       style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: 'var(--space-2) var(--space-2.5)',
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'var(--color-text)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--text-sm)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
+                        margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
+                        fontSize: 'var(--text-xs)',
+                        fontWeight: 'var(--weight-semibold)',
+                        color: 'var(--color-text-tertiary)',
+                        textTransform: 'uppercase',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
-                      <result.icon size={15} style={{ color: result.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 'var(--weight-medium)' }}>{result.name}</span>
-                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{result.type}</span>
+                      Search Results
+                    </p>
+                    {GLOBAL_SEARCH_ITEMS.filter(item =>
+                      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).slice(0, 10).map((result) => (
+                      <button
+                        key={result.name}
+                        onClick={() => { router.push(result.href); setSearchOpen(false); setSearchQuery(''); }}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: 'var(--space-2) var(--space-2.5)',
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'var(--color-text)',
+                          borderRadius: 'var(--radius-md)',
+                          fontSize: 'var(--text-sm)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 'var(--space-2)',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <result.icon size={15} style={{ color: result.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: 'var(--weight-medium)' }}>{result.name}</span>
+                          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{result.type}</span>
+                        </div>
+                      </button>
+                    ))}
+                    {GLOBAL_SEARCH_ITEMS.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                      <div style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+                        No results found for "{searchQuery}"
                       </div>
-                    </button>
-                  ))}
-                  {GLOBAL_SEARCH_ITEMS.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                    <div style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-                      No results found for "{searchQuery}"
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
-            
+
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               {!isAppsLanding && (
                 <>
                   {/* Apps Home Button */}
                   <button
                     onClick={() => router.push('/apps')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  background: 'transparent',
-                  border: '1px solid var(--color-border)',
-                  padding: 'var(--space-1.5) var(--space-3)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--text-sm)',
-                  fontWeight: 'var(--weight-semibold)',
-                  color: 'var(--color-text)',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <LayoutGrid size={15} style={{ color: 'var(--color-text-secondary)' }} />
-                <span>Apps Home</span>
-              </button>
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-2)',
+                      background: 'transparent',
+                      border: '1px solid var(--color-border)',
+                      padding: 'var(--space-1.5) var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: 'var(--text-sm)',
+                      fontWeight: 'var(--weight-semibold)',
+                      color: 'var(--color-text)',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <LayoutGrid size={15} style={{ color: 'var(--color-text-secondary)' }} />
+                    <span>Apps Home</span>
+                  </button>
 
-              {/* Apps Switcher Dropdown */}
-              <div style={{ position: 'relative' }} ref={appsDropdownRef}>
+                  {/* Apps Switcher Dropdown */}
+                  <div style={{ position: 'relative' }} ref={appsDropdownRef}>
+                    <button
+                      onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-2)',
+                        background: 'var(--color-bg-elevated)',
+                        border: '1px solid var(--color-border)',
+                        padding: 'var(--space-1.5) var(--space-3)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 'var(--weight-semibold)',
+                        color: 'var(--color-text)',
+                        cursor: 'pointer',
+                        boxShadow: 'var(--shadow-sm)',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
+                    >
+                      <LayoutGrid size={15} style={{ color: 'var(--color-primary)' }} />
+                      <span>Switch App</span>
+                      <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                    </button>
+                    {appsDropdownOpen && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          marginTop: 'var(--space-1.5)',
+                          background: 'var(--color-bg-elevated)',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: 'var(--radius-lg)',
+                          boxShadow: 'var(--shadow-lg)',
+                          width: '16rem',
+                          maxHeight: '70vh',
+                          overflowY: 'auto',
+                          zIndex: 110,
+                          padding: 'var(--space-1.5)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 'var(--space-1)',
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
+                            fontSize: 'var(--text-xs)',
+                            fontWeight: 'var(--weight-semibold)',
+                            color: 'var(--color-text-tertiary)',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          Core Modules
+                        </p>
+                        {GLOBAL_SEARCH_ITEMS.filter(item => item.type === 'App').map((app) => (
+                          <button
+                            key={app.name}
+                            onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
+                            style={{
+                              width: '100%',
+                              textAlign: 'left',
+                              padding: 'var(--space-2) var(--space-2.5)',
+                              border: 'none',
+                              background: pathname.startsWith(app.href) ? 'var(--color-primary-light)' : 'transparent',
+                              color: pathname.startsWith(app.href) ? 'var(--color-primary)' : 'var(--color-text)',
+                              borderRadius: 'var(--radius-md)',
+                              fontSize: 'var(--text-sm)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 'var(--space-2)',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'var(--color-bg-hover)';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'transparent';
+                            }}
+                          >
+                            <app.icon size={15} />
+                            {app.name}
+                          </button>
+                        ))}
+                        <div style={{ borderTop: '1px solid var(--color-border)', margin: 'var(--space-1) 0' }} />
+                        <button
+                          onClick={() => { router.push('/apps/store'); setAppsDropdownOpen(false); }}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: 'var(--space-2) var(--space-2.5)',
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--color-text)',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: 'var(--text-sm)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <LayoutGrid size={15} /> All Applications...
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Tenant Selector Dropdown */}
+              <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
                 <button
-                  onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
+                  onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -923,11 +1094,11 @@ export default function DashboardLayout({
                   onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
                 >
-                  <LayoutGrid size={15} style={{ color: 'var(--color-primary)' }} />
-                  <span>Switch App</span>
+                  <Building size={15} style={{ color: 'var(--color-primary)' }} />
+                  <span>{currentTenant.name}</span>
                   <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
                 </button>
-                {appsDropdownOpen && (
+                {tenantDropdownOpen && (
                   <div
                     style={{
                       position: 'absolute',
@@ -938,14 +1109,9 @@ export default function DashboardLayout({
                       border: '1px solid var(--color-border)',
                       borderRadius: 'var(--radius-lg)',
                       boxShadow: 'var(--shadow-lg)',
-                      width: '16rem',
-                      maxHeight: '70vh',
-                      overflowY: 'auto',
+                      width: '12rem',
                       zIndex: 110,
                       padding: 'var(--space-1.5)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 'var(--space-1)',
                     }}
                   >
                     <p
@@ -957,150 +1123,41 @@ export default function DashboardLayout({
                         textTransform: 'uppercase',
                       }}
                     >
-                      Core Modules
+                      Switch Tenant
                     </p>
-                    {GLOBAL_SEARCH_ITEMS.filter(item => item.type === 'App').map((app) => (
+                    {tenants.map((t) => (
                       <button
-                        key={app.name}
-                        onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
+                        key={t.slug}
+                        onClick={() => handleTenantSwitch(t)}
                         style={{
                           width: '100%',
                           textAlign: 'left',
                           padding: 'var(--space-2) var(--space-2.5)',
                           border: 'none',
-                          background: pathname.startsWith(app.href) ? 'var(--color-primary-light)' : 'transparent',
-                          color: pathname.startsWith(app.href) ? 'var(--color-primary)' : 'var(--color-text)',
+                          background: currentTenant.slug === t.slug ? 'var(--color-primary-light)' : 'transparent',
+                          color: currentTenant.slug === t.slug ? 'var(--color-primary)' : 'var(--color-text)',
                           borderRadius: 'var(--radius-md)',
                           fontSize: 'var(--text-sm)',
                           cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 'var(--space-2)',
                         }}
                         onMouseEnter={(e) => {
-                          if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'var(--color-bg-hover)';
+                          if (currentTenant.slug !== t.slug) {
+                            e.currentTarget.style.background = 'var(--color-bg-hover)';
+                          }
                         }}
                         onMouseLeave={(e) => {
-                          if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'transparent';
+                          if (currentTenant.slug !== t.slug) {
+                            e.currentTarget.style.background = 'transparent';
+                          }
                         }}
                       >
-                        <app.icon size={15} />
-                        {app.name}
+                        {t.name}
                       </button>
                     ))}
-                    <div style={{ borderTop: '1px solid var(--color-border)', margin: 'var(--space-1) 0' }} />
-                    <button
-                      onClick={() => { router.push('/apps/store'); setAppsDropdownOpen(false); }}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: 'var(--space-2) var(--space-2.5)',
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'var(--color-text)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--text-sm)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <LayoutGrid size={15} /> All Applications...
-                    </button>
                   </div>
                 )}
               </div>
-              </>
-              )}
-
-              {/* Tenant Selector Dropdown */}
-              <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
-              <button
-                onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  background: 'var(--color-bg-elevated)',
-                  border: '1px solid var(--color-border)',
-                  padding: 'var(--space-1.5) var(--space-3)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--text-sm)',
-                  fontWeight: 'var(--weight-semibold)',
-                  color: 'var(--color-text)',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-bg-elevated)')}
-              >
-                <Building size={15} style={{ color: 'var(--color-primary)' }} />
-                <span>{currentTenant.name}</span>
-                <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
-              </button>
-              {tenantDropdownOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    marginTop: 'var(--space-1.5)',
-                    background: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-lg)',
-                    width: '12rem',
-                    zIndex: 110,
-                    padding: 'var(--space-1.5)',
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
-                      fontSize: 'var(--text-xs)',
-                      fontWeight: 'var(--weight-semibold)',
-                      color: 'var(--color-text-tertiary)',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Switch Tenant
-                  </p>
-                  {tenants.map((t) => (
-                    <button
-                      key={t.slug}
-                      onClick={() => handleTenantSwitch(t)}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: 'var(--space-2) var(--space-2.5)',
-                        border: 'none',
-                        background: currentTenant.slug === t.slug ? 'var(--color-primary-light)' : 'transparent',
-                        color: currentTenant.slug === t.slug ? 'var(--color-primary)' : 'var(--color-text)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--text-sm)',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (currentTenant.slug !== t.slug) {
-                          e.currentTarget.style.background = 'var(--color-bg-hover)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (currentTenant.slug !== t.slug) {
-                          e.currentTarget.style.background = 'transparent';
-                        }
-                      }}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
           </div>
 
           {/* Top Right: System settings, Notification, Dark mode, Profiler */}

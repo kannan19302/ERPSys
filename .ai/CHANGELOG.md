@@ -5,6 +5,121 @@
 
 ---
 
+## [2026-06-13] CRM Advanced Features — Detail Pages, Pipeline Progress & Testing Plan
+
+### Added
+- **Lead Detail Page** (`/crm/leads/[id]`) — Full lead profile with contact info, industry, revenue, employee count. Activity timeline showing all logged calls/emails/meetings. Lead convert-to-opportunity modal with customer name, opportunity name, and amount fields. Related opportunities list. Back navigation. Demo data fallback.
+- **Opportunity Detail Page** (`/crm/opportunities/[id]`) — Visual pipeline progress bar (5 numbered stages with active/completed indicators). Quick action buttons for stage advancement and Close Won/Lost. Deal information card (amount, probability, expected close, competitor, loss reason). Activity timeline. Related customer/lead links. Stage details sidebar.
+- **Advanced CRM Hub** (`/crm/advanced`) — Grouped landing page matching Finance's `/finance/advanced` pattern. Three sections: Account Management (Customers, Vendors, Contacts), Sales Pipeline (Leads, Opportunities, Quotations, Sales Orders), Activities & Analytics (Activities, Email Templates, CRM Reports). Each module card with icon, description, and navigation.
+
+### Testing Plan — UI Test Checklist
+```
+□ /crm — Dashboard loads with KPI cards (customers, leads, opps, pipeline value, win rate)
+□ /crm/customers — Customer list loads, search filters, create modal opens/submits
+□ /crm/vendors — Vendor list loads, create modal opens
+□ /crm/contacts — Contact list with customer linkage, create modal works
+□ /crm/leads — Kanban view shows 5 columns, table view toggle works
+□ /crm/leads — Status change buttons work, create modal opens, search filters
+□ /crm/leads — Click card navigates to /crm/leads/{id} detail page
+□ /crm/leads/{id} — Detail page loads with contact info, timeline, convert button
+□ /crm/leads/{id} — Convert modal opens, form submits, redirects to opportunities
+□ /crm/opportunities — Pipeline Kanban shows 6 stages, list view toggle works
+□ /crm/opportunities — Create modal opens, summary cards show correct totals
+□ /crm/opportunities/{id} — Progress bar shows current stage, stage advancement works
+□ /crm/opportunities/{id} — Close Won/Lost buttons work
+□ /crm/quotations — Quotation list loads from sales API
+□ /crm/sales-orders — Sales order list loads from sales API
+□ /crm/activities — Activity timeline loads, create activity modal works
+□ /crm/email-templates — Template grid displays, create modal works
+□ /crm/reports — Pipeline funnel, win rate, lead sources load
+□ /crm/advanced — Hub page groups all modules correctly
+□ Sidebar navigation — All 14 links work without 404 errors
+□ Responsive design — Pages reflow on mobile viewport
+```
+
+### API Test Commands
+```bash
+# Start dev environment
+.\scripts\dev-start.ps1
+
+# Test CRM endpoints manually
+curl http://localhost:3001/api/v1/crm/customers -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/leads -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/opportunities -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/activities -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/email-templates -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/analytics/win-rate -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/analytics/pipeline-funnel -H "Authorization: Bearer $TOKEN"
+curl http://localhost:3001/api/v1/crm/analytics/lead-source-breakdown -H "Authorization: Bearer $TOKEN"
+```
+
+### Unit Tests (40+ test cases)
+```
+CrmService tests:
+✓ Customer CRUD (get, getById, create, update, delete)
+✓ Contact CRUD with customer validation
+✓ Lead CRUD with status filtering
+✓ Lead conversion creates customer + opportunity in transaction
+✓ Lead conversion throws if already converted
+✓ Pipeline creation with default management
+✓ Opportunity filtering by pipeline and stage
+✓ Opportunity stage advancement
+✓ Activity filtering by entity type
+✓ Activity completion tracking
+✓ Email template CRUD
+✓ Vendor CRUD
+✓ Pipeline funnel analytics grouping
+✓ Win rate calculation
+✓ Lead source breakdown analytics
+```
+
+---
+
+## [2026-06-13] CRM & Sales App Complete Build (Phase 2 Enhancement)
+
+### Added
+- **Database: 7 new Prisma models** — Contact (linked to customers), LeadSource, Lead (status pipeline, scoring, conversion tracking), SalesPipeline (configurable stages), Opportunity (deal tracking with amount/probability/stage), Activity (unified timeline for all entities), EmailTemplate (reusable with variables)
+- **Shared Zod DTOs: 18 new validation schemas** — Full type-safe input validation for all CRM operations across frontend and backend
+- **Backend API: ~50 new endpoints** in `CrmController` + `CrmService`:
+  - Customers: GET/POST/PUT/DELETE with getById + counts
+  - Vendors: GET/POST (existing enhanced)
+  - Contacts: GET/POST/PUT/DELETE with customerId filter
+  - LeadSources: GET
+  - Leads: GET (status filter)/POST/PUT/PATCH status/POST convert (creates Customer + Opportunity in transaction)/DELETE
+  - Pipelines: GET/POST with isDefault handling
+  - Opportunities: GET (pipelineId/stage filter)/POST/PUT/PATCH stage/DELETE
+  - Activities: GET (leadId/opportunityId/customerId filter)/POST/PATCH complete
+  - EmailTemplates: Full CRUD
+  - Analytics: Pipeline funnel, win rate, lead source breakdown
+- **Sidebar: 3 grouped CRM sections** — Account Management (Customers, Vendors, Contacts), Sales Pipeline (Leads, Opportunities, Quotations, Sales Orders), Activities & Analytics (Activities, Email Templates, CRM Reports)
+- **Frontend Pages (14 new pages):**
+  - `/crm` — Dashboard with KPI cards (customers/leads/opps/pipeline value/win rate), lead status breakdown, pipeline funnel, quick action links
+  - `/crm/leads` — **Kanban board** (5 columns: NEW→CONTACTED→QUALIFIED→DISQUALIFIED→CONVERTED) + table view toggle, inline status change, lead creation modal, score indicators
+  - `/crm/opportunities` — **Pipeline Kanban** (6 columns: Prospecting→Qualification→Proposal→Negotiation→Closed Won/Lost) + list view, summary cards (pipeline total/avg deal size/open deals), stage advancement buttons
+  - `/crm/customers` — Directory with search, credit limits, payment terms, status badges, create modal
+  - `/crm/vendors` — Directory with search, tax IDs, payment terms, create modal
+  - `/crm/contacts` — Directory linked to customers, primary contact indicators, create modal
+  - `/crm/activities` — Activity feed with type icons/colors, log activity modal
+  - `/crm/reports` — Analytics dashboard (pipeline funnel, lead sources, win rate, totals)
+
+### Fixed
+- All pages use relative `/api/v1/crm/...` URLs (no hardcoded localhost)
+- CRM sidebar now shows active state highlighting correctly with grouped `isHeader` items
+
+---
+
+## [2026-06-13] Finance Sidebar Reorganization & Advanced Hub Restructure
+
+### Changed
+- **Finance Sidebar Grouping**: Reorganized flat 13-item Finance sidebar into 4 logical `isHeader` groups mirroring the HR pattern: **Core Accounting** (Chart of Accounts, Journal Entries, Financial Periods, Fixed Assets), **Payables & Treasury** (Bank Accounts, AP Automation, AR Automation, Treasury & Investments), **Tax & Compliance** (Tax Engine, Tax Filing), and **Planning & Reporting** (Budgeting & Planning, Financial Reports). The `SidebarNavigation` component already handled `isHeader` groups, so no component changes were needed.
+- **Advanced Finance Hub Restructured**: Replaced the flat tier-grid layout in `finance/advanced/page.tsx` with 4 grouped sections matching the sidebar categories. Each group includes a section header with icon and description, and future pages (e.g., Bank Reconciliation, Expense Management) are listed with a "Coming Soon" badge to avoid 404 dead links.
+- **Global Search Updated**: Fixed the broken `/finance/invoices/new` link (404) by redirecting to `/finance` where invoice creation works via modal. Grouped finance action items in `GLOBAL_SEARCH_ITEMS` under category comments (Core Accounting, Payables & Treasury, Tax & Compliance, Planning & Reporting) for easier maintainability.
+
+### Fixed
+- **Broken global search link**: "Create Invoice" previously pointed to `/finance/invoices/new` (404); now points to `/finance` where the invoice modal is available.
+
+---
+
 ## [2026-06-13] Advanced HR Subpages, Checklists, & Visual Dashboards
 
 ### Added

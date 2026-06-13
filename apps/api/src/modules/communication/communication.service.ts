@@ -136,7 +136,7 @@ export class CommunicationService {
         bodyHtml: dto.bodyHtml,
         bodyText: dto.bodyText || null,
         createdBy,
-      },
+      } as any,
     });
   }
 }

@@ -333,6 +333,130 @@ export const updateProfileSchema = z.object({
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
+// ── CRM Schemas ──
+
+export const createContactSchema = z.object({
+  customerId: z.string().optional(),
+  salutation: z.string().max(10).optional(),
+  firstName: z.string().min(1, 'First name is required').max(100),
+  lastName: z.string().min(1, 'Last name is required').max(100),
+  email: z.string().email().optional(),
+  phone: z.string().max(20).optional(),
+  mobile: z.string().max(20).optional(),
+  title: z.string().max(100).optional(),
+  department: z.string().max(100).optional(),
+  isPrimary: z.boolean().default(false),
+  notes: z.string().max(2000).optional(),
+});
+export type CreateContactInput = z.infer<typeof createContactSchema>;
+
+export const updateContactSchema = createContactSchema.partial();
+export type UpdateContactInput = z.infer<typeof updateContactSchema>;
+
+export const createLeadSourceSchema = z.object({
+  name: z.string().min(1, 'Source name is required').max(100),
+});
+export type CreateLeadSourceInput = z.infer<typeof createLeadSourceSchema>;
+
+export const createLeadSchema = z.object({
+  salutation: z.string().max(10).optional(),
+  firstName: z.string().min(1, 'First name is required').max(100),
+  lastName: z.string().min(1, 'Last name is required').max(100),
+  company: z.string().max(200).optional(),
+  title: z.string().max(100).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().max(20).optional(),
+  mobile: z.string().max(20).optional(),
+  website: z.string().url().optional(),
+  sourceId: z.string().optional(),
+  industry: z.string().max(100).optional(),
+  employeeCount: z.number().int().positive().optional(),
+  annualRevenue: z.number().positive().optional(),
+  notes: z.string().max(2000).optional(),
+});
+export type CreateLeadInput = z.infer<typeof createLeadSchema>;
+
+export const updateLeadSchema = createLeadSchema.partial();
+export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
+
+export const updateLeadStatusSchema = z.object({
+  status: z.enum(['NEW', 'CONTACTED', 'QUALIFIED', 'DISQUALIFIED', 'CONVERTED']),
+});
+export type UpdateLeadStatusInput = z.infer<typeof updateLeadStatusSchema>;
+
+export const convertLeadSchema = z.object({
+  customerName: z.string().optional(), // defaults to lead company or name
+  opportunityAmount: z.number().positive().optional(),
+  opportunityName: z.string().optional(),
+});
+export type ConvertLeadInput = z.infer<typeof convertLeadSchema>;
+
+export const createSalesPipelineSchema = z.object({
+  name: z.string().min(1, 'Pipeline name is required').max(100),
+  stages: z.array(z.object({
+    label: z.string().min(1),
+    probability: z.number().int().min(0).max(100),
+    order: z.number().int().min(0),
+  })).min(1, 'At least one stage is required'),
+  isDefault: z.boolean().default(false),
+});
+export type CreateSalesPipelineInput = z.infer<typeof createSalesPipelineSchema>;
+
+export const createOpportunitySchema = z.object({
+  name: z.string().min(1, 'Opportunity name is required').max(200),
+  customerId: z.string().optional(),
+  leadId: z.string().optional(),
+  pipelineId: z.string().optional(),
+  stage: z.string().default('PROSPECTING'),
+  amount: z.number().positive().optional(),
+  probability: z.number().int().min(0).max(100).default(0),
+  expectedCloseDate: z.string().optional(),
+  competitor: z.string().max(200).optional(),
+  notes: z.string().max(2000).optional(),
+});
+export type CreateOpportunityInput = z.infer<typeof createOpportunitySchema>;
+
+export const updateOpportunitySchema = createOpportunitySchema.partial();
+export type UpdateOpportunityInput = z.infer<typeof updateOpportunitySchema>;
+
+export const updateOpportunityStageSchema = z.object({
+  stage: z.string().min(1, 'Stage is required'),
+  probability: z.number().int().min(0).max(100).optional(),
+  actualCloseDate: z.string().optional(),
+  lossReason: z.string().max(500).optional(),
+});
+export type UpdateOpportunityStageInput = z.infer<typeof updateOpportunityStageSchema>;
+
+export const createActivitySchema = z.object({
+  type: z.enum(['CALL', 'EMAIL', 'MEETING', 'NOTE', 'TASK', 'QUOTE_SENT', 'ORDER_PLACED']),
+  subject: z.string().min(1, 'Subject is required').max(200),
+  description: z.string().max(5000).optional(),
+  leadId: z.string().optional(),
+  opportunityId: z.string().optional(),
+  customerId: z.string().optional(),
+  contactId: z.string().optional(),
+  dueDate: z.string().optional(),
+  assignedToId: z.string().optional(),
+});
+export type CreateActivityInput = z.infer<typeof createActivitySchema>;
+
+export const completeActivitySchema = z.object({
+  completedAt: z.string().optional(),
+});
+export type CompleteActivityInput = z.infer<typeof completeActivitySchema>;
+
+export const createEmailTemplateSchema = z.object({
+  name: z.string().min(1, 'Template name is required').max(100),
+  category: z.enum(['GENERAL', 'QUOTATION', 'INVOICE', 'FOLLOWUP']).default('GENERAL'),
+  subject: z.string().min(1, 'Subject is required').max(500),
+  body: z.string().min(1, 'Body is required'),
+  variables: z.array(z.string()).default([]),
+});
+export type CreateEmailTemplateInput = z.infer<typeof createEmailTemplateSchema>;
+
+export const updateEmailTemplateSchema = createEmailTemplateSchema.partial();
+export type UpdateEmailTemplateInput = z.infer<typeof updateEmailTemplateSchema>;
+
 // ── Admin Settings Schemas ──
 
 export const updateAdminSettingsSchema = z.object({

@@ -223,6 +223,9 @@ model Customer {
   quotations   Quotation[]
   salesOrders  SalesOrder[]
   creditNotes  CreditNote[]
+  contacts     Contact[] // Added for inverse relation
+  opportunities Opportunity[] // Added for inverse relation
+  activities   Activity[] // Added for inverse relation
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -253,6 +256,180 @@ model Vendor {
 
   @@index([tenantId])
   @@map("vendors")
+}
+
+model Contact {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  orgId            String   @map("org_id")
+  customerId       String?  @map("customer_id")
+  salutation       String?
+  firstName        String   @map("first_name")
+  lastName         String   @map("last_name")
+  email            String?
+  phone            String?
+  mobile           String?
+  title            String?
+  department       String?
+  isPrimary        Boolean  @default(false) @map("is_primary")
+  isActive         Boolean  @default(true) @map("is_active")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+  activities Activity[] // Added for inverse relation
+
+  @@unique([tenantId, orgId, email])
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("contacts")
+}
+
+model LeadSource {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  leads Lead[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("lead_sources")
+}
+
+model Lead {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  salutation    String?
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  company       String?
+  title         String?
+  email         String?
+  phone         String?
+  mobile        String?
+  website       String?
+  sourceId      String?   @map("source_id")
+  status        String    @default("NEW") // NEW, CONTACTED, QUALIFIED, DISQUALIFIED, CONVERTED
+  industry      String?
+  employeeCount Int?      @map("employee_count")
+  annualRevenue Decimal?  @map("annual_revenue") @db.Decimal(15, 2)
+  score         Int       @default(0)
+  notes         String?
+  assignedToId  String?   @map("assigned_to_id")
+  convertedCustomerId String? @map("converted_customer_id")
+  convertedOpportunityId String? @map("converted_opportunity_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  source       LeadSource?   @relation(fields: [sourceId], references: [id])
+  activities   Activity[]
+  opportunities Opportunity[] @relation("LeadOpportunity")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([assignedToId])
+  @@map("leads")
+}
+
+model SalesPipeline {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  name             String
+  stages           Json     @default("[]") // Array of {label, probability, order}
+  isDefault        Boolean  @default(false) @map("is_default")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  opportunities Opportunity[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("sales_pipelines")
+}
+
+model Opportunity {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  name           String
+  customerId     String?   @map("customer_id")
+  leadId         String?   @map("lead_id")
+  pipelineId     String?   @map("pipeline_id")
+  stage          String    @default("PROSPECTING") // Prospecting, Qualification, Proposal, Negotiation, Closed Won, Closed Lost
+  amount         Decimal?  @db.Decimal(15, 2)
+  probability    Int       @default(0) // 0-100
+  expectedCloseDate DateTime? @map("expected_close_date")
+  actualCloseDate DateTime? @map("actual_close_date")
+  competitor     String?
+  lossReason     String?   @map("loss_reason")
+  notes          String?
+  assignedToId   String?   @map("assigned_to_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  customer Customer?       @relation(fields: [customerId], references: [id])
+  lead     Lead?           @relation("LeadOpportunity", fields: [leadId], references: [id])
+  pipeline SalesPipeline?  @relation(fields: [pipelineId], references: [id])
+  activities Activity[]
+
+  @@index([tenantId])
+  @@index([tenantId, stage])
+  @@index([tenantId, pipelineId])
+  @@index([customerId])
+  @@map("opportunities")
+}
+
+model Activity {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  type          String    // CALL, EMAIL, MEETING, NOTE, TASK, QUOTE_SENT, ORDER_PLACED
+  subject       String
+  description   String?
+  leadId        String?   @map("lead_id")
+  opportunityId String?   @map("opportunity_id")
+  customerId    String?   @map("customer_id")
+  contactId     String?   @map("contact_id")
+  dueDate       DateTime? @map("due_date")
+  completedAt   DateTime? @map("completed_at")
+  assignedToId  String?   @map("assigned_to_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  lead        Lead?        @relation(fields: [leadId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+  customer    Customer?    @relation(fields: [customerId], references: [id])
+  contact     Contact?     @relation(fields: [contactId], references: [id])
+
+  @@index([tenantId])
+  @@index([leadId])
+  @@index([opportunityId])
+  @@index([customerId])
+  @@map("activities")
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  category    String   @default("GENERAL") // GENERAL, QUOTATION, INVOICE, FOLLOWUP
+  subject     String
+  body        String
+  variables   Json     @default("[]") // Available variable names
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("email_templates")
 }
 
 // ════════════════════════════════════════════════
@@ -1064,22 +1241,6 @@ model Notification {
 
   @@index([tenantId, userId])
   @@map("notifications")
-}
-
-model EmailTemplate {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  name      String
-  subject   String
-  bodyHtml  String   @map("body_html") @db.Text
-  bodyText  String?  @map("body_text") @db.Text
-  createdBy String?  @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@unique([tenantId, name])
-  @@index([tenantId])
-  @@map("email_templates")
 }
 
 // ════════════════════════════════════════════════
