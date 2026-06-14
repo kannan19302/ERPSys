@@ -4,11 +4,28 @@ import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, StatusBadge, Button, Spinner } from '@unerp/ui';
 import { Plus, ArrowLeft, ArrowRight, LayoutGrid, List } from 'lucide-react';
 
+interface OfferLetter {
+  id: string;
+  applicantId: string;
+  salaryOffered: number | string;
+  status: string;
+  expiresAt: string | null;
+  notes: string | null;
+  applicant?: {
+    firstName: string;
+    lastName: string;
+    jobPosting?: {
+      title: string;
+    }
+  };
+}
+
 export default function RecruitmentPage() {
   const [jobs, setJobs] = useState<Array<{ id: string; title: string; status: string; postedAt: string }>>([]);
   const [applicants, setApplicants] = useState<Array<{ id: string; firstName: string; lastName: string; currentStage: string; jobPosting: { title: string } }>>([]);
+  const [offers, setOffers] = useState<OfferLetter[]>([]);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<'jobs' | 'applicants'>('jobs');
+  const [tab, setTab] = useState<'jobs' | 'applicants' | 'offers'>('jobs');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
   
   const [showForm, setShowForm] = useState(false);
@@ -16,6 +33,9 @@ export default function RecruitmentPage() {
   
   const [showApplicantForm, setShowApplicantForm] = useState(false);
   const [applicantForm, setApplicantForm] = useState({ jobPostingId: '', firstName: '', lastName: '', email: '', phone: '' });
+
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [offerForm, setOfferForm] = useState({ applicantId: '', salaryOffered: '', expiresAt: '', notes: '' });
   
   const [msg, setMsg] = useState('');
 
@@ -24,12 +44,14 @@ export default function RecruitmentPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [jobsRes, appRes] = await Promise.all([
+      const [jobsRes, appRes, offersRes] = await Promise.all([
         fetch('/api/v1/advanced-hr/jobs', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/advanced-hr/applicants', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/v1/advanced-hr/offers', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       if (jobsRes.ok) setJobs(await jobsRes.json());
       if (appRes.ok) setApplicants(await appRes.json());
+      if (offersRes.ok) setOffers(await offersRes.json());
     } catch {} finally {
       setLoading(false);
     }
@@ -91,6 +113,48 @@ export default function RecruitmentPage() {
     fetchData();
   };
 
+  const createOfferLetter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/v1/advanced-hr/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          applicantId: offerForm.applicantId,
+          salaryOffered: parseFloat(offerForm.salaryOffered),
+          expiresAt: offerForm.expiresAt || null,
+          notes: offerForm.notes || ''
+        })
+      });
+      if (res.ok) {
+        setMsg('Offer Letter issued successfully.');
+        setShowOfferForm(false);
+        setOfferForm({ applicantId: '', salaryOffered: '', expiresAt: '', notes: '' });
+        fetchData();
+      }
+    } catch {}
+  };
+
+  const handleOfferStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/v1/advanced-hr/offers/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        setMsg(`Offer status updated to ${status}.`);
+        fetchData();
+      }
+    } catch {}
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
@@ -121,6 +185,9 @@ export default function RecruitmentPage() {
         </Button>
         <Button variant={tab === 'applicants' ? 'primary' : 'outline'} onClick={() => setTab('applicants')}>
           Applicants ({applicants.length})
+        </Button>
+        <Button variant={tab === 'offers' ? 'primary' : 'outline'} onClick={() => setTab('offers')}>
+          Offers ({offers.length})
         </Button>
       </div>
 
@@ -222,6 +289,58 @@ export default function RecruitmentPage() {
         </Card>
       )}
 
+      {showOfferForm && (
+        <Card padding="md">
+          <h4 style={{ margin: '0 0 var(--space-3)' }}>Issue Job Offer Letter</h4>
+          <form onSubmit={createOfferLetter} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <select
+              className="frappe-input"
+              value={offerForm.applicantId}
+              onChange={e => setOfferForm({ ...offerForm, applicantId: e.target.value })}
+              required
+            >
+              <option value="">Select Candidate</option>
+              {applicants.filter(a => a.currentStage === 'OFFER' || a.currentStage === 'HIRED').map(a => (
+                <option key={a.id} value={a.id}>{a.firstName} {a.lastName} ({a.jobPosting?.title})</option>
+              ))}
+            </select>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Offered Monthly Salary ($)</label>
+                <input
+                  type="number"
+                  className="frappe-input"
+                  placeholder="5000"
+                  value={offerForm.salaryOffered}
+                  onChange={e => setOfferForm({ ...offerForm, salaryOffered: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Offer Expiry Date</label>
+                <input
+                  type="date"
+                  className="frappe-input"
+                  value={offerForm.expiresAt}
+                  onChange={e => setOfferForm({ ...offerForm, expiresAt: e.target.value })}
+                />
+              </div>
+            </div>
+            <textarea
+              className="frappe-input"
+              placeholder="Notes, terms, or message to candidate"
+              value={offerForm.notes}
+              onChange={e => setOfferForm({ ...offerForm, notes: e.target.value })}
+              rows={3}
+            />
+            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+              <Button variant="outline" type="button" onClick={() => setShowOfferForm(false)}>Cancel</Button>
+              <Button variant="primary" type="submit">Issue Offer</Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
           <Spinner size="lg" />
@@ -300,6 +419,19 @@ export default function RecruitmentPage() {
                               <StatusBadge status={a.currentStage} />
                             </td>
                             <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
+                              {a.currentStage === 'OFFER' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  style={{ marginRight: 8 }}
+                                  onClick={() => {
+                                    setOfferForm({ ...offerForm, applicantId: a.id });
+                                    setShowOfferForm(true);
+                                  }}
+                                >
+                                  Issue Offer
+                                </Button>
+                              )}
                               <select
                                 className="frappe-input"
                                 style={{ fontSize: 12, padding: '2px 8px', maxWidth: '120px', display: 'inline-block' }}
@@ -340,6 +472,19 @@ export default function RecruitmentPage() {
                                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{a.firstName} {a.lastName}</div>
                                 <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: 2 }}>{a.jobPosting?.title || 'N/A'}</div>
                               </div>
+                              {a.currentStage === 'OFFER' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setOfferForm({ ...offerForm, applicantId: a.id });
+                                    setShowOfferForm(true);
+                                  }}
+                                  style={{ width: '100%', fontSize: 11, padding: '4px' }}
+                                >
+                                  Issue Offer Letter
+                                </Button>
+                              )}
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
                                 {idx > 0 && stagesArray[idx - 1] ? (
                                   <button
@@ -384,6 +529,63 @@ export default function RecruitmentPage() {
                 </div>
               )}
             </div>
+          )}
+          {tab === 'offers' && (
+            <Card padding="none">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'left' }}>Candidate</th>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'left' }}>Position</th>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'center' }}>Salary</th>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'center' }}>Expires</th>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'center' }}>Status</th>
+                    <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {offers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                        No offers issued yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    offers.map(o => (
+                      <tr key={o.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: 'var(--space-4)', fontWeight: 600 }}>
+                          {o.applicant?.firstName} {o.applicant?.lastName}
+                        </td>
+                        <td style={{ padding: 'var(--space-4)' }}>
+                          {o.applicant?.jobPosting?.title || 'N/A'}
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'center', fontWeight: 600 }}>
+                          ${Number(o.salaryOffered).toLocaleString()}/mo
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
+                          {o.expiresAt ? new Date(o.expiresAt).toLocaleDateString() : 'Never'}
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
+                          <StatusBadge status={o.status} />
+                        </td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
+                          {o.status === 'SENT' && (
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                              <Button variant="outline" size="sm" onClick={() => handleOfferStatus(o.id, 'REJECTED')} style={{ color: 'var(--color-danger)' }}>
+                                Reject
+                              </Button>
+                              <Button variant="primary" size="sm" onClick={() => handleOfferStatus(o.id, 'ACCEPTED')}>
+                                Accept
+                              </Button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </Card>
           )}
         </>
       )}

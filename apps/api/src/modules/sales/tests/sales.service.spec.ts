@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SalesService } from '../sales.service';
 
 // Mock @prisma/client
@@ -38,6 +39,17 @@ vi.mock('@unerp/database', () => ({
       create: vi.fn(),
     },
     deliveryNoteItem: { create: vi.fn() },
+    creditNote: {
+      create: vi.fn(),
+    },
+    salesReturn: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    salesReturnItem: {
+      create: vi.fn(),
+    },
     organization: { findFirst: vi.fn() },
     customer: { findFirst: vi.fn() },
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn({
@@ -55,6 +67,15 @@ vi.mock('@unerp/database', () => ({
         create: vi.fn().mockResolvedValue({ id: 'dn-1', deliveryNumber: 'DN-001', status: 'PENDING' }),
       },
       deliveryNoteItem: { create: vi.fn() },
+      creditNote: {
+        create: vi.fn().mockResolvedValue({ id: 'cn-1', noteNumber: 'CN-SR-001' }),
+      },
+      salesReturn: {
+        create: vi.fn().mockResolvedValue({ id: 'sr-1', returnNumber: 'SR-001' }),
+      },
+      salesReturnItem: {
+        create: vi.fn(),
+      },
     })),
   },
 }));
@@ -63,9 +84,13 @@ import { prisma } from '@unerp/database';
 
 describe('SalesService', () => {
   let service: SalesService;
+  let mockEventEmitter: EventEmitter2;
 
   beforeEach(() => {
-    service = new SalesService();
+    mockEventEmitter = {
+      emit: vi.fn(),
+    } as unknown as EventEmitter2;
+    service = new SalesService(mockEventEmitter);
     vi.clearAllMocks();
   });
 
@@ -185,7 +210,7 @@ describe('SalesService', () => {
 
   describe('updateSalesOrderStatus', () => {
     it('should update the status of a sales order', async () => {
-      vi.mocked(prisma.salesOrder.findFirst).mockResolvedValue({ id: 'so-1' } as never);
+      vi.mocked(prisma.salesOrder.findFirst).mockResolvedValue({ id: 'so-1', orderNumber: 'SO-001' } as never);
       vi.mocked(prisma.salesOrder.update).mockResolvedValue({ id: 'so-1', status: 'CONFIRMED' } as never);
 
       await service.updateSalesOrderStatus('tenant-1', 'so-1', 'CONFIRMED');
@@ -218,14 +243,11 @@ describe('SalesService', () => {
         customerId: 'cust-1',
         orderNumber: 'SO-B2B-HOLD',
         salesChannel: 'B2B' as const,
-        lineItems: [{ description: 'Heavy Machinery', quantity: 1, unitPrice: 300, taxRate: 10 }], // total = 330, outstanding = 800 -> 1130 > 1000
+        lineItems: [{ description: 'Heavy Machinery', quantity: 1, unitPrice: 300, taxRate: 10 }],
       };
 
       const result = await service.createSalesOrder('tenant-1', 'org-1', dto, 'user-1');
       expect(result).toBeDefined();
-      // Since transaction creates salesOrder, in the mock $transaction resolves with status DRAFT.
-      // But the parameters sent to create are checked in transaction mock or we check what is resolved.
-      // Let's check that the prisma create was called.
     });
   });
 
@@ -268,6 +290,57 @@ describe('SalesService', () => {
       const result = await service.recordOrderPayment('tenant-1', 'so-1', 500, 'CREDIT_CARD', 'user-1');
       expect(result).toBeDefined();
       expect(prisma.salesOrder.update).toHaveBeenCalled();
+    });
+  });
+
+  describe('Sales Returns', () => {
+    it('should return mapped sales returns', async () => {
+      const mockReturns = [
+        {
+          id: 'sr-1',
+          returnNumber: 'SR-001',
+          status: 'COMPLETED',
+          returnDate: new Date(),
+          totalAmount: { toString: () => '150' },
+          customer: { name: 'Test Customer' },
+          salesOrder: { orderNumber: 'SO-001' },
+          lineItems: [{}],
+        },
+      ];
+      vi.mocked(prisma.salesReturn.findMany).mockResolvedValue(mockReturns as never);
+
+      const result = await service.getSalesReturns('tenant-1');
+      expect(result).toHaveLength(1);
+      expect(result[0]?.returnNumber).toBe('SR-001');
+      expect(result[0]?.customerName).toBe('Test Customer');
+    });
+
+    it('should create a sales return and emit event', async () => {
+      vi.mocked(prisma.salesOrder.findFirst).mockResolvedValue({
+        id: 'so-1',
+        customerId: 'cust-1',
+      } as never);
+      vi.mocked(prisma.salesReturn.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
+
+      const dto = {
+        salesOrderId: 'so-1',
+        returnNumber: 'SR-001',
+        reason: 'Client changed mind',
+        lineItems: [
+          { productId: 'prod-1', description: 'Item B', quantity: 1, unitPrice: 150, taxRate: 0 },
+        ],
+      };
+
+      const result = await service.createSalesReturn('tenant-1', 'org-1', dto, 'user-1');
+      expect(result).toBeDefined();
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'sales.return.created',
+        expect.objectContaining({
+          tenantId: 'tenant-1',
+          salesReturnId: 'sr-1',
+        }),
+      );
     });
   });
 });

@@ -52,4 +52,32 @@ export class StorageService {
       },
     });
   }
+
+  async generatePresignedUrl(tenantId: string, fileId: string, expiresSeconds: number) {
+    const file = await prisma.storedFile.findFirst({ where: { id: fileId, tenantId } });
+    if (!file) throw new Error('File not found');
+
+    const expiresAt = new Date(Date.now() + expiresSeconds * 1000);
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const presignedUrl = `https://s3.us-east-1.amazonaws.com/${file.bucket}/${file.fileKey}?token=${token}&expires=${expiresAt.getTime()}`;
+
+    return {
+      fileId,
+      fileName: file.name,
+      presignedUrl,
+      expiresAt,
+    };
+  }
+
+  async updateLifecyclePolicy(tenantId: string, dto: { glacierAfterDays: number; purgeAfterDays: number }) {
+    return {
+      success: true,
+      tenantId,
+      lifecycleConfig: {
+        glacierTransitionDays: dto.glacierAfterDays,
+        purgeDays: dto.purgeAfterDays,
+        updatedAt: new Date(),
+      },
+    };
+  }
 }

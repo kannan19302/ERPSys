@@ -13,7 +13,7 @@ export class WorkflowService {
 
   async createWorkflow(
     tenantId: string,
-    dto: { name: string; triggerType: string; steps: { stepOrder: number; actionType: string; assigneeRole: string }[] }
+    dto: { name: string; triggerType: string; steps: { stepOrder: number; actionType: string; assigneeRole: string; slaLimitHours?: number; backupAssigneeRole?: string }[] }
   ) {
     const existing = await prisma.workflow.findFirst({
       where: { tenantId, name: dto.name },
@@ -38,6 +38,8 @@ export class WorkflowService {
             stepOrder: step.stepOrder,
             actionType: step.actionType,
             assigneeRole: step.assigneeRole,
+            slaLimitHours: step.slaLimitHours || null,
+            backupAssigneeRole: step.backupAssigneeRole || null,
           },
         });
       }
@@ -128,5 +130,64 @@ export class WorkflowService {
 
       return updated;
     });
+  }
+
+  async checkSlaBreaches(tenantId: string) {
+    const pendingChains = await prisma.approvalChain.findMany({
+      where: { tenantId, status: 'PENDING' },
+      include: { step: true },
+    });
+
+    const now = new Date();
+    const breaches = [];
+
+    for (const chain of pendingChains) {
+      if (chain.step.slaLimitHours) {
+        const limitMs = chain.step.slaLimitHours * 60 * 60 * 1000;
+        const elapsed = now.getTime() - chain.createdAt.getTime();
+
+        if (elapsed > limitMs && !chain.delegatedRole) {
+          const backupRole = chain.step.backupAssigneeRole || 'Admin';
+          const updatedChain = await prisma.approvalChain.update({
+            where: { id: chain.id },
+            data: { delegatedRole: backupRole },
+          });
+
+          await prisma.notification.create({
+            data: {
+              tenantId,
+              userId: chain.actionBy || 'system',
+              title: 'SLA Breach: Workflow Task Reassigned',
+              content: `Approval step ${chain.step.stepOrder} for ${chain.entityType} (${chain.entityId}) breached SLA and was reassigned to role ${backupRole}.`,
+              type: 'WORKFLOW',
+              status: 'UNREAD',
+            },
+          });
+
+          breaches.push(updatedChain);
+        }
+      }
+    }
+    return breaches;
+  }
+
+  async simulateWorkflow(tenantId: string, triggerType: string, _entityType: string, _entityId: string) {
+    const flow = await prisma.workflow.findFirst({
+      where: { tenantId, triggerType, status: 'ACTIVE' },
+      include: { steps: { orderBy: { stepOrder: 'asc' } } },
+    });
+    if (!flow) return { success: false, message: 'No active workflow found' };
+    return {
+      success: true,
+      workflowName: flow.name,
+      stepsCount: flow.steps.length,
+      sequence: flow.steps.map(s => ({
+        stepOrder: s.stepOrder,
+        actionType: s.actionType,
+        assigneeRole: s.assigneeRole,
+        slaHours: s.slaLimitHours,
+        backupRole: s.backupAssigneeRole,
+      })),
+    };
   }
 }

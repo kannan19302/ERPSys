@@ -1,0 +1,286 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Search as SearchIcon,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Globe,
+  FileText,
+  Eye,
+  Image,
+  Link,
+  BarChart3,
+  Zap,
+  ChevronDown,
+  Edit3,
+} from 'lucide-react';
+
+const PAGES_SEO = [
+  { id: 1, name: 'Homepage', slug: '/', score: 94, issues: 0, title: 'UniERP — Enterprise Resource Planning Platform', metaDesc: 'Manage your entire business with UniERP — the composable ERP system.', ogImage: true, lastAudit: '2 hours ago' },
+  { id: 2, name: 'Pricing', slug: '/pricing', score: 72, issues: 3, title: 'Pricing Plans — UniERP', metaDesc: '', ogImage: false, lastAudit: '1 day ago' },
+  { id: 3, name: 'Features', slug: '/features', score: 85, issues: 1, title: 'Features — UniERP ERP Platform', metaDesc: 'Explore the full feature set of UniERP including Finance, HR, CRM, and more.', ogImage: true, lastAudit: '3 days ago' },
+  { id: 4, name: 'Blog Index', slug: '/blog', score: 68, issues: 4, title: 'Blog', metaDesc: '', ogImage: false, lastAudit: '1 week ago' },
+];
+
+const STRUCTURED_DATA_TYPES = [
+  { type: 'FAQ', description: 'FAQ schema for FAQ sections', pages: 2 },
+  { type: 'Product', description: 'Product schema for pricing pages', pages: 1 },
+  { type: 'Article', description: 'Article schema for blog posts', pages: 24 },
+  { type: 'Organization', description: 'Organization schema for homepage', pages: 1 },
+];
+
+function ScoreBadge({ score }: { score: number }) {
+  const color = score >= 90 ? '#059669' : score >= 70 ? '#d97706' : '#dc2626';
+  return (
+    <div style={{ width: '44px', height: '44px', borderRadius: '50%', border: `3px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: `${color}10` }}>
+      <span style={{ fontSize: '12px', fontWeight: 'var(--weight-bold)', color }}>{score}</span>
+    </div>
+  );
+}
+
+export default function WebSEOPage() {
+  const router = useRouter();
+  const [selectedPage, setSelectedPage] = useState<number | null>(1);
+  const [activeTab, setActiveTab] = useState<'pages' | 'technical' | 'structured'>('pages');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const currentPage = (PAGES_SEO.find(p => p.id === selectedPage) ?? PAGES_SEO[0])!;
+
+  return (
+    <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+            <TrendingUp size={20} style={{ color: '#059669' }} />
+            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
+              SEO Manager
+            </h1>
+          </div>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+            Per-page SEO metadata, structured data schemas, sitemap, and performance scores
+          </p>
+        </div>
+        <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>
+          ← Web Builder
+        </button>
+      </div>
+
+      {/* Site-wide score */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
+        {[
+          { label: 'Site SEO Score', value: '80', color: '#d97706', sub: 'Avg across all pages' },
+          { label: 'Pages Audited', value: '9', color: 'var(--color-primary)', sub: 'of 9 total pages' },
+          { label: 'Open Issues', value: '8', color: 'var(--color-danger)', sub: '3 high priority' },
+          { label: 'Sitemap Status', value: 'Active', color: '#059669', sub: 'Last submitted 1 day ago' },
+        ].map(stat => (
+          <div key={stat.label} className="frappe-card" style={{ padding: 'var(--space-3)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'block' }}>{stat.label}</span>
+            <span style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: stat.color, display: 'block' }}>{stat.value}</span>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{stat.sub}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{ borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-1)' }}>
+        {[
+          { id: 'pages', label: 'Page SEO', icon: FileText },
+          { id: 'technical', label: 'Technical SEO', icon: Zap },
+          { id: 'structured', label: 'Structured Data', icon: BarChart3 },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as typeof activeTab)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+              padding: 'var(--space-2.5) var(--space-4)',
+              border: 'none', background: 'transparent', cursor: 'pointer',
+              fontSize: 'var(--text-sm)', fontWeight: activeTab === tab.id ? 'var(--weight-semibold)' : 'var(--weight-normal)',
+              color: activeTab === tab.id ? '#059669' : 'var(--color-text-secondary)',
+              borderBottom: activeTab === tab.id ? '2px solid #059669' : '2px solid transparent',
+              marginBottom: '-1px', transition: 'all var(--duration-fast)',
+            }}
+          >
+            <tab.icon size={15} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Page SEO Tab */}
+      {activeTab === 'pages' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 'var(--space-4)' }}>
+          {/* Pages list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <div style={{ position: 'relative' }}>
+              <SearchIcon size={13} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+              <input className="frappe-input" type="text" placeholder="Search pages..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-8)', fontSize: 'var(--text-xs)' }} />
+            </div>
+            {PAGES_SEO.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(page => (
+              <div
+                key={page.id}
+                onClick={() => setSelectedPage(page.id)}
+                className="frappe-card"
+                style={{ padding: 'var(--space-3)', cursor: 'pointer', border: `2px solid ${selectedPage === page.id ? '#059669' : 'var(--color-border)'}`, background: selectedPage === page.id ? 'rgba(5,150,105,0.04)' : '', transition: 'all var(--duration-fast)' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <ScoreBadge score={page.score} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{page.name}</p>
+                    <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', margin: 0 }}>{page.slug}</p>
+                    {page.issues > 0 && (
+                      <p style={{ fontSize: '10px', color: 'var(--color-danger)', margin: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <AlertTriangle size={9} />{page.issues} issues
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* SEO Detail Panel */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            {/* Page header */}
+            <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <ScoreBadge score={currentPage.score} />
+                  <div>
+                    <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{currentPage.name}</h2>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{currentPage.slug} · Last audit: {currentPage.lastAudit}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <button className="frappe-btn frappe-btn-secondary"><Eye size={13} /><span>Preview</span></button>
+                  <button className="frappe-btn frappe-btn-primary"><CheckCircle size={13} /><span>Save SEO</span></button>
+                </div>
+              </div>
+
+              {/* Google Preview */}
+              <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', marginBottom: 'var(--space-4)' }}>
+                <p style={{ fontSize: '10px', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0' }}>Google Search Preview</p>
+                <p style={{ fontSize: '18px', color: '#1a0dab', margin: '0 0 2px 0', fontFamily: 'Arial, sans-serif' }}>{currentPage.title}</p>
+                <p style={{ fontSize: '13px', color: '#006621', margin: '0 0 4px 0', fontFamily: 'Arial, sans-serif' }}>yourdomain.com{currentPage.slug}</p>
+                <p style={{ fontSize: '13px', color: '#545454', margin: 0, fontFamily: 'Arial, sans-serif', lineHeight: 1.5 }}>
+                  {currentPage.metaDesc || <span style={{ color: '#dc2626' }}>⚠ No meta description set — Google will auto-generate from page content</span>}
+                </p>
+              </div>
+
+              {/* Fields */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div className="frappe-form-group">
+                  <label className="frappe-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
+                    <FileText size={12} /> Title Tag
+                    <span style={{ marginLeft: 'auto', fontSize: '10px', color: currentPage.title.length < 60 ? '#059669' : 'var(--color-danger)' }}>
+                      {currentPage.title.length}/60 chars
+                    </span>
+                  </label>
+                  <input className="frappe-input" type="text" defaultValue={currentPage.title} />
+                </div>
+                <div className="frappe-form-group">
+                  <label className="frappe-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
+                    <FileText size={12} /> Meta Description
+                    <span style={{ marginLeft: 'auto', fontSize: '10px', color: currentPage.metaDesc ? '#059669' : 'var(--color-danger)' }}>
+                      {currentPage.metaDesc.length}/160 chars
+                    </span>
+                  </label>
+                  <textarea className="frappe-input" defaultValue={currentPage.metaDesc} placeholder="Write a compelling meta description..." rows={3} style={{ resize: 'vertical' }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label"><Globe size={12} /> Canonical URL</label>
+                    <input className="frappe-input" type="text" placeholder="https://yourdomain.com/" />
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label"><Link size={12} /> Robots</label>
+                    <select className="frappe-input"><option>index, follow</option><option>noindex, follow</option><option>noindex, nofollow</option></select>
+                  </div>
+                </div>
+                <div className="frappe-form-group">
+                  <label className="frappe-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
+                    <Image size={12} /> OG Image (Social Sharing)
+                    {currentPage.ogImage
+                      ? <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#059669', display: 'flex', alignItems: 'center', gap: '3px' }}><CheckCircle size={10} />Set</span>
+                      : <span style={{ marginLeft: 'auto', fontSize: '10px', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '3px' }}><AlertTriangle size={10} />Missing</span>}
+                  </label>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                    <input className="frappe-input" type="text" placeholder="https://..." style={{ flex: 1 }} />
+                    <button className="frappe-btn frappe-btn-secondary">Browse</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Technical SEO Tab */}
+      {activeTab === 'technical' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {[
+            { title: 'Sitemap', status: 'Active', description: 'XML sitemap auto-generated and submitted to Google Search Console', action: 'Submit Now', actionColor: '#059669' },
+            { title: 'Robots.txt', status: 'Custom', description: 'User-agent: *\nDisallow: /admin\nDisallow: /api\nSitemap: https://yourdomain.com/sitemap.xml', action: 'Edit', actionColor: 'var(--color-primary)', isCode: true },
+            { title: 'Page Speed', status: '84/100', description: 'Core Web Vitals: LCP 2.1s · FID 18ms · CLS 0.04 — All passing', action: 'Run Audit', actionColor: 'var(--color-primary)' },
+            { title: 'HTTPS / SSL', status: 'Active', description: 'SSL certificate valid — expires in 87 days', action: 'View Cert', actionColor: '#059669' },
+            { title: 'CDN Cache', status: 'Cloudflare', description: 'Cache invalidation on publish is enabled', action: 'Purge Cache', actionColor: '#d97706' },
+          ].map(item => (
+            <div key={item.title} className="frappe-card" style={{ padding: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)' }}>{item.title}</p>
+                    <span style={{ fontSize: '10px', padding: '1px 8px', borderRadius: 'var(--radius-full)', background: `${item.actionColor}18`, color: item.actionColor, fontWeight: 'var(--weight-semibold)' }}>{item.status}</span>
+                  </div>
+                  {item.isCode
+                    ? <pre style={{ fontSize: '11px', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)', color: 'var(--color-text)', margin: 0, fontFamily: 'monospace', lineHeight: 1.6 }}>{item.description}</pre>
+                    : <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{item.description}</p>
+                  }
+                </div>
+                <button className="frappe-btn frappe-btn-secondary" style={{ marginLeft: 'var(--space-3)', flexShrink: 0 }}>
+                  <Edit3 size={12} />
+                  <span>{item.action}</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Structured Data Tab */}
+      {activeTab === 'structured' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
+            {STRUCTURED_DATA_TYPES.map(sd => (
+              <div key={sd.type} className="frappe-card" style={{ padding: 'var(--space-4)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: 'var(--radius-md)', background: 'rgba(5,150,105,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <BarChart3 size={16} style={{ color: '#059669' }} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)' }}>{sd.type} Schema</p>
+                    <p style={{ fontSize: '10px', color: 'var(--color-text-secondary)', margin: 0 }}>{sd.pages} pages using this</p>
+                  </div>
+                </div>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: '0 0 var(--space-3) 0' }}>{sd.description}</p>
+                <button className="frappe-btn frappe-btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                  <Edit3 size={12} /><span>Configure</span>
+                </button>
+              </div>
+            ))}
+            <div className="frappe-card" style={{ padding: 'var(--space-4)', cursor: 'pointer', border: '2px dashed var(--color-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#059669'; e.currentTarget.style.background = 'rgba(5,150,105,0.05)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = ''; }}>
+              <ChevronDown size={24} style={{ color: '#059669', transform: 'rotate(-90deg)' }} />
+              <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', margin: 0 }}>Add Schema Type</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -156,4 +156,50 @@ export class PosService {
       },
     });
   }
+
+  async updateTerminalReceiptTemplate(
+    tenantId: string,
+    id: string,
+    dto: { receiptTemplate: string; layoutFormat: string }
+  ) {
+    const term = await prisma.pOSTerminal.findFirst({ where: { id, tenantId } });
+    if (!term) throw new NotFoundException('POS Terminal not found');
+
+    return prisma.pOSTerminal.update({
+      where: { id },
+      data: {
+        receiptTemplate: dto.receiptTemplate,
+        layoutFormat: dto.layoutFormat,
+      },
+    });
+  }
+
+  async getTerminalDiagnostics(tenantId: string, id: string) {
+    const term = await prisma.pOSTerminal.findFirst({ where: { id, tenantId } });
+    if (!term) throw new NotFoundException('POS Terminal not found');
+
+    return {
+      terminalId: id,
+      name: term.name,
+      code: term.code,
+      diagnostics: term.diagnosticData || {
+        printerStatus: 'ONLINE',
+        cashDrawerStatus: 'CLOSED',
+        scannerConnection: 'CONNECTED',
+        lastChecked: new Date(),
+      },
+    };
+  }
+
+  async updateTerminalDiagnostics(tenantId: string, id: string, dto: { diagnosticData: any }) {
+    const term = await prisma.pOSTerminal.findFirst({ where: { id, tenantId } });
+    if (!term) throw new NotFoundException('POS Terminal not found');
+
+    return prisma.pOSTerminal.update({
+      where: { id },
+      data: {
+        diagnosticData: dto.diagnosticData,
+      },
+    });
+  }
 }

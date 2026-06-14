@@ -4,7 +4,15 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ProcurementService } from './procurement.service';
-import { CreatePurchaseOrderInput, CreatePurchaseReceiptInput, UpdatePurchaseOrderStatusInput, CreateRFQInput, CreateSupplierQuotationInput, UpdateSupplierQuotationStatusInput } from '@unerp/shared';
+import {
+  CreatePurchaseOrderInput,
+  CreatePurchaseReceiptInput,
+  UpdatePurchaseOrderStatusInput,
+  CreateRFQInput,
+  CreateSupplierQuotationInput,
+  UpdateSupplierQuotationStatusInput,
+  CreatePurchaseReturnInput,
+} from '@unerp/shared';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -121,5 +129,20 @@ export class ProcurementController {
     @Param('id') id: string,
   ) {
     return this.procurementService.convertSupplierQuotationToPO(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  // ── PURCHASE RETURNS ──────────────────────────────
+
+  @Get('returns')
+  @Permissions('procurement.purchase-order.read')
+  async getPurchaseReturns(@Req() req: AuthenticatedRequest) {
+    return this.procurementService.getPurchaseReturns(req.user.tenantId);
+  }
+
+  @Post('returns')
+  @Permissions('procurement.purchase-order.create')
+  async createPurchaseReturn(@Req() req: AuthenticatedRequest, @Body() dto: CreatePurchaseReturnInput): Promise<unknown> {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.procurementService.createPurchaseReturn(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 }

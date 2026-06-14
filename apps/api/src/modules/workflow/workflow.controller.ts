@@ -30,7 +30,7 @@ export class WorkflowController {
   @Permissions('admin.setting.create')
   async createWorkflow(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; triggerType: string; steps: { stepOrder: number; actionType: string; assigneeRole: string }[] }
+    @Body() dto: { name: string; triggerType: string; steps: { stepOrder: number; actionType: string; assigneeRole: string; slaLimitHours?: number; backupAssigneeRole?: string }[] }
   ) {
     return this.workflowService.createWorkflow(req.user.tenantId, dto);
   }
@@ -50,5 +50,20 @@ export class WorkflowController {
   ) {
     const userId = req.user.userId || 'system';
     return this.workflowService.submitApprovalAction(req.user.tenantId, id, dto, userId);
+  }
+
+  @Post('sla-check')
+  @Permissions('admin.setting.create')
+  async checkSlaBreaches(@Req() req: AuthenticatedRequest) {
+    return this.workflowService.checkSlaBreaches(req.user.tenantId);
+  }
+
+  @Post('simulate')
+  @Permissions('admin.setting.create')
+  async simulateWorkflow(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { triggerType: string; entityType: string; entityId: string }
+  ) {
+    return this.workflowService.simulateWorkflow(req.user.tenantId, dto.triggerType, dto.entityType, dto.entityId);
   }
 }

@@ -29,7 +29,7 @@ export class ApiPlatformController {
   @Permissions('admin.api-keys.create')
   async createApiKey(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; rateLimit?: number }
+    @Body() dto: { name: string; rateLimit?: number; apiScopes?: string[]; ipWhitelist?: string[] }
   ) {
     return this.apiPlatformService.createApiKey(req.user.tenantId, dto);
   }
@@ -65,5 +65,21 @@ export class ApiPlatformController {
   @Permissions('admin.webhooks.read')
   async getWebhookDeliveryLogs(@Req() req: AuthenticatedRequest) {
     return this.apiPlatformService.getWebhookDeliveryLogs(req.user.tenantId);
+  }
+
+  @Post('keys/:id/scopes')
+  @Permissions('admin.api-keys.create')
+  async updateApiKeyScopes(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { apiScopes: string[]; ipWhitelist?: string[] }
+  ) {
+    return this.apiPlatformService.updateApiKeyScopes(req.user.tenantId, id, dto);
+  }
+
+  @Post('webhooks/logs/:id/retry')
+  @Permissions('admin.webhooks.create')
+  async retryWebhookDelivery(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.apiPlatformService.retryWebhookDelivery(req.user.tenantId, id);
   }
 }

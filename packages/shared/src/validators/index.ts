@@ -415,6 +415,7 @@ export const createLeadSchema = z.object({
   employeeCount: z.number().int().positive().optional(),
   annualRevenue: z.number().positive().optional(),
   notes: z.string().max(2000).optional(),
+  campaignId: z.string().optional(),
 });
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
 
@@ -546,3 +547,53 @@ export const createQualityInspectionSchema = z.object({
   checklist: z.array(qualityChecklistItemSchema).default([]),
 });
 export type CreateQualityInspectionInput = z.infer<typeof createQualityInspectionSchema>;
+
+// ── Campaigns Schemas ──
+
+export const createCampaignSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  status: z.enum(['PLANNED', 'ACTIVE', 'COMPLETED', 'CANCELLED']).default('PLANNED'),
+  type: z.enum(['EMAIL', 'SOCIAL', 'SEARCH', 'COLD_CALL', 'EVENT']).default('EMAIL'),
+  budget: z.number().nonnegative().default(0),
+  actualCost: z.number().nonnegative().default(0),
+  notes: z.string().max(2000).optional(),
+});
+export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
+
+// ── Sales Returns Schemas ──
+
+export const createSalesReturnItemSchema = z.object({
+  productId: z.string().min(1, 'Product is required'),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unitPrice: z.number().nonnegative(),
+  taxRate: z.number().nonnegative().default(0),
+});
+
+export const createSalesReturnSchema = z.object({
+  salesOrderId: z.string().min(1, 'Sales Order ID is required'),
+  deliveryNoteId: z.string().optional(),
+  returnNumber: z.string().min(1, 'Return number is required'),
+  reason: z.string().max(2000).optional(),
+  lineItems: z.array(createSalesReturnItemSchema).min(1, 'At least one line item is required'),
+});
+export type CreateSalesReturnInput = z.infer<typeof createSalesReturnSchema>;
+
+// ── Purchase Returns Schemas ──
+
+export const createPurchaseReturnItemSchema = z.object({
+  productId: z.string().min(1, 'Product is required'),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unitPrice: z.number().nonnegative(),
+  taxRate: z.number().nonnegative().default(0),
+});
+
+export const createPurchaseReturnSchema = z.object({
+  purchaseOrderId: z.string().min(1, 'Purchase Order ID is required'),
+  purchaseReceiptId: z.string().optional(),
+  returnNumber: z.string().min(1, 'Return number is required'),
+  reason: z.string().max(2000).optional(),
+  lineItems: z.array(createPurchaseReturnItemSchema).min(1, 'At least one line item is required'),
+});
+export type CreatePurchaseReturnInput = z.infer<typeof createPurchaseReturnSchema>;

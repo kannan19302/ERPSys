@@ -43,8 +43,8 @@ export default function RealEstatePage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [pRes, lRes] = await Promise.all([
-        fetch('http://localhost:3001/real-estate/properties', { headers }),
-        fetch('http://localhost:3001/real-estate/leases', { headers }),
+        fetch('/api/v1/real-estate/properties', { headers }),
+        fetch('/api/v1/real-estate/leases', { headers }),
       ]);
 
       const [pData, lData] = await Promise.all([
@@ -71,7 +71,7 @@ export default function RealEstatePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/real-estate/properties', {
+      const res = await fetch('/api/v1/real-estate/properties', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -104,7 +104,7 @@ export default function RealEstatePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/real-estate/leases', {
+      const res = await fetch('/api/v1/real-estate/leases', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

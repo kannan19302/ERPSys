@@ -1163,6 +1163,598 @@ async function main() {
     console.log('Phase 16-20 (API Platform, i18n, PWA, SaaS) seed data complete.');
   }
 
+  // 15. Seeding HR Gaps models
+  console.log('🌱 Seeding HR Gaps models...');
+  
+  // Benefit Schemes
+  const healthIns = await prisma.benefitScheme.upsert({
+    where: { id: 'health-scheme' },
+    update: {},
+    create: {
+      id: 'health-scheme',
+      tenantId: tenant.id,
+      name: 'Standard Health Insurance',
+      type: 'HEALTH_INSURANCE',
+      provider: 'Blue Cross Blue Shield',
+      description: 'Comprehensive medical coverage',
+      employeeCostShare: 150.00,
+      employerCostShare: 350.00,
+      isActive: true,
+    }
+  });
+
+  const pensionScheme = await prisma.benefitScheme.upsert({
+    where: { id: 'pension-scheme' },
+    update: {},
+    create: {
+      id: 'pension-scheme',
+      tenantId: tenant.id,
+      name: '401(k) Retirement Plan',
+      type: 'PENSION',
+      provider: 'Fidelity Investments',
+      description: 'Tax-deferred retirement savings',
+      employeeCostShare: 200.00,
+      employerCostShare: 200.00,
+      isActive: true,
+    }
+  });
+
+  // Tax Tables
+  await prisma.taxTable.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        country: 'US',
+        incomeBracketMin: 0.00,
+        incomeBracketMax: 11600.00,
+        taxRate: 10.00,
+        allowanceAmount: 0.00,
+      },
+      {
+        tenantId: tenant.id,
+        country: 'US',
+        incomeBracketMin: 11600.01,
+        incomeBracketMax: 47150.00,
+        taxRate: 12.00,
+        allowanceAmount: 0.00,
+      },
+      {
+        tenantId: tenant.id,
+        country: 'US',
+        incomeBracketMin: 47150.01,
+        incomeBracketMax: 100525.00,
+        taxRate: 22.00,
+        allowanceAmount: 0.00,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  // Holiday Calendar
+  await prisma.holidayCalendar.upsert({
+    where: { tenantId_date_region: { tenantId: tenant.id, date: new Date('2026-07-04T00:00:00Z'), region: 'US' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Independence Day',
+      date: new Date('2026-07-04T00:00:00Z'),
+      region: 'US',
+    }
+  });
+
+  await prisma.holidayCalendar.upsert({
+    where: { tenantId_date_region: { tenantId: tenant.id, date: new Date('2026-12-25T00:00:00Z'), region: 'US' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Christmas Day',
+      date: new Date('2026-12-25T00:00:00Z'),
+      region: 'US',
+    }
+  });
+
+  // Skill Requirements
+  await prisma.skillRequirement.upsert({
+    where: { tenantId_designation_skillName: { tenantId: tenant.id, designation: 'HR Director', skillName: 'Recruitment' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      designation: 'HR Director',
+      skillName: 'Recruitment',
+      requiredLevel: 4,
+    }
+  });
+
+  await prisma.skillRequirement.upsert({
+    where: { tenantId_designation_skillName: { tenantId: tenant.id, designation: 'HR Director', skillName: 'Labor Compliance' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      designation: 'HR Director',
+      skillName: 'Labor Compliance',
+      requiredLevel: 5,
+    }
+  });
+
+  // Positions Control
+  if (departmentMap['HUMAN_RESOURCES'] && departmentMap['FINANCE']) {
+    await prisma.position.upsert({
+      where: { tenantId_code: { tenantId: tenant.id, code: 'POS-HR-DIR' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        departmentId: hrDeptId,
+        title: 'HR Director',
+        code: 'POS-HR-DIR',
+        budgetedSalary: 8500.00,
+        status: 'FILLED',
+      }
+    });
+
+    await prisma.position.upsert({
+      where: { tenantId_code: { tenantId: tenant.id, code: 'POS-HR-SPEC' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        departmentId: hrDeptId,
+        title: 'HR Specialist',
+        code: 'POS-HR-SPEC',
+        budgetedSalary: 5000.00,
+        status: 'VACANT',
+      }
+    });
+  }
+
+  // 16. Seeding Project Management Gaps models
+  console.log('🌱 Seeding Project Management Gaps models...');
+  
+  // Find a Customer
+  const customer = await prisma.customer.findFirst({
+    where: { tenantId: tenant.id },
+  });
+  
+  if (customer) {
+    // Portfolios
+    const portfolio = await prisma.projectPortfolio.upsert({
+      where: { id: 'enterprise-portfolio' },
+      update: {},
+      create: {
+        id: 'enterprise-portfolio',
+        tenantId: tenant.id,
+        orgId: org.id,
+        name: 'Enterprise Software Enhancements',
+        description: 'Portfolio containing core enterprise upgrade projects',
+        riskScore: 2.50,
+        strategicAlignment: 'HIGH',
+        budget: 500000.00,
+      }
+    });
+
+    // Create a new Project linked to this Portfolio & Customer
+    const project = await prisma.project.upsert({
+      where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: 'PRJ-ERP-UPGRADE' } },
+      update: {
+        portfolioId: portfolio.id,
+        customerId: customer.id,
+      },
+      create: {
+        tenantId: tenant.id,
+        orgId: org.id,
+        name: 'ERP Suite Upgrade Project',
+        code: 'PRJ-ERP-UPGRADE',
+        description: 'Migrating legacy ERP workloads to UniERP Cloud Platform',
+        status: 'ACTIVE',
+        startDate: new Date('2026-06-01T00:00:00Z'),
+        endDate: new Date('2026-12-31T23:59:59Z'),
+        budget: 150000.00,
+        portfolioId: portfolio.id,
+        customerId: customer.id,
+        overallHealth: 'HEALTHY',
+      }
+    });
+
+    // Add some tasks if they don't exist
+    const task1 = await prisma.task.create({
+      data: {
+        tenantId: tenant.id,
+        projectId: project.id,
+        name: 'Requirement Analysis & Solution Design',
+        description: 'Complete fit-gap analysis and sign-off spec',
+        status: 'DONE',
+        priority: 'HIGH',
+        dueDate: new Date('2026-06-15T00:00:00Z'),
+      }
+    });
+
+    const task2 = await prisma.task.create({
+      data: {
+        tenantId: tenant.id,
+        projectId: project.id,
+        name: 'Database Migration Scripting',
+        description: 'Draft and test PostgreSQL schemas and mapping scripts',
+        status: 'IN_PROGRESS',
+        priority: 'HIGH',
+        dueDate: new Date('2026-07-30T00:00:00Z'),
+      }
+    });
+
+    const task3 = await prisma.task.create({
+      data: {
+        tenantId: tenant.id,
+        projectId: project.id,
+        name: 'UAT & Client Verification',
+        description: 'Perform user acceptance testing with customer stakeholders',
+        status: 'TODO',
+        priority: 'MEDIUM',
+        dueDate: new Date('2026-11-30T00:00:00Z'),
+      }
+    });
+
+    // Add timesheets to completed tasks for cost calculations
+    const emp = await prisma.employee.findFirst({ where: { tenantId: tenant.id } });
+    if (emp) {
+      await prisma.timesheet.create({
+        data: {
+          tenantId: tenant.id,
+          taskId: task1.id,
+          employeeId: emp.id,
+          date: new Date('2026-06-10T00:00:00Z'),
+          hours: 12.50,
+          notes: 'Worked on solution blueprint design',
+        }
+      });
+      await prisma.timesheet.create({
+        data: {
+          tenantId: tenant.id,
+          taskId: task2.id,
+          employeeId: emp.id,
+          date: new Date('2026-06-13T00:00:00Z'),
+          hours: 8.00,
+          notes: 'Configured Prisma migrations',
+        }
+      });
+    }
+
+    // Risks
+    await prisma.projectRisk.createMany({
+      data: [
+        {
+          tenantId: tenant.id,
+          projectId: project.id,
+          title: 'Database migration performance bottleneck',
+          description: 'Large historical tables might experience high latency during lockups',
+          probability: 'MEDIUM',
+          impact: 'HIGH',
+          mitigationPlan: 'Run trial runs on staging and optimize indices beforehand.',
+          status: 'OPEN',
+        },
+        {
+          tenantId: tenant.id,
+          projectId: project.id,
+          title: 'Developer resource constraint',
+          description: 'Key database developers assigned to multiple projects simultaneously',
+          probability: 'HIGH',
+          impact: 'MEDIUM',
+          mitigationPlan: 'Pre-allocate dedicated sprint capacity and cross-train team members.',
+          status: 'MITIGATED',
+        }
+      ],
+      skipDuplicates: true,
+    });
+
+    // Change Requests
+    await prisma.changeRequest.createMany({
+      data: [
+        {
+          tenantId: tenant.id,
+          projectId: project.id,
+          title: 'Add Advanced Financial Reporting dashboard',
+          description: 'Client requested extra real-time drilldowns for regional tax structures.',
+          requestedAmount: 25000.00,
+          requestedScheduleDays: 15,
+          status: 'PENDING',
+        },
+        {
+          tenantId: tenant.id,
+          projectId: project.id,
+          title: 'Additional SSO providers scope expansion',
+          description: 'Integrate Okta OIDC protocol in addition to simple credential logins.',
+          requestedAmount: 12000.00,
+          requestedScheduleDays: 7,
+          status: 'APPROVED',
+          approvedBy: 'admin@unerp.dev',
+          approvedAt: new Date('2026-06-12T00:00:00Z'),
+        }
+      ],
+      skipDuplicates: true,
+    });
+  }
+
+  // === MANUFACTURING MODULE SEEDING ===
+  console.log('🌱 Seeding Manufacturing, QC, CMMS & Subcontracting data...');
+
+  // 1. Workstations
+  const wsCNC = await prisma.workstation.upsert({
+    where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: 'WS-CNC' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      name: 'CNC Cutting Machine',
+      code: 'WS-CNC',
+      capacityHours: 80.0,
+      hourlyOverheadRate: 25.0,
+    },
+  });
+
+  const wsASM = await prisma.workstation.upsert({
+    where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: 'WS-ASM' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      name: 'Assembly Line A',
+      code: 'WS-ASM',
+      capacityHours: 120.0,
+      hourlyOverheadRate: 15.0,
+    },
+  });
+
+  const wsPKG = await prisma.workstation.upsert({
+    where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: 'WS-PKG' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      name: 'Packaging Station',
+      code: 'WS-PKG',
+      capacityHours: 60.0,
+      hourlyOverheadRate: 10.0,
+    },
+  });
+
+  // Find laptop product
+  const laptop = await prisma.product.findFirst({ where: { tenantId: tenant.id, sku: 'SKU-LAP-001' } });
+  if (laptop) {
+    // Create BOM Components
+    const component1 = await prisma.product.upsert({
+      where: { tenantId_orgId_sku: { tenantId: tenant.id, orgId: org.id, sku: 'SKU-CHASSIS-01' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        orgId: org.id,
+        sku: 'SKU-CHASSIS-01',
+        name: 'Aluminium Laptop Chassis',
+        costPrice: 150.0,
+        sellPrice: 300.0,
+        type: 'GOODS',
+      },
+    });
+
+    const component2 = await prisma.product.upsert({
+      where: { tenantId_orgId_sku: { tenantId: tenant.id, orgId: org.id, sku: 'SKU-MOBO-01' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        orgId: org.id,
+        sku: 'SKU-MOBO-01',
+        name: 'Core i7 Motherboard',
+        costPrice: 200.0,
+        sellPrice: 400.0,
+        type: 'GOODS',
+      },
+    });
+
+    const component3 = await prisma.product.upsert({
+      where: { tenantId_orgId_sku: { tenantId: tenant.id, orgId: org.id, sku: 'SKU-RAM-01' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        orgId: org.id,
+        sku: 'SKU-RAM-01',
+        name: '16GB RAM DDR5 Module',
+        costPrice: 50.0,
+        sellPrice: 100.0,
+        type: 'GOODS',
+      },
+    });
+
+    // Create By-Product (e.g. scrap aluminium)
+    const byproduct = await prisma.product.upsert({
+      where: { tenantId_orgId_sku: { tenantId: tenant.id, orgId: org.id, sku: 'SKU-SCRAP-AL' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        orgId: org.id,
+        sku: 'SKU-SCRAP-AL',
+        name: 'Scrap Aluminium Sheets',
+        costPrice: 2.0,
+        sellPrice: 5.0,
+        type: 'GOODS',
+      },
+    });
+
+    // Seed BOM
+    const bom = await prisma.bOM.upsert({
+      where: { tenantId_code: { tenantId: tenant.id, code: 'BOM-LAP-001' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        productId: laptop.id,
+        name: 'UltraBook Laptop Pro Assembly',
+        code: 'BOM-LAP-001',
+        materialCost: 400.0,
+        overheadCost: 150.0,
+        standardCost: 550.0,
+        routingJson: JSON.stringify([
+          { sequence: 1, name: 'CNC casing chassis cutting', workstationCode: 'WS-CNC', durationMinutes: 60 },
+          { sequence: 2, name: 'Assembly of motherboard and components', workstationCode: 'WS-ASM', durationMinutes: 120 },
+          { sequence: 3, name: 'Screen calibration and final testing', workstationCode: 'WS-ASM', durationMinutes: 30 },
+          { sequence: 4, name: 'Packaging and scanning', workstationCode: 'WS-PKG', durationMinutes: 15 },
+        ]),
+      },
+    });
+
+    // Seed BOM Items (Components)
+    await prisma.bOMItem.deleteMany({ where: { bomId: bom.id } });
+    await prisma.bOMItem.createMany({
+      data: [
+        { tenantId: tenant.id, bomId: bom.id, productId: component1.id, quantity: 1.0, type: 'COMPONENT' },
+        { tenantId: tenant.id, bomId: bom.id, productId: component2.id, quantity: 1.0, type: 'COMPONENT' },
+        { tenantId: tenant.id, bomId: bom.id, productId: component3.id, quantity: 1.0, type: 'COMPONENT' },
+        { tenantId: tenant.id, bomId: bom.id, productId: byproduct.id, quantity: 0.5, type: 'BY_PRODUCT' },
+      ],
+    });
+
+    // Seed Work Orders
+    await prisma.workOrder.deleteMany({ where: { bomId: bom.id } });
+    const wo1 = await prisma.workOrder.create({
+      data: {
+        tenantId: tenant.id,
+        bomId: bom.id,
+        workOrderNumber: 'WO-LAP-001',
+        status: 'PLANNED',
+        quantity: 50.0,
+        startDate: new Date('2026-06-15T08:00:00Z'),
+        workstationId: wsASM.id,
+        standardCost: 27500.0,
+      },
+    });
+
+    const wo2 = await prisma.workOrder.create({
+      data: {
+        tenantId: tenant.id,
+        bomId: bom.id,
+        workOrderNumber: 'WO-LAP-002',
+        status: 'IN_PROGRESS',
+        quantity: 20.0,
+        startDate: new Date('2026-06-14T09:00:00Z'),
+        workstationId: wsASM.id,
+        standardCost: 11000.0,
+        actualCost: 11200.0,
+        costVariance: 200.0,
+        lotNumber: 'LOT-20260614-01',
+      },
+    });
+
+    const wo3 = await prisma.workOrder.create({
+      data: {
+        tenantId: tenant.id,
+        bomId: bom.id,
+        workOrderNumber: 'WO-LAP-003',
+        status: 'COMPLETED',
+        quantity: 10.0,
+        startDate: new Date('2026-06-13T08:00:00Z'),
+        endDate: new Date('2026-06-13T12:00:00Z'),
+        workstationId: wsASM.id,
+        standardCost: 5500.0,
+        actualCost: 5450.0,
+        costVariance: -50.0,
+        lotNumber: 'LOT-20260613-01',
+        oeeScore: 92.5,
+        scrapQuantity: 1.0,
+      },
+    });
+
+    // Seed Quality Plans
+    const qPlan = await prisma.qualityInspectionPlan.upsert({
+      where: { tenantId_code: { tenantId: tenant.id, code: 'QPLAN-LAP-001' } },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        productId: laptop.id,
+        name: 'Laptop Inspection Standards Plan',
+        code: 'QPLAN-LAP-001',
+        checks: JSON.stringify([
+          { parameter: 'Chassis Thickness (mm)', minVal: 1.4, maxVal: 1.6 },
+          { parameter: 'Screen Brightness (nits)', minVal: 350, maxVal: 450 },
+          { parameter: 'Keyboard Functional Key Test', minVal: 1, maxVal: 1 },
+        ]),
+      },
+    });
+
+    // Seed Quality Inspection
+    await prisma.qualityInspection.create({
+      data: {
+        tenantId: tenant.id,
+        orgId: org.id,
+        inspectionNumber: 'QI-LAP-001',
+        referenceType: 'Work Order',
+        referenceId: wo3.id,
+        productId: laptop.id,
+        status: 'PASSED',
+        inspectedQty: 10.0,
+        passedQty: 10.0,
+        rejectedQty: 0.0,
+        inspectedBy: 'admin@unerp.dev',
+        checklist: JSON.stringify([
+          { parameter: 'Chassis Thickness (mm)', target: '1.5', actual: '1.5', status: 'PASS' },
+          { parameter: 'Screen Brightness (nits)', target: '400', actual: '410', status: 'PASS' },
+          { parameter: 'Keyboard Functional Key Test', target: '1', actual: '1', status: 'PASS' },
+        ]),
+      },
+    });
+
+    // Seed Non-Conformance Report
+    await prisma.nonConformanceReport.create({
+      data: {
+        tenantId: tenant.id,
+        workOrderId: wo2.id,
+        productId: laptop.id,
+        title: 'Screen Calibration Backlight Leakage',
+        description: '3 laptops in batch WO-LAP-002 had backlight leakage exceeding threshold checks.',
+        disposition: 'REWORK',
+        status: 'OPEN',
+        loggedBy: 'inspector.qc@unerp.dev',
+      },
+    });
+  }
+
+  // 2. Machine Downtime Logs
+  await prisma.machineDowntimeLog.create({
+    data: {
+      tenantId: tenant.id,
+      workstationId: wsCNC.id,
+      downtimeCode: 'MECHANICAL',
+      startTime: new Date('2026-06-14T08:00:00Z'),
+      endTime: new Date('2026-06-14T09:15:00Z'),
+      durationMinutes: 75,
+      notes: 'Chassis cutter blade swap and motor oil check.',
+    },
+  });
+
+  // 3. CMMS / Maintenance Requests
+  await prisma.maintenanceRequest.create({
+    data: {
+      tenantId: tenant.id,
+      workstationId: wsASM.id,
+      type: 'PREVENTIVE',
+      priority: 'MEDIUM',
+      title: 'Assembly Belt Greasing & Calibration',
+      description: 'Bi-weekly routine belt inspection and maintenance checklist.',
+      status: 'SCHEDULED',
+      assignedTo: 'Technical Team B',
+    },
+  });
+
+  // 4. Subcontracting Orders
+  const lexcorpVendor = await prisma.vendor.findFirst({ where: { tenantId: tenant.id, name: 'LexCorp Heavy Industries' } });
+  const rawSteel = await prisma.product.findFirst({ where: { tenantId: tenant.id, sku: 'SKU-CHASSIS-01' } });
+  if (lexcorpVendor && rawSteel) {
+    await prisma.subcontractingOrder.create({
+      data: {
+        tenantId: tenant.id,
+        vendorId: lexcorpVendor.id,
+        productId: rawSteel.id,
+        quantity: 100.0,
+        unitCost: 15.0,
+        totalCost: 1500.0,
+        status: 'MATERIALS_SHIPPED',
+        deliveryDate: new Date('2026-06-25T00:00:00Z'),
+      },
+    });
+  }
+
   console.log('✅ Database seeding complete!');
 }
 

@@ -41,8 +41,8 @@ export default function StoragePage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [filesRes, genRes] = await Promise.all([
-        fetch('http://localhost:3001/storage/files', { headers }),
-        fetch('http://localhost:3001/storage/generated', { headers }),
+        fetch('/api/v1/storage/files', { headers }),
+        fetch('/api/v1/storage/generated', { headers }),
       ]);
 
       const [filesData, genData] = await Promise.all([
@@ -67,7 +67,7 @@ export default function StoragePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/storage/files', {
+      const res = await fetch('/api/v1/storage/files', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -97,7 +97,7 @@ export default function StoragePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/storage/generate', {
+      const res = await fetch('/api/v1/storage/generate', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

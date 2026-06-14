@@ -126,14 +126,14 @@ if ($pgOk) { Write-Ok "PostgreSQL is healthy." }
 else { Write-Warn "Health check timed out - proceeding anyway." }
 
 # --------------------------------------------------------
-# Step 4: Run Prisma Migrations
+# Step 4: Run Prisma DB Push
 # --------------------------------------------------------
-Write-Step "Step 4/7 - Applying Prisma migrations..."
+Write-Step "Step 4/7 - Synchronizing Prisma database schema..."
 Push-Location $ROOT
 try {
-  & pnpm db:migrate
+  & pnpm db:push
   if ($LASTEXITCODE -ne 0) {
-    Write-Fail "Migration failed. Check DATABASE_URL in apps/api/.env"
+    Write-Fail "Database sync failed. Check DATABASE_URL in apps/api/.env"
     Pop-Location
     exit 1
   }
@@ -142,7 +142,7 @@ try {
   throw
 }
 Pop-Location
-Write-Ok "Migrations applied."
+Write-Ok "Database schema synchronized."
 
 # --------------------------------------------------------
 # Step 5: Seed the Database

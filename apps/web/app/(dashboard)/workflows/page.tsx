@@ -6,7 +6,6 @@ import {
   RefreshCw, 
   CheckCircle, 
   XCircle, 
-  AlertCircle, 
   Activity
 } from 'lucide-react';
 
@@ -15,6 +14,8 @@ interface WorkflowStep {
   stepOrder: number;
   actionType: string;
   assigneeRole: string;
+  slaLimitHours?: number;
+  backupAssigneeRole?: string;
 }
 
 interface Workflow {
@@ -48,8 +49,8 @@ export default function WorkflowsPage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [wfRes, appRes] = await Promise.all([
-        fetch('http://localhost:3001/workflows', { headers }),
-        fetch('http://localhost:3001/workflows/approvals', { headers }),
+        fetch('/api/v1/workflows', { headers }),
+        fetch('/api/v1/workflows/approvals', { headers }),
       ]);
 
       const [wfs, apps] = await Promise.all([
@@ -72,7 +73,7 @@ export default function WorkflowsPage() {
     try {
       const token = localStorage.getItem('token');
       const comments = prompt(`Enter comments for ${status.toLowerCase()}:`, '');
-      const res = await fetch(`http://localhost:3001/workflows/approvals/${id}`, {
+      const res = await fetch(`/api/v1/workflows/approvals/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -96,10 +97,15 @@ export default function WorkflowsPage() {
     if (!name) return;
     const triggerType = prompt('Enter trigger type (e.g. PO_CREATED, LEAVE_REQUESTED, INVOICE_CREATED):', 'PO_CREATED');
     if (!triggerType) return;
+    const assigneeRole = prompt('Enter primary assignee role:', 'Admin');
+    if (!assigneeRole) return;
+    const slaLimitStr = prompt('Enter SLA limit hours (optional, e.g. 24):', '24');
+    const slaLimitHours = slaLimitStr ? parseInt(slaLimitStr, 10) : undefined;
+    const backupAssigneeRole = slaLimitHours ? (prompt('Enter backup assignee role:', 'Manager') || 'Admin') : undefined;
 
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3001/workflows', {
+      const res = await fetch('/api/v1/workflows', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -109,11 +115,22 @@ export default function WorkflowsPage() {
           name,
           triggerType,
           steps: [
-            { stepOrder: 1, actionType: 'APPROVAL', assigneeRole: 'Admin' }
+            { 
+              stepOrder: 1, 
+              actionType: 'APPROVAL', 
+              assigneeRole,
+              slaLimitHours,
+              backupAssigneeRole
+            }
           ]
         })
       });
-      loadData();
+      if (res.ok) {
+        loadData();
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Error creating workflow');
+      }
     } catch {
       alert('Error creating workflow.');
     }
@@ -170,7 +187,7 @@ export default function WorkflowsPage() {
       </div>
 
       {/* Main Grid content */}
-      <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
         
         {/* Tab view */}
         <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
@@ -203,6 +220,7 @@ export default function WorkflowsPage() {
                         {wf.steps?.map((step: WorkflowStep) => (
                           <div key={step.id} style={{ padding: 'var(--space-1) var(--space-2.5)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', fontSize: '10px', background: 'var(--color-bg)' }}>
                             Step {step.stepOrder}: {step.actionType} ({step.assigneeRole})
+                            {step.slaLimitHours ? ` [SLA: ${step.slaLimitHours}h (Backup: ${step.backupAssigneeRole || 'Admin'})]` : ''}
                           </div>
                         ))}
                       </div>
@@ -248,18 +266,6 @@ export default function WorkflowsPage() {
             </div>
           )}
         </div>
-
-        {/* Side Panel: Rules info */}
-        <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', margin: 0, display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
-            <AlertCircle size={16} style={{ color: 'var(--color-primary)' }} />
-            Workflow Engine Rationale
-          </h3>
-          <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-            Workflows automatically trigger approval chains for key business entities when events are registered in the monorepo event-emitter system.
-          </p>
-        </div>
-
       </div>
     </div>
   );

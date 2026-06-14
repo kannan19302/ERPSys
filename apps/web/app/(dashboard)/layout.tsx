@@ -53,6 +53,13 @@ import {
   ClipboardCheck,
   Warehouse,
   Layers,
+  Play,
+  Cpu,
+  FileCode2,
+  Workflow,
+  Database,
+  Image,
+  Code2,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -115,6 +122,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: Users,
       items: [
         { name: 'Employee Directory', href: '/hr', icon: Users },
+        { name: 'Self-Service Portal', href: '/hr/advanced/self-service', icon: UserIcon },
         {
           name: 'Talent Management',
           isHeader: true,
@@ -140,6 +148,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
             { name: 'Trainings & Certs', href: '/hr/advanced/trainings', icon: GraduationCap },
             { name: 'HR Helpdesk', href: '/hr/advanced/tickets', icon: HelpCircle },
             { name: 'Engagement Surveys', href: '/hr/advanced/surveys', icon: CheckSquare },
+            { name: 'Public Holidays', href: '/hr/advanced/holidays', icon: CalendarDays },
+            { name: 'Labor Compliance', href: '/hr/advanced/compliance', icon: ShieldCheck },
           ]
         },
         {
@@ -148,6 +158,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           items: [
             { name: 'Payroll & Salaries', href: '/hr/advanced/payroll', icon: DollarSign },
             { name: 'Leave Management', href: '/hr/advanced/leaves', icon: Coffee },
+            { name: 'Benefits Admin', href: '/hr/advanced/benefits', icon: CreditCard },
+            { name: 'Position Control', href: '/hr/advanced/positions', icon: ClipboardCheck },
             { name: 'Workforce Analytics', href: '/hr/advanced/analytics', icon: BarChart3 },
           ]
         }
@@ -183,6 +195,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           name: 'Activities & Analytics',
           isHeader: true,
           items: [
+            { name: 'Marketing Campaigns', href: '/crm/campaigns', icon: Target },
             { name: 'Activities', href: '/crm/activities', icon: Activity },
             { name: 'Email Templates', href: '/crm/email-templates', icon: Mail },
             { name: 'CRM Reports', href: '/crm/reports', icon: PieChart },
@@ -236,6 +249,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
         { name: 'Procurement Dashboard', href: '/procurement', icon: ShoppingCart },
         { name: 'Purchase Orders', href: '/procurement/purchase-orders', icon: FileText },
         { name: 'Purchase Receipts (GRN)', href: '/procurement/purchase-receipts', icon: Truck },
+        { name: 'Supplier Returns', href: '/procurement/returns', icon: History },
         { name: 'Sourcing (RFQs)', href: '/procurement/rfqs', icon: ClipboardList },
         { name: 'Supplier Bids', href: '/procurement/supplier-quotations', icon: FileText },
         { name: 'Supplier Directory', href: '/procurement/vendors', icon: Building2 }
@@ -250,7 +264,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
         { name: 'Sales Dashboard', href: '/sales', icon: Home },
         { name: 'Customer Quotations', href: '/sales/quotations', icon: FileText },
         { name: 'Sales Orders', href: '/sales/orders', icon: ClipboardList },
-        { name: 'Delivery Notes', href: '/sales/delivery-notes', icon: Truck }
+        { name: 'Delivery Notes', href: '/sales/delivery-notes', icon: Truck },
+        { name: 'Customer Returns', href: '/sales/returns', icon: History }
       ] as SidebarItem[]
     };
   }
@@ -268,7 +283,17 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Project Management',
       icon: Briefcase,
       items: [
-        { name: 'Gantt & Tasks', href: '/projects', icon: Briefcase }
+        { name: 'Gantt & Tasks', href: '/projects', icon: Briefcase },
+        { name: 'Portfolio Hub', href: '/projects/portfolios', icon: Target },
+        { name: 'Client Portal', href: '/projects/client-portal', icon: Home },
+        {
+          name: 'Advanced Tools',
+          isHeader: true,
+          items: [
+            { name: 'Resource Workloads', href: '/projects/workloads', icon: Clock },
+            { name: 'Project Health & CPM', href: '/projects/health', icon: Activity },
+          ]
+        }
       ]
     };
   }
@@ -277,7 +302,20 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Manufacturing',
       icon: Hammer,
       items: [
-        { name: 'Manufacturing Operations', href: '/manufacturing', icon: Hammer }
+        { name: 'Work Orders', href: '/manufacturing', icon: Hammer },
+        { name: 'Bills of Materials', href: '/manufacturing/boms', icon: ClipboardList },
+        { name: 'MRP Replenishment', href: '/manufacturing/mrp', icon: Layers },
+        { name: 'Operator Shop Floor', href: '/manufacturing/shop-floor', icon: Cpu },
+        { name: 'Quality Control & NCR', href: '/manufacturing/quality', icon: ShieldCheck },
+        { name: 'Product Configurator', href: '/manufacturing/configurator', icon: Settings },
+        {
+          name: 'Execution & MES',
+          isHeader: true,
+          items: [
+            { name: 'MES Diagnostics', href: '/manufacturing/diagnostics', icon: Settings },
+            { name: 'IoT Telemetry Sensors', href: '/manufacturing/diagnostics', icon: Activity },
+          ]
+        }
       ]
     };
   }
@@ -286,8 +324,15 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Business Intelligence',
       icon: PieChart,
       items: [
-        { name: 'BI Analytics', href: '/analytics', icon: PieChart },
-        { name: 'Advanced Reporting', href: '/analytics/advanced', icon: PieChart }
+        { name: 'BI Analytics Dashboard', href: '/analytics', icon: PieChart },
+        {
+          name: 'Data Tools',
+          isHeader: true,
+          items: [
+            { name: 'Visual Query Builder', href: '/analytics/query', icon: GitFork },
+            { name: 'Pivot Matrix Aggregator', href: '/analytics/pivot', icon: Layers },
+          ]
+        }
       ]
     };
   }
@@ -297,7 +342,14 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: FolderOpen,
       items: [
         { name: 'Documents & Folders', href: '/documents', icon: FolderOpen },
-        { name: 'Files & Storage', href: '/storage', icon: HardDrive }
+        {
+          name: 'Cloud Storage',
+          isHeader: true,
+          items: [
+            { name: 'Files Explorer', href: '/storage', icon: HardDrive },
+            { name: 'Presigned Urls', href: '/storage', icon: Key },
+          ]
+        }
       ]
     };
   }
@@ -315,7 +367,15 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'POS & Retail',
       icon: Store,
       items: [
-        { name: 'POS Terminals', href: '/pos', icon: Store }
+        { name: 'POS Terminals', href: '/pos', icon: Store },
+        {
+          name: 'Customizer',
+          isHeader: true,
+          items: [
+            { name: 'Receipt Designer', href: '/pos/designer', icon: Settings },
+            { name: 'Printer Diagnostics', href: '/pos/diagnostics', icon: Activity },
+          ]
+        }
       ]
     };
   }
@@ -324,7 +384,15 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Workflows',
       icon: GitFork,
       items: [
-        { name: 'Approval Workflows', href: '/workflows', icon: GitFork }
+        { name: 'Approval Workflows', href: '/workflows', icon: GitFork },
+        {
+          name: 'SLA Escalations',
+          isHeader: true,
+          items: [
+            { name: 'Escalation Logs', href: '/workflows/escalations', icon: ShieldAlert },
+            { name: 'Workflow Simulator', href: '/workflows/simulation', icon: Play },
+          ]
+        }
       ]
     };
   }
@@ -370,10 +438,16 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: ShieldAlert,
       items: [
         { name: 'Users List', href: '/admin/users', icon: ShieldAlert },
-        { name: 'API Platform', href: '/admin/api-keys', icon: Key },
-        { name: 'Localization', href: '/admin/localization', icon: Globe },
-        { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
-        { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server }
+        {
+          name: 'System Platform',
+          isHeader: true,
+          items: [
+            { name: 'API Key Whitelists', href: '/admin/api-keys', icon: Key },
+            { name: 'i18n Localization', href: '/admin/localization', icon: Globe },
+            { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
+            { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
+          ]
+        }
       ]
     };
   }
@@ -384,6 +458,39 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       items: [
         { name: 'Subscription Plans', href: '/saas/portal', icon: Cloud }
       ]
+    };
+  }
+  if (pathname.startsWith('/builder')) {
+    return {
+      title: 'Builder Studio',
+      icon: Cpu,
+      items: [
+        { name: 'Builder Overview', href: '/builder', icon: Layers },
+        {
+          name: 'ERP App Builder',
+          isHeader: true,
+          items: [
+            { name: 'Form Builder', href: '/builder/erp/forms', icon: FileCode2 },
+            { name: 'Workflow Builder', href: '/builder/erp/workflows', icon: Workflow },
+            { name: 'Dashboard Builder', href: '/builder/erp/dashboards', icon: BarChart3 },
+            { name: 'Custom Modules', href: '/builder/erp/modules', icon: Database },
+            { name: 'Business Logic', href: '/builder/erp/logic', icon: Play },
+            { name: 'Data Import', href: '/builder/erp/data', icon: Layers },
+          ]
+        },
+        {
+          name: 'Website Builder',
+          isHeader: true,
+          items: [
+            { name: 'Pages', href: '/builder/web/pages', icon: Globe },
+            { name: 'Blog Posts', href: '/builder/web/blog', icon: FileText },
+            { name: 'Asset Manager', href: '/builder/web/assets', icon: Image },
+            { name: 'Templates', href: '/builder/web/templates', icon: Code2 },
+            { name: 'Navigation Menus', href: '/builder/web/menus', icon: Layers },
+            { name: 'SEO Manager', href: '/builder/web/seo', icon: BarChart3 },
+          ]
+        },
+      ] as SidebarItem[]
     };
   }
 
@@ -415,6 +522,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
   { name: 'API Platform', href: '/admin/api-keys', icon: Key, type: 'App' },
   { name: 'Administration', href: '/admin/users', icon: ShieldAlert, type: 'App' },
+  { name: 'Builder Studio', href: '/builder', icon: Cpu, type: 'App' },
   // Actions — General
   { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
   { name: 'Create Invoice', href: '/finance', icon: CreditCard, type: 'Action' },
@@ -682,7 +790,9 @@ export default function DashboardLayout({
             flexDirection: 'column',
             transition: 'width var(--duration-normal) var(--ease-default)',
             zIndex: 100,
-            position: 'relative',
+            position: 'sticky',
+            top: 0,
+            height: '100vh',
           }}
         >
           {/* Sidebar Header / Brand Logo */}
@@ -760,6 +870,7 @@ export default function DashboardLayout({
               display: 'flex',
               flexDirection: 'column',
               gap: 'var(--space-1)',
+              overflowY: 'auto',
             }}
           >
             <Suspense fallback={<div className="flex-1" />}>
@@ -1356,12 +1467,12 @@ export default function DashboardLayout({
         <main
           style={{
             flex: 1,
-            padding: 'var(--space-6) var(--space-8)',
+            padding: pathname.startsWith('/builder') ? '0' : 'var(--space-6) var(--space-8)',
             overflowY: 'auto',
             background: 'var(--color-bg)',
           }}
         >
-          <div style={{ maxWidth: 'var(--content-max-width)', margin: '0 auto' }}>
+          <div style={{ maxWidth: pathname.startsWith('/builder') ? '100%' : 'var(--content-max-width)', margin: '0 auto' }}>
             {children}
           </div>
         </main>

@@ -19,6 +19,7 @@ interface ApiKeyData {
   prefix: string;
   rateLimit: number;
   status: string;
+  scopes: string[];
   createdAt: string;
 }
 
@@ -47,13 +48,22 @@ export default function ApiKeysPage() {
   const [showCreateKey, setShowCreateKey] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyRateLimit, setNewKeyRateLimit] = useState(120);
+  const [selectedScopes, setSelectedScopes] = useState<string[]>(['projects.project.read']);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const availableScopes = [
+    { value: 'projects.project.read', label: 'View Projects (projects.project.read)' },
+    { value: 'projects.project.create', label: 'Create Projects (projects.project.create)' },
+    { value: 'pos.terminal.read', label: 'View POS Counters (pos.terminal.read)' },
+    { value: 'analytics.report.read', label: 'Run Reports (analytics.report.read)' },
+    { value: 'admin.setting.read', label: 'View Settings (admin.setting.read)' }
+  ];
 
   useEffect(() => {
     // Load mock data
     setApiKeys([
-      { id: 'key-1', name: 'Read-only API Key', prefix: 'ue_live_', rateLimit: 120, status: 'ACTIVE', createdAt: new Date().toLocaleDateString() },
-      { id: 'key-2', name: 'CI/CD Pipeline Key', prefix: 'ue_test_', rateLimit: 60, status: 'ACTIVE', createdAt: new Date(Date.now() - 86400000).toLocaleDateString() },
+      { id: 'key-1', name: 'Read-only API Key', prefix: 'ue_live_', rateLimit: 120, status: 'ACTIVE', scopes: ['projects.project.read', 'analytics.report.read'], createdAt: new Date().toLocaleDateString() },
+      { id: 'key-2', name: 'CI/CD Pipeline Key', prefix: 'ue_test_', rateLimit: 60, status: 'ACTIVE', scopes: ['projects.project.create', 'admin.setting.read'], createdAt: new Date(Date.now() - 86400000).toLocaleDateString() },
     ]);
     setWebhooks([
       { id: 'wh-1', name: 'Invoice Paid Event', targetUrl: 'https://api.external-service.com/webhooks/invoice', events: '["invoice.paid", "invoice.created"]', status: 'ACTIVE', createdAt: new Date().toLocaleDateString() },
@@ -72,10 +82,12 @@ export default function ApiKeysPage() {
       prefix: 'ue_live_',
       rateLimit: newKeyRateLimit,
       status: 'ACTIVE',
+      scopes: selectedScopes,
       createdAt: new Date().toLocaleDateString(),
     };
     setApiKeys((prev) => [newKey, ...prev]);
     setNewKeyName('');
+    setSelectedScopes(['projects.project.read']);
     setShowCreateKey(false);
   };
 
@@ -144,6 +156,7 @@ export default function ApiKeysPage() {
                 <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
                 <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Key Prefix</th>
                 <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Rate Limit</th>
+                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Allowed Scopes</th>
                 <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
                 <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Actions</th>
               </tr>
@@ -158,6 +171,13 @@ export default function ApiKeysPage() {
                     </code>
                   </td>
                   <td style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>{k.rateLimit}/min</td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      {k.scopes?.map(s => (
+                        <Badge key={s} variant="info">{s}</Badge>
+                      )) || <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px' }}>None</span>}
+                    </div>
+                  </td>
                   <td style={{ padding: 'var(--space-3) var(--space-4)' }}><StatusBadge status={k.status} /></td>
                   <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
@@ -255,6 +275,33 @@ export default function ApiKeysPage() {
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Rate Limit (req/min)</label>
                 <input type="number" value={newKeyRateLimit} onChange={(e) => setNewKeyRateLimit(Number(e.target.value))} style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none', color: 'var(--color-text)' }} />
               </div>
+              
+              {/* Scopes Checklist */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Whitelisted Scopes (RBAC)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxHeight: '120px', overflowY: 'auto', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}>
+                  {availableScopes.map(sc => {
+                    const checked = selectedScopes.includes(sc.value);
+                    return (
+                      <label key={sc.value} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={checked} 
+                          onChange={() => {
+                            if (checked) {
+                              setSelectedScopes(selectedScopes.filter(s => s !== sc.value));
+                            } else {
+                              setSelectedScopes([...selectedScopes, sc.value]);
+                            }
+                          }}
+                        />
+                        {sc.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
                 <Button variant="outline" onClick={() => setShowCreateKey(false)}>Cancel</Button>
                 <Button variant="primary" onClick={handleCreateKey}>Generate Key</Button>

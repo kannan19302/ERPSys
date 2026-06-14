@@ -7,6 +7,7 @@ import {
   CreateActivityInput, CreateEmailTemplateInput, CreateSalesPipelineInput,
   UpdateCustomerInput, UpdateContactInput, UpdateLeadInput,
   UpdateOpportunityInput, UpdateEmailTemplateInput,
+  CreateCampaignInput,
 } from '@unerp/shared';
 
 @Injectable()
@@ -182,6 +183,43 @@ export class CrmService {
     return lead;
   }
 
+  async recalculateLeadScore(tenantId: string, leadId: string) {
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, tenantId, deletedAt: null },
+      include: { activities: true },
+    });
+    if (!lead) return;
+
+    let score = 0;
+    if (lead.email) score += 15;
+    if (lead.phone || lead.mobile) score += 15;
+    if (lead.company) score += 10;
+    if (lead.website) score += 10;
+    if (lead.industry) score += 10;
+    if (lead.annualRevenue) {
+      const rev = Number(lead.annualRevenue);
+      if (rev > 1000000) score += 30;
+      else if (rev > 100000) score += 20;
+      else score += 10;
+    }
+    if (lead.employeeCount) {
+      if (lead.employeeCount > 100) score += 20;
+      else score += 10;
+    }
+
+    if (lead.activities && lead.activities.length > 0) {
+      lead.activities.forEach((act) => {
+        if (act.completedAt) score += 15;
+        else score += 5;
+      });
+    }
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: { score },
+    });
+  }
+
   async createLead(tenantId: string, orgId: string, dto: CreateLeadInput) {
     let resolvedOrgId = orgId;
     if (!orgId || orgId === 'org-system-default') {
@@ -189,7 +227,7 @@ export class CrmService {
       if (!org) throw new BadRequestException('No Organization registered');
       resolvedOrgId = org.id;
     }
-    return prisma.lead.create({
+    const lead = await prisma.lead.create({
       data: {
         tenantId, orgId: resolvedOrgId,
         salutation: dto.salutation || null,
@@ -198,22 +236,38 @@ export class CrmService {
         email: dto.email || null, phone: dto.phone || null, mobile: dto.mobile || null,
         website: dto.website || null, sourceId: dto.sourceId || null,
         industry: dto.industry || null,
-        employeeCount: dto.employeeCount || null, annualRevenue: dto.annualRevenue || null,
+        employeeCount: dto.employeeCount || null,
+        annualRevenue: dto.annualRevenue != null ? new Prisma.Decimal(dto.annualRevenue) : null,
         notes: dto.notes || null,
+        campaignId: dto.campaignId || null,
       },
     });
+    await this.recalculateLeadScore(tenantId, lead.id);
+    return this.getLeadById(tenantId, lead.id);
   }
 
   async updateLead(tenantId: string, id: string, dto: UpdateLeadInput) {
     const existing = await prisma.lead.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Lead not found');
-    return prisma.lead.update({ where: { id }, data: dto as Prisma.LeadUpdateInput });
+    const { campaignId, ...rest } = dto;
+    const updated = await prisma.lead.update({
+      where: { id },
+      data: {
+        ...rest,
+        annualRevenue: dto.annualRevenue != null ? new Prisma.Decimal(dto.annualRevenue) : undefined,
+        ...(campaignId !== undefined && { campaignId: campaignId || null }),
+      } as Prisma.LeadUpdateInput
+    });
+    await this.recalculateLeadScore(tenantId, id);
+    return updated;
   }
 
   async updateLeadStatus(tenantId: string, id: string, status: string) {
     const existing = await prisma.lead.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Lead not found');
-    return prisma.lead.update({ where: { id }, data: { status } });
+    const updated = await prisma.lead.update({ where: { id }, data: { status } });
+    await this.recalculateLeadScore(tenantId, id);
+    return updated;
   }
 
   async convertLead(tenantId: string, orgId: string, leadId: string, customerName?: string, opportunityName?: string, opportunityAmount?: number) {
@@ -408,7 +462,7 @@ export class CrmService {
       if (!org) throw new BadRequestException('No Organization registered');
       resolvedOrgId = org.id;
     }
-    return prisma.activity.create({
+    const act = await prisma.activity.create({
       data: {
         tenantId, orgId: resolvedOrgId,
         type: dto.type, subject: dto.subject,
@@ -421,15 +475,23 @@ export class CrmService {
         assignedToId: dto.assignedToId || null,
       },
     });
+    if (dto.leadId) {
+      await this.recalculateLeadScore(tenantId, dto.leadId);
+    }
+    return act;
   }
 
   async completeActivity(tenantId: string, id: string) {
     const existing = await prisma.activity.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Activity not found');
-    return prisma.activity.update({
+    const updated = await prisma.activity.update({
       where: { id },
       data: { completedAt: new Date() },
     });
+    if (existing.leadId) {
+      await this.recalculateLeadScore(tenantId, existing.leadId);
+    }
+    return updated;
   }
 
   // ════════════════════════════════════════════════
@@ -494,15 +556,101 @@ export class CrmService {
   }
 
   async getLeadSourceBreakdown(tenantId: string) {
-    const leads = await prisma.lead.findMany({
+    const raw = await prisma.lead.groupBy({
+      by: ['sourceId'],
       where: { tenantId, deletedAt: null },
-      include: { source: { select: { name: true } } },
+      _count: { id: true },
     });
-    const breakdown: Record<string, number> = {};
-    for (const lead of leads) {
-      const key = lead.source?.name || 'UNKNOWN';
-      breakdown[key] = (breakdown[key] || 0) + 1;
+    // map names
+    const sources = await prisma.leadSource.findMany({ where: { tenantId } });
+    return raw.map((r) => {
+      const src = sources.find((s) => s.id === r.sourceId);
+      return {
+        source: src ? src.name : 'Unknown',
+        count: r._count.id,
+      };
+    });
+  }
+
+  // ── CAMPAIGNS ─────────────────────────────────
+
+  async getCampaigns(tenantId: string) {
+    const campaigns = await prisma.campaign.findMany({
+      where: { tenantId, deletedAt: null },
+      include: {
+        leads: {
+          select: {
+            id: true,
+            status: true,
+            opportunities: {
+              select: {
+                id: true,
+                stage: true,
+                amount: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return campaigns.map((c) => {
+      const leads = c.leads;
+      const leadCount = leads.length;
+      
+      const opps = leads.flatMap((l) => l.opportunities);
+      const opportunityCount = opps.length;
+      
+      const wonOpps = opps.filter((o) => o.stage === 'CLOSED_WON');
+      const wonCount = wonOpps.length;
+      
+      const conversionRate = leadCount > 0 ? (wonCount / leadCount) * 100 : 0;
+      const actualCost = Number(c.actualCost);
+      const budget = Number(c.budget);
+
+      return {
+        id: c.id,
+        name: c.name,
+        status: c.status,
+        type: c.type,
+        budget,
+        actualCost,
+        notes: c.notes,
+        leadCount,
+        opportunityCount,
+        wonCount,
+        conversionRate: Number(conversionRate.toFixed(2)),
+        createdAt: c.createdAt,
+      };
+    });
+  }
+
+  async createCampaign(tenantId: string, orgId: string, dto: CreateCampaignInput, createdBy: string) {
+    let resolvedOrgId = orgId;
+    if (!orgId || orgId === 'org-system-default') {
+      const org = await prisma.organization.findFirst({ where: { tenantId } });
+      if (!org) throw new BadRequestException('No Organization registered');
+      resolvedOrgId = org.id;
     }
-    return breakdown;
+
+    const existing = await prisma.campaign.findFirst({
+      where: { tenantId, orgId: resolvedOrgId, name: dto.name, deletedAt: null },
+    });
+    if (existing) throw new BadRequestException(`Campaign with name "${dto.name}" already exists.`);
+
+    return prisma.campaign.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        name: dto.name,
+        status: dto.status,
+        type: dto.type,
+        budget: new Prisma.Decimal(dto.budget || 0),
+        actualCost: new Prisma.Decimal(dto.actualCost || 0),
+        notes: dto.notes || null,
+        createdBy,
+      },
+    });
   }
 }

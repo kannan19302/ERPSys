@@ -13,6 +13,7 @@ import {
   CreateActivityInput,
   CreateEmailTemplateInput, UpdateEmailTemplateInput,
   CreateSalesPipelineInput,
+  CreateCampaignInput,
 } from '@unerp/shared';
 
 interface AuthenticatedRequest extends Request {
@@ -294,5 +295,20 @@ export class CrmController {
   @Permissions('crm.report.read')
   async getLeadSourceBreakdown(@Req() req: AuthenticatedRequest) {
     return this.crmService.getLeadSourceBreakdown(req.user.tenantId);
+  }
+
+  // ── CAMPAIGNS ─────────────────────────────────
+
+  @Get('campaigns')
+  @Permissions('crm.lead.read')
+  async getCampaigns(@Req() req: AuthenticatedRequest) {
+    return this.crmService.getCampaigns(req.user.tenantId);
+  }
+
+  @Post('campaigns')
+  @Permissions('crm.lead.create')
+  async createCampaign(@Req() req: AuthenticatedRequest, @Body() dto: CreateCampaignInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.crmService.createCampaign(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 }

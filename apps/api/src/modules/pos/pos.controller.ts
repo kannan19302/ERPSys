@@ -98,4 +98,30 @@ export class PosController {
   ): Promise<unknown> {
     return this.posService.addCashEntry(req.user.tenantId, registerId, dto, req.user.userId || 'system');
   }
+
+  @Put('terminals/:id/receipt-template')
+  @Permissions('pos.terminal.create')
+  async updateTerminalReceiptTemplate(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { receiptTemplate: string; layoutFormat: string }
+  ) {
+    return this.posService.updateTerminalReceiptTemplate(req.user.tenantId, id, dto);
+  }
+
+  @Get('terminals/:id/diagnostics')
+  @Permissions('pos.terminal.read')
+  async getTerminalDiagnostics(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.posService.getTerminalDiagnostics(req.user.tenantId, id);
+  }
+
+  @Put('terminals/:id/diagnostics')
+  @Permissions('pos.terminal.create')
+  async updateTerminalDiagnostics(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { diagnosticData: any }
+  ) {
+    return this.posService.updateTerminalDiagnostics(req.user.tenantId, id, dto);
+  }
 }

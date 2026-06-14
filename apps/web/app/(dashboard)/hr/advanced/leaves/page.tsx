@@ -18,6 +18,7 @@ interface LeavePolicy {
   name: string;
   leaveType: string;
   annualAllocation: number;
+  carryForwardLimit?: number;
 }
 
 interface LeaveRequest {
@@ -51,7 +52,7 @@ export default function LeavesPage() {
 
   // Forms
   const [showPolicyForm, setShowPolicyForm] = useState(false);
-  const [policyForm, setPolicyForm] = useState({ name: '', leaveType: 'ANNUAL', annualAllocation: '' });
+  const [policyForm, setPolicyForm] = useState({ name: '', leaveType: 'ANNUAL', annualAllocation: '', carryForwardLimit: '' });
 
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [requestForm, setRequestForm] = useState({ employeeId: '', policyId: '', startDate: '', endDate: '', reason: '' });
@@ -92,13 +93,14 @@ export default function LeavesPage() {
         },
         body: JSON.stringify({
           ...policyForm,
-          annualAllocation: parseInt(policyForm.annualAllocation) || 10
+          annualAllocation: parseInt(policyForm.annualAllocation) || 10,
+          carryForwardLimit: parseInt(policyForm.carryForwardLimit) || 0
         })
       });
       if (res.ok) {
         setMsg('Leave Policy created successfully.');
         setShowPolicyForm(false);
-        setPolicyForm({ name: '', leaveType: 'ANNUAL', annualAllocation: '' });
+        setPolicyForm({ name: '', leaveType: 'ANNUAL', annualAllocation: '', carryForwardLimit: '' });
         fetchData();
       }
     } catch {
@@ -238,7 +240,7 @@ export default function LeavesPage() {
               onChange={e => setPolicyForm({ ...policyForm, name: e.target.value })}
               required
             />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)' }}>
               <select
                 className="frappe-input"
                 value={policyForm.leaveType}
@@ -253,10 +255,17 @@ export default function LeavesPage() {
               <input
                 type="number"
                 className="frappe-input"
-                placeholder="Annual Allocation Days (e.g. 15)"
+                placeholder="Allocation Days (e.g. 15)"
                 value={policyForm.annualAllocation}
                 onChange={e => setPolicyForm({ ...policyForm, annualAllocation: e.target.value })}
                 required
+              />
+              <input
+                type="number"
+                className="frappe-input"
+                placeholder="Carry Limit Days (e.g. 5)"
+                value={policyForm.carryForwardLimit}
+                onChange={e => setPolicyForm({ ...policyForm, carryForwardLimit: e.target.value })}
               />
             </div>
             <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
@@ -412,40 +421,76 @@ export default function LeavesPage() {
             )}
           </div>
 
-          {/* Leave Balances */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <h3>Leave Allocation Balances</h3>
-            <Card padding="none">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'left' }}>Policy</th>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Allocated</th>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Used</th>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Remaining</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {balances.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No allocation balances available.</td>
+          {/* Leave Balances and Policies */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              <h3>Leave Allocation Balances</h3>
+              <Card padding="none">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'left' }}>Policy</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Allocated</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Used</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Remaining</th>
                     </tr>
-                  ) : (
-                    balances.map(bal => (
-                      <tr key={bal.policyId} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: 'var(--space-3)' }}>
-                          <div style={{ fontWeight: 600 }}>{bal.policyName}</div>
-                          <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>{bal.leaveType}</span>
-                        </td>
-                        <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{bal.allocated}d</td>
-                        <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{bal.used}d</td>
-                        <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600, color: 'var(--color-success)' }}>{bal.remaining}d</td>
+                  </thead>
+                  <tbody>
+                    {balances.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No allocation balances available.</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </Card>
+                    ) : (
+                      balances.map(bal => (
+                        <tr key={bal.policyId} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: 'var(--space-3)' }}>
+                            <div style={{ fontWeight: 600 }}>{bal.policyName}</div>
+                            <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>{bal.leaveType}</span>
+                          </td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{bal.allocated}d</td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{bal.used}d</td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600, color: 'var(--color-success)' }}>{bal.remaining}d</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              <h3>Active Leave Policies</h3>
+              <Card padding="none">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'left' }}>Policy Name</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Type</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Allocation</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Carry Forward Limit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {policies.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No active policies found.</td>
+                      </tr>
+                    ) : (
+                      policies.map(policy => (
+                        <tr key={policy.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: 'var(--space-3)', fontWeight: 600 }}>{policy.name}</td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                            <span style={{ fontSize: '10px', background: 'var(--color-bg-sunken)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>{policy.leaveType}</span>
+                          </td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{policy.annualAllocation} days</td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>{policy.carryForwardLimit ?? 0} days</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
           </div>
         </div>
       )}

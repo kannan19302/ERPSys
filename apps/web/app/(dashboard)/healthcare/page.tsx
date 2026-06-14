@@ -60,9 +60,9 @@ export default function HealthcarePage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [pRes, prRes, appRes] = await Promise.all([
-        fetch('http://localhost:3001/healthcare/patients', { headers }),
-        fetch('http://localhost:3001/healthcare/practitioners', { headers }),
-        fetch('http://localhost:3001/healthcare/appointments', { headers }),
+        fetch('/api/v1/healthcare/patients', { headers }),
+        fetch('/api/v1/healthcare/practitioners', { headers }),
+        fetch('/api/v1/healthcare/appointments', { headers }),
       ]);
 
       const [pData, prData, appData] = await Promise.all([
@@ -90,7 +90,7 @@ export default function HealthcarePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/healthcare/patients', {
+      const res = await fetch('/api/v1/healthcare/patients', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -124,7 +124,7 @@ export default function HealthcarePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/healthcare/appointments', {
+      const res = await fetch('/api/v1/healthcare/appointments', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

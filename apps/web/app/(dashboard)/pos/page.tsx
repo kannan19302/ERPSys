@@ -64,19 +64,21 @@ export default function POSPage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Load terminals
-      const tRes = await fetch('http://localhost:3001/pos/terminals', { headers });
+      const tRes = await fetch('/api/v1/pos/terminals', { headers });
       const tData = await tRes.json();
       setTerminals(Array.isArray(tData) ? tData : []);
-      if (tData.length > 0) setSelectedTerminal(tData[0].id);
+      if (tData.length > 0) {
+        setSelectedTerminal(tData[0].id);
+      }
 
       // Load registers
-      const rRes = await fetch('http://localhost:3001/pos/registers', { headers });
+      const rRes = await fetch('/api/v1/pos/registers', { headers });
       const rData = await rRes.json();
       const active = rData.find((reg: POSRegister) => reg.status === 'OPEN');
       if (active) setActiveRegister(active);
 
       // Load products
-      const pRes = await fetch('http://localhost:3001/inventory/products', { headers });
+      const pRes = await fetch('/api/v1/inventory/products', { headers });
       const pData = await pRes.json();
       setProducts(Array.isArray(pData) ? pData : []);
     } catch {
@@ -92,7 +94,7 @@ export default function POSPage() {
     if (!selectedTerminal) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/pos/registers/open', {
+      const res = await fetch('/api/v1/pos/registers/open', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -118,7 +120,7 @@ export default function POSPage() {
     if (!endingCash) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3001/pos/registers/${activeRegister.id}/close`, {
+      await fetch(`/api/v1/pos/registers/${activeRegister.id}/close`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -138,7 +140,7 @@ export default function POSPage() {
     if (!activeRegister) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/pos/registers/${activeRegister.id}/shifts/start`, {
+      const res = await fetch(`/api/v1/pos/registers/${activeRegister.id}/shifts/start`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -162,7 +164,7 @@ export default function POSPage() {
     if (!currentShift) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3001/pos/shifts/${currentShift.id}/end`, {
+      await fetch(`/api/v1/pos/shifts/${currentShift.id}/end`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -392,7 +394,7 @@ export default function POSPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <button onClick={() => updateQuantity(item.id, -1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', display: 'flex', padding: '2px' }}><Minus size={12} /></button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', display: 'flex', padding: '2px' }}></button>
+                    <button onClick={() => updateQuantity(item.id, 1)} style={{ background: 'none', border: '1px solid var(--color-border)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', display: 'flex', padding: '2px' }}><Plus size={12} /></button>
                     <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', display: 'flex' }}><Trash2 size={14} /></button>
                   </div>
                 </div>

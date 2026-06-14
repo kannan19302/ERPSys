@@ -50,4 +50,22 @@ export class StorageController {
   ) {
     return this.service.generateDocument(req.user.tenantId, dto);
   }
+
+  @Post('presigned')
+  @Permissions('documents.document.read')
+  async generatePresignedUrl(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { fileId: string; expiresSeconds: number }
+  ) {
+    return this.service.generatePresignedUrl(req.user.tenantId, dto.fileId, dto.expiresSeconds);
+  }
+
+  @Post('lifecycle')
+  @Permissions('documents.document.create')
+  async updateLifecyclePolicy(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { glacierAfterDays: number; purgeAfterDays: number }
+  ) {
+    return this.service.updateLifecyclePolicy(req.user.tenantId, dto);
+  }
 }

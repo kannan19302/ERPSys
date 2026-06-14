@@ -1,8 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
-import { CreatePurchaseOrderInput, CreatePurchaseReceiptInput, CreateRFQInput, CreateSupplierQuotationInput } from '@unerp/shared';
+import {
+  CreatePurchaseOrderInput,
+  CreatePurchaseReceiptInput,
+  CreateRFQInput,
+  CreateSupplierQuotationInput,
+  CreatePurchaseReturnInput,
+} from '@unerp/shared';
 import { PurchaseOrder, PurchaseOrderItem, PurchaseReceipt, Prisma } from '@prisma/client';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ProcurementService {
@@ -546,5 +552,185 @@ export class ProcurementService {
         : null,
       itemsCount: r.lineItems.length,
     }));
+  }
+
+  // ─── Purchase Returns ──────────────────────────────
+
+  async getPurchaseReturns(tenantId: string) {
+    const returns = await prisma.purchaseReturn.findMany({
+      where: { tenantId },
+      include: { vendor: true, purchaseOrder: true, lineItems: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return returns.map((r) => ({
+      id: r.id,
+      returnNumber: r.returnNumber,
+      status: r.status,
+      returnDate: r.returnDate,
+      totalAmount: Number(r.totalAmount),
+      vendorName: r.vendor.name,
+      poNumber: r.purchaseOrder.poNumber,
+      lineItemCount: r.lineItems.length,
+    }));
+  }
+
+  async createPurchaseReturn(tenantId: string, orgId: string, dto: CreatePurchaseReturnInput, createdBy: string) {
+    let resolvedOrgId = orgId;
+    if (!orgId || orgId === 'org-system-default') {
+      const org = await prisma.organization.findFirst({ where: { tenantId } });
+      if (!org) throw new BadRequestException('No Organization found.');
+      resolvedOrgId = org.id;
+    }
+
+    const order = await prisma.purchaseOrder.findFirst({
+      where: { id: dto.purchaseOrderId, tenantId },
+    });
+    if (!order) throw new NotFoundException('Purchase Order not found');
+
+    const existing = await prisma.purchaseReturn.findFirst({
+      where: { tenantId, returnNumber: dto.returnNumber },
+    });
+    if (existing) throw new BadRequestException(`Return number ${dto.returnNumber} already exists.`);
+
+    let subtotal = 0;
+    let taxAmount = 0;
+    dto.lineItems.forEach((item) => {
+      const lineSub = item.quantity * item.unitPrice;
+      subtotal += lineSub;
+      taxAmount += lineSub * (item.taxRate / 100);
+    });
+    const totalAmount = subtotal + taxAmount;
+
+    return prisma.$transaction(async (tx) => {
+      // 1. Create Debit Note
+      const debitNoteNumber = `DN-PR-${dto.returnNumber.replace('PR-', '')}-${Math.floor(Math.random() * 1000)}`;
+      const debitNote = await tx.debitNote.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          vendorId: order.vendorId,
+          purchaseOrderId: dto.purchaseOrderId,
+          noteNumber: debitNoteNumber,
+          amount: new Prisma.Decimal(totalAmount),
+          reason: dto.reason || 'Supplier Return',
+          status: 'CONFIRMED',
+        },
+      });
+
+      // 2. Create Purchase Return
+      const pr = await tx.purchaseReturn.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          vendorId: order.vendorId,
+          purchaseOrderId: dto.purchaseOrderId,
+          purchaseReceiptId: dto.purchaseReceiptId || null,
+          returnNumber: dto.returnNumber,
+          status: 'COMPLETED',
+          returnDate: new Date(),
+          subtotal: new Prisma.Decimal(subtotal),
+          taxAmount: new Prisma.Decimal(taxAmount),
+          totalAmount: new Prisma.Decimal(totalAmount),
+          reason: dto.reason || null,
+          debitNoteId: debitNote.id,
+          createdBy,
+        },
+      });
+
+      // 3. Create Purchase Return Items
+      for (const item of dto.lineItems) {
+        const itemSub = item.quantity * item.unitPrice;
+        const itemTax = itemSub * (item.taxRate / 100);
+        await tx.purchaseReturnItem.create({
+          data: {
+            tenantId,
+            purchaseReturnId: pr.id,
+            productId: item.productId,
+            description: item.description,
+            quantity: new Prisma.Decimal(item.quantity),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
+            taxRate: new Prisma.Decimal(item.taxRate),
+            taxAmount: new Prisma.Decimal(itemTax),
+            totalAmount: new Prisma.Decimal(itemSub + itemTax),
+          },
+        });
+      }
+
+      // 4. Update PO status
+      await tx.purchaseOrder.update({
+        where: { id: dto.purchaseOrderId },
+        data: { status: 'RETURNED' },
+      });
+
+      // 5. Emit stock return event
+      if (this.eventEmitter) {
+        let whId = 'WH-MAIN';
+        if (dto.purchaseReceiptId) {
+          const prObj = await tx.purchaseReceipt.findFirst({ where: { id: dto.purchaseReceiptId } });
+          if (prObj && prObj.warehouseId) {
+            whId = prObj.warehouseId;
+          }
+        }
+        this.eventEmitter.emit('procurement.return.created', {
+          tenantId,
+          purchaseReturnId: pr.id,
+          warehouseId: whId,
+          lineItems: dto.lineItems.map((li) => ({
+            productId: li.productId,
+            quantity: li.quantity,
+          })),
+        });
+      }
+
+      return pr;
+    });
+  }
+
+  // ─── Auto-Reorder Event Listener ───────────────────
+
+  @OnEvent('procurement.order.reorder')
+  async handleReorderEvent(event: {
+    tenantId: string;
+    productId: string;
+    warehouseId: string;
+    reorderQty: number;
+  }) {
+    const { tenantId, productId, reorderQty } = event;
+
+    // Find the product
+    const product = await prisma.product.findFirst({
+      where: { id: productId, tenantId },
+    });
+    if (!product) return;
+
+    // Get an organization
+    const org = await prisma.organization.findFirst({ where: { tenantId } });
+    if (!org) return;
+
+    // Find a vendor to purchase from (select the first active vendor or fallback to any)
+    const vendor = await prisma.vendor.findFirst({
+      where: { tenantId, status: 'ACTIVE', deletedAt: null },
+    });
+    if (!vendor) return;
+
+    // Create a new draft PO
+    const poNumber = `PO-AUTO-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    const dto: CreatePurchaseOrderInput = {
+      vendorId: vendor.id,
+      poNumber,
+      notes: `Auto-generated due to low stock level for product ${product.name} (SKU: ${product.sku}).`,
+      lineItems: [
+        {
+          productId,
+          description: product.description || product.name,
+          quantity: reorderQty,
+          unitPrice: Number(product.costPrice),
+          taxRate: 0,
+        },
+      ],
+    };
+
+    await this.createPurchaseOrder(tenantId, org.id, dto, 'system-auto');
   }
 }

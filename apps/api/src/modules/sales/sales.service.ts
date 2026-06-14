@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
-import { CreateQuotationInput, CreateSalesOrderInput, CreateDeliveryNoteInput } from '@unerp/shared';
+import { CreateQuotationInput, CreateSalesOrderInput, CreateDeliveryNoteInput, CreateSalesReturnInput } from '@unerp/shared';
 import { Quotation, QuotationItem, SalesOrder, SalesOrderItem, Prisma } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -496,5 +496,137 @@ export class SalesService {
     }
 
     return result;
+  }
+
+  // ── SALES RETURNS ──────────────────────────────
+
+  async getSalesReturns(tenantId: string) {
+    const returns = await prisma.salesReturn.findMany({
+      where: { tenantId },
+      include: { customer: true, salesOrder: true, lineItems: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return returns.map((r) => ({
+      id: r.id,
+      returnNumber: r.returnNumber,
+      status: r.status,
+      returnDate: r.returnDate,
+      totalAmount: Number(r.totalAmount),
+      customerName: r.customer.name,
+      orderNumber: r.salesOrder.orderNumber,
+      lineItemCount: r.lineItems.length,
+    }));
+  }
+
+  async createSalesReturn(tenantId: string, orgId: string, dto: CreateSalesReturnInput, createdBy: string) {
+    let resolvedOrgId = orgId;
+    if (!orgId || orgId === 'org-system-default') {
+      const org = await prisma.organization.findFirst({ where: { tenantId } });
+      if (!org) throw new BadRequestException('No Organization found.');
+      resolvedOrgId = org.id;
+    }
+
+    const order = await prisma.salesOrder.findFirst({
+      where: { id: dto.salesOrderId, tenantId },
+    });
+    if (!order) throw new NotFoundException('Sales Order not found');
+
+    const existing = await prisma.salesReturn.findFirst({
+      where: { tenantId, returnNumber: dto.returnNumber },
+    });
+    if (existing) throw new BadRequestException(`Return number ${dto.returnNumber} already exists.`);
+
+    let subtotal = 0;
+    let taxAmount = 0;
+    dto.lineItems.forEach((item) => {
+      const lineSub = item.quantity * item.unitPrice;
+      subtotal += lineSub;
+      taxAmount += lineSub * (item.taxRate / 100);
+    });
+    const totalAmount = subtotal + taxAmount;
+
+    return prisma.$transaction(async (tx) => {
+      // 1. Create Credit Note
+      const creditNoteNumber = `CN-SR-${dto.returnNumber.replace('SR-', '')}-${Math.floor(Math.random() * 1000)}`;
+      const creditNote = await tx.creditNote.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          customerId: order.customerId,
+          invoiceId: order.invoiceId || null,
+          noteNumber: creditNoteNumber,
+          amount: new Prisma.Decimal(totalAmount),
+          reason: dto.reason || 'Customer Return',
+          status: 'CONFIRMED',
+        },
+      });
+
+      // 2. Create Sales Return
+      const sr = await tx.salesReturn.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          customerId: order.customerId,
+          salesOrderId: dto.salesOrderId,
+          deliveryNoteId: dto.deliveryNoteId || null,
+          returnNumber: dto.returnNumber,
+          status: 'COMPLETED',
+          returnDate: new Date(),
+          subtotal: new Prisma.Decimal(subtotal),
+          taxAmount: new Prisma.Decimal(taxAmount),
+          totalAmount: new Prisma.Decimal(totalAmount),
+          reason: dto.reason || null,
+          creditNoteId: creditNote.id,
+          createdBy,
+        },
+      });
+
+      // 3. Create Sales Return Items
+      for (const item of dto.lineItems) {
+        const itemSub = item.quantity * item.unitPrice;
+        const itemTax = itemSub * (item.taxRate / 100);
+        await tx.salesReturnItem.create({
+          data: {
+            tenantId,
+            salesReturnId: sr.id,
+            productId: item.productId,
+            description: item.description,
+            quantity: new Prisma.Decimal(item.quantity),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
+            taxRate: new Prisma.Decimal(item.taxRate),
+            taxAmount: new Prisma.Decimal(itemTax),
+            totalAmount: new Prisma.Decimal(itemSub + itemTax),
+          },
+        });
+      }
+
+      // 4. Update Sales Order status
+      await tx.salesOrder.update({
+        where: { id: dto.salesOrderId },
+        data: { status: 'RETURNED' },
+      });
+
+      // 5. Emit stock restock event
+      if (this.eventEmitter) {
+        let whId = 'WH-MAIN';
+        if (dto.deliveryNoteId) {
+          const dnObj = await tx.deliveryNote.findFirst({ where: { id: dto.deliveryNoteId } });
+          if (dnObj && dnObj.warehouseId) {
+            whId = dnObj.warehouseId;
+          }
+        }
+        this.eventEmitter.emit('sales.return.created', {
+          tenantId,
+          salesReturnId: sr.id,
+          warehouseId: whId,
+          lineItems: dto.lineItems.map((li) => ({
+            productId: li.productId,
+            quantity: li.quantity,
+          })),
+        });
+      }
+
+      return sr;
+    });
   }
 }

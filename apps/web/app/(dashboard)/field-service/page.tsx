@@ -42,8 +42,8 @@ export default function FieldServicePage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [tRes, dRes] = await Promise.all([
-        fetch('http://localhost:3001/field-service/tickets', { headers }),
-        fetch('http://localhost:3001/field-service/dispatches', { headers }),
+        fetch('/api/v1/field-service/tickets', { headers }),
+        fetch('/api/v1/field-service/dispatches', { headers }),
       ]);
 
       const [tData, dData] = await Promise.all([
@@ -70,7 +70,7 @@ export default function FieldServicePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/field-service/tickets', {
+      const res = await fetch('/api/v1/field-service/tickets', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -104,7 +104,7 @@ export default function FieldServicePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/field-service/dispatches', {
+      const res = await fetch('/api/v1/field-service/dispatches', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, Query, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
@@ -152,7 +152,7 @@ export class AdvancedHrController {
   @Permissions('hr.leave.create')
   async createLeavePolicy(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; leaveType: string; annualAllocation: number }
+    @Body() dto: { name: string; leaveType: string; annualAllocation: number; carryForwardLimit?: number }
   ) {
     return this.hrService.createLeavePolicy(req.user.tenantId, dto);
   }
@@ -607,6 +607,215 @@ export class AdvancedHrController {
     @Body() dto: { questionId: string; employeeId: string; rating: number; comment?: string }
   ): Promise<unknown> {
     return this.hrService.submitSurveyResponse(req.user.tenantId, dto);
+  }
+
+  // ── GAPS: Offers ──
+  @Get('offers')
+  @Permissions('hr.employee.read')
+  async getOffers(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getOffers(req.user.tenantId);
+  }
+
+  @Post('offers')
+  @Permissions('hr.employee.create')
+  async createOffer(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { applicantId: string; salaryOffered: number; expiresAt?: string; notes?: string }
+  ) {
+    return this.hrService.createOffer(req.user.tenantId, dto);
+  }
+
+  @Put('offers/:id/status')
+  @Permissions('hr.employee.update')
+  async updateOfferStatus(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { status: string }
+  ) {
+    return this.hrService.updateOfferStatus(req.user.tenantId, id, dto.status);
+  }
+
+  // ── GAPS: Benefits ──
+  @Get('benefits/schemes')
+  @Permissions('hr.employee.read')
+  async getBenefitSchemes(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getBenefitSchemes(req.user.tenantId);
+  }
+
+  @Post('benefits/schemes')
+  @Permissions('hr.employee.create')
+  async createBenefitScheme(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { name: string; type: string; provider: string; description?: string; employeeCostShare: number; employerCostShare: number }
+  ) {
+    return this.hrService.createBenefitScheme(req.user.tenantId, dto);
+  }
+
+  @Get('benefits/enrollments')
+  @Permissions('hr.employee.read')
+  async getEmployeeBenefits(
+    @Req() req: AuthenticatedRequest,
+    @Query('employeeId') employeeId?: string
+  ) {
+    return this.hrService.getEmployeeBenefits(req.user.tenantId, employeeId);
+  }
+
+  @Post('benefits/enroll')
+  @Permissions('hr.employee.create')
+  async enrollEmployeeBenefit(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { employeeId: string; schemeId: string; coverageAmount?: number }
+  ) {
+    return this.hrService.enrollEmployeeBenefit(req.user.tenantId, dto);
+  }
+
+  @Put('benefits/enrollments/:id')
+  @Permissions('hr.employee.update')
+  async updateEmployeeBenefit(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { status: string; terminatedAt?: string }
+  ) {
+    return this.hrService.updateEmployeeBenefit(req.user.tenantId, id, dto);
+  }
+
+  // ── GAPS: Skills Requirements & Gap Analysis ──
+  @Get('skills/requirements')
+  @Permissions('hr.employee.read')
+  async getSkillRequirements(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getSkillRequirements(req.user.tenantId);
+  }
+
+  @Post('skills/requirements')
+  @Permissions('hr.employee.create')
+  async upsertSkillRequirement(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { designation: string; skillName: string; requiredLevel: number }
+  ) {
+    return this.hrService.upsertSkillRequirement(req.user.tenantId, dto);
+  }
+
+  @Get('skills/gap-analysis')
+  @Permissions('hr.employee.read')
+  async getSkillGapAnalysis(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getSkillGapAnalysis(req.user.tenantId);
+  }
+
+  // ── GAPS: Positions Control ──
+  @Get('positions')
+  @Permissions('hr.employee.read')
+  async getPositions(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getPositions(req.user.tenantId);
+  }
+
+  @Post('positions')
+  @Permissions('hr.employee.create')
+  async createPosition(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { departmentId: string; title: string; code: string; budgetedSalary: number }
+  ) {
+    return this.hrService.createPosition(req.user.tenantId, dto);
+  }
+
+  @Put('positions/:id')
+  @Permissions('hr.employee.update')
+  async updatePosition(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { status: string; employeeId?: string }
+  ) {
+    return this.hrService.updatePosition(req.user.tenantId, id, dto);
+  }
+
+  @Get('positions/budget-variance')
+  @Permissions('hr.employee.read')
+  async getPositionBudgetVariance(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getPositionBudgetVariance(req.user.tenantId);
+  }
+
+  // ── GAPS: Compliance Checks ──
+  @Get('compliance/checks')
+  @Permissions('hr.employee.read')
+  async getComplianceChecks(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getComplianceChecks(req.user.tenantId);
+  }
+
+  @Post('compliance/run-checks')
+  @Permissions('hr.employee.create')
+  async runComplianceChecks(@Req() req: AuthenticatedRequest) {
+    return this.hrService.runComplianceChecks(req.user.tenantId);
+  }
+
+  // ── GAPS: Tax Tables ──
+  @Get('tax-tables')
+  @Permissions('hr.employee.read')
+  async getTaxTables(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getTaxTables(req.user.tenantId);
+  }
+
+  @Post('tax-tables')
+  @Permissions('hr.employee.create')
+  async createTaxTable(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { country: string; state?: string; incomeBracketMin: number; incomeBracketMax?: number; taxRate: number; allowanceAmount?: number }
+  ) {
+    return this.hrService.createTaxTable(req.user.tenantId, dto);
+  }
+
+  // ── GAPS: Holidays Calendar ──
+  @Get('holidays')
+  @Permissions('hr.employee.read')
+  async getHolidays(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getHolidays(req.user.tenantId);
+  }
+
+  @Post('holidays')
+  @Permissions('hr.employee.create')
+  async createHoliday(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { name: string; date: string; region?: string }
+  ) {
+    return this.hrService.createHoliday(req.user.tenantId, dto);
+  }
+
+  // ── GAPS: Biometric/RFID simulator endpoint ──
+  @Post('attendance/biometric')
+  @Permissions('hr.employee.create')
+  async checkInRFID(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { employeeCode: string; timestamp?: string; actionType?: 'CHECK_IN' | 'CHECK_OUT' }
+  ) {
+    // We can import prisma or fetch employee directly. To avoid importing prisma, we fetch via standard query inside service or controller.
+    // Let's use the Prisma Client from @unerp/database package directly
+    const { prisma } = require('@unerp/database');
+    const emp = await prisma.employee.findFirst({ where: { tenantId: req.user.tenantId, employeeCode: dto.employeeCode } });
+    if (!emp) throw new NotFoundException(`Employee with code ${dto.employeeCode} not found.`);
+    
+    const today = new Date(); today.setHours(0,0,0,0);
+    const existing = await prisma.attendanceRecord.findFirst({ where: { tenantId: req.user.tenantId, employeeId: emp.id, date: today } });
+    
+    const action = dto.actionType || (existing ? 'CHECK_OUT' : 'CHECK_IN');
+    if (action === 'CHECK_IN') {
+      return this.hrService.checkIn(req.user.tenantId, emp.id);
+    } else {
+      return this.hrService.checkOut(req.user.tenantId, emp.id);
+    }
+  }
+
+  // ── GAPS: Self Service Portal ──
+  @Get('self-service/dashboard')
+  @Permissions('hr.employee.read')
+  async getSelfServiceDashboard(@Req() req: AuthenticatedRequest) {
+    return this.hrService.getEmployeeDashboardByUserId(req.user.tenantId, req.user.userId);
+  }
+
+  @Put('self-service/profile')
+  @Permissions('hr.employee.update')
+  async updateSelfServiceProfile(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { phone?: string; address?: any; bankDetails?: any }
+  ) {
+    return this.hrService.updateEmployeeSelfDetails(req.user.tenantId, req.user.userId, dto);
   }
 }
 

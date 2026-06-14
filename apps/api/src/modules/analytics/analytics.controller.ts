@@ -63,4 +63,23 @@ export class AnalyticsController {
   async getKPIs(@Req() req: AuthenticatedRequest) {
     return this.analyticsService.getKPIs(req.user.tenantId);
   }
+
+  @Post('reports/:id/pivot')
+  @Permissions('analytics.report.read')
+  async executePivotQuery(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { rowFields: string[]; colFields: string[]; aggregations: string[] }
+  ) {
+    return this.analyticsService.executePivotQuery(req.user.tenantId, id, dto);
+  }
+
+  @Post('query/visual')
+  @Permissions('analytics.report.read')
+  async runSecureVisualQuery(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { selectFields: string[]; filterGroups: any[] }
+  ) {
+    return this.analyticsService.runSecureVisualQuery(req.user.tenantId, dto);
+  }
 }

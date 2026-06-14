@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CrmService } from '../crm.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { Prisma } from '@prisma/client';
 
 // Hoist mock object to resolve Vitest order-of-initialization hoisting
 const mockPrisma = vi.hoisted(() => ({
@@ -25,6 +26,13 @@ const mockPrisma = vi.hoisted(() => ({
     findMany: vi.fn(),
   },
   lead: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    groupBy: vi.fn(),
+  },
+  campaign: {
     findMany: vi.fn(),
     findFirst: vi.fn(),
     create: vi.fn(),
@@ -344,16 +352,77 @@ describe('CrmService', () => {
     });
 
     it('getLeadSourceBreakdown should group leads by source', async () => {
-      mockPrisma.lead.findMany.mockResolvedValue([
-        { source: { name: 'Website' } },
-        { source: { name: 'Website' } },
-        { source: { name: 'Referral' } },
-        { source: null },
+      mockPrisma.lead.groupBy.mockResolvedValue([
+        { sourceId: 's1', _count: { id: 2 } },
+        { sourceId: 's2', _count: { id: 1 } },
+        { sourceId: null, _count: { id: 1 } },
+      ]);
+      mockPrisma.leadSource.findMany.mockResolvedValue([
+        { id: 's1', name: 'Website' },
+        { id: 's2', name: 'Referral' },
       ]);
       const result = await service.getLeadSourceBreakdown(tenantId);
-      expect(result['Website']).toBe(2);
-      expect(result['Referral']).toBe(1);
-      expect(result['UNKNOWN']).toBe(1);
+      expect(result).toContainEqual({ source: 'Website', count: 2 });
+      expect(result).toContainEqual({ source: 'Referral', count: 1 });
+      expect(result).toContainEqual({ source: 'Unknown', count: 1 });
+    });
+  });
+
+  // ═══════════════════════════════════════
+  // CAMPAIGNS & SCORING TESTS
+  // ═══════════════════════════════════════
+
+  describe('Campaigns & Scoring', () => {
+    it('should create and list campaigns', async () => {
+      mockPrisma.campaign.findMany.mockResolvedValue([
+        {
+          id: 'c1',
+          name: 'Summer Campaign',
+          status: 'ACTIVE',
+          type: 'EMAIL',
+          budget: new Prisma.Decimal(1000),
+          actualCost: new Prisma.Decimal(800),
+          notes: 'Test notes',
+          leads: [
+            { id: 'l1', status: 'CONVERTED', opportunities: [{ id: 'o1', stage: 'CLOSED_WON', amount: 5000 }] }
+          ],
+          createdAt: new Date(),
+        }
+      ]);
+      const list = await service.getCampaigns(tenantId);
+      expect(list).toHaveLength(1);
+      expect(list[0].conversionRate).toBe(100);
+
+      const dto = { name: 'Autumn Campaign', status: 'PLANNED', type: 'SEARCH', budget: 500, actualCost: 0 };
+      mockPrisma.campaign.findFirst.mockResolvedValue(null);
+      mockPrisma.campaign.create.mockResolvedValue({ id: 'c-new', ...dto, tenantId, orgId });
+      const created = await service.createCampaign(tenantId, orgId, dto as any, 'user1');
+      expect(created).toBeDefined();
+    });
+
+    it('should recalculate lead score on activities and profile fields', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue({
+        id: 'l1',
+        tenantId,
+        email: 'test@lead.com',
+        phone: '12345',
+        company: 'Lead Co',
+        website: 'lead.com',
+        industry: 'Tech',
+        annualRevenue: new Prisma.Decimal(200000),
+        employeeCount: 50,
+        activities: [
+          { id: 'a1', completedAt: new Date() },
+          { id: 'a2', completedAt: null },
+        ]
+      });
+      mockPrisma.lead.update.mockResolvedValue({ id: 'l1' });
+
+      await service.recalculateLeadScore(tenantId, 'l1');
+      expect(mockPrisma.lead.update).toHaveBeenCalledWith({
+        where: { id: 'l1' },
+        data: { score: 110 }
+      });
     });
   });
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProcurementService } from '../procurement.service';
 
 // Mock @prisma/client
@@ -32,6 +33,23 @@ vi.mock('@unerp/database', () => ({
     purchaseReceiptItem: {
       create: vi.fn(),
     },
+    purchaseReturn: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    purchaseReturnItem: {
+      create: vi.fn(),
+    },
+    debitNote: {
+      create: vi.fn(),
+    },
+    product: {
+      findFirst: vi.fn(),
+    },
+    inventoryItem: {
+      findFirst: vi.fn(),
+    },
     organization: {
       findFirst: vi.fn(),
     },
@@ -48,6 +66,15 @@ vi.mock('@unerp/database', () => ({
         create: vi.fn().mockResolvedValue({ id: 'rcpt-1', receiptNumber: 'REC-001' }),
       },
       purchaseReceiptItem: { create: vi.fn() },
+      debitNote: {
+        create: vi.fn().mockResolvedValue({ id: 'dn-1', noteNumber: 'DN-PR-001' }),
+      },
+      purchaseReturn: {
+        create: vi.fn().mockResolvedValue({ id: 'pr-1', returnNumber: 'PR-001' }),
+      },
+      purchaseReturnItem: {
+        create: vi.fn(),
+      },
     })),
   },
 }));
@@ -56,9 +83,13 @@ import { prisma } from '@unerp/database';
 
 describe('ProcurementService', () => {
   let service: ProcurementService;
+  let mockEventEmitter: EventEmitter2;
 
   beforeEach(() => {
-    service = new ProcurementService();
+    mockEventEmitter = {
+      emit: vi.fn(),
+    } as unknown as EventEmitter2;
+    service = new ProcurementService(mockEventEmitter);
     vi.clearAllMocks();
   });
 
@@ -171,6 +202,81 @@ describe('ProcurementService', () => {
       await expect(
         service.updatePurchaseOrderStatus('tenant-1', 'nonexistent', 'APPROVED', 'user-1'),
       ).rejects.toThrow('Purchase order not found');
+    });
+  });
+
+  describe('Purchase Returns', () => {
+    it('should return mapped purchase returns', async () => {
+      const mockReturns = [
+        {
+          id: 'pr-1',
+          returnNumber: 'PR-001',
+          status: 'COMPLETED',
+          returnDate: new Date(),
+          totalAmount: { toString: () => '100' },
+          vendor: { name: 'Test Vendor' },
+          purchaseOrder: { poNumber: 'PO-001' },
+          lineItems: [{}],
+        },
+      ];
+      vi.mocked(prisma.purchaseReturn.findMany).mockResolvedValue(mockReturns as never);
+
+      const result = await service.getPurchaseReturns('tenant-1');
+      expect(result).toHaveLength(1);
+      expect(result[0]?.returnNumber).toBe('PR-001');
+      expect(result[0]?.vendorName).toBe('Test Vendor');
+    });
+
+    it('should create a purchase return and debit note', async () => {
+      vi.mocked(prisma.purchaseOrder.findFirst).mockResolvedValue({
+        id: 'po-1',
+        vendorId: 'vendor-1',
+      } as never);
+      vi.mocked(prisma.purchaseReturn.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
+
+      const dto = {
+        purchaseOrderId: 'po-1',
+        returnNumber: 'PR-001',
+        reason: 'Defective items',
+        lineItems: [
+          { productId: 'prod-1', description: 'Item A', quantity: 2, unitPrice: 50, taxRate: 10 },
+        ],
+      };
+
+      const result = await service.createPurchaseReturn('tenant-1', 'org-1', dto, 'user-1');
+      expect(result).toBeDefined();
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'procurement.return.created',
+        expect.objectContaining({
+          tenantId: 'tenant-1',
+          purchaseReturnId: 'pr-1',
+        }),
+      );
+    });
+  });
+
+  describe('handleReorderEvent', () => {
+    it('should auto-create a draft purchase order when event is received', async () => {
+      vi.mocked(prisma.product.findFirst).mockResolvedValue({
+        id: 'prod-1',
+        name: 'Restock Product',
+        sku: 'RESTOCK-001',
+        costPrice: { toString: () => '10' },
+      } as never);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
+      vi.mocked(prisma.vendor.findFirst).mockResolvedValue({ id: 'vendor-1', status: 'ACTIVE' } as never);
+      vi.mocked(prisma.purchaseOrder.findFirst).mockResolvedValue(null);
+
+      await service.handleReorderEvent({
+        tenantId: 'tenant-1',
+        productId: 'prod-1',
+        warehouseId: 'wh-1',
+        reorderQty: 50,
+      });
+
+      // Verify that findFirst was called to check if PO exists
+      expect(prisma.purchaseOrder.findFirst).toHaveBeenCalled();
     });
   });
 });

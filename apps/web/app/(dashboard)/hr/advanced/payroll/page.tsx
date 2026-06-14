@@ -29,6 +29,16 @@ interface PayrollRun {
   }>;
 }
 
+interface TaxTable {
+  id: string;
+  country: string;
+  state: string | null;
+  incomeBracketMin: number | string;
+  incomeBracketMax: number | string | null;
+  taxRate: number | string;
+  allowanceAmount: number | string;
+}
+
 interface Employee {
   id: string;
   firstName: string;
@@ -39,6 +49,7 @@ export default function PayrollPage() {
   const [salaries, setSalaries] = useState<SalaryStructure[]>([]);
   const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [taxTables, setTaxTables] = useState<TaxTable[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
@@ -50,6 +61,9 @@ export default function PayrollPage() {
   const [showPayrollForm, setShowPayrollForm] = useState(false);
   const [payrollForm, setPayrollForm] = useState({ periodStart: '', periodEnd: '' });
 
+  const [showTaxForm, setShowTaxForm] = useState(false);
+  const [taxForm, setTaxForm] = useState({ country: 'US', state: '', incomeBracketMin: '', incomeBracketMax: '', taxRate: '', allowanceAmount: '0' });
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
   useEffect(() => {
@@ -59,14 +73,16 @@ export default function PayrollPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [salRes, payRes, empRes] = await Promise.all([
+      const [salRes, payRes, empRes, taxRes] = await Promise.all([
         fetch('/api/v1/advanced-hr/salaries', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/advanced-hr/payroll', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/v1/advanced-hr/tax-tables', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       if (salRes.ok) setSalaries(await salRes.json());
       if (payRes.ok) setPayrollRuns(await payRes.json());
       if (empRes.ok) setEmployees(await empRes.json());
+      if (taxRes.ok) setTaxTables(await taxRes.json());
     } catch {} finally {
       setLoading(false);
     }
@@ -130,6 +146,40 @@ export default function PayrollPage() {
     }
   };
 
+  const saveTaxRule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/v1/advanced-hr/tax-tables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          country: taxForm.country,
+          state: taxForm.state || null,
+          incomeBracketMin: parseFloat(taxForm.incomeBracketMin),
+          incomeBracketMax: taxForm.incomeBracketMax ? parseFloat(taxForm.incomeBracketMax) : null,
+          taxRate: parseFloat(taxForm.taxRate),
+          allowanceAmount: parseFloat(taxForm.allowanceAmount) || 0
+        })
+      });
+      if (res.ok) {
+        setMsg('Tax bracket rule saved successfully.');
+        setShowTaxForm(false);
+        setTaxForm({ country: 'US', state: '', incomeBracketMin: '', incomeBracketMax: '', taxRate: '', allowanceAmount: '0' });
+        fetchData();
+      } else {
+        setMsg('Error saving tax rule.');
+      }
+    } catch {
+      setMsg('Network error.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const getEmpName = (id: string) => {
     const emp = employees.find(e => e.id === id);
     return emp ? `${emp.firstName} ${emp.lastName}` : id;
@@ -143,6 +193,9 @@ export default function PayrollPage() {
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'HR', href: '/hr' }, { label: 'Advanced', href: '/hr/advanced' }, { label: 'Payroll' }]}
         actions={
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button variant="outline" onClick={() => setShowTaxForm(!showTaxForm)}>
+              <Plus size={14} /> Tax Bracket
+            </Button>
             <Button variant="outline" onClick={() => setShowSalaryForm(!showSalaryForm)}>
               <Plus size={14} /> Structure
             </Button>
@@ -226,6 +279,85 @@ export default function PayrollPage() {
         </Card>
       )}
 
+      {/* Tax Bracket Form */}
+      {showTaxForm && (
+        <Card padding="md">
+          <h4 style={{ margin: '0 0 var(--space-3)' }}>Define Income Tax Bracket</h4>
+          <form onSubmit={saveTaxRule} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Country Code (e.g. US)</label>
+                <input
+                  className="frappe-input"
+                  placeholder="US"
+                  value={taxForm.country}
+                  onChange={e => setTaxForm({ ...taxForm, country: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>State Code (Optional)</label>
+                <input
+                  className="frappe-input"
+                  placeholder="CA"
+                  value={taxForm.state}
+                  onChange={e => setTaxForm({ ...taxForm, state: e.target.value })}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 'var(--space-3)' }}>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Bracket Min ($)</label>
+                <input
+                  type="number"
+                  className="frappe-input"
+                  placeholder="0"
+                  value={taxForm.incomeBracketMin}
+                  onChange={e => setTaxForm({ ...taxForm, incomeBracketMin: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Bracket Max ($)</label>
+                <input
+                  type="number"
+                  className="frappe-input"
+                  placeholder="No Max"
+                  value={taxForm.incomeBracketMax}
+                  onChange={e => setTaxForm({ ...taxForm, incomeBracketMax: e.target.value })}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Tax Rate (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="frappe-input"
+                  placeholder="15"
+                  value={taxForm.taxRate}
+                  onChange={e => setTaxForm({ ...taxForm, taxRate: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Standard Allowance ($)</label>
+                <input
+                  type="number"
+                  className="frappe-input"
+                  placeholder="0"
+                  value={taxForm.allowanceAmount}
+                  onChange={e => setTaxForm({ ...taxForm, allowanceAmount: e.target.value })}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+              <Button variant="outline" type="button" onClick={() => setShowTaxForm(false)}>Cancel</Button>
+              <Button variant="primary" type="submit" disabled={submitting}>Save Tax Rule</Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
           <Spinner size="lg" />
@@ -268,40 +400,96 @@ export default function PayrollPage() {
                       <span style={{ fontWeight: 600, color: 'var(--color-success)' }}>${Number(run.totalNet).toLocaleString()}</span>
                     </div>
                   </div>
+                  {run.slips && run.slips.length > 0 && (
+                    <div style={{ marginTop: 'var(--space-4)', borderTop: '1px dashed var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                      <h5 style={{ margin: '0 0 var(--space-2)', fontSize: '12px' }}>Payslips Summary (Calculated Deductions)</h5>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                        {run.slips.map(slip => (
+                          <div key={slip.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', background: 'var(--color-bg-sunken)', padding: '6px 12px', borderRadius: 'var(--radius-sm)' }}>
+                            <span style={{ fontWeight: 600 }}>{getEmpName(slip.employeeId)}</span>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                              <span>Gross: <strong>${Number(slip.grossSalary).toLocaleString()}</strong></span>
+                              <span style={{ color: 'var(--color-danger)' }}>Tax: <strong>-${Number(slip.deductions).toLocaleString()}</strong></span>
+                              <span style={{ color: 'var(--color-success)' }}>Net: <strong>${Number(slip.netSalary).toLocaleString()}</strong></span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </Card>
               ))
             )}
           </div>
 
-          {/* Salaries Structure List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <h3>Salary Registry</h3>
-            <Card padding="none">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'left' }}>Employee</th>
-                    <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Base Salary</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {salaries.length === 0 ? (
-                    <tr>
-                      <td colSpan={2} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No custom structures defined.</td>
+          {/* Salaries Structure List & Tax Rules */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <h3>Salary Registry</h3>
+              <Card padding="none">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'left' }}>Employee</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Base Salary</th>
                     </tr>
-                  ) : (
-                    salaries.map(sal => (
-                      <tr key={sal.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: 'var(--space-3)' }}>{getEmpName(sal.employeeId)}</td>
-                        <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600 }}>
-                          ${Number(sal.baseSalary).toLocaleString()}/mo
-                        </td>
+                  </thead>
+                  <tbody>
+                    {salaries.length === 0 ? (
+                      <tr>
+                        <td colSpan={2} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No custom structures defined.</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </Card>
+                    ) : (
+                      salaries.map(sal => (
+                        <tr key={sal.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: 'var(--space-3)' }}>{getEmpName(sal.employeeId)}</td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600 }}>
+                            ${Number(sal.baseSalary).toLocaleString()}/mo
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <h3>Tax Brackets Configuration</h3>
+              <Card padding="none">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'left' }}>Region</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'center' }}>Range</th>
+                      <th style={{ padding: 'var(--space-3)', textAlign: 'right' }}>Tax Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {taxTables.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No tax brackets configured.</td>
+                      </tr>
+                    ) : (
+                      taxTables.map(tax => (
+                        <tr key={tax.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: 'var(--space-3)' }}>
+                            <div style={{ fontWeight: 600 }}>{tax.country}</div>
+                            {tax.state && <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>{tax.state}</span>}
+                          </td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                            ${Number(tax.incomeBracketMin).toLocaleString()} - {tax.incomeBracketMax ? `$${Number(tax.incomeBracketMax).toLocaleString()}` : '∞'}
+                          </td>
+                          <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600 }}>
+                            {Number(tax.taxRate)}%
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
           </div>
         </div>
       )}

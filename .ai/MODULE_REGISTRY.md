@@ -36,7 +36,7 @@
 
 | # | Module | Package Path | Status | Phase | Dependencies | Key Entities |
 |:--|:---|:---|:---|:---|:---|:---|
-| 9 | **Project Management** | `apps/api/src/modules/projects` | 🟢 ACTIVE | 3 | admin, hr, finance | Project, Task, Timesheet, Milestone, Budget |
+| 9 | **Project Management** | `apps/api/src/modules/projects` | 🟢 ACTIVE | 3 | admin, hr, finance | Project, Task, Timesheet, Milestone, Budget, ProjectPortfolio, ProjectRisk, ChangeRequest |
 | 10 | **Manufacturing (MRP)** | `apps/api/src/modules/manufacturing` | 🟢 ACTIVE | 3 | inventory, procurement, sales | BOM, WorkOrder, ProductionPlan, Routing, ScrapEntry |
 | 11 | **Business Intelligence** | `apps/api/src/modules/analytics` | 🟢 ACTIVE | 4 | all core modules | Dashboard, Report, KPI, Widget, ScheduledReport |
 | 12 | **Document Management** | `apps/api/src/modules/documents` | 🟢 ACTIVE | 4 | admin | Document, Folder, Version, Template, Signature |
@@ -67,11 +67,11 @@
 
 | # | Module | Package Path | Status | Phase | Dependencies | Key Features |
 |:--|:---|:---|:---|:---|:---|:---|
-| 26 | **API Platform** | `apps/api/src/modules/api-platform` | 🔵 PLANNED | 16 | all core modules | OpenAPI, Webhooks, API Keys, OAuth |
-| 27 | **i18n & Localization** | `packages/i18n` | 🔵 PLANNED | 17 | all UI modules | Translations, RTL, Date/Currency formats |
-| 28 | **Mobile & PWA** | `apps/web` (enhancement) | 🔵 PLANNED | 18 | all UI, i18n | Responsive, PWA, Offline mode |
-| 29 | **DevOps & Monitoring** | `infra/` | 🔵 PLANNED | 19 | all modules | CI/CD, Docker, K8s, Logging, APM |
-| 30 | **SaaS Platform** | `apps/api/src/modules/saas` | 🔵 PLANNED | 20 | all modules | Billing, Metering, Marketplace |
+| 26 | **API Platform** | `apps/api/src/modules/api-platform` | 🟢 ACTIVE | 16 | all core modules | OpenAPI, Webhooks, API Keys, OAuth |
+| 27 | **i18n & Localization** | `packages/i18n` | 🟢 ACTIVE | 17 | all UI modules | Translations, RTL, Date/Currency formats |
+| 28 | **Mobile & PWA** | `apps/web` (enhancement) | 🟢 ACTIVE | 18 | all UI, i18n | Responsive, PWA, Offline mode |
+| 29 | **DevOps & Monitoring** | `infra/` | 🟢 ACTIVE | 19 | all modules | CI/CD, Docker, K8s, Logging, APM |
+| 30 | **SaaS Platform** | `apps/api/src/modules/saas` | 🟢 ACTIVE | 20 | all modules | Billing, Metering, Marketplace |
 
 ---
 

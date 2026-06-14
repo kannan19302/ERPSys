@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   FileText, 
-   
   Download, 
   RefreshCw,
   Calendar,
@@ -36,38 +35,38 @@ export default function AnalyticsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedDashboard, setSelectedDashboard] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
+  const loadData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
 
-        // Fetch KPIs
-        const kpiRes = await fetch('http://localhost:3001/analytics/kpis', { headers });
-        const kpisData = await kpiRes.json();
-        setKpis(Array.isArray(kpisData) ? kpisData : []);
+      // Fetch KPIs
+      const kpiRes = await fetch('http://localhost:3001/api/v1/analytics/kpis', { headers });
+      const kpisData = await kpiRes.json();
+      setKpis(Array.isArray(kpisData) ? kpisData : []);
 
-        // Fetch Dashboards
-        const dashRes = await fetch('http://localhost:3001/analytics/dashboards', { headers });
-        const dashData = await dashRes.json();
-        setDashboards(Array.isArray(dashData) ? dashData : []);
-        if (dashData.length > 0) {
-          setSelectedDashboard(dashData[0].id);
-        }
-
-        // Fetch Reports
-        const repRes = await fetch('http://localhost:3001/analytics/reports', { headers });
-        const repData = await repRes.json();
-        setReports(Array.isArray(repData) ? repData : []);
-
-        setLoading(false);
-      } catch {
-        setLoading(false);
+      // Fetch Dashboards
+      const dashRes = await fetch('http://localhost:3001/api/v1/analytics/dashboards', { headers });
+      const dashData = await dashRes.json();
+      setDashboards(Array.isArray(dashData) ? dashData : []);
+      if (dashData.length > 0) {
+        setSelectedDashboard(dashData[0].id);
       }
+
+      // Fetch Reports
+      const repRes = await fetch('http://localhost:3001/api/v1/analytics/reports', { headers });
+      const repData = await repRes.json();
+      setReports(Array.isArray(repData) ? repData : []);
+      setLoading(false);
+    } catch {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -75,7 +74,7 @@ export default function AnalyticsPage() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'var(--color-text-secondary)' }}>
         <RefreshCw className="animate-spin" size={32} />
-        <span style={{ marginLeft: 'var(--space-2)' }}>Loading Analytics Platform...</span>
+        <span style={{ marginLeft: 'var(--space-2)' }}>Loading Executive Dashboard...</span>
       </div>
     );
   }
@@ -87,10 +86,10 @@ export default function AnalyticsPage() {
         <div>
           <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <Sparkles style={{ color: 'var(--color-primary)' }} />
-            Business Intelligence
+            Business Intelligence Dashboard
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-            Monitor KPIs, run custom reports, and customize your visual dashboards.
+            Monitor enterprise key performance indicators, view real-time operations charts, and export custom files.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -155,17 +154,16 @@ export default function AnalyticsPage() {
       {/* Main Board Layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
         
-        {/* Active Dashboard Area */}
         <div style={{
           background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-3)' }}>
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>
-              {dashboards.find(d => d.id === selectedDashboard)?.name || 'Default Dashboard'}
+              {dashboards.find(d => d.id === selectedDashboard)?.name || 'Executive Sales Summary'}
             </h2>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <button style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+              <button onClick={loadData} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
                 <RefreshCw size={16} />
               </button>
               <button style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
@@ -195,12 +193,6 @@ export default function AnalyticsPage() {
                   display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center',
                   position: 'relative', zIndex: 1
                 }}>
-                  <div style={{
-                    position: 'absolute', top: '-28px', background: 'var(--color-bg)', border: '1px solid var(--color-border)',
-                    padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', display: 'none'
-                  }} className="bar-tooltip">
-                    {val}k
-                  </div>
                 </div>
               ))}
             </div>

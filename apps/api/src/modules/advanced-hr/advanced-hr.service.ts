@@ -62,7 +62,24 @@ export class AdvancedHrService {
       const run = await tx.payrollRun.create({ data: { tenantId, periodStart: start, periodEnd: end, status: 'DRAFT', totalGross: 0, totalDeductions: 0, totalNet: 0 } });
       for (const struct of structures) {
         const gross = Number(struct.baseSalary);
-        const deductionSum = gross * 0.1;
+        
+        // Fetch employee to check country for tax calculation
+        const emp = await tx.employee.findUnique({ where: { id: struct.employeeId } });
+        const country = (emp && emp.address && typeof emp.address === 'object' && (emp.address as any).country) || 'US';
+        const taxBrackets = await tx.taxTable.findMany({ where: { tenantId, country } });
+        let taxRate = 10; // Fallback 10%
+        if (taxBrackets.length > 0) {
+          const matchingBracket = taxBrackets.find(b => {
+            const min = Number(b.incomeBracketMin);
+            const max = b.incomeBracketMax ? Number(b.incomeBracketMax) : Infinity;
+            return gross >= min && gross <= max;
+          });
+          if (matchingBracket) {
+            taxRate = Number(matchingBracket.taxRate);
+          }
+        }
+        
+        const deductionSum = gross * (taxRate / 100);
         const net = gross - deductionSum;
         totalGross += gross; totalDeductions += deductionSum; totalNet += net;
         await tx.payrollSlip.create({ data: { tenantId, payrollRunId: run.id, employeeId: struct.employeeId, grossSalary: new Prisma.Decimal(gross), deductions: new Prisma.Decimal(deductionSum), netSalary: new Prisma.Decimal(net) } });
@@ -89,7 +106,22 @@ export class AdvancedHrService {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const record = await prisma.attendanceRecord.findFirst({ where: { tenantId, employeeId, date: today } });
     if (!record) throw new NotFoundException('No check-in record for today');
-    return prisma.attendanceRecord.update({ where: { id: record.id }, data: { checkOut: new Date() } });
+    const checkInTime = record.checkIn ? new Date(record.checkIn).getTime() : 0;
+    const checkOutTime = new Date().getTime();
+    let overtimeHours = 0;
+    if (checkInTime > 0) {
+      const hoursWorked = (checkOutTime - checkInTime) / 3600000;
+      if (hoursWorked > 8) {
+        overtimeHours = hoursWorked - 8;
+      }
+    }
+    return prisma.attendanceRecord.update({
+      where: { id: record.id },
+      data: {
+        checkOut: new Date(checkOutTime),
+        overtime: new Prisma.Decimal(overtimeHours)
+      }
+    });
   }
 
   // ── TIER 1: Employee Documents ──
@@ -162,13 +194,23 @@ export class AdvancedHrService {
   async getLeaveBalances(tenantId: string) {
     const policies = await prisma.leavePolicy.findMany({ where: { tenantId } });
     const requests = await prisma.leaveRequest.findMany({ where: { tenantId, status: 'APPROVED' } });
-    const balances: Array<{ policyId: string; policyName: string; leaveType: string; allocated: number; used: number; remaining: number }> = [];
+    const balances: Array<{ policyId: string; policyName: string; leaveType: string; allocated: number; used: number; remaining: number; carryForward: number }> = [];
     for (const policy of policies) {
       const used = requests.filter(r => r.policyId === policy.id).reduce((s, r) => {
         const days = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / 86400000) + 1;
         return s + days;
       }, 0);
-      balances.push({ policyId: policy.id, policyName: policy.name, leaveType: policy.leaveType, allocated: policy.annualAllocation, used, remaining: policy.annualAllocation - used });
+      const carryForward = policy.carryForwardLimit || 0;
+      const totalAllocated = policy.annualAllocation + carryForward;
+      balances.push({
+        policyId: policy.id,
+        policyName: policy.name,
+        leaveType: policy.leaveType,
+        allocated: totalAllocated,
+        used,
+        remaining: totalAllocated - used,
+        carryForward
+      });
     }
     return balances;
   }
@@ -176,13 +218,44 @@ export class AdvancedHrService {
   // ── TIER 2: Leave Policies & Requests ──
   async getLeavePolicies(tenantId: string) { return prisma.leavePolicy.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }); }
 
-  async createLeavePolicy(tenantId: string, dto: { name: string; leaveType: string; annualAllocation: number }) {
-    return prisma.leavePolicy.create({ data: { tenantId, name: dto.name, leaveType: dto.leaveType, annualAllocation: dto.annualAllocation } });
+  async createLeavePolicy(tenantId: string, dto: { name: string; leaveType: string; annualAllocation: number; carryForwardLimit?: number }) {
+    return prisma.leavePolicy.create({ data: { tenantId, name: dto.name, leaveType: dto.leaveType, annualAllocation: dto.annualAllocation, carryForwardLimit: dto.carryForwardLimit ?? 0 } });
   }
 
   async getLeaveRequests(tenantId: string) { return prisma.leaveRequest.findMany({ where: { tenantId }, include: { policy: true }, orderBy: { createdAt: 'desc' } }); }
 
   async createLeaveRequest(tenantId: string, dto: { employeeId: string; policyId: string; startDate: string; endDate: string; reason?: string }) {
+    const start = new Date(dto.startDate);
+    const end = new Date(dto.endDate);
+    
+    // Fetch public holidays
+    const holidays = await prisma.holidayCalendar.findMany({ where: { tenantId } });
+    const holidayDates = holidays.map(h => {
+      const d = new Date(h.date);
+      d.setHours(0,0,0,0);
+      return d.getTime();
+    });
+
+    let current = new Date(start);
+    let businessDays = 0;
+    while (current <= end) {
+      const dayOfWeek = current.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
+      
+      const checkDate = new Date(current);
+      checkDate.setHours(0,0,0,0);
+      const isHoliday = holidayDates.includes(checkDate.getTime());
+      
+      if (!isWeekend && !isHoliday) {
+        businessDays++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    
+    if (businessDays === 0) {
+      throw new BadRequestException('Requested leave duration contains 0 working days (weekends or public holidays only).');
+    }
+
     return prisma.leaveRequest.create({ data: { tenantId, employeeId: dto.employeeId, policyId: dto.policyId, startDate: new Date(dto.startDate), endDate: new Date(dto.endDate), reason: dto.reason || null, status: 'PENDING' } });
   }
 
@@ -539,20 +612,34 @@ export class AdvancedHrService {
 
   // ── TIER 4: HR Analytics ──
   async getHeadcountAnalytics(tenantId: string) {
-    const [total, byDept, byType, byStatus, tenureBuckets] = await Promise.all([
+    const now = new Date();
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+    const [total, byDept, byType, byStatus, tenureBuckets, leftCount, activeCount, hiredApplicants] = await Promise.all([
       prisma.employee.count({ where: { tenantId } }),
       prisma.department.findMany({ where: { tenantId }, include: { _count: { select: { employees: true } } } }),
       prisma.employee.groupBy({ where: { tenantId }, by: ['employmentType'], _count: true }),
       prisma.employee.groupBy({ where: { tenantId }, by: ['status'], _count: true }),
       prisma.employee.findMany({ where: { tenantId, status: 'ACTIVE' }, select: { dateOfJoining: true } }),
+      prisma.employee.count({ where: { tenantId, NOT: { dateOfLeaving: null }, dateOfLeaving: { gte: oneYearAgo } } }),
+      prisma.employee.count({ where: { tenantId, status: 'ACTIVE' } }),
+      prisma.applicant.findMany({ where: { tenantId, currentStage: 'HIRED' }, select: { appliedAt: true, updatedAt: true } }),
     ]);
-    const now = new Date();
     const tenure = { '<1 Year': 0, '1-3 Years': 0, '3-5 Years': 0, '5+ Years': 0 };
     for (const e of tenureBuckets) {
       const years = (now.getTime() - new Date(e.dateOfJoining).getTime()) / (365.25 * 86400000);
       if (years < 1) tenure['<1 Year']++; else if (years < 3) tenure['1-3 Years']++; else if (years < 5) tenure['3-5 Years']++; else tenure['5+ Years']++;
     }
-    return { total, byDepartment: byDept.map(d => ({ name: d.name, count: d._count.employees })), byEmploymentType: byType, byStatus: byStatus, tenure };
+    const turnoverRate = activeCount + leftCount > 0 ? (leftCount / ((activeCount + (activeCount + leftCount)) / 2)) * 100 : 0;
+
+    let totalDays = 0;
+    for (const a of hiredApplicants) {
+      const diffTime = Math.abs(a.updatedAt.getTime() - a.appliedAt.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      totalDays += diffDays;
+    }
+    const timeToHire = hiredApplicants.length > 0 ? Math.round(totalDays / hiredApplicants.length) : 15;
+
+    return { total, byDepartment: byDept.map(d => ({ name: d.name, count: d._count.employees })), byEmploymentType: byType, byStatus: byStatus, tenure, turnoverRate, timeToHire };
   }
 
   async getCompensationAnalytics(tenantId: string) {
@@ -598,10 +685,402 @@ export class AdvancedHrService {
     return prisma.surveyResponse.create({ data: { tenantId, questionId: dto.questionId, employeeId: dto.employeeId, rating: dto.rating, comment: dto.comment || null } });
   }
 
-  // ── TIER 5: Shift Scheduling ──
   async getShiftSchedules(tenantId: string) { return prisma.shiftSchedule.findMany({ where: { tenantId }, orderBy: { startTime: 'asc' } }); }
 
   async createShiftSchedule(tenantId: string, dto: { employeeId: string; startTime: string; endTime: string; note?: string }) {
     return prisma.shiftSchedule.create({ data: { tenantId, employeeId: dto.employeeId, startTime: new Date(dto.startTime), endTime: new Date(dto.endTime), note: dto.note || null } });
+  }
+
+  // ── GAPS: Offers ──
+  async getOffers(tenantId: string) {
+    return prisma.offerLetter.findMany({ where: { tenantId }, include: { applicant: true }, orderBy: { createdAt: 'desc' } });
+  }
+
+  async createOffer(tenantId: string, dto: { applicantId: string; salaryOffered: number; expiresAt?: string; notes?: string }) {
+    return prisma.offerLetter.create({
+      data: {
+        tenantId,
+        applicantId: dto.applicantId,
+        salaryOffered: new Prisma.Decimal(dto.salaryOffered),
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+        notes: dto.notes || null,
+        status: 'DRAFT',
+      },
+      include: { applicant: true }
+    });
+  }
+
+  async updateOfferStatus(tenantId: string, id: string, status: string) {
+    const updateData: Prisma.OfferLetterUpdateInput = { status };
+    if (status === 'SENT') {
+      updateData.sentAt = new Date();
+    } else if (status === 'ACCEPTED') {
+      updateData.signedAt = new Date();
+      
+      // Auto-onboard: create Employee record!
+      const offer = await prisma.offerLetter.findUnique({ where: { id }, include: { applicant: true } });
+      if (offer && offer.applicant) {
+        const app = offer.applicant;
+        const org = await prisma.organization.findFirst({ where: { tenantId } });
+        const code = `EMP-APP-${app.firstName.slice(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+        
+        await prisma.employee.create({
+          data: {
+            tenantId,
+            orgId: org ? org.id : 'default-org',
+            employeeCode: code,
+            firstName: app.firstName,
+            lastName: app.lastName,
+            email: app.email,
+            phone: app.phone,
+            designation: 'New Associate',
+            dateOfJoining: new Date(),
+            status: 'ACTIVE',
+          }
+        });
+      }
+    }
+    return prisma.offerLetter.update({ where: { id }, data: updateData });
+  }
+
+  // ── GAPS: Benefits ──
+  async getBenefitSchemes(tenantId: string) {
+    return prisma.benefitScheme.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
+  }
+
+  async createBenefitScheme(tenantId: string, dto: { name: string; type: string; provider: string; description?: string; employeeCostShare: number; employerCostShare: number }) {
+    return prisma.benefitScheme.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        type: dto.type,
+        provider: dto.provider,
+        description: dto.description || null,
+        employeeCostShare: new Prisma.Decimal(dto.employeeCostShare),
+        employerCostShare: new Prisma.Decimal(dto.employerCostShare),
+        isActive: true,
+      }
+    });
+  }
+
+  async getEmployeeBenefits(tenantId: string, employeeId?: string) {
+    const where: Record<string, unknown> = { tenantId };
+    if (employeeId) where.employeeId = employeeId;
+    return prisma.employeeBenefit.findMany({ where: where as never, include: { scheme: true }, orderBy: { enrollmentDate: 'desc' } });
+  }
+
+  async enrollEmployeeBenefit(tenantId: string, dto: { employeeId: string; schemeId: string; coverageAmount?: number }) {
+    const existing = await prisma.employeeBenefit.findFirst({ where: { tenantId, employeeId: dto.employeeId, schemeId: dto.schemeId } });
+    if (existing) {
+      return prisma.employeeBenefit.update({
+        where: { id: existing.id },
+        data: { status: 'ACTIVE', terminatedAt: null, coverageAmount: dto.coverageAmount ? new Prisma.Decimal(dto.coverageAmount) : null }
+      });
+    }
+    return prisma.employeeBenefit.create({
+      data: {
+        tenantId,
+        employeeId: dto.employeeId,
+        schemeId: dto.schemeId,
+        coverageAmount: dto.coverageAmount ? new Prisma.Decimal(dto.coverageAmount) : null,
+        status: 'ACTIVE',
+      }
+    });
+  }
+
+  async updateEmployeeBenefit(tenantId: string, id: string, dto: { status: string; terminatedAt?: string }) {
+    const data: Prisma.EmployeeBenefitUpdateInput = { status: dto.status };
+    if (dto.status === 'TERMINATED') {
+      data.terminatedAt = dto.terminatedAt ? new Date(dto.terminatedAt) : new Date();
+    }
+    return prisma.employeeBenefit.update({ where: { id, tenantId } , data });
+  }
+
+  // ── GAPS: Skills & Requirements ──
+  async getSkillRequirements(tenantId: string) {
+    return prisma.skillRequirement.findMany({ where: { tenantId }, orderBy: { designation: 'asc' } });
+  }
+
+  async upsertSkillRequirement(tenantId: string, dto: { designation: string; skillName: string; requiredLevel: number }) {
+    const existing = await prisma.skillRequirement.findFirst({ where: { tenantId, designation: dto.designation, skillName: dto.skillName } });
+    if (existing) {
+      return prisma.skillRequirement.update({ where: { id: existing.id }, data: { requiredLevel: dto.requiredLevel } });
+    }
+    return prisma.skillRequirement.create({
+      data: {
+        tenantId,
+        designation: dto.designation,
+        skillName: dto.skillName,
+        requiredLevel: dto.requiredLevel
+      }
+    });
+  }
+
+  async getSkillGapAnalysis(tenantId: string) {
+    const requirements = await prisma.skillRequirement.findMany({ where: { tenantId } });
+    const employees = await prisma.employee.findMany({ where: { tenantId, status: 'ACTIVE' } });
+    const employeeSkills = await prisma.employeeSkill.findMany({ where: { tenantId } });
+
+    const analysis: Array<{
+      employeeId: string;
+      employeeName: string;
+      designation: string;
+      skillsCount: number;
+      gapsCount: number;
+      gaps: Array<{ skillName: string; requiredLevel: number; actualLevel: number; gap: number }>;
+    }> = [];
+
+    for (const emp of employees) {
+      const designation = emp.designation || 'N/A';
+      const reqs = requirements.filter(r => r.designation.toLowerCase() === designation.toLowerCase());
+      if (reqs.length === 0) continue;
+
+      const empSkills = employeeSkills.filter(s => s.employeeId === emp.id);
+      const gaps: typeof analysis[0]['gaps'] = [];
+      let gapsCount = 0;
+
+      for (const req of reqs) {
+        const hasSkill = empSkills.find(s => s.skillName.toLowerCase() === req.skillName.toLowerCase());
+        const actualLevel = hasSkill ? hasSkill.proficiency : 0;
+        const gap = actualLevel - req.requiredLevel;
+
+        if (gap < 0) {
+          gapsCount++;
+          gaps.push({
+            skillName: req.skillName,
+            requiredLevel: req.requiredLevel,
+            actualLevel,
+            gap
+          });
+        }
+      }
+
+      analysis.push({
+        employeeId: emp.id,
+        employeeName: `${emp.firstName} ${emp.lastName}`,
+        designation,
+        skillsCount: empSkills.length,
+        gapsCount,
+        gaps
+      });
+    }
+
+    return analysis;
+  }
+
+  // ── GAPS: Positions Control ──
+  async getPositions(tenantId: string) {
+    return prisma.position.findMany({ where: { tenantId }, include: { department: true }, orderBy: { code: 'asc' } });
+  }
+
+  async createPosition(tenantId: string, dto: { departmentId: string; title: string; code: string; budgetedSalary: number }) {
+    return prisma.position.create({
+      data: {
+        tenantId,
+        departmentId: dto.departmentId,
+        title: dto.title,
+        code: dto.code,
+        budgetedSalary: new Prisma.Decimal(dto.budgetedSalary),
+        status: 'VACANT',
+      },
+      include: { department: true }
+    });
+  }
+
+  async updatePosition(tenantId: string, id: string, dto: { status: string; employeeId?: string }) {
+    const data: Prisma.PositionUpdateInput = { status: dto.status };
+    if (dto.employeeId !== undefined) {
+      data.employeeId = dto.employeeId || null;
+    }
+    return prisma.position.update({ where: { id, tenantId }, data, include: { department: true } });
+  }
+
+  async getPositionBudgetVariance(tenantId: string) {
+    const positions = await prisma.position.findMany({ where: { tenantId }, include: { department: true } });
+    const structures = await prisma.salaryStructure.findMany({ where: { tenantId } });
+
+    // Variance by department
+    const deptVarianceMap = new Map<string, { departmentName: string; budgeted: number; actual: number; variance: number }>();
+
+    for (const pos of positions) {
+      const deptId = pos.departmentId;
+      const deptName = pos.department.name;
+      const current = deptVarianceMap.get(deptId) || { departmentName: deptName, budgeted: 0, actual: 0, variance: 0 };
+      
+      current.budgeted += Number(pos.budgetedSalary);
+      
+      if (pos.status === 'FILLED' && pos.employeeId) {
+        const struct = structures.find(s => s.employeeId === pos.employeeId);
+        if (struct) {
+          current.actual += Number(struct.baseSalary);
+        } else {
+          // Fallback if no structure found but filled, use budgeted
+          current.actual += Number(pos.budgetedSalary);
+        }
+      }
+      current.variance = current.budgeted - current.actual;
+      deptVarianceMap.set(deptId, current);
+    }
+
+    return Array.from(deptVarianceMap.values());
+  }
+
+  // ── GAPS: Compliance Checks ──
+  async getComplianceChecks(tenantId: string) {
+    return prisma.complianceCheck.findMany({ where: { tenantId }, orderBy: { checkedAt: 'desc' }, take: 100 });
+  }
+
+  async runComplianceChecks(tenantId: string) {
+    const employees = await prisma.employee.findMany({ where: { tenantId, status: 'ACTIVE' } });
+    const structures = await prisma.salaryStructure.findMany({ where: { tenantId } });
+    const documents = await prisma.employeeDocument.findMany({ where: { tenantId } });
+
+    const checksCreated: Array<{ checkType: string; status: string; message: string; employeeId?: string }> = [];
+
+    // Delete previous run checks to prevent clutter
+    await prisma.complianceCheck.deleteMany({ where: { tenantId } });
+
+    for (const emp of employees) {
+      // 1. FLSA check: Check if salary exists and is above minimum wage ($2000/month standard)
+      const struct = structures.find(s => s.employeeId === emp.id);
+      if (!struct) {
+        checksCreated.push({
+          checkType: 'FLSA_MINIMUM_WAGE',
+          status: 'FAILED',
+          message: `Employee ${emp.firstName} ${emp.lastName} has no salary structure configured.`,
+          employeeId: emp.id
+        });
+      } else {
+        const base = Number(struct.baseSalary);
+        if (base < 2000) {
+          checksCreated.push({
+            checkType: 'FLSA_MINIMUM_WAGE',
+            status: 'FAILED',
+            message: `Employee ${emp.firstName} ${emp.lastName} salary ($${base}/mo) is below the minimum compliance threshold of $2000.`,
+            employeeId: emp.id
+          });
+        } else {
+          checksCreated.push({
+            checkType: 'FLSA_MINIMUM_WAGE',
+            status: 'PASSED',
+            message: `Employee ${emp.firstName} ${emp.lastName} salary ($${base}/mo) complies with FLSA.`,
+            employeeId: emp.id
+          });
+        }
+      }
+
+      // 2. Document Expiry checks
+      const empDocs = documents.filter(d => d.employeeId === emp.id);
+      const now = new Date();
+      for (const doc of empDocs) {
+        if (doc.expiryDate && new Date(doc.expiryDate) < now) {
+          checksCreated.push({
+            checkType: 'DOC_EXPIRY',
+            status: 'FAILED',
+            message: `Document '${doc.name}' (${doc.docType}) for ${emp.firstName} ${emp.lastName} expired on ${new Date(doc.expiryDate).toLocaleDateString()}.`,
+            employeeId: emp.id
+          });
+        }
+      }
+
+      // 3. GDPR check: Check if employee has GDPR_CONSENT document
+      const hasGdpr = empDocs.some(d => d.docType === 'GDPR_CONSENT' || d.name.toLowerCase().includes('gdpr'));
+      if (!hasGdpr) {
+        checksCreated.push({
+          checkType: 'GDPR_CONSENT',
+          status: 'WARNING',
+          message: `Employee ${emp.firstName} ${emp.lastName} is missing a GDPR consent confirmation form.`,
+          employeeId: emp.id
+        });
+      } else {
+        checksCreated.push({
+          checkType: 'GDPR_CONSENT',
+          status: 'PASSED',
+          message: `Employee ${emp.firstName} ${emp.lastName} has a valid GDPR consent document.`,
+          employeeId: emp.id
+        });
+      }
+    }
+
+    // Write all checks in database
+    await prisma.complianceCheck.createMany({
+      data: checksCreated.map(c => ({
+        tenantId,
+        employeeId: c.employeeId || null,
+        checkType: c.checkType,
+        status: c.status,
+        message: c.message
+      }))
+    });
+
+    return prisma.complianceCheck.findMany({ where: { tenantId }, orderBy: { checkedAt: 'desc' } });
+  }
+
+  // ── GAPS: Tax Tables ──
+  async getTaxTables(tenantId: string) {
+    return prisma.taxTable.findMany({ where: { tenantId }, orderBy: [{ country: 'asc' }, { incomeBracketMin: 'asc' }] });
+  }
+
+  async createTaxTable(tenantId: string, dto: { country: string; state?: string; incomeBracketMin: number; incomeBracketMax?: number; taxRate: number; allowanceAmount?: number }) {
+    return prisma.taxTable.create({
+      data: {
+        tenantId,
+        country: dto.country,
+        state: dto.state || null,
+        incomeBracketMin: new Prisma.Decimal(dto.incomeBracketMin),
+        incomeBracketMax: dto.incomeBracketMax ? new Prisma.Decimal(dto.incomeBracketMax) : null,
+        taxRate: new Prisma.Decimal(dto.taxRate),
+        allowanceAmount: dto.allowanceAmount ? new Prisma.Decimal(dto.allowanceAmount) : new Prisma.Decimal(0),
+      }
+    });
+  }
+
+  // ── GAPS: Holidays ──
+  async getHolidays(tenantId: string) {
+    return prisma.holidayCalendar.findMany({ where: { tenantId }, orderBy: { date: 'asc' } });
+  }
+
+  async createHoliday(tenantId: string, dto: { name: string; date: string; region?: string }) {
+    const existing = await prisma.holidayCalendar.findFirst({ where: { tenantId, date: new Date(dto.date), region: dto.region || 'GLOBAL' } });
+    if (existing) return existing;
+    return prisma.holidayCalendar.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        date: new Date(dto.date),
+        region: dto.region || 'GLOBAL',
+      }
+    });
+  }
+
+  // ── GAPS: Self Service Profile ──
+  async getEmployeeDashboardByUserId(tenantId: string, userId: string) {
+    const employee = await prisma.employee.findFirst({ where: { tenantId, userId }, include: { department: true } });
+    if (!employee) {
+      // Fallback: search by email to link them
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        const linkedEmp = await prisma.employee.findFirst({ where: { tenantId, email: user.email }, include: { department: true } });
+        if (linkedEmp) {
+          // Link them now!
+          await prisma.employee.update({ where: { id: linkedEmp.id }, data: { userId } });
+          return this.getEmployeeDashboard(tenantId, linkedEmp.id);
+        }
+      }
+      throw new NotFoundException('Employee record not linked to this user login credentials.');
+    }
+    return this.getEmployeeDashboard(tenantId, employee.id);
+  }
+
+  async updateEmployeeSelfDetails(tenantId: string, userId: string, dto: { phone?: string; address?: any; bankDetails?: any }) {
+    const employee = await prisma.employee.findFirst({ where: { tenantId, userId } });
+    if (!employee) throw new NotFoundException('Employee record not found for updating.');
+    
+    const updateData: Prisma.EmployeeUpdateInput = {};
+    if (dto.phone !== undefined) updateData.phone = dto.phone || null;
+    if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.bankDetails !== undefined) updateData.bankDetails = dto.bankDetails;
+    
+    return prisma.employee.update({ where: { id: employee.id }, data: updateData });
   }
 }

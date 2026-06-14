@@ -52,9 +52,9 @@ export default function EducationPage() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [sRes, cRes, tRes] = await Promise.all([
-        fetch('http://localhost:3001/education/students', { headers }),
-        fetch('http://localhost:3001/education/courses', { headers }),
-        fetch('http://localhost:3001/education/timetables', { headers }),
+        fetch('/api/v1/education/students', { headers }),
+        fetch('/api/v1/education/courses', { headers }),
+        fetch('/api/v1/education/timetables', { headers }),
       ]);
 
       const [sData, cData, tData] = await Promise.all([
@@ -82,7 +82,7 @@ export default function EducationPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/education/students', {
+      const res = await fetch('/api/v1/education/students', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -114,7 +114,7 @@ export default function EducationPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/education/courses', {
+      const res = await fetch('/api/v1/education/courses', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

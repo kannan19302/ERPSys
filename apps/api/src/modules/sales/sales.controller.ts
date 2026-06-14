@@ -9,6 +9,7 @@ import {
   CreateSalesOrderInput,
   CreateDeliveryNoteInput,
   UpdateSalesOrderStatusInput,
+  CreateSalesReturnInput,
 } from '@unerp/shared';
 
 interface AuthenticatedRequest extends Request {
@@ -116,5 +117,20 @@ export class SalesController {
   @Permissions('sales.delivery-note.create')
   async createDeliveryNote(@Req() req: AuthenticatedRequest, @Body() dto: CreateDeliveryNoteInput) {
     return this.salesService.createDeliveryNote(req.user.tenantId, dto, req.user.userId || 'system');
+  }
+
+  // ─── Sales Returns ─────────────────────────────────
+
+  @Get('returns')
+  @Permissions('sales.return.read')
+  async getSalesReturns(@Req() req: AuthenticatedRequest) {
+    return this.salesService.getSalesReturns(req.user.tenantId);
+  }
+
+  @Post('returns')
+  @Permissions('sales.return.create')
+  async createSalesReturn(@Req() req: AuthenticatedRequest, @Body() dto: CreateSalesReturnInput): Promise<unknown> {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.salesService.createSalesReturn(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 }

@@ -5,6 +5,76 @@
 
 ---
 
+## [2026-06-14] Module 2: Project Management Gaps Implementation
+
+### Added
+- **Database Models & Schema**: Introduced `ProjectPortfolio`, `ProjectRisk`, and `ChangeRequest` models. Updated `Project` and `Customer` models with complete double-entry relations.
+- **Backend NestJS APIs**:
+  - Implemented Portfolio Management service and controllers with rolling strategic KPI rollups (budget, projects, open risks).
+  - Implemented Project Risk Register logs and Change Request tracking.
+  - Implemented Change Request Approval hooks adjusting project budgets and pushing timelines.
+  - Implemented Earned Value Management (EVM) Calculator API (`GET /projects/:id/evm`) calculating PV, AC, EV, CPI, SPI, CV, SV, EAC, ETC, and predictive end dates.
+  - Implemented auto-billing invoice generator (`POST /projects/:id/invoice`) aggregating completed milestones and timesheet hours to create a draft invoice.
+- **Next.js Frontend Workspace Pages**:
+  - Strategic Portfolio Hub (`/projects/portfolios`) rendering rolling strategic metrics and alignment mappings.
+  - Stakeholder/Client Portal (`/projects/client-portal`) allowing read-only access to completion percentages, milestones, and invoice history.
+  - Updated Projects main view (`/projects`) with a clean tabbed layout (Tasks Checklist with baseline due comparisons and critical path flags, EVM costings with billing trigger, Risk registering, and Change Control tracking).
+  - Updated Resource workloads (`/projects/workloads`) to render Monday-to-Friday availability heat maps.
+- **Verification**: Verified using the browser subagent, demonstrating flawless CRUD, budget dynamically shifting on approval, and automatic billing. All compilation tests passed successfully.
+
+## [2026-06-14] Module 1: Human Resources (HR) Gaps Implementation
+
+### Added
+- **Database Models & Schema**: Introduced `OfferLetter`, `BenefitScheme`, `EmployeeBenefit`, `SkillRequirement`, `Position`, `ComplianceCheck`, `TaxTable`, and `HolidayCalendar` models inside `schema.prisma`. Updated `LeavePolicy` to support carry-forward limit parameters.
+- **Backend NestJS APIs**: Implemented CRUD services, business logic, and API endpoints for biometric/RFID scanning simulation, automated checkout overtime calculations, public holiday exclusion calendars, statutory labor compliance scanner checklists (GDPR, FLSA, validity), tax table bracket lookups, and offer letter status controls.
+- **Next.js Frontend Workspace Pages**: 
+  - Self-Service Portal (`/self-service`) with profile updates, payslip records, leave status updates, assigned assets, and decrypted corporate documents download.
+  - Benefits Admin (`/benefits`) with scheme creation, provider registries, and cost-share allocations.
+  - Labor Compliance (`/compliance`) with on-demand compliance auditor.
+  - Headcount & Position Control (`/positions`) with vacant/filled status management and budget variance logs.
+  - Skills Matrix & Gap Analysis (`/skills`) with target levels setup and staff gap analysis tables.
+  - Public Holidays Calendar (`/holidays`) for registering corporate closures.
+  - Enhanced Leave Policies (`/leaves`) to define and display rollover carry-forward limits.
+  - Enhanced Payroll (`/payroll`) to configure tax brackets and display payslips tax deductions calculations.
+  - Enhanced Recruitment (`/recruitment`) to issue job offer letters to candidates in the OFFER stage.
+- **Verification**: Next.js production build succeeds with 0 TypeScript/ESLint warnings.
+
+## [2026-06-14] Cross-Module Advanced Features & MES Rollout
+
+### Added
+- **Database Tables & Schema**:
+  - `Campaign`: Represents marketing campaigns linked to leads.
+  - `SalesReturn` & `SalesReturnItem`: For customer returns with auto-credit note generation.
+  - `PurchaseReturn` & `PurchaseReturnItem`: For supplier returns with auto-debit note generation.
+  - Extended fields: `baselineSchedule`, `criticalPath`, `overallHealth`, `slaHours`, `escalatedAt`, `oeeScore`, `scrapQuantity`, `lotNumber`, `slaLimitHours`, `backupAssigneeRole`, `receiptTemplate`, `layoutFormat`, `diagnosticData`, `delegatedRole`, `apiScopes`, `ipWhitelist`.
+- **Shared Layer**: Zod validators for Campaigns, Customer/Supplier Returns, POS receipts, and API platforms.
+- **Backend API Services**:
+  - `crm.service.ts`: Marketing Campaign CRUD and dynamic Lead Scoring.
+  - `sales.service.ts` & `procurement.service.ts`: Returns registries and Credit/Debit note automation.
+  - `manufacturing.service.ts`: OEE logging, batch lot tracing, and workstation load-balancing metrics.
+  - `projects.service.ts`: Critical Path Method (CPM) and baseline schedule capture.
+  - `analytics.service.ts`: Secure visual query translator preventing SQL injection.
+  - `workflow.service.ts`: Dual-action SLA breach engine with escalation and auto-delegation.
+  - `pos.service.ts`: Thermal receipt template rendering.
+  - `storage.service.ts`: Presigned S3 URLs with custom timers.
+- **Frontend Pages**:
+  - `/manufacturing`: Added workstation load balancing charts, OEE/Scrap log forms, and IoT real-time diagnostic simulation panel.
+  - `/projects`: Integrated Critical Path Method, baseline comparisons, and team workload capacity grids.
+  - `/pos`: Added customizable CSS receipt template designer and printer diagnostics.
+  - `/analytics`: Built visual query builder and drag-and-drop pivot matrices.
+  - `/workflows`: Added flowchart step editor and SLA escalation configurations.
+  - `/admin/api-keys`: Integrated developer console key manager with whitelisted scopes checklist.
+  - `/crm/campaigns`, `/sales/returns`, `/procurement/returns`: ROI trackers and return workflows.
+- **Unit Tests**:
+  - Maintained 100% test coverage with 256 green tests passing successfully.
+
+### Fixed
+- Fixed ESLint unused variable/import warnings (e.g. `Truck`, `AlertCircle`, and `error` in returns pages).
+- Resolved Next.js compile type check error on the Campaigns page (`alignInteractions` changed to `alignItems`, and `Badge` variant value adjusted from `"secondary"` to `"default"`).
+- Resolved Next.js type check error for `Spinner` size attribute accepting only `"sm" | "md" | "lg"`.
+
+---
+
 ## [2026-06-13] Sales & Orders Module Implementation (B2B, B2C, D2C)
 
 ### Added
