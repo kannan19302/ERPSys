@@ -331,6 +331,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           items: [
             { name: 'Visual Query Builder', href: '/analytics/query', icon: GitFork },
             { name: 'Pivot Matrix Aggregator', href: '/analytics/pivot', icon: Layers },
+            { name: 'Predictive Analytics', href: '/analytics/predictive', icon: TrendingUp },
+            { name: 'Advanced BI Analytics', href: '/analytics/advanced', icon: BarChart3 },
           ]
         }
       ]
@@ -342,12 +344,14 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: FolderOpen,
       items: [
         { name: 'Documents & Folders', href: '/documents', icon: FolderOpen },
+        { name: 'Advanced Document Mgmt', href: '/documents/advanced', icon: FileText },
         {
           name: 'Cloud Storage',
           isHeader: true,
           items: [
             { name: 'Files Explorer', href: '/storage', icon: HardDrive },
             { name: 'Presigned Urls', href: '/storage', icon: Key },
+            { name: 'Storage & Templates Pro', href: '/storage/advanced', icon: Database },
           ]
         }
       ]
@@ -358,7 +362,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Communication',
       icon: MessageSquare,
       items: [
-        { name: 'Internal Chats', href: '/communication', icon: MessageSquare }
+        { name: 'Internal Chats', href: '/communication', icon: MessageSquare },
+        { name: 'Advanced Messaging & Threading', href: '/communication/advanced', icon: Mail }
       ]
     };
   }
@@ -368,6 +373,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: Store,
       items: [
         { name: 'POS Terminals', href: '/pos', icon: Store },
+        { name: 'Advanced POS Features', href: '/pos/advanced', icon: Activity },
         {
           name: 'Customizer',
           isHeader: true,
@@ -385,6 +391,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: GitFork,
       items: [
         { name: 'Approval Workflows', href: '/workflows', icon: GitFork },
+        { name: 'Advanced Workflow Engine', href: '/workflows/advanced', icon: Workflow },
         {
           name: 'SLA Escalations',
           isHeader: true,
@@ -438,11 +445,14 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: ShieldAlert,
       items: [
         { name: 'Users List', href: '/admin/users', icon: ShieldAlert },
+        { name: 'Security Control Hub', href: '/admin/security', icon: ShieldCheck },
+        { name: 'App Marketplace', href: '/admin/marketplace', icon: Package },
         {
           name: 'System Platform',
           isHeader: true,
           items: [
             { name: 'API Key Whitelists', href: '/admin/api-keys', icon: Key },
+            { name: 'API Integration Hub', href: '/admin/api-platform', icon: Server },
             { name: 'i18n Localization', href: '/admin/localization', icon: Globe },
             { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
             { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
