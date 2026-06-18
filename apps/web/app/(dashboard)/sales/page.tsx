@@ -53,8 +53,8 @@ export default function SalesDashboard() {
         fetch('/api/v1/sales/quotations', { headers }),
       ]);
 
-      if (orderRes.ok) setOrders(await orderRes.json());
-      if (quoteRes.ok) setQuotes(await quoteRes.json());
+      if (orderRes.ok) setOrders(await orderRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (quoteRes.ok) setQuotes(await quoteRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       // Local fallback data

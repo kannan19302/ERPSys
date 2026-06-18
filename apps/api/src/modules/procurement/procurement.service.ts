@@ -7,30 +7,46 @@ import {
   CreateSupplierQuotationInput,
   CreatePurchaseReturnInput,
 } from '@unerp/shared';
-import { PurchaseOrder, PurchaseOrderItem, PurchaseReceipt, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { buildPaginationValues, buildOrderBy, paginatedResult, PaginatedResult, PaginationParams } from '../../common/utils/pagination.util';
 
 @Injectable()
 export class ProcurementService {
-  constructor(private readonly eventEmitter?: EventEmitter2) {}
+  constructor(private readonly eventEmitter?: EventEmitter2) { }
 
   /**
-   * Fetch all purchase orders scoped to tenantId.
+   * Fetch all purchase orders with pagination.
    */
-  async getPurchaseOrders(tenantId: string) {
-    const orders = (await prisma.purchaseOrder.findMany({
-      where: { tenantId, deletedAt: null },
-      include: {
-        vendor: true,
-        lineItems: true,
-        receipts: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    })) as unknown as Array<
-      PurchaseOrder & { vendor: { name: string }; lineItems: PurchaseOrderItem[]; receipts: PurchaseReceipt[] }
-    >;
+  async getPurchaseOrders(
+    tenantId: string,
+    params: PaginationParams & { status?: string; vendorId?: string } = {},
+  ): Promise<PaginatedResult<any>> {
+    const where: any = { tenantId, deletedAt: null };
+    if (params.status) where.status = params.status;
+    if (params.vendorId) where.vendorId = params.vendorId;
+    if (params.search) {
+      where.OR = [
+        { poNumber: { contains: params.search, mode: 'insensitive' } },
+        { vendor: { name: { contains: params.search, mode: 'insensitive' } } },
+      ];
+    }
 
-    return orders.map((po) => ({
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [orders, total] = await Promise.all([
+      prisma.purchaseOrder.findMany({
+        where,
+        include: { vendor: { select: { name: true } }, lineItems: true, receipts: { select: { id: true } } },
+        skip,
+        take,
+        orderBy: orderBy as any,
+      }),
+      prisma.purchaseOrder.count({ where }),
+    ]);
+
+    const data = orders.map((po: any) => ({
       id: po.id,
       poNumber: po.poNumber,
       status: po.status,
@@ -42,7 +58,7 @@ export class ProcurementService {
       currency: po.currency,
       vendorName: po.vendor.name,
       notes: po.notes,
-      lineItems: po.lineItems.map((li) => ({
+      lineItems: po.lineItems.map((li: any) => ({
         id: li.id,
         description: li.description,
         quantity: Number(li.quantity),
@@ -53,6 +69,8 @@ export class ProcurementService {
       })),
       receiptsCount: po.receipts.length,
     }));
+
+    return paginatedResult(data, total, params);
   }
 
   /**
@@ -546,9 +564,9 @@ export class ProcurementService {
       notes: r.notes,
       purchaseOrder: r.purchaseOrder
         ? {
-            poNumber: r.purchaseOrder.poNumber,
-            vendorName: r.purchaseOrder.vendor.name,
-          }
+          poNumber: r.purchaseOrder.poNumber,
+          vendorName: r.purchaseOrder.vendor.name,
+        }
         : null,
       itemsCount: r.lineItems.length,
     }));

@@ -76,7 +76,7 @@ export default function HrPage() {
       });
       if (!res.ok) throw new Error('Could not fetch employees');
       const data = await res.json();
-      setEmployees(data);
+      setEmployees(Array.isArray(data) ? data : (data?.data || []));
     } catch {
       setError('Could not connect to HR service.');
       setEmployees([

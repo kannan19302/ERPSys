@@ -51,7 +51,7 @@ export default function RecruitmentPage() {
       ]);
       if (jobsRes.ok) setJobs(await jobsRes.json());
       if (appRes.ok) setApplicants(await appRes.json());
-      if (offersRes.ok) setOffers(await offersRes.json());
+      if (offersRes.ok) setOffers(await offersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

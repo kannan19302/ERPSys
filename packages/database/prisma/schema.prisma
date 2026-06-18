@@ -224,16 +224,16 @@ model Customer {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
-  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  invoices     Invoice[]
-  quotations   Quotation[]
-  salesOrders  SalesOrder[]
-  creditNotes  CreditNote[]
-  contacts     Contact[] // Added for inverse relation
+  organization  Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invoices      Invoice[]
+  quotations    Quotation[]
+  salesOrders   SalesOrder[]
+  creditNotes   CreditNote[]
+  contacts      Contact[] // Added for inverse relation
   opportunities Opportunity[] // Added for inverse relation
-  activities   Activity[] // Added for inverse relation
+  activities    Activity[] // Added for inverse relation
   salesReturns  SalesReturn[]
-  projects     Project[]
+  projects      Project[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -257,12 +257,12 @@ model Vendor {
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
 
-  organization     Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  purchaseOrders   PurchaseOrder[]
-  debitNotes       DebitNote[]
-  paymentSchedules PaymentSchedule[]
-  supplierQuotations SupplierQuotation[]
-  purchaseReturns  PurchaseReturn[]
+  organization         Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  purchaseOrders       PurchaseOrder[]
+  debitNotes           DebitNote[]
+  paymentSchedules     PaymentSchedule[]
+  supplierQuotations   SupplierQuotation[]
+  purchaseReturns      PurchaseReturn[]
   subcontractingOrders SubcontractingOrder[]
 
   @@index([tenantId])
@@ -270,26 +270,26 @@ model Vendor {
 }
 
 model Contact {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  orgId            String   @map("org_id")
-  customerId       String?  @map("customer_id")
-  salutation       String?
-  firstName        String   @map("first_name")
-  lastName         String   @map("last_name")
-  email            String?
-  phone            String?
-  mobile           String?
-  title            String?
-  department       String?
-  isPrimary        Boolean  @default(false) @map("is_primary")
-  isActive         Boolean  @default(true) @map("is_active")
-  notes            String?
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-  deletedAt        DateTime? @map("deleted_at")
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  orgId      String    @map("org_id")
+  customerId String?   @map("customer_id")
+  salutation String?
+  firstName  String    @map("first_name")
+  lastName   String    @map("last_name")
+  email      String?
+  phone      String?
+  mobile     String?
+  title      String?
+  department String?
+  isPrimary  Boolean   @default(false) @map("is_primary")
+  isActive   Boolean   @default(true) @map("is_active")
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
-  customer Customer? @relation(fields: [customerId], references: [id])
+  customer   Customer?  @relation(fields: [customerId], references: [id])
   activities Activity[] // Added for inverse relation
 
   @@unique([tenantId, orgId, email])
@@ -312,37 +312,37 @@ model LeadSource {
 }
 
 model Lead {
-  id            String    @id @default(cuid())
-  tenantId      String    @map("tenant_id")
-  orgId         String    @map("org_id")
-  salutation    String?
-  firstName     String    @map("first_name")
-  lastName      String    @map("last_name")
-  company       String?
-  title         String?
-  email         String?
-  phone         String?
-  mobile        String?
-  website       String?
-  sourceId      String?   @map("source_id")
-  status        String    @default("NEW") // NEW, CONTACTED, QUALIFIED, DISQUALIFIED, CONVERTED
-  industry      String?
-  employeeCount Int?      @map("employee_count")
-  annualRevenue Decimal?  @map("annual_revenue") @db.Decimal(15, 2)
-  score         Int       @default(0)
-  notes         String?
-  assignedToId  String?   @map("assigned_to_id")
-  convertedCustomerId String? @map("converted_customer_id")
-  convertedOpportunityId String? @map("converted_opportunity_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  id                     String    @id @default(cuid())
+  tenantId               String    @map("tenant_id")
+  orgId                  String    @map("org_id")
+  salutation             String?
+  firstName              String    @map("first_name")
+  lastName               String    @map("last_name")
+  company                String?
+  title                  String?
+  email                  String?
+  phone                  String?
+  mobile                 String?
+  website                String?
+  sourceId               String?   @map("source_id")
+  status                 String    @default("NEW") // NEW, CONTACTED, QUALIFIED, DISQUALIFIED, CONVERTED
+  industry               String?
+  employeeCount          Int?      @map("employee_count")
+  annualRevenue          Decimal?  @map("annual_revenue") @db.Decimal(15, 2)
+  score                  Int       @default(0)
+  notes                  String?
+  assignedToId           String?   @map("assigned_to_id")
+  convertedCustomerId    String?   @map("converted_customer_id")
+  convertedOpportunityId String?   @map("converted_opportunity_id")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  deletedAt              DateTime? @map("deleted_at")
 
-  campaignId    String?   @map("campaign_id")
+  campaignId String? @map("campaign_id")
 
-  source       LeadSource?   @relation(fields: [sourceId], references: [id])
-  campaign     Campaign?     @relation(fields: [campaignId], references: [id])
-  activities   Activity[]
+  source        LeadSource?   @relation(fields: [sourceId], references: [id])
+  campaign      Campaign?     @relation(fields: [campaignId], references: [id])
+  activities    Activity[]
   opportunities Opportunity[] @relation("LeadOpportunity")
 
   @@index([tenantId])
@@ -353,13 +353,13 @@ model Lead {
 }
 
 model SalesPipeline {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  name             String
-  stages           Json     @default("[]") // Array of {label, probability, order}
-  isDefault        Boolean  @default(false) @map("is_default")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  stages    Json     @default("[]") // Array of {label, probability, order}
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   opportunities Opportunity[]
 
@@ -369,29 +369,29 @@ model SalesPipeline {
 }
 
 model Opportunity {
-  id             String    @id @default(cuid())
-  tenantId       String    @map("tenant_id")
-  orgId          String    @map("org_id")
-  name           String
-  customerId     String?   @map("customer_id")
-  leadId         String?   @map("lead_id")
-  pipelineId     String?   @map("pipeline_id")
-  stage          String    @default("PROSPECTING") // Prospecting, Qualification, Proposal, Negotiation, Closed Won, Closed Lost
-  amount         Decimal?  @db.Decimal(15, 2)
-  probability    Int       @default(0) // 0-100
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  name              String
+  customerId        String?   @map("customer_id")
+  leadId            String?   @map("lead_id")
+  pipelineId        String?   @map("pipeline_id")
+  stage             String    @default("PROSPECTING") // Prospecting, Qualification, Proposal, Negotiation, Closed Won, Closed Lost
+  amount            Decimal?  @db.Decimal(15, 2)
+  probability       Int       @default(0) // 0-100
   expectedCloseDate DateTime? @map("expected_close_date")
-  actualCloseDate DateTime? @map("actual_close_date")
-  competitor     String?
-  lossReason     String?   @map("loss_reason")
-  notes          String?
-  assignedToId   String?   @map("assigned_to_id")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
+  actualCloseDate   DateTime? @map("actual_close_date")
+  competitor        String?
+  lossReason        String?   @map("loss_reason")
+  notes             String?
+  assignedToId      String?   @map("assigned_to_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
-  customer Customer?       @relation(fields: [customerId], references: [id])
-  lead     Lead?           @relation("LeadOpportunity", fields: [leadId], references: [id])
-  pipeline SalesPipeline?  @relation(fields: [pipelineId], references: [id])
+  customer   Customer?      @relation(fields: [customerId], references: [id])
+  lead       Lead?          @relation("LeadOpportunity", fields: [leadId], references: [id])
+  pipeline   SalesPipeline? @relation(fields: [pipelineId], references: [id])
   activities Activity[]
 
   @@index([tenantId])
@@ -405,7 +405,7 @@ model Activity {
   id            String    @id @default(cuid())
   tenantId      String    @map("tenant_id")
   orgId         String    @map("org_id")
-  type          String    // CALL, EMAIL, MEETING, NOTE, TASK, QUOTE_SENT, ORDER_PLACED
+  type          String // CALL, EMAIL, MEETING, NOTE, TASK, QUOTE_SENT, ORDER_PLACED
   subject       String
   description   String?
   leadId        String?   @map("lead_id")
@@ -431,16 +431,16 @@ model Activity {
 }
 
 model EmailTemplate {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  name        String
-  category    String   @default("GENERAL") // GENERAL, QUOTATION, INVOICE, FOLLOWUP
-  subject     String
-  body        String
-  variables   Json     @default("[]") // Available variable names
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  category  String   @default("GENERAL") // GENERAL, QUOTATION, INVOICE, FOLLOWUP
+  subject   String
+  body      String
+  variables Json     @default("[]") // Available variable names
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -471,24 +471,24 @@ model Product {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  organization       Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  inventoryItems     InventoryItem[]
-  invoiceLines       InvoiceLineItem[]
-  purchaseOrderItems PurchaseOrderItem[]
-  salesOrderItems    SalesOrderItem[]
-  serialNumbers      SerialNumber[]
-  batches            Batch[]
-  stockLedgerEntries StockLedgerEntry[]
-  stockEntryItems    StockEntryItem[]
-  qualityInspections QualityInspection[]
-  cycleCountItems    CycleCountItem[]
-  rfqItems           RFQItem[]
+  organization           Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inventoryItems         InventoryItem[]
+  invoiceLines           InvoiceLineItem[]
+  purchaseOrderItems     PurchaseOrderItem[]
+  salesOrderItems        SalesOrderItem[]
+  serialNumbers          SerialNumber[]
+  batches                Batch[]
+  stockLedgerEntries     StockLedgerEntry[]
+  stockEntryItems        StockEntryItem[]
+  qualityInspections     QualityInspection[]
+  cycleCountItems        CycleCountItem[]
+  rfqItems               RFQItem[]
   supplierQuotationItems SupplierQuotationItem[]
-  salesReturnItems   SalesReturnItem[]
-  purchaseReturnItems PurchaseReturnItem[]
-  mrpPlannedItems    MRPPlannedItem[]
-  subcontractingOrders SubcontractingOrder[]
-  ncrRecords         NonConformanceReport[]
+  salesReturnItems       SalesReturnItem[]
+  purchaseReturnItems    PurchaseReturnItem[]
+  mrpPlannedItems        MRPPlannedItem[]
+  subcontractingOrders   SubcontractingOrder[]
+  ncrRecords             NonConformanceReport[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -506,7 +506,7 @@ model Warehouse {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organization       Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  organization       Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
   inventoryItems     InventoryItem[]
   stockLedgerEntries StockLedgerEntry[]
 
@@ -680,17 +680,17 @@ model PurchaseOrder {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
-  rfqId               String?             @map("rfq_id")
-  supplierQuotationId String?             @map("supplier_quotation_id")
+  rfqId               String? @map("rfq_id")
+  supplierQuotationId String? @map("supplier_quotation_id")
 
-  vendor           Vendor              @relation(fields: [vendorId], references: [id])
-  rfq              RFQ?                @relation(fields: [rfqId], references: [id])
+  vendor            Vendor              @relation(fields: [vendorId], references: [id])
+  rfq               RFQ?                @relation(fields: [rfqId], references: [id])
   supplierQuotation SupplierQuotation?  @relation(fields: [supplierQuotationId], references: [id])
-  lineItems        PurchaseOrderItem[]
-  receipts         PurchaseReceipt[]
-  debitNotes       DebitNote[]
-  paymentSchedules PaymentSchedule[]
-  returns          PurchaseReturn[]
+  lineItems         PurchaseOrderItem[]
+  receipts          PurchaseReceipt[]
+  debitNotes        DebitNote[]
+  paymentSchedules  PaymentSchedule[]
+  returns           PurchaseReturn[]
 
   @@unique([tenantId, orgId, poNumber])
   @@index([tenantId])
@@ -770,10 +770,10 @@ model RFQ {
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
 
-  organization      Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  lineItems         RFQItem[]
+  organization       Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lineItems          RFQItem[]
   supplierQuotations SupplierQuotation[]
-  purchaseOrders    PurchaseOrder[]
+  purchaseOrders     PurchaseOrder[]
 
   @@unique([tenantId, orgId, rfqNumber])
   @@index([tenantId])
@@ -781,12 +781,12 @@ model RFQ {
 }
 
 model RFQItem {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  rfqId       String   @map("rfq_id")
-  productId   String?  @map("product_id")
+  id          String  @id @default(cuid())
+  tenantId    String  @map("tenant_id")
+  rfqId       String  @map("rfq_id")
+  productId   String? @map("product_id")
   description String
-  quantity    Decimal  @db.Decimal(15, 3)
+  quantity    Decimal @db.Decimal(15, 3)
 
   rfq     RFQ      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
   product Product? @relation(fields: [productId], references: [id])
@@ -797,21 +797,21 @@ model RFQItem {
 }
 
 model SupplierQuotation {
-  id              String    @id @default(cuid())
-  tenantId        String    @map("tenant_id")
-  orgId           String    @map("org_id")
-  rfqId           String?   @map("rfq_id")
-  vendorId        String    @map("vendor_id")
-  quotationNumber String    @map("quotation_number")
-  status          String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, EXPIRED, CONVERTED
-  validUntil      DateTime  @map("valid_until")
-  subtotal        Decimal   @default(0) @db.Decimal(15, 2)
-  taxAmount       Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  totalAmount     Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
-  currency        String    @default("USD")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  rfqId           String?  @map("rfq_id")
+  vendorId        String   @map("vendor_id")
+  quotationNumber String   @map("quotation_number")
+  status          String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, EXPIRED, CONVERTED
+  validUntil      DateTime @map("valid_until")
+  subtotal        Decimal  @default(0) @db.Decimal(15, 2)
+  taxAmount       Decimal  @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount     Decimal  @default(0) @map("total_amount") @db.Decimal(15, 2)
+  currency        String   @default("USD")
   notes           String?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   organization   Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
   rfq            RFQ?                    @relation(fields: [rfqId], references: [id])
@@ -1041,24 +1041,24 @@ model Shipment {
 // ════════════════════════════════════════════════
 
 model Project {
-  id          String    @id @default(cuid())
-  tenantId    String    @map("tenant_id")
-  orgId       String    @map("org_id")
-  name        String
-  code        String
-  description String?
-  status      String    @default("PLANNED") // PLANNED, ACTIVE, ON_HOLD, COMPLETED, CANCELLED
-  startDate   DateTime? @map("start_date")
-  endDate     DateTime? @map("end_date")
-  budget      Decimal?  @db.Decimal(15, 2)
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  orgId            String    @map("org_id")
+  name             String
+  code             String
+  description      String?
+  status           String    @default("PLANNED") // PLANNED, ACTIVE, ON_HOLD, COMPLETED, CANCELLED
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  budget           Decimal?  @db.Decimal(15, 2)
   baselineSchedule String?   @map("baseline_schedule") @db.Text
   criticalPath     String?   @map("critical_path") @db.Text
   overallHealth    String?   @map("overall_health")
-  portfolioId String?   @map("portfolio_id")
-  customerId  String?   @map("customer_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  portfolioId      String?   @map("portfolio_id")
+  customerId       String?   @map("customer_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   portfolio      ProjectPortfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
   customer       Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
@@ -1075,18 +1075,18 @@ model Project {
 }
 
 model ProjectPortfolio {
-  id                 String    @id @default(cuid())
-  tenantId           String    @map("tenant_id")
-  orgId              String    @map("org_id")
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  orgId              String   @map("org_id")
   name               String
   description        String?
-  riskScore          Decimal?  @map("risk_score") @db.Decimal(5, 2)
-  strategicAlignment String?   @map("strategic_alignment") // HIGH, MEDIUM, LOW
-  budget             Decimal?  @db.Decimal(15, 2)
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  riskScore          Decimal? @map("risk_score") @db.Decimal(5, 2)
+  strategicAlignment String?  @map("strategic_alignment") // HIGH, MEDIUM, LOW
+  budget             Decimal? @db.Decimal(15, 2)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  projects           Project[]
+  projects Project[]
 
   @@index([tenantId])
   @@map("project_portfolios")
@@ -1098,8 +1098,8 @@ model ProjectRisk {
   projectId      String   @map("project_id")
   title          String
   description    String?
-  probability    String   // LOW, MEDIUM, HIGH
-  impact         String   // LOW, MEDIUM, HIGH
+  probability    String // LOW, MEDIUM, HIGH
+  impact         String // LOW, MEDIUM, HIGH
   mitigationPlan String?  @map("mitigation_plan")
   status         String   @default("OPEN") // OPEN, MITIGATED, CLOSED
   createdAt      DateTime @default(now()) @map("created_at")
@@ -1193,22 +1193,22 @@ model Milestone {
 // ════════════════════════════════════════════════
 
 model BOM {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  productId String   @map("product_id")
-  name      String
-  code      String
-  isActive  Boolean  @default(true) @map("is_active")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  productId    String   @map("product_id")
+  name         String
+  code         String
+  isActive     Boolean  @default(true) @map("is_active")
   materialCost Decimal  @default(0) @map("material_cost") @db.Decimal(15, 3)
   overheadCost Decimal  @default(0) @map("overhead_cost") @db.Decimal(15, 3)
   standardCost Decimal  @default(0) @map("standard_cost") @db.Decimal(15, 3)
   routingJson  Json     @default("[]") // Operations list
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  items      BOMItem[]
-  workOrders WorkOrder[]
-  mrpPlannedItems MRPPlannedItem[]
+  items                BOMItem[]
+  workOrders           WorkOrder[]
+  mrpPlannedItems      MRPPlannedItem[]
   subcontractingOrders SubcontractingOrder[]
 
   @@unique([tenantId, code])
@@ -1240,9 +1240,9 @@ model WorkOrder {
   quantity        Decimal   @db.Decimal(15, 3)
   startDate       DateTime? @map("start_date")
   endDate         DateTime? @map("end_date")
-  oeeScore         Decimal?  @map("oee_score") @db.Decimal(5, 2)
-  scrapQuantity    Decimal?  @map("scrap_quantity") @db.Decimal(15, 3)
-  lotNumber        String?   @map("lot_number")
+  oeeScore        Decimal?  @map("oee_score") @db.Decimal(5, 2)
+  scrapQuantity   Decimal?  @map("scrap_quantity") @db.Decimal(15, 3)
+  lotNumber       String?   @map("lot_number")
   workstationId   String?   @map("workstation_id")
   standardCost    Decimal?  @map("standard_cost") @db.Decimal(15, 3)
   actualCost      Decimal?  @map("actual_cost") @db.Decimal(15, 3)
@@ -1251,8 +1251,8 @@ model WorkOrder {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  bom         BOM        @relation(fields: [bomId], references: [id])
-  workstation Workstation? @relation(fields: [workstationId], references: [id])
+  bom         BOM                    @relation(fields: [bomId], references: [id])
+  workstation Workstation?           @relation(fields: [workstationId], references: [id])
   ncrRecords  NonConformanceReport[]
 
   @@unique([tenantId, workOrderNumber])
@@ -1460,18 +1460,18 @@ model Notification {
 // ════════════════════════════════════════════════
 
 model POSTerminal {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orgId       String   @map("org_id")
-  name        String
-  code        String
-  warehouseId String?  @map("warehouse_id")
-  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
-  receiptTemplate  String?   @map("receipt_template") @db.Text
-  layoutFormat     String?   @map("layout_format")
-  diagnosticData   Json?     @map("diagnostic_data")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  name            String
+  code            String
+  warehouseId     String?  @map("warehouse_id")
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE
+  receiptTemplate String?  @map("receipt_template") @db.Text
+  layoutFormat    String?  @map("layout_format")
+  diagnosticData  Json?    @map("diagnostic_data")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   registers POSRegister[]
 
@@ -1808,8 +1808,8 @@ model BankReconciliation {
 model SalaryComponent {
   id        String   @id @default(cuid())
   tenantId  String   @map("tenant_id")
-  name      String   // Basic, HRA, DA, PF, ESI, TDS, BONUS
-  type      String   // EARNING, DEDUCTION
+  name      String // Basic, HRA, DA, PF, ESI, TDS, BONUS
+  type      String // EARNING, DEDUCTION
   isPercent Boolean  @default(false) @map("is_percent")
   value     Decimal  @db.Decimal(15, 2) // percentage or fixed amount
   isSystem  Boolean  @default(false) @map("is_system")
@@ -1859,16 +1859,16 @@ model AttendanceRecord {
 // ════════════════════════════════════════════════
 
 model EmployeeDocument {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  employeeId  String   @map("employee_id")
-  name        String
-  docType     String   @map("doc_type") // OFFER_LETTER, CONTRACT, TAX_FORM, ID_PROOF, CERTIFICATION
-  fileUrl     String?  @map("file_url")
-  expiryDate  DateTime? @map("expiry_date")
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  employeeId String    @map("employee_id")
+  name       String
+  docType    String    @map("doc_type") // OFFER_LETTER, CONTRACT, TAX_FORM, ID_PROOF, CERTIFICATION
+  fileUrl    String?   @map("file_url")
+  expiryDate DateTime? @map("expiry_date")
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@index([tenantId, employeeId])
@@ -1876,19 +1876,19 @@ model EmployeeDocument {
 }
 
 model AssetAssignment {
-  id              String    @id @default(cuid())
-  tenantId        String    @map("tenant_id")
-  employeeId      String    @map("employee_id")
-  assetType       String    @map("asset_type") // LAPTOP, PHONE, BADGE, FURNITURE, VEHICLE
-  assetName       String    @map("asset_name")
-  serialNumber    String?   @map("serial_number")
-  assignedDate    DateTime  @default(now()) @map("assigned_date")
-  returnDueDate   DateTime? @map("return_due_date")
-  returnedDate    DateTime? @map("returned_date")
-  status          String    @default("ASSIGNED") // ASSIGNED, RETURNED, LOST
-  notes           String?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  employeeId    String    @map("employee_id")
+  assetType     String    @map("asset_type") // LAPTOP, PHONE, BADGE, FURNITURE, VEHICLE
+  assetName     String    @map("asset_name")
+  serialNumber  String?   @map("serial_number")
+  assignedDate  DateTime  @default(now()) @map("assigned_date")
+  returnDueDate DateTime? @map("return_due_date")
+  returnedDate  DateTime? @map("returned_date")
+  status        String    @default("ASSIGNED") // ASSIGNED, RETURNED, LOST
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@index([tenantId, employeeId])
@@ -1915,16 +1915,16 @@ model OnboardingChecklist {
 }
 
 model OnboardingItem {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  checklistId  String    @map("checklist_id")
-  task         String
-  category     String    @default("GENERAL") // IT, HR, FACILITIES, LEGAL
-  isCompleted  Boolean   @default(false) @map("is_completed")
-  completedAt  DateTime? @map("completed_at")
-  sortOrder    Int       @default(0) @map("sort_order")
-  status       String    @default("PENDING") // PENDING, ON_HOLD, COMPLETED
-  comments     String?   @db.Text
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  checklistId String    @map("checklist_id")
+  task        String
+  category    String    @default("GENERAL") // IT, HR, FACILITIES, LEGAL
+  isCompleted Boolean   @default(false) @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  sortOrder   Int       @default(0) @map("sort_order")
+  status      String    @default("PENDING") // PENDING, ON_HOLD, COMPLETED
+  comments    String?   @db.Text
 
   checklist OnboardingChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 
@@ -1933,14 +1933,14 @@ model OnboardingItem {
 }
 
 model OffboardingChecklist {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  employeeId   String   @map("employee_id")
-  status       String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
-  exitDate     DateTime @map("exit_date")
-  exitReason   String?  @map("exit_reason")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  employeeId String   @map("employee_id")
+  status     String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  exitDate   DateTime @map("exit_date")
+  exitReason String?  @map("exit_reason")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   items OffboardingItem[]
 
@@ -1949,15 +1949,15 @@ model OffboardingChecklist {
 }
 
 model OffboardingItem {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  checklistId  String    @map("checklist_id")
-  task         String
-  isCompleted  Boolean   @default(false) @map("is_completed")
-  completedAt  DateTime? @map("completed_at")
-  sortOrder    Int       @default(0) @map("sort_order")
-  status       String    @default("PENDING") // PENDING, ON_HOLD, COMPLETED
-  comments     String?   @db.Text
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  checklistId String    @map("checklist_id")
+  task        String
+  isCompleted Boolean   @default(false) @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  sortOrder   Int       @default(0) @map("sort_order")
+  status      String    @default("PENDING") // PENDING, ON_HOLD, COMPLETED
+  comments    String?   @db.Text
 
   checklist OffboardingChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 
@@ -1995,23 +1995,23 @@ model JobPosting {
 }
 
 model Applicant {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  jobPostingId  String   @map("job_posting_id")
-  firstName     String   @map("first_name")
-  lastName      String   @map("last_name")
-  email         String
-  phone         String?
-  resumeUrl     String?  @map("resume_url")
-  coverLetter   String?  @map("cover_letter") @db.Text
-  currentStage  String   @default("APPLIED") // APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED
-  status        String   @default("ACTIVE") // ACTIVE, HIRED, REJECTED
-  notes         String?
-  appliedAt     DateTime @default(now()) @map("applied_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  jobPostingId String   @map("job_posting_id")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  email        String
+  phone        String?
+  resumeUrl    String?  @map("resume_url")
+  coverLetter  String?  @map("cover_letter") @db.Text
+  currentStage String   @default("APPLIED") // APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED
+  status       String   @default("ACTIVE") // ACTIVE, HIRED, REJECTED
+  notes        String?
+  appliedAt    DateTime @default(now()) @map("applied_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  jobPosting JobPosting  @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+  jobPosting JobPosting    @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
   interviews Interview[]
   offers     OfferLetter[]
 
@@ -2020,19 +2020,19 @@ model Applicant {
 }
 
 model Interview {
-  id          String    @id @default(cuid())
-  tenantId    String    @map("tenant_id")
-  applicantId String    @map("applicant_id")
-  jobPostingId String   @map("job_posting_id")
-  interviewerId String  @map("interviewer_id")
-  scheduledAt DateTime  @map("scheduled_at")
-  durationMin Int       @default(60) @map("duration_min")
-  round       String    @default("TECHNICAL") // TECHNICAL, HR, MANAGERIAL, FINAL
-  status      String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
-  feedback    String?
-  rating      Int?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  applicantId   String   @map("applicant_id")
+  jobPostingId  String   @map("job_posting_id")
+  interviewerId String   @map("interviewer_id")
+  scheduledAt   DateTime @map("scheduled_at")
+  durationMin   Int      @default(60) @map("duration_min")
+  round         String   @default("TECHNICAL") // TECHNICAL, HR, MANAGERIAL, FINAL
+  status        String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  feedback      String?
+  rating        Int?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   applicant  Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   jobPosting JobPosting @relation(fields: [jobPostingId], references: [id])
@@ -2046,20 +2046,20 @@ model Interview {
 // ════════════════════════════════════════════════
 
 model Goal {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  employeeId   String    @map("employee_id")
-  title        String
-  description  String?
-  category     String    @default("INDIVIDUAL") // INDIVIDUAL, TEAM, ORGANIZATION
-  type         String    @default("QUARTERLY") // MONTHLY, QUARTERLY, ANNUAL
-  startDate    DateTime  @map("start_date")
-  endDate      DateTime  @map("end_date")
-  weight       Int       @default(100)
-  progress     Int       @default(0) // 0-100
-  status       String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  employeeId  String   @map("employee_id")
+  title       String
+  description String?
+  category    String   @default("INDIVIDUAL") // INDIVIDUAL, TEAM, ORGANIZATION
+  type        String   @default("QUARTERLY") // MONTHLY, QUARTERLY, ANNUAL
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  weight      Int      @default(100)
+  progress    Int      @default(0) // 0-100
+  status      String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   keyResults KeyResult[]
   comments   GoalComment[]
@@ -2087,16 +2087,16 @@ model GoalComment {
 }
 
 model KeyResult {
-  id        String    @id @default(cuid())
-  tenantId  String    @map("tenant_id")
-  goalId    String    @map("goal_id")
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  goalId    String   @map("goal_id")
   title     String
-  target    Int       // target number
-  current   Int       @default(0) // current progress number
-  unit      String    @default("percentage") // percentage, number, currency
-  status    String    @default("ACTIVE")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  target    Int // target number
+  current   Int      @default(0) // current progress number
+  unit      String   @default("percentage") // percentage, number, currency
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
@@ -2105,18 +2105,18 @@ model KeyResult {
 }
 
 model Feedback360 {
-  id          String    @id @default(cuid())
-  tenantId    String    @map("tenant_id")
-  employeeId  String    @map("employee_id")
-  reviewerId  String    @map("reviewer_id")
-  relationship String   @default("PEER") // PEER, MANAGER, REPORT, SELF
-  period      String    @default("2026-Q2")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  employeeId    String   @map("employee_id")
+  reviewerId    String   @map("reviewer_id")
+  relationship  String   @default("PEER") // PEER, MANAGER, REPORT, SELF
+  period        String   @default("2026-Q2")
   overallRating Int?
-  strengths   String?
-  improvements String?
-  status      String    @default("PENDING") // PENDING, SUBMITTED
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  strengths     String?
+  improvements  String?
+  status        String   @default("PENDING") // PENDING, SUBMITTED
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   responses FeedbackResponse[]
 
@@ -2126,13 +2126,13 @@ model Feedback360 {
 }
 
 model FeedbackResponse {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  feedbackId   String   @map("feedback_id")
-  question     String
-  rating       Int      // 1-5
-  comment      String?
-  category     String   @default("COMMUNICATION") // COMMUNICATION, LEADERSHIP, TECHNICAL, TEAMWORK
+  id         String  @id @default(cuid())
+  tenantId   String  @map("tenant_id")
+  feedbackId String  @map("feedback_id")
+  question   String
+  rating     Int // 1-5
+  comment    String?
+  category   String  @default("COMMUNICATION") // COMMUNICATION, LEADERSHIP, TECHNICAL, TEAMWORK
 
   feedback Feedback360 @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
 
@@ -2141,16 +2141,16 @@ model FeedbackResponse {
 }
 
 model SuccessionPlan {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  position       String   // Key position title
-  currentHolderId String? @map("current_holder_id")
-  riskLevel      String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
-  readinessLevel String   @default("NOT_READY") // NOT_READY, DEVELOPING, READY_NOW
-  successorId    String?  @map("successor_id")
-  developmentPlan String? @map("development_plan") @db.Text
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  position        String // Key position title
+  currentHolderId String?  @map("current_holder_id")
+  riskLevel       String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  readinessLevel  String   @default("NOT_READY") // NOT_READY, DEVELOPING, READY_NOW
+  successorId     String?  @map("successor_id")
+  developmentPlan String?  @map("development_plan") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@unique([tenantId, position])
   @@index([tenantId])
@@ -2162,16 +2162,16 @@ model SuccessionPlan {
 // ════════════════════════════════════════════════
 
 model EmployeeSkill {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  employeeId     String   @map("employee_id")
-  skillName      String   @map("skill_name")
-  proficiency    Int      @default(1) // 1-5
-  category       String   @default("TECHNICAL") // TECHNICAL, SOFT, MANAGEMENT, LANGUAGE
-  certified      Boolean  @default(false)
-  certificationUrl String? @map("certification_url")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  employeeId       String   @map("employee_id")
+  skillName        String   @map("skill_name")
+  proficiency      Int      @default(1) // 1-5
+  category         String   @default("TECHNICAL") // TECHNICAL, SOFT, MANAGEMENT, LANGUAGE
+  certified        Boolean  @default(false)
+  certificationUrl String?  @map("certification_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@unique([tenantId, employeeId, skillName])
   @@index([tenantId])
@@ -2179,19 +2179,19 @@ model EmployeeSkill {
 }
 
 model HRTicket {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  employeeId  String   @map("employee_id")
-  category    String   @default("QUERY") // QUERY, REQUEST, COMPLAINT, GRIEVANCE
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  employeeId  String    @map("employee_id")
+  category    String    @default("QUERY") // QUERY, REQUEST, COMPLAINT, GRIEVANCE
   title       String
-  description String?  @db.Text
-  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
-  assignedTo  String?  @map("assigned_to")
-  resolution  String?  @db.Text
+  description String?   @db.Text
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status      String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  assignedTo  String?   @map("assigned_to")
+  resolution  String?   @db.Text
   resolvedAt  DateTime? @map("resolved_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@index([tenantId, employeeId])
@@ -2215,12 +2215,12 @@ model EngagementSurvey {
 }
 
 model SurveyQuestion {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  surveyId  String   @map("survey_id")
+  id        String @id @default(cuid())
+  tenantId  String @map("tenant_id")
+  surveyId  String @map("survey_id")
   question  String
-  category  String   @default("ENGAGEMENT") // ENGAGEMENT, CULTURE, MANAGEMENT, WELLNESS
-  sortOrder Int      @default(0) @map("sort_order")
+  category  String @default("ENGAGEMENT") // ENGAGEMENT, CULTURE, MANAGEMENT, WELLNESS
+  sortOrder Int    @default(0) @map("sort_order")
 
   survey    EngagementSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   responses SurveyResponse[]
@@ -2230,13 +2230,13 @@ model SurveyQuestion {
 }
 
 model SurveyResponse {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  questionId  String   @map("question_id")
-  employeeId  String   @map("employee_id")
-  rating      Int      // 1-5
-  comment     String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  questionId String   @map("question_id")
+  employeeId String   @map("employee_id")
+  rating     Int // 1-5
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
 
   question SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
@@ -2279,14 +2279,14 @@ model PayrollSlip {
 }
 
 model LeavePolicy {
-  id                 String   @id @default(cuid())
-  tenantId           String   @map("tenant_id")
-  name               String
-  leaveType          String   @map("leave_type") // SICK, CASUAL, ANNUAL, MATERNITY
-  annualAllocation   Int      @map("annual_allocation")
-  carryForwardLimit  Int      @default(0) @map("carry_forward_limit")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  name              String
+  leaveType         String   @map("leave_type") // SICK, CASUAL, ANNUAL, MATERNITY
+  annualAllocation  Int      @map("annual_allocation")
+  carryForwardLimit Int      @default(0) @map("carry_forward_limit")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   requests LeaveRequest[]
 
@@ -2386,56 +2386,56 @@ model TrainingEnrollment {
 // ════════════════════════════════════════════════
 
 model OfferLetter {
-  id             String    @id @default(cuid())
-  tenantId       String    @map("tenant_id")
-  applicantId    String    @map("applicant_id")
-  salaryOffered  Decimal   @map("salary_offered") @db.Decimal(15, 2)
-  status         String    @default("DRAFT") // DRAFT, SENT, ACCEPTED, DECLINED, EXPIRED
-  sentAt         DateTime? @map("sent_at")
-  expiresAt      DateTime? @map("expires_at")
-  signedAt       DateTime? @map("signed_at")
-  notes          String?   @db.Text
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  applicantId   String    @map("applicant_id")
+  salaryOffered Decimal   @map("salary_offered") @db.Decimal(15, 2)
+  status        String    @default("DRAFT") // DRAFT, SENT, ACCEPTED, DECLINED, EXPIRED
+  sentAt        DateTime? @map("sent_at")
+  expiresAt     DateTime? @map("expires_at")
+  signedAt      DateTime? @map("signed_at")
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  applicant      Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@map("offer_letters")
 }
 
 model BenefitScheme {
-  id                 String   @id @default(cuid())
-  tenantId           String   @map("tenant_id")
-  name               String
-  type               String   // HEALTH_INSURANCE, PENSION, FSA, DENTAL, VISION, LIFE_INSURANCE
-  provider           String
-  description        String?  @db.Text
-  employeeCostShare  Decimal  @map("employee_cost_share") @db.Decimal(15, 2)
-  employerCostShare  Decimal  @map("employer_cost_share") @db.Decimal(15, 2)
-  isActive           Boolean  @default(true) @map("is_active")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  name              String
+  type              String // HEALTH_INSURANCE, PENSION, FSA, DENTAL, VISION, LIFE_INSURANCE
+  provider          String
+  description       String?  @db.Text
+  employeeCostShare Decimal  @map("employee_cost_share") @db.Decimal(15, 2)
+  employerCostShare Decimal  @map("employer_cost_share") @db.Decimal(15, 2)
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
-  enrollments        EmployeeBenefit[]
+  enrollments EmployeeBenefit[]
 
   @@index([tenantId])
   @@map("benefit_schemes")
 }
 
 model EmployeeBenefit {
-  id              String    @id @default(cuid())
-  tenantId        String    @map("tenant_id")
-  employeeId      String    @map("employee_id")
-  schemeId        String    @map("scheme_id")
-  enrollmentDate  DateTime  @default(now()) @map("enrollment_date")
-  coverageAmount  Decimal?  @map("coverage_amount") @db.Decimal(15, 2)
-  status          String    @default("ACTIVE") // ACTIVE, TERMINATED, PENDING
-  terminatedAt    DateTime? @map("terminated_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  employeeId     String    @map("employee_id")
+  schemeId       String    @map("scheme_id")
+  enrollmentDate DateTime  @default(now()) @map("enrollment_date")
+  coverageAmount Decimal?  @map("coverage_amount") @db.Decimal(15, 2)
+  status         String    @default("ACTIVE") // ACTIVE, TERMINATED, PENDING
+  terminatedAt   DateTime? @map("terminated_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  scheme          BenefitScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  scheme BenefitScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, employeeId, schemeId])
   @@index([tenantId])
@@ -2443,13 +2443,13 @@ model EmployeeBenefit {
 }
 
 model SkillRequirement {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  designation     String
-  skillName       String   @map("skill_name")
-  requiredLevel   Int      @default(3) @map("required_level")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  designation   String
+  skillName     String   @map("skill_name")
+  requiredLevel Int      @default(3) @map("required_level")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@unique([tenantId, designation, skillName])
   @@index([tenantId])
@@ -2457,18 +2457,18 @@ model SkillRequirement {
 }
 
 model Position {
-  id             String    @id @default(cuid())
-  tenantId       String    @map("tenant_id")
-  departmentId   String    @map("department_id")
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  departmentId   String   @map("department_id")
   title          String
   code           String
-  budgetedSalary Decimal   @map("budgeted_salary") @db.Decimal(15, 2)
-  status         String    @default("VACANT") // VACANT, FILLED, APPROVED, FROZEN
-  employeeId     String?   @map("employee_id")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  budgetedSalary Decimal  @map("budgeted_salary") @db.Decimal(15, 2)
+  status         String   @default("VACANT") // VACANT, FILLED, APPROVED, FROZEN
+  employeeId     String?  @map("employee_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  department     Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -2476,28 +2476,28 @@ model Position {
 }
 
 model ComplianceCheck {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  employeeId  String?  @map("employee_id")
-  checkType   String
-  status      String   @default("PASSED") // PASSED, WARNING, FAILED
-  message     String   @db.Text
-  checkedAt   DateTime @default(now()) @map("checked_at")
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  employeeId String?  @map("employee_id")
+  checkType  String
+  status     String   @default("PASSED") // PASSED, WARNING, FAILED
+  message    String   @db.Text
+  checkedAt  DateTime @default(now()) @map("checked_at")
 
   @@index([tenantId])
   @@map("compliance_checks")
 }
 
 model TaxTable {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  country         String
-  state           String?
-  incomeBracketMin Decimal @map("income_bracket_min") @db.Decimal(15, 2)
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  country          String
+  state            String?
+  incomeBracketMin Decimal  @map("income_bracket_min") @db.Decimal(15, 2)
   incomeBracketMax Decimal? @map("income_bracket_max") @db.Decimal(15, 2)
-  taxRate         Decimal  @map("tax_rate") @db.Decimal(5, 2)
-  allowanceAmount Decimal  @default(0) @map("allowance_amount") @db.Decimal(15, 2)
-  createdAt       DateTime @default(now()) @map("created_at")
+  taxRate          Decimal  @map("tax_rate") @db.Decimal(5, 2)
+  allowanceAmount  Decimal  @default(0) @map("allowance_amount") @db.Decimal(15, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
 
   @@index([tenantId, country])
   @@map("tax_tables")
@@ -2537,16 +2537,16 @@ model Workflow {
 }
 
 model WorkflowStep {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  workflowId   String   @map("workflow_id")
-  stepOrder    Int      @map("step_order")
-  actionType   String   @map("action_type") // APPROVAL, NOTIFICATION
-  assigneeRole String   @map("assignee_role")
-  slaLimitHours Int?     @map("sla_limit_hours")
-  backupAssigneeRole String? @map("backup_assignee_role")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  workflowId         String   @map("workflow_id")
+  stepOrder          Int      @map("step_order")
+  actionType         String   @map("action_type") // APPROVAL, NOTIFICATION
+  assigneeRole       String   @map("assignee_role")
+  slaLimitHours      Int?     @map("sla_limit_hours")
+  backupAssigneeRole String?  @map("backup_assignee_role")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   workflow       Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   approvalChains ApprovalChain[]
@@ -2556,18 +2556,18 @@ model WorkflowStep {
 }
 
 model ApprovalChain {
-  id         String    @id @default(cuid())
-  tenantId   String    @map("tenant_id")
-  entityType String    @map("entity_type") // "PurchaseOrder", "Invoice", "LeaveRequest"
-  entityId   String    @map("entity_id")
-  stepId     String    @map("step_id")
-  status     String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  actionBy   String?   @map("action_by")
-  actionAt   DateTime? @map("action_at")
-  comments   String?
-  delegatedRole String? @map("delegated_role")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  entityType    String    @map("entity_type") // "PurchaseOrder", "Invoice", "LeaveRequest"
+  entityId      String    @map("entity_id")
+  stepId        String    @map("step_id")
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  actionBy      String?   @map("action_by")
+  actionAt      DateTime? @map("action_at")
+  comments      String?
+  delegatedRole String?   @map("delegated_role")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   step WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
 
@@ -3076,18 +3076,18 @@ model PreventativeMaintenance {
 // ════════════════════════════════════════════════
 
 model ApiKey {
-  id        String    @id @default(cuid())
-  tenantId  String    @map("tenant_id")
-  name      String
-  hashedKey String    @unique @map("hashed_key")
-  prefix    String
-  rateLimit Int       @default(60) @map("rate_limit") // Requests per min
-  status    String    @default("ACTIVE") // ACTIVE, REVOKED
-  apiScopes String?   @map("api_scopes")
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  hashedKey   String    @unique @map("hashed_key")
+  prefix      String
+  rateLimit   Int       @default(60) @map("rate_limit") // Requests per min
+  status      String    @default("ACTIVE") // ACTIVE, REVOKED
+  apiScopes   String?   @map("api_scopes")
   ipWhitelist String?   @map("ip_whitelist")
-  expiresAt DateTime? @map("expires_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@map("api_keys")
@@ -3228,21 +3228,21 @@ model InstalledApp {
 // ════════════════════════════════════════════════
 
 model ExpenseReport {
-  id            String    @id @default(cuid())
-  tenantId      String    @map("tenant_id")
-  orgId         String    @map("org_id")
-  employeeId    String    @map("employee_id")
-  reportNumber  String    @map("report_number")
-  title         String
-  description   String?
-  totalAmount   Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
-  status        String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REIMBURSED, REJECTED
-  approvedBy    String?   @map("approved_by")
-  approvedAt    DateTime? @map("approved_at")
-  paidAt        DateTime? @map("paid_at")
-  createdBy     String?   @map("created_by")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  orgId        String    @map("org_id")
+  employeeId   String    @map("employee_id")
+  reportNumber String    @map("report_number")
+  title        String
+  description  String?
+  totalAmount  Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
+  status       String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REIMBURSED, REJECTED
+  approvedBy   String?   @map("approved_by")
+  approvedAt   DateTime? @map("approved_at")
+  paidAt       DateTime? @map("paid_at")
+  createdBy    String?   @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   items ExpenseReportItem[]
 
@@ -3252,16 +3252,16 @@ model ExpenseReport {
 }
 
 model ExpenseReportItem {
-  id             String  @id @default(cuid())
-  tenantId       String  @map("tenant_id")
-  expenseReportId String @map("expense_report_id")
-  category       String  // TRAVEL, MEALS, OFFICE, UTILITIES, OTHER
-  description    String
-  amount         Decimal @db.Decimal(15, 2)
-  taxAmount      Decimal @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  receiptUrl     String? @map("receipt_url")
-  expenseDate    DateTime @map("expense_date")
-  billable       Boolean @default(false)
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  expenseReportId String   @map("expense_report_id")
+  category        String // TRAVEL, MEALS, OFFICE, UTILITIES, OTHER
+  description     String
+  amount          Decimal  @db.Decimal(15, 2)
+  taxAmount       Decimal  @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  receiptUrl      String?  @map("receipt_url")
+  expenseDate     DateTime @map("expense_date")
+  billable        Boolean  @default(false)
 
   expenseReport ExpenseReport @relation(fields: [expenseReportId], references: [id], onDelete: Cascade)
 
@@ -3290,18 +3290,18 @@ model RevenueSchedule {
 }
 
 model ConsolidationRun {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  runDate        DateTime @default(now()) @map("run_date")
-  periodStart    DateTime @map("period_start")
-  periodEnd      DateTime @map("period_end")
-  status         String   @default("DRAFT") // DRAFT, COMPLETED
-  totalAssets    Decimal  @default(0) @map("total_assets") @db.Decimal(15, 2)
-  totalLiabilities Decimal @default(0) @map("total_liabilities") @db.Decimal(15, 2)
-  totalEquity    Decimal  @default(0) @map("total_equity") @db.Decimal(15, 2)
-  totalRevenue   Decimal  @default(0) @map("total_revenue") @db.Decimal(15, 2)
-  totalExpenses  Decimal  @default(0) @map("total_expenses") @db.Decimal(15, 2)
-  createdAt      DateTime @default(now()) @map("created_at")
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  runDate          DateTime @default(now()) @map("run_date")
+  periodStart      DateTime @map("period_start")
+  periodEnd        DateTime @map("period_end")
+  status           String   @default("DRAFT") // DRAFT, COMPLETED
+  totalAssets      Decimal  @default(0) @map("total_assets") @db.Decimal(15, 2)
+  totalLiabilities Decimal  @default(0) @map("total_liabilities") @db.Decimal(15, 2)
+  totalEquity      Decimal  @default(0) @map("total_equity") @db.Decimal(15, 2)
+  totalRevenue     Decimal  @default(0) @map("total_revenue") @db.Decimal(15, 2)
+  totalExpenses    Decimal  @default(0) @map("total_expenses") @db.Decimal(15, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
 
   eliminations ConsolidationElimination[]
 
@@ -3310,15 +3310,15 @@ model ConsolidationRun {
 }
 
 model ConsolidationElimination {
-  id                String  @id @default(cuid())
-  tenantId          String  @map("tenant_id")
-  consolidationId   String  @map("consolidation_id")
-  fromOrgId         String  @map("from_org_id")
-  toOrgId           String  @map("to_org_id")
-  amount            Decimal @db.Decimal(15, 2)
-  accountType       String  @map("account_type") // REVENUE, EXPENSE, ASSET, LIABILITY
-  description       String?
-  createdAt         DateTime @default(now()) @map("created_at")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  consolidationId String   @map("consolidation_id")
+  fromOrgId       String   @map("from_org_id")
+  toOrgId         String   @map("to_org_id")
+  amount          Decimal  @db.Decimal(15, 2)
+  accountType     String   @map("account_type") // REVENUE, EXPENSE, ASSET, LIABILITY
+  description     String?
+  createdAt       DateTime @default(now()) @map("created_at")
 
   consolidation ConsolidationRun @relation(fields: [consolidationId], references: [id], onDelete: Cascade)
 
@@ -3331,7 +3331,7 @@ model FinanceAuditLog {
   tenantId   String   @map("tenant_id")
   entityType String   @map("entity_type") // Invoice, Payment, Journal, Account
   entityId   String   @map("entity_id")
-  action     String   // CREATE, UPDATE, DELETE, APPROVE, REJECT
+  action     String // CREATE, UPDATE, DELETE, APPROVE, REJECT
   changes    Json?
   userId     String   @map("user_id")
   ipAddress  String?  @map("ip_address")
@@ -3687,21 +3687,21 @@ model StockLedgerEntry {
 }
 
 model StockEntry {
-  id              String           @id @default(cuid())
-  tenantId        String           @map("tenant_id")
-  orgId           String           @map("org_id")
-  entryNumber     String           @map("entry_number")
-  purpose         String           @default("MATERIAL_TRANSFER") // MATERIAL_RECEIPT, MATERIAL_ISSUE, MATERIAL_TRANSFER
-  postingDate     DateTime         @default(now()) @map("posting_date")
-  status          String           @default("DRAFT") // DRAFT, SUBMITTED, CANCELLED
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  entryNumber     String   @map("entry_number")
+  purpose         String   @default("MATERIAL_TRANSFER") // MATERIAL_RECEIPT, MATERIAL_ISSUE, MATERIAL_TRANSFER
+  postingDate     DateTime @default(now()) @map("posting_date")
+  status          String   @default("DRAFT") // DRAFT, SUBMITTED, CANCELLED
   remarks         String?
-  fromWarehouseId String?          @map("from_warehouse_id")
-  toWarehouseId   String?          @map("to_warehouse_id")
-  createdBy       String?          @map("created_by")
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  fromWarehouseId String?  @map("from_warehouse_id")
+  toWarehouseId   String?  @map("to_warehouse_id")
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  items           StockEntryItem[]
+  items StockEntryItem[]
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -3709,18 +3709,18 @@ model StockEntry {
 }
 
 model StockEntryItem {
-  id            String     @id @default(cuid())
-  tenantId      String     @map("tenant_id")
-  stockEntryId  String     @map("stock_entry_id")
-  productId     String     @map("product_id")
-  qty           Decimal    @db.Decimal(15, 3)
-  valuationRate Decimal    @map("valuation_rate") @db.Decimal(15, 2)
-  amount        Decimal    @db.Decimal(15, 2)
-  batchNumber   String?    @map("batch_number")
-  serialNumber  String?    @map("serial_number")
+  id            String  @id @default(cuid())
+  tenantId      String  @map("tenant_id")
+  stockEntryId  String  @map("stock_entry_id")
+  productId     String  @map("product_id")
+  qty           Decimal @db.Decimal(15, 3)
+  valuationRate Decimal @map("valuation_rate") @db.Decimal(15, 2)
+  amount        Decimal @db.Decimal(15, 2)
+  batchNumber   String? @map("batch_number")
+  serialNumber  String? @map("serial_number")
 
-  stockEntry    StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
-  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([stockEntryId])
@@ -3745,7 +3745,7 @@ model QualityInspection {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, orgId, inspectionNumber])
   @@index([tenantId])
@@ -3757,19 +3757,19 @@ model QualityInspection {
 // ════════════════════════════════════════════════
 
 model Campaign {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  orgId        String    @map("org_id")
-  name         String
-  status       String    @default("PLANNED") // PLANNED, ACTIVE, COMPLETED, CANCELLED
-  type         String    @default("EMAIL") // EMAIL, SOCIAL, SEARCH, COLD_CALL, EVENT
-  budget       Decimal   @default(0) @db.Decimal(15, 2)
-  actualCost   Decimal   @default(0) @map("actual_cost") @db.Decimal(15, 2)
-  notes        String?
-  createdBy    String?   @map("created_by")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  orgId      String    @map("org_id")
+  name       String
+  status     String    @default("PLANNED") // PLANNED, ACTIVE, COMPLETED, CANCELLED
+  type       String    @default("EMAIL") // EMAIL, SOCIAL, SEARCH, COLD_CALL, EVENT
+  budget     Decimal   @default(0) @db.Decimal(15, 2)
+  actualCost Decimal   @default(0) @map("actual_cost") @db.Decimal(15, 2)
+  notes      String?
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
   organization Organization @relation(fields: [orgId], references: [id])
   leads        Lead[]
@@ -3784,27 +3784,27 @@ model Campaign {
 // ════════════════════════════════════════════════
 
 model SalesReturn {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  orgId           String   @map("org_id")
-  customerId      String   @map("customer_id")
-  salesOrderId    String   @map("sales_order_id")
-  deliveryNoteId  String?  @map("delivery_note_id")
-  returnNumber    String   @map("return_number")
-  status          String   @default("DRAFT") // DRAFT, COMPLETED, CANCELLED
-  returnDate      DateTime @default(now()) @map("return_date")
-  subtotal        Decimal  @default(0) @db.Decimal(15, 2)
-  taxAmount       Decimal  @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  totalAmount     Decimal  @default(0) @map("total_amount") @db.Decimal(15, 2)
-  reason          String?
-  creditNoteId    String?  @map("credit_note_id")
-  createdBy       String?  @map("created_by")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  orgId          String   @map("org_id")
+  customerId     String   @map("customer_id")
+  salesOrderId   String   @map("sales_order_id")
+  deliveryNoteId String?  @map("delivery_note_id")
+  returnNumber   String   @map("return_number")
+  status         String   @default("DRAFT") // DRAFT, COMPLETED, CANCELLED
+  returnDate     DateTime @default(now()) @map("return_date")
+  subtotal       Decimal  @default(0) @db.Decimal(15, 2)
+  taxAmount      Decimal  @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount    Decimal  @default(0) @map("total_amount") @db.Decimal(15, 2)
+  reason         String?
+  creditNoteId   String?  @map("credit_note_id")
+  createdBy      String?  @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [orgId], references: [id])
-  customer     Customer     @relation(fields: [customerId], references: [id])
-  salesOrder   SalesOrder   @relation(fields: [salesOrderId], references: [id])
+  organization Organization      @relation(fields: [orgId], references: [id])
+  customer     Customer          @relation(fields: [customerId], references: [id])
+  salesOrder   SalesOrder        @relation(fields: [salesOrderId], references: [id])
   lineItems    SalesReturnItem[]
 
   @@unique([tenantId, orgId, returnNumber])
@@ -3850,9 +3850,9 @@ model PurchaseReturn {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
-  organization  Organization  @relation(fields: [orgId], references: [id])
-  vendor        Vendor        @relation(fields: [vendorId], references: [id])
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  organization  Organization         @relation(fields: [orgId], references: [id])
+  vendor        Vendor               @relation(fields: [vendorId], references: [id])
+  purchaseOrder PurchaseOrder        @relation(fields: [purchaseOrderId], references: [id])
   lineItems     PurchaseReturnItem[]
 
   @@unique([tenantId, orgId, returnNumber])
@@ -3884,19 +3884,19 @@ model PurchaseReturnItem {
 // ════════════════════════════════════════════════
 
 model Workstation {
-  id                 String               @id @default(cuid())
-  tenantId           String               @map("tenant_id")
-  orgId              String               @map("org_id")
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  orgId              String   @map("org_id")
   name               String
   code               String
-  capacityHours      Decimal              @map("capacity_hours") @db.Decimal(10, 2)
-  hourlyOverheadRate Decimal              @map("hourly_overhead_rate") @db.Decimal(15, 2)
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
+  capacityHours      Decimal  @map("capacity_hours") @db.Decimal(10, 2)
+  hourlyOverheadRate Decimal  @map("hourly_overhead_rate") @db.Decimal(15, 2)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  workOrders         WorkOrder[]
-  downtimeLogs       MachineDowntimeLog[]
-  maintenance        MaintenanceRequest[]
+  workOrders   WorkOrder[]
+  downtimeLogs MachineDowntimeLog[]
+  maintenance  MaintenanceRequest[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -3904,11 +3904,11 @@ model Workstation {
 }
 
 model MRPRun {
-  id        String             @id @default(cuid())
-  tenantId  String             @map("tenant_id")
-  runDate   DateTime           @default(now()) @map("run_date")
-  status    String             @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
-  runBy     String?            @map("run_by")
+  id       String   @id @default(cuid())
+  tenantId String   @map("tenant_id")
+  runDate  DateTime @default(now()) @map("run_date")
+  status   String   @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  runBy    String?  @map("run_by")
 
   plannedItems MRPPlannedItem[]
 
@@ -3931,7 +3931,7 @@ model MRPPlannedItem {
   status              String   @default("PENDING") // PENDING, PROCESSED
   createdAt           DateTime @default(now()) @map("created_at")
 
-  mrpRun  MRPRun @relation(fields: [mrpRunId], references: [id], onDelete: Cascade)
+  mrpRun  MRPRun  @relation(fields: [mrpRunId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
   bom     BOM?    @relation(fields: [bomId], references: [id])
 
@@ -3957,19 +3957,19 @@ model QualityInspectionPlan {
 }
 
 model NonConformanceReport {
-  id                  String   @id @default(cuid())
-  tenantId            String   @map("tenant_id")
-  qualityInspectionId String?  @map("quality_inspection_id")
-  workOrderId         String?  @map("work_order_id")
-  productId           String   @map("product_id")
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id")
+  qualityInspectionId String?   @map("quality_inspection_id")
+  workOrderId         String?   @map("work_order_id")
+  productId           String    @map("product_id")
   title               String
   description         String?
-  disposition         String   @default("REWORK") // REWORK, SCRAP, ACCEPT_AS_IS, RETURN_TO_VENDOR
-  status              String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
-  loggedBy            String?  @map("logged_by")
-  resolvedBy          String?  @map("resolved_by")
+  disposition         String    @default("REWORK") // REWORK, SCRAP, ACCEPT_AS_IS, RETURN_TO_VENDOR
+  status              String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
+  loggedBy            String?   @map("logged_by")
+  resolvedBy          String?   @map("resolved_by")
   resolvedAt          DateTime? @map("resolved_at")
-  createdAt           DateTime @default(now()) @map("created_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
 
   workOrder WorkOrder? @relation(fields: [workOrderId], references: [id])
   product   Product    @relation(fields: [productId], references: [id])
@@ -3979,17 +3979,17 @@ model NonConformanceReport {
 }
 
 model MachineDowntimeLog {
-  id              String      @id @default(cuid())
-  tenantId        String      @map("tenant_id")
-  workstationId   String      @map("workstation_id")
-  downtimeCode    String      @map("downtime_code") // ELECTRICAL, MECHANICAL, TOOL_WEAR, NO_OPERATOR
-  startTime       DateTime    @map("start_time")
-  endTime         DateTime?   @map("end_time")
-  durationMinutes Int?        @map("duration_minutes")
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  workstationId   String    @map("workstation_id")
+  downtimeCode    String    @map("downtime_code") // ELECTRICAL, MECHANICAL, TOOL_WEAR, NO_OPERATOR
+  startTime       DateTime  @map("start_time")
+  endTime         DateTime? @map("end_time")
+  durationMinutes Int?      @map("duration_minutes")
   notes           String?
-  createdAt       DateTime    @default(now()) @map("created_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
-  workstation     Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+  workstation Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([workstationId])
@@ -3997,20 +3997,20 @@ model MachineDowntimeLog {
 }
 
 model MaintenanceRequest {
-  id            String      @id @default(cuid())
-  tenantId      String      @map("tenant_id")
-  workstationId String      @map("workstation_id")
-  type          String      @default("CORRECTIVE") // PREVENTIVE, CORRECTIVE
-  priority      String      @default("MEDIUM") // LOW, MEDIUM, HIGH
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  workstationId String    @map("workstation_id")
+  type          String    @default("CORRECTIVE") // PREVENTIVE, CORRECTIVE
+  priority      String    @default("MEDIUM") // LOW, MEDIUM, HIGH
   title         String
   description   String?
-  status        String      @default("REQUESTED") // REQUESTED, SCHEDULED, IN_PROGRESS, COMPLETED
-  assignedTo    String?     @map("assigned_to")
-  cost          Decimal?    @db.Decimal(15, 2)
-  createdAt     DateTime    @default(now()) @map("created_at")
-  completedAt   DateTime?   @map("completed_at")
+  status        String    @default("REQUESTED") // REQUESTED, SCHEDULED, IN_PROGRESS, COMPLETED
+  assignedTo    String?   @map("assigned_to")
+  cost          Decimal?  @db.Decimal(15, 2)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  completedAt   DateTime? @map("completed_at")
 
-  workstation   Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+  workstation Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([workstationId])
@@ -4030,10 +4030,309 @@ model SubcontractingOrder {
   deliveryDate DateTime? @map("delivery_date")
   createdAt    DateTime  @default(now()) @map("created_at")
 
-  vendor       Vendor    @relation(fields: [vendorId], references: [id])
-  product      Product   @relation(fields: [productId], references: [id])
-  bom          BOM?      @relation(fields: [bomId], references: [id])
+  vendor  Vendor  @relation(fields: [vendorId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  bom     BOM?    @relation(fields: [bomId], references: [id])
 
   @@index([tenantId])
   @@map("subcontracting_orders")
+}
+
+// ════════════════════════════════════════════════
+// BUILDER STUDIO — Custom Forms, Workflows, Dashboards, Modules, Automation
+// ════════════════════════════════════════════════
+
+model BuilderForm {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  slug        String
+  description String?
+  icon        String?
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  fields      Json     @default("[]") // Array of field definitions [{name, type, label, required, options}]
+  settings    Json     @default("{}") // Form settings: naming, permissions, etc.
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("builder_forms")
+}
+
+model BuilderWorkflow {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  docType     String?  @map("doc_type") // Which form/module this workflow applies to
+  status      String   @default("DRAFT") // DRAFT, ACTIVE, PAUSED
+  trigger     String   @default("SUBMIT") // SUBMIT, CREATE, UPDATE, MANUAL
+  nodes       Json     @default("[]") // Workflow graph nodes [{id, type, label, approver, position}]
+  edges       Json     @default("[]") // Connections between nodes [{from, to, condition}]
+  settings    Json     @default("{}") // Auto-approve rules, SLA, etc.
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("builder_workflows")
+}
+
+model BuilderDashboard {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  icon        String?
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED
+  widgets     Json     @default("[]") // Array of widgets [{type, title, dataSource, chartType, position, size}]
+  layout      Json     @default("{}") // Grid layout config
+  refreshRate Int      @default(300) @map("refresh_rate") // Auto-refresh seconds
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("builder_dashboards")
+}
+
+model BuilderModule {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  name          String
+  slug          String
+  description   String?
+  icon          String?
+  color         String?
+  status        String   @default("DRAFT") // DRAFT, ACTIVE, ARCHIVED
+  entities      Json     @default("[]") // Array of entity schemas [{name, fields, relationships}]
+  relationships Json     @default("[]") // Cross-entity relationships [{from, to, type}]
+  permissions   Json     @default("{}") // Module-level RBAC configuration
+  createdBy     String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("builder_modules")
+}
+
+model AutomationRule {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  name          String
+  description   String?
+  trigger       String // e.g. "record.created", "schedule.daily", "form.submitted"
+  triggerConfig Json      @default("{}") @map("trigger_config") // Trigger-specific configuration
+  conditions    Json      @default("[]") // Array of conditions [{field, operator, value}]
+  actions       Json      @default("[]") // Array of actions [{type, config}]
+  status        String    @default("DRAFT") // DRAFT, ACTIVE, PAUSED
+  runCount      Int       @default(0) @map("run_count")
+  lastRunAt     DateTime? @map("last_run_at")
+  avgExecMs     Int?      @map("avg_exec_ms") // Average execution time in milliseconds
+  settings      Json      @default("{}") // runOnce, logExecution, haltOnError
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("automation_rules")
+}
+
+model DataImportJob {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  name          String
+  targetModel   String    @map("target_model") // Which Prisma model to import into
+  fileName      String    @map("file_name")
+  fileSize      Int       @map("file_size") // In bytes
+  totalRows     Int       @default(0) @map("total_rows")
+  importedRows  Int       @default(0) @map("imported_rows")
+  failedRows    Int       @default(0) @map("failed_rows")
+  columnMapping Json      @default("{}") @map("column_mapping") // {csvColumn: dbColumn}
+  status        String    @default("PENDING") // PENDING, VALIDATING, IMPORTING, COMPLETED, FAILED
+  errorLog      Json      @default("[]") @map("error_log") // Array of row-level errors
+  startedAt     DateTime? @map("started_at")
+  completedAt   DateTime? @map("completed_at")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@map("data_import_jobs")
+}
+
+model WebPage {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  name       String
+  slug       String
+  status     String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  sections   Json     @default("[]") // Array of page sections [{id, type, content, settings}]
+  metaTitle  String?  @map("meta_title")
+  metaDesc   String?  @map("meta_desc")
+  ogImage    String?  @map("og_image")
+  visibility String   @default("PUBLIC") // PUBLIC, UNLISTED, PASSWORD_PROTECTED
+  sortOrder  Int      @default(0) @map("sort_order")
+  visits     Int      @default(0)
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("web_pages")
+}
+
+model BlogPost {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  title         String
+  slug          String
+  content       String?   @db.Text
+  excerpt       String?
+  category      String    @default("General")
+  tags          Json      @default("[]") // Array of tag strings
+  author        String?
+  status        String    @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  featuredImage String?   @map("featured_image")
+  metaTitle     String?   @map("meta_title")
+  metaDesc      String?   @map("meta_desc")
+  readTime      String?   @map("read_time")
+  views         Int       @default(0)
+  publishedAt   DateTime? @map("published_at")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("blog_posts")
+}
+
+model WebAsset {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  name       String
+  url        String
+  type       String   @default("IMAGE") // IMAGE, DOCUMENT, VIDEO
+  sizeBytes  Int      @default(0) @map("size_bytes")
+  uploadedBy String?  @map("uploaded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("web_assets")
+}
+
+model WebTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  htmlContent String?  @map("html_content") @db.Text
+  cssContent  String?  @map("css_content") @db.Text
+  status      String   @default("DRAFT")
+  author      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("web_templates")
+}
+
+model WebMenu {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  location  String   @default("HEADER") // HEADER, FOOTER, SIDEBAR
+  items     Json // Array of { label, url, order }
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("web_menus")
+}
+
+model WebSeo {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  path        String // URL path this applies to
+  title       String
+  description String?
+  keywords    String?
+  ogImage     String?  @map("og_image")
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, path])
+  @@map("web_seo")
+}
+
+// ════════════════════════════════════════════════
+// BUILDER STUDIO MODULE
+// ════════════════════════════════════════════════
+
+model SchemaRegistry {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  module      String // e.g., "crm", "hr", "custom"
+  name        String // e.g., "Vehicle Maintenance"
+  slug        String // e.g., "vehicle_maintenance"
+  description String?
+  isCustom    Boolean  @default(true) @map("is_custom")
+  fields      Json     @default("[]") // Definition of fields/columns
+  settings    Json     @default("{}") // RBAC, naming series, etc.
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  pageRegistries PageRegistry[]
+  customRecords  CustomRecord[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, module])
+  @@map("schema_registries")
+}
+
+model PageRegistry {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  schemaId  String?  @map("schema_id")
+  module    String // e.g., "crm"
+  slug      String // Unique URL path segment
+  title     String
+  type      String   @default("FORM") // FORM, LIST, DASHBOARD, REPORT
+  layout    Json     @default("[]") // The JSON DOM (fields, grids, sections)
+  history   Json[]   @default([]) // Array of previous layouts for rollback
+  status    String   @default("DRAFT") // DRAFT, PUBLISHED
+  isCustom  Boolean  @default(true) @map("is_custom")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  schemaRegistry SchemaRegistry? @relation(fields: [schemaId], references: [id])
+
+  @@unique([tenantId, module, slug])
+  @@index([tenantId])
+  @@map("page_registries")
+}
+
+model CustomRecord {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  schemaId  String   @map("schema_id")
+  data      Json     @default("{}") // The actual submitted user data
+  status    String   @default("ACTIVE")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  schemaRegistry SchemaRegistry @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, schemaId])
+  @@index([tenantId, createdAt])
+  @@map("custom_records")
 }

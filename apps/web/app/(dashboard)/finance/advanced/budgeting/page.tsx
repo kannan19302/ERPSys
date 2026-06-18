@@ -57,9 +57,9 @@ export default function BudgetingPage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/forecast-scenarios', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('http://localhost:3001/api/v1/advanced-finance/accounts', { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      if (budRes.ok) setBudgets(await budRes.json());
-      if (scnRes.ok) setScenarios(await scnRes.json());
-      if (accRes.ok) setAccounts(await accRes.json());
+      if (budRes.ok) setBudgets(await budRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (scnRes.ok) setScenarios(await scnRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (accRes.ok) setAccounts(await accRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch (e) {
       console.error(e);
     } finally {

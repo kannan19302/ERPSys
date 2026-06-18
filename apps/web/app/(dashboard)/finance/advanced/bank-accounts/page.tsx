@@ -45,7 +45,7 @@ export default function BankAccountsPage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/accounts', { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
-      if (banksRes.ok) setBankAccounts(await banksRes.json());
+      if (banksRes.ok) setBankAccounts(await banksRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (glRes.ok) {
         const data = await glRes.json();
         const assetAccounts = (data as GLAccount[]).filter(a => a.type === 'ASSET');

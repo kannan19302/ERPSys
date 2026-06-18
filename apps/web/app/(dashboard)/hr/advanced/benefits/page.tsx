@@ -56,9 +56,9 @@ export default function BenefitsPage() {
         fetch('/api/v1/advanced-hr/benefits/enrollments', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      if (schRes.ok) setSchemes(await schRes.json());
-      if (enrRes.ok) setEnrollments(await enrRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (schRes.ok) setSchemes(await schRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (enrRes.ok) setEnrollments(await enrRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

@@ -7,10 +7,8 @@ import { ProcurementService } from './procurement.service';
 import {
   CreatePurchaseOrderInput,
   CreatePurchaseReceiptInput,
-  UpdatePurchaseOrderStatusInput,
   CreateRFQInput,
   CreateSupplierQuotationInput,
-  UpdateSupplierQuotationStatusInput,
   CreatePurchaseReturnInput,
 } from '@unerp/shared';
 
@@ -53,7 +51,7 @@ export class ProcurementController {
   async updatePurchaseOrderStatus(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: UpdatePurchaseOrderStatusInput,
+    @Body() dto: { status: string },
   ): Promise<unknown> {
     return this.procurementService.updatePurchaseOrderStatus(req.user.tenantId, id, dto.status, req.user.userId || 'system');
   }
@@ -117,7 +115,7 @@ export class ProcurementController {
   async updateSupplierQuotationStatus(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: UpdateSupplierQuotationStatusInput,
+    @Body() dto: { status: string },
   ) {
     return this.procurementService.updateSupplierQuotationStatus(req.user.tenantId, id, dto.status);
   }

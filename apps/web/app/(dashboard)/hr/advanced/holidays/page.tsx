@@ -28,7 +28,7 @@ export default function HolidaysPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setHolidays(await res.json());
+        (async () => { const _d = await res.json(); setHolidays(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       }
     } catch {} finally {
       setLoading(false);

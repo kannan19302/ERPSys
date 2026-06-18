@@ -19,7 +19,7 @@ interface AuthenticatedRequest extends Request {
 @Controller('supply-chain')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class SupplyChainController {
-  constructor(private readonly supplyChainService: SupplyChainService) {}
+  constructor(private readonly supplyChainService: SupplyChainService) { }
 
   @Get('shipments')
   @Permissions('supply-chain.shipment.read')

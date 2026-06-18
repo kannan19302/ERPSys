@@ -58,7 +58,7 @@ export default function PurchaseReceiptsPage() {
       ]);
 
       if (receiptRes.ok) {
-        setReceipts(await receiptRes.json());
+        setReceipts(await receiptRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       }
       if (poRes.ok) {
         const activePos: PurchaseOrder[] = await poRes.json();
@@ -66,7 +66,7 @@ export default function PurchaseReceiptsPage() {
       }
       if (whRes.ok) {
         const whs = await whRes.json();
-        setWarehouses(whs);
+        setWarehouses(Array.isArray(whs) ? whs : (whs?.data || []));
         if (whs.length > 0) setSelectedWarehouse(whs[0].id);
       }
     } catch {

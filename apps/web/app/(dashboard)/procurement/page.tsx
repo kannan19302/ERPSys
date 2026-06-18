@@ -52,8 +52,8 @@ export default function ProcurementDashboard() {
         fetch('/api/v1/crm/vendors', { headers })
       ]);
 
-      if (poRes.ok) setPos(await poRes.json());
-      if (rfqRes.ok) setRfqs(await rfqRes.json());
+      if (poRes.ok) setPos(await poRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (rfqRes.ok) setRfqs(await rfqRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (vendorRes.ok) {
         const v = await vendorRes.json();
         setVendorsCount(v.length);

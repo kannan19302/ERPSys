@@ -63,7 +63,7 @@ export default function DeliveryNotesPage() {
     try {
       const res = await fetch('/api/v1/sales/delivery-notes', { headers });
       if (res.ok) {
-        setDeliveryNotes(await res.json());
+        (async () => { const _d = await res.json(); setDeliveryNotes(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       } else {
         throw new Error();
       }

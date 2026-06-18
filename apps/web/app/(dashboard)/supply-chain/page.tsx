@@ -53,7 +53,7 @@ export default function SupplyChainPage() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setShipments(data);
+      setShipments(Array.isArray(data) ? data : (data?.data || []));
     } catch {
       setError('Serving local mock fallback registry.');
       setShipments([

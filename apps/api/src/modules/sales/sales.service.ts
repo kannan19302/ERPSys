@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class SalesService {
-  constructor(private readonly eventEmitter?: EventEmitter2) {}
+  constructor(private readonly eventEmitter?: EventEmitter2) { }
 
   // ─── QUOTATION METHODS ─────────────────────────────
 
@@ -199,7 +199,7 @@ export class SalesService {
     // B2B Credit Limit Check
     if (salesChannel === 'B2B' && customer.creditLimit !== undefined && customer.creditLimit !== null) {
       const creditLimit = Number(customer.creditLimit);
-      
+
       const unpaidInvoices = await prisma.invoice.findMany({
         where: {
           tenantId,
@@ -325,7 +325,7 @@ export class SalesService {
     if (!so) throw new NotFoundException('Sales order not found');
 
     const newPaymentStatus = amount >= Number(so.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
-    
+
     const updateData: Prisma.SalesOrderUpdateInput = {
       paymentStatus: newPaymentStatus,
       paymentMethod: method,
@@ -609,8 +609,10 @@ export class SalesService {
       // 5. Emit stock restock event
       if (this.eventEmitter) {
         let whId = 'WH-MAIN';
-        if (dto.deliveryNoteId) {
-          const dnObj = await tx.deliveryNote.findFirst({ where: { id: dto.deliveryNoteId } });
+        // deliveryNoteId is optional on the return DTO
+        const dnId = (dto as any).deliveryNoteId;
+        if (dnId) {
+          const dnObj = await tx.deliveryNote.findFirst({ where: { id: dnId } });
           if (dnObj && dnObj.warehouseId) {
             whId = dnObj.warehouseId;
           }

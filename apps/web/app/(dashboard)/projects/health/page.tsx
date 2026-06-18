@@ -32,7 +32,7 @@ export default function ProjectHealthPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setProjects(data);
+      setProjects(Array.isArray(data) ? data : (data?.data || []));
         if (data.length > 0) {
           fetchProjectDetails(data[0].id);
         }

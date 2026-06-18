@@ -44,8 +44,8 @@ export default function SuccessionPage() {
         fetch('/api/v1/advanced-hr/succession', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (succRes.ok) setPlans(await succRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (succRes.ok) setPlans(await succRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

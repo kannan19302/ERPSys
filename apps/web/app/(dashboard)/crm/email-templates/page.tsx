@@ -19,7 +19,7 @@ export default function EmailTemplatesPage() {
         const token = localStorage.getItem('token');
         try {
             const res = await fetch('/api/v1/crm/email-templates', { headers: { Authorization: `Bearer ${token || ''}` } });
-            if (res.ok) setTemplates(await res.json()); else throw new Error();
+            if (res.ok) (async () => { const _d = await res.json(); setTemplates(Array.isArray(_d) ? _d : (_d?.data || [])); })(); else throw new Error();
         } catch {
             setTemplates([
                 { id: '1', name: 'Welcome Email', category: 'GENERAL', subject: 'Welcome {{customer.name}}!', body: 'Dear {{customer.name}}, welcome to our platform...', isActive: true },

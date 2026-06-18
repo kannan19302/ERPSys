@@ -32,7 +32,7 @@ export default function ActivitiesPage() {
         const token = localStorage.getItem('token');
         try {
             const res = await fetch('/api/v1/crm/activities', { headers: { Authorization: `Bearer ${token || ''}` } });
-            if (res.ok) setActivities(await res.json()); else throw new Error();
+            if (res.ok) (async () => { const _d = await res.json(); setActivities(Array.isArray(_d) ? _d : (_d?.data || [])); })(); else throw new Error();
         } catch {
             setActivities([
                 { id: '1', type: 'CALL', subject: 'Discussed arc reactor contract', description: 'Tony agreed to initial terms', createdAt: new Date().toISOString() },

@@ -1,4 +1,5 @@
 'use client';
+import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -56,6 +57,8 @@ const DEMO_FORM_FIELDS = [
 ];
 
 export default function ERPBuilderPage() {
+  const { data: MODULES_LIST_DB } = useBuilderData("modules", MODULES_LIST);
+
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'modules' | 'form-builder'>('modules');
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,7 +69,7 @@ export default function ERPBuilderPage() {
     { id: 'form-builder', label: 'Form Builder', icon: FileCode2 },
   ];
 
-  const filtered = MODULES_LIST.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filtered = MODULES_LIST_DB.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
@@ -87,7 +90,7 @@ export default function ERPBuilderPage() {
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder')}>
             ← Back to Builder
           </button>
-          <button className="frappe-btn frappe-btn-primary">
+          <button onClick={() => { /* Create new form */ }} className="frappe-btn frappe-btn-primary">
             <PlusCircle size={15} />
             <span>New Module</span>
           </button>
@@ -197,13 +200,13 @@ export default function ERPBuilderPage() {
                     <Edit3 size={13} />
                     <span>Edit</span>
                   </button>
-                  <button
+                  <button onClick={() => { /* Edit item */ }}
                     className="frappe-btn frappe-btn-secondary"
                     style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}
                   >
                     <Eye size={13} />
                   </button>
-                  <button
+                  <button onClick={() => { /* Delete item */ }}
                     className="frappe-btn"
                     style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}
                   >
@@ -257,8 +260,8 @@ export default function ERPBuilderPage() {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                <button className="frappe-btn frappe-btn-secondary">Preview</button>
-                <button className="frappe-btn frappe-btn-primary">
+                <button onClick={() => { /* Preview form */ }} className="frappe-btn frappe-btn-secondary">Preview</button>
+                <button onClick={() => { /* Publish form */ }} className="frappe-btn frappe-btn-primary">
                   <CheckCircle size={14} />
                   <span>Publish</span>
                 </button>

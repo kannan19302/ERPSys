@@ -71,7 +71,15 @@ interface SidebarItem {
 }
 
 const getAppSpecificNavigation = (pathname: string): { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } => {
-  if (pathname.startsWith('/finance')) {
+  let effectivePathname = pathname;
+  if (pathname.startsWith('/app/')) {
+    const parts = pathname.split('/');
+    if (parts[2]) {
+      effectivePathname = '/' + parts[2];
+    }
+  }
+
+  if (effectivePathname.startsWith('/finance')) {
     return {
       title: 'Finance & Accounting',
       icon: CreditCard,
@@ -557,6 +565,58 @@ const GLOBAL_SEARCH_ITEMS = [
 
 function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] }; pathname: string; collapsed: boolean }) {
   const searchParams = useSearchParams();
+  const [customPages, setCustomPages] = useState<any[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch('/api/v1/builder/page-registries', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+           const pages = await res.json();
+           if (isMounted) setCustomPages(Array.isArray(pages) ? pages : (pages?.data || []));
+        } else {
+           // fallback
+           const reg = localStorage.getItem('unerp_page_registry');
+           if (reg && isMounted) setCustomPages(JSON.parse(reg));
+        }
+      } catch {
+         const reg = localStorage.getItem('unerp_page_registry');
+         if (reg && isMounted) setCustomPages(JSON.parse(reg));
+      }
+    };
+    load();
+    window.addEventListener('unerp_page_registry_updated', load);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('unerp_page_registry_updated', load);
+    };
+  }, []);
+
+  const enhancedItems = React.useMemo(() => {
+    const activeModulePrefix = pathname.split('/')[1];
+    const moduleCustomPages = customPages.filter(p => p.module.toLowerCase() === activeModulePrefix?.toLowerCase() && !p.isOverride);
+    
+    if (moduleCustomPages.length === 0) return appNav.items;
+
+    const newItems = [...appNav.items];
+    const customLinks = moduleCustomPages.map(p => ({
+      name: p.title || p.pageName || 'Custom Page',
+      href: `/app/${p.module}/${p.slug}`,
+      icon: FileText
+    }));
+
+    newItems.push({
+      name: 'Custom Extensions',
+      isHeader: true,
+      items: customLinks
+    });
+    
+    return newItems;
+  }, [appNav.items, customPages, pathname]);
 
   const renderItem = (item: SidebarItem, isSub = false) => {
     if (item.isHeader) {
@@ -643,7 +703,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
 
   return (
     <>
-      {appNav.items.map(item => renderItem(item))}
+      {enhancedItems.map(item => renderItem(item))}
     </>
   );
 }

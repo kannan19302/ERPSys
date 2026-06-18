@@ -48,8 +48,8 @@ export default function BOMsPage() {
         fetch('http://localhost:3001/api/v1/manufacturing/boms', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('http://localhost:3001/api/v1/inventory/products', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (bomsRes.ok) setBoms(await bomsRes.json());
-      if (prodRes.ok) setProducts(await prodRes.json());
+      if (bomsRes.ok) setBoms(await bomsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (prodRes.ok) setProducts(await prodRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       // Ignored
     } finally {

@@ -38,8 +38,8 @@ export default function SkillsPage() {
         fetch('/api/v1/advanced-hr/skills/requirements', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/advanced-hr/skills/gap-analysis', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (reqRes.ok) setRequirements(await reqRes.json());
-      if (gapRes.ok) setReports(await gapRes.json());
+      if (reqRes.ok) setRequirements(await reqRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (gapRes.ok) setReports(await gapRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

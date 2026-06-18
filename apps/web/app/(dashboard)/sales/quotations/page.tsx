@@ -100,9 +100,9 @@ export default function QuotationsPage() {
         fetch('/api/v1/inventory/products', { headers })
       ]);
 
-      if (quotesRes.ok) setQuotes(await quotesRes.json());
-      if (customersRes.ok) setCustomers(await customersRes.json());
-      if (productsRes.ok) setProducts(await productsRes.json());
+      if (quotesRes.ok) setQuotes(await quotesRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (customersRes.ok) setCustomers(await customersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (productsRes.ok) setProducts(await productsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setQuotes([

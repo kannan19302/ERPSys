@@ -44,8 +44,8 @@ export default function AppraisalsPage() {
         fetch('/api/v1/advanced-hr/appraisals', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (appRes.ok) setAppraisals(await appRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (appRes.ok) setAppraisals(await appRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

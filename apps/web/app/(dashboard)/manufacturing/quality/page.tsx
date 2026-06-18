@@ -91,9 +91,9 @@ export default function QualityManagement() {
         fetch('http://localhost:3001/api/v1/inventory/products', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
-      if (plansRes.ok) setPlans(await plansRes.json());
-      if (ncrRes.ok) setNcrs(await ncrRes.json());
-      if (productsRes.ok) setProducts(await productsRes.json());
+      if (plansRes.ok) setPlans(await plansRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (ncrRes.ok) setNcrs(await ncrRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (productsRes.ok) setProducts(await productsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       // Ignored
     } finally {

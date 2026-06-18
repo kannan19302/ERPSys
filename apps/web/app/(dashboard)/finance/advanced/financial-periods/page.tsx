@@ -31,7 +31,7 @@ export default function FinancialPeriodsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setPeriods(data);
+      setPeriods(Array.isArray(data) ? data : (data?.data || []));
       }
     } catch (e) {
       console.error(e);

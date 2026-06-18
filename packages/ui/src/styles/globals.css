@@ -517,3 +517,243 @@ img {
 .shadow-md { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
 .shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* ─────────────────────────────────────────────────
+   BUILDER STUDIO — Enhanced UI Components
+   ───────────────────────────────────────────────── */
+
+/* ── Button Active / Pressed State ── */
+.frappe-btn:active {
+  transform: scale(0.97);
+  transition-duration: 50ms;
+}
+.frappe-btn:disabled {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ── Danger Button ── */
+.frappe-btn-danger {
+  background-color: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-border);
+}
+.frappe-btn-danger:hover {
+  background-color: var(--color-danger-light);
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
+}
+
+/* ── Icon-only Button ── */
+.frappe-btn-icon {
+  padding: var(--space-1) var(--space-2);
+  min-width: 28px;
+  min-height: 28px;
+  justify-content: center;
+}
+.frappe-btn-icon:hover {
+  background-color: var(--color-bg-hover);
+}
+
+/* ── Modal Overlay Animation ── */
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes modalFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.modal-overlay {
+  animation: modalFadeIn 150ms var(--ease-out) forwards;
+}
+.modal-card {
+  animation: modalSlideUp 200ms var(--ease-spring) forwards;
+}
+
+/* ── Toast Notification ── */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+.toast-container {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+.toast-item {
+  pointer-events: auto;
+  animation: toastSlideIn 300ms var(--ease-spring) forwards;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 280px;
+  max-width: 420px;
+}
+.toast-item.toast-success { border-left: 3px solid var(--color-success); }
+.toast-item.toast-error { border-left: 3px solid var(--color-danger); }
+.toast-item.toast-warning { border-left: 3px solid var(--color-warning); }
+.toast-item.toast-exiting {
+  animation: toastSlideOut 200ms var(--ease-in) forwards;
+}
+
+/* ── Delete Confirmation Inline ── */
+.delete-confirm-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  animation: fadeIn 150ms var(--ease-out);
+}
+.delete-confirm-bar .confirm-text {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Responsive Stat Grid ── */
+.builder-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ── Responsive Header ── */
+.builder-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+@media (max-width: 768px) {
+  .builder-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .builder-header > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}
+
+/* ── Responsive Table Wrapper ── */
+.builder-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.builder-table-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+
+/* ── Responsive Mode Cards ── */
+.builder-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: var(--space-4);
+}
+@media (max-width: 480px) {
+  .builder-mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Tab bar styling ── */
+.builder-tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.builder-tabs::-webkit-scrollbar { display: none; }
+.builder-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2.5) var(--space-4);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color var(--duration-fast), border-color var(--duration-fast);
+}
+.builder-tab:hover {
+  color: var(--color-text);
+}
+.builder-tab.active {
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ── Pill / Filter Toggle ── */
+.builder-pill {
+  padding: var(--space-1.5) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  white-space: nowrap;
+}
+.builder-pill:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+}
+.builder-pill.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: var(--weight-semibold);
+}
+

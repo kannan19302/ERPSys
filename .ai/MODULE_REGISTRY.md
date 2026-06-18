@@ -22,10 +22,10 @@
 | # | Module | Package Path | Status | Phase | Dependencies | Key Entities |
 |:--|:---|:---|:---|:---|:---|:---|
 | 1 | **Administration** | `apps/api/src/modules/admin` | 🟢 ACTIVE | 0 | auth, database | Tenant, User, Role, Permission, Setting |
-| 2 | **Finance & Accounting** | `apps/api/src/modules/finance` | 🟢 ACTIVE | 1 | admin, database | Account, Journal, Invoice, Payment, TaxRate |
-| 3 | **Human Resources** | `apps/api/src/modules/hr` | 🟢 ACTIVE | 1 | admin, finance | Employee, Department, Payroll, Leave, Attendance |
+| 2 | **Finance & Accounting** | `apps/api/src/modules/finance` | 🟢 ENHANCED | 1 | admin, database | Invoice, Payment (paginated, bulk ops, send/void, events, stats, KPI) |
+| 3 | **Human Resources** | `apps/api/src/modules/hr` | 🟢 ENHANCED | 1 | admin, finance | Employee (paginated, detail, update, bulk ops, events, stats, KPI), Department management |
 | 4 | **CRM** | `apps/api/src/modules/crm` | 🟢 ACTIVE | 1 | admin | Contact, Lead, Opportunity, Activity, Pipeline |
-| 5 | **Inventory & Warehouse** | `apps/api/src/modules/inventory` | 🟢 ACTIVE | 1 | admin | Product, Warehouse, StockEntry, Transfer, Adjustment |
+| 5 | **Inventory & Warehouse** | `apps/api/src/modules/inventory` | 🟢 ENHANCED | 1 | admin | Product (paginated, detail, update, bulk ops), Warehouse (full CRUD), Stock Levels, Inventory Stats |
 | 6 | **Procurement** | `apps/api/src/modules/procurement` | 🟢 ACTIVE | 2 | admin, finance, inventory, crm | Vendor, PurchaseOrder, PurchaseReceipt, RFQ, GoodsReceipt |
 | 7 | **Sales & Orders** | `apps/api/src/modules/sales` | 🟢 ACTIVE | 2 | admin, finance, inventory, crm | Quotation, SalesOrder, DeliveryNote, Return, SalesPipeline |
 | 8 | **Supply Chain** | `apps/api/src/modules/supply-chain` | 🟢 ACTIVE | 2 | inventory, procurement, sales | Shipment, Carrier, Route, DemandForecast |

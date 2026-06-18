@@ -61,7 +61,7 @@ export default function CampaignsPage() {
     try {
       const res = await fetch('/api/v1/crm/campaigns', { headers });
       if (res.ok) {
-        setCampaigns(await res.json());
+        (async () => { const _d = await res.json(); setCampaigns(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       } else {
         throw new Error();
       }

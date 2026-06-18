@@ -43,7 +43,7 @@ export default function VendorsPage() {
         headers: { Authorization: `Bearer ${token || ''}` }
       });
       if (!res.ok) throw new Error();
-      setVendors(await res.json());
+      (async () => { const _d = await res.json(); setVendors(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {
       setError('Serving local mock fallback registry.');
       setVendors([

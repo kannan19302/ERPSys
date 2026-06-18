@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
       }
 
       const data = await res.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : (data?.data || []));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not fetch user registry';
       setError(message);

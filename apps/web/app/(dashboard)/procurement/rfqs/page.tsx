@@ -61,8 +61,8 @@ export default function RFQsPage() {
         fetch('/api/v1/inventory/products', { headers })
       ]);
 
-      if (rfqRes.ok) setRfqs(await rfqRes.json());
-      if (prodRes.ok) setProducts(await prodRes.json());
+      if (rfqRes.ok) setRfqs(await rfqRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (prodRes.ok) setProducts(await prodRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setRfqs([

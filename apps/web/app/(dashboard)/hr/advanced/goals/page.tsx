@@ -48,7 +48,7 @@ export default function GoalsPage() {
         fetch('/api/v1/advanced-hr/goals', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (goalsRes.ok) setGoals(await goalsRes.json());
+      if (goalsRes.ok) setGoals(await goalsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (empRes.ok) setEmployees(await empRes.json());
     } catch {} finally { setLoading(false); }
   };

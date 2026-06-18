@@ -31,7 +31,7 @@ export default function TrainingsPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/v1/advanced-hr/trainings', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setTrainings(await res.json());
+      if (res.ok) (async () => { const _d = await res.json(); setTrainings(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {} finally {
       setLoading(false);
     }

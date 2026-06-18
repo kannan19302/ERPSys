@@ -18,7 +18,7 @@ export default function VendorsPage() {
         const token = localStorage.getItem('token');
         try {
             const res = await fetch('/api/v1/crm/vendors', { headers: { Authorization: `Bearer ${token || ''}` } });
-            if (res.ok) setVendors(await res.json()); else throw new Error();
+            if (res.ok) (async () => { const _d = await res.json(); setVendors(Array.isArray(_d) ? _d : (_d?.data || [])); })(); else throw new Error();
         } catch {
             setVendors([
                 { id: 'v1', name: 'Pym Particles Inc.', email: 'supply@pym.com', phone: '+1-555-0901', taxId: 'TX-901', paymentTerms: 30, status: 'ACTIVE' },

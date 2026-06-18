@@ -76,8 +76,8 @@ export default function PurchaseReturnsPage() {
         fetch('/api/v1/procurement/purchase-orders', { headers })
       ]);
 
-      if (returnsRes.ok) setReturns(await returnsRes.json());
-      if (ordersRes.ok) setOrders(await ordersRes.json());
+      if (returnsRes.ok) setReturns(await returnsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (ordersRes.ok) setOrders(await ordersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       // Mock data

@@ -63,10 +63,10 @@ export default function APAutomationPage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/bank-accounts', { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
-      if (schRes.ok) setSchedules(await schRes.json());
-      if (runRes.ok) setRuns(await runRes.json());
-      if (venRes.ok) setVendors(await venRes.json());
-      if (bankRes.ok) setBankAccounts(await bankRes.json());
+      if (schRes.ok) setSchedules(await schRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (runRes.ok) setRuns(await runRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (venRes.ok) setVendors(await venRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (bankRes.ok) setBankAccounts(await bankRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch (e) {
       console.error(e);
     } finally {

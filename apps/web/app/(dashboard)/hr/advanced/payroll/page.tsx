@@ -79,10 +79,10 @@ export default function PayrollPage() {
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/advanced-hr/tax-tables', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (salRes.ok) setSalaries(await salRes.json());
-      if (payRes.ok) setPayrollRuns(await payRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
-      if (taxRes.ok) setTaxTables(await taxRes.json());
+      if (salRes.ok) setSalaries(await salRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (payRes.ok) setPayrollRuns(await payRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (taxRes.ok) setTaxTables(await taxRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

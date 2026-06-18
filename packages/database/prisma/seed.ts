@@ -1674,8 +1674,10 @@ async function main() {
     });
 
     // Seed Quality Inspection
-    await prisma.qualityInspection.create({
-      data: {
+    await prisma.qualityInspection.upsert({
+      where: { tenantId_orgId_inspectionNumber: { tenantId: tenant.id, orgId: org.id, inspectionNumber: 'QI-LAP-001' } },
+      update: {},
+      create: {
         tenantId: tenant.id,
         orgId: org.id,
         inspectionNumber: 'QI-LAP-001',
@@ -1755,7 +1757,166 @@ async function main() {
     });
   }
 
-  console.log('✅ Database seeding complete!');
+  // === BUILDER STUDIO MODULE SEEDING ===
+  console.log('🌱 Seeding Builder Studio data...');
+
+  const builderForm = await prisma.builderForm.upsert({
+    where: { tenantId_slug: { tenantId: tenant.id, slug: 'employee-onboarding' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Employee Onboarding',
+      slug: 'employee-onboarding',
+      description: 'Standard onboarding checklist form',
+      status: 'PUBLISHED',
+      fields: JSON.stringify([
+        { name: 'firstName', type: 'text', label: 'First Name', required: true },
+        { name: 'lastName', type: 'text', label: 'Last Name', required: true },
+        { name: 'department', type: 'select', label: 'Department', required: true, options: ['Engineering', 'Sales', 'HR'] },
+      ]),
+    },
+  });
+
+  await prisma.builderWorkflow.create({
+    data: {
+      tenantId: tenant.id,
+      name: 'Leave Approval Workflow',
+      docType: 'LeaveRequest',
+      status: 'ACTIVE',
+      trigger: 'SUBMIT',
+      nodes: JSON.stringify([
+        { id: '1', type: 'start', label: 'Submitted' },
+        { id: '2', type: 'approval', label: 'Manager Approval' },
+        { id: '3', type: 'end', label: 'Approved' },
+      ]),
+      edges: JSON.stringify([
+        { from: '1', to: '2' },
+        { from: '2', to: '3' },
+      ]),
+    },
+  });
+
+  await prisma.builderDashboard.create({
+    data: {
+      tenantId: tenant.id,
+      name: 'Executive Overview',
+      description: 'High-level metrics for executives',
+      status: 'PUBLISHED',
+      widgets: JSON.stringify([
+        { type: 'kpi', title: 'Total Revenue', dataSource: 'Invoice', position: { x: 0, y: 0, w: 3, h: 2 } },
+        { type: 'chart', title: 'Sales Trend', dataSource: 'SalesOrder', chartType: 'line', position: { x: 3, y: 0, w: 9, h: 4 } },
+      ]),
+    },
+  });
+
+  await prisma.builderModule.upsert({
+    where: { tenantId_slug: { tenantId: tenant.id, slug: 'fleet-management' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Fleet Management',
+      slug: 'fleet-management',
+      description: 'Manage company vehicles and maintenance',
+      icon: 'Truck',
+      status: 'ACTIVE',
+      entities: JSON.stringify([
+        { name: 'Vehicle', fields: ['plateNumber', 'model', 'status'] },
+        { name: 'MaintenanceLog', fields: ['vehicleId', 'date', 'cost'] },
+      ]),
+    },
+  });
+
+  await prisma.automationRule.create({
+    data: {
+      tenantId: tenant.id,
+      name: 'Auto-assign Lead',
+      description: 'Assign leads from website to sales team',
+      trigger: 'lead.created',
+      status: 'ACTIVE',
+      conditions: JSON.stringify([{ field: 'source', operator: 'equals', value: 'Website' }]),
+      actions: JSON.stringify([{ type: 'assignTo', target: 'Sales Team' }]),
+    },
+  });
+
+  await prisma.webPage.upsert({
+    where: { tenantId_slug: { tenantId: tenant.id, slug: 'home' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Home Page',
+      slug: 'home',
+      status: 'PUBLISHED',
+      sections: JSON.stringify([
+        { type: 'hero', content: { title: 'Welcome to UniERP', subtitle: 'The modern way to run your business' } },
+        { type: 'features', content: { items: ['Fast', 'Secure', 'Customizable'] } },
+      ]),
+    },
+  });
+
+  await prisma.blogPost.upsert({
+    where: { tenantId_slug: { tenantId: tenant.id, slug: 'getting-started-with-unierp' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      title: 'Getting Started with UniERP',
+      slug: 'getting-started-with-unierp',
+      content: 'Welcome to your new ERP system. In this post...',
+      excerpt: 'Learn the basics of navigating and setting up UniERP.',
+      status: 'PUBLISHED',
+      author: 'Admin',
+      readTime: '5 min',
+    },
+  });
+
+  await prisma.webAsset.create({
+    data: {
+      tenantId: tenant.id,
+      name: 'hero-banner.jpg',
+      url: 'https://example.com/assets/hero-banner.jpg',
+      type: 'IMAGE',
+      sizeBytes: 1048576,
+      uploadedBy: 'Admin',
+    },
+  });
+
+  await prisma.webTemplate.create({
+    data: {
+      tenantId: tenant.id,
+      name: 'Standard Page Template',
+      description: 'Default layout for standard pages',
+      htmlContent: '<html><body><header></header><main>{{content}}</main><footer></footer></body></html>',
+      status: 'ACTIVE',
+      author: 'Admin',
+    },
+  });
+
+  await prisma.webMenu.create({
+    data: {
+      tenantId: tenant.id,
+      name: 'Main Navigation',
+      location: 'HEADER',
+      items: JSON.stringify([
+        { label: 'Home', url: '/', order: 1 },
+        { label: 'About', url: '/about', order: 2 },
+        { label: 'Products', url: '/products', order: 3 },
+      ]),
+    },
+  });
+
+  await prisma.webSeo.upsert({
+    where: { tenantId_path: { tenantId: tenant.id, path: '/' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      path: '/',
+      title: 'Home | UniERP',
+      description: 'Welcome to UniERP, the future of enterprise.',
+      keywords: 'erp, business, unierp',
+      ogImage: 'https://example.com/assets/og-home.jpg',
+    },
+  });
+
+  console.log('🚀 Database seeding complete!');
 }
 
 main()

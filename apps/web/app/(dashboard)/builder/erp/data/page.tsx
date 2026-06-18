@@ -1,295 +1,314 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Database,
-  Search,
   Upload,
+  Download,
+  Search,
+  ArrowLeft,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
-  ArrowRight,
-  FileText,
-  Table,
-  Columns,
+  AlertCircle,
+  Clock,
+  FileSpreadsheet,
+  Database,
+  ChevronDown,
+  ChevronRight,
+  Trash2,
   RefreshCw,
 } from 'lucide-react';
 
-const IMPORT_JOBS = [
-  { id: 1, name: 'Q1 Customer Import', module: 'CRM', records: 1240, status: 'Completed', date: '2 days ago', errors: 0 },
-  { id: 2, name: 'Product Catalog Update', module: 'Inventory', records: 386, status: 'Completed', date: '1 week ago', errors: 3 },
-  { id: 3, name: 'Employee Payroll Data', module: 'HR', records: 128, status: 'Failed', date: '2 weeks ago', errors: 14 },
-  { id: 4, name: 'Vendor Master Upload', module: 'Procurement', records: 95, status: 'Completed', date: '3 weeks ago', errors: 0 },
-];
+interface ImportJob {
+  id: string;
+  name: string;
+  targetModel: string;
+  fileName: string;
+  fileSize: number;
+  totalRows: number;
+  importedRows: number;
+  failedRows: number;
+  status: string;
+  errorLog: any[];
+  createdAt: string;
+  completedAt?: string;
+}
 
-const SAMPLE_COLUMNS = ['Customer Name', 'Email', 'Phone', 'Country', 'Annual Revenue', 'Industry', 'Account Manager', 'Status'];
-const ERP_FIELDS = ['name', 'email', 'phone', 'country', 'revenue', 'industry', 'assigned_to', 'status', '— Skip Field —'];
-
-const STATUS_COLORS: Record<string, { bg: string; text: string; icon: React.ComponentType<{ size?: number }> }> = {
-  Completed: { bg: 'var(--color-success-light)', text: 'var(--color-success)', icon: CheckCircle },
-  Failed: { bg: 'var(--color-danger-light)', text: 'var(--color-danger)', icon: XCircle },
-  Processing: { bg: 'var(--color-warning-light)', text: 'var(--color-warning)', icon: RefreshCw },
-};
-
-export default function ERPDataPage() {
+export default function DataImportPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'jobs' | 'mapper'>('jobs');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedModule, setSelectedModule] = useState('CRM');
-  const [mappings, setMappings] = useState<Record<string, string>>({
-    'Customer Name': 'name',
-    'Email': 'email',
-    'Phone': 'phone',
-    'Country': 'country',
-    'Annual Revenue': 'revenue',
-    'Industry': 'industry',
-    'Account Manager': 'assigned_to',
-    'Status': 'status',
-  });
-  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imports, setImports] = useState<ImportJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showWizard, setShowWizard] = useState(false);
+  const [step, setStep] = useState(1);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [targetModel, setTargetModel] = useState('customers');
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+  const [importName, setImportName] = useState('');
 
-  const filtered = IMPORT_JOBS.filter(j =>
-    j.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    j.module.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const MODELS = [
+    { value: 'customers', label: 'Customers' },
+    { value: 'vendors', label: 'Vendors' },
+    { value: 'products', label: 'Products' },
+    { value: 'employees', label: 'Employees' },
+    { value: 'invoices', label: 'Invoices' },
+    { value: 'contacts', label: 'Contacts' },
+    { value: 'leads', label: 'Leads' },
+    { value: 'opportunities', label: 'Opportunities' },
+  ];
+
+  const fetchImports = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/builder/data-imports', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setImports(Array.isArray(data) ? data : data.data || []);
+      }
+    } catch { /* ignore */ } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchImports();
+  }, []);
+
+  const handleStartImport = async () => {
+    if (!selectedFile || !importName) return;
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/builder/data-imports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: importName,
+          targetModel,
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          totalRows: 0,
+          columnMapping,
+        }),
+      });
+      if (res.ok) {
+        setShowWizard(false);
+        setSelectedFile(null);
+        setImportName('');
+        setStep(1);
+        fetchImports();
+      }
+    } catch { /* ignore */ }
+  };
+
+  const statusBadge = (status: string) => {
+    const colors: Record<string, { bg: string; color: string }> = {
+      COMPLETED: { bg: 'var(--color-success-light)', color: 'var(--color-success)' },
+      FAILED: { bg: 'var(--color-danger-light)', color: 'var(--color-danger)' },
+      IMPORTING: { bg: '#3b82f620', color: '#3b82f6' },
+      VALIDATING: { bg: '#f59e0b20', color: '#f59e0b' },
+      PENDING: { bg: '#64748b20', color: '#64748b' },
+    };
+    const c = colors[status] || { bg: '#64748b20', color: '#64748b' };
+    return <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px', background: c.bg, color: c.color }}>{status}</span>;
+  };
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div className="builder-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Database size={20} style={{ color: '#059669' }} />
+            <Upload size={20} style={{ color: '#059669' }} />
             <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Data Import & Mapper
+              Data Import
             </h1>
           </div>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Map CSV/Excel columns to ERP model fields, validate data, and bulk-import records
+            Import records from CSV/Excel files into any ERP module
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← ERP Builder
-          </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => setActiveTab('mapper')}>
-            <Upload size={15} />
-            <span>New Import</span>
+          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>← ERP Builder</button>
+          <button className="frappe-btn frappe-btn-primary" onClick={() => setShowWizard(true)}>
+            <Upload size={15} /> <span>New Import</span>
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-1)' }}>
-        {[
-          { id: 'jobs', label: 'Import History', icon: FileText },
-          { id: 'mapper', label: 'Column Mapper', icon: Columns },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-              padding: 'var(--space-2.5) var(--space-4)',
-              border: 'none', background: 'transparent', cursor: 'pointer',
-              fontSize: 'var(--text-sm)', fontWeight: activeTab === tab.id ? 'var(--weight-semibold)' : 'var(--weight-normal)',
-              color: activeTab === tab.id ? '#059669' : 'var(--color-text-secondary)',
-              borderBottom: activeTab === tab.id ? '2px solid #059669' : '2px solid transparent',
-              marginBottom: '-1px', transition: 'all var(--duration-fast)',
-            }}
+      {/* Import Wizard Modal */}
+      {showWizard && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setShowWizard(false)}
+        >
+          <div className="frappe-card" style={{ width: '560px', maxHeight: '80vh', overflow: 'auto', zIndex: 1001 }}
+            onClick={e => e.stopPropagation()}
           >
-            <tab.icon size={15} />
-            {tab.label}
-          </button>
+            <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>New Data Import</h3>
+                <button className="frappe-btn" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }} onClick={() => setShowWizard(false)}>×</button>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                {[1, 2, 3].map(s => (
+                  <div key={s} style={{ flex: 1, height: '4px', borderRadius: '2px', background: step >= s ? 'var(--color-primary)' : 'var(--color-border)' }} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--space-1.5)' }}>
+                <span style={{ fontSize: '11px', color: step >= 1 ? 'var(--color-primary)' : 'var(--color-text-tertiary)', fontWeight: step >= 1 ? 600 : 400 }}>Select File</span>
+                <span style={{ fontSize: '11px', color: step >= 2 ? 'var(--color-primary)' : 'var(--color-text-tertiary)', fontWeight: step >= 2 ? 600 : 400 }}>Map Columns</span>
+                <span style={{ fontSize: '11px', color: step >= 3 ? 'var(--color-primary)' : 'var(--color-text-tertiary)', fontWeight: step >= 3 ? 600 : 400 }}>Confirm</span>
+              </div>
+            </div>
+
+            <div style={{ padding: 'var(--space-4)' }}>
+              {step === 1 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Import Name</label>
+                    <input className="frappe-input" type="text" placeholder="e.g. Q1 Customer Import" value={importName} onChange={e => setImportName(e.target.value)} />
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Target Module</label>
+                    <select className="frappe-input" value={targetModel} onChange={e => setTargetModel(e.target.value)}>
+                      {MODELS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">CSV / Excel File</label>
+                    <div
+                      style={{ border: '2px dashed var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-6)', textAlign: 'center', cursor: 'pointer', transition: 'all var(--duration-fast)' }}
+                      onClick={() => fileInputRef.current?.click()}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'var(--color-primary-light)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = ''; }}
+                    >
+                      <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+                      {selectedFile ? (
+                        <div>
+                          <FileSpreadsheet size={32} style={{ color: 'var(--color-primary)', margin: '0 auto var(--space-2)', display: 'block' }} />
+                          <p style={{ fontWeight: 'var(--weight-semibold)', margin: 0 }}>{selectedFile.name}</p>
+                          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload size={32} style={{ color: 'var(--color-text-tertiary)', margin: '0 auto var(--space-2)', display: 'block', opacity: 0.4 }} />
+                          <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Click to select a CSV or Excel file</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                    <button className="frappe-btn frappe-btn-secondary" onClick={() => setShowWizard(false)}>Cancel</button>
+                    <button className="frappe-btn frappe-btn-primary" disabled={!selectedFile || !importName} onClick={() => setStep(2)}>Next: Map Columns</button>
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Map CSV columns to database fields:</p>
+                  {['name', 'email', 'phone', 'status'].map(col => (
+                    <div key={col} className="frappe-form-group" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <span style={{ fontSize: 'var(--text-xs)', width: '100px', color: 'var(--color-text-secondary)' }}>{col}</span>
+                      <ChevronRight size={12} style={{ color: 'var(--color-text-tertiary)' }} />
+                      <select className="frappe-input" value={columnMapping[col] || col} onChange={e => setColumnMapping({ ...columnMapping, [col]: e.target.value })}>
+                        <option value="">Skip column</option>
+                        <option value="name">Name</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="status">Status</option>
+                        <option value="notes">Notes</option>
+                        <option value="address">Address</option>
+                      </select>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <button className="frappe-btn frappe-btn-secondary" onClick={() => setStep(1)}>← Back</button>
+                    <button className="frappe-btn frappe-btn-primary" onClick={() => setStep(3)}>Next: Confirm</button>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                  <div style={{ background: 'var(--color-bg-elevated)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-2) 0' }}>Import Summary</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', fontSize: 'var(--text-xs)' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Name:</span><span>{importName}</span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Target:</span><span>{MODELS.find(m => m.value === targetModel)?.label}</span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>File:</span><span>{selectedFile?.name}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <button className="frappe-btn frappe-btn-secondary" onClick={() => setStep(2)}>← Back</button>
+                    <button className="frappe-btn frappe-btn-primary" onClick={handleStartImport}>
+                      <Upload size={14} /> <span>Start Import</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      <div className="builder-stats-grid">
+        {[
+          { label: 'Total Imports', value: imports.length.toString(), icon: Upload, color: '#059669' },
+          { label: 'Completed', value: imports.filter(i => i.status === 'COMPLETED').length.toString(), icon: CheckCircle, color: '#10b981' },
+          { label: 'Failed', value: imports.filter(i => i.status === 'FAILED').length.toString(), icon: AlertCircle, color: '#ef4444' },
+          { label: 'Total Rows', value: imports.reduce((a, i) => a + i.totalRows, 0).toLocaleString(), icon: Database, color: '#3b82f6' },
+        ].map(stat => (
+          <div key={stat.label} className="frappe-card" style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', background: `${stat.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <stat.icon size={20} style={{ color: stat.color }} />
+            </div>
+            <div>
+              <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{stat.value}</p>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{stat.label}</p>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Import Jobs */}
-      {activeTab === 'jobs' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ position: 'relative', maxWidth: '28rem' }}>
-            <Search size={15} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
-            <input className="frappe-input" type="text" placeholder="Search import jobs..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-8)' }} />
-          </div>
-
-          <div className="frappe-card" style={{ overflow: 'hidden', padding: 0 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--color-bg)', borderBottom: '2px solid var(--color-border)' }}>
-                  {['Import Name', 'Module', 'Records', 'Status', 'Date', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(job => {
-                  const sc = (STATUS_COLORS[job.status] ?? STATUS_COLORS['Processing'])!;
-                  const Icon = sc.icon;
-                  return (
-                    <tr key={job.id} style={{ borderBottom: '1px solid var(--color-border)' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                          <Table size={14} style={{ color: '#059669' }} />
-                          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{job.name}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{job.module}</span>
-                      </td>
-                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{job.records.toLocaleString()}</span>
-                        {job.errors > 0 && <span style={{ fontSize: '10px', marginLeft: 'var(--space-1)', color: 'var(--color-danger)' }}>{job.errors} errors</span>}
-                      </td>
-                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: sc.bg, color: sc.text }}>
-                          <Icon size={10} />
-                          {job.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{job.date}</span>
-                      </td>
-                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2.5)' }} onClick={() => setActiveTab('mapper')}>
-                          <RefreshCw size={12} />
-                          <span>Re-import</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Column Mapper */}
-      {activeTab === 'mapper' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-          {/* Step 1: Upload */}
-          <div className="frappe-card" style={{ padding: 'var(--space-5)' }}>
-            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4) 0', color: 'var(--color-text)' }}>
-              Step 1 — Upload File & Select Target Module
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-4)', alignItems: 'start' }}>
-              <div
-                onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
-                onDragLeave={() => setIsDragOver(false)}
-                onDrop={e => { e.preventDefault(); setIsDragOver(false); }}
-                style={{
-                  border: `2px dashed ${isDragOver ? '#059669' : 'var(--color-border)'}`,
-                  borderRadius: 'var(--radius-md)',
-                  padding: 'var(--space-8)',
-                  textAlign: 'center',
-                  background: isDragOver ? 'rgba(5,150,105,0.05)' : 'var(--color-bg)',
-                  cursor: 'pointer',
-                  transition: 'all var(--duration-fast)',
-                }}
+      {/* Import Jobs Table */}
+      <div className="frappe-card" style={{ overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+              {['Name', 'Target', 'File', 'Rows', 'Imported', 'Failed', 'Status', 'Date'].map(h => (
+                <th key={h} style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--color-bg-elevated)', whiteSpace: 'nowrap' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={8} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading...</td></tr>
+            ) : imports.length === 0 ? (
+              <tr><td colSpan={8} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                <Upload size={24} style={{ opacity: 0.3, margin: '0 auto var(--space-2)', display: 'block' }} />
+                No imports yet. Click "New Import" to start.
+              </td></tr>
+            ) : imports.map((imp, idx) => (
+              <tr key={imp.id} style={{ borderBottom: idx < imports.length - 1 ? '1px solid var(--color-border)' : 'none', transition: 'background var(--duration-fast)' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <Upload size={28} style={{ color: '#059669', margin: '0 auto var(--space-2)', display: 'block' }} />
-                <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-1) 0', color: 'var(--color-text)' }}>
-                  Drop your CSV or Excel file here
-                </p>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', margin: 0 }}>
-                  or click to browse — .csv, .xlsx up to 50MB
-                </p>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', minWidth: '200px' }}>
-                <div className="frappe-form-group" style={{ margin: 0 }}>
-                  <label className="frappe-label">Target ERP Module</label>
-                  <select className="frappe-input" value={selectedModule} onChange={e => setSelectedModule(e.target.value)}>
-                    {['CRM', 'Inventory', 'HR', 'Finance', 'Procurement', 'Sales'].map(m => (
-                      <option key={m}>{m}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="frappe-form-group" style={{ margin: 0 }}>
-                  <label className="frappe-label">Record Type</label>
-                  <select className="frappe-input">
-                    <option>Customer</option>
-                    <option>Contact</option>
-                    <option>Lead</option>
-                  </select>
-                </div>
-                <button className="frappe-btn frappe-btn-secondary" style={{ justifyContent: 'center' }}>
-                  <FileText size={14} />
-                  <span>Use Demo File</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 2: Column Mapping */}
-          <div className="frappe-card" style={{ padding: 'var(--space-5)' }}>
-            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4) 0', color: 'var(--color-text)' }}>
-              Step 2 — Map Columns to ERP Fields
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-              {['CSV Column', '', 'ERP Field', 'Validation'].map(h => (
-                <span key={h} style={{ fontSize: '10px', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
-              ))}
-            </div>
-            {SAMPLE_COLUMNS.map(col => {
-              const mapped = mappings[col] || '— Skip Field —';
-              const isSkipped = mapped === '— Skip Field —';
-              return (
-                <div key={col} style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr 1fr', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-2)', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', background: isSkipped ? 'transparent' : 'rgba(5,150,105,0.03)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: 'var(--text-xs)', color: 'var(--color-text)', fontFamily: 'monospace' }}>
-                    {col}
-                  </div>
-                  <ArrowRight size={14} style={{ color: isSkipped ? 'var(--color-text-tertiary)' : '#059669' }} />
-                  <select
-                    className="frappe-input"
-                    style={{ fontSize: 'var(--text-xs)' }}
-                    value={mapped}
-                    onChange={e => setMappings({ ...mappings, [col]: e.target.value })}
-                  >
-                    {ERP_FIELDS.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                  <span style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px', color: isSkipped ? 'var(--color-text-tertiary)' : '#059669' }}>
-                    {isSkipped ? <AlertTriangle size={11} /> : <CheckCircle size={11} />}
-                    {isSkipped ? 'Skipped' : 'Mapped'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Step 3: Validate & Import */}
-          <div className="frappe-card" style={{ padding: 'var(--space-5)' }}>
-            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4) 0', color: 'var(--color-text)' }}>
-              Step 3 — Validate & Import
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-              {[
-                { label: 'Total Rows', value: '1,240', color: 'var(--color-text)' },
-                { label: 'Valid Rows', value: '1,226', color: '#059669' },
-                { label: 'Rows with Errors', value: '14', color: 'var(--color-danger)' },
-              ].map(stat => (
-                <div key={stat.label} style={{ padding: 'var(--space-3)', background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', textAlign: 'center' }}>
-                  <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: stat.color }}>{stat.value}</p>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{stat.label}</p>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-              <button className="frappe-btn frappe-btn-secondary">
-                <AlertTriangle size={14} />
-                <span>Preview Errors</span>
-              </button>
-              <button className="frappe-btn frappe-btn-secondary">Test Import (10 rows)</button>
-              <button className="frappe-btn frappe-btn-primary" style={{ marginLeft: 'auto' }}>
-                <CheckCircle size={14} />
-                <span>Import {(1226).toLocaleString()} Valid Records</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>{imp.name}</td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)' }}><span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', background: '#3b82f620', color: '#3b82f6', fontWeight: 600 }}>{imp.targetModel}</span></td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{imp.fileName}</td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)' }}>{imp.totalRows}</td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-success)' }}>{imp.importedRows}</td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: imp.failedRows > 0 ? 'var(--color-danger)' : 'var(--color-text-secondary)' }}>{imp.failedRows}</td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{statusBadge(imp.status)}</td>
+                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{imp.createdAt ? new Date(imp.createdAt).toLocaleDateString() : 'N/A'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

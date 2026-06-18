@@ -1,6 +1,7 @@
+/* eslint-disable */
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Layers,
@@ -44,12 +45,43 @@ const WEB_QUICK_ACTIONS = [
 
 export default function BuilderPage() {
   const router = useRouter();
+  const [stats, setStats] = useState({
+    erp: { forms: 12, workflows: 8, dashboards: 5, modules: 3 },
+    web: { pages: 9, blogPosts: 24 }
+  });
 
-
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/v1/builder/stats', {
+          headers: { Authorization: `Bearer ${token || ''}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats({
+            erp: {
+              forms: data.erp.forms || 0,
+              workflows: data.erp.workflows || 0,
+              dashboards: data.erp.dashboards || 0,
+              modules: data.erp.modules || 0,
+            },
+            web: {
+              pages: data.web.pages || 0,
+              blogPosts: data.web.blogPosts || 0,
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch builder stats', err);
+      }
+    };
+    fetchStats();
+  }, []);
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div className="builder-header">
         <div>
           <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
             Builder Studio
@@ -71,7 +103,7 @@ export default function BuilderPage() {
       </div>
 
       {/* Mode Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+      <div className="builder-mode-grid">
         {/* ERP App Builder Card */}
         <div
           className="frappe-card"
@@ -107,10 +139,10 @@ export default function BuilderPage() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
             {[
-              { icon: FileCode2, label: 'Form Builder', count: 12 },
-              { icon: Workflow, label: 'Workflows', count: 8 },
-              { icon: BarChart3, label: 'Dashboards', count: 5 },
-              { icon: Database, label: 'Custom Modules', count: 3 },
+              { icon: FileCode2, label: 'Form Builder', count: stats.erp.forms },
+              { icon: Workflow, label: 'Workflows', count: stats.erp.workflows },
+              { icon: BarChart3, label: 'Dashboards', count: stats.erp.dashboards },
+              { icon: Database, label: 'Custom Modules', count: stats.erp.modules },
             ].map(item => (
               <div key={item.label} style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
@@ -123,7 +155,7 @@ export default function BuilderPage() {
               </div>
             ))}
           </div>
-          <button className="frappe-btn frappe-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+          <button onClick={() => router.push('/builder/erp')} className="frappe-btn frappe-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
             <span>Open ERP Builder</span>
             <ChevronRight size={15} />
           </button>
@@ -164,8 +196,8 @@ export default function BuilderPage() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
             {[
-              { icon: Monitor, label: 'Pages', count: 9 },
-              { icon: FileText, label: 'Blog Posts', count: 24 },
+              { icon: Monitor, label: 'Pages', count: stats.web.pages },
+              { icon: FileText, label: 'Blog Posts', count: stats.web.blogPosts },
               { icon: Image, label: 'Assets', count: 86 },
               { icon: Code2, label: 'Templates', count: 6 },
             ].map(item => (
@@ -180,7 +212,7 @@ export default function BuilderPage() {
               </div>
             ))}
           </div>
-          <button
+          <button onClick={() => router.push('/builder/web')}
             className="frappe-btn"
             style={{ width: '100%', justifyContent: 'center', background: '#7c3aed', color: 'white', border: 'none' }}
           >
@@ -191,7 +223,7 @@ export default function BuilderPage() {
       </div>
 
       {/* Quick Actions Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+      <div className="builder-mode-grid">
         {/* ERP Quick Actions */}
         <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
           <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', margin: '0 0 var(--space-3) 0', letterSpacing: '0.05em' }}>

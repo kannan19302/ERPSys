@@ -27,7 +27,7 @@ export default function CompliancePage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setChecks(await res.json());
+        (async () => { const _d = await res.json(); setChecks(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       }
     } catch {} finally {
       setLoading(false);
@@ -48,7 +48,7 @@ export default function CompliancePage() {
       });
       if (res.ok) {
         setMsg('Compliance audit executed successfully.');
-        setChecks(await res.json());
+        (async () => { const _d = await res.json(); setChecks(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       } else {
         setMsg('Audit execution failed.');
       }

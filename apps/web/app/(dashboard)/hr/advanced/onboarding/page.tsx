@@ -59,8 +59,8 @@ export default function OnboardingPage() {
         fetch('/api/v1/advanced-hr/onboarding/checklists', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (chkRes.ok) setChecklists(await chkRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (chkRes.ok) setChecklists(await chkRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

@@ -131,30 +131,30 @@ export default function ManufacturingDashboard() {
           fetch('http://localhost:3001/api/v1/manufacturing/work-orders', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('http://localhost:3001/api/v1/manufacturing/workstations', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
-        if (bomsRes.ok) setBoms(await bomsRes.json());
-        if (ordersRes.ok) setWorkOrders(await ordersRes.json());
-        if (wsRes.ok) setWorkstations(await wsRes.json());
+        if (bomsRes.ok) setBoms(await bomsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (ordersRes.ok) setWorkOrders(await ordersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (wsRes.ok) setWorkstations(await wsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       } else if (activeTab === 'capacity') {
         const res = await fetch('http://localhost:3001/api/v1/manufacturing/workstations/load-balancing', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.ok) setLoadBalancing(await res.json());
+        if (res.ok) (async () => { const _d = await res.json(); setLoadBalancing(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       } else if (activeTab === 'cmms') {
         const [cmmsRes, wsRes] = await Promise.all([
           fetch('http://localhost:3001/api/v1/manufacturing/maintenance', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('http://localhost:3001/api/v1/manufacturing/workstations', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
-        if (cmmsRes.ok) setMaintenance(await cmmsRes.json());
-        if (wsRes.ok) setWorkstations(await wsRes.json());
+        if (cmmsRes.ok) setMaintenance(await cmmsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (wsRes.ok) setWorkstations(await wsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       } else if (activeTab === 'subcontracting') {
         const [subRes, vendorRes, productRes] = await Promise.all([
           fetch('http://localhost:3001/api/v1/manufacturing/subcontracting', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('http://localhost:3001/api/v1/crm/vendors', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('http://localhost:3001/api/v1/inventory/products', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
-        if (subRes.ok) setSubcontracting(await subRes.json());
-        if (vendorRes.ok) setVendors(await vendorRes.json());
-        if (productRes.ok) setProducts(await productRes.json());
+        if (subRes.ok) setSubcontracting(await subRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (vendorRes.ok) setVendors(await vendorRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (productRes.ok) setProducts(await productRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       }
     } catch {
       // Ignored

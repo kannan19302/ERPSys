@@ -31,7 +31,7 @@ export default function ValuationsPage() {
       const headers = { 'Authorization': `Bearer ${token}` };
       const res = await fetch('/api/v1/inventory/valuation-report', { headers });
       if (!res.ok) throw new Error();
-      setValuationData(await res.json());
+      (async () => { const _d = await res.json(); setValuationData(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {
       setError('Serving local mock fallback registry.');
       setValuationData([

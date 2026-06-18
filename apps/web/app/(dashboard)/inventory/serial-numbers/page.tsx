@@ -54,15 +54,15 @@ export default function SerialNumbersPage() {
 
       if (pRes.ok) {
         const prods = await pRes.json();
-        setProducts(prods);
+        setProducts(Array.isArray(prods) ? prods : (prods?.data || []));
         if (prods.length > 0) setSelectedProduct(prods[0].id);
       }
       if (wRes.ok) {
         const whs = await wRes.json();
-        setWarehouses(whs);
+        setWarehouses(Array.isArray(whs) ? whs : (whs?.data || []));
         if (whs.length > 0) setSelectedWarehouse(whs[0].id);
       }
-      if (snRes.ok) setSerialNumbers(await snRes.json());
+      if (snRes.ok) setSerialNumbers(await snRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setProducts([

@@ -55,7 +55,7 @@ export default function ShopFloorTerminal() {
       });
       if (res.ok) {
         const data = await res.json();
-        setWorkstations(data);
+      setWorkstations(Array.isArray(data) ? data : (data?.data || []));
         if (data.length > 0) setSelectedWorkstationId(data[0].id);
       }
     } catch {

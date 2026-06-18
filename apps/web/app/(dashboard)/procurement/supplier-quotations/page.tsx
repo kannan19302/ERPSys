@@ -73,10 +73,10 @@ export default function SupplierQuotationsPage() {
         fetch('/api/v1/inventory/products', { headers })
       ]);
 
-      if (qRes.ok) setQuotes(await qRes.json());
-      if (vRes.ok) setVendors(await vRes.json());
-      if (rRes.ok) setRfqs(await rRes.json());
-      if (pRes.ok) setProducts(await pRes.json());
+      if (qRes.ok) setQuotes(await qRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (vRes.ok) setVendors(await vRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (rRes.ok) setRfqs(await rRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (pRes.ok) setProducts(await pRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setQuotes([

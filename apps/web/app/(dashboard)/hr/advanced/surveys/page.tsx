@@ -61,8 +61,8 @@ export default function SurveysPage() {
         fetch('/api/v1/advanced-hr/surveys', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (surveyRes.ok) setSurveys(await surveyRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (surveyRes.ok) setSurveys(await surveyRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

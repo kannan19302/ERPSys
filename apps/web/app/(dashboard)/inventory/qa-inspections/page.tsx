@@ -61,10 +61,10 @@ export default function QaInspectionsPage() {
 
       if (pRes.ok) {
         const prods = await pRes.json();
-        setProducts(prods);
+        setProducts(Array.isArray(prods) ? prods : (prods?.data || []));
         if (prods.length > 0) setQaProduct(prods[0].id);
       }
-      if (qaRes.ok) setInspections(await qaRes.json());
+      if (qaRes.ok) setInspections(await qaRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setProducts([

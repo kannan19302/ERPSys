@@ -55,7 +55,7 @@ export default function MRPPage() {
 
       if (runsRes.ok) {
         const data = await runsRes.json();
-        setRuns(data);
+        setRuns(Array.isArray(data) ? data : (data?.data || []));
         // Extract all planned items from all completed runs or flatten them
         const flattened: MRPPlannedItem[] = [];
         const seenIds = new Set<string>();

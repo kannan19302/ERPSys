@@ -1,187 +1,136 @@
-import { Controller, Get, Post, Put, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { InventoryService } from './inventory.service';
-import { CreateProductInput, CreateStockEntryInput, CreateQualityInspectionInput } from '@unerp/shared';
+import {
+  CreateProductInput, UpdateProductInput,
+  CreateWarehouseInput, UpdateWarehouseInput,
+  BulkActionInput,
+} from '@unerp/shared';
 
 interface AuthenticatedRequest extends Request {
-  user: {
-    tenantId: string;
-    userId: string;
-    email: string;
-    roles: string[];
-    orgId?: string;
-  };
+  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
 }
 
 @Controller('inventory')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(private readonly inventoryService: InventoryService) { }
+
+  // ─── Products ─────────────────────────────────────
 
   @Get('products')
   @Permissions('inventory.product.read')
-  async getProducts(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    const tenantId = req.user.tenantId;
-    return this.inventoryService.getProducts(tenantId);
+  async getProducts(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sort') sort?: string,
+    @Query('search') search?: string,
+    @Query('type') type?: string,
+    @Query('category') category?: string,
+  ) {
+    return this.inventoryService.getProducts(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      sort, search, type, category,
+    });
+  }
+
+  @Get('products/stats')
+  @Permissions('inventory.product.read')
+  async getInventoryStats(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getInventoryStats(req.user.tenantId);
+  }
+
+  @Get('products/:id')
+  @Permissions('inventory.product.read')
+  async getProductById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getProductById(req.user.tenantId, id);
   }
 
   @Post('products')
   @Permissions('inventory.product.create')
-  async createProduct(@Req() req: AuthenticatedRequest, @Body() dto: CreateProductInput): Promise<unknown> {
-    const tenantId = req.user.tenantId;
+  async createProduct(@Req() req: AuthenticatedRequest, @Body() dto: CreateProductInput) {
     const orgId = req.user.orgId || 'org-system-default';
-    return this.inventoryService.createProduct(tenantId, orgId, dto);
+    return this.inventoryService.createProduct(req.user.tenantId, orgId, dto);
   }
+
+  @Patch('products/:id')
+  @Permissions('inventory.product.update')
+  async updateProduct(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: UpdateProductInput) {
+    return this.inventoryService.updateProduct(req.user.tenantId, id, dto);
+  }
+
+  @Delete('products/:id')
+  @Permissions('inventory.product.delete')
+  async deleteProduct(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.deleteProduct(req.user.tenantId, id);
+  }
+
+  @Post('products/bulk')
+  @Permissions('inventory.product.update')
+  async bulkAction(@Req() req: AuthenticatedRequest, @Body() dto: BulkActionInput) {
+    return this.inventoryService.bulkAction(req.user.tenantId, dto.action, dto.ids, dto.data);
+  }
+
+  // ─── Warehouses ───────────────────────────────────
 
   @Get('warehouses')
   @Permissions('inventory.warehouse.read')
-  async getWarehouses(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    const tenantId = req.user.tenantId;
-    return this.inventoryService.getWarehouses(tenantId);
-  }
-
-  @Get('stock')
-  @Permissions('inventory.stock.read')
-  async getStockLevels(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    const tenantId = req.user.tenantId;
-    return this.inventoryService.getStockLevels(tenantId);
-  }
-
-  @Get('serial-numbers')
-  @Permissions('inventory.stock.read')
-  async getSerialNumbers(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    return this.inventoryService.getSerialNumbers(req.user.tenantId);
-  }
-
-  @Post('serial-numbers')
-  @Permissions('inventory.stock.create')
-  async createSerialNumber(
+  async getWarehouses(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { productId: string; warehouseId: string; serialNumber: string }
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.inventoryService.createSerialNumber(req.user.tenantId, dto);
+    return this.inventoryService.getWarehouses(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+    });
   }
 
-  @Get('batches')
-  @Permissions('inventory.stock.read')
-  async getBatches(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    return this.inventoryService.getBatches(req.user.tenantId);
-  }
-
-  @Post('batches')
-  @Permissions('inventory.stock.create')
-  async createBatch(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: { productId: string; batchNumber: string; expiryDate?: string; quantity: number; costPrice?: number }
-  ): Promise<unknown> {
-    return this.inventoryService.createBatch(req.user.tenantId, dto);
-  }
-
-  @Get('bin-locations')
+  @Get('warehouses/:id')
   @Permissions('inventory.warehouse.read')
-  async getBinLocations(@Req() req: AuthenticatedRequest) {
-    return this.inventoryService.getBinLocations(req.user.tenantId);
+  async getWarehouseById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getWarehouseById(req.user.tenantId, id);
   }
 
-  @Post('bin-locations')
+  @Post('warehouses')
   @Permissions('inventory.warehouse.create')
-  async createBinLocation(
+  async createWarehouse(@Req() req: AuthenticatedRequest, @Body() dto: CreateWarehouseInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.createWarehouse(req.user.tenantId, orgId, dto);
+  }
+
+  @Patch('warehouses/:id')
+  @Permissions('inventory.warehouse.update')
+  async updateWarehouse(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: UpdateWarehouseInput) {
+    return this.inventoryService.updateWarehouse(req.user.tenantId, id, dto);
+  }
+
+  @Delete('warehouses/:id')
+  @Permissions('inventory.warehouse.delete')
+  async deleteWarehouse(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.deleteWarehouse(req.user.tenantId, id);
+  }
+
+  // ─── Stock Levels ─────────────────────────────────
+
+  @Get('stock-levels')
+  @Permissions('inventory.stock.read')
+  async getStockLevels(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { warehouseId: string; name: string; zone?: string; shelf?: string; bin?: string }
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('warehouseId') warehouseId?: string,
   ) {
-    return this.inventoryService.createBinLocation(req.user.tenantId, dto);
-  }
-
-  @Get('cycle-counts')
-  @Permissions('inventory.stock.read')
-  async getCycleCounts(@Req() req: AuthenticatedRequest) {
-    return this.inventoryService.getCycleCounts(req.user.tenantId);
-  }
-
-  @Get('cycle-counts/:id')
-  @Permissions('inventory.stock.read')
-  async getCycleCountById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
-    return this.inventoryService.getCycleCountById(req.user.tenantId, id);
-  }
-
-  @Post('cycle-counts')
-  @Permissions('inventory.stock.create')
-  async createCycleCount(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: { warehouseId: string; notes?: string; items: { productId: string; expectedQty: number; countedQty: number }[] }
-  ): Promise<unknown> {
-    return this.inventoryService.createCycleCount(req.user.tenantId, dto, req.user.userId || 'system');
-  }
-
-  @Put('cycle-counts/:id/complete')
-  @Permissions('inventory.stock.create')
-  async completeCycleCount(
-    @Req() req: AuthenticatedRequest,
-    @Param('id') id: string
-  ) {
-    return this.inventoryService.completeCycleCount(req.user.tenantId, id);
-  }
-
-  // ════════════════════════════════════════════════
-  // EXTENDED LOGISTICS TRANSACTIONS
-  // ════════════════════════════════════════════════
-
-  @Get('stock-entries')
-  @Permissions('inventory.stock.read')
-  async getStockEntries(@Req() req: AuthenticatedRequest) {
-    return this.inventoryService.getStockEntries(req.user.tenantId);
-  }
-
-  @Post('stock-entries')
-  @Permissions('inventory.stock.create')
-  async createStockEntry(@Req() req: AuthenticatedRequest, @Body() dto: CreateStockEntryInput) {
-    return this.inventoryService.createStockEntry(
-      req.user.tenantId,
-      req.user.orgId || 'org-system-default',
-      dto,
-      req.user.userId || 'system'
-    );
-  }
-
-  @Put('stock-entries/:id/submit')
-  @Permissions('inventory.stock.create')
-  async submitStockEntry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.inventoryService.submitStockEntry(req.user.tenantId, id);
-  }
-
-  @Get('stock-ledger')
-  @Permissions('inventory.stock.read')
-  async getStockLedger(
-    @Req() req: AuthenticatedRequest,
-    @Query('productId') productId?: string,
-    @Query('warehouseId') warehouseId?: string
-  ) {
-    return this.inventoryService.getStockLedger(req.user.tenantId, { productId, warehouseId });
-  }
-
-  @Get('valuation-report')
-  @Permissions('inventory.stock.read')
-  async getValuationReport(@Req() req: AuthenticatedRequest) {
-    return this.inventoryService.getValuationReport(req.user.tenantId);
-  }
-
-  @Get('quality-inspections')
-  @Permissions('inventory.stock.read')
-  async getQualityInspections(@Req() req: AuthenticatedRequest) {
-    return this.inventoryService.getQualityInspections(req.user.tenantId);
-  }
-
-  @Post('quality-inspections')
-  @Permissions('inventory.stock.create')
-  async createQualityInspection(@Req() req: AuthenticatedRequest, @Body() dto: CreateQualityInspectionInput) {
-    return this.inventoryService.createQualityInspection(
-      req.user.tenantId,
-      req.user.orgId || 'org-system-default',
-      dto,
-      req.user.userId || 'system'
-    );
+    return this.inventoryService.getStockLevels(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      search, warehouseId,
+    });
   }
 }

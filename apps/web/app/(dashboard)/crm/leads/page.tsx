@@ -43,7 +43,7 @@ export default function LeadsPage() {
             const res = await fetch('/api/v1/crm/leads', { headers: { Authorization: `Bearer ${token || ''}` } });
             if (!res.ok) throw new Error();
             const data = await res.json();
-            setLeads(data);
+      setLeads(Array.isArray(data) ? data : (data?.data || []));
         } catch {
             setError('Using demo data');
             setLeads([

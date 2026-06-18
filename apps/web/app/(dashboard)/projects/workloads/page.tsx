@@ -28,7 +28,7 @@ export default function ResourceWorkloadsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setResourceWorkloads(await res.json());
+        (async () => { const _d = await res.json(); setResourceWorkloads(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       }
     } catch {
       // Ignored

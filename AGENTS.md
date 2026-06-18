@@ -81,9 +81,10 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 14. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
 15. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
 16. **Always develop End-to-End.** When requested to "develop" or "build" a page or feature, AI agents MUST provide a completely end-to-end working implementation. This includes the database schema (Prisma), backend API (NestJS Controllers/Services), and the frontend (Next.js) hooked up to the API. Do not just build frontend mocks unless explicitly requested.
+17. **Zero-Code Builder Philosophy.** The Builder Studio module is strictly a **No-Code / Low-Code environment** aimed at non-technical users. AI agents MUST NOT provide "code snippets", "developer instructions", or expect the user to manually copy-paste React code to deploy forms. All form deployment, layout adjustment, and page creation MUST be handled via visual UI controls and dynamic rendering (via the Page Registry). Read `.ai/BUILDER_STUDIO_CONVENTIONS.md`.
 
 ### Dev Environment Startup (MANDATORY BEFORE ANY DEV WORK)
-16. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
+18. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
     - **One-command start**: `.\scripts\dev-start.ps1` (from the project root in PowerShell)
     - This script automatically: starts Docker, runs Postgres + Redis, applies migrations, seeds data, and opens the API + Web dev servers.
     - **Manual steps** (if the script cannot be run):
@@ -110,6 +111,7 @@ ERPSys/
 ├── .ai/                         ← Extended AI context (architecture, conventions, etc.)
 │   ├── ARCHITECTURE.md          ← System design, module patterns, data flow
 │   ├── CONVENTIONS.md           ← Naming, file structure, code style rules
+│   ├── BUILDER_STUDIO_CONVENTIONS.md ← Zero-Code philosophy and builder instructions
 │   ├── TECH_STACK.md            ← Technology choices & rationale
 │   ├── MODULE_REGISTRY.md       ← Status of every ERP module
 │   ├── DATA_MODEL.md            ← Entity relationships & schema design
@@ -413,3 +415,4 @@ Before starting any significant work, read the relevant files from `.ai/`:
 | Fixing bugs | `prompts/bugfix.md` |
 | Reviewing code | `prompts/review.md`, `SECURITY.md`, `TESTING.md` |
 | Understanding the domain | `GLOSSARY.md`, `MODULE_REGISTRY.md` |
+| Working on the Builder Studio | `BUILDER_STUDIO_CONVENTIONS.md` |

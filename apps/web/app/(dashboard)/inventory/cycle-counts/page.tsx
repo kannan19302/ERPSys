@@ -34,7 +34,7 @@ export default function CycleCountsPage() {
       const headers = { 'Authorization': `Bearer ${token}` };
       const res = await fetch('/api/v1/inventory/cycle-counts', { headers });
       if (!res.ok) throw new Error();
-      setCycleCounts(await res.json());
+      (async () => { const _d = await res.json(); setCycleCounts(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {
       setError('Serving local mock fallback registry.');
       setCycleCounts([

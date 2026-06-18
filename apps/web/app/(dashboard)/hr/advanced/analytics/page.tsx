@@ -61,7 +61,7 @@ export default function AnalyticsPage() {
       if (headRes.ok) setHeadcount(await headRes.json());
       if (compRes.ok) setCompensation(await compRes.json());
       if (costRes.ok) setCost(await costRes.json());
-      if (budgetRes.ok) setBudgetVariance(await budgetRes.json());
+      if (budgetRes.ok) setBudgetVariance(await budgetRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

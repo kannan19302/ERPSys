@@ -37,8 +37,8 @@ export default function ARAutomationPage() {
         fetch('http://localhost:3001/api/v1/advanced-finance/dunning-levels', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('http://localhost:3001/api/v1/advanced-finance/dunning-runs', { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      if (lvlRes.ok) setLevels(await lvlRes.json());
-      if (runRes.ok) setRuns(await runRes.json());
+      if (lvlRes.ok) setLevels(await lvlRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (runRes.ok) setRuns(await runRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch (e) {
       console.error(e);
     } finally {

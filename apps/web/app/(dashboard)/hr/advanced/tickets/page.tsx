@@ -49,8 +49,8 @@ export default function TicketsPage() {
         fetch('/api/v1/advanced-hr/tickets', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (ticketRes.ok) setTickets(await ticketRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (ticketRes.ok) setTickets(await ticketRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

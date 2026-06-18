@@ -35,7 +35,7 @@ export default function WarehousesPage() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setWarehouses(data);
+      setWarehouses(Array.isArray(data) ? data : (data?.data || []));
     } catch {
       setError('Serving local mock fallback registry.');
       setWarehouses([

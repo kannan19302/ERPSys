@@ -48,10 +48,10 @@ export default function BatchesPage() {
 
       if (pRes.ok) {
         const prods = await pRes.json();
-        setProducts(prods);
+        setProducts(Array.isArray(prods) ? prods : (prods?.data || []));
         if (prods.length > 0) setSelectedProduct(prods[0].id);
       }
-      if (bRes.ok) setBatches(await bRes.json());
+      if (bRes.ok) setBatches(await bRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setProducts([

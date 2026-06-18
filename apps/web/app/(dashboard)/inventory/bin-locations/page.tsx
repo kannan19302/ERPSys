@@ -46,10 +46,10 @@ export default function BinLocationsPage() {
 
       if (wRes.ok) {
         const whs = await wRes.json();
-        setWarehouses(whs);
+        setWarehouses(Array.isArray(whs) ? whs : (whs?.data || []));
         if (whs.length > 0) setSelectedWarehouse(whs[0].id);
       }
-      if (binRes.ok) setBinLocations(await binRes.json());
+      if (binRes.ok) setBinLocations(await binRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setWarehouses([

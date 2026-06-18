@@ -34,7 +34,7 @@ export default function StockLedgerPage() {
       const headers = { 'Authorization': `Bearer ${token}` };
       const res = await fetch('/api/v1/inventory/stock-ledger', { headers });
       if (!res.ok) throw new Error();
-      setLedgerEntries(await res.json());
+      (async () => { const _d = await res.json(); setLedgerEntries(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {
       setError('Serving local mock fallback registry.');
       setLedgerEntries([

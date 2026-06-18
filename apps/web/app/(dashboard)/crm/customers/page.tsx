@@ -22,7 +22,7 @@ export default function CustomersPage() {
         const token = localStorage.getItem('token');
         try {
             const res = await fetch('/api/v1/crm/customers', { headers: { Authorization: `Bearer ${token || ''}` } });
-            if (res.ok) setCustomers(await res.json());
+            if (res.ok) (async () => { const _d = await res.json(); setCustomers(Array.isArray(_d) ? _d : (_d?.data || [])); })();
             else throw new Error();
         } catch {
             setCustomers([

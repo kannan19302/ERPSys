@@ -45,7 +45,7 @@ export default function CPQConfigurator() {
       });
       if (res.ok) {
         const data = await res.json();
-        setProducts(data);
+      setProducts(Array.isArray(data) ? data : (data?.data || []));
         if (data.length > 0) {
           setSelectedProductId(data[0].id);
           setBasePrice(Number(data[0].costPrice));

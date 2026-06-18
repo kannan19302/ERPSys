@@ -53,7 +53,7 @@ export default function PortfoliosPage() {
       });
       if (!res.ok) throw new Error('Failed to fetch portfolios');
       const data = await res.json();
-      setPortfolios(data);
+      setPortfolios(Array.isArray(data) ? data : (data?.data || []));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {

@@ -51,7 +51,7 @@ export default function ClientPortalPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setProjects(data);
+      setProjects(Array.isArray(data) ? data : (data?.data || []));
         if (data.length > 0) {
           setSelectedProjectId(data[0].id);
           fetchProjectDetails(data[0].id);

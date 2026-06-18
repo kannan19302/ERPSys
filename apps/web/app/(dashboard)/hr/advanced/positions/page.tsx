@@ -57,7 +57,7 @@ export default function PositionsPage() {
       ]);
       if (posRes.ok) setPositions(await posRes.ok ? await posRes.json() : []);
       if (varRes.ok) setVariances(await varRes.ok ? await varRes.json() : []);
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       
       // Parse departments from org chart structure
       if (deptRes.ok) {

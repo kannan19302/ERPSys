@@ -95,7 +95,7 @@ export default function DocumentsPage() {
   const fetchEmployees = async () => {
     try {
       const res = await fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setEmployees(await res.json());
+      if (res.ok) (async () => { const _d = await res.json(); setEmployees(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {}
   };
 
@@ -103,7 +103,7 @@ export default function DocumentsPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/v1/advanced-hr/documents/${empId}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setDocs(await res.json());
+      if (res.ok) (async () => { const _d = await res.json(); setDocs(Array.isArray(_d) ? _d : (_d?.data || [])); })();
     } catch {} finally {
       setLoading(false);
     }

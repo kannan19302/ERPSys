@@ -31,7 +31,7 @@ export default function AttendancePage() {
         fetch(`/api/v1/advanced-hr/attendance${selectedEmployee ? `?employeeId=${selectedEmployee}` : ''}`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       if (empRes.ok) { const data = await empRes.json(); setEmployees(data); }
-      if (attRes.ok) { const data = await attRes.json(); setRecords(data); }
+      if (attRes.ok) { const data = await attRes.json(); setRecords(Array.isArray(data) ? data : (data?.data || [])); }
     } catch { setError('API connection issue'); } finally { setLoading(false); }
   };
 

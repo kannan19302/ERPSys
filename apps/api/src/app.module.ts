@@ -32,6 +32,7 @@ import { LocalizationModule } from './modules/localization/localization.module';
 import { PwaModule } from './modules/pwa/pwa.module';
 import { DevopsModule } from './modules/devops/devops.module';
 import { SaasModule } from './modules/saas/saas.module';
+import { BuilderModule } from './modules/builder/builder.module';
 
 @Module({
   imports: [
@@ -125,9 +126,13 @@ import { SaasModule } from './modules/saas/saas.module';
 
     // Phase 20 — SaaS Platform & Billing
     SaasModule,
+
+    // Builder Studio
+    BuilderModule,
   ],
   controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}
+
 

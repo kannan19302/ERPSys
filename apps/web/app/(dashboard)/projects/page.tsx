@@ -134,7 +134,7 @@ export default function ProjectsPage() {
       });
       if (!res.ok) throw new Error('Failed to fetch projects');
       const data = await res.json();
-      setProjects(data);
+      setProjects(Array.isArray(data) ? data : (data?.data || []));
       if (data.length > 0 && !selectedProject) {
         fetchProjectDetails(data[0].id);
       }
@@ -194,7 +194,7 @@ export default function ProjectsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setRisks(await res.json());
+        (async () => { const _d = await res.json(); setRisks(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       }
     } catch {}
   };
@@ -206,7 +206,7 @@ export default function ProjectsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setChangeRequests(await res.json());
+        (async () => { const _d = await res.json(); setChangeRequests(Array.isArray(_d) ? _d : (_d?.data || [])); })();
       }
     } catch {}
   };

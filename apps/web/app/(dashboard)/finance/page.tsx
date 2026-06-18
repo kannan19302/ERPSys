@@ -86,7 +86,7 @@ export default function FinancePage() {
       });
       if (!res.ok) throw new Error('Could not fetch invoices');
       const data = await res.json();
-      setInvoices(data);
+      setInvoices(Array.isArray(data) ? data : (data.data || []));
     } catch {
       setError('Could not connect to API server.');
       // Local mock data
@@ -149,7 +149,7 @@ export default function FinancePage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setCustomers(data);
+        setCustomers(Array.isArray(data) ? data : (data.data || []));
       } else {
         setCustomers([
           { id: 'stark-123', name: 'Stark Industries' },
@@ -338,7 +338,7 @@ export default function FinancePage() {
     }
   };
 
-  const filteredInvoices = invoices.filter(inv => {
+  const filteredInvoices = (Array.isArray(invoices) ? invoices : []).filter(inv => {
     const query = searchQuery.toLowerCase();
     return (
       inv.invoiceNumber.toLowerCase().includes(query) ||
@@ -377,7 +377,7 @@ export default function FinancePage() {
             </div>
           </div>
           <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            ${invoices.reduce((acc, inv) => acc + (inv.status !== 'PAID' ? (inv.totalAmount - inv.paidAmount) : 0), 0).toLocaleString()}
+            ${(Array.isArray(invoices) ? invoices : []).reduce((acc, inv) => acc + (inv.status !== 'PAID' ? (inv.totalAmount - inv.paidAmount) : 0), 0).toLocaleString()}
           </h4>
         </Card>
 
@@ -389,7 +389,7 @@ export default function FinancePage() {
             </div>
           </div>
           <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            ${invoices.reduce((acc, inv) => acc + inv.paidAmount, 0).toLocaleString()}
+            ${(Array.isArray(invoices) ? invoices : []).reduce((acc, inv) => acc + inv.paidAmount, 0).toLocaleString()}
           </h4>
         </Card>
 
@@ -401,7 +401,7 @@ export default function FinancePage() {
             </div>
           </div>
           <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            {invoices.filter(inv => inv.status === 'DRAFT').length}
+            {(Array.isArray(invoices) ? invoices : []).filter(inv => inv.status === 'DRAFT').length}
           </h4>
         </Card>
       </div>

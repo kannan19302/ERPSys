@@ -72,16 +72,16 @@ export default function StockEntriesPage() {
         fetch('/api/v1/inventory/stock-entries', { headers })
       ]);
 
-      if (pRes.ok) setProducts(await pRes.json());
+      if (pRes.ok) setProducts(await pRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (wRes.ok) {
         const whs = await wRes.json();
-        setWarehouses(whs);
+        setWarehouses(Array.isArray(whs) ? whs : (whs?.data || []));
         if (whs.length > 0) {
           setFromWarehouse(whs[0].id);
           setToWarehouse(whs[0].id);
         }
       }
-      if (seRes.ok) setStockEntries(await seRes.json());
+      if (seRes.ok) setStockEntries(await seRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setProducts([

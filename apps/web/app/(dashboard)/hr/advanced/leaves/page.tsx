@@ -72,10 +72,10 @@ export default function LeavesPage() {
         fetch('/api/v1/advanced-hr/leaves/requests', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (balRes.ok) setBalances(await balRes.json());
-      if (polRes.ok) setPolicies(await polRes.json());
-      if (reqRes.ok) setRequests(await reqRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (balRes.ok) setBalances(await balRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (polRes.ok) setPolicies(await polRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (reqRes.ok) setRequests(await reqRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }

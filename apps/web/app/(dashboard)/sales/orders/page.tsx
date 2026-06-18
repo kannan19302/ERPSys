@@ -133,9 +133,9 @@ export default function SalesOrdersHub() {
         fetch('/api/v1/inventory/products', { headers })
       ]);
 
-      if (ordersRes.ok) setOrders(await ordersRes.json());
-      if (customersRes.ok) setCustomers(await customersRes.json());
-      if (productsRes.ok) setProducts(await productsRes.json());
+      if (ordersRes.ok) setOrders(await ordersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (customersRes.ok) setCustomers(await customersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (productsRes.ok) setProducts(await productsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
       setError('Serving local mock fallback registry.');
       setOrders([

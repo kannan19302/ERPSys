@@ -56,8 +56,8 @@ export default function FeedbackPage() {
         fetch('/api/v1/advanced-hr/feedback', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/v1/hr/employees', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (feedRes.ok) setFeedbacks(await feedRes.json());
-      if (empRes.ok) setEmployees(await empRes.json());
+      if (feedRes.ok) setFeedbacks(await feedRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (empRes.ok) setEmployees(await empRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {} finally {
       setLoading(false);
     }
