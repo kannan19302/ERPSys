@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 

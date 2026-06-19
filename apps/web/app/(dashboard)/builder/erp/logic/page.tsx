@@ -1,9 +1,7 @@
-/* eslint-disable */
-// @ts-nocheck
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Zap,
@@ -26,33 +24,7 @@ import {
   Code2,
 } from 'lucide-react';
 
-const RULES_LIST = [
-  {
-    id: 1, name: 'Auto-Assign PO Approval', trigger: 'purchase_order.submitted', conditions: 2,
-    actions: 3, status: 'Active', lastRun: '5 min ago', runs: 1240,
-    description: 'Routes purchase orders above $10K to CFO approval chain',
-  },
-  {
-    id: 2, name: 'Low Stock Reorder Alert', trigger: 'inventory.stock_updated', conditions: 1,
-    actions: 2, status: 'Active', lastRun: '12 min ago', runs: 890,
-    description: 'Sends reorder notification when stock falls below minimum threshold',
-  },
-  {
-    id: 3, name: 'Invoice Overdue Follow-Up', trigger: 'schedule.daily', conditions: 1,
-    actions: 2, status: 'Active', lastRun: '1 hour ago', runs: 365,
-    description: 'Sends reminder emails for invoices overdue by 7+ days',
-  },
-  {
-    id: 4, name: 'New Employee Onboarding', trigger: 'employee.created', conditions: 0,
-    actions: 5, status: 'Draft', lastRun: 'Never', runs: 0,
-    description: 'Automatically creates accounts, sends welcome email, assigns equipment',
-  },
-  {
-    id: 5, name: 'SLA Breach Escalation', trigger: 'service_request.sla_breached', conditions: 1,
-    actions: 2, status: 'Paused', lastRun: '3 days ago', runs: 48,
-    description: 'Escalates unresolved service tickets to manager after SLA breach',
-  },
-];
+// Will be fetched from API
 
 const TRIGGER_TYPES = [
   { id: 'record.created', label: 'Record Created', icon: Database, group: 'Data Events' },
@@ -82,6 +54,12 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 export default function ERPLogicPage() {
+  const router = useRouter();
+  const [rules, setRules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'rules' | 'builder'>('rules');
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
@@ -89,16 +67,93 @@ export default function ERPLogicPage() {
     console.log('Saving', data);
     setIsModalOpen(false);
   };
-
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'rules' | 'builder'>('rules');
-  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Builder state
+  const [ruleName, setRuleName] = useState('New Rule');
+  const [ruleDesc, setRuleDesc] = useState('');
   const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
   const [selectedActions, setSelectedActions] = useState<string[]>(['send_email']);
 
-  const filtered = RULES_LIST.filter(r =>
+  const fetchRules = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/builder/automation-rules', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRules(data);
+      }
+    } catch { /* ignore */ } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRules();
+  }, []);
+
+  const handleToggleStatus = async (rule: any) => {
+    const newStatus = rule.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    try {
+      const token = localStorage.getItem('token') || '';
+      await fetch(`/api/v1/builder/automation-rules/${rule.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: newStatus })
+      });
+      fetchRules();
+    } catch {}
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this rule?')) return;
+    try {
+      const token = localStorage.getItem('token') || '';
+      await fetch(`/api/v1/builder/automation-rules/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchRules();
+    } catch {}
+  };
+
+  const handleSaveAndActivate = async () => {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/builder/automation-rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: ruleName,
+          description: ruleDesc,
+          trigger: selectedTrigger || 'record.created',
+          status: 'ACTIVE',
+          actions: selectedActions
+        })
+      });
+      if (res.ok) {
+        fetchRules();
+        setActiveTab('rules');
+      }
+    } catch {}
+  };
+
+  const handleTestRun = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch(`/api/v1/builder/automation-rules/${id}/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) alert('Test run triggered successfully');
+    } catch {}
+  };
+
+  const filtered = rules.filter(r =>
     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (r.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -120,9 +175,8 @@ export default function ERPLogicPage() {
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
             ← ERP Builder
           </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => setActiveTab('builder')}>
-            <PlusCircle size={15} />
-            <span>New Rule</span>
+          <button onClick={handleSaveAndActivate} className="frappe-btn frappe-btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+            <Play size={14} /> Save & Activate
           </button>
         </div>
       </div>
@@ -130,9 +184,9 @@ export default function ERPLogicPage() {
       {/* Stats Bar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
         {[
-          { label: 'Active Rules', value: '3', color: 'var(--color-success)' },
-          { label: 'Total Runs Today', value: '284', color: '#7c3aed' },
-          { label: 'Draft Rules', value: '1', color: 'var(--color-warning)' },
+          { label: 'Total Rules', value: rules.length.toString(), color: 'var(--color-success)' },
+          { label: 'Active Rules', value: rules.filter(r => r.status === 'ACTIVE').length.toString(), color: '#7c3aed' },
+          { label: 'Drafts/Paused', value: rules.filter(r => r.status !== 'ACTIVE').length.toString(), color: 'var(--color-warning)' },
           { label: 'Avg Exec Time', value: '1.2s', color: 'var(--color-primary)' },
         ].map(stat => (
           <div key={stat.label} className="frappe-card" style={{ padding: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
@@ -191,14 +245,14 @@ export default function ERPLogicPage() {
                       <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5 }}>{rule.description}</p>
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-1.5)', marginLeft: 'var(--space-3)', flexShrink: 0 }}>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }} onClick={() => setActiveTab('builder')}>
-                        <Edit3 size={12} />
+                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }} onClick={() => handleTestRun(rule.id)}>
+                        <Play size={12} /> <span style={{fontSize: '11px'}}>Test</span>
                       </button>
-                      {rule.status === 'Active'
-                        ? <button onClick={() => { /* Pause rule */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Pause size={12} /></button>
-                        : <button onClick={() => { /* Activate rule */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Play size={12} /></button>
+                      {rule.status === 'ACTIVE'
+                        ? <button onClick={() => handleToggleStatus(rule)} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Pause size={12} /></button>
+                        : <button onClick={() => handleToggleStatus(rule)} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Play size={12} /></button>
                       }
-                      <button onClick={() => { /* Delete rule */ }} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
+                      <button onClick={() => handleDelete(rule.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -233,9 +287,33 @@ export default function ERPLogicPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 260px', gap: 'var(--space-4)', minHeight: '500px' }}>
           {/* Left: Trigger Palette */}
           <div className="frappe-card" style={{ padding: 'var(--space-3)', overflow: 'auto' }}>
-            <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', letterSpacing: '0.05em', margin: '0 0 var(--space-3) 0' }}>
-              Select Trigger
-            </p>
+            <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
+              <div style={{ marginBottom: 'var(--space-4)' }}>
+                <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', letterSpacing: '0.05em', margin: '0 0 var(--space-1.5) 0' }}>
+                  Rule Name
+                </p>
+                <input 
+                  type="text" 
+                  value={ruleName}
+                  onChange={(e) => setRuleName(e.target.value)}
+                  placeholder="e.g., Auto-Assign PO Approval" 
+                  style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', background: 'var(--color-bg)' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 'var(--space-4)' }}>
+                <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', letterSpacing: '0.05em', margin: '0 0 var(--space-1.5) 0' }}>
+                  Description
+                </p>
+                <input 
+                  type="text" 
+                  value={ruleDesc}
+                  onChange={(e) => setRuleDesc(e.target.value)}
+                  placeholder="What does this rule do?" 
+                  style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', background: 'var(--color-bg)' }}
+                />
+              </div>
+            </div>
             {['Data Events', 'Form Events', 'Workflow Events', 'Scheduled', 'API Events'].map(group => (
               <div key={group} style={{ marginBottom: 'var(--space-3)' }}>
                 <p style={{ fontSize: '10px', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', margin: '0 0 var(--space-1.5) 0', letterSpacing: '0.08em' }}>{group}</p>
@@ -279,7 +357,7 @@ export default function ERPLogicPage() {
             {/* Rule name */}
             <div className="frappe-form-group">
               <label className="frappe-label">Rule Name</label>
-              <input className="frappe-input" type="text" placeholder="e.g. Auto-Assign Invoice on Submit" />
+              <input className="frappe-input" type="text" value={ruleName} onChange={e => setRuleName(e.target.value)} placeholder="e.g. Auto-Assign Invoice on Submit" />
             </div>
 
             {/* Trigger block */}

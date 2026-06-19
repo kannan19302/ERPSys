@@ -2,6 +2,7 @@
 // @ts-nocheck
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
+import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -49,12 +50,41 @@ const MODULES_LIST = [
 
 
 export default function ERPModulesPage() {
+  const { data: dbModules, refetch } = useBuilderData('modules', MODULES_LIST);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
   const handleSave = async (data: any) => {
-    console.log('Saving', data);
+    try {
+      const token = localStorage.getItem('token') || '';
+      const method = editingItem ? 'PATCH' : 'POST';
+      const url = editingItem ? `/api/v1/builder/modules/${editingItem.id}` : '/api/v1/builder/modules';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...data, entities: [], relationships: [], permissions: {} })
+      });
+      refetch();
+      
+      if (res.ok && method === 'POST') {
+        const newMod = await res.json();
+        router.push(`/builder/erp/modules/${newMod.id}`);
+      }
+    } catch {}
     setIsModalOpen(false);
+  };
+
+  const handleDeleteModule = async (id: string) => {
+    if (!confirm('Delete this module?')) return;
+    try {
+      const token = localStorage.getItem('token') || '';
+      await fetch(`/api/v1/builder/modules/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedModule(null);
+      refetch();
+    } catch {}
   };
 
   const router = useRouter();
@@ -62,8 +92,8 @@ export default function ERPModulesPage() {
   const [selectedModule, setSelectedModule] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState<'list' | 'schema'>('list');
 
-  const filtered = MODULES_LIST.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const currentMod = MODULES_LIST.find(m => m.id === selectedModule);
+  const filtered = dbModules.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const currentMod = dbModules.find(m => m.id === selectedModule);
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
@@ -103,6 +133,7 @@ export default function ERPModulesPage() {
           {/* Create New Card */}
           <div
             className="frappe-card"
+            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
             style={{ padding: 'var(--space-3)', cursor: 'pointer', border: '2px dashed var(--color-border)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#d97706'; e.currentTarget.style.background = 'rgba(217,119,6,0.05)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = ''; }}
@@ -162,14 +193,14 @@ export default function ERPModulesPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
                 <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{currentMod.name}</h2>
                 <div style={{ display: 'flex', gap: 'var(--space-1.5)' }}>
-                  <button onClick={() => { /* Edit module */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}>
+                  <button onClick={() => router.push(`/builder/erp/modules/${currentMod.id}`)} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}>
                     <Edit3 size={13} />
                     <span>Edit</span>
                   </button>
                   <button onClick={() => { /* Preview module */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}>
                     <Eye size={13} />
                   </button>
-                  <button onClick={() => { /* Delete module */ }} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
+                  <button onClick={() => handleDeleteModule(currentMod.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
                     <Trash2 size={13} />
                   </button>
                 </div>

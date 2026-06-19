@@ -1,7 +1,6 @@
-/* eslint-disable */
-// @ts-nocheck
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
+import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,21 +19,6 @@ import {
   Monitor,
 } from 'lucide-react';
 
-const MENUS = [
-  {
-    id: 1, name: 'Main Navigation', location: 'Header', items: 6, status: 'Active',
-    preview: ['Home', 'Products', 'Solutions', 'Pricing', 'Blog', 'Contact'],
-  },
-  {
-    id: 2, name: 'Footer Links', location: 'Footer', items: 12, status: 'Active',
-    preview: ['About', 'Careers', 'Privacy', 'Terms'],
-  },
-  {
-    id: 3, name: 'Mobile Hamburger', location: 'Mobile', items: 8, status: 'Active',
-    preview: ['Home', 'Features', 'Pricing', 'Login'],
-  },
-];
-
 const DEMO_MENU_ITEMS = [
   { id: 'm1', label: 'Home', href: '/', depth: 0, children: [] },
   { id: 'm2', label: 'Products', href: '/products', depth: 0, children: ['m2a', 'm2b'] },
@@ -46,12 +30,23 @@ const DEMO_MENU_ITEMS = [
 ];
 
 export default function WebMenusPage() {
+  const { data: MENUS_DB, createItem, updateItem, deleteItem } = useBuilderData("web-menus", []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
   const handleSave = async (data: any) => {
-    console.log('Saving', data);
+    if (editingItem) {
+      await updateItem(editingItem.id, data);
+    } else {
+      await createItem({ ...data, items: DEMO_MENU_ITEMS });
+    }
     setIsModalOpen(false);
+  };
+
+  const handleDelete = async (id: any) => {
+    if (confirm('Are you sure you want to delete this menu?')) {
+      await deleteItem(id);
+    }
   };
 
   const router = useRouter();
@@ -77,7 +72,7 @@ export default function WebMenusPage() {
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>
             ← Web Builder
           </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => setActiveTab('editor')}>
+          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
             <PlusCircle size={15} />
             <span>New Menu</span>
           </button>
@@ -116,47 +111,51 @@ export default function WebMenusPage() {
           <div className="frappe-card" style={{ padding: 'var(--space-5)', cursor: 'pointer', border: '2px dashed var(--color-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', minHeight: '140px' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#7c3aed'; e.currentTarget.style.background = 'rgba(124,58,237,0.05)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = ''; }}
-            onClick={() => setActiveTab('editor')}>
+            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
             <PlusCircle size={28} style={{ color: '#7c3aed' }} />
             <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', margin: 0 }}>Create New Menu</p>
           </div>
 
-          {MENUS.map(menu => (
+          {MENUS_DB.map((menu: any) => {
+            const itemCount = Array.isArray(menu.items) ? menu.items.length : 0;
+            const previewItems = Array.isArray(menu.items) ? menu.items.slice(0, 4).map((i: any) => i.label || 'Item') : ['Home', 'Products', 'Contact'];
+            return (
             <div key={menu.id} className="frappe-card" style={{ padding: 'var(--space-4)', cursor: 'pointer' }}
-              onClick={() => { setActiveTab('editor'); }}
+              onClick={() => { setEditingItem(menu); setActiveTab('editor'); }}
               onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = ''; e.currentTarget.style.transform = ''; }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {menu.location === 'Mobile' ? <Smartphone size={18} style={{ color: '#7c3aed' }} /> : <Monitor size={18} style={{ color: '#7c3aed' }} />}
+                    {menu.location === 'MOBILE' ? <Smartphone size={18} style={{ color: '#7c3aed' }} /> : <Monitor size={18} style={{ color: '#7c3aed' }} />}
                   </div>
                   <div>
                     <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)' }}>{menu.name}</p>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{menu.location} · {menu.items} items</p>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{menu.location} · {itemCount} items</p>
                   </div>
                 </div>
-                <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-success-light)', color: 'var(--color-success)' }}>
-                  {menu.status}
+                <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: menu.status === 'ACTIVE' ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: menu.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                  {menu.status || 'ACTIVE'}
                 </span>
               </div>
               {/* Preview pills */}
               <div style={{ display: 'flex', gap: 'var(--space-1.5)', flexWrap: 'wrap' }}>
-                {menu.preview.map(item => (
-                  <span key={item} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
+                {previewItems.map((item: string, index: number) => (
+                  <span key={index} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
                     {item}
                   </span>
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-1.5)', marginTop: 'var(--space-3)' }}>
-                <button className="frappe-btn frappe-btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1.5)' }} onClick={() => setActiveTab('editor')}>
+                <button className="frappe-btn frappe-btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1.5)' }} onClick={(e) => { e.stopPropagation(); setEditingItem(menu); setActiveTab('editor'); }}>
                   <Edit3 size={12} /><span>Edit</span>
                 </button>
-                <button onClick={() => { /* Preview menu */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Eye size={12} /></button>
-                <button onClick={() => { /* Delete menu */ }} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={12} /></button>
+                <button onClick={(e) => { e.stopPropagation(); /* Preview */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Eye size={12} /></button>
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(menu.id); }} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={12} /></button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -174,14 +173,14 @@ export default function WebMenusPage() {
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-              {DEMO_MENU_ITEMS.map(item => (
+              {(editingItem?.items || DEMO_MENU_ITEMS).map((item: any) => (
                 <div
                   key={item.id}
                   onClick={() => setSelectedItem(item.id === selectedItem ? null : item.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
                     padding: 'var(--space-2) var(--space-2.5)',
-                    paddingLeft: `calc(var(--space-2.5) + ${item.depth * 16}px)`,
+                    paddingLeft: `calc(var(--space-2.5) + ${(item.depth || 0) * 16}px)`,
                     borderRadius: 'var(--radius-sm)', cursor: 'pointer',
                     background: selectedItem === item.id ? 'rgba(124,58,237,0.08)' : 'transparent',
                     border: `1px solid ${selectedItem === item.id ? '#7c3aed' : 'transparent'}`,
@@ -191,11 +190,11 @@ export default function WebMenusPage() {
                   onMouseLeave={e => { if (selectedItem !== item.id) e.currentTarget.style.background = 'transparent'; }}
                 >
                   <GripVertical size={12} style={{ color: 'var(--color-text-tertiary)', cursor: 'grab', flexShrink: 0 }} />
-                  {item.children.length > 0 && <ChevronRight size={12} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />}
+                  {item.children?.length > 0 && <ChevronRight size={12} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />}
                   <span style={{ fontSize: 'var(--text-xs)', color: selectedItem === item.id ? '#7c3aed' : 'var(--color-text)', fontWeight: item.depth === 0 ? 'var(--weight-medium)' : 'var(--weight-normal)', flex: 1 }}>
                     {item.label}
                   </span>
-                  {item.depth === 0 && item.children.length > 0 && (
+                  {item.depth === 0 && item.children?.length > 0 && (
                     <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{item.children.length} sub</span>
                   )}
                 </div>
@@ -210,10 +209,10 @@ export default function WebMenusPage() {
           {/* Center: Preview */}
           <div className="frappe-card" style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>Main Navigation</h3>
+              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>{editingItem?.name || 'Main Navigation'}</h3>
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <button className="frappe-btn frappe-btn-secondary"><Eye size={14} /><span>Preview</span></button>
-                <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}><CheckCircle size={14} /><span>Save Menu</span></button>
+                <button className="frappe-btn frappe-btn-primary" onClick={() => { setIsModalOpen(true); }}><CheckCircle size={14} /><span>Edit Details</span></button>
               </div>
             </div>
 
@@ -296,8 +295,12 @@ export default function WebMenusPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSave}
-        title={editingItem ? "Edit Item" : "Create New"}
-        fields={[ { name: 'name', label: 'Name', type: 'text', required: true }, { name: 'location', label: 'Location', type: 'text', required: true } ]}
+        title={editingItem ? "Edit Menu Properties" : "Create New Menu"}
+        fields={[ 
+          { name: 'name', label: 'Menu Name', type: 'text', required: true }, 
+          { name: 'location', label: 'Location (HEADER/FOOTER/MOBILE)', type: 'text', required: true },
+          { name: 'status', label: 'Status (ACTIVE/DRAFT)', type: 'text' }
+        ]}
         initialData={editingItem}
       />
     </div>

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { seedWebTemplates } from './seed-web-templates';
 
 const prisma = new PrismaClient();
 
@@ -1915,6 +1916,11 @@ async function main() {
       ogImage: 'https://example.com/assets/og-home.jpg',
     },
   });
+
+  const existingTemplatesCount = await prisma.webTemplate.count({ where: { tenantId: tenant.id } });
+  if (existingTemplatesCount <= 1) { // 1 is the default standard page template seeded above
+    await seedWebTemplates(prisma, tenant.id);
+  }
 
   console.log('🚀 Database seeding complete!');
 }

@@ -1,7 +1,6 @@
-/* eslint-disable */
-// @ts-nocheck
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
+import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -21,13 +20,6 @@ import {
   Edit3,
 } from 'lucide-react';
 
-const PAGES_SEO = [
-  { id: 1, name: 'Homepage', slug: '/', score: 94, issues: 0, title: 'UniERP — Enterprise Resource Planning Platform', metaDesc: 'Manage your entire business with UniERP — the composable ERP system.', ogImage: true, lastAudit: '2 hours ago' },
-  { id: 2, name: 'Pricing', slug: '/pricing', score: 72, issues: 3, title: 'Pricing Plans — UniERP', metaDesc: '', ogImage: false, lastAudit: '1 day ago' },
-  { id: 3, name: 'Features', slug: '/features', score: 85, issues: 1, title: 'Features — UniERP ERP Platform', metaDesc: 'Explore the full feature set of UniERP including Finance, HR, CRM, and more.', ogImage: true, lastAudit: '3 days ago' },
-  { id: 4, name: 'Blog Index', slug: '/blog', score: 68, issues: 4, title: 'Blog', metaDesc: '', ogImage: false, lastAudit: '1 week ago' },
-];
-
 const STRUCTURED_DATA_TYPES = [
   { type: 'FAQ', description: 'FAQ schema for FAQ sections', pages: 2 },
   { type: 'Product', description: 'Product schema for pricing pages', pages: 1 },
@@ -45,20 +37,27 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 export default function WebSEOPage() {
+  const { data: PAGES_SEO_DB, createItem, updateItem, deleteItem } = useBuilderData("web-seo", []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
   const handleSave = async (data: any) => {
-    console.log('Saving', data);
+    if (editingItem) {
+      await updateItem(editingItem.id, data);
+    } else {
+      await createItem(data);
+    }
     setIsModalOpen(false);
   };
 
   const router = useRouter();
-  const [selectedPage, setSelectedPage] = useState<number | null>(1);
+  const [selectedPage, setSelectedPage] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'pages' | 'technical' | 'structured'>('pages');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const currentPage = (PAGES_SEO.find(p => p.id === selectedPage) ?? PAGES_SEO[0])!;
+  // Fallback to first item if none selected
+  const displayPageId = selectedPage || (PAGES_SEO_DB.length > 0 ? PAGES_SEO_DB[0].id : null);
+  const currentPage = PAGES_SEO_DB.find((p: any) => p.id === displayPageId);
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
@@ -75,16 +74,21 @@ export default function WebSEOPage() {
             Per-page SEO metadata, structured data schemas, sitemap, and performance scores
           </p>
         </div>
-        <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>
-          ← Web Builder
-        </button>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>
+            ← Web Builder
+          </button>
+          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+            <span>Create New SEO Config</span>
+          </button>
+        </div>
       </div>
 
       {/* Site-wide score */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
         {[
           { label: 'Site SEO Score', value: '80', color: '#d97706', sub: 'Avg across all pages' },
-          { label: 'Pages Audited', value: '9', color: 'var(--color-primary)', sub: 'of 9 total pages' },
+          { label: 'Pages Audited', value: PAGES_SEO_DB.length.toString(), color: 'var(--color-primary)', sub: `of ${PAGES_SEO_DB.length} total configs` },
           { label: 'Open Issues', value: '8', color: 'var(--color-danger)', sub: '3 high priority' },
           { label: 'Sitemap Status', value: 'Active', color: '#059669', sub: 'Last submitted 1 day ago' },
         ].map(stat => (
@@ -129,103 +133,114 @@ export default function WebSEOPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             <div style={{ position: 'relative' }}>
               <SearchIcon size={13} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
-              <input className="frappe-input" type="text" placeholder="Search pages..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-8)', fontSize: 'var(--text-xs)' }} />
+              <input className="frappe-input" type="text" placeholder="Search configs..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-8)', fontSize: 'var(--text-xs)' }} />
             </div>
-            {PAGES_SEO.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(page => (
+            {PAGES_SEO_DB.filter((p: any) => p.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((page: any) => (
               <div
                 key={page.id}
                 onClick={() => setSelectedPage(page.id)}
                 className="frappe-card"
-                style={{ padding: 'var(--space-3)', cursor: 'pointer', border: `2px solid ${selectedPage === page.id ? '#059669' : 'var(--color-border)'}`, background: selectedPage === page.id ? 'rgba(5,150,105,0.04)' : '', transition: 'all var(--duration-fast)' }}
+                style={{ padding: 'var(--space-3)', cursor: 'pointer', border: `2px solid ${displayPageId === page.id ? '#059669' : 'var(--color-border)'}`, background: displayPageId === page.id ? 'rgba(5,150,105,0.04)' : '', transition: 'all var(--duration-fast)' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <ScoreBadge score={page.score} />
+                  <ScoreBadge score={page.title ? 95 : 60} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{page.name}</p>
-                    <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', margin: 0 }}>{page.slug}</p>
-                    {page.issues > 0 && (
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{page.title || 'Untitled'}</p>
+                    <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', margin: 0 }}>Page ID: {page.pageId}</p>
+                    {(!page.description) && (
                       <p style={{ fontSize: '10px', color: 'var(--color-danger)', margin: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <AlertTriangle size={9} />{page.issues} issues
+                        <AlertTriangle size={9} />Missing description
                       </p>
                     )}
                   </div>
                 </div>
               </div>
             ))}
+            {PAGES_SEO_DB.length === 0 && (
+              <div style={{ textAlign: 'center', padding: 'var(--space-6) 0', color: 'var(--color-text-tertiary)' }}>
+                No SEO configs yet.
+              </div>
+            )}
           </div>
 
           {/* SEO Detail Panel */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            {/* Page header */}
+            {currentPage ? (
             <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <ScoreBadge score={currentPage.score} />
+                  <ScoreBadge score={currentPage.title ? 95 : 60} />
                   <div>
-                    <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{currentPage.name}</h2>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{currentPage.slug} · Last audit: {currentPage.lastAudit}</p>
+                    <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{currentPage.title || 'Untitled'}</h2>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>Page ID: {currentPage.pageId} · Last updated: {new Date(currentPage.updatedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                  <button className="frappe-btn frappe-btn-secondary"><Eye size={13} /><span>Preview</span></button>
-                  <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}><CheckCircle size={13} /><span>Save SEO</span></button>
+                  <button className="frappe-btn frappe-btn-secondary" onClick={() => deleteItem(currentPage.id)} style={{ color: 'var(--color-danger)' }}><span>Delete</span></button>
+                  <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(currentPage); setIsModalOpen(true); }}><Edit3 size={13} /><span>Edit SEO</span></button>
                 </div>
               </div>
 
               {/* Google Preview */}
               <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', border: '1px solid var(--color-border)', marginBottom: 'var(--space-4)' }}>
                 <p style={{ fontSize: '10px', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 var(--space-2) 0' }}>Google Search Preview</p>
-                <p style={{ fontSize: '18px', color: '#1a0dab', margin: '0 0 2px 0', fontFamily: 'Arial, sans-serif' }}>{currentPage.title}</p>
-                <p style={{ fontSize: '13px', color: '#006621', margin: '0 0 4px 0', fontFamily: 'Arial, sans-serif' }}>yourdomain.com{currentPage.slug}</p>
+                <p style={{ fontSize: '18px', color: '#1a0dab', margin: '0 0 2px 0', fontFamily: 'Arial, sans-serif' }}>{currentPage.title || 'Untitled Page'}</p>
+                <p style={{ fontSize: '13px', color: '#006621', margin: '0 0 4px 0', fontFamily: 'Arial, sans-serif' }}>yourdomain.com{currentPage.canonicalUrl || `/${currentPage.pageId}`}</p>
                 <p style={{ fontSize: '13px', color: '#545454', margin: 0, fontFamily: 'Arial, sans-serif', lineHeight: 1.5 }}>
-                  {currentPage.metaDesc || <span style={{ color: '#dc2626' }}>⚠ No meta description set — Google will auto-generate from page content</span>}
+                  {currentPage.description || <span style={{ color: '#dc2626' }}>⚠ No meta description set — Google will auto-generate from page content</span>}
                 </p>
               </div>
 
-              {/* Fields */}
+              {/* Fields Display */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 <div className="frappe-form-group">
                   <label className="frappe-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
                     <FileText size={12} /> Title Tag
-                    <span style={{ marginLeft: 'auto', fontSize: '10px', color: currentPage.title.length < 60 ? '#059669' : 'var(--color-danger)' }}>
-                      {currentPage.title.length}/60 chars
+                    <span style={{ marginLeft: 'auto', fontSize: '10px', color: (currentPage.title?.length || 0) < 60 ? '#059669' : 'var(--color-danger)' }}>
+                      {currentPage.title?.length || 0}/60 chars
                     </span>
                   </label>
-                  <input className="frappe-input" type="text" defaultValue={currentPage.title} />
+                  <input className="frappe-input" type="text" readOnly value={currentPage.title || ''} />
                 </div>
                 <div className="frappe-form-group">
                   <label className="frappe-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
                     <FileText size={12} /> Meta Description
-                    <span style={{ marginLeft: 'auto', fontSize: '10px', color: currentPage.metaDesc ? '#059669' : 'var(--color-danger)' }}>
-                      {currentPage.metaDesc.length}/160 chars
+                    <span style={{ marginLeft: 'auto', fontSize: '10px', color: currentPage.description ? '#059669' : 'var(--color-danger)' }}>
+                      {currentPage.description?.length || 0}/160 chars
                     </span>
                   </label>
-                  <textarea className="frappe-input" defaultValue={currentPage.metaDesc} placeholder="Write a compelling meta description..." rows={3} style={{ resize: 'vertical' }} />
+                  <textarea className="frappe-input" readOnly value={currentPage.description || ''} rows={3} style={{ resize: 'vertical' }} />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
                   <div className="frappe-form-group">
                     <label className="frappe-label"><Globe size={12} /> Canonical URL</label>
-                    <input className="frappe-input" type="text" placeholder="https://yourdomain.com/" />
+                    <input className="frappe-input" type="text" readOnly value={currentPage.canonicalUrl || ''} />
                   </div>
                   <div className="frappe-form-group">
-                    <label className="frappe-label"><Link size={12} /> Robots</label>
-                    <select className="frappe-input"><option>index, follow</option><option>noindex, follow</option><option>noindex, nofollow</option></select>
+                    <label className="frappe-label"><Link size={12} /> Keywords</label>
+                    <input className="frappe-input" type="text" readOnly value={currentPage.keywords || ''} />
                   </div>
                 </div>
                 <div className="frappe-form-group">
                   <label className="frappe-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
-                    <Image size={12} /> OG Image (Social Sharing)
+                    <Image size={12} /> OG Image URL
                     {currentPage.ogImage
                       ? <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#059669', display: 'flex', alignItems: 'center', gap: '3px' }}><CheckCircle size={10} />Set</span>
                       : <span style={{ marginLeft: 'auto', fontSize: '10px', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '3px' }}><AlertTriangle size={10} />Missing</span>}
                   </label>
                   <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                    <input className="frappe-input" type="text" placeholder="https://..." style={{ flex: 1 }} />
-                    <button onClick={() => { /* Browse file */ }} className="frappe-btn frappe-btn-secondary">Browse</button>
+                    <input className="frappe-input" type="text" readOnly value={currentPage.ogImage || ''} style={{ flex: 1 }} />
                   </div>
                 </div>
               </div>
             </div>
+            ) : (
+              <div className="frappe-card" style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                <FileText size={48} style={{ color: 'var(--color-border)', marginBottom: 'var(--space-3)' }} />
+                <h3 style={{ margin: '0 0 var(--space-1) 0' }}>Select an SEO config</h3>
+                <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Click a configuration on the left to view and edit details.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -252,7 +267,7 @@ export default function WebSEOPage() {
                     : <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{item.description}</p>
                   }
                 </div>
-                <button onClick={() => { /* Add redirect */ }} className="frappe-btn frappe-btn-secondary" style={{ marginLeft: 'var(--space-3)', flexShrink: 0 }}>
+                <button onClick={() => { /* action */ }} className="frappe-btn frappe-btn-secondary" style={{ marginLeft: 'var(--space-3)', flexShrink: 0 }}>
                   <Edit3 size={12} />
                   <span>{item.action}</span>
                 </button>
@@ -297,8 +312,15 @@ export default function WebSEOPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSave}
-        title={editingItem ? "Edit Item" : "Create New"}
-        fields={[ { name: 'title', label: 'Title', type: 'text', required: true }, { name: 'path', label: 'Path', type: 'text', required: true }, { name: 'description', label: 'Description', type: 'textarea' } ]}
+        title={editingItem ? "Edit SEO Config" : "Create New Config"}
+        fields={[ 
+          { name: 'pageId', label: 'Page ID', type: 'number', required: true },
+          { name: 'title', label: 'Title', type: 'text', required: true }, 
+          { name: 'description', label: 'Meta Description', type: 'textarea' },
+          { name: 'keywords', label: 'Keywords', type: 'text' },
+          { name: 'canonicalUrl', label: 'Canonical URL', type: 'text' },
+          { name: 'ogImage', label: 'OG Image URL', type: 'text' }
+        ]}
         initialData={editingItem}
       />
     </div>

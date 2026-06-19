@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Papa from 'papaparse';
 import {
   Upload,
   Download,
@@ -80,25 +81,46 @@ export default function DataImportPage() {
     if (!selectedFile || !importName) return;
     try {
       const token = localStorage.getItem('token') || '';
-      const res = await fetch('/api/v1/builder/data-imports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name: importName,
-          targetModel,
-          fileName: selectedFile.name,
-          fileSize: selectedFile.size,
-          totalRows: 0,
-          columnMapping,
-        }),
+
+      Papa.parse(selectedFile, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          const rows = results.data;
+          
+          const res = await fetch('/api/v1/builder/data-imports', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              name: importName,
+              targetModel,
+              fileName: selectedFile.name,
+              fileSize: selectedFile.size,
+              totalRows: rows.length,
+              columnMapping,
+            }),
+          });
+          
+          if (res.ok) {
+            const job = await res.json();
+            setShowWizard(false);
+            setSelectedFile(null);
+            setImportName('');
+            setStep(1);
+            fetchImports();
+
+            // Execute import
+            await fetch(`/api/v1/builder/data-imports/${job.id}/execute`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ rows })
+            });
+            
+            // Refresh status
+            fetchImports();
+          }
+        }
       });
-      if (res.ok) {
-        setShowWizard(false);
-        setSelectedFile(null);
-        setImportName('');
-        setStep(1);
-        fetchImports();
-      }
     } catch { /* ignore */ }
   };
 

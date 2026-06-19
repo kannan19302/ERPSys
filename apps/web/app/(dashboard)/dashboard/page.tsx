@@ -12,7 +12,16 @@ import {
   UserPlus,
   PlusCircle,
   FileText,
+  BarChart2,
+  PieChart,
+  Hash,
+  Table as TableIcon,
+  LayoutDashboard
 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import GridLayout from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 interface MetricCardProps {
   title: string;
@@ -75,8 +84,16 @@ const MetricCard: React.FC<MetricCardProps> = ({
   );
 };
 
-export default function DashboardPage() {
-  const [user, setUser] = useState<{ firstName: string; lastName: string } | null>(null);
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const dashboardId = searchParams?.get('dashboardId');
+  const router = useRouter();
+  const [user, setUser] = useState<{ firstName: string; lastName: string; tenantId?: string } | null>(null);
+  
+  const [customDashboard, setCustomDashboard] = useState<any>(null);
+  const [customLayout, setCustomLayout] = useState<any[]>([]);
+  const [customWidgets, setCustomWidgets] = useState<any[]>([]);
+  const [loadingCustom, setLoadingCustom] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
@@ -88,6 +105,24 @@ export default function DashboardPage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (dashboardId) {
+      setLoadingCustom(true);
+      const token = localStorage.getItem('token') || '';
+      fetch(`/api/v1/builder/dashboards/${dashboardId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        setCustomDashboard(data);
+        if (data.layout) setCustomLayout(typeof data.layout === 'string' ? JSON.parse(data.layout) : data.layout);
+        if (data.widgets) setCustomWidgets(typeof data.widgets === 'string' ? JSON.parse(data.widgets) : data.widgets);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingCustom(false));
+    }
+  }, [dashboardId]);
 
   const metrics: MetricCardProps[] = [
     {
@@ -134,12 +169,53 @@ export default function DashboardPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title={`Welcome back, ${user ? user.firstName : 'Admin'}`}
-        description="Here is an overview of your organization's operations today."
-        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Dashboard' }]}
+        title={customDashboard ? customDashboard.name : `Welcome back, ${user ? user.firstName : 'Admin'}`}
+        description={customDashboard ? customDashboard.description || 'Custom Builder Dashboard' : "Here is an overview of your organization's operations today."}
+        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: customDashboard ? customDashboard.name : 'Dashboard' }]}
       />
 
-      {/* Metrics Grid */}
+      {loadingCustom ? (
+        <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading dashboard...</div>
+      ) : customDashboard ? (
+        <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', padding: '16px', minHeight: '600px' }}>
+          <GridLayout
+            className="layout"
+            layout={customLayout}
+            // @ts-ignore
+            cols={12}
+            rowHeight={40}
+            width={1200} // Hardcoded width for simple preview, or could use responsive grid
+            isDraggable={false}
+            isResizable={false}
+            margin={[16, 16]}
+          >
+            {customLayout.map(l => {
+              const widget = customWidgets.find(w => w.id === l.i);
+              if (!widget) return <div key={l.i}></div>;
+              
+              const typeIcons: Record<string, any> = { kpi: Hash, bar: BarChart2, line: TrendingUp, pie: PieChart, table: TableIcon };
+              const typeColors: Record<string, string> = { kpi: '#10b981', bar: '#3b82f6', line: '#f59e0b', pie: '#8b5cf6', table: '#64748b' };
+              const Icon = typeIcons[widget.type] || LayoutDashboard;
+              const color = typeColors[widget.type] || '#64748b';
+              
+              return (
+                <div key={l.i} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', background: 'white' }}>
+                    <Icon size={14} color={color} />
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: '#475569', flex: 1 }}>{widget.title}</span>
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
+                    {widget.type === 'kpi' && <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>--</span>}
+                    {widget.type !== 'kpi' && <BarChart2 size={32} opacity={0.5} />}
+                  </div>
+                </div>
+              );
+            })}
+          </GridLayout>
+        </div>
+      ) : (
+        <>
+          {/* Metrics Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
         {metrics.map((metric) => (
           <MetricCard key={metric.title} {...metric} />
@@ -278,6 +354,18 @@ export default function DashboardPage() {
         </Card>
 
       </div>
+      </>
+      )}
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-10)', textAlign: 'center' }}>Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

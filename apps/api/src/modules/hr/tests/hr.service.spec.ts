@@ -6,6 +6,7 @@ vi.mock('@unerp/database', () => {
     prisma: {
       employee: {
         findMany: vi.fn(),
+        count: vi.fn(),
         findFirst: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
@@ -49,8 +50,8 @@ describe('HrService', () => {
       const result = await hrService.getEmployees('tenant-123');
 
       expect(result).toBeDefined();
-      expect(result[0]?.employeeCode).toBe('EMP-001');
-      expect(result[0]?.departmentName).toBe('Engineering');
+      expect((result.data || result)[0]?.employeeCode).toBe('EMP-001');
+      expect((result.data || result)[0]?.departmentName).toBe('Engineering');
     });
   });
 });

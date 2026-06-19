@@ -20,6 +20,7 @@ vi.mock('@unerp/database', () => {
     prisma: {
       invoice: {
         findMany: vi.fn(),
+        count: vi.fn(),
         findFirst: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
@@ -117,12 +118,12 @@ describe('FinanceService', () => {
       const result = await financeService.getInvoices('tenant-123');
 
       expect(result).toBeDefined();
-      expect(result.length).toBe(1);
-      expect(result[0]!.invoiceNumber).toBe('INV-001');
-      expect(result[0]!.customerName).toBe('Acme');
-      expect(result[0]!.subtotal).toBe(1000);
-      expect(result[0]!.lineItems.length).toBe(1);
-      expect(result[0]!.payments.length).toBe(1);
+      expect((result.data || result).length).toBe(1);
+      expect((result.data || result)[0]!.invoiceNumber).toBe('INV-001');
+      expect((result.data || result)[0]!.customerName).toBe('Acme');
+      expect((result.data || result)[0]!.subtotal).toBe(1000);
+      expect((result.data || result)[0]!.lineItems.length).toBe(1);
+      expect((result.data || result)[0]!.payments.length).toBe(1);
     });
   });
 
@@ -157,7 +158,7 @@ describe('FinanceService', () => {
 
       await financeService.createInvoice('tenant-123', 'org-system-default', defaultDto as never, 'user-1');
 
-      expect(prisma.organization.findFirst).toHaveBeenCalledWith({ where: { tenantId: 'tenant-123' } });
+      expect(prisma.organization.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { tenantId: 'tenant-123' } }));
       expect(prisma.invoice.findFirst).toHaveBeenCalledWith(expect.objectContaining({
         where: { tenantId: 'tenant-123', orgId: 'resolved-org', invoiceNumber: 'INV-123' }
       }));

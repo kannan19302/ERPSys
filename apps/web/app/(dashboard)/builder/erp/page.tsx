@@ -58,6 +58,7 @@ const DEMO_FORM_FIELDS = [
 
 export default function ERPBuilderPage() {
   const { data: MODULES_LIST_DB } = useBuilderData("modules", MODULES_LIST);
+  const stats: any = {};
 
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'modules' | 'form-builder'>('modules');
@@ -95,6 +96,25 @@ export default function ERPBuilderPage() {
             <span>New Module</span>
           </button>
         </div>
+      </div>
+
+      <div className="builder-stats-grid">
+        {[
+          { label: 'Modules', value: stats?.modules || MODULES_LIST_DB.length.toString(), icon: Database, color: '#059669' },
+          { label: 'Forms', value: stats?.forms || '0', icon: FileCode2, color: '#10b981' },
+          { label: 'Workflows', value: stats?.workflows || '0', icon: Layers, color: '#f59e0b' },
+          { label: 'Dashboards', value: stats?.dashboards || '0', icon: Grid3X3, color: '#8b5cf6' },
+        ].map(s => (
+          <div key={s.label} className="frappe-card" style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', background: `${s.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <s.icon size={20} style={{ color: s.color }} />
+            </div>
+            <div>
+              <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0 }}>{s.value}</p>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{s.label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Tabs */}

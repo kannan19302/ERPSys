@@ -103,6 +103,18 @@ export class BuilderController {
     return this.builderService.deleteWorkflow(req.user.tenantId, id);
   }
 
+  @Post('workflows/:id/execute')
+  @Permissions('builder.workflow.update')
+  async executeWorkflow(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.executeWorkflow(req.user.tenantId, id);
+  }
+
+  @Get('workflows/:id/executions')
+  @Permissions('builder.workflow.read')
+  async getWorkflowExecutions(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.getWorkflowExecutions(req.user.tenantId, id);
+  }
+
   // ─── Dashboards ─────────────────────────────────
   @Get('dashboards')
   @Permissions('builder.dashboard.read')
@@ -239,6 +251,16 @@ export class BuilderController {
     return this.builderService.createDataImport(req.user.tenantId, dto);
   }
 
+  @Post('data-imports/:id/execute')
+  @Permissions('builder.import.create')
+  async executeDataImport(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { rows: any[] }
+  ) {
+    return this.builderService.executeDataImport(req.user.tenantId, id, dto.rows);
+  }
+
   // ─── Web Pages ──────────────────────────────────
   @Get('web-pages')
   @Permissions('builder.web.read')
@@ -324,6 +346,24 @@ export class BuilderController {
     return this.builderService.getWebAssets(req.user.tenantId);
   }
 
+  @Post('web-assets')
+  @Permissions('builder.web.create')
+  async createWebAsset(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+    return this.builderService.createWebAsset(req.user.tenantId, dto);
+  }
+
+  @Patch('web-assets/:id')
+  @Permissions('builder.web.update')
+  async updateWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.builderService.updateWebAsset(req.user.tenantId, id, dto);
+  }
+
+  @Delete('web-assets/:id')
+  @Permissions('builder.web.delete')
+  async deleteWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deleteWebAsset(req.user.tenantId, id);
+  }
+
   // ---------------------------------------------------------------------------
   // WEB TEMPLATES
   // ---------------------------------------------------------------------------
@@ -331,6 +371,24 @@ export class BuilderController {
   @Permissions('builder.web.read')
   async getWebTemplates(@Req() req: AuthenticatedRequest) {
     return this.builderService.getWebTemplates(req.user.tenantId);
+  }
+
+  @Post('web-templates')
+  @Permissions('builder.web.create')
+  async createWebTemplate(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+    return this.builderService.createWebTemplate(req.user.tenantId, dto);
+  }
+
+  @Patch('web-templates/:id')
+  @Permissions('builder.web.update')
+  async updateWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.builderService.updateWebTemplate(req.user.tenantId, id, dto);
+  }
+
+  @Delete('web-templates/:id')
+  @Permissions('builder.web.delete')
+  async deleteWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deleteWebTemplate(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -342,6 +400,24 @@ export class BuilderController {
     return this.builderService.getWebMenus(req.user.tenantId);
   }
 
+  @Post('web-menus')
+  @Permissions('builder.web.create')
+  async createWebMenu(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+    return this.builderService.createWebMenu(req.user.tenantId, dto);
+  }
+
+  @Patch('web-menus/:id')
+  @Permissions('builder.web.update')
+  async updateWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.builderService.updateWebMenu(req.user.tenantId, id, dto);
+  }
+
+  @Delete('web-menus/:id')
+  @Permissions('builder.web.delete')
+  async deleteWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deleteWebMenu(req.user.tenantId, id);
+  }
+
   // ---------------------------------------------------------------------------
   // WEB SEO
   // ---------------------------------------------------------------------------
@@ -350,6 +426,26 @@ export class BuilderController {
   async getWebSeo(@Req() req: AuthenticatedRequest) {
     return this.builderService.getWebSeo(req.user.tenantId);
   }
+
+  @Post('web-seo')
+  @Permissions('builder.web.create')
+  async createWebSeo(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+    return this.builderService.createWebSeo(req.user.tenantId, dto);
+  }
+
+  @Patch('web-seo/:id')
+  @Permissions('builder.web.update')
+  async updateWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.builderService.updateWebSeo(req.user.tenantId, id, dto);
+  }
+
+  @Delete('web-seo/:id')
+  @Permissions('builder.web.delete')
+  async deleteWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deleteWebSeo(req.user.tenantId, id);
+  }
+
+
 
   @Post('analytics')
   async logAnalytics(@Req() req: AuthenticatedRequest, @Body() data: any) {
@@ -496,5 +592,20 @@ export class BuilderController {
     @Param('id') id: string
   ) {
     return this.builderService.deleteCustomRecord(req.user.tenantId, schemaId, id);
+  }
+
+  // ---------------------------------------------------------------------------
+  // WEBSITE BUILDER SETTINGS & TEMPLATES
+  // ---------------------------------------------------------------------------
+  @Get('web-settings')
+  @Permissions('builder.page.read')
+  async getWebSettings(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getWebSettings(req.user.tenantId);
+  }
+
+  @Patch('web-settings')
+  @Permissions('builder.page.update')
+  async updateWebSettings(@Req() req: AuthenticatedRequest, @Body() data: any) {
+    return this.builderService.updateWebSettings(req.user.tenantId, data);
   }
 }

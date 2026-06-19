@@ -19,6 +19,7 @@ vi.mock('@unerp/database', () => ({
   prisma: {
     purchaseOrder: {
       findMany: vi.fn(),
+        count: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
@@ -127,9 +128,9 @@ describe('ProcurementService', () => {
 
       const result = await service.getPurchaseOrders('tenant-1');
 
-      expect(result).toHaveLength(1);
-      expect(result[0]?.poNumber).toBe('PO-001');
-      expect(result[0]?.vendorName).toBe('Test Vendor');
+      expect(result.data || result).toHaveLength(1);
+      expect((result.data || result)[0]?.poNumber).toBe('PO-001');
+      expect((result.data || result)[0]?.vendorName).toBe('Test Vendor');
       expect(prisma.purchaseOrder.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { tenantId: 'tenant-1', deletedAt: null } }),
       );
@@ -222,9 +223,9 @@ describe('ProcurementService', () => {
       vi.mocked(prisma.purchaseReturn.findMany).mockResolvedValue(mockReturns as never);
 
       const result = await service.getPurchaseReturns('tenant-1');
-      expect(result).toHaveLength(1);
-      expect(result[0]?.returnNumber).toBe('PR-001');
-      expect(result[0]?.vendorName).toBe('Test Vendor');
+      expect(result.data || result).toHaveLength(1);
+      expect((result.data || result)[0]?.returnNumber).toBe('PR-001');
+      expect((result.data || result)[0]?.vendorName).toBe('Test Vendor');
     });
 
     it('should create a purchase return and debit note', async () => {

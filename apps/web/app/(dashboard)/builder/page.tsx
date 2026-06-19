@@ -47,7 +47,7 @@ export default function BuilderPage() {
   const router = useRouter();
   const [stats, setStats] = useState({
     erp: { forms: 12, workflows: 8, dashboards: 5, modules: 3 },
-    web: { pages: 9, blogPosts: 24 }
+    web: { pages: 9, blogPosts: 24, assets: 86, templates: 6 }
   });
 
   useEffect(() => {
@@ -69,6 +69,8 @@ export default function BuilderPage() {
             web: {
               pages: data.web.pages || 0,
               blogPosts: data.web.blogPosts || 0,
+              assets: data.web.assets || 0,
+              templates: data.web.templates || 0,
             }
           });
         }
@@ -198,8 +200,8 @@ export default function BuilderPage() {
             {[
               { icon: Monitor, label: 'Pages', count: stats.web.pages },
               { icon: FileText, label: 'Blog Posts', count: stats.web.blogPosts },
-              { icon: Image, label: 'Assets', count: 86 },
-              { icon: Code2, label: 'Templates', count: 6 },
+              { icon: Image, label: 'Assets', count: stats.web.assets },
+              { icon: Code2, label: 'Templates', count: stats.web.templates },
             ].map(item => (
               <div key={item.label} style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--space-2)',

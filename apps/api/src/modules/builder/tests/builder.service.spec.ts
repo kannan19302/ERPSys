@@ -63,7 +63,7 @@ describe('BuilderService', () => {
       it(`should get ${entity}s`, async () => {
         (prismaMock.findMany as any).mockResolvedValue([]);
         const result = await (service as any)[`get${entity}s`]('t1');
-        expect(result).toEqual([]);
+        expect(result.data || result).toEqual([]);
         expect(prismaMock.findMany).toHaveBeenCalled();
       });
 

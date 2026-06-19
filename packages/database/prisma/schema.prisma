@@ -4231,12 +4231,16 @@ model WebTemplate {
   tenantId    String   @map("tenant_id")
   name        String
   description String?
+  thumbnail   String?
   htmlContent String?  @map("html_content") @db.Text
   cssContent  String?  @map("css_content") @db.Text
+  designTokens Json    @default("{}") @map("design_tokens")
   status      String   @default("DRAFT")
   author      String?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+
+  settings    WebSettings[]
 
   @@index([tenantId])
   @@map("web_templates")
@@ -4270,6 +4274,20 @@ model WebSeo {
 
   @@unique([tenantId, path])
   @@map("web_seo")
+}
+
+model WebSettings {
+  id               String   @id @default(cuid())
+  tenantId         String   @unique @map("tenant_id")
+  activeTemplateId String?  @map("active_template_id")
+  globalCss        String?  @map("global_css") @db.Text
+  themeTokens      Json     @default("{}") @map("theme_tokens")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  template WebTemplate? @relation(fields: [activeTemplateId], references: [id])
+
+  @@map("web_settings")
 }
 
 // ════════════════════════════════════════════════

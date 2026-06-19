@@ -16,7 +16,7 @@ describe('FinanceController', () => {
     it('should call financeService.getInvoices with tenantId', async () => {
       const req: unknown = { user: { tenantId: 'tenant-1' } };
       await controller.getInvoices(req as never);
-      expect(service.getInvoices).toHaveBeenCalledWith('tenant-1');
+      expect(service.getInvoices).toHaveBeenCalledWith('tenant-1', expect.any(Object));
     });
   });
 

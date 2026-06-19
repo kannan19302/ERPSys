@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 
@@ -62,7 +60,7 @@ export default function ERPFormsPage() {
             fields: Array.isArray(f.fields) ? f.fields.length : 0,
           }));
           if (transformed.length > 0) {
-            setFormsList(transformed);
+            // setFormsList(transformed);
           }
         }
       } catch { }

@@ -5,6 +5,13 @@
 
 ---
 
+## [2026-06-18] Builder Studio — P0 (Logic & Modules Wiring)
+
+### Added
+- **Automation Logic API Wiring**: Wired the Automation/Logic UI (`/builder/erp/logic`) to the actual backend API `/api/v1/builder/automation-rules`. Implemented rule creation, status toggling, deletion, and real-time statistics generation instead of using hardcoded mock data.
+- **Module CRUD Wiring**: Wired the Custom Modules UI (`/builder/erp/page.tsx`) to the backend API `/api/v1/builder/modules`. Implemented module creation via the `GenericBuilderModal`, deletion functionality, and live statistics counts for entities and relationships.
+- **Sidebar Integration Review**: Verified that Builder Studio navigation correctly exists and resolves dynamically based on the current context within `layout.tsx`.
+
 ## [2026-06-18] Builder Studio — Phase 2 Complete (Data Import, Conditional Logic, Website CMS)
 
 ### Added

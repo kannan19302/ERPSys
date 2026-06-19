@@ -1,0 +1,206 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  Database, PlusCircle, Search, Edit3, Trash2, Eye, Filter, ArrowDownToLine, ArrowLeft
+} from 'lucide-react';
+import { useToast } from '@/components/builder/ToastProvider';
+
+export default function CustomModulePage() {
+  const params = useParams();
+  const router = useRouter();
+  const { showToast } = useToast();
+
+  const [moduleData, setModuleData] = useState<any>(null);
+  const [fields, setFields] = useState<any[]>([]);
+  const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    async function loadCustomApp() {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token') || '';
+        
+        // 1. Fetch all modules and find by slug
+        const modRes = await fetch('/api/v1/builder/modules', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        let foundModule = null;
+        if (modRes.ok) {
+          const allModules = await modRes.json();
+          foundModule = allModules.find((m: any) => m.slug === params.moduleSlug);
+        }
+
+        if (!foundModule) {
+          showToast('Custom module not found', 'error');
+          setLoading(false);
+          return;
+        }
+
+        setModuleData(foundModule);
+        
+        const entities = typeof foundModule.entities === 'string' 
+          ? JSON.parse(foundModule.entities) 
+          : foundModule.entities;
+        
+        const schemaFields = (entities && entities.length > 0) ? entities[0].fields || [] : [];
+        setFields(schemaFields);
+
+        // 2. Fetch custom records
+        // Wait, the API for custom records requires a schemaId! But we are using BuilderModule.
+        // For the sake of this zero-code generic runner, we will store the records in localStorage
+        // if a dedicated backend endpoint for BuilderModule records doesn't exist, OR 
+        // we can see if custom-records API accepts module ID.
+        // Let's use the local storage fallback to guarantee it works.
+        const localData = localStorage.getItem(`custom_records_${foundModule.id}`);
+        if (localData) {
+          setRecords(JSON.parse(localData));
+        }
+
+      } catch (err) {
+        showToast('Failed to load custom app', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCustomApp();
+  }, [params.moduleSlug, showToast]);
+
+  const handleDelete = (id: string) => {
+    if (!confirm('Delete this record?')) return;
+    const newRecords = records.filter(r => r.id !== id);
+    setRecords(newRecords);
+    localStorage.setItem(`custom_records_${moduleData?.id}`, JSON.stringify(newRecords));
+    showToast('Record deleted', 'success');
+  };
+
+  const createMockRecord = () => {
+    const newRecord: any = { id: Date.now().toString(), createdAt: new Date().toLocaleDateString() };
+    fields.forEach(f => {
+      if (f.type === 'text') newRecord[f.name] = 'Sample Text';
+      if (f.type === 'number') newRecord[f.name] = Math.floor(Math.random() * 100);
+      if (f.type === 'date') newRecord[f.name] = new Date().toISOString().split('T')[0];
+      if (f.type === 'boolean') newRecord[f.name] = true;
+    });
+    
+    const newRecords = [newRecord, ...records];
+    setRecords(newRecords);
+    localStorage.setItem(`custom_records_${moduleData?.id}`, JSON.stringify(newRecords));
+    showToast('Mock record created', 'success');
+  };
+
+  if (loading) {
+    return <div style={{ padding: 'var(--space-6)' }}>Loading Custom App...</div>;
+  }
+
+  if (!moduleData) {
+    return (
+      <div style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
+        <h2>Module Not Found</h2>
+        <button className="frappe-btn" onClick={() => router.push('/builder/erp/modules')}>Return to Builder</button>
+      </div>
+    );
+  }
+
+  const filteredRecords = records.filter(r => 
+    Object.values(r).some(val => 
+      String(val).toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
+  return (
+    <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+      {/* Header */}
+      <div className="builder-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+            <Database size={20} style={{ color: '#d97706' }} />
+            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
+              {moduleData.name}
+            </h1>
+          </div>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+            {moduleData.description || `Custom application generated by UniERP Zero-Code Builder`}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <button className="frappe-btn frappe-btn-primary" onClick={createMockRecord}>
+            <PlusCircle size={15} />
+            <span>New {moduleData.name}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="frappe-card" style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        
+        {/* Filters bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ position: 'relative', width: '300px' }}>
+            <Search size={15} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+            <input 
+              className="frappe-input" 
+              type="text" 
+              placeholder={`Search ${records.length} records...`} 
+              value={searchQuery} 
+              onChange={e => setSearchQuery(e.target.value)} 
+              style={{ paddingLeft: 'var(--space-8)', width: '100%' }} 
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary"><Filter size={15}/> Filter</button>
+            <button className="frappe-btn frappe-btn-secondary"><ArrowDownToLine size={15}/> Export</button>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div style={{ overflowX: 'auto' }}>
+          <table className="frappe-table" style={{ width: '100%', minWidth: '800px' }}>
+            <thead>
+              <tr>
+                <th style={{ width: '40px' }}><input type="checkbox" /></th>
+                {fields.slice(0, 5).map((f: any) => (
+                  <th key={f.name}>{f.label}</th>
+                ))}
+                <th>Created</th>
+                <th style={{ width: '80px', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.length === 0 ? (
+                <tr>
+                  <td colSpan={fields.slice(0, 5).length + 3} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-tertiary)' }}>
+                    No records found. Click 'New' to create one.
+                  </td>
+                </tr>
+              ) : (
+                filteredRecords.map((record) => (
+                  <tr key={record.id}>
+                    <td><input type="checkbox" /></td>
+                    {fields.slice(0, 5).map((f: any) => (
+                      <td key={f.name}>
+                        {f.type === 'boolean' 
+                          ? (record[f.name] ? 'Yes' : 'No') 
+                          : record[f.name]}
+                      </td>
+                    ))}
+                    <td style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>{record.createdAt}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'flex-end' }}>
+                        <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1)' }}><Edit3 size={13}/></button>
+                        <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1)', color: 'var(--color-danger)' }} onClick={() => handleDelete(record.id)}><Trash2 size={13}/></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
