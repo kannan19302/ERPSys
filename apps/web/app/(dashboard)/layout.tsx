@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   Menu,
   ChevronLeft,
+  ChevronRight,
   Search,
   Bell,
   Sun,
@@ -730,6 +731,7 @@ export default function DashboardLayout({
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [installedApps, setInstalledApps] = useState<string[]>([]);
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
 
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
   const tenantDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -850,16 +852,74 @@ export default function DashboardLayout({
   const hideSidebar = isAppsLanding || pathname === '/profile' || pathname.startsWith('/profile/');
   const appNav = getAppSpecificNavigation(pathname);
 
-  // Compute active & sorted switcher apps
-  const coreApps = GLOBAL_SEARCH_ITEMS.filter(item => item.type === 'App');
-  const optionalAppsMetadata = [
-    { name: 'Healthcare Module', href: '/healthcare', icon: Activity, type: 'App', id: 'healthcare' },
-    { name: 'Education Module', href: '/education', icon: GraduationCap, type: 'App', id: 'education' },
-    { name: 'Real Estate Module', href: '/real-estate', icon: Building2, type: 'App', id: 'real-estate' },
-    { name: 'Field Service Module', href: '/field-service', icon: Wrench, type: 'App', id: 'field-service' }
+  // Define all apps like in apps/page.tsx for the switcher hierarchy
+  const allApplications = [
+    { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: Home, installed: true },
+    { id: 'finance', name: 'Finance & Accounting', href: '/finance', icon: CreditCard, installed: true },
+    { id: 'hr', name: 'Human Resources', href: '/hr', icon: Users, installed: true },
+    { id: 'crm', name: 'CRM & Sales', href: '/crm', icon: BarChart3, installed: true },
+    { id: 'inventory', name: 'Inventory & Stock', href: '/inventory', icon: Package, installed: true },
+    { id: 'procurement', name: 'Procurement', href: '/procurement', icon: ShoppingCart, installed: true },
+    { id: 'sales', name: 'Sales & Orders', href: '/sales', icon: ClipboardList, installed: true },
+    { id: 'supply-chain', name: 'Supply Chain', href: '/supply-chain', icon: Truck, installed: true },
+    { id: 'projects', name: 'Project Management', href: '/projects', icon: Briefcase, installed: true },
+    { id: 'manufacturing', name: 'Manufacturing', href: '/manufacturing', icon: Hammer, installed: true },
+    { id: 'analytics', name: 'Business Intelligence', href: '/analytics', icon: PieChart, installed: true },
+    { id: 'documents', name: 'Document Management', href: '/documents', icon: FolderOpen, installed: true },
+    { id: 'communication', name: 'Communication', href: '/communication', icon: MessageSquare, installed: true },
+    { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
+    { id: 'workflows', name: 'Workflows', href: '/workflows', icon: GitFork, installed: true },
+    { id: 'storage', name: 'Files & Storage', href: '/storage', icon: HardDrive, installed: true },
+    { id: 'healthcare', name: 'Healthcare Module', href: '/healthcare', icon: Activity, installed: false },
+    { id: 'education', name: 'Education Module', href: '/education', icon: GraduationCap, installed: false },
+    { id: 'real-estate', name: 'Real Estate Module', href: '/real-estate', icon: Building2, installed: false },
+    { id: 'field-service', name: 'Field Service Module', href: '/field-service', icon: Wrench, installed: false },
+    { id: 'api-keys', name: 'API Platform', href: '/admin/api-keys', icon: Key, installed: true },
+    { id: 'localization', name: 'Localization', href: '/admin/localization', icon: Globe, installed: true },
+    { id: 'sync', name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone, installed: true },
+    { id: 'devops', name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server, installed: true },
+    { id: 'saas', name: 'SaaS Portal', href: '/saas/portal', icon: Cloud, installed: true },
+    { id: 'admin', name: 'Administration', href: '/admin/users', icon: ShieldAlert, installed: true },
+    { id: 'app-store', name: 'App Store', href: '/apps/store', icon: ShoppingBag, installed: true },
+    { id: 'builder', name: 'Builder Studio', href: '/builder', icon: Cpu, installed: true },
   ];
-  const installedOptionalApps = optionalAppsMetadata.filter(app => installedApps.includes(app.id));
-  const switcherApps = [...coreApps, ...installedOptionalApps].sort((a, b) => a.name.localeCompare(b.name));
+
+  const switcherFolders = [
+    {
+      id: 'developer',
+      name: 'Developer',
+      color: '#334155',
+      appIds: ['api-keys', 'app-store', 'builder', 'devops'],
+    },
+    {
+      id: 'system',
+      name: 'System',
+      color: '#dc2626',
+      appIds: ['admin', 'localization', 'sync', 'saas'],
+    },
+  ];
+
+  const activeApps = allApplications.filter(app => app.installed || installedApps.includes(app.id));
+  const folderAppIds = switcherFolders.flatMap(f => f.appIds);
+  const rootApps = activeApps.filter(app => !folderAppIds.includes(app.id));
+  const visibleFolders = switcherFolders.filter(f => activeApps.filter(a => f.appIds.includes(a.id)).length > 0);
+
+  const switcherItems = [
+    ...visibleFolders.map(folder => ({
+      type: 'folder' as const,
+      id: folder.id,
+      name: folder.name,
+      color: folder.color,
+      apps: activeApps.filter(a => folder.appIds.includes(a.id)).sort((a, b) => a.name.localeCompare(b.name))
+    })),
+    ...rootApps.map(app => ({
+      type: 'app' as const,
+      id: app.id,
+      name: app.name,
+      href: app.href,
+      icon: app.icon
+    }))
+  ].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div
@@ -1062,16 +1122,157 @@ export default function DashboardLayout({
             zIndex: 90,
           }}
         >
-          {/* Top Left: Search & Mobile Navigation */}
+          {/* Top Left: Apps Switcher & Tenant Selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              {!isAppsLanding && (
+                <div style={{ position: 'relative' }} ref={appsDropdownRef}>
+                  <button
+                    onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
+                    className="frappe-btn frappe-btn-secondary"
+                    style={{ padding: 'var(--space-1.5) var(--space-3)', gap: 'var(--space-1)' }}
+                  >
+                    <span>Switch App</span>
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        color: 'var(--color-text-secondary)',
+                        transform: appsDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform var(--duration-fast) var(--ease-default)',
+                      }}
+                    />
+                  </button>
+                  {appsDropdownOpen && (
+                    <div className="frappe-dropdown frappe-dropdown-left frappe-dropdown-apps">
+                      <p className="frappe-dropdown-header">Applications</p>
+                      {switcherItems.map((item) => {
+                        if (item.type === 'folder') {
+                          const isExpanded = !!expandedFolders[item.id];
+                          return (
+                            <React.Fragment key={item.id}>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setExpandedFolders(prev => ({
+                                    ...prev,
+                                    [item.id]: !prev[item.id]
+                                  }));
+                                }}
+                                className="frappe-dropdown-item frappe-dropdown-folder"
+                              >
+                                <FolderOpen size={14} style={{ color: item.color }} />
+                                <span>{item.name}</span>
+                                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', color: 'var(--color-text-secondary)' }}>
+                                  <ChevronRight
+                                    size={12}
+                                    style={{
+                                      transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                      transition: 'transform var(--duration-fast) var(--ease-default)',
+                                    }}
+                                  />
+                                </div>
+                              </button>
+                              {isExpanded && (
+                                <div className="frappe-dropdown-item-nested-container">
+                                  {item.apps.map((app) => {
+                                    const isSubActive = pathname.startsWith(app.href);
+                                    return (
+                                      <button
+                                        key={app.name}
+                                        onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
+                                        className={`frappe-dropdown-item-nested ${isSubActive ? 'active' : ''}`}
+                                      >
+                                        <app.icon size={13} style={{ opacity: 0.6 }} />
+                                        <span>{app.name}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </React.Fragment>
+                          );
+                        } else {
+                          const app = item;
+                          const isPathActive = pathname.startsWith(app.href);
+                          return (
+                            <button
+                              key={app.name}
+                              onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
+                              className={`frappe-dropdown-item ${isPathActive ? 'active' : ''}`}
+                            >
+                              <app.icon size={14} style={{ color: isPathActive ? 'var(--color-primary)' : 'var(--color-text-secondary)', opacity: 0.8 }} />
+                              <span>{app.name}</span>
+                            </button>
+                          );
+                        }
+                      })}
+                      <div className="frappe-dropdown-divider" />
+                      <button
+                        onClick={() => { router.push('/apps'); setAppsDropdownOpen(false); }}
+                        className="frappe-dropdown-item"
+                      >
+                        <LayoutGrid size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                        <span>Desk</span>
+                      </button>
+                      <button
+                        onClick={() => { router.push('/apps/store'); setAppsDropdownOpen(false); }}
+                        className="frappe-dropdown-item"
+                      >
+                        <ShoppingBag size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                        <span>App store</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
+              {/* Tenant Selector Dropdown */}
+              <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
+                <button
+                  onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
+                  className="frappe-btn frappe-btn-secondary"
+                  style={{ padding: 'var(--space-1.5) var(--space-3)', gap: 'var(--space-1)' }}
+                >
+                  <span>{currentTenant.name}</span>
+                  <ChevronDown
+                    size={14}
+                    style={{
+                      color: 'var(--color-text-secondary)',
+                      transform: tenantDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform var(--duration-fast) var(--ease-default)',
+                    }}
+                  />
+                </button>
+                {tenantDropdownOpen && (
+                  <div className="frappe-dropdown frappe-dropdown-left frappe-dropdown-tenant">
+                    <p className="frappe-dropdown-header">Switch Tenant</p>
+                    {tenants.map((t) => {
+                      const isTenantActive = currentTenant.slug === t.slug;
+                      return (
+                        <button
+                          key={t.slug}
+                          onClick={() => handleTenantSwitch(t)}
+                          className={`frappe-dropdown-item ${isTenantActive ? 'active' : ''}`}
+                        >
+                          {t.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Top Right: Search, Dark mode, Notification, Profiler */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             {!isAppsLanding && (
               <div
                 ref={searchDropdownRef}
                 style={{
                   position: 'relative',
-                  maxWidth: '20rem',
-                  width: '100%',
+                  width: '16rem',
                   display: 'block',
                 }}
               >
@@ -1093,80 +1294,28 @@ export default function DashboardLayout({
                     setSearchQuery(e.target.value);
                     setSearchOpen(e.target.value.length > 0);
                   }}
+                  className="frappe-input"
                   style={{
-                    width: '100%',
-                    padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-8)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    fontSize: 'var(--text-sm)',
-                    outline: 'none',
-                    color: 'var(--color-text)',
+                    paddingLeft: 'var(--space-8)',
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.background = 'var(--color-bg-elevated)';
-                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--color-primary-light)';
                     if (searchQuery.length > 0) setSearchOpen(true);
                   }}
                 />
 
                 {/* Dynamic Search Dropdown Results */}
                 {searchOpen && searchQuery.length > 0 && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      marginTop: 'var(--space-1.5)',
-                      background: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-lg)',
-                      boxShadow: 'var(--shadow-lg)',
-                      zIndex: 150,
-                      padding: 'var(--space-1.5)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 'var(--space-1)',
-                      maxHeight: '400px',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    <p
-                      style={{
-                        margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 'var(--weight-semibold)',
-                        color: 'var(--color-text-tertiary)',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      Search Results
-                    </p>
+                  <div className="frappe-dropdown frappe-dropdown-right frappe-dropdown-search">
+                    <p className="frappe-dropdown-header">Search Results</p>
                     {GLOBAL_SEARCH_ITEMS.filter(item =>
                       item.name.toLowerCase().includes(searchQuery.toLowerCase())
                     ).slice(0, 10).map((result) => (
                       <button
                         key={result.name}
                         onClick={() => { router.push(result.href); setSearchOpen(false); setSearchQuery(''); }}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          padding: 'var(--space-2) var(--space-2.5)',
-                          border: 'none',
-                          background: 'transparent',
-                          color: 'var(--color-text)',
-                          borderRadius: 'var(--radius-md)',
-                          fontSize: 'var(--text-sm)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 'var(--space-2)',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        className="frappe-dropdown-item"
                       >
-                        <result.icon size={15} style={{ color: result.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
+                        <result.icon size={14} style={{ color: result.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)', opacity: 0.8 }} />
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 'var(--weight-medium)' }}>{result.name}</span>
                           <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{result.type}</span>
@@ -1183,253 +1332,34 @@ export default function DashboardLayout({
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              {!isAppsLanding && (
-                <>
-                  {/* Apps Home Button */}
-                  <button
-                    onClick={() => router.push('/apps')}
-                    className="frappe-btn frappe-btn-secondary"
-                    style={{ padding: 'var(--space-1.5) var(--space-3)' }}
-                  >
-                    <LayoutGrid size={15} style={{ color: 'var(--color-text-secondary)' }} />
-                    <span>Apps Home</span>
-                  </button>
-
-                  {/* Apps Switcher Dropdown */}
-                  <div style={{ position: 'relative' }} ref={appsDropdownRef}>
-                    <button
-                      onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
-                      className="frappe-btn frappe-btn-secondary"
-                      style={{ padding: 'var(--space-1.5) var(--space-3)' }}
-                    >
-                      <LayoutGrid size={15} style={{ color: 'var(--color-primary)' }} />
-                      <span>Switch App</span>
-                      <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
-                    </button>
-                    {appsDropdownOpen && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: 0,
-                          marginTop: 'var(--space-1.5)',
-                          background: 'var(--color-bg-elevated)',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: 'var(--radius-lg)',
-                          boxShadow: 'var(--shadow-lg)',
-                          width: '16rem',
-                          maxHeight: '70vh',
-                          overflowY: 'auto',
-                          zIndex: 110,
-                          padding: 'var(--space-1.5)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 'var(--space-1)',
-                        }}
-                      >
-                        <p
-                          style={{
-                            margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 'var(--weight-semibold)',
-                            color: 'var(--color-text-tertiary)',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Applications
-                        </p>
-                        {switcherApps.map((app) => (
-                          <button
-                            key={app.name}
-                            onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
-                            style={{
-                              width: '100%',
-                              textAlign: 'left',
-                              padding: 'var(--space-2) var(--space-2.5)',
-                              border: 'none',
-                              background: pathname.startsWith(app.href) ? 'var(--color-primary-light)' : 'transparent',
-                              color: pathname.startsWith(app.href) ? 'var(--color-primary)' : 'var(--color-text)',
-                              borderRadius: 'var(--radius-md)',
-                              fontSize: 'var(--text-sm)',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 'var(--space-2)',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'var(--color-bg-hover)';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!pathname.startsWith(app.href)) e.currentTarget.style.background = 'transparent';
-                            }}
-                          >
-                            <app.icon size={15} />
-                            {app.name}
-                          </button>
-                        ))}
-                        <div style={{ borderTop: '1px solid var(--color-border)', margin: 'var(--space-1) 0' }} />
-                        <button
-                          onClick={() => { router.push('/apps'); setAppsDropdownOpen(false); }}
-                          style={{
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: 'var(--space-2) var(--space-2.5)',
-                            border: 'none',
-                            background: 'transparent',
-                            color: 'var(--color-text)',
-                            borderRadius: 'var(--radius-md)',
-                            fontSize: 'var(--text-sm)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-2)',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                        >
-                          <LayoutGrid size={15} /> Desk
-                        </button>
-                        <button
-                          onClick={() => { router.push('/apps/store'); setAppsDropdownOpen(false); }}
-                          style={{
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: 'var(--space-2) var(--space-2.5)',
-                            border: 'none',
-                            background: 'transparent',
-                            color: 'var(--color-text)',
-                            borderRadius: 'var(--radius-md)',
-                            fontSize: 'var(--text-sm)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-2)',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                        >
-                          <ShoppingBag size={15} /> App store
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Tenant Selector Dropdown */}
-              <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
-                <button
-                  onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
-                  className="frappe-btn frappe-btn-secondary"
-                  style={{ padding: 'var(--space-1.5) var(--space-3)' }}
-                >
-                  <Building size={15} style={{ color: 'var(--color-primary)' }} />
-                  <span>{currentTenant.name}</span>
-                  <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
-                </button>
-                {tenantDropdownOpen && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      marginTop: 'var(--space-1.5)',
-                      background: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-lg)',
-                      boxShadow: 'var(--shadow-lg)',
-                      width: '12rem',
-                      zIndex: 110,
-                      padding: 'var(--space-1.5)',
-                    }}
-                  >
-                    <p
-                      style={{
-                        margin: 'var(--space-1) var(--space-2) var(--space-2) var(--space-2)',
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 'var(--weight-semibold)',
-                        color: 'var(--color-text-tertiary)',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      Switch Tenant
-                    </p>
-                    {tenants.map((t) => (
-                      <button
-                        key={t.slug}
-                        onClick={() => handleTenantSwitch(t)}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          padding: 'var(--space-2) var(--space-2.5)',
-                          border: 'none',
-                          background: currentTenant.slug === t.slug ? 'var(--color-primary-light)' : 'transparent',
-                          color: currentTenant.slug === t.slug ? 'var(--color-primary)' : 'var(--color-text)',
-                          borderRadius: 'var(--radius-md)',
-                          fontSize: 'var(--text-sm)',
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (currentTenant.slug !== t.slug) {
-                            e.currentTarget.style.background = 'var(--color-bg-hover)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (currentTenant.slug !== t.slug) {
-                            e.currentTarget.style.background = 'transparent';
-                          }
-                        }}
-                      >
-                        {t.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Top Right: System settings, Notification, Dark mode, Profiler */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
+              className="frappe-btn frappe-btn-secondary"
               style={{
                 width: '36px',
                 height: '36px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                background: 'transparent',
-                color: 'var(--color-text-secondary)',
+                padding: 0,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
 
             {/* Notification Bell */}
             <button
+              className="frappe-btn frappe-btn-secondary"
               style={{
                 width: '36px',
                 height: '36px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                background: 'transparent',
-                color: 'var(--color-text-secondary)',
+                padding: 0,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
                 position: 'relative',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <Bell size={18} />
               <span
@@ -1479,26 +1409,19 @@ export default function DashboardLayout({
                 >
                   {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
                 </div>
-                <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                <ChevronDown
+                  size={14}
+                  style={{
+                    color: 'var(--color-text-secondary)',
+                    transform: userDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform var(--duration-fast) var(--ease-default)',
+                  }}
+                />
               </button>
 
               {userDropdownOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: 'var(--space-1.5)',
-                    background: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-lg)',
-                    width: '200px',
-                    zIndex: 110,
-                    padding: 'var(--space-1.5)',
-                  }}
-                >
-                  <div style={{ padding: 'var(--space-2) var(--space-3)', borderBottom: '1px solid var(--color-border)' }}>
+                <div className="frappe-dropdown frappe-dropdown-right frappe-dropdown-user">
+                  <div style={{ padding: 'var(--space-2) var(--space-3)', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-0.5)' }}>
                     <p style={{ margin: 0, fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>
                       {user ? `${user.firstName} ${user.lastName}` : 'Super Admin'}
                     </p>
@@ -1506,70 +1429,25 @@ export default function DashboardLayout({
                       {user ? user.email : 'admin@uni-erp.com'}
                     </p>
                   </div>
-                  <div style={{ padding: 'var(--space-1.5) 0' }}>
-                    <button
-                      onClick={() => { router.push('/profile'); setUserDropdownOpen(false); }}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: 'var(--space-2) var(--space-3)',
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'var(--color-text)',
-                        fontSize: 'var(--text-sm)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <UserIcon size={14} /> Profile
-                    </button>
-                    <button
-                      onClick={() => { router.push('/admin/settings'); setUserDropdownOpen(false); }}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: 'var(--space-2) var(--space-3)',
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'var(--color-text)',
-                        fontSize: 'var(--text-sm)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <Settings size={14} /> Settings
-                    </button>
-                  </div>
-                  <div style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-1.5) 0 0 0' }}>
-                    <button
-                      onClick={handleLogout}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: 'var(--space-2) var(--space-3)',
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'var(--color-danger)',
-                        fontSize: 'var(--text-sm)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-danger-light)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <LogOut size={14} /> Sign out
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => { router.push('/profile'); setUserDropdownOpen(false); }}
+                    className="frappe-dropdown-item"
+                  >
+                    <UserIcon size={14} style={{ color: 'var(--color-text-secondary)' }} /> Profile
+                  </button>
+                  <button
+                    onClick={() => { router.push('/admin/settings'); setUserDropdownOpen(false); }}
+                    className="frappe-dropdown-item"
+                  >
+                    <Settings size={14} style={{ color: 'var(--color-text-secondary)' }} /> Settings
+                  </button>
+                  <div className="frappe-dropdown-divider" />
+                  <button
+                    onClick={handleLogout}
+                    className="frappe-dropdown-item frappe-dropdown-item-danger"
+                  >
+                    <LogOut size={14} /> Sign out
+                  </button>
                 </div>
               )}
             </div>

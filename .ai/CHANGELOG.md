@@ -5,6 +5,36 @@
 
 ---
 
+## [2026-06-20] Navigation — Dropdown Styling Revamp & Tree Connector Visuals
+
+### Changed
+- **Dropdown Cleanliness**: Extracted inline CSS styles from `layout.tsx` for the Switch App, Tenant Selector, Search Results, and User Profile dropdown menus into global utility classes in `globals.css` (`.frappe-dropdown-*`).
+- **Nesting UI Hierarchy**: Replaced the simple indent spacing for nested sub-apps inside expanded folders (Developer & System) with a distinct vertical connector line (`.frappe-dropdown-item-nested-container`) aligned precisely with the folder icons.
+- **Dynamic Caret Rotations**: Caret indicators (`ChevronDown` and folder `ChevronRight`) now rotate smoothly using CSS transitions when toggled open/expanded, rather than popping instantly.
+- **Interactive Micro-animations**: Dropdown menus fade-in-up dynamically using keyframe animations on mount. Added a subtle `translateX(2px)` hover animation on list items to increase responsiveness.
+- **Danger Action Isolation**: Created `.frappe-dropdown-item-danger` for negative triggers (Sign out) to eliminate hover styling event listeners.
+
+## [2026-06-20] Navigation — Rearranged Navbar & Global CSS Styling
+
+### Changed
+- **Header Structure**: Rearranged elements in the main layout header panel:
+  - Placed the "Switch Tenant" button directly next to the "Switch App" button on the left side of the navbar.
+  - Removed the redundant "Apps Home" button.
+  - Moved the search bar to the right side of the navbar, positioned next to the theme toggle button.
+  - Aligned search results dropdown menu to render relative to the right-hand position (`right: 0`).
+- **Global Styling Alignment**: Replaced custom inline CSS borders, backgrounds, and colors with global utility classes:
+  - Search Input: `className="frappe-input"`
+  - Theme Toggle: `className="frappe-btn frappe-btn-secondary"`
+  - Notification Bell: `className="frappe-btn frappe-btn-secondary"`
+
+## [2026-06-20] Navigation — Collapsible Folders in Switch App Dropdown
+
+### Added
+- **Collapsible Switcher folders**: Added collapsible subfolders for "Developer" and "System" in the "Switch App" dropdown in `layout.tsx` to mirror the Desk layout.
+- **Indented sub-apps**: Inside collapsed dropdown folders, children applications render slightly indented.
+- **Chevron Indicators**: Implemented interactive `ChevronRight` and `ChevronDown` icons to signify the expansion state of collapsible sections.
+- **Alphabetical sorting**: Both root apps and folder headers are combined and sorted alphabetically.
+
 ## [2026-06-20] Custom App Builder — Integrated In-Studio Builders (never leave build mode)
 
 ### Added
