@@ -89,46 +89,10 @@ interface SubfolderDefinition {
 
 const SUBFOLDERS: SubfolderDefinition[] = [
   {
-    id: 'people',
-    name: 'People & HR',
-    color: 'var(--color-warning)',
-    appIds: ['hr', 'communication'],
-  },
-  {
-    id: 'operations',
-    name: 'Operations',
-    color: '#84cc16',
-    appIds: ['manufacturing', 'inventory', 'procurement', 'supply-chain'],
-  },
-  {
-    id: 'finance',
-    name: 'Finance',
-    color: '#10b981',
-    appIds: ['finance', 'pos', 'workflows'],
-  },
-  {
-    id: 'projects',
-    name: 'Projects & Work',
-    color: '#06b6d4',
-    appIds: ['projects', 'sales'],
-  },
-  {
-    id: 'intelligence',
-    name: 'Intelligence',
-    color: '#a855f7',
-    appIds: ['analytics', 'documents', 'storage'],
-  },
-  {
     id: 'developer',
     name: 'Developer',
     color: '#334155',
     appIds: ['api-keys', 'app-store', 'builder', 'devops'],
-  },
-  {
-    id: 'files',
-    name: 'Files & Docs',
-    color: '#eab308',
-    appIds: [],
   },
   {
     id: 'system',
@@ -137,9 +101,6 @@ const SUBFOLDERS: SubfolderDefinition[] = [
     appIds: ['admin', 'localization', 'sync', 'saas'],
   },
 ];
-
-// Root-level apps (not in any subfolder)
-const ROOT_APP_IDS = ['dashboard', 'crm', 'healthcare', 'education', 'real-estate', 'field-service'];
 
 function FolderTile({ folder, onClick, activeApps }: { folder: SubfolderDefinition; onClick: () => void; activeApps: AppDefinition[] }) {
   const appsInFolder = activeApps.filter(a => folder.appIds.includes(a.id));
@@ -274,25 +235,31 @@ export default function AppsHubPage() {
       })
     : [];
 
-  const rootApps = sortedActiveApps.filter(app => ROOT_APP_IDS.includes(app.id));
+  const folderAppIds = SUBFOLDERS.flatMap(f => f.appIds);
+  const rootApps = sortedActiveApps.filter(app => !folderAppIds.includes(app.id));
   const visibleSubfolders = SUBFOLDERS.filter(f => sortedActiveApps.filter(a => f.appIds.includes(a.id)).length > 0);
   const sortedSubfolders = [...visibleSubfolders].sort((a, b) => a.name.localeCompare(b.name));
+
+  // Combine folders and rootApps into a single list sorted alphabetically
+  const gridItems = [
+    ...sortedSubfolders.map(folder => ({ type: 'folder' as const, id: folder.id, name: folder.name, data: folder })),
+    ...rootApps.map(app => ({ type: 'app' as const, id: app.id, name: app.name, data: app }))
+  ].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', minHeight: '80vh', position: 'relative' }}>
       {/* Center card */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 'var(--space-8)' }}>
-        <div style={{
+        <div className="frappe-card" style={{
           width: '940px', maxWidth: '100%',
-          background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-xl)',
-          overflow: 'hidden', position: 'relative',
+          boxShadow: 'var(--shadow-xl)',
+          position: 'relative',
         }}>
           {/* Header */}
           <div style={{ padding: 'var(--space-5) var(--space-6)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0, color: 'var(--color-text)' }}>
-                {openFolder ? openFolderObj?.name : 'All Applications'}
+                {openFolder ? openFolderObj?.name : 'Desk'}
               </h2>
               {openFolder && (
                 <button
@@ -308,11 +275,12 @@ export default function AppsHubPage() {
             <div style={{ position: 'relative', width: '240px' }}>
               <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
               <input
+                className="frappe-input"
                 type="text"
                 placeholder={openFolder ? `Search in ${openFolderObj?.name}...` : 'Search all apps...'}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                style={{ width: '100%', padding: '8px 12px 8px 34px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: '13px', outline: 'none' }}
+                style={{ paddingLeft: '34px', fontSize: '13px' }}
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 0 }}>
@@ -355,21 +323,22 @@ export default function AppsHubPage() {
                 </div>
               </div>
             ) : (
-              /* Root grid: subfolders + individual apps */
+              /* Root grid: subfolders + individual apps mixed alphabetically */
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
-                {/* Subfolders first */}
-                {sortedSubfolders.map(folder => (
-                  <FolderTile
-                    key={folder.id}
-                    folder={folder}
-                    onClick={() => setOpenFolder(folder.id)}
-                    activeApps={sortedActiveApps}
-                  />
-                ))}
-                {/* Then root-level individual apps */}
-                {rootApps.map(app => (
-                  <SingleAppTile key={app.id} app={app} />
-                ))}
+                {gridItems.map(item => {
+                  if (item.type === 'folder') {
+                    return (
+                      <FolderTile
+                        key={item.id}
+                        folder={item.data}
+                        onClick={() => setOpenFolder(item.id)}
+                        activeApps={sortedActiveApps}
+                      />
+                    );
+                  } else {
+                    return <SingleAppTile key={item.id} app={item.data} />;
+                  }
+                })}
               </div>
             )}
           </div>

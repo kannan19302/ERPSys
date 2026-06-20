@@ -23,6 +23,7 @@ import {
   Settings,
   Building,
   ShoppingCart,
+  ShoppingBag,
   ClipboardList,
   Truck,
   Briefcase,
@@ -622,10 +623,15 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
   const renderItem = (item: SidebarItem, isSub = false) => {
     if (item.isHeader) {
       if (collapsed) {
-        return <div key={item.name} style={{ height: '1px', background: 'var(--color-border)', margin: 'var(--space-4) 0' }} />;
+        return (
+          <React.Fragment key={item.name}>
+            <div style={{ height: '1px', background: 'var(--color-border)', margin: 'var(--space-2) 0' }} />
+            {item.items?.map(sub => renderItem(sub, true))}
+          </React.Fragment>
+        );
       }
       return (
-        <div key={item.name} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', marginTop: 'var(--space-4)' }}>
+        <div key={item.name} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', marginTop: 'var(--space-3)' }}>
           <div style={{
             fontSize: '9px',
             textTransform: 'uppercase',
@@ -1264,6 +1270,27 @@ export default function DashboardLayout({
                         ))}
                         <div style={{ borderTop: '1px solid var(--color-border)', margin: 'var(--space-1) 0' }} />
                         <button
+                          onClick={() => { router.push('/apps'); setAppsDropdownOpen(false); }}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: 'var(--space-2) var(--space-2.5)',
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--color-text)',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: 'var(--text-sm)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <LayoutGrid size={15} /> Desk
+                        </button>
+                        <button
                           onClick={() => { router.push('/apps/store'); setAppsDropdownOpen(false); }}
                           style={{
                             width: '100%',
@@ -1282,7 +1309,7 @@ export default function DashboardLayout({
                           onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
                           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
-                          <LayoutGrid size={15} /> All Applications...
+                          <ShoppingBag size={15} /> App store
                         </button>
                       </div>
                     )}

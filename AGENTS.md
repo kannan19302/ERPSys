@@ -98,7 +98,8 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
       - URL: `http://localhost:3000`
       - Email: `admin@unerp.dev`
       - Password: `admin123`
-17. **Always verify both servers are running** before asking the user to test. Confirm port 3001 (API) and 3000 (Web) are listening.
+19. **Always verify both servers are running** before asking the user to test. Confirm port 3001 (API) and 3000 (Web) are listening.
+20. **Never run browser testing subagents** unless explicitly requested by the user. The user will handle manual testing in the browser themselves.
 
 ---
 
