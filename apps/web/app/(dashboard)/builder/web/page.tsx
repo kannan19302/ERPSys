@@ -11,23 +11,39 @@ import {
   Image,
   Code2,
   Layers,
-  Database,
+  SearchCheck,
 } from 'lucide-react';
 
-const RECENT_WEB = [
-  { name: 'Homepage', slug: '/', status: 'Published', type: 'page' },
-  { name: 'About Us', slug: '/about', status: 'Published', type: 'page' },
-  { name: 'Introducing UniERP v12', slug: '/blog/v12', status: 'Draft', type: 'blog' },
-];
+interface WebStats {
+  publishedPages: number;
+  blogPosts: number;
+  assets: number;
+  templates: number;
+  pages: number;
+  seo: number;
+  menus: number;
+}
 
 export default function WebBuilderPage() {
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<WebStats>({
+    publishedPages: 0,
+    blogPosts: 0,
+    assets: 0,
+    templates: 0,
+    pages: 0,
+    seo: 0,
+    menus: 0,
+  });
 
   useEffect(() => {
-    fetch('/api/v1/builder/stats', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } })
+    fetch('/api/v1/builder/stats', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') } })
       .then(res => res.json())
-      .then(data => setStats(data.web))
+      .then(data => {
+        if (data && data.web) {
+          setStats(data.web);
+        }
+      })
       .catch(console.error);
   }, []);
 
@@ -54,10 +70,10 @@ export default function WebBuilderPage() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)' }}>
         {[
-          { label: 'Published Pages', value: stats?.publishedPages?.toString() || '7', icon: Globe, color: '#7c3aed' },
-          { label: 'Blog Posts', value: stats?.blogPosts?.toString() || '24', icon: FileText, color: 'var(--color-primary)' },
-          { label: 'Media Assets', value: stats?.assets?.toString() || '86', icon: Image, color: '#059669' },
-          { label: 'Templates', value: stats?.templates?.toString() || '6', icon: Code2, color: '#d97706' },
+          { label: 'Published Pages', value: stats.publishedPages.toString(), icon: Globe, color: '#7c3aed' },
+          { label: 'Blog Posts', value: stats.blogPosts.toString(), icon: FileText, color: 'var(--color-primary)' },
+          { label: 'Media Assets', value: stats.assets.toString(), icon: Image, color: '#059669' },
+          { label: 'Templates', value: stats.templates.toString(), icon: Code2, color: '#d97706' },
         ].map(stat => (
           <div key={stat.label} className="frappe-card" style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', background: `${stat.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -79,42 +95,42 @@ export default function WebBuilderPage() {
             description: 'Design page layouts with drag-and-drop sections',
             icon: Monitor, color: '#7c3aed',
             href: '/builder/web/pages',
-            count: '9 pages',
+            count: `${stats.pages} pages`,
           },
           {
             title: 'Blog Posts',
             description: 'Write, edit, and publish blog articles',
             icon: FileText, color: 'var(--color-primary)',
             href: '/builder/web/blog',
-            count: '24 posts',
+            count: `${stats.blogPosts} posts`,
           },
           {
             title: 'Asset Manager',
             description: 'Upload and organize images, videos, documents',
             icon: Image, color: '#059669',
             href: '/builder/web/assets',
-            count: '86 files',
+            count: `${stats.assets} files`,
           },
           {
             title: 'Templates',
             description: 'Manage reusable page and email templates',
             icon: Code2, color: '#d97706',
             href: '/builder/web/templates',
-            count: '6 templates',
+            count: `${stats.templates} templates`,
           },
           {
             title: 'Navigation Menus',
             description: 'Configure header, footer, and sidebar menus',
             icon: Layers, color: '#0891b2',
             href: '/builder/web/menus',
-            count: '3 menus',
+            count: `${stats.menus} menus`,
           },
           {
-            title: 'API Routes',
-            description: 'Manage public-facing API routes and webhooks',
-            icon: Database, color: '#7c3aed',
-            href: '/builder/web/api-routes',
-            count: '12 routes',
+            title: 'SEO Settings',
+            description: 'Manage page metadata and search visibility',
+            icon: SearchCheck, color: '#7c3aed',
+            href: '/builder/web/seo',
+            count: `${stats.seo} entries`,
           },
         ].map(item => (
           <div
@@ -144,28 +160,9 @@ export default function WebBuilderPage() {
           Recent Website Changes
         </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-          {RECENT_WEB.map(item => (
-            <div
-              key={item.name}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-2.5) var(--space-3)', borderRadius: 'var(--radius-md)', cursor: 'pointer' }}
-              onClick={() => router.push('/builder/web/pages')}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {item.type === 'blog' ? <FileText size={13} style={{ color: '#7c3aed' }} /> : <Monitor size={13} style={{ color: '#7c3aed' }} />}
-                </div>
-                <div>
-                  <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', margin: 0, color: 'var(--color-text)' }}>{item.name}</p>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0, fontFamily: 'monospace' }}>{item.slug}</p>
-                </div>
-              </div>
-              <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: item.status === 'Published' ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: item.status === 'Published' ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                {item.status}
-              </span>
-            </div>
-          ))}
+          <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-sm)' }}>
+            Recent changes will appear after website content is created or updated.
+          </div>
         </div>
       </div>
     </div>

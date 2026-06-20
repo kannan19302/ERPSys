@@ -1770,6 +1770,7 @@ async function main() {
       slug: 'employee-onboarding',
       description: 'Standard onboarding checklist form',
       status: 'PUBLISHED',
+      module: 'HR',
       fields: JSON.stringify([
         { name: 'firstName', type: 'text', label: 'First Name', required: true },
         { name: 'lastName', type: 'text', label: 'Last Name', required: true },
@@ -1820,6 +1821,7 @@ async function main() {
       description: 'Manage company vehicles and maintenance',
       icon: 'Truck',
       status: 'ACTIVE',
+      scope: 'ORGANIZATION',
       entities: JSON.stringify([
         { name: 'Vehicle', fields: ['plateNumber', 'model', 'status'] },
         { name: 'MaintenanceLog', fields: ['vehicleId', 'date', 'cost'] },

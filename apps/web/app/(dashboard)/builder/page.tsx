@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Layers,
   Globe,
@@ -20,45 +20,76 @@ import {
   Code2,
 } from 'lucide-react';
 
-const RECENT_APPS = [
-  { name: 'Sales Order Form', type: 'erp', path: '/builder/erp/forms', status: 'Published', updatedAt: '2 hours ago' },
-  { name: 'Homepage Hero', type: 'web', path: '/builder/web/pages', status: 'Draft', updatedAt: '5 hours ago' },
-  { name: 'Expense Approval Workflow', type: 'erp', path: '/builder/erp/workflows', status: 'Published', updatedAt: '1 day ago' },
-  { name: 'About Us Page', type: 'web', path: '/builder/web/pages', status: 'Published', updatedAt: '2 days ago' },
-  { name: 'KPI Executive Dashboard', type: 'erp', path: '/builder/erp/dashboards', status: 'Draft', updatedAt: '3 days ago' },
-  { name: 'Blog Post Template', type: 'web', path: '/builder/web/templates', status: 'Published', updatedAt: '4 days ago' },
-];
+interface RecentItem {
+  id: string;
+  name: string;
+  type: string;
+  path: string;
+  status: string;
+  updatedAt: string;
+}
+
+function formatTimeAgo(dateString: string): string {
+  if (!dateString) return 'unknown';
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  
+  let interval = seconds / 31536000;
+  if (interval >= 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval >= 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval >= 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval >= 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval >= 1) return Math.floor(interval) + " mins ago";
+  return "just now";
+}
 
 const ERP_QUICK_ACTIONS = [
-  { label: 'New Form', icon: FileCode2, href: '/builder/erp/forms', color: 'var(--color-primary)' },
-  { label: 'New Workflow', icon: Workflow, href: '/builder/erp/workflows', color: '#7c3aed' },
-  { label: 'New Dashboard', icon: BarChart3, href: '/builder/erp/dashboards', color: '#059669' },
-  { label: 'New Module', icon: Cpu, href: '/builder/erp/modules', color: '#d97706' },
+  { label: 'New Form', icon: FileCode2, href: '/builder/erp/forms?new=1', color: 'var(--color-primary)' },
+  { label: 'New Workflow', icon: Workflow, href: '/builder/erp/workflows/new', color: '#7c3aed' },
+  { label: 'New Dashboard', icon: BarChart3, href: '/builder/erp/dashboards/new', color: '#059669' },
+  { label: 'New Module', icon: Cpu, href: '/builder/erp/modules?new=1', color: '#d97706' },
 ];
 
 const WEB_QUICK_ACTIONS = [
-  { label: 'New Page', icon: Globe, href: '/builder/web/pages', color: 'var(--color-primary)' },
-  { label: 'Upload Asset', icon: Image, href: '/builder/web/assets', color: '#7c3aed' },
-  { label: 'New Template', icon: FileText, href: '/builder/web/templates', color: '#059669' },
-  { label: 'API Settings', icon: Database, href: '/builder/web/api-routes', color: '#d97706' },
+  { label: 'New Page', icon: Globe, href: '/builder/web/pages?new=1', color: 'var(--color-primary)' },
+  { label: 'Upload Asset', icon: Image, href: '/builder/web/assets?new=1', color: '#7c3aed' },
+  { label: 'New Template', icon: FileText, href: '/builder/web/templates?new=1', color: '#059669' },
+  { label: 'SEO Settings', icon: Database, href: '/builder/web/seo?new=1', color: '#d97706' },
 ];
 
-export default function BuilderPage() {
+function BuilderPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams?.get('tab') || 'all';
+
+  const setTab = (newTab: string) => {
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    if (newTab === 'all') params.delete('tab');
+    else params.set('tab', newTab);
+    router.push(`/builder?${params.toString()}`);
+  };
+
   const [stats, setStats] = useState({
-    erp: { forms: 12, workflows: 8, dashboards: 5, modules: 3 },
-    web: { pages: 9, blogPosts: 24, assets: 86, templates: 6 }
+    erp: { forms: 0, workflows: 0, dashboards: 0, modules: 0 },
+    web: { pages: 0, blogPosts: 0, assets: 0, templates: 0 }
   });
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/v1/builder/stats', {
-          headers: { Authorization: `Bearer ${token || ''}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
+        const [statsRes, recentRes] = await Promise.all([
+          fetch('/api/v1/builder/stats', { headers: { Authorization: `Bearer ${token || ''}` } }),
+          fetch('/api/v1/builder/recent-items', { headers: { Authorization: `Bearer ${token || ''}` } })
+        ]);
+        
+        if (statsRes.ok) {
+          const data = await statsRes.json();
           setStats({
             erp: {
               forms: data.erp.forms || 0,
@@ -74,8 +105,13 @@ export default function BuilderPage() {
             }
           });
         }
-      } catch (err) {
-        console.error('Failed to fetch builder stats', err);
+        
+        if (recentRes.ok) {
+          const data = await recentRes.json();
+          setRecentItems(data || []);
+        }
+      } catch {
+        // fallback to empty state
       }
     };
     fetchStats();
@@ -93,20 +129,32 @@ export default function BuilderPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+          <button 
+            className={`frappe-btn ${activeTab === 'erp' ? 'frappe-btn-primary' : 'frappe-btn-secondary'}`} 
+            onClick={() => setTab('erp')}
+          >
             <Cpu size={15} />
             <span>ERP Builder</span>
           </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => router.push('/builder/web')}>
+          <button 
+            className={`frappe-btn ${activeTab === 'web' ? 'frappe-btn-primary' : 'frappe-btn-secondary'}`} 
+            onClick={() => setTab('web')}
+          >
             <Globe size={15} />
             <span>Website Builder</span>
           </button>
+          {activeTab !== 'all' && (
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => setTab('all')}>
+              Show All
+            </button>
+          )}
         </div>
       </div>
 
       {/* Mode Cards */}
-      <div className="builder-mode-grid">
+      <div className="builder-mode-grid" style={{ gridTemplateColumns: activeTab !== 'all' ? '1fr' : undefined }}>
         {/* ERP App Builder Card */}
+        {(activeTab === 'all' || activeTab === 'erp') && (
         <div
           className="frappe-card"
           style={{
@@ -162,8 +210,10 @@ export default function BuilderPage() {
             <ChevronRight size={15} />
           </button>
         </div>
+        )}
 
         {/* Website Builder Card */}
+        {(activeTab === 'all' || activeTab === 'web') && (
         <div
           className="frappe-card"
           style={{
@@ -222,11 +272,13 @@ export default function BuilderPage() {
             <ChevronRight size={15} />
           </button>
         </div>
+        )}
       </div>
 
       {/* Quick Actions Row */}
-      <div className="builder-mode-grid">
+      <div className="builder-mode-grid" style={{ gridTemplateColumns: activeTab !== 'all' ? '1fr' : undefined }}>
         {/* ERP Quick Actions */}
+        {(activeTab === 'all' || activeTab === 'erp') && (
         <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
           <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', margin: '0 0 var(--space-3) 0', letterSpacing: '0.05em' }}>
             ERP Builder — Quick Create
@@ -252,8 +304,10 @@ export default function BuilderPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Website Quick Actions */}
+        {(activeTab === 'all' || activeTab === 'web') && (
         <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
           <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', margin: '0 0 var(--space-3) 0', letterSpacing: '0.05em' }}>
             Website Builder — Quick Create
@@ -279,6 +333,7 @@ export default function BuilderPage() {
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {/* Recent Items */}
@@ -290,7 +345,12 @@ export default function BuilderPage() {
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Across all builder modes</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-          {RECENT_APPS.map(item => (
+          {recentItems.length === 0 && (
+            <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-sm)' }}>
+              No recent items found
+            </div>
+          )}
+          {recentItems.map(item => (
             <div
               key={item.name}
               style={{
@@ -316,7 +376,7 @@ export default function BuilderPage() {
                 </div>
                 <div>
                   <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', margin: 0, color: 'var(--color-text)' }}>{item.name}</p>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{item.type === 'erp' ? 'ERP Builder' : 'Website Builder'} · {item.updatedAt}</p>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{item.type === 'erp' ? 'ERP Builder' : 'Website Builder'} · {formatTimeAgo(item.updatedAt)}</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -335,5 +395,15 @@ export default function BuilderPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function BuilderPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Builder Studio...</div>}>
+      <BuilderPageContent />
+    </Suspense>
   );
 }

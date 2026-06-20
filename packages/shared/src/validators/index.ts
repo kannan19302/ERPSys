@@ -714,3 +714,301 @@ export type ProjectStatusZod = z.infer<typeof projectStatusSchema>;
 
 export const employeeStatusSchema = z.enum(['ACTIVE', 'INVITED', 'TERMINATED', 'LEAVE']);
 export type EmployeeStatusZod = z.infer<typeof employeeStatusSchema>;
+
+// Builder Studio Schemas
+
+const builderSlugSchema = z
+  .string()
+  .min(1, 'Slug is required')
+  .max(80)
+  .regex(/^[a-z0-9][a-z0-9-]*$/, 'Use lowercase letters, numbers, and hyphens');
+
+const builderModuleSlugSchema = z
+  .string()
+  .min(1, 'Module is required')
+  .max(80)
+  .regex(/^[a-z0-9][a-z0-9_-]*$/, 'Use lowercase letters, numbers, underscores, and hyphens');
+
+const builderJsonObjectSchema = z.record(z.unknown());
+
+export const builderFieldSchema = z.object({
+  id: z.string().min(1).optional(),
+  name: z.string().min(1).max(80),
+  label: z.string().min(1).max(120).optional(),
+  type: z.string().min(1).max(40),
+  options: z.union([z.string(), z.array(z.unknown()), z.null()]).optional(),
+  required: z.boolean().optional(),
+  readOnly: z.boolean().optional(),
+  defaultValue: z.unknown().optional(),
+  inListView: z.boolean().optional(),
+  readRoles: z.string().max(500).optional().nullable(),
+  writeRoles: z.string().max(500).optional().nullable(),
+  formula: z.string().max(1000).optional().nullable(),
+  placeholder: z.string().max(200).optional(),
+  description: z.string().max(1000).optional(),
+  columnSpan: z.number().int().min(1).max(12).optional(),
+  height: z.number().int().min(1).max(1200).optional(),
+  weight: z.number().positive().max(12).optional(),
+  dataSource: z.string().max(300).optional(),
+  dataFilter: z.string().max(1000).optional(),
+  visibilityRule: z.string().max(1000).optional(),
+  minLength: z.number().int().min(0).optional(),
+  maxLength: z.number().int().min(0).optional(),
+  regexPattern: z.string().max(500).optional(),
+  cssClass: z.string().max(120).optional(),
+});
+export type BuilderFieldInput = z.infer<typeof builderFieldSchema>;
+
+export const createBuilderFormSchema = z.object({
+  name: z.string().min(1).max(160),
+  slug: builderSlugSchema,
+  description: z.string().max(1000).optional(),
+  icon: z.string().max(80).optional(),
+  module: z.string().max(80).optional(),
+  fields: z.array(builderFieldSchema).optional(),
+  settings: builderJsonObjectSchema.optional(),
+});
+export type CreateBuilderFormInput = z.infer<typeof createBuilderFormSchema>;
+
+export const updateBuilderFormSchema = createBuilderFormSchema
+  .omit({ slug: true })
+  .partial()
+  .extend({ status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional() });
+export type UpdateBuilderFormInput = z.infer<typeof updateBuilderFormSchema>;
+
+export const createSchemaRegistrySchema = z.object({
+  module: builderModuleSlugSchema,
+  name: z.string().min(1).max(160),
+  slug: builderSlugSchema,
+  description: z.string().max(1000).optional(),
+  fields: z.array(builderFieldSchema).optional(),
+  settings: builderJsonObjectSchema.optional(),
+});
+export type CreateSchemaRegistryInput = z.infer<typeof createSchemaRegistrySchema>;
+
+export const updateSchemaRegistrySchema = createSchemaRegistrySchema
+  .omit({ module: true, slug: true })
+  .partial()
+  .extend({ status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']).optional() });
+export type UpdateSchemaRegistryInput = z.infer<typeof updateSchemaRegistrySchema>;
+
+export const createPageRegistrySchema = z.object({
+  schemaId: z.string().min(1).optional(),
+  module: builderModuleSlugSchema,
+  slug: builderSlugSchema,
+  title: z.string().min(1).max(160),
+  type: z.enum(['FORM', 'LIST', 'DASHBOARD', 'REPORT']).default('FORM').optional(),
+  layout: z.union([z.array(builderFieldSchema), z.object({ fields: z.array(builderFieldSchema), settings: builderJsonObjectSchema.optional() })]).optional(),
+});
+export type CreatePageRegistryInput = z.infer<typeof createPageRegistrySchema>;
+
+export const updatePageRegistrySchema = createPageRegistrySchema
+  .partial()
+  .extend({ status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional() });
+export type UpdatePageRegistryInput = z.infer<typeof updatePageRegistrySchema>;
+
+export const restorePageRegistryHistorySchema = z.object({
+  historyIndex: z.number().int().min(0),
+});
+export type RestorePageRegistryHistoryInput = z.infer<typeof restorePageRegistryHistorySchema>;
+
+export const customRecordDataSchema = z.record(z.unknown());
+export type CustomRecordDataInput = z.infer<typeof customRecordDataSchema>;
+
+export const createDataImportSchema = z.object({
+  name: z.string().min(1).max(160),
+  targetModel: z.enum(['customer', 'vendor', 'product', 'employee', 'warehouse']),
+  fileName: z.string().min(1).max(255),
+  fileSize: z.number().int().positive(),
+  totalRows: z.number().int().min(0),
+  columnMapping: z.record(z.string().max(80)).optional(),
+});
+export type CreateDataImportInput = z.infer<typeof createDataImportSchema>;
+
+export const executeDataImportSchema = z.object({
+  rows: z.array(z.record(z.unknown())).max(1000),
+});
+export type ExecuteDataImportInput = z.infer<typeof executeDataImportSchema>;
+
+export const builderAnalyticsEventSchema = z.object({
+  event: z.string().min(1).max(120),
+  entityType: z.string().max(80).optional(),
+  entityId: z.string().max(120).optional(),
+  metadata: builderJsonObjectSchema.optional(),
+});
+export type BuilderAnalyticsEventInput = z.infer<typeof builderAnalyticsEventSchema>;
+
+export const builderAiGenerateSchema = z.object({
+  prompt: z.string().min(3).max(2000),
+});
+export type BuilderAiGenerateInput = z.infer<typeof builderAiGenerateSchema>;
+
+// Additional Builder DTOs
+export const createBuilderWorkflowSchema = z.object({
+  name: z.string().min(1).max(160),
+  description: z.string().optional(),
+  docType: z.string().optional(),
+  trigger: z.string().optional(),
+  nodes: z.array(z.any()).optional(),
+  edges: z.array(z.any()).optional(),
+  settings: z.record(z.unknown()).optional(),
+});
+export const updateBuilderWorkflowSchema = createBuilderWorkflowSchema.partial().extend({ status: z.string().optional() });
+
+export const createBuilderDashboardSchema = z.object({
+  name: z.string().min(1).max(160),
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  widgets: z.array(z.any()).optional(),
+  layout: z.record(z.unknown()).optional(),
+  refreshRate: z.number().int().min(0).optional(),
+});
+export const updateBuilderDashboardSchema = createBuilderDashboardSchema.partial().extend({ status: z.string().optional() });
+
+export const createBuilderModuleSchema = z.object({
+  name: z.string().min(1).max(160),
+  slug: builderSlugSchema,
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  scope: z.string().optional(),
+  version: z.string().optional(),
+  entities: z.array(z.any()).optional(),
+  relationships: z.array(z.any()).optional(),
+  permissions: z.record(z.unknown()).optional(),
+  pages: z.array(z.any()).optional(),
+  components: z.array(z.any()).optional(),
+  dataModels: z.array(z.any()).optional(),
+  testResults: z.record(z.unknown()).optional(),
+});
+export const updateBuilderModuleSchema = createBuilderModuleSchema.omit({ slug: true }).partial().extend({ status: z.string().optional(), scope: z.string().optional() });
+
+export const addAppComponentSchema = z.object({
+  type: z.enum(['form', 'workflow', 'dashboard', 'automation']),
+  refId: z.string().min(1),
+  name: z.string().min(1).max(160),
+});
+export type AddAppComponentInput = z.infer<typeof addAppComponentSchema>;
+
+export const addAppPageSchema = z.object({
+  name: z.string().min(1).max(160),
+  slug: z.string().min(1).max(160),
+  type: z.enum(['form', 'list', 'dashboard']),
+  formId: z.string().optional(),
+  dashboardId: z.string().optional(),
+});
+export type AddAppPageInput = z.infer<typeof addAppPageSchema>;
+
+export const addAppDataModelSchema = z.object({
+  name: z.string().min(1).max(160),
+  fields: z.array(z.object({
+    name: z.string().min(1),
+    type: z.string().min(1),
+    required: z.boolean().optional(),
+    label: z.string().optional(),
+  })),
+  relationships: z.array(z.any()).optional(),
+});
+export type AddAppDataModelInput = z.infer<typeof addAppDataModelSchema>;
+
+export const publishModuleSchema = z.object({
+  scope: z.enum(['ORGANIZATION', 'GLOBAL']),
+  // Optional release metadata. When omitted, the patch version is auto-bumped.
+  version: z.string().regex(/^\d+\.\d+\.\d+$/).optional(),
+  bump: z.enum(['major', 'minor', 'patch']).optional(),
+  changelog: z.string().max(5000).optional(),
+  // Store-listing metadata (persisted on the module).
+  category: z.string().max(80).optional(),
+  longDescription: z.string().max(5000).optional(),
+  publisher: z.string().max(120).optional(),
+  screenshots: z.array(z.string()).optional(),
+});
+export type PublishModuleInput = z.infer<typeof publishModuleSchema>;
+
+export const rollbackModuleSchema = z.object({
+  releaseId: z.string().min(1),
+});
+export type RollbackModuleInput = z.infer<typeof rollbackModuleSchema>;
+
+// Install a builder-published app from the marketplace into the current tenant.
+export const installBuilderAppSchema = z.object({
+  moduleId: z.string().min(1),
+  releaseId: z.string().optional(), // defaults to the module's current release
+});
+export type InstallBuilderAppInput = z.infer<typeof installBuilderAppSchema>;
+
+export const createAutomationRuleSchema = z.object({
+  name: z.string().min(1).max(160),
+  description: z.string().optional(),
+  trigger: z.string(),
+  triggerConfig: z.record(z.unknown()).optional(),
+  conditions: z.array(z.any()).optional(),
+  actions: z.array(z.any()).optional(),
+  settings: z.record(z.unknown()).optional(),
+});
+export const updateAutomationRuleSchema = createAutomationRuleSchema.partial().extend({ status: z.string().optional() });
+
+export const createWebPageSchema = z.object({
+  name: z.string().min(1).max(160),
+  slug: builderSlugSchema,
+  sections: z.array(z.any()).optional(),
+  metaTitle: z.string().optional(),
+  metaDesc: z.string().optional(),
+  ogImage: z.string().optional(),
+  visibility: z.string().optional(),
+});
+export const updateWebPageSchema = createWebPageSchema.omit({ slug: true }).partial().extend({ status: z.string().optional(), sortOrder: z.number().int().optional() });
+
+export const createBlogPostSchema = z.object({
+  title: z.string().min(1).max(160),
+  slug: builderSlugSchema,
+  content: z.string().optional(),
+  excerpt: z.string().optional(),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  author: z.string().optional(),
+  featuredImage: z.string().optional(),
+  metaTitle: z.string().optional(),
+  metaDesc: z.string().optional(),
+  readTime: z.string().optional(),
+});
+export const updateBlogPostSchema = createBlogPostSchema.omit({ slug: true }).partial().extend({ status: z.string().optional() });
+
+export const createWebAssetSchema = z.object({
+  name: z.string().min(1).max(160),
+  type: z.string(),
+  url: z.string().url(),
+  size: z.number().int().min(0).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export const updateWebAssetSchema = createWebAssetSchema.partial();
+
+export const createWebTemplateSchema = z.object({
+  name: z.string().min(1).max(160),
+  type: z.string(),
+  content: z.string(),
+  styles: z.string().optional(),
+  scripts: z.string().optional(),
+  settings: z.record(z.unknown()).optional(),
+});
+export const updateWebTemplateSchema = createWebTemplateSchema.partial().extend({ status: z.string().optional() });
+
+export const createWebMenuSchema = z.object({
+  name: z.string().min(1).max(160),
+  location: z.string(),
+  items: z.array(z.any()).optional(),
+  settings: z.record(z.unknown()).optional(),
+});
+export const updateWebMenuSchema = createWebMenuSchema.partial().extend({ status: z.string().optional() });
+
+export const createWebSeoSchema = z.object({
+  path: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  keywords: z.string().optional(),
+  ogImage: z.string().optional(),
+  twitterCard: z.string().optional(),
+  canonicalUrl: z.string().optional(),
+  schemaJson: z.string().optional(),
+});
+export const updateWebSeoSchema = createWebSeoSchema.partial();

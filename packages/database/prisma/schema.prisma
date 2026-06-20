@@ -3216,6 +3216,13 @@ model InstalledApp {
   appId       String   @map("app_id")
   installedAt DateTime @default(now()) @map("installed_at")
 
+  // ─── Builder-app installs (null for static catalog apps) ───
+  source           String  @default("CATALOG") // CATALOG | BUILDER
+  sourceModuleId   String? @map("source_module_id") // BuilderModule.id this was installed from
+  releaseId        String? @map("release_id") // pinned AppRelease.id
+  installedVersion String? @map("installed_version")
+  provisioned      Json    @default("{}") // {pageRegistryIds:[], schemaRegistryIds:[]} for teardown on uninstall
+
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, appId])
@@ -4050,6 +4057,7 @@ model BuilderForm {
   description String?
   icon        String?
   status      String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  module      String   @default("Sales")
   fields      Json     @default("[]") // Array of field definitions [{name, type, label, required, options}]
   settings    Json     @default("{}") // Form settings: naming, permissions, etc.
   createdBy   String?  @map("created_by")
@@ -4099,24 +4107,66 @@ model BuilderDashboard {
 }
 
 model BuilderModule {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
+  id            String  @id @default(cuid())
+  tenantId      String  @map("tenant_id")
   name          String
   slug          String
   description   String?
   icon          String?
   color         String?
-  status        String   @default("DRAFT") // DRAFT, ACTIVE, ARCHIVED
-  entities      Json     @default("[]") // Array of entity schemas [{name, fields, relationships}]
-  relationships Json     @default("[]") // Cross-entity relationships [{from, to, type}]
-  permissions   Json     @default("{}") // Module-level RBAC configuration
-  createdBy     String?  @map("created_by")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  status        String  @default("DRAFT") // DRAFT, ACTIVE, ARCHIVED
+  scope         String  @default("ORGANIZATION") // DRAFT, ORGANIZATION, GLOBAL
+  version       String  @default("1.0.0")
+  entities      Json    @default("[]") // Array of entity schemas [{name, fields, relationships}]
+  relationships Json    @default("[]") // Cross-entity relationships [{from, to, type}]
+  permissions   Json    @default("{}") // Module-level RBAC configuration
+  pages         Json    @default("[]") // [{id, name, slug, type:'form'|'list'|'dashboard', formId?, dashboardId?}]
+  components    Json    @default("[]") // [{id, type:'form'|'workflow'|'dashboard'|'automation', refId, name}]
+  dataModels    Json    @default("[]") // [{id, name, fields:[{name,type,required}], relationships:[]}]
+  testResults   Json    @default("{}") // {lastRunAt, score, totalTests, passed, failed, errors:[], history:[]}
+
+  // ─── App Store listing metadata ───
+  category        String? // e.g. "Operations", "HR", "Finance"
+  longDescription String? @map("long_description") @db.Text
+  publisher       String? // display name of the publishing org/team
+  screenshots     Json    @default("[]") // Array of asset URLs for the store listing
+  installCount    Int     @default(0) @map("install_count")
+
+  currentReleaseId String?   @map("current_release_id") // points at the latest PUBLISHED AppRelease
+  publishedAt      DateTime? @map("published_at")
+  createdBy        String?   @map("created_by")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  releases AppRelease[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
+  @@index([scope, status])
   @@map("builder_modules")
+}
+
+// Immutable snapshot of a BuilderModule at publish time. Installs pin to a
+// release so a tenant's running app is unaffected by later edits in the studio.
+model AppRelease {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  moduleId    String   @map("module_id")
+  version     String // semver, e.g. "1.2.0"
+  channel     String   @default("ORGANIZATION") // ORGANIZATION, GLOBAL
+  changelog   String?  @db.Text
+  snapshot    Json     @default("{}") // frozen {components, pages, dataModels, permissions, entities, relationships, meta}
+  testScore   Int?     @map("test_score")
+  status      String   @default("PUBLISHED") // PUBLISHED, ROLLED_BACK
+  publishedBy String?  @map("published_by")
+  publishedAt DateTime @default(now()) @map("published_at")
+
+  module BuilderModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleId, version])
+  @@index([tenantId])
+  @@index([channel, status])
+  @@map("app_releases")
 }
 
 model AutomationRule {
@@ -4227,20 +4277,20 @@ model WebAsset {
 }
 
 model WebTemplate {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  name        String
-  description String?
-  thumbnail   String?
-  htmlContent String?  @map("html_content") @db.Text
-  cssContent  String?  @map("css_content") @db.Text
-  designTokens Json    @default("{}") @map("design_tokens")
-  status      String   @default("DRAFT")
-  author      String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  description  String?
+  thumbnail    String?
+  htmlContent  String?  @map("html_content") @db.Text
+  cssContent   String?  @map("css_content") @db.Text
+  designTokens Json     @default("{}") @map("design_tokens")
+  status       String   @default("DRAFT")
+  author       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  settings    WebSettings[]
+  settings WebSettings[]
 
   @@index([tenantId])
   @@map("web_templates")

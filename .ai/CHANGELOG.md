@@ -5,6 +5,78 @@
 
 ---
 
+## [2026-06-20] Custom App Builder — Integrated In-Studio Builders (never leave build mode)
+
+### Added
+- **Extracted `FormBuilderWorkspace`** (`apps/web/src/components/builder/FormBuilderWorkspace.tsx`): the full visual form builder (palette, properties, dnd, zoom/pan, AI-generate) is now a reusable component accepting `{ formId, onBack, onSaved, embedded, defaultModule }`. The route `builder/erp/forms/[id]` is now a thin wrapper around it.
+- **Embedded form builder in the App Studio**: launches as a full-screen overlay over `builder/erp/apps/[id]` — you build/edit a form and return to the app without any navigation. On first save of a new form it auto-links to the app; `onSaved` keeps the overlay open on the now-saved form for continued editing.
+- **Forms section — Build New + inline Edit**: the studio Forms tab now has a "Build New" action (opens the full builder) and a per-form pencil to edit the linked form in place.
+- **Page composer**: the Add Page flow now binds a data source for form/list pages — either **Link Existing** (form dropdown) or **Build New** (opens the form builder; on save it links the form and creates the page bound to it via `formId`).
+
+### Notes
+- Same overlay pattern is ready to extend to the Workflow and Dashboard editors (planned next) for a fully end-to-end in-studio full-stack builder.
+
+## [2026-06-20] Custom App Builder — Release Management & App Store Loop
+
+### Added
+- **App releases (immutable snapshots)**: New `AppRelease` Prisma model. Publishing a custom app now cuts an immutable, self-contained snapshot (components dereferenced into full form/workflow/dashboard/automation definitions, plus pages, data models, permissions and store metadata) rather than just flipping a status flag. Migration `20260620050000_add_app_releases_and_store_listing`.
+- **Semantic versioning on publish**: `POST /builder/modules/:id/publish` accepts `{ scope, bump: 'patch'|'minor'|'major', version?, changelog, category, longDescription, publisher, screenshots }`. Auto-bumps patch by default; rejects duplicate versions (`@@unique([moduleId, version])`).
+- **Release history & rollback**: `GET /builder/modules/:id/releases` and `POST /builder/modules/:id/rollback` ({ releaseId }) — restores a prior release's snapshot into the live module and marks newer releases `ROLLED_BACK`.
+- **App Marketplace API**: `GET /builder/marketplace` lists installable builder apps (GLOBAL from any tenant + this tenant's ORG apps) annotated with install state and `updateAvailable`. `POST /builder/marketplace/install` and `/uninstall`.
+- **Provision-on-install**: Installing a built app provisions its pages as resolvable `SchemaRegistry` + `PageRegistry` entries (route `/app/<module-slug>/<page-slug>`), pins the install to a release, and records provisioned IDs on `InstalledApp` for clean teardown on uninstall. Data models without a page also get a runtime surface.
+- **App Store integration (closes the loop)**: `apps/store` now renders a live **"Built in your workspace"** section sourced from `/builder/marketplace` alongside the static catalog — apps published from the builder are now actually discoverable and installable, with update/uninstall actions.
+- **Studio Publish & Releases tab**: Rebuilt publish UI with version-bump selector (live next-version preview), changelog, store-listing fields (category/publisher/description), scope, and a release-history list with one-click rollback.
+- **Enhanced test + sandbox engine** (`runAppTests`): structural checks are now categorized (structure/data/automation/security/performance) and joined by a sandbox simulator that validates a sample record per data model and linked form (required/type/select-options/regex), plus per-run history (last 10) with a score-trend chart in the Test tab.
+- **In-studio runtime Preview tab**: A simulated app shell that renders the app's pages with a working nav; form pages render live via `DynamicFormRenderer` (submissions captured locally, not persisted) and an "Open Live" deep link to `/app/<slug>/<page>` once published. List/dashboard pages show a runtime placeholder.
+- **App lifecycle stats** (`getModuleStats`): now returns installs, release count, automation-run totals, current version/scope/status, and score trend — surfaced as stat cards on the studio Overview tab.
+
+### Changed
+- **`InstalledApp`** extended with `source` (CATALOG|BUILDER), `sourceModuleId`, `releaseId`, `installedVersion`, `provisioned`.
+- **`BuilderModule`** extended with store-listing fields (`category`, `longDescription`, `publisher`, `screenshots`, `installCount`) and `currentReleaseId`; added `@@index([scope, status])`.
+
+### Tests
+- Added service unit tests for `publishModule` (version bump, duplicate-version guard), `getMarketplace` (install/update annotation), `installBuilderApp` (provisioning) and `uninstallBuilderApp` (teardown). Builder suite: 63 passing.
+
+## [2026-06-20] Fix — ReferenceError on App Builder page
+
+### Fixed
+- **App Builder Overview Page**: Resolved a critical runtime `ReferenceError: HelpCircle is not defined` by adding the missing import for `HelpCircle` from `lucide-react`.
+
+## [2026-06-20] Builder Studio — App Builder Overview & No-Code Test Platform
+
+### Added
+- **No-Code Test Platform Tab**: A complete interactive sandbox directly inside the ERP App Builder overview page (`/builder/erp`). Users can select any developed form from the system to render live.
+- **Dynamic Input & Rules Execution**: Sandbox fields are rendered automatically via the shared `<DynamicForm>` component, supporting formulas, conditional visibility rules, data formats, and validation.
+- **Form Sandbox State Modes**:
+  - **Live Database Mode**: When testing a published form, submissions are written directly to the PostgreSQL database via `POST /api/v1/builder/custom-records/:schemaId`.
+  - **Simulated Sandbox Mode**: When testing draft forms, submissions are captured in temporary React state to allow testing of visibility rules and formulas without deploying to database tables.
+- **Interactive API Log & Payload Inspector**: Shows history log of test submissions, raw JSON payload inspections, and supports entry deletion (SQL deletion for live tables).
+- **Custom Modules CRUD Enhancements**: Expanded Custom Modules list to dynamically fetch `/api/v1/builder/modules` and support full create and edit configurations with specific theme colors, icons, and publish scopes.
+- **Publish Scopes for Modules**: Added support for module scopes: "Draft" (private draft), "Organization Level" (restricted to tenant), and "App Store" (globally accessible).
+- **Database Schema Migration**: Added `scope String @default("ORGANIZATION")` field to the `BuilderModule` table in PostgreSQL.
+- **Shared Validation Schemas**: Added `scope` field validation to `createBuilderModuleSchema` and `updateBuilderModuleSchema` in packages/shared.
+- **App Builder Overview Sidebar Link**: Added the overview page `/builder/erp` to the global `ERP App Builder` sidebar navigation under layout.tsx.
+
+---
+
+## [2026-06-19] Builder Studio — Deploy Loop & Runtime Renderer Overhaul
+
+### Added
+- **`publishForm` backend engine** (`builder.service.ts`): New `POST /page-registries/:id/publish` endpoint that closes the zero-code deploy loop. On publish: derives field metadata from the visual layout, upserts a `SchemaRegistry` (creates on first publish, updates on re-publish — no orphaned schemas), links it to the `PageRegistry` via `schemaId`, and sets `status: 'PUBLISHED'`. Returns the live `/app/{module}/{slug}` route.
+- **Deploy-to-App wizard** (`DeployFormModal.tsx`): Frappe-styled modal replacing the hardcoded publish flow. Users choose a target module (with datalist of existing modules), URL slug (auto-suggested from title, URL-safe validated), and description. Shows live route preview. On success: displays "Open Page" and "Copy Link" actions.
+- **`getSchemaRegistryById` helper**: New service method for fetching schemas by ID (used by publish flow + tests).
+- **Search/sort/pagination for custom records**: `GET /custom-records/:schemaId` now accepts `?search=&sortBy=&sortOrder=&page=&pageSize=` query params. Server-side filtering across all field values, sorting by any data column (asc/desc), and paginated response `{ data, total, page, pageSize, totalPages }`.
+
+### Changed
+- **Runtime renderer** (`app/[module]/[slug]/page.tsx`): Full rewrite fixing a React Rules-of-Hooks violation (useState/useEffect called after conditional returns). Now supports: server-side search, sortable column headers, pagination controls (10/25/50), per-row edit (pre-fills DynamicFormRenderer) and delete (with inline confirm), and `frappe-*` utility classes throughout.
+- **Form builder Publish button**: Now opens the DeployFormModal ("Deploy to App") instead of calling `handleSave(true)` with hardcoded `module:'custom'` and `slug:custom-${timestamp}`. Save payload now uses the deploy wizard's module/slug/title.
+- **Sidebar Page Registry filter**: Only pages with `status === 'PUBLISHED'` now appear in the sidebar navigation — drafts are no longer visible to the team.
+
+### Tested
+- **Builder service tests** (`builder.service.spec.ts`): Extended prisma mock with `schemaRegistry`, `pageRegistry`, `customRecord` stubs and `$transaction` support. Added test suites for: `publishForm` (new schema creation, re-publish update, not-found error), `getSchemaRegistryById` (found, not-found), and `getCustomRecords` with query (default pagination, search filtering, asc/desc sorting, page slicing, RBAC scrub with query, null-schema fallback).
+
+---
+
 ## [2026-06-18] Builder Studio — P0 (Logic & Modules Wiring)
 
 ### Added

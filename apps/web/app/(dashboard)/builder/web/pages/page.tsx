@@ -3,7 +3,7 @@ import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Globe, PlusCircle, Search, Edit3, Trash2, Eye, Move, Layers, LayoutGrid, Image, Zap, Type, Tag, FileText, Monitor, LayoutTemplate, CheckCircle } from 'lucide-react';
 
 const SECTIONS_PALETTE = [
@@ -18,11 +18,21 @@ const SECTIONS_PALETTE = [
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-export default function WebBuilderPagesPage() {
-  const { data: PAGES_DB, createItem, updateItem, deleteItem } = useBuilderData("web-pages", []);
+function WebBuilderPagesPageContent() {
+
+  const { data: PAGES_DB, createItem, updateItem, deleteItem } = useBuilderData<any>("web-pages", []);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setEditingItem(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
   
   const handleSave = async (data: any) => {
     if (editingItem) {
@@ -362,5 +372,15 @@ export default function WebBuilderPagesPage() {
         initialData={editingItem}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function WebBuilderPagesPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Web Pages...</div>}>
+      <WebBuilderPagesPageContent />
+    </Suspense>
   );
 }

@@ -1,8 +1,7 @@
 'use client';
-import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   FileCode2,
   PlusCircle,
@@ -12,84 +11,125 @@ import {
   Eye,
   Copy,
   CheckCircle,
-  Download,
   Layers,
+  Globe,
 } from 'lucide-react';
-
-const FORMS_LIST = [
-  { id: 1, name: 'Sales Order Form', module: 'Sales', submissions: 1240, lastEdited: '2 hours ago', status: 'Published', fields: 18 },
-  { id: 2, name: 'Expense Claim Form', module: 'HR', submissions: 340, lastEdited: '5 hours ago', status: 'Published', fields: 12 },
-  { id: 3, name: 'Purchase Request Form', module: 'Procurement', submissions: 89, lastEdited: '1 day ago', status: 'Published', fields: 9 },
-  { id: 4, name: 'Leave Application Form', module: 'HR', submissions: 560, lastEdited: '2 days ago', status: 'Published', fields: 7 },
-  { id: 5, name: 'Vendor Evaluation Form', module: 'Procurement', submissions: 45, lastEdited: '3 days ago', status: 'Draft', fields: 14 },
-  { id: 6, name: 'Customer Feedback Form', module: 'CRM', submissions: 0, lastEdited: '1 week ago', status: 'Draft', fields: 8 },
-  { id: 7, name: 'Work Order Checklist', module: 'Manufacturing', submissions: 222, lastEdited: '4 days ago', status: 'Published', fields: 11 },
-  { id: 8, name: 'Asset Requisition Form', module: 'Admin', submissions: 67, lastEdited: '2 weeks ago', status: 'Published', fields: 9 },
-];
+import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 
 const MODULES = ['All Modules', 'Sales', 'HR', 'Procurement', 'CRM', 'Manufacturing', 'Admin'];
 
-import { useBuilderData } from '@/lib/hooks/useBuilderData';
-import { getPageRegistry } from '@/utils/pageRegistry';
-import { Globe } from 'lucide-react';
-
-export default function ERPFormsPage() {
+export function ERPFormsPageContent() {
   const router = useRouter();
-  const [registry, setRegistry] = useState<any[]>([]);
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    // Load page registry and forms from API
-    const loadData = async () => {
-      try {
-        const token = localStorage.getItem('token') || '';
-        const [regRes, formsRes] = await Promise.all([
-          fetch('/api/v1/builder/page-registries', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/v1/builder/forms', { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        if (regRes.ok) { const d = await regRes.json(); setRegistry(d.data || d); }
-        if (formsRes.ok) {
-          const d = await formsRes.json();
-          // Transform API data to match table format
-          const transformed = (d.data || d).map((f: any) => ({
-            id: f.id,
-            name: f.name,
-            module: f.module || 'Custom',
-            submissions: f.submissions || 0,
-            lastEdited: f.updatedAt ? new Date(f.updatedAt).toLocaleDateString() : 'N/A',
-            status: f.status || 'DRAFT',
-            fields: Array.isArray(f.fields) ? f.fields.length : 0,
-          }));
-          if (transformed.length > 0) {
-            // setFormsList(transformed);
-          }
-        }
-      } catch { }
-    };
-    loadData();
-    window.addEventListener('unerp_page_registry_updated', loadData);
-    return () => window.removeEventListener('unerp_page_registry_updated', loadData);
-  }, []);
+  // Search and Filter State
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [moduleFilter, setModuleFilter] = useState('All Modules');
   const [sortBy, setSortBy] = useState<'name' | 'submissions' | 'lastEdited'>('name');
 
-  const { data: formsList, createItem, updateItem, deleteItem } = useBuilderData("forms", FORMS_LIST);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  // API Data State
+  const [formsList, setFormsList] = useState<any[]>([]);
+  const [loadingForms, setLoadingForms] = useState(true);
+  const [stats, setStats] = useState({ total: 0, published: 0, draft: 0, totalSubmissions: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Load stats
+  const loadStats = async () => {
+    setLoadingStats(true);
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch('/api/v1/builder/forms/stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setStats(d);
+      }
+    } catch (err) {
+      console.error('Error loading stats:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  // Load forms
+  const loadForms = async () => {
+    setLoadingForms(true);
+    try {
+      const token = localStorage.getItem('token') || '';
+      const query = new URLSearchParams();
+      if (debouncedSearch) query.append('search', debouncedSearch);
+      if (moduleFilter && moduleFilter !== 'All Modules') query.append('module', moduleFilter);
+
+      const res = await fetch(`/api/v1/builder/forms?${query.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const d = await res.json();
+        const forms = (d.data || d).map((f: any) => ({
+          id: f.id,
+          name: f.name,
+          slug: f.slug,
+          module: f.module || 'Sales',
+          submissions: f.submissions || 0,
+          lastEdited: f.updatedAt ? new Date(f.updatedAt).toLocaleDateString() : 'N/A',
+          status: f.status || 'DRAFT',
+          fields: Array.isArray(f.fields) ? f.fields.length : (typeof f.fields === 'string' ? JSON.parse(f.fields).length : 0),
+        }));
+        setFormsList(forms);
+      }
+    } catch (err) {
+      console.error('Error loading forms:', err);
+    } finally {
+      setLoadingForms(false);
+    }
+  };
+
+  // Trigger loading of data
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  useEffect(() => {
+    loadForms();
+  }, [debouncedSearch, moduleFilter]);
+
+  // Check if '?new=1' query is present to auto-open creation dialog
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
+  // Create blank form and redirect
   const handleSave = async (data: any) => {
     try {
       const token = localStorage.getItem('token') || '';
-      const res = await fetch('/api/v1/builder/page-registries', {
+      const res = await fetch('/api/v1/builder/forms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
-          title: data.name,
+          name: data.name,
           slug: data.slug,
-          type: 'FORM',
-          module: 'Custom',
-          layout: { fields: [], settings: {} },
-          status: 'DRAFT'
+          module: data.module || 'Sales',
+          fields: [
+            { id: 'f_1', type: 'Section Break', label: 'General Info', name: 'general_info_section', required: false, readOnly: false, weight: 1, columnSpan: 12 },
+            { id: 'f_2', type: 'Data', label: 'Form Name', name: 'form_name', required: true, readOnly: false, columnSpan: 12 },
+            { id: 'f_3', type: 'Select', label: 'Status', name: 'status', required: false, readOnly: false, options: 'Draft\nPublished', columnSpan: 12 },
+          ],
+          settings: {},
         })
       });
       if (res.ok) {
@@ -97,28 +137,74 @@ export default function ERPFormsPage() {
         setIsModalOpen(false);
         router.push(`/builder/erp/forms/${newForm.id}`);
       } else {
-        alert("Failed to create form. Please check backend.");
+        const err = await res.json();
+        alert(`Failed to create form: ${err.message || 'Check backend.'}`);
       }
-    } catch {
+    } catch (err) {
       alert("Failed to create form. Please check backend.");
     }
   };
 
-  const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      await deleteItem(id);
+  // Duplicate Form
+  const handleDuplicate = async (form: any) => {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch(`/api/v1/builder/forms/${form.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch original form');
+      const original = await res.json();
+
+      const dupRes = await fetch('/api/v1/builder/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: `Copy of ${original.name}`,
+          slug: `${original.slug}-copy-${Date.now().toString().slice(-4)}`,
+          module: original.module || 'Sales',
+          fields: typeof original.fields === 'string' ? JSON.parse(original.fields) : original.fields,
+          settings: typeof original.settings === 'string' ? JSON.parse(original.settings) : original.settings
+        })
+      });
+      if (dupRes.ok) {
+        loadForms();
+        loadStats();
+      } else {
+        const err = await dupRes.json();
+        alert(`Failed to duplicate: ${err.message || 'Server error'}`);
+      }
+    } catch (err) {
+      alert('Error duplicating form');
     }
   };
 
+  // Delete Form
+  const handleDelete = async (id: any) => {
+    if (confirm('Are you sure you want to delete this form?')) {
+      try {
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch(`/api/v1/builder/forms/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          loadForms();
+          loadStats();
+        } else {
+          alert('Failed to delete form');
+        }
+      } catch (err) {
+        alert('Error deleting form');
+      }
+    }
+  };
 
-  const filtered = formsList
-    .filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    .filter(f => moduleFilter === 'All Modules' || f.module === moduleFilter)
-    .sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'submissions') return b.submissions - a.submissions;
-      return b.id - a.id;
-    });
+  // Local sorting
+  const sortedForms = [...formsList].sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    if (sortBy === 'submissions') return b.submissions - a.submissions;
+    return b.id.localeCompare(a.id);
+  });
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
@@ -136,10 +222,10 @@ export default function ERPFormsPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/page?tab=erp')}>
             ← ERP Builder
           </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+          <button className="frappe-btn frappe-btn-primary" onClick={() => setIsModalOpen(true)}>
             <PlusCircle size={15} />
             <span>New Form</span>
           </button>
@@ -149,19 +235,26 @@ export default function ERPFormsPage() {
       {/* Summary Cards */}
       <div className="builder-stats-grid">
         {[
-          { label: 'Total Forms', value: formsList.length.toString(), icon: FileCode2, color: 'var(--color-primary)' },
-          { label: 'Published', value: formsList.filter(f => f.status === 'Published' || f.status === 'PUBLISHED').length.toString(), icon: CheckCircle, color: '#059669' },
-          { label: 'Drafts', value: formsList.filter(f => f.status === 'Draft' || f.status === 'DRAFT').length.toString(), icon: Edit3, color: '#d97706' },
-          { label: 'Total Submissions', value: formsList.reduce((a, b) => a + b.submissions, 0).toLocaleString(), icon: Layers, color: '#7c3aed' },
+          { label: 'Total Forms', value: stats.total.toString(), icon: FileCode2, color: 'var(--color-primary)' },
+          { label: 'Published', value: stats.published.toString(), icon: CheckCircle, color: '#059669' },
+          { label: 'Drafts', value: stats.draft.toString(), icon: Edit3, color: '#d97706' },
+          { label: 'Total Submissions', value: stats.totalSubmissions.toLocaleString(), icon: Layers, color: '#7c3aed' },
         ].map(stat => (
           <div key={stat.label} className="frappe-card" style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', background: `${stat.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <stat.icon size={20} style={{ color: stat.color }} />
             </div>
-            <div>
-              <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{stat.value}</p>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{stat.label}</p>
-            </div>
+            {loadingStats ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', width: '80px' }}>
+                <div className="animate-pulse" style={{ height: '24px', backgroundColor: 'var(--color-bg-hover)', borderRadius: 'var(--radius-sm)' }}></div>
+                <div className="animate-pulse" style={{ height: '12px', backgroundColor: 'var(--color-bg-hover)', borderRadius: 'var(--radius-sm)', width: '50px' }}></div>
+              </div>
+            ) : (
+              <div>
+                <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>{stat.value}</p>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{stat.label}</p>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -176,6 +269,7 @@ export default function ERPFormsPage() {
           {MODULES.map(mod => (
             <button
               key={mod}
+              onClick={() => setModuleFilter(mod)}
               style={{
                 padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-full)',
                 border: `1px solid ${moduleFilter === mod ? 'var(--color-primary)' : 'var(--color-border)'}`,
@@ -222,61 +316,102 @@ export default function ERPFormsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((form, idx) => (
-              <tr
-                key={form.id}
-                style={{
-                  borderBottom: idx < filtered.length - 1 ? '1px solid var(--color-border)' : 'none',
-                  transition: 'background var(--duration-fast)',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <FileCode2 size={13} style={{ color: 'var(--color-primary)' }} />
+            {loadingForms ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <div className="animate-pulse" style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                      <div className="animate-pulse" style={{ width: '120px', height: '16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
                     </div>
-                    <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{form.name}</span>
-                  </div>
-                </td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                  <span style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-hover)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
-                    {form.module}
-                  </span>
-                </td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{form.fields}</td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{form.submissions.toLocaleString()}</td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{form.lastEdited}</td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                  {(() => {
-                    const isPublished = registry.some(m => m.formId === form.id.toString() || m.formId === form.id);
-                    const statusText = isPublished ? 'Published' : 'Draft';
-                    return (
-                      <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: isPublished ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: isPublished ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                        {statusText}
-                      </span>
-                    );
-                  })()}
-                </td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                  <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                    <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Builder Workspace" onClick={() => router.push(`/builder/erp/forms/${form.id}`)}>
-                      <Edit3 size={13} />
-                    </button>
-                    <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} title="Delete" onClick={() => handleDelete(form.id)}>
-                      <Trash2 size={13} />
-                    </button>
-                    <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Preview" onClick={() => router.push(`/builder/erp/forms/${form.id}?preview=true`)}>
-                      <Eye size={13} />
-                    </button>
-                    <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Publish / Unpublish" onClick={() => router.push(`/builder/erp/forms/${form.id}?publish=true`)}>
-                      <Globe size={13} />
-                    </button>
-                  </div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div className="animate-pulse" style={{ width: '60px', height: '18px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div className="animate-pulse" style={{ width: '30px', height: '16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div className="animate-pulse" style={{ width: '40px', height: '16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div className="animate-pulse" style={{ width: '80px', height: '14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div className="animate-pulse" style={{ width: '70px', height: '18px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : sortedForms.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                  No forms found
                 </td>
               </tr>
-            ))}
+            ) : (
+              sortedForms.map((form, idx) => (
+                <tr
+                  key={form.id}
+                  style={{
+                    borderBottom: idx < sortedForms.length - 1 ? '1px solid var(--color-border)' : 'none',
+                    transition: 'background var(--duration-fast)',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <FileCode2 size={13} style={{ color: 'var(--color-primary)' }} />
+                      </div>
+                      <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{form.name}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <span style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-hover)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                      {form.module}
+                    </span>
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{form.fields}</td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{form.submissions.toLocaleString()}</td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{form.lastEdited}</td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    {(() => {
+                      const isPublished = form.status === 'PUBLISHED' || form.status === 'Published';
+                      return (
+                        <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: isPublished ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: isPublished ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                          {isPublished ? 'Published' : 'Draft'}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                    <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Edit Form" onClick={() => router.push(`/builder/erp/forms/${form.id}`)}>
+                        <Edit3 size={13} />
+                      </button>
+                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Duplicate" onClick={() => handleDuplicate(form)}>
+                        <Copy size={13} />
+                      </button>
+                      <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} title="Delete" onClick={() => handleDelete(form.id)}>
+                        <Trash2 size={13} />
+                      </button>
+                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Preview" onClick={() => router.push(`/builder/erp/forms/${form.id}?preview=true`)}>
+                        <Eye size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -284,10 +419,36 @@ export default function ERPFormsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSave}
-        title={editingItem ? "Edit Form" : "Create New Form"}
-        fields={[{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }]}
-        initialData={editingItem}
+        title="Create New Form"
+        fields={[
+          { name: 'name', label: 'Name', type: 'text', required: true },
+          { name: 'slug', label: 'Slug', type: 'text', required: true },
+          {
+            name: 'module',
+            label: 'Module',
+            type: 'select',
+            required: true,
+            options: [
+              { label: 'Sales', value: 'Sales' },
+              { label: 'HR', value: 'HR' },
+              { label: 'Procurement', value: 'Procurement' },
+              { label: 'CRM', value: 'CRM' },
+              { label: 'Manufacturing', value: 'Manufacturing' },
+              { label: 'Admin', value: 'Admin' }
+            ]
+          }
+        ]}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function ERPFormsPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Form Builder...</div>}>
+      <ERPFormsPageContent />
+    </Suspense>
   );
 }

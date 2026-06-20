@@ -258,12 +258,81 @@ const storeApps: StoreApp[] = [
 
 const storeCategories = ['All', 'Industry', 'Integration', 'Intelligence', 'Finance', 'HR', 'Operations', 'Marketing'];
 
+// Live apps published from the Custom App Builder (scope GLOBAL, or this tenant's ORG apps).
+interface BuilderStoreApp {
+  id: string;
+  appId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  longDescription: string | null;
+  icon: string | null;
+  color: string | null;
+  category: string;
+  publisher: string;
+  version: string;
+  scope: string;
+  installCount: number;
+  isOwn: boolean;
+  installed: boolean;
+  installedVersion: string | null;
+  updateAvailable: boolean;
+}
+
 export default function AppStorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [installedApps, setInstalledApps] = useState<Set<string>>(new Set());
   const [installingId, setInstallingId] = useState<string | null>(null);
   const [uninstallingId, setUninstallingId] = useState<string | null>(null);
+  const [builderApps, setBuilderApps] = useState<BuilderStoreApp[]>([]);
+  const [builderBusyId, setBuilderBusyId] = useState<string | null>(null);
+
+  const fetchBuilderApps = React.useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/builder/marketplace', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setBuilderApps(await res.json());
+    } catch {
+      // no builder apps available
+    }
+  }, []);
+
+  useEffect(() => { fetchBuilderApps(); }, [fetchBuilderApps]);
+
+  const handleBuilderInstall = async (app: BuilderStoreApp) => {
+    setBuilderBusyId(app.id);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/builder/marketplace/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ moduleId: app.id }),
+      });
+      if (res.ok) await fetchBuilderApps();
+    } catch {
+      // install failed
+    } finally {
+      setBuilderBusyId(null);
+    }
+  };
+
+  const handleBuilderUninstall = async (app: BuilderStoreApp) => {
+    setBuilderBusyId(app.id);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/builder/marketplace/uninstall', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ moduleId: app.id }),
+      });
+      if (res.ok) await fetchBuilderApps();
+    } catch {
+      // uninstall failed
+    } finally {
+      setBuilderBusyId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchInstalled = async () => {
@@ -425,6 +494,83 @@ export default function AppStorePage() {
           </div>
         </div>
       </div>
+
+      {/* Built in your workspace — live apps from the Custom App Builder */}
+      {builderApps.filter((a) => {
+        const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || (a.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCat = selectedCategory === 'All' || a.category === selectedCategory;
+        return matchesSearch && matchesCat;
+      }).length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+            <Cpu size={18} style={{ color: 'var(--color-primary)' }} />
+            <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>Built in your workspace</h3>
+            <Badge variant="info">Custom Apps</Badge>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+            {builderApps.filter((a) => {
+              const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || (a.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+              const matchesCat = selectedCategory === 'All' || a.category === selectedCategory;
+              return matchesSearch && matchesCat;
+            }).map((app) => {
+              const busy = builderBusyId === app.id;
+              const color = app.color || 'var(--color-primary)';
+              return (
+                <Card key={app.id} padding="lg" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', border: '1px solid var(--color-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-lg)', background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 22 }}>
+                      {app.icon || '📦'}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{app.name}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '2px' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{app.publisher}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>·</span>
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>v{app.version}</span>
+                      </div>
+                    </div>
+                    <Badge variant={app.scope === 'GLOBAL' ? 'info' : 'default'}>{app.scope === 'GLOBAL' ? 'Global' : 'Org'}</Badge>
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                    {app.longDescription || app.description || 'A custom application built in your workspace.'}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                      <Download size={12} /> {app.installCount} installs
+                    </span>
+                    <span style={{ fontSize: '10px', color, fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{app.category}</span>
+                    {app.isOwn && <Badge variant="success">Yours</Badge>}
+                  </div>
+
+                  <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)', display: 'flex', gap: 'var(--space-2)' }}>
+                    {app.installed ? (
+                      <>
+                        {app.updateAvailable && (
+                          <button onClick={() => handleBuilderInstall(app)} disabled={busy}
+                            style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: busy ? 'wait' : 'pointer' }}>
+                            {busy ? 'Updating…' : `Update to v${app.version}`}
+                          </button>
+                        )}
+                        <button onClick={() => handleBuilderUninstall(app)} disabled={busy}
+                          style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: busy ? 'wait' : 'pointer' }}>
+                          {busy && !app.updateAvailable ? 'Uninstalling…' : 'Uninstall'}
+                        </button>
+                      </>
+                    ) : (
+                      <button onClick={() => handleBuilderInstall(app)} disabled={busy}
+                        style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: 'none', background: busy ? 'var(--color-bg-sunken)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: busy ? 'var(--color-text-secondary)' : '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: busy ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}>
+                        <Download size={15} /> {busy ? 'Installing…' : 'Install'}
+                      </button>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Search & Filter */}
       <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', flexWrap: 'wrap' }}>

@@ -2,8 +2,8 @@
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Image, PlusCircle, Search, Trash2, Download, Copy, Upload, Grid3X3, List, FileText, Film, Music, Archive } from 'lucide-react';
 
 const TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = {
@@ -33,10 +33,20 @@ function formatBytes(bytes: number, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-export default function WebAssetsPage() {
-  const { data: ASSETS_DB, createItem, updateItem, deleteItem } = useBuilderData("web-assets", []);
+function WebAssetsPageContent() {
+
+  const { data: ASSETS_DB, createItem, updateItem, deleteItem } = useBuilderData<any>("web-assets", []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setEditingItem(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
 
   const handleSave = async (data: any) => {
     if (data.sizeBytes) data.sizeBytes = parseInt(data.sizeBytes, 10);
@@ -199,5 +209,15 @@ export default function WebAssetsPage() {
         initialData={editingItem}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function WebAssetsPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Asset Manager...</div>}>
+      <WebAssetsPageContent />
+    </Suspense>
   );
 }

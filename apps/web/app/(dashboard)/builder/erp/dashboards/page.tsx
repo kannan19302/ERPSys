@@ -27,6 +27,7 @@ interface Dashboard {
 }
 
 export default function DashboardsPage() {
+
   const router = useRouter();
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [loading, setLoading] = useState(true);

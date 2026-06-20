@@ -5,7 +5,7 @@ import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Database,
   PlusCircle,
@@ -49,10 +49,20 @@ const MODULES_LIST = [
 ];
 
 
-export default function ERPModulesPage() {
+function ERPModulesPageContent() {
+
   const { data: dbModules, refetch } = useBuilderData('modules', MODULES_LIST);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setEditingItem(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
   
   const handleSave = async (data: any) => {
     try {
@@ -308,5 +318,15 @@ export default function ERPModulesPage() {
         initialData={editingItem}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function ERPModulesPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Custom Modules...</div>}>
+      <ERPModulesPageContent />
+    </Suspense>
   );
 }

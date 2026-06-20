@@ -488,6 +488,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           name: 'ERP App Builder',
           isHeader: true,
           items: [
+            { name: 'App Builder Overview', href: '/builder/erp', icon: Cpu },
             { name: 'Form Builder', href: '/builder/erp/forms', icon: FileCode2 },
             { name: 'Workflow Builder', href: '/builder/erp/workflows', icon: Workflow },
             { name: 'Dashboard Builder', href: '/builder/erp/dashboards', icon: BarChart3 },
@@ -598,7 +599,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
 
   const enhancedItems = React.useMemo(() => {
     const activeModulePrefix = pathname.split('/')[1];
-    const moduleCustomPages = customPages.filter(p => p.module.toLowerCase() === activeModulePrefix?.toLowerCase() && !p.isOverride);
+    const moduleCustomPages = customPages.filter(p => p.module.toLowerCase() === activeModulePrefix?.toLowerCase() && !p.isOverride && p.status === 'PUBLISHED');
     
     if (moduleCustomPages.length === 0) return appNav.items;
 
@@ -646,8 +647,8 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
       const itemPath = parts[0] || '';
       const itemQuery = parts[1] || '';
       
-      const isPathMatch = itemPath === '/inventory' 
-        ? pathname === '/inventory' 
+      const isPathMatch = (itemPath === '/inventory' || itemPath === '/builder' || itemPath === '/dashboard')
+        ? pathname === itemPath 
         : (pathname === itemPath || pathname.startsWith(itemPath + '/'));
         
       if (!isPathMatch) return false;

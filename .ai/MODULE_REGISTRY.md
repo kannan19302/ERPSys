@@ -75,6 +75,15 @@
 
 ---
 
+## Cross-Cutting Modules
+
+| # | Module | Package Path | Status | Phase | Dependencies | Key Features |
+|:--|:---|:---|:---|:---|:---|:---|
+| 31 | **Builder Studio** | `apps/api/src/modules/builder` | 🟢 ENHANCED | 0–10 | admin, database | Zero-code form/page/dashboard/workflow builder, Page Registry, Schema Registry, Custom Records, dynamic rendering, deploy-to-app wizard, field-level RBAC, server-side webhooks & scripts, app overview dashboard, publish scopes, sandbox simulator test platform, **app releases (immutable snapshots) + semantic versioning + rollback, App Marketplace with provision-on-install (built apps published to App Store), `AppRelease` model** |
+
+
+---
+
 ## Shared Packages
 
 | Package | Path | Status | Description |

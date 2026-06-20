@@ -1,8 +1,67 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
+import {
+  builderAiGenerateSchema,
+  builderAnalyticsEventSchema,
+  createBuilderFormSchema,
+  createDataImportSchema,
+  createPageRegistrySchema,
+  createSchemaRegistrySchema,
+  customRecordDataSchema,
+  executeDataImportSchema,
+  restorePageRegistryHistorySchema,
+  updateBuilderFormSchema,
+  updatePageRegistrySchema,
+  updateSchemaRegistrySchema,
+  createBuilderWorkflowSchema,
+  updateBuilderWorkflowSchema,
+  createBuilderDashboardSchema,
+  updateBuilderDashboardSchema,
+  createBuilderModuleSchema,
+  updateBuilderModuleSchema,
+  createAutomationRuleSchema,
+  updateAutomationRuleSchema,
+  createWebPageSchema,
+  updateWebPageSchema,
+  createBlogPostSchema,
+  updateBlogPostSchema,
+  createWebAssetSchema,
+  updateWebAssetSchema,
+  createWebTemplateSchema,
+  updateWebTemplateSchema,
+  createWebMenuSchema,
+  updateWebMenuSchema,
+  createWebSeoSchema,
+  updateWebSeoSchema,
+  addAppComponentSchema,
+  addAppPageSchema,
+  addAppDataModelSchema,
+  publishModuleSchema,
+  rollbackModuleSchema,
+  installBuilderAppSchema,
+  type BuilderAiGenerateInput,
+  type BuilderAnalyticsEventInput,
+  type CreateBuilderFormInput,
+  type CreateDataImportInput,
+  type CreatePageRegistryInput,
+  type CreateSchemaRegistryInput,
+  type CustomRecordDataInput,
+  type ExecuteDataImportInput,
+  type RestorePageRegistryHistoryInput,
+  type UpdateBuilderFormInput,
+  type UpdatePageRegistryInput,
+  type UpdateSchemaRegistryInput,
+  type AddAppComponentInput,
+  type AddAppPageInput,
+  type AddAppDataModelInput,
+  type PublishModuleInput,
+  type RollbackModuleInput,
+  type InstallBuilderAppInput,
+} from '@unerp/shared';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { BuilderService } from './builder.service';
 
 interface AuthenticatedRequest extends Request {
@@ -27,11 +86,27 @@ export class BuilderController {
     return this.builderService.getStats(req.user.tenantId);
   }
 
+  @Get('recent-items')
+  @Permissions('builder.read')
+  async getRecentItems(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getRecentItems(req.user.tenantId);
+  }
+
   // ─── Forms ──────────────────────────────────────
   @Get('forms')
   @Permissions('builder.form.read')
-  async getForms(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getForms(req.user.tenantId);
+  async getForms(
+    @Req() req: AuthenticatedRequest,
+    @Query('search') search?: string,
+    @Query('module') module?: string,
+  ) {
+    return this.builderService.getForms(req.user.tenantId, { search, module });
+  }
+
+  @Get('forms/stats')
+  @Permissions('builder.form.read')
+  async getFormStats(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getFormStats(req.user.tenantId);
   }
 
   @Get('forms/:id')
@@ -44,7 +119,7 @@ export class BuilderController {
   @Permissions('builder.form.create')
   async createForm(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; slug: string; description?: string; icon?: string; fields?: any; settings?: any }
+    @Body(new ZodValidationPipe(createBuilderFormSchema)) dto: CreateBuilderFormInput
   ) {
     return this.builderService.createForm(req.user.tenantId, dto);
   }
@@ -54,7 +129,7 @@ export class BuilderController {
   async updateForm(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; description: string; icon: string; status: string; fields: any; settings: any }>
+    @Body(new ZodValidationPipe(updateBuilderFormSchema)) dto: UpdateBuilderFormInput
   ) {
     return this.builderService.updateForm(req.user.tenantId, id, dto);
   }
@@ -63,6 +138,12 @@ export class BuilderController {
   @Permissions('builder.form.delete')
   async deleteForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.builderService.deleteForm(req.user.tenantId, id);
+  }
+
+  @Post('forms/:id/publish')
+  @Permissions('builder.form.update')
+  async publishBuilderForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.publishBuilderForm(req.user.tenantId, id);
   }
 
   // ─── Workflows ──────────────────────────────────
@@ -82,7 +163,7 @@ export class BuilderController {
   @Permissions('builder.workflow.create')
   async createWorkflow(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; description?: string; docType?: string; trigger?: string; nodes?: any; edges?: any; settings?: any }
+    @Body(new ZodValidationPipe(createBuilderWorkflowSchema)) dto: any
   ) {
     return this.builderService.createWorkflow(req.user.tenantId, dto);
   }
@@ -92,7 +173,7 @@ export class BuilderController {
   async updateWorkflow(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; description: string; docType: string; status: string; trigger: string; nodes: any; edges: any; settings: any }>
+    @Body(new ZodValidationPipe(updateBuilderWorkflowSchema)) dto: any
   ) {
     return this.builderService.updateWorkflow(req.user.tenantId, id, dto);
   }
@@ -132,7 +213,7 @@ export class BuilderController {
   @Permissions('builder.dashboard.create')
   async createDashboard(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; description?: string; icon?: string; widgets?: any; layout?: any; refreshRate?: number }
+    @Body(new ZodValidationPipe(createBuilderDashboardSchema)) dto: any
   ) {
     return this.builderService.createDashboard(req.user.tenantId, dto);
   }
@@ -142,7 +223,7 @@ export class BuilderController {
   async updateDashboard(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; description: string; icon: string; status: string; widgets: any; layout: any; refreshRate: number }>
+    @Body(new ZodValidationPipe(updateBuilderDashboardSchema)) dto: any
   ) {
     return this.builderService.updateDashboard(req.user.tenantId, id, dto);
   }
@@ -170,7 +251,7 @@ export class BuilderController {
   @Permissions('builder.module.create')
   async createModule(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; slug: string; description?: string; icon?: string; color?: string; entities?: any; relationships?: any; permissions?: any }
+    @Body(new ZodValidationPipe(createBuilderModuleSchema)) dto: any
   ) {
     return this.builderService.createModule(req.user.tenantId, dto);
   }
@@ -180,7 +261,7 @@ export class BuilderController {
   async updateModule(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; description: string; icon: string; color: string; status: string; entities: any; relationships: any; permissions: any }>
+    @Body(new ZodValidationPipe(updateBuilderModuleSchema)) dto: any
   ) {
     return this.builderService.updateModule(req.user.tenantId, id, dto);
   }
@@ -189,6 +270,142 @@ export class BuilderController {
   @Permissions('builder.module.delete')
   async deleteModule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.builderService.deleteModule(req.user.tenantId, id);
+  }
+
+  // ─── Custom App Builder ─────────────────────────
+  @Get('modules/:id/full')
+  @Permissions('builder.module.read')
+  async getModuleWithComponents(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.getModuleWithComponents(req.user.tenantId, id);
+  }
+
+  @Get('modules/:id/stats')
+  @Permissions('builder.module.read')
+  async getModuleStats(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.getModuleStats(req.user.tenantId, id);
+  }
+
+  @Post('modules/:id/components')
+  @Permissions('builder.module.update')
+  async addComponentToModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(addAppComponentSchema)) dto: AddAppComponentInput
+  ) {
+    return this.builderService.addComponentToModule(req.user.tenantId, id, dto);
+  }
+
+  @Delete('modules/:id/components/:componentId')
+  @Permissions('builder.module.update')
+  async removeComponentFromModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('componentId') componentId: string
+  ) {
+    return this.builderService.removeComponentFromModule(req.user.tenantId, id, componentId);
+  }
+
+  @Post('modules/:id/pages')
+  @Permissions('builder.module.update')
+  async addPageToModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(addAppPageSchema)) dto: AddAppPageInput
+  ) {
+    return this.builderService.addPageToModule(req.user.tenantId, id, dto);
+  }
+
+  @Delete('modules/:id/pages/:pageId')
+  @Permissions('builder.module.update')
+  async removePageFromModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('pageId') pageId: string
+  ) {
+    return this.builderService.removePageFromModule(req.user.tenantId, id, pageId);
+  }
+
+  @Post('modules/:id/data-models')
+  @Permissions('builder.module.update')
+  async addDataModelToModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(addAppDataModelSchema)) dto: AddAppDataModelInput
+  ) {
+    return this.builderService.addDataModelToModule(req.user.tenantId, id, dto);
+  }
+
+  @Delete('modules/:id/data-models/:dataModelId')
+  @Permissions('builder.module.update')
+  async removeDataModelFromModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('dataModelId') dataModelId: string
+  ) {
+    return this.builderService.removeDataModelFromModule(req.user.tenantId, id, dataModelId);
+  }
+
+  @Post('modules/:id/test')
+  @Permissions('builder.module.update')
+  async runAppTests(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.runAppTests(req.user.tenantId, id);
+  }
+
+  @Post('modules/:id/publish')
+  @Permissions('builder.module.update')
+  async publishModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(publishModuleSchema)) dto: PublishModuleInput
+  ) {
+    return this.builderService.publishModule(req.user.tenantId, id, dto, req.user.userId);
+  }
+
+  @Post('modules/:id/unpublish')
+  @Permissions('builder.module.update')
+  async unpublishModule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.unpublishModule(req.user.tenantId, id);
+  }
+
+  @Get('modules/:id/releases')
+  @Permissions('builder.module.read')
+  async getModuleReleases(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.getModuleReleases(req.user.tenantId, id);
+  }
+
+  @Post('modules/:id/rollback')
+  @Permissions('builder.module.update')
+  async rollbackModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(rollbackModuleSchema)) dto: RollbackModuleInput
+  ) {
+    return this.builderService.rollbackModule(req.user.tenantId, id, dto.releaseId);
+  }
+
+  // ─── App Marketplace ────────────────────────────
+  @Get('marketplace')
+  @Permissions('builder.module.read')
+  async getMarketplace(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getMarketplace(req.user.tenantId);
+  }
+
+  @Post('marketplace/install')
+  @Permissions('builder.module.read')
+  async installBuilderApp(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(installBuilderAppSchema)) dto: InstallBuilderAppInput
+  ) {
+    return this.builderService.installBuilderApp(req.user.tenantId, dto.moduleId, dto.releaseId);
+  }
+
+  @Post('marketplace/uninstall')
+  @Permissions('builder.module.read')
+  async uninstallBuilderApp(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(installBuilderAppSchema)) dto: InstallBuilderAppInput
+  ) {
+    return this.builderService.uninstallBuilderApp(req.user.tenantId, dto.moduleId);
   }
 
   // ─── Automation Rules ───────────────────────────
@@ -208,7 +425,7 @@ export class BuilderController {
   @Permissions('builder.automation.create')
   async createAutomationRule(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; description?: string; trigger: string; triggerConfig?: any; conditions?: any; actions?: any; settings?: any }
+    @Body(new ZodValidationPipe(createAutomationRuleSchema)) dto: any
   ) {
     return this.builderService.createAutomationRule(req.user.tenantId, dto);
   }
@@ -218,7 +435,7 @@ export class BuilderController {
   async updateAutomationRule(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; description: string; trigger: string; triggerConfig: any; conditions: any; actions: any; status: string; settings: any }>
+    @Body(new ZodValidationPipe(updateAutomationRuleSchema)) dto: any
   ) {
     return this.builderService.updateAutomationRule(req.user.tenantId, id, dto);
   }
@@ -246,7 +463,7 @@ export class BuilderController {
   @Permissions('builder.import.create')
   async createDataImport(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; targetModel: string; fileName: string; fileSize: number; totalRows: number; columnMapping?: any }
+    @Body(new ZodValidationPipe(createDataImportSchema)) dto: CreateDataImportInput
   ) {
     return this.builderService.createDataImport(req.user.tenantId, dto);
   }
@@ -256,7 +473,7 @@ export class BuilderController {
   async executeDataImport(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { rows: any[] }
+    @Body(new ZodValidationPipe(executeDataImportSchema)) dto: ExecuteDataImportInput
   ) {
     return this.builderService.executeDataImport(req.user.tenantId, id, dto.rows);
   }
@@ -278,7 +495,7 @@ export class BuilderController {
   @Permissions('builder.web.create')
   async createWebPage(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; slug: string; sections?: any; metaTitle?: string; metaDesc?: string; ogImage?: string; visibility?: string }
+    @Body(new ZodValidationPipe(createWebPageSchema)) dto: any
   ) {
     return this.builderService.createWebPage(req.user.tenantId, dto);
   }
@@ -288,7 +505,7 @@ export class BuilderController {
   async updateWebPage(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; slug: string; status: string; sections: any; metaTitle: string; metaDesc: string; ogImage: string; visibility: string; sortOrder: number }>
+    @Body(new ZodValidationPipe(updateWebPageSchema)) dto: any
   ) {
     return this.builderService.updateWebPage(req.user.tenantId, id, dto);
   }
@@ -316,7 +533,7 @@ export class BuilderController {
   @Permissions('builder.blog.create')
   async createBlogPost(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { title: string; slug: string; content?: string; excerpt?: string; category?: string; tags?: any; author?: string; featuredImage?: string; metaTitle?: string; metaDesc?: string; readTime?: string }
+    @Body(new ZodValidationPipe(createBlogPostSchema)) dto: any
   ) {
     return this.builderService.createBlogPost(req.user.tenantId, dto);
   }
@@ -326,7 +543,7 @@ export class BuilderController {
   async updateBlogPost(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ title: string; content: string; excerpt: string; category: string; tags: any; author: string; status: string; featuredImage: string; metaTitle: string; metaDesc: string; readTime: string }>
+    @Body(new ZodValidationPipe(updateBlogPostSchema)) dto: any
   ) {
     return this.builderService.updateBlogPost(req.user.tenantId, id, dto);
   }
@@ -348,13 +565,13 @@ export class BuilderController {
 
   @Post('web-assets')
   @Permissions('builder.web.create')
-  async createWebAsset(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+  async createWebAsset(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebAssetSchema)) dto: any) {
     return this.builderService.createWebAsset(req.user.tenantId, dto);
   }
 
   @Patch('web-assets/:id')
   @Permissions('builder.web.update')
-  async updateWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+  async updateWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebAssetSchema)) dto: any) {
     return this.builderService.updateWebAsset(req.user.tenantId, id, dto);
   }
 
@@ -375,13 +592,13 @@ export class BuilderController {
 
   @Post('web-templates')
   @Permissions('builder.web.create')
-  async createWebTemplate(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+  async createWebTemplate(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebTemplateSchema)) dto: any) {
     return this.builderService.createWebTemplate(req.user.tenantId, dto);
   }
 
   @Patch('web-templates/:id')
   @Permissions('builder.web.update')
-  async updateWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+  async updateWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebTemplateSchema)) dto: any) {
     return this.builderService.updateWebTemplate(req.user.tenantId, id, dto);
   }
 
@@ -402,13 +619,13 @@ export class BuilderController {
 
   @Post('web-menus')
   @Permissions('builder.web.create')
-  async createWebMenu(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+  async createWebMenu(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebMenuSchema)) dto: any) {
     return this.builderService.createWebMenu(req.user.tenantId, dto);
   }
 
   @Patch('web-menus/:id')
   @Permissions('builder.web.update')
-  async updateWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+  async updateWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebMenuSchema)) dto: any) {
     return this.builderService.updateWebMenu(req.user.tenantId, id, dto);
   }
 
@@ -429,13 +646,13 @@ export class BuilderController {
 
   @Post('web-seo')
   @Permissions('builder.web.create')
-  async createWebSeo(@Req() req: AuthenticatedRequest, @Body() dto: any) {
+  async createWebSeo(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebSeoSchema)) dto: any) {
     return this.builderService.createWebSeo(req.user.tenantId, dto);
   }
 
   @Patch('web-seo/:id')
   @Permissions('builder.web.update')
-  async updateWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: any) {
+  async updateWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebSeoSchema)) dto: any) {
     return this.builderService.updateWebSeo(req.user.tenantId, id, dto);
   }
 
@@ -448,22 +665,21 @@ export class BuilderController {
 
 
   @Post('analytics')
-  async logAnalytics(@Req() req: AuthenticatedRequest, @Body() data: any) {
-    // In a real app, save to an Analytics table. For now just log it.
-    console.log(`[ANALYTICS] Tenant ${req.user?.tenantId} | Event: ${data.event} | Entity: ${data.entityType} ${data.entityId}`);
-    return { success: true };
+  @Permissions('builder.read')
+  async logAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(builderAnalyticsEventSchema)) data: BuilderAnalyticsEventInput
+  ) {
+    return this.builderService.logAnalyticsEvent(req.user.tenantId, data);
   }
 
   @Post('ai-generate')
-  async generateSchema(@Req() _req: AuthenticatedRequest, @Body() _data: { prompt: string }) {
-    // In a real app, this calls an LLM API (OpenAI/Anthropic) using prompt to generate a JSON schema.
-    // For now, return a generic pre-built template based on the prompt content.
-    const schema = [
-      { id: 'f_ai_1', name: 'title', label: 'Generated Title', type: 'text', width: 12 },
-      { id: 'f_ai_2', name: 'description', label: 'Generated Description', type: 'textarea', width: 12 },
-      { id: 'f_ai_3', name: 'status', label: 'Status', type: 'select', width: 6, options: [{label: 'Active', value: 'active'}, {label: 'Draft', value: 'draft'}] }
-    ];
-    return { success: true, schema };
+  @Permissions('builder.form.create')
+  async generateSchema(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(builderAiGenerateSchema)) data: BuilderAiGenerateInput
+  ) {
+    return this.builderService.generateSchemaFromPrompt(req.user.tenantId, data.prompt);
   }
 
   // ---------------------------------------------------------------------------
@@ -485,7 +701,7 @@ export class BuilderController {
   @Permissions('builder.schema.create')
   async createSchemaRegistry(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { module: string; name: string; slug: string; description?: string; fields?: any; settings?: any }
+    @Body(new ZodValidationPipe(createSchemaRegistrySchema)) dto: CreateSchemaRegistryInput
   ) {
     return this.builderService.createSchemaRegistry(req.user.tenantId, dto);
   }
@@ -495,9 +711,15 @@ export class BuilderController {
   async updateSchemaRegistry(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ name: string; description: string; fields: any; settings: any; status: string }>
+    @Body(new ZodValidationPipe(updateSchemaRegistrySchema)) dto: UpdateSchemaRegistryInput
   ) {
     return this.builderService.updateSchemaRegistry(req.user.tenantId, id, dto);
+  }
+
+  @Delete('schema-registries/:id')
+  @Permissions('builder.schema.delete')
+  async deleteSchemaRegistry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deleteSchemaRegistry(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -529,7 +751,7 @@ export class BuilderController {
   @Permissions('builder.page.create')
   async createPageRegistry(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { schemaId?: string; module: string; slug: string; title: string; type?: string; layout?: any }
+    @Body(new ZodValidationPipe(createPageRegistrySchema)) dto: CreatePageRegistryInput
   ) {
     return this.builderService.createPageRegistry(req.user.tenantId, dto);
   }
@@ -539,9 +761,35 @@ export class BuilderController {
   async updatePageRegistry(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: Partial<{ title: string; layout: any; status: string }>
+    @Body(new ZodValidationPipe(updatePageRegistrySchema)) dto: UpdatePageRegistryInput
   ) {
     return this.builderService.updatePageRegistry(req.user.tenantId, id, dto);
+  }
+
+  @Delete('page-registries/:id')
+  @Permissions('builder.page.delete')
+  async deletePageRegistry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deletePageRegistry(req.user.tenantId, id);
+  }
+
+  @Post('page-registries/:id/restore')
+  @Permissions('builder.page.update')
+  async restorePageRegistryHistory(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(restorePageRegistryHistorySchema)) dto: RestorePageRegistryHistoryInput
+  ) {
+    return this.builderService.restorePageRegistryHistory(req.user.tenantId, id, dto.historyIndex);
+  }
+
+  /**
+   * Deploy (publish) a Builder Form to a resolvable dynamic app page.
+   * Generates / syncs the backing SchemaRegistry so submissions persist.
+   */
+  @Post('page-registries/:id/publish')
+  @Permissions('builder.page.update')
+  async publishForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.publishForm(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -549,8 +797,22 @@ export class BuilderController {
   // ---------------------------------------------------------------------------
   @Get('custom-records/:schemaId')
   @Permissions('builder.record.read')
-  async getCustomRecords(@Req() req: AuthenticatedRequest, @Param('schemaId') schemaId: string) {
-    return this.builderService.getCustomRecords(req.user.tenantId, schemaId, req.user.roles);
+  async getCustomRecords(
+    @Req() req: AuthenticatedRequest,
+    @Param('schemaId') schemaId: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.builderService.getCustomRecords(req.user.tenantId, schemaId, req.user.roles, {
+      search,
+      sortBy,
+      sortOrder,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
   }
 
   @Get('custom-records/:schemaId/:id')
@@ -568,7 +830,7 @@ export class BuilderController {
   async createCustomRecord(
     @Req() req: AuthenticatedRequest,
     @Param('schemaId') schemaId: string,
-    @Body() data: any
+    @Body(new ZodValidationPipe(customRecordDataSchema)) data: CustomRecordDataInput
   ) {
     return this.builderService.createCustomRecord(req.user.tenantId, schemaId, data, req.user.userId, req.user.roles);
   }
@@ -579,7 +841,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @Param('schemaId') schemaId: string,
     @Param('id') id: string,
-    @Body() data: any
+    @Body(new ZodValidationPipe(customRecordDataSchema)) data: CustomRecordDataInput
   ) {
     return this.builderService.updateCustomRecord(req.user.tenantId, schemaId, id, data, req.user.roles);
   }

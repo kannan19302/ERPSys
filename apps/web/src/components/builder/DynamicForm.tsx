@@ -154,19 +154,30 @@ export function DynamicForm({ fields, data = {}, onChange, onSubmit, readOnly = 
                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>{field.label}</span>
                     </label>
                 );
-            case 'Select':
+            case 'Select': {
+                const opts = Array.isArray(field.options)
+                    ? field.options
+                    : typeof field.options === 'string'
+                    ? field.options.split('\n').filter(Boolean)
+                    : [];
                 return (
                     <select {...commonProps} style={{ ...inputStyle, minHeight: '36px' }}>
                         <option value="">{field.placeholder || 'Select...'}</option>
-                        {(field.options || '').split('\n').filter(Boolean).map((opt) => (
+                        {opts.map((opt: string) => (
                             <option key={opt} value={opt}>{opt}</option>
                         ))}
                     </select>
                 );
-            case 'Radio':
+            }
+            case 'Radio': {
+                const opts = Array.isArray(field.options)
+                    ? field.options
+                    : typeof field.options === 'string'
+                    ? field.options.split('\n').filter(Boolean)
+                    : [];
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                        {(field.options || '').split('\n').filter(Boolean).map((opt) => (
+                        {opts.map((opt: string) => (
                             <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
                                 <input
                                     type="radio"
@@ -181,6 +192,7 @@ export function DynamicForm({ fields, data = {}, onChange, onSubmit, readOnly = 
                         ))}
                     </div>
                 );
+            }
             case 'Textarea':
                 return <textarea {...commonProps} rows={4} />;
             case 'HTML':

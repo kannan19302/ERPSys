@@ -2,8 +2,8 @@
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Code2, PlusCircle, Edit3, Trash2, Eye, Copy } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -15,10 +15,20 @@ const CATEGORY_COLORS: Record<string, string> = {
   Auth: '#dc2626',
 };
 
-export default function WebTemplatesPage() {
-  const { data: TEMPLATES_DB, createItem, updateItem, deleteItem } = useBuilderData("web-templates", []);
+function WebTemplatesPageContent() {
+
+  const { data: TEMPLATES_DB, createItem, updateItem, deleteItem } = useBuilderData<any>("web-templates", []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setEditingItem(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
 
   const handleSave = async (data: any) => {
     if (editingItem) {
@@ -118,5 +128,15 @@ export default function WebTemplatesPage() {
         initialData={editingItem}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function WebTemplatesPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Templates...</div>}>
+      <WebTemplatesPageContent />
+    </Suspense>
   );
 }

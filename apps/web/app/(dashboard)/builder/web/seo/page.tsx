@@ -2,8 +2,8 @@
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Search as SearchIcon,
   TrendingUp,
@@ -36,10 +36,20 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-export default function WebSEOPage() {
-  const { data: PAGES_SEO_DB, createItem, updateItem, deleteItem } = useBuilderData("web-seo", []);
+function WebSEOPageContent() {
+
+  const { data: PAGES_SEO_DB, createItem, updateItem, deleteItem } = useBuilderData<any>("web-seo", []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setEditingItem(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
   
   const handleSave = async (data: any) => {
     if (editingItem) {
@@ -324,5 +334,15 @@ export default function WebSEOPage() {
         initialData={editingItem}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function WebSEOPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading SEO Manager...</div>}>
+      <WebSEOPageContent />
+    </Suspense>
   );
 }

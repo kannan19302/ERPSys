@@ -21,16 +21,27 @@ export function FieldRenderer({ field, previewMode = false }: FieldRendererProps
 
   switch (field.type) {
     case 'Select':
-    case 'Link':
+    case 'Link': {
+      const opts = Array.isArray(field.options)
+        ? field.options
+        : typeof field.options === 'string'
+        ? field.options.split('\n').filter(Boolean)
+        : [];
       return (
         <select {...commonProps}>
-          {(field.options || '').split('\n').filter(Boolean).map((opt, i) => <option key={i}>{opt}</option>)}
+          {opts.map((opt: string, i: number) => <option key={i}>{opt}</option>)}
         </select>
       );
-    case 'Radio':
+    }
+    case 'Radio': {
+      const opts = Array.isArray(field.options)
+        ? field.options
+        : typeof field.options === 'string'
+        ? field.options.split('\n').filter(Boolean)
+        : [];
       return (
         <div className={`frappe-radio-group ${field.cssClass || ''}`.trim()} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          {(field.options || '').split('\n').filter(Boolean).map((opt, i) => (
+          {opts.map((opt: string, i: number) => (
             <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
               <input type="radio" name={field.name} disabled={previewMode && field.readOnly} defaultChecked={field.defaultValue === opt} />
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>{opt}</span>
@@ -38,6 +49,7 @@ export function FieldRenderer({ field, previewMode = false }: FieldRendererProps
           ))}
         </div>
       );
+    }
     case 'Check':
       return <input type="checkbox" style={{ width: '16px', height: '16px' }} disabled={previewMode && field.readOnly} defaultChecked={field.defaultValue === 'true' || field.defaultValue === '1'} className={field.cssClass} />;
     case 'Text Editor':
