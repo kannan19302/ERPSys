@@ -116,7 +116,7 @@ export default function WorkflowsPage() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← ERP Builder
+            ← App Studio
           </button>
           <button className="frappe-btn frappe-btn-primary" onClick={() => router.push('/builder/erp/workflows/new')}>
             <PlusCircle size={15} />

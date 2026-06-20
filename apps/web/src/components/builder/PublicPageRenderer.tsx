@@ -51,7 +51,7 @@ export function PublicPageRenderer({ page, settings }: { page: any; settings: an
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-background, #ffffff)', color: 'var(--color-text, #111111)', fontFamily: 'var(--font-body, sans-serif)' }}>
       <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `:root { ${cssVars} } \n ${settings?.globalCss || ''}` }} />
       {sections.map(section => {
-        const BlockComponent = BLOCK_REGISTRY[section.type] || BLOCK_REGISTRY['text'];
+        const BlockComponent = (BLOCK_REGISTRY[section.type] || BLOCK_REGISTRY['text'])!;
         return (
           <div key={section.id}>
             <BlockComponent {...(section.content || {})} />

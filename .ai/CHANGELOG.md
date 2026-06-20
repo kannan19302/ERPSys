@@ -61,6 +61,15 @@
 - **Chevron Indicators**: Implemented interactive `ChevronRight` and `ChevronDown` icons to signify the expansion state of collapsible sections.
 - **Alphabetical sorting**: Both root apps and folder headers are combined and sorted alphabetically.
 
+## [2026-06-20] Custom App Builder — Workflow & Dashboard Editors Embedded Inline
+
+### Added
+- **Extracted `WorkflowEditorWorkspace`** (`apps/web/src/components/builder/WorkflowEditorWorkspace.tsx`): the full React Flow workflow editor (palette, drag-drop nodes, properties panel, test-run, execution history) is now a reusable component accepting `{ workflowId, onBack, onSaved, embedded, defaultName }`. Route `builder/erp/workflows/[id]` slimmed to a thin wrapper.
+- **Extracted `DashboardEditorWorkspace`** (`apps/web/src/components/builder/DashboardEditorWorkspace.tsx`): the full grid-layout dashboard editor (widget palette, resizable grid, properties panel) is now a reusable component. Route `builder/erp/dashboards/[id]` slimmed to a thin wrapper.
+- **Studio Workflows tab — Build New + inline Edit**: launches the workflow editor as a full-screen overlay over `builder/erp/apps/[id]`; on first save the workflow is auto-linked to the app.
+- **Studio Dashboards tab — Build New + inline Edit**: same pattern for dashboards. Both follow the form-builder convention so the user never leaves build mode.
+- **Generic `linkComponentToApp` helper** in the app studio centralizes the link-on-save behavior across form/workflow/dashboard overlays.
+
 ## [2026-06-20] Custom App Builder — Integrated In-Studio Builders (never leave build mode)
 
 ### Added

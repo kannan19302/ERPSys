@@ -396,7 +396,7 @@ function DashboardContent() {
 
               {(!globalStats?.customApps || globalStats.customApps.length === 0) ? (
                 <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                  No custom applications have been created yet. Navigate to the App Builder to create one!
+                  No custom applications have been created yet. Navigate to App Studio to create one!
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>

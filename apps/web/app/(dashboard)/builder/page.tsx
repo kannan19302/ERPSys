@@ -122,7 +122,7 @@ function BuilderPageContent() {
       <div className="builder-header">
         <div>
           <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-            Builder Studio
+            Studio
           </h1>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', margin: 'var(--space-1) 0 0 0' }}>
             Low-code platform for ERP modules, forms, workflows and website content management
@@ -134,14 +134,14 @@ function BuilderPageContent() {
             onClick={() => setTab('erp')}
           >
             <Cpu size={15} />
-            <span>ERP Builder</span>
+            <span>App Studio</span>
           </button>
           <button 
             className={`frappe-btn ${activeTab === 'web' ? 'frappe-btn-primary' : 'frappe-btn-secondary'}`} 
             onClick={() => setTab('web')}
           >
             <Globe size={15} />
-            <span>Website Builder</span>
+            <span>Web Studio</span>
           </button>
           {activeTab !== 'all' && (
             <button className="frappe-btn frappe-btn-secondary" onClick={() => setTab('all')}>
@@ -153,7 +153,7 @@ function BuilderPageContent() {
 
       {/* Mode Cards */}
       <div className="builder-mode-grid" style={{ gridTemplateColumns: activeTab !== 'all' ? '1fr' : undefined }}>
-        {/* ERP App Builder Card */}
+        {/* App Studio Card */}
         {(activeTab === 'all' || activeTab === 'erp') && (
         <div
           className="frappe-card"
@@ -177,7 +177,7 @@ function BuilderPageContent() {
             </div>
             <div>
               <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>
-                ERP App Builder
+                App Studio
               </h2>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
                 Internal module & workflow creator
@@ -206,13 +206,13 @@ function BuilderPageContent() {
             ))}
           </div>
           <button onClick={() => router.push('/builder/erp')} className="frappe-btn frappe-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-            <span>Open ERP Builder</span>
+            <span>Open App Studio</span>
             <ChevronRight size={15} />
           </button>
         </div>
         )}
 
-        {/* Website Builder Card */}
+        {/* Web Studio Card */}
         {(activeTab === 'all' || activeTab === 'web') && (
         <div
           className="frappe-card"
@@ -236,7 +236,7 @@ function BuilderPageContent() {
             </div>
             <div>
               <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>
-                Website Builder
+                Web Studio
               </h2>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
                 CMS for public-facing content
@@ -268,7 +268,7 @@ function BuilderPageContent() {
             className="frappe-btn"
             style={{ width: '100%', justifyContent: 'center', background: '#7c3aed', color: 'white', border: 'none' }}
           >
-            <span>Open Website Builder</span>
+            <span>Open Web Studio</span>
             <ChevronRight size={15} />
           </button>
         </div>
@@ -281,7 +281,7 @@ function BuilderPageContent() {
         {(activeTab === 'all' || activeTab === 'erp') && (
         <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
           <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', margin: '0 0 var(--space-3) 0', letterSpacing: '0.05em' }}>
-            ERP Builder — Quick Create
+            App Studio — Quick Create
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
             {ERP_QUICK_ACTIONS.map(action => (
@@ -310,7 +310,7 @@ function BuilderPageContent() {
         {(activeTab === 'all' || activeTab === 'web') && (
         <div className="frappe-card" style={{ padding: 'var(--space-4)' }}>
           <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-tertiary)', margin: '0 0 var(--space-3) 0', letterSpacing: '0.05em' }}>
-            Website Builder — Quick Create
+            Web Studio — Quick Create
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
             {WEB_QUICK_ACTIONS.map(action => (
@@ -376,7 +376,7 @@ function BuilderPageContent() {
                 </div>
                 <div>
                   <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', margin: 0, color: 'var(--color-text)' }}>{item.name}</p>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{item.type === 'erp' ? 'ERP Builder' : 'Website Builder'} · {formatTimeAgo(item.updatedAt)}</p>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{item.type === 'erp' ? 'App Studio' : 'Web Studio'} · {formatTimeAgo(item.updatedAt)}</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -402,7 +402,7 @@ import { Suspense } from 'react';
 
 export default function BuilderPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Builder Studio...</div>}>
+    <Suspense fallback={<div style={{ padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>Loading Studio...</div>}>
       <BuilderPageContent />
     </Suspense>
   );

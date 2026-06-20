@@ -222,7 +222,7 @@ export function PageBuilderWorkspace({
         {/* Left Sidebar - Widget Palette */}
         {!previewMode && (
           <aside style={{ width: '280px', background: '#1e293b', borderRight: '1px solid rgba(255,255,255,0.1)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', overflowY: 'auto', flexShrink: 0 }}>
-            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, textTransform: 'uppercase', tracking: '0.05em', color: '#94a3b8', marginBottom: 4 }}>Add Component</h3>
+            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: 4 }}>Add Component</h3>
             {widgetPalette.map((p) => (
               <button key={p.type} onClick={() => handleAddWidget(p.type)} style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-lg)', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', textAlign: 'left', width: '100%',
@@ -311,7 +311,7 @@ export function PageBuilderWorkspace({
 
                       {w.type === 'stats' && (
                         <div>
-                          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', tracking: '0.05em', marginBottom: 'var(--space-3)' }}>{w.title}</div>
+                          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>{w.title}</div>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
                             {(w.config.items || []).map((item: any, i: number) => (
                               <div key={i} style={{ padding: 'var(--space-3)', background: 'white', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-md)' }}>
@@ -564,7 +564,7 @@ export function PageBuilderWorkspace({
                             handleUpdateConfig(selectedWidget.id, 'items', nextItems);
                           }} style={{ width: '60px', padding: 4, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', color: 'white', fontSize: '11px', borderRadius: 2 }} />
                         </div>
-                        <div style={{ display: 'flex', justify: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <input type="color" value={item.color || '#3b82f6'} onChange={e => {
                             const nextItems = [...selectedWidget.config.items];
                             nextItems[i].color = e.target.value;

@@ -91,7 +91,7 @@ function CanvasContent() {
         </div>
       ) : (
         sections.map((section) => {
-          const BlockComponent = BLOCK_REGISTRY[section.type] || BLOCK_REGISTRY['text'];
+          const BlockComponent = (BLOCK_REGISTRY[section.type] || BLOCK_REGISTRY['text'])!;
           const isSelected = selectedSectionId === section.id;
           
           return (

@@ -223,7 +223,7 @@ export function ERPFormsPageContent() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/page?tab=erp')}>
-            ← ERP Builder
+            ← App Studio
           </button>
           <button className="frappe-btn frappe-btn-primary" onClick={() => setIsModalOpen(true)}>
             <PlusCircle size={15} />

@@ -482,15 +482,15 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
   }
   if (pathname.startsWith('/builder')) {
     return {
-      title: 'Builder Studio',
+      title: 'Studio',
       icon: Cpu,
       items: [
         { name: 'Builder Overview', href: '/builder', icon: Layers },
         {
-          name: 'ERP App Builder',
+          name: 'App Studio',
           isHeader: true,
           items: [
-            { name: 'App Builder Overview', href: '/builder/erp', icon: Cpu },
+            { name: 'App Studio Overview', href: '/builder/erp', icon: Cpu },
             { name: 'Form Builder', href: '/builder/erp/forms', icon: FileCode2 },
             { name: 'Workflow Builder', href: '/builder/erp/workflows', icon: Workflow },
             { name: 'Dashboard Builder', href: '/builder/erp/dashboards', icon: BarChart3 },
@@ -500,7 +500,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           ]
         },
         {
-          name: 'Website Builder',
+          name: 'Web Studio',
           isHeader: true,
           items: [
             { name: 'Pages', href: '/builder/web/pages', icon: Globe },
@@ -543,7 +543,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
   { name: 'API Platform', href: '/admin/api-keys', icon: Key, type: 'App' },
   { name: 'Administration', href: '/admin/users', icon: ShieldAlert, type: 'App' },
-  { name: 'Builder Studio', href: '/builder', icon: Cpu, type: 'App' },
+  { name: 'Studio', href: '/builder', icon: Cpu, type: 'App' },
   // Actions — General
   { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
   { name: 'Create Invoice', href: '/finance', icon: CreditCard, type: 'Action' },
@@ -733,7 +733,7 @@ const SEGMENT_NAMES: Record<string, string> = {
   admin: 'Administration',
   settings: 'Settings',
   profile: 'Profile',
-  builder: 'Builder Studio',
+  builder: 'Studio',
   store: 'App Store',
   'real-estate': 'Real Estate',
   healthcare: 'Healthcare',
@@ -1024,7 +1024,7 @@ export default function DashboardLayout({
     { id: 'saas', name: 'SaaS Portal', href: '/saas/portal', icon: Cloud, installed: true },
     { id: 'admin', name: 'Administration', href: '/admin/users', icon: ShieldAlert, installed: true },
     { id: 'app-store', name: 'App Store', href: '/apps/store', icon: ShoppingBag, installed: true },
-    { id: 'builder', name: 'Builder Studio', href: '/builder', icon: Cpu, installed: true },
+    { id: 'builder', name: 'Studio', href: '/builder', icon: Cpu, installed: true },
   ];
 
   const switcherFolders = [

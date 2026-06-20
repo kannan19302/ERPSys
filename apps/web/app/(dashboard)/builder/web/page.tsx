@@ -55,7 +55,7 @@ export default function WebBuilderPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
             <Globe size={20} style={{ color: '#7c3aed' }} />
             <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Website Builder
+              Web Studio
             </h1>
           </div>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
@@ -63,7 +63,7 @@ export default function WebBuilderPage() {
           </p>
         </div>
         <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder')}>
-          ← Builder Studio
+          ← Studio
         </button>
       </div>
 

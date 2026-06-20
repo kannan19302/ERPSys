@@ -217,10 +217,7 @@ export default function EntityDesignerWorkspace() {
                             <SortableField
                               field={field}
                               isSelected={selectedFieldId === field.id}
-                              onDelete={() => {
-                                setFields(fields.filter(f => f.id !== field.id));
-                                if (selectedFieldId === field.id) setSelectedFieldId(null);
-                              }}
+                              onClick={() => setSelectedFieldId(field.id)}
                             />
                           </div>
                         ))

@@ -152,7 +152,7 @@ export default function DataImportPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>← ERP Builder</button>
+          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>← App Studio</button>
           <button className="frappe-btn frappe-btn-primary" onClick={() => setShowWizard(true)}>
             <Upload size={15} /> <span>New Import</span>
           </button>

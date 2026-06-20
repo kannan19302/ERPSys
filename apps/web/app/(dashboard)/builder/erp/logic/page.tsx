@@ -64,8 +64,25 @@ export default function ERPLogicPage() {
   const [editingItem, setEditingItem] = useState<any>(null);
   
   const handleSave = async (data: any) => {
-    console.log('Saving', data);
+    try {
+      const token = localStorage.getItem('token') || '';
+      if (editingItem) {
+        await fetch(`/api/v1/builder/automation-rules/${editingItem.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(data),
+        });
+      } else {
+        await fetch('/api/v1/builder/automation-rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(data),
+        });
+      }
+      fetchRules();
+    } catch { /* ignore */ }
     setIsModalOpen(false);
+    setEditingItem(null);
   };
   
   // Builder state
@@ -173,7 +190,7 @@ export default function ERPLogicPage() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← ERP Builder
+            ← App Studio
           </button>
           <button onClick={handleSaveAndActivate} className="frappe-btn frappe-btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
             <Play size={14} /> Save & Activate

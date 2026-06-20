@@ -126,6 +126,9 @@ importers:
       '@unerp/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@unerp/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@unerp/shared':
         specifier: workspace:*
         version: link:../../packages/shared

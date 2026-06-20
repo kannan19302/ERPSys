@@ -37,7 +37,7 @@ export function CommandPalette() {
     { name: 'Finance Dashboard', href: '/finance' },
     { name: 'HR Dashboard', href: '/hr' },
     { name: 'CRM Dashboard', href: '/crm' },
-    { name: 'Builder Studio', href: '/builder' },
+    { name: 'Studio', href: '/builder' },
     { name: 'Settings', href: '/admin/settings' },
   ].filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 

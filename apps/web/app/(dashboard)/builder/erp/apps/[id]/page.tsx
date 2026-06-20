@@ -43,6 +43,8 @@ import {
 import { DynamicFormRenderer } from '@/components/builder/DynamicFormRenderer';
 import { FormBuilderWorkspace } from '@/components/builder/FormBuilderWorkspace';
 import { PageBuilderWorkspace } from '@/components/builder/PageBuilderWorkspace';
+import { WorkflowEditorWorkspace } from '@/components/builder/WorkflowEditorWorkspace';
+import { DashboardEditorWorkspace } from '@/components/builder/DashboardEditorWorkspace';
 import { Pencil, Wand2 } from 'lucide-react';
 
 interface AppModule {
@@ -856,6 +858,7 @@ function TestEngineSection({ app, onRefresh }: { app: AppModule; onRefresh: () =
 function PreviewSection({ app }: { app: AppModule }) {
   const pages = Array.isArray(app.pages) ? app.pages : [];
   const forms = app.resolvedComponents?.forms || [];
+  const dataModels = Array.isArray(app.dataModels) ? app.dataModels : [];
   const [activePageId, setActivePageId] = useState<string | null>(pages[0]?.id ?? null);
   const [lastPayload, setLastPayload] = useState<Record<string, any> | null>(null);
 
@@ -1242,6 +1245,20 @@ export default function AppStudioPage() {
   const [formBuilder, setFormBuilder] = useState<{ formId: string; pendingLink: boolean; pageDraft?: { name: string; slug: string; type: string } } | null>(null);
   // Embedded page builder layout canvas state.
   const [pageBuilder, setPageBuilder] = useState<{ pageId: string; pageName: string; initialLayout: any[] } | null>(null);
+  // Embedded workflow + dashboard editor overlays.
+  const [workflowBuilder, setWorkflowBuilder] = useState<{ workflowId: string; pendingLink: boolean } | null>(null);
+  const [dashboardBuilder, setDashboardBuilder] = useState<{ dashboardId: string; pendingLink: boolean } | null>(null);
+
+  // Generic link-on-save for workflow/dashboard so users never leave the studio.
+  const linkComponentToApp = useCallback(async (type: 'workflow' | 'dashboard', refId: string, name: string) => {
+    const already = (Array.isArray(app?.components) ? app!.components : []).some((c: any) => c.type === type && c.refId === refId);
+    if (already) return;
+    const token = localStorage.getItem('token');
+    await fetch(`/api/v1/builder/modules/${appId}/components`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
+      body: JSON.stringify({ type, refId, name }),
+    });
+  }, [appId, app]);
 
   const fetchApp = useCallback(async () => {
     if (!appId) return;
@@ -1393,8 +1410,12 @@ export default function AppStudioPage() {
           onBuildNew={() => setFormBuilder({ formId: 'new', pendingLink: true })}
           onEditItem={(refId) => setFormBuilder({ formId: refId, pendingLink: false })} />}
         {activeSection === 'data-models' && <DataModelsSection app={app} onRefresh={fetchApp} />}
-        {activeSection === 'workflows' && <ComponentListSection app={app} type="workflow" typeLabel="Workflow" icon={Workflow} onRefresh={fetchApp} />}
-        {activeSection === 'dashboards' && <ComponentListSection app={app} type="dashboard" typeLabel="Dashboard" icon={BarChart3} onRefresh={fetchApp} />}
+        {activeSection === 'workflows' && <ComponentListSection app={app} type="workflow" typeLabel="Workflow" icon={Workflow} onRefresh={fetchApp}
+          onBuildNew={() => setWorkflowBuilder({ workflowId: 'new', pendingLink: true })}
+          onEditItem={(refId) => setWorkflowBuilder({ workflowId: refId, pendingLink: false })} />}
+        {activeSection === 'dashboards' && <ComponentListSection app={app} type="dashboard" typeLabel="Dashboard" icon={BarChart3} onRefresh={fetchApp}
+          onBuildNew={() => setDashboardBuilder({ dashboardId: 'new', pendingLink: true })}
+          onEditItem={(refId) => setDashboardBuilder({ dashboardId: refId, pendingLink: false })} />}
         {activeSection === 'automations' && <ComponentListSection app={app} type="automation" typeLabel="Automation" icon={Zap} onRefresh={fetchApp} />}
         {activeSection === 'preview' && <PreviewSection app={app} />}
         {activeSection === 'test' && <TestEngineSection app={app} onRefresh={fetchApp} />}
@@ -1427,6 +1448,36 @@ export default function AppStudioPage() {
             setPageBuilder(null);
             fetchApp();
           }}
+        />
+      )}
+
+      {/* Embedded workflow editor */}
+      {workflowBuilder && (
+        <WorkflowEditorWorkspace
+          workflowId={workflowBuilder.workflowId}
+          embedded
+          defaultName={`${app.name} Workflow`}
+          onSaved={async (wf: { id: string; name: string }) => {
+            if (workflowBuilder.pendingLink) await linkComponentToApp('workflow', wf.id, wf.name);
+            setWorkflowBuilder((prev) => prev ? { workflowId: wf.id, pendingLink: false } : prev);
+            fetchApp();
+          }}
+          onBack={() => { setWorkflowBuilder(null); fetchApp(); }}
+        />
+      )}
+
+      {/* Embedded dashboard editor */}
+      {dashboardBuilder && (
+        <DashboardEditorWorkspace
+          dashboardId={dashboardBuilder.dashboardId}
+          embedded
+          defaultName={`${app.name} Dashboard`}
+          onSaved={async (d: { id: string; name: string }) => {
+            if (dashboardBuilder.pendingLink) await linkComponentToApp('dashboard', d.id, d.name);
+            setDashboardBuilder((prev) => prev ? { dashboardId: d.id, pendingLink: false } : prev);
+            fetchApp();
+          }}
+          onBack={() => { setDashboardBuilder(null); fetchApp(); }}
         />
       )}
 

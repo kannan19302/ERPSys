@@ -77,7 +77,7 @@ const applications: AppDefinition[] = [
   { id: 'saas', name: 'SaaS Portal', description: 'Subscription plans, billing, and usage meters', href: '/saas/portal', icon: Cloud, color: '#9333ea', category: 'Platform', installed: true },
   { id: 'admin', name: 'Administration', description: 'User management and security settings', href: '/admin/users', icon: ShieldAlert, color: '#dc2626', category: 'Platform', installed: true },
   { id: 'app-store', name: 'App Store', description: 'Browse additional apps and modules', href: '/apps/store', icon: ShoppingBag, color: '#7c3aed', category: 'Developer', installed: true },
-  { id: 'builder', name: 'Builder Studio', description: 'Low-code ERP module and website builder', href: '/builder', icon: Cpu, color: '#0ea5e9', category: 'Developer', installed: true },
+  { id: 'builder', name: 'Studio', description: 'Low-code App Studio and Web Studio for custom ERP apps and website management', href: '/builder', icon: Cpu, color: '#0ea5e9', category: 'Developer', installed: true },
 ];
 
 interface SubfolderDefinition {

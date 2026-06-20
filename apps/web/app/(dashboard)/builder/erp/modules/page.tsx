@@ -122,7 +122,7 @@ function ERPModulesPageContent() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← ERP Builder
+            ← App Studio
           </button>
           <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
             <PlusCircle size={15} />

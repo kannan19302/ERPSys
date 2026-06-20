@@ -19,15 +19,6 @@ import {
   Monitor,
 } from 'lucide-react';
 
-const DEMO_MENU_ITEMS = [
-  { id: 'm1', label: 'Home', href: '/', depth: 0, children: [] },
-  { id: 'm2', label: 'Products', href: '/products', depth: 0, children: ['m2a', 'm2b'] },
-  { id: 'm2a', label: 'UniERP Core', href: '/products/core', depth: 1, children: [] },
-  { id: 'm2b', label: 'Industry Modules', href: '/products/industry', depth: 1, children: [] },
-  { id: 'm3', label: 'Pricing', href: '/pricing', depth: 0, children: [] },
-  { id: 'm4', label: 'Blog', href: '/blog', depth: 0, children: [] },
-  { id: 'm5', label: 'Contact', href: '/contact', depth: 0, children: [] },
-];
 
 export default function WebMenusPage() {
   const { data: MENUS_DB, createItem, updateItem, deleteItem } = useBuilderData("web-menus", []);
@@ -38,7 +29,7 @@ export default function WebMenusPage() {
     if (editingItem) {
       await updateItem(editingItem.id, data);
     } else {
-      await createItem({ ...data, items: DEMO_MENU_ITEMS });
+      await createItem({ ...data, items: [] });
     }
     setIsModalOpen(false);
   };
@@ -173,7 +164,7 @@ export default function WebMenusPage() {
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-              {(editingItem?.items || DEMO_MENU_ITEMS).map((item: any) => (
+              {(editingItem?.items || []).map((item: any) => (
                 <div
                   key={item.id}
                   onClick={() => setSelectedItem(item.id === selectedItem ? null : item.id)}
@@ -260,8 +251,8 @@ export default function WebMenusPage() {
             </p>
             {selectedItem ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                <div className="frappe-form-group"><label className="frappe-label">Label</label><input className="frappe-input" defaultValue={DEMO_MENU_ITEMS.find(i => i.id === selectedItem)?.label} /></div>
-                <div className="frappe-form-group"><label className="frappe-label">Link URL</label><input className="frappe-input" defaultValue={DEMO_MENU_ITEMS.find(i => i.id === selectedItem)?.href} /></div>
+                <div className="frappe-form-group"><label className="frappe-label">Label</label><input className="frappe-input" defaultValue={(editingItem?.items || []).find((i: any) => i.id === selectedItem)?.label} /></div>
+                <div className="frappe-form-group"><label className="frappe-label">Link URL</label><input className="frappe-input" defaultValue={(editingItem?.items || []).find((i: any) => i.id === selectedItem)?.href} /></div>
                 <div className="frappe-form-group">
                   <label className="frappe-label">Link Type</label>
                   <select className="frappe-input"><option>Internal Page</option><option>External URL</option><option>Anchor (#)</option><option>No Link</option></select>

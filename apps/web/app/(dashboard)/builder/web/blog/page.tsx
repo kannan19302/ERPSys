@@ -6,14 +6,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, PlusCircle, Search, Edit3, Trash2, Eye, Clock } from 'lucide-react';
 
-const POSTS = [
-  { id: 1, title: 'Introducing UniERP v12 — The Future of Enterprise', category: 'Product', author: 'Admin', date: '2025-06-10', status: 'Published', views: 4200, readTime: '5 min' },
-  { id: 2, title: 'How AI is Transforming ERP Systems in 2025', category: 'Insights', author: 'Admin', date: '2025-06-08', status: 'Published', views: 3800, readTime: '8 min' },
-  { id: 3, title: 'Top 10 ERP Best Practices for Manufacturing', category: 'Guide', author: 'Admin', date: '2025-06-05', status: 'Published', views: 6100, readTime: '12 min' },
-  { id: 4, title: 'Case Study: How Acme Corp Saved 40% on Operations', category: 'Case Study', author: 'Admin', date: '2025-06-01', status: 'Published', views: 2900, readTime: '6 min' },
-  { id: 5, title: 'UniERP Healthcare Module Deep Dive', category: 'Product', author: 'Admin', date: '2025-05-28', status: 'Draft', views: 0, readTime: '10 min' },
-  { id: 6, title: 'The Complete Guide to Procurement Automation', category: 'Guide', author: 'Admin', date: '2025-05-22', status: 'Published', views: 5400, readTime: '15 min' },
-];
 
 const CATEGORIES = ['All', 'Product', 'Insights', 'Guide', 'Case Study', 'Tutorial'];
 const CATEGORY_COLORS: Record<string, string> = {
@@ -25,13 +17,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function WebBlogPage() {
-  const { data: POSTS_DB, createItem, updateItem, deleteItem } = useBuilderData("blog-posts", POSTS);
+  const { data: POSTS_DB, loading, createItem, updateItem, deleteItem } = useBuilderData<any>("blog-posts", []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
   const handleSave = async (data: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dummy1 = handleDelete; const dummy2 = setEditingItem;
     if (editingItem) {
       await updateItem(editingItem.id, data);
     } else {
