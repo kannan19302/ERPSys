@@ -59,6 +59,7 @@ describe('BuilderController', () => {
       getWebMenus: vi.fn().mockResolvedValue([]),
       getWebSeo: vi.fn().mockResolvedValue([]),
       getStats: vi.fn().mockResolvedValue({}),
+      getGlobalPerformanceStats: vi.fn().mockResolvedValue({ metrics: { totalRevenue: 100 } }),
     });
 
     const mockService = generateMockService();
@@ -118,5 +119,8 @@ describe('BuilderController', () => {
     it('should get menus', async () => expect(await controller.getWebMenus(req as any)).toEqual([]));
     it('should get seo', async () => expect(await controller.getWebSeo(req as any)).toEqual([]));
     it('should get stats', async () => expect(await controller.getStats(req as any)).toEqual({}));
+    it('should get global performance stats', async () => {
+      expect(await controller.getGlobalPerformanceStats(req as any)).toEqual({ metrics: { totalRevenue: 100 } });
+    });
   });
 });

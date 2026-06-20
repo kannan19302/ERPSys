@@ -723,6 +723,7 @@ export default function DashboardLayout({
   const [appsDropdownOpen, setAppsDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [installedApps, setInstalledApps] = useState<string[]>([]);
 
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
   const tenantDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -786,30 +787,33 @@ export default function DashboardLayout({
         }).catch(() => { });
       }
 
-      // Check client-side app installation guard for industry/premium paths
-      const segments = pathname.split('/');
-      const activeSegment = segments[1];
-      const industryApps = ['healthcare', 'education', 'real-estate', 'field-service'];
+      // Fetch installed apps for the switcher
+      const fetchInstalledApps = async () => {
+        try {
+          const res = await fetch('/api/v1/saas/installed-apps', {
+            headers: { 'Authorization': `Bearer ${storedToken}` }
+          });
+          if (res.ok) {
+            const installedList: string[] = await res.json();
+            setInstalledApps(installedList);
 
-      if (activeSegment && industryApps.includes(activeSegment)) {
-        const verifyInstalled = async () => {
-          try {
-            const res = await fetch('/api/v1/saas/installed-apps', {
-              headers: { 'Authorization': `Bearer ${storedToken}` }
-            });
-            if (res.ok) {
-              const installedList: string[] = await res.json();
+            // Check client-side app installation guard for industry/premium paths
+            const segments = pathname.split('/');
+            const activeSegment = segments[1];
+            const industryApps = ['healthcare', 'education', 'real-estate', 'field-service'];
+
+            if (activeSegment && industryApps.includes(activeSegment)) {
               if (!installedList.includes(activeSegment)) {
                 // Not installed! Redirect back to Apps landing
                 router.push('/apps');
               }
             }
-          } catch {
-            // failed to verify app installation state
           }
-        };
-        verifyInstalled();
-      }
+        } catch {
+          // failed to verify app installation state
+        }
+      };
+      fetchInstalledApps();
     } else {
       router.push('/login');
     }
@@ -839,6 +843,17 @@ export default function DashboardLayout({
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
   const hideSidebar = isAppsLanding || pathname === '/profile' || pathname.startsWith('/profile/');
   const appNav = getAppSpecificNavigation(pathname);
+
+  // Compute active & sorted switcher apps
+  const coreApps = GLOBAL_SEARCH_ITEMS.filter(item => item.type === 'App');
+  const optionalAppsMetadata = [
+    { name: 'Healthcare Module', href: '/healthcare', icon: Activity, type: 'App', id: 'healthcare' },
+    { name: 'Education Module', href: '/education', icon: GraduationCap, type: 'App', id: 'education' },
+    { name: 'Real Estate Module', href: '/real-estate', icon: Building2, type: 'App', id: 'real-estate' },
+    { name: 'Field Service Module', href: '/field-service', icon: Wrench, type: 'App', id: 'field-service' }
+  ];
+  const installedOptionalApps = optionalAppsMetadata.filter(app => installedApps.includes(app.id));
+  const switcherApps = [...coreApps, ...installedOptionalApps].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div
@@ -1216,9 +1231,9 @@ export default function DashboardLayout({
                             textTransform: 'uppercase',
                           }}
                         >
-                          Core Modules
+                          Applications
                         </p>
-                        {GLOBAL_SEARCH_ITEMS.filter(item => item.type === 'App').map((app) => (
+                        {switcherApps.map((app) => (
                           <button
                             key={app.name}
                             onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}

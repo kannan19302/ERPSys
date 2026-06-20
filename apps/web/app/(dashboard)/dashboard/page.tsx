@@ -16,7 +16,9 @@ import {
   PieChart,
   Hash,
   Table as TableIcon,
-  LayoutDashboard
+  LayoutDashboard,
+  Layers,
+  Database
 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import GridLayout from 'react-grid-layout';
@@ -95,6 +97,11 @@ function DashboardContent() {
   const [customWidgets, setCustomWidgets] = useState<any[]>([]);
   const [loadingCustom, setLoadingCustom] = useState(false);
 
+  // Global enterprise dashboard states
+  const [activeTab, setActiveTab] = useState<'global' | 'personal'>('global');
+  const [globalStats, setGlobalStats] = useState<any>(null);
+  const [loadingGlobal, setLoadingGlobal] = useState(false);
+
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) {
@@ -123,6 +130,22 @@ function DashboardContent() {
       .finally(() => setLoadingCustom(false));
     }
   }, [dashboardId]);
+
+  useEffect(() => {
+    if (activeTab === 'global' && !customDashboard) {
+      setLoadingGlobal(true);
+      const token = localStorage.getItem('token') || '';
+      fetch('/api/v1/builder/dashboards/global-stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        setGlobalStats(data);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingGlobal(false));
+    }
+  }, [activeTab, customDashboard]);
 
   const metrics: MetricCardProps[] = [
     {
@@ -166,13 +189,40 @@ function DashboardContent() {
     { id: '4', action: 'Invited user sales@company.com', user: 'admin@uni-erp.com', time: '1 day ago', status: 'WARNING' },
   ];
 
+  const globalMetrics = globalStats?.metrics || {
+    totalRevenue: 0,
+    activeEmployees: 0,
+    totalCustomApps: 0,
+    totalCustomRecords: 0,
+    pendingInvoices: 0,
+    stockAlerts: 0,
+    totalLeads: 0
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title={customDashboard ? customDashboard.name : `Welcome back, ${user ? user.firstName : 'Admin'}`}
-        description={customDashboard ? customDashboard.description || 'Custom Builder Dashboard' : "Here is an overview of your organization's operations today."}
+        title={customDashboard ? customDashboard.name : (activeTab === 'global' ? 'Global Enterprise Dashboard' : `Welcome back, ${user ? user.firstName : 'Admin'}`)}
+        description={customDashboard ? customDashboard.description || 'Custom Builder Dashboard' : (activeTab === 'global' ? 'Overview of all custom applications and global company performance metrics.' : "Here is an overview of your organization's operations today.")}
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: customDashboard ? customDashboard.name : 'Dashboard' }]}
       />
+
+      {!customDashboard && (
+        <div className="builder-tabs" style={{ marginBottom: '-8px' }}>
+          <button
+            className={`builder-tab ${activeTab === 'global' ? 'active' : ''}`}
+            onClick={() => setActiveTab('global')}
+          >
+            Global Enterprise Overview
+          </button>
+          <button
+            className={`builder-tab ${activeTab === 'personal' ? 'active' : ''}`}
+            onClick={() => setActiveTab('personal')}
+          >
+            Personal Dashboard
+          </button>
+        </div>
+      )}
 
       {loadingCustom ? (
         <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading dashboard...</div>
@@ -213,148 +263,384 @@ function DashboardContent() {
             })}
           </GridLayout>
         </div>
+      ) : activeTab === 'global' ? (
+        loadingGlobal ? (
+          <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading enterprise performance stats...</div>
+        ) : (
+          <>
+            {/* Global enterprise summary cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+              <MetricCard
+                title="Company Paid Revenue"
+                value={`$${Number(globalMetrics.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                change={`${globalMetrics.pendingInvoices} unpaid`}
+                trend={globalMetrics.totalRevenue > 0 ? "up" : "down"}
+                description="Invoices amount paid"
+                icon={TrendingUp}
+              />
+              <MetricCard
+                title="Active Workforce"
+                value={String(globalMetrics.activeEmployees || 0)}
+                change="Employees"
+                trend="up"
+                description="Active status records"
+                icon={Users}
+              />
+              <MetricCard
+                title="CRM Leads"
+                value={String(globalMetrics.totalLeads || 0)}
+                change="Leads"
+                trend="up"
+                description="In CRM sales pipeline"
+                icon={ArrowUpRight}
+              />
+              <MetricCard
+                title="Low Stock Alerts"
+                value={String(globalMetrics.stockAlerts || 0)}
+                change="Items low stock"
+                trend="down"
+                description="Requires reordering"
+                icon={AlertCircle}
+              />
+              <MetricCard
+                title="Custom Applications"
+                value={String(globalMetrics.totalCustomApps || 0)}
+                change={`${globalMetrics.totalCustomRecords} submissions`}
+                trend="up"
+                description="Visual Apps Deployed"
+                icon={LayoutDashboard}
+              />
+            </div>
+
+            {/* Performance charts */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
+              <Card padding="lg">
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
+                  Submissions Distribution by Custom App
+                </h3>
+                {(!globalStats?.charts?.submissionsByApp || globalStats.charts.submissionsByApp.length === 0) ? (
+                  <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                    No custom app records submitted yet.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '180px', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
+                    <div className="relative w-[130px] h-[130px] rounded-full flex items-center justify-center" style={{
+                      background: 'conic-gradient(var(--color-primary) 0% 40%, #10b981 40% 70%, #f59e0b 70% 90%, #8b5cf6 90% 100%)'
+                    }}>
+                      <div className="absolute w-[86px] h-[86px] rounded-full flex flex-col justify-center items-center" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--color-text)' }}>{globalMetrics.totalCustomRecords || 0}</span>
+                        <span style={{ fontSize: '9px', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Submissions</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5 text-xs text-text">
+                      {globalStats.charts.submissionsByApp.slice(0, 4).map((app: any, idx: number) => {
+                        const colors = ['var(--color-primary)', '#10b981', '#f59e0b', '#8b5cf6'];
+                        const color = colors[idx % colors.length];
+                        const pct = globalMetrics.totalCustomRecords > 0 ? Math.round((app.count / globalMetrics.totalCustomRecords) * 100) : 0;
+                        return (
+                          <div key={app.appName} className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+                            <span>{app.appName} ({pct}%)</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              <Card padding="lg">
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
+                  Monthly Custom Record Submissions
+                </h3>
+                <div className="h-[180px] flex flex-col justify-between pt-2">
+                  <div className="flex-1 flex items-end justify-between px-2 gap-3">
+                    {(globalStats?.charts?.monthlySubmissionsTrend || []).map((d: any, i: number) => {
+                      const maxVal = Math.max(...(globalStats?.charts?.monthlySubmissionsTrend || []).map((x: any) => x.count), 1);
+                      return (
+                        <div key={i} className="group flex-1 flex flex-col items-center h-full justify-end relative">
+                          <div className="absolute bottom-full mb-1 bg-text text-card text-[10px] py-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md" style={{ backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
+                            {d.count} records
+                          </div>
+                          <div
+                            className="w-full rounded-t hover:brightness-110 transition-all cursor-pointer"
+                            style={{
+                              height: `${Math.max(4, (d.count / maxVal) * 90)}%`,
+                              background: 'linear-gradient(to top, var(--color-primary-light), var(--color-primary))',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between border-t pt-2 text-[10px] text-muted-foreground px-2">
+                    {(globalStats?.charts?.monthlySubmissionsTrend || []).map((d: any, i: number) => (
+                      <span key={i} className="w-[10%] text-center">{d.month}</span>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Custom apps catalog */}
+            <Card padding="lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>
+                  Custom Applications Workspace
+                </h3>
+                <span className="frappe-badge frappe-badge-primary" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+                  {globalStats?.customApps?.length || 0} Apps Deployed
+                </span>
+              </div>
+
+              {(!globalStats?.customApps || globalStats.customApps.length === 0) ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                  No custom applications have been created yet. Navigate to the App Builder to create one!
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+                  {globalStats.customApps.map((app: any) => (
+                    <div
+                      key={app.id}
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-lg)',
+                        background: 'var(--color-bg)',
+                        padding: 'var(--space-4)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 'var(--space-3)',
+                        transition: 'border-color 0.2s ease',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                      onClick={() => router.push(`/builder/erp/apps/${app.id}`)}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
+                          {app.name}
+                        </span>
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: 'bold',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: app.status === 'ACTIVE' || app.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                          color: app.status === 'ACTIVE' || app.status === 'Active' ? '#10b981' : '#f59e0b'
+                        }}>
+                          {app.status}
+                        </span>
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-2)', textAlign: 'center', background: 'var(--color-bg-sunken)', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)' }}>
+                        <div>
+                          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold' }}>{app.pagesCount}</div>
+                          <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Pages</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold' }}>{app.formsCount}</div>
+                          <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Forms</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold' }}>{app.dataModelsCount}</div>
+                          <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Models</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', color: 'var(--color-primary)' }}>{app.submissionsCount}</div>
+                          <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Subs</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                        <span>Category: {app.category}</span>
+                        <span style={{ color: 'var(--color-primary)', fontWeight: '600' }}>v{app.version}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Submissions Timeline Activity */}
+            <Card padding="lg">
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
+                Enterprise Activity Timeline (Custom Records)
+              </h3>
+              {(!globalStats?.recentSubmissions || globalStats.recentSubmissions.length === 0) ? (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                  No recent submissions recorded.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                  {globalStats.recentSubmissions.map((sub: any) => (
+                    <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-3)' }}>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>
+                            New submission to {sub.schemaName}
+                          </span>
+                          <span style={{ fontSize: '10px', background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '1px 6px', borderRadius: '4px' }}>
+                            {sub.appName}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '4px', maxWidth: '600px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          Data: {JSON.stringify(sub.data)}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>
+                        {new Date(sub.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </>
+        )
       ) : (
         <>
           {/* Metrics Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-        {metrics.map((metric) => (
-          <MetricCard key={metric.title} {...metric} />
-        ))}
-      </div>
-
-      {/* Actions and Activity Logs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
-        
-        {/* Quick Actions Panel */}
-        <Card padding="lg">
-          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
-            Quick Actions
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-3)',
-                padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: 'var(--color-text)',
-                fontWeight: 'var(--weight-medium)',
-                fontSize: 'var(--text-sm)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-                e.currentTarget.style.background = 'var(--color-primary-light)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.background = 'var(--color-bg)';
-              }}
-            >
-              <UserPlus size={18} style={{ color: 'var(--color-primary)' }} />
-              <div>
-                <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Invite Team Member</p>
-                <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Add administrators, managers, or viewers</p>
-              </div>
-            </button>
-
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-3)',
-                padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: 'var(--color-text)',
-                fontWeight: 'var(--weight-medium)',
-                fontSize: 'var(--text-sm)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-                e.currentTarget.style.background = 'var(--color-primary-light)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.background = 'var(--color-bg)';
-              }}
-            >
-              <FileText size={18} style={{ color: 'var(--color-primary)' }} />
-              <div>
-                <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Create Customer Invoice</p>
-                <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Record new sales and trigger billing events</p>
-              </div>
-            </button>
-
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-3)',
-                padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: 'var(--color-text)',
-                fontWeight: 'var(--weight-medium)',
-                fontSize: 'var(--text-sm)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-                e.currentTarget.style.background = 'var(--color-primary-light)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.background = 'var(--color-bg)';
-              }}
-            >
-              <PlusCircle size={18} style={{ color: 'var(--color-primary)' }} />
-              <div>
-                <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Register New Product</p>
-                <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Add products and define warehouse settings</p>
-              </div>
-            </button>
-          </div>
-        </Card>
-
-        {/* Audit Activity Log */}
-        <Card padding="lg">
-          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
-            Recent Activity Logs
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            {recentLogs.map((log) => (
-              <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
-                    {log.action}
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
-                    By {log.user} • {log.time}
-                  </span>
-                </div>
-                <Badge variant={log.status === 'SUCCESS' ? 'success' : 'warning'}>
-                  {log.status.toLowerCase()}
-                </Badge>
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+            {metrics.map((metric) => (
+              <MetricCard key={metric.title} {...metric} />
             ))}
           </div>
-        </Card>
 
-      </div>
-      </>
+          {/* Actions and Activity Logs */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
+            
+            {/* Quick Actions Panel */}
+            <Card padding="lg">
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
+                Quick Actions
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <button
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-3)',
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    color: 'var(--color-text)',
+                    fontWeight: 'var(--weight-medium)',
+                    fontSize: 'var(--text-sm)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.background = 'var(--color-primary-light)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.background = 'var(--color-bg)';
+                  }}
+                >
+                  <UserPlus size={18} style={{ color: 'var(--color-primary)' }} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Invite Team Member</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Add administrators, managers, or viewers</p>
+                  </div>
+                </button>
+
+                <button
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-3)',
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    color: 'var(--color-text)',
+                    fontWeight: 'var(--weight-medium)',
+                    fontSize: 'var(--text-sm)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.background = 'var(--color-primary-light)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.background = 'var(--color-bg)';
+                  }}
+                >
+                  <FileText size={18} style={{ color: 'var(--color-primary)' }} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Create Customer Invoice</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Record new sales and trigger billing events</p>
+                  </div>
+                </button>
+
+                <button
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-3)',
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    color: 'var(--color-text)',
+                    fontWeight: 'var(--weight-medium)',
+                    fontSize: 'var(--text-sm)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.background = 'var(--color-primary-light)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.background = 'var(--color-bg)';
+                  }}
+                >
+                  <PlusCircle size={18} style={{ color: 'var(--color-primary)' }} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>Register New Product</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Add products and define warehouse settings</p>
+                  </div>
+                </button>
+              </div>
+            </Card>
+
+            {/* Audit Activity Log */}
+            <Card padding="lg">
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
+                Recent Activity Logs
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                {recentLogs.map((log) => (
+                  <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
+                        {log.action}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+                        By {log.user} • {log.time}
+                      </span>
+                    </div>
+                    <Badge variant={log.status === 'SUCCESS' ? 'success' : 'warning'}>
+                      {log.status.toLowerCase()}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+          </div>
+        </>
       )}
     </div>
   );

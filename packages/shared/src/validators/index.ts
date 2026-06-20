@@ -893,11 +893,22 @@ export type AddAppComponentInput = z.infer<typeof addAppComponentSchema>;
 export const addAppPageSchema = z.object({
   name: z.string().min(1).max(160),
   slug: z.string().min(1).max(160),
-  type: z.enum(['form', 'list', 'dashboard']),
-  formId: z.string().optional(),
-  dashboardId: z.string().optional(),
+  type: z.enum(['form', 'list', 'dashboard', 'custom']),
+  formId: z.string().nullable().optional(),
+  dashboardId: z.string().nullable().optional(),
+  layout: z.array(z.any()).optional(),
 });
 export type AddAppPageInput = z.infer<typeof addAppPageSchema>;
+
+export const updateAppPageSchema = z.object({
+  name: z.string().min(1).max(160).optional(),
+  slug: z.string().min(1).max(160).optional(),
+  type: z.enum(['form', 'list', 'dashboard', 'custom']).optional(),
+  formId: z.string().nullable().optional(),
+  dashboardId: z.string().nullable().optional(),
+  layout: z.array(z.any()).optional(),
+});
+export type UpdateAppPageInput = z.infer<typeof updateAppPageSchema>;
 
 export const addAppDataModelSchema = z.object({
   name: z.string().min(1).max(160),

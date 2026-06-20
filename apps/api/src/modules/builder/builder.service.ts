@@ -388,6 +388,215 @@ export class BuilderService {
       : [];
   }
 
+  async getGlobalPerformanceStats(tenantId: string) {
+    let totalRevenue = 0;
+    let pendingInvoices = 0;
+    let activeEmployees = 0;
+    let stockAlerts = 0;
+    let totalLeads = 0;
+
+    try {
+      const invoices = await prisma.invoice.findMany({
+        where: { tenantId },
+        select: { totalAmount: true, status: true }
+      });
+      if (invoices.length > 0) {
+        totalRevenue = invoices
+          .filter(inv => inv.status === 'PAID' || inv.status === 'Paid')
+          .reduce((sum, inv) => sum + Number(inv.totalAmount || 0), 0);
+        pendingInvoices = invoices
+          .filter(inv => inv.status === 'UNPAID' || inv.status === 'Unpaid' || inv.status === 'Draft' || inv.status === 'Pending')
+          .length;
+      }
+    } catch (err) {
+      this.logger.error('Error fetching invoices for global stats', err);
+    }
+
+    try {
+      const empCount = await prisma.employee.count({
+        where: { tenantId, deletedAt: null, status: 'ACTIVE' }
+      });
+      activeEmployees = empCount;
+    } catch (err) {
+      this.logger.error('Error fetching employees for global stats', err);
+    }
+
+    try {
+      const leadCount = await prisma.lead.count({
+        where: { tenantId }
+      });
+      totalLeads = leadCount;
+    } catch (err) {
+      this.logger.error('Error fetching leads for global stats', err);
+    }
+
+    try {
+      const items = await prisma.inventoryItem.findMany({
+        where: { tenantId },
+        select: { quantity: true, reorderPoint: true }
+      });
+      stockAlerts = items.filter(item => {
+        const q = Number(item.quantity || 0);
+        const rp = item.reorderPoint ? Number(item.reorderPoint) : 0;
+        return q <= rp;
+      }).length;
+    } catch (err) {
+      this.logger.error('Error fetching stock alerts for global stats', err);
+    }
+
+    // Custom Apps / Modules Details
+    let customApps: any[] = [];
+    let totalCustomApps = 0;
+    let totalCustomRecords = 0;
+
+    try {
+      const modules = await prisma.builderModule.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          category: true,
+          version: true,
+          status: true,
+          pages: true,
+          components: true,
+          dataModels: true
+        }
+      });
+
+      totalCustomApps = modules.length;
+
+      // Count custom records grouped by schemaRegistry.module
+      const schemas = await prisma.schemaRegistry.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          slug: true,
+          module: true,
+          name: true,
+          _count: {
+            select: { customRecords: true }
+          }
+        }
+      });
+
+      totalCustomRecords = schemas.reduce((sum, s) => sum + s._count.customRecords, 0);
+
+      // Map moduleSlug to count
+      const moduleRecordCountMap = new Map<string, number>();
+      for (const s of schemas) {
+        const modKey = s.module.toLowerCase();
+        moduleRecordCountMap.set(modKey, (moduleRecordCountMap.get(modKey) || 0) + s._count.customRecords);
+      }
+
+      customApps = modules.map(m => {
+        const mSlug = m.slug.toLowerCase();
+        const pagesArr = Array.isArray(m.pages) ? m.pages : [];
+        const componentsArr = Array.isArray(m.components) ? m.components : [];
+        const dmsArr = Array.isArray(m.dataModels) ? m.dataModels : [];
+
+        return {
+          id: m.id,
+          name: m.name,
+          slug: m.slug,
+          category: m.category || 'Operations',
+          version: m.version,
+          status: m.status,
+          pagesCount: pagesArr.length,
+          formsCount: componentsArr.filter((c: any) => c.type === 'form').length,
+          dataModelsCount: dmsArr.length,
+          submissionsCount: moduleRecordCountMap.get(mSlug) || 0
+        };
+      });
+    } catch (err) {
+      this.logger.error('Error fetching custom apps for global stats', err);
+    }
+
+    // Fetch recent custom records submissions across all custom apps
+    let recentSubmissions: any[] = [];
+    try {
+      const records = await prisma.customRecord.findMany({
+        where: { tenantId },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          schemaRegistry: {
+            select: {
+              name: true,
+              slug: true,
+              module: true
+            }
+          }
+        }
+      });
+
+      recentSubmissions = records.map(r => {
+        return {
+          id: r.id,
+          appSlug: r.schemaRegistry.module,
+          appName: r.schemaRegistry.module.toUpperCase() + ' App',
+          schemaSlug: r.schemaRegistry.slug,
+          schemaName: r.schemaRegistry.name,
+          createdAt: r.createdAt,
+          data: r.data
+        };
+      });
+    } catch (err) {
+      this.logger.error('Error fetching recent submissions for global stats', err);
+    }
+
+    // Analytics Chart Data
+    const submissionsByApp = customApps.map(app => ({
+      appName: app.name,
+      count: app.submissionsCount
+    }));
+
+    // Dynamic month grouping from actual records
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const trendMap = new Map<string, number>();
+    months.forEach(m => trendMap.set(m, 0));
+
+    try {
+      const allRecords = await prisma.customRecord.findMany({
+        where: { tenantId },
+        select: { createdAt: true }
+      });
+      allRecords.forEach(r => {
+        const date = new Date(r.createdAt);
+        const monthName = months[date.getMonth()];
+        if (monthName) {
+          trendMap.set(monthName, (trendMap.get(monthName) || 0) + 1);
+        }
+      });
+    } catch (err) {
+      this.logger.error('Error fetching trend records for global stats', err);
+    }
+
+    const monthlySubmissionsTrend = months.map(m => ({
+      month: m,
+      count: trendMap.get(m) || 0
+    }));
+
+    return {
+      metrics: {
+        totalRevenue,
+        activeEmployees,
+        totalCustomApps,
+        totalCustomRecords,
+        pendingInvoices,
+        stockAlerts,
+        totalLeads
+      },
+      customApps,
+      recentSubmissions,
+      charts: {
+        submissionsByApp,
+        monthlySubmissionsTrend
+      }
+    };
+  }
+
   // ══════════════════════════════════════════════
   // BUILDER DASHBOARDS
   // ══════════════════════════════════════════════
@@ -581,7 +790,7 @@ export class BuilderService {
     });
   }
 
-  async addPageToModule(tenantId: string, moduleId: string, page: { name: string; slug: string; type: string; formId?: string; dashboardId?: string }) {
+  async addPageToModule(tenantId: string, moduleId: string, page: { name: string; slug: string; type: string; formId?: string; dashboardId?: string; layout?: any[] }) {
     const mod = await prisma.builderModule.findFirst({ where: { id: moduleId, tenantId } });
     if (!mod) throw new NotFoundException('Module not found');
 
@@ -598,12 +807,39 @@ export class BuilderService {
       type: page.type,
       formId: page.formId || null,
       dashboardId: page.dashboardId || null,
+      layout: page.layout || [],
       addedAt: new Date().toISOString(),
     };
 
     return prisma.builderModule.update({
       where: { id: moduleId },
       data: { pages: [...pages, newPage] },
+    });
+  }
+
+  async updatePageInModule(
+    tenantId: string,
+    moduleId: string,
+    pageId: string,
+    update: { name?: string; slug?: string; type?: string; formId?: string | null; dashboardId?: string | null; layout?: any[] }
+  ) {
+    const mod = await prisma.builderModule.findFirst({ where: { id: moduleId, tenantId } });
+    if (!mod) throw new NotFoundException('Module not found');
+
+    const pages = Array.isArray(mod.pages) ? (mod.pages as any[]) : [];
+    const pageIndex = pages.findIndex(p => p.id === pageId);
+    if (pageIndex === -1) throw new NotFoundException('Page not found in this app');
+
+    // Merge updates
+    pages[pageIndex] = {
+      ...pages[pageIndex],
+      ...update,
+      updatedAt: new Date().toISOString(),
+    };
+
+    return prisma.builderModule.update({
+      where: { id: moduleId },
+      data: { pages },
     });
   }
 
@@ -1149,19 +1385,25 @@ export class BuilderService {
 
     // Provision a runtime page+schema for each app page. Form pages back onto the
     // referenced form's fields; data-model-only pages back onto the data model.
-    const provisionPage = async (pageSlug: string, title: string, type: string, fields: any[], settings: any) => {
-      const schemaSlug = `${moduleSlug}_${pageSlug}`.toLowerCase().replace(/[^a-z0-9_]/g, '_');
-      const schema = await prisma.schemaRegistry.upsert({
-        where: { tenantId_slug: { tenantId, slug: schemaSlug } },
-        update: { name: title, module: moduleSlug, fields: fields as any, settings: settings as any, status: 'ACTIVE' },
-        create: { tenantId, module: moduleSlug, name: title, slug: schemaSlug, description: `Installed from ${mod.name}`, fields: fields as any, settings: settings as any, status: 'ACTIVE' },
-      });
-      schemaRegistryIds.push(schema.id);
+    const provisionPage = async (pageSlug: string, title: string, type: string, fields: any[], settings: any, layout?: any) => {
+      let backingSchemaId: string | null = null;
+      if (type !== 'custom') {
+        const schemaSlug = `${moduleSlug}_${pageSlug}`.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        const schema = await prisma.schemaRegistry.upsert({
+          where: { tenantId_slug: { tenantId, slug: schemaSlug } },
+          update: { name: title, module: moduleSlug, fields: fields as any, settings: settings as any, status: 'ACTIVE' },
+          create: { tenantId, module: moduleSlug, name: title, slug: schemaSlug, description: `Installed from ${mod.name}`, fields: fields as any, settings: settings as any, status: 'ACTIVE' },
+        });
+        backingSchemaId = schema.id;
+        schemaRegistryIds.push(schema.id);
+      }
+
+      const pageLayout = type === 'custom' ? (layout || []) : { fields, settings };
 
       const page = await prisma.pageRegistry.upsert({
         where: { tenantId_module_slug: { tenantId, module: moduleSlug, slug: pageSlug } },
-        update: { schemaId: schema.id, title, type: type.toUpperCase(), layout: { fields, settings } as any, status: 'PUBLISHED' },
-        create: { tenantId, schemaId: schema.id, module: moduleSlug, slug: pageSlug, title, type: type.toUpperCase(), layout: { fields, settings } as any, status: 'PUBLISHED' },
+        update: { schemaId: backingSchemaId, title, type: type.toUpperCase(), layout: pageLayout as any, status: 'PUBLISHED' },
+        create: { tenantId, schemaId: backingSchemaId, module: moduleSlug, slug: pageSlug, title, type: type.toUpperCase(), layout: pageLayout as any, status: 'PUBLISHED' },
       });
       pageRegistryIds.push(page.id);
     };
@@ -1169,7 +1411,7 @@ export class BuilderService {
     for (const p of pages) {
       const form = p.formId ? formById.get(p.formId) : undefined;
       const fields = Array.isArray(form?.fields) ? form.fields : [];
-      await provisionPage(p.slug, p.name || p.slug, p.type || 'form', fields, form?.settings ?? {});
+      await provisionPage(p.slug, p.name || p.slug, p.type || 'form', fields, form?.settings ?? {}, p.layout);
     }
 
     // Data models with no corresponding page still get a runtime surface.

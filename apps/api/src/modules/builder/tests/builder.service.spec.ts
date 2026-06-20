@@ -41,6 +41,10 @@ vi.mock('@unerp/database', () => {
       appRelease: generateMock(),
       installedApp: generateMock(),
       auditLog: generateMock(),
+      invoice: generateMock(),
+      employee: generateMock(),
+      lead: generateMock(),
+      inventoryItem: generateMock(),
       $transaction: vi.fn((fn: any) => fn(txMock)),
     }
   };
@@ -478,6 +482,74 @@ describe('BuilderService', () => {
       expect(result.success).toBe(true);
       expect(prisma.pageRegistry.deleteMany).toHaveBeenCalled();
       expect(prisma.schemaRegistry.deleteMany).toHaveBeenCalled();
+    });
+  });
+
+  describe('getGlobalPerformanceStats', () => {
+    it('should aggregate and calculate stats from databases', async () => {
+      (prisma.invoice.findMany as any).mockResolvedValue([
+        { totalAmount: 1000, status: 'PAID' },
+        { totalAmount: 500, status: 'Paid' },
+        { totalAmount: 200, status: 'UNPAID' },
+        { totalAmount: 100, status: 'Draft' },
+      ]);
+      (prisma.employee.count as any).mockResolvedValue(12);
+      (prisma.lead.count as any).mockResolvedValue(45);
+      (prisma.inventoryItem.findMany as any).mockResolvedValue([
+        { quantity: 5, reorderPoint: 10 },
+        { quantity: 15, reorderPoint: 10 },
+      ]);
+      (prisma.builderModule.findMany as any).mockResolvedValue([
+        { id: 'm1', name: 'Sales App', slug: 'sales', category: 'Sales', version: '1.0.0', status: 'ACTIVE', pages: [1, 2], components: [{ type: 'form' }], dataModels: [1] }
+      ]);
+      (prisma.schemaRegistry.findMany as any).mockResolvedValue([
+        { id: 's1', slug: 'orders', module: 'sales', name: 'Orders Schema', _count: { customRecords: 8 } }
+      ]);
+      (prisma.customRecord.findMany as any).mockImplementation(({ take }: any) => {
+        if (take === 10) {
+          return Promise.resolve([
+            { id: 'r1', schemaRegistry: { module: 'sales', slug: 'orders', name: 'Orders Schema' }, createdAt: new Date('2026-06-15T12:00:00Z'), data: { total: 100 } }
+          ]);
+        }
+        return Promise.resolve([
+          { createdAt: new Date('2026-06-15T12:00:00Z') }
+        ]);
+      });
+
+      const res = await service.getGlobalPerformanceStats('tenant-1');
+      expect(res.metrics.totalRevenue).toBe(1500);
+      expect(res.metrics.pendingInvoices).toBe(2);
+      expect(res.metrics.activeEmployees).toBe(12);
+      expect(res.metrics.totalLeads).toBe(45);
+      expect(res.metrics.stockAlerts).toBe(1);
+      expect(res.metrics.totalCustomApps).toBe(1);
+      expect(res.metrics.totalCustomRecords).toBe(8);
+
+      expect(res.customApps).toHaveLength(1);
+      expect(res.customApps[0].submissionsCount).toBe(8);
+      expect(res.recentSubmissions).toHaveLength(1);
+      expect(res.recentSubmissions[0].appName).toBe('SALES App');
+
+      expect(res.charts.submissionsByApp).toEqual([{ appName: 'Sales App', count: 8 }]);
+      const junTrend = res.charts.monthlySubmissionsTrend.find((t: any) => t.month === 'Jun');
+      expect(junTrend?.count).toBe(1);
+    });
+
+    it('should handle exceptions gracefully and return default empty structures', async () => {
+      (prisma.invoice.findMany as any).mockRejectedValue(new Error('DB Error'));
+      (prisma.employee.count as any).mockRejectedValue(new Error('DB Error'));
+      (prisma.lead.count as any).mockRejectedValue(new Error('DB Error'));
+      (prisma.inventoryItem.findMany as any).mockRejectedValue(new Error('DB Error'));
+      (prisma.builderModule.findMany as any).mockRejectedValue(new Error('DB Error'));
+      (prisma.customRecord.findMany as any).mockRejectedValue(new Error('DB Error'));
+
+      const res = await service.getGlobalPerformanceStats('tenant-1');
+      expect(res.metrics.totalRevenue).toBe(0);
+      expect(res.metrics.activeEmployees).toBe(0);
+      expect(res.metrics.totalCustomApps).toBe(0);
+      expect(res.metrics.totalCustomRecords).toBe(0);
+      expect(res.customApps).toHaveLength(0);
+      expect(res.recentSubmissions).toHaveLength(0);
     });
   });
 });

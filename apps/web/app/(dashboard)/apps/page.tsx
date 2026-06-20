@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -141,8 +141,8 @@ const SUBFOLDERS: SubfolderDefinition[] = [
 // Root-level apps (not in any subfolder)
 const ROOT_APP_IDS = ['dashboard', 'crm', 'healthcare', 'education', 'real-estate', 'field-service'];
 
-function FolderTile({ folder, onClick }: { folder: SubfolderDefinition; onClick: () => void }) {
-  const appsInFolder = applications.filter(a => folder.appIds.includes(a.id));
+function FolderTile({ folder, onClick, activeApps }: { folder: SubfolderDefinition; onClick: () => void; activeApps: AppDefinition[] }) {
+  const appsInFolder = activeApps.filter(a => folder.appIds.includes(a.id));
   const previewApps = appsInFolder.slice(0, 4);
   const [hovered, setHovered] = React.useState(false);
 
@@ -232,14 +232,40 @@ export default function AppsHubPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [openFolder, setOpenFolder] = useState<string | null>(null);
-  // loading state reserved for future API integration
+  
+  const [installedApps, setInstalledApps] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInstalled = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('/api/v1/saas/installed-apps', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setInstalledApps(new Set(data));
+        }
+      } catch (err) {
+        console.error('Failed to load installed apps', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchInstalled();
+  }, []);
+
+  const activeApps = applications.filter(app => app.installed || installedApps.has(app.id));
+  const sortedActiveApps = [...activeApps].sort((a, b) => a.name.localeCompare(b.name));
 
   const openFolderObj = SUBFOLDERS.find(f => f.id === openFolder);
-  const appsInOpenFolder = openFolderObj ? applications.filter(a => openFolderObj.appIds.includes(a.id)) : [];
+  const appsInOpenFolder = openFolderObj ? sortedActiveApps.filter(a => openFolderObj.appIds.includes(a.id)) : [];
 
   // Search across all apps
   const searchResults = searchQuery.trim()
-    ? applications.filter(app =>
+    ? sortedActiveApps.filter(app =>
         app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.description.toLowerCase().includes(searchQuery.toLowerCase())
       ).map(app => {
@@ -248,8 +274,9 @@ export default function AppsHubPage() {
       })
     : [];
 
-  const rootApps = applications.filter(app => ROOT_APP_IDS.includes(app.id));
-  const visibleSubfolders = SUBFOLDERS.filter(f => applications.filter(a => f.appIds.includes(a.id)).length > 0);
+  const rootApps = sortedActiveApps.filter(app => ROOT_APP_IDS.includes(app.id));
+  const visibleSubfolders = SUBFOLDERS.filter(f => sortedActiveApps.filter(a => f.appIds.includes(a.id)).length > 0);
+  const sortedSubfolders = [...visibleSubfolders].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', minHeight: '80vh', position: 'relative' }}>
@@ -331,11 +358,12 @@ export default function AppsHubPage() {
               /* Root grid: subfolders + individual apps */
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
                 {/* Subfolders first */}
-                {visibleSubfolders.map(folder => (
+                {sortedSubfolders.map(folder => (
                   <FolderTile
                     key={folder.id}
                     folder={folder}
                     onClick={() => setOpenFolder(folder.id)}
+                    activeApps={sortedActiveApps}
                   />
                 ))}
                 {/* Then root-level individual apps */}
@@ -349,7 +377,7 @@ export default function AppsHubPage() {
           {/* Footer */}
           <div style={{ padding: 'var(--space-3) var(--space-6)', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--color-bg)' }}>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
-              {applications.length} apps · {SUBFOLDERS.length} folders
+              {sortedActiveApps.length} apps · {sortedSubfolders.length} folders
             </span>
             <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
               <Link href="/apps/store" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>

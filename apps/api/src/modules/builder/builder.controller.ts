@@ -35,6 +35,7 @@ import {
   updateWebSeoSchema,
   addAppComponentSchema,
   addAppPageSchema,
+  updateAppPageSchema,
   addAppDataModelSchema,
   publishModuleSchema,
   rollbackModuleSchema,
@@ -53,6 +54,7 @@ import {
   type UpdateSchemaRegistryInput,
   type AddAppComponentInput,
   type AddAppPageInput,
+  type UpdateAppPageInput,
   type AddAppDataModelInput,
   type PublishModuleInput,
   type RollbackModuleInput,
@@ -197,6 +199,12 @@ export class BuilderController {
   }
 
   // ─── Dashboards ─────────────────────────────────
+  @Get('dashboards/global-stats')
+  @Permissions('builder.dashboard.read')
+  async getGlobalPerformanceStats(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getGlobalPerformanceStats(req.user.tenantId);
+  }
+
   @Get('dashboards')
   @Permissions('builder.dashboard.read')
   async getDashboards(@Req() req: AuthenticatedRequest) {
@@ -323,6 +331,17 @@ export class BuilderController {
     @Param('pageId') pageId: string
   ) {
     return this.builderService.removePageFromModule(req.user.tenantId, id, pageId);
+  }
+
+  @Patch('modules/:id/pages/:pageId')
+  @Permissions('builder.module.update')
+  async updatePageInModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('pageId') pageId: string,
+    @Body(new ZodValidationPipe(updateAppPageSchema)) dto: UpdateAppPageInput
+  ) {
+    return this.builderService.updatePageInModule(req.user.tenantId, id, pageId, dto);
   }
 
   @Post('modules/:id/data-models')

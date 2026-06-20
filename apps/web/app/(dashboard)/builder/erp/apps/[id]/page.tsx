@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { DynamicFormRenderer } from '@/components/builder/DynamicFormRenderer';
 import { FormBuilderWorkspace } from '@/components/builder/FormBuilderWorkspace';
+import { PageBuilderWorkspace } from '@/components/builder/PageBuilderWorkspace';
 import { Pencil, Wand2 } from 'lucide-react';
 
 interface AppModule {
@@ -275,7 +276,7 @@ function AddComponentModal({ isOpen, onClose, type, appId, onSuccess }: {
 function AddPageModal({ isOpen, onClose, appId, onSuccess, forms, onLaunchFormBuilder }: { isOpen: boolean; onClose: () => void; appId: string; onSuccess: () => void; forms: any[]; onLaunchFormBuilder: (draft: { name: string; slug: string; type: string }) => void }) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [type, setType] = useState<'form' | 'list' | 'dashboard'>('form');
+  const [type, setType] = useState<'form' | 'list' | 'dashboard' | 'custom'>('form');
   const [dataSource, setDataSource] = useState<'existing' | 'build'>('existing');
   const [formId, setFormId] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -324,7 +325,7 @@ function AddPageModal({ isOpen, onClose, appId, onSuccess, forms, onLaunchFormBu
         <div style={{ marginBottom: 'var(--space-5)' }}>
           <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Type</label>
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            {(['form', 'list', 'dashboard'] as const).map(t => (
+            {(['form', 'list', 'dashboard', 'custom'] as const).map(t => (
               <button key={t} onClick={() => setType(t)}
                 style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: type === t ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
                   background: type === t ? 'var(--color-primary-bg)' : 'var(--color-bg)', cursor: 'pointer', fontWeight: type === t ? 600 : 400, fontSize: 'var(--text-sm)', color: type === t ? 'var(--color-primary)' : 'var(--color-text-secondary)', textTransform: 'capitalize' }}>
@@ -618,7 +619,7 @@ function ComponentListSection({ app, type, typeLabel, icon: Icon, onRefresh, onB
   );
 }
 
-function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder }: { app: AppModule; onRefresh: () => void; forms: any[]; onLaunchFormBuilder: (draft: { name: string; slug: string; type: string }) => void }) {
+function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder, onDesignLayout }: { app: AppModule; onRefresh: () => void; forms: any[]; onLaunchFormBuilder: (draft: { name: string; slug: string; type: string }) => void; onDesignLayout: (page: any) => void }) {
   const [showAdd, setShowAdd] = useState(false);
   const pages = Array.isArray(app.pages) ? app.pages : [];
 
@@ -631,7 +632,7 @@ function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder }: { app: App
     onRefresh();
   };
 
-  const typeColors: Record<string, string> = { form: '#3b82f6', list: '#10b981', dashboard: '#8b5cf6' };
+  const typeColors: Record<string, string> = { form: '#3b82f6', list: '#10b981', dashboard: '#8b5cf6', custom: '#ec4899' };
 
   return (
     <div>
@@ -655,7 +656,15 @@ function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder }: { app: App
                   </div>
                 </div>
               </div>
-              <button onClick={() => handleRemove(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={16} /></button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {p.type === 'custom' && (
+                  <button onClick={() => onDesignLayout(p)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-xs)' }}>
+                    <Pencil size={12} /> Design Layout
+                  </button>
+                )}
+                <button onClick={() => handleRemove(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={16} /></button>
+              </div>
             </div>
           ))}
         </div>
@@ -913,7 +922,53 @@ function PreviewSection({ app }: { app: AppModule }) {
         {/* Render area */}
         <div style={{ flex: 1, padding: 'var(--space-6)', overflow: 'auto' }}>
           <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--color-text)', marginBottom: 'var(--space-4)' }}>{activePage?.name}</h3>
-          {activePage?.type === 'form' || !activePage?.type ? (
+          {activePage?.type === 'custom' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--space-4)' }}>
+              {(() => {
+                const layout = Array.isArray(activePage.layout) ? activePage.layout : [];
+                if (layout.length === 0) {
+                  return (
+                    <div style={{ gridColumn: 'span 12' }}>
+                      <EmptyState icon={Layers} title="Empty Page Layout" description="Go to the Pages tab and click Design Layout to build this page." />
+                    </div>
+                  );
+                }
+                return layout.map((w: any) => (
+                  <div key={w.id} style={{ gridColumn: `span ${w.gridSpan || 12}`, padding: 'var(--space-4)', border: '1px solid #cbd5e1', borderRadius: 'var(--radius-lg)', background: '#f8fafc' }}>
+                    <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b', marginBottom: 6, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{w.title}</div>
+                    {w.type === 'header' && (
+                      <div>
+                        <div style={{ fontSize: '16px', fontWeight: 700 }}>{w.title}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>{w.config.subtitle}</div>
+                      </div>
+                    )}
+                    {w.type === 'stats' && (
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        {(w.config.items || []).map((item: any, idx: number) => (
+                          <div key={idx} style={{ flex: 1, padding: 8, background: 'white', border: '1px solid #e2e8f0', borderRadius: 4 }}>
+                            <div style={{ fontSize: '16px', fontWeight: 800, color: item.color }}>{item.value}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b' }}>{item.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {w.type === 'alert' && (
+                      <div style={{ fontSize: '12px', color: '#d97706', padding: 8, background: '#fffbeb', borderRadius: 4 }}>{w.config.text}</div>
+                    )}
+                    {w.type === 'form' && (
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>[Form Embed: {forms.find((f: any) => f.id === w.config.formId)?.name || 'Select in layout'}]</div>
+                    )}
+                    {w.type === 'table' && (
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>[Table Listing: {dataModels.find((dm: any) => dm.id === w.config.dataModelId)?.name || 'Select in layout'}]</div>
+                    )}
+                    {w.type === 'chart' && (
+                      <div style={{ height: 40, background: '#3b82f615', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#3b82f6' }}>[Chart Embed]</div>
+                    )}
+                  </div>
+                ));
+              })()}
+            </div>
+          ) : activePage?.type === 'form' || !activePage?.type ? (
             fields.length > 0 ? (
               <>
                 <DynamicFormRenderer schema={fields} submitLabel="Submit (simulated)" onSubmit={(d) => setLastPayload(d)} />
@@ -1185,6 +1240,8 @@ export default function AppStudioPage() {
   const [forms, setForms] = useState<any[]>([]);
   // Embedded form builder overlay state.
   const [formBuilder, setFormBuilder] = useState<{ formId: string; pendingLink: boolean; pageDraft?: { name: string; slug: string; type: string } } | null>(null);
+  // Embedded page builder layout canvas state.
+  const [pageBuilder, setPageBuilder] = useState<{ pageId: string; pageName: string; initialLayout: any[] } | null>(null);
 
   const fetchApp = useCallback(async () => {
     if (!appId) return;
@@ -1323,7 +1380,15 @@ export default function AppStudioPage() {
       {/* Main Content */}
       <div style={{ flex: 1, overflow: 'auto', padding: 'var(--space-6) var(--space-8)' }}>
         {activeSection === 'overview' && <OverviewSection app={app} onUpdate={handleUpdate} />}
-        {activeSection === 'pages' && <PagesSection app={app} onRefresh={fetchApp} forms={forms} onLaunchFormBuilder={(draft) => setFormBuilder({ formId: 'new', pendingLink: true, pageDraft: draft })} />}
+        {activeSection === 'pages' && (
+          <PagesSection
+            app={app}
+            onRefresh={fetchApp}
+            forms={forms}
+            onLaunchFormBuilder={(draft) => setFormBuilder({ formId: 'new', pendingLink: true, pageDraft: draft })}
+            onDesignLayout={(page) => setPageBuilder({ pageId: page.id, pageName: page.name, initialLayout: page.layout || [] })}
+          />
+        )}
         {activeSection === 'forms' && <ComponentListSection app={app} type="form" typeLabel="Form" icon={FileCode2} onRefresh={fetchApp}
           onBuildNew={() => setFormBuilder({ formId: 'new', pendingLink: true })}
           onEditItem={(refId) => setFormBuilder({ formId: refId, pendingLink: false })} />}
@@ -1344,6 +1409,24 @@ export default function AppStudioPage() {
           defaultModule={app.slug}
           onSaved={handleFormSaved}
           onBack={() => { setFormBuilder(null); fetchApp(); fetchForms(); }}
+        />
+      )}
+
+      {/* Embedded page builder layout canvas */}
+      {pageBuilder && (
+        <PageBuilderWorkspace
+          appId={app.id}
+          pageId={pageBuilder.pageId}
+          pageName={pageBuilder.pageName}
+          initialLayout={pageBuilder.initialLayout}
+          forms={app.resolvedComponents?.forms || forms}
+          dataModels={app.dataModels || []}
+          dashboards={app.resolvedComponents?.dashboards || []}
+          onBack={() => setPageBuilder(null)}
+          onSaved={() => {
+            setPageBuilder(null);
+            fetchApp();
+          }}
         />
       )}
 
