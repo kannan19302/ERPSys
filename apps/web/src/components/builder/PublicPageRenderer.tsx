@@ -1,19 +1,5 @@
 import React from 'react';
-import { HeroBlock, TrustBarBlock, FeaturesGridBlock, SocialProofBlock, HowItWorksBlock, PricingBlock, FaqBlock } from '@unerp/ui';
-
-const BLOCK_REGISTRY: Record<string, React.FC<any>> = {
-  hero: HeroBlock,
-  trust: TrustBarBlock,
-  features: FeaturesGridBlock,
-  social: SocialProofBlock,
-  steps: HowItWorksBlock,
-  pricing: PricingBlock,
-  faq: FaqBlock,
-  text: (props: any) => <div style={{ padding: '80px 20px', textAlign: 'center' }}><h2>{props.title || 'Text Block'}</h2><p>{props.content || 'Content goes here'}</p></div>,
-  image: (props: any) => <div style={{ padding: '40px 20px', textAlign: 'center' }}><div style={{ width: '100%', height: 300, backgroundColor: '#eee', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Image Gallery Placeholder</div></div>,
-  cta: (props: any) => <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: 'var(--color-primary, #333)', color: 'white' }}><h2>{props.title || 'Call to action'}</h2><button className="frappe-btn">{props.buttonText || 'Click here'}</button></div>,
-  testimonials: SocialProofBlock,
-};
+import { BLOCK_REGISTRY } from './blocks/registry';
 
 export function PublicPageRenderer({ page, settings }: { page: any; settings: any }) {
   if (!page) {

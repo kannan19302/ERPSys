@@ -4341,6 +4341,93 @@ model WebSettings {
 }
 
 // ════════════════════════════════════════════════
+// WEB STUDIO — CMS COLLECTIONS (dynamic content modeling)
+// Powers e-commerce catalogs, portfolios, team directories, testimonials, etc.
+// ════════════════════════════════════════════════
+
+model WebCollection {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String // e.g. "Products", "Projects", "Team"
+  slug        String // URL-safe, used in public API + dynamic routes
+  singular    String? // e.g. "Product" (for UI labels)
+  description String?
+  icon        String? // emoji or lucide name
+  color       String?
+  kind        String   @default("GENERIC") // GENERIC | PRODUCT | POST | PORTFOLIO | TEAM | TESTIMONIAL
+  fields      Json     @default("[]") // [{ name, label, type, required, options, ... }]
+  settings    Json     @default("{}") // titleField, slugField, imageField, sort, etc.
+  status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  items WebCollectionItem[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("web_collections")
+}
+
+model WebCollectionItem {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  collectionId String    @map("collection_id")
+  slug         String // item-level slug for /:collection/:slug routes
+  data         Json      @default("{}") // the actual field values
+  status       String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  featured     Boolean   @default(false)
+  sortOrder    Int       @default(0) @map("sort_order")
+  publishedAt  DateTime? @map("published_at")
+  createdBy    String?   @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  collection WebCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, slug])
+  @@index([tenantId, collectionId])
+  @@index([tenantId, status])
+  @@map("web_collection_items")
+}
+
+// Form submissions captured from public-facing website forms (contact, lead, newsletter).
+model WebFormSubmission {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  formName  String   @map("form_name") // logical form identifier, e.g. "contact", "newsletter"
+  pageSlug  String?  @map("page_slug") // which page it came from
+  data      Json     @default("{}") // submitted field values
+  status    String   @default("NEW") // NEW | READ | SPAM | ARCHIVED
+  meta      Json     @default("{}") // ip, userAgent, referrer
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, formName])
+  @@index([tenantId, status])
+  @@map("web_form_submissions")
+}
+
+// Orders captured from the public-facing storefront (e-commerce).
+model WebOrder {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orderNumber String   @map("order_number")
+  status      String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED
+  customer    Json     @default("{}") // { name, email, phone, address }
+  items       Json     @default("[]") // [{ productSlug, name, price, qty, image }]
+  subtotal    Float    @default(0)
+  total       Float    @default(0)
+  currency    String   @default("USD")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId, status])
+  @@map("web_orders")
+}
+
+// ════════════════════════════════════════════════
 // BUILDER STUDIO MODULE
 // ════════════════════════════════════════════════
 

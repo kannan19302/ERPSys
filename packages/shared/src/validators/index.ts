@@ -1023,3 +1023,93 @@ export const createWebSeoSchema = z.object({
   schemaJson: z.string().optional(),
 });
 export const updateWebSeoSchema = createWebSeoSchema.partial();
+
+// ─────────────────────────────────────────────────
+// WEB STUDIO — CMS COLLECTIONS
+// ─────────────────────────────────────────────────
+
+export const webCollectionFieldSchema = z.object({
+  name: z.string().min(1),
+  label: z.string().min(1),
+  type: z.enum([
+    'Text', 'RichText', 'Number', 'Price', 'Boolean', 'Date', 'Image', 'Gallery',
+    'Select', 'Color', 'URL', 'Email', 'Reference', 'Tags', 'Textarea',
+  ]),
+  required: z.boolean().optional(),
+  options: z.string().optional(), // newline/comma-separated for Select
+  referenceCollection: z.string().optional(), // slug of referenced collection
+  helpText: z.string().optional(),
+});
+export type WebCollectionFieldInput = z.infer<typeof webCollectionFieldSchema>;
+
+export const createWebCollectionSchema = z.object({
+  name: z.string().min(1).max(120),
+  slug: z.string().min(1).max(120).regex(/^[a-z0-9-]+$/, 'lowercase letters, numbers and dashes only'),
+  singular: z.string().max(120).optional(),
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  kind: z.enum(['GENERIC', 'PRODUCT', 'POST', 'PORTFOLIO', 'TEAM', 'TESTIMONIAL']).optional(),
+  fields: z.array(webCollectionFieldSchema).optional(),
+  settings: z.record(z.unknown()).optional(),
+});
+export type CreateWebCollectionInput = z.infer<typeof createWebCollectionSchema>;
+
+export const updateWebCollectionSchema = createWebCollectionSchema.omit({ slug: true }).partial().extend({
+  status: z.string().optional(),
+});
+export type UpdateWebCollectionInput = z.infer<typeof updateWebCollectionSchema>;
+
+export const createWebCollectionItemSchema = z.object({
+  slug: z.string().max(160).optional(), // auto-derived from title field when omitted
+  data: z.record(z.unknown()),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+  featured: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+});
+export type CreateWebCollectionItemInput = z.infer<typeof createWebCollectionItemSchema>;
+
+export const updateWebCollectionItemSchema = createWebCollectionItemSchema.partial();
+export type UpdateWebCollectionItemInput = z.infer<typeof updateWebCollectionItemSchema>;
+
+// Seed a ready-made collection (Products, Projects, Team, Testimonials, Blog).
+export const seedWebCollectionSchema = z.object({
+  preset: z.enum(['products', 'projects', 'team', 'testimonials', 'blog', 'services', 'events']),
+});
+export type SeedWebCollectionInput = z.infer<typeof seedWebCollectionSchema>;
+
+// Public form submission capture.
+export const createWebFormSubmissionSchema = z.object({
+  formName: z.string().min(1).max(120),
+  pageSlug: z.string().optional(),
+  data: z.record(z.unknown()),
+  meta: z.record(z.unknown()).optional(),
+});
+export type CreateWebFormSubmissionInput = z.infer<typeof createWebFormSubmissionSchema>;
+
+// ─────────────────────────────────────────────────
+// WEB STUDIO — STOREFRONT ORDERS (e-commerce)
+// ─────────────────────────────────────────────────
+export const webCheckoutSchema = z.object({
+  customer: z.object({
+    name: z.string().min(1).max(160),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+  }),
+  items: z.array(z.object({
+    productSlug: z.string().optional(),
+    name: z.string().min(1),
+    price: z.number().nonnegative(),
+    qty: z.number().int().positive(),
+    image: z.string().optional(),
+  })).min(1, 'Cart is empty'),
+  notes: z.string().optional(),
+  currency: z.string().optional(),
+});
+export type WebCheckoutInput = z.infer<typeof webCheckoutSchema>;
+
+export const updateWebOrderSchema = z.object({
+  status: z.enum(['PENDING', 'PAID', 'FULFILLED', 'CANCELLED']),
+});
+export type UpdateWebOrderInput = z.infer<typeof updateWebOrderSchema>;

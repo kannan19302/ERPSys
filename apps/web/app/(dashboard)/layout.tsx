@@ -60,6 +60,7 @@ import {
   FileCode2,
   Workflow,
   Database,
+  Inbox,
   Image,
   Code2,
 } from 'lucide-react';
@@ -503,12 +504,15 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           name: 'Web Studio',
           isHeader: true,
           items: [
+            { name: 'CMS Collections', href: '/builder/web/collections', icon: Database },
             { name: 'Pages', href: '/builder/web/pages', icon: Globe },
             { name: 'Blog Posts', href: '/builder/web/blog', icon: FileText },
             { name: 'Asset Manager', href: '/builder/web/assets', icon: Image },
             { name: 'Templates', href: '/builder/web/templates', icon: Code2 },
             { name: 'Navigation Menus', href: '/builder/web/menus', icon: Layers },
             { name: 'SEO Manager', href: '/builder/web/seo', icon: BarChart3 },
+            { name: 'Orders', href: '/builder/web/orders', icon: ShoppingCart },
+            { name: 'Form Submissions', href: '/builder/web/submissions', icon: Inbox },
           ]
         },
       ] as SidebarItem[]
@@ -734,6 +738,8 @@ const SEGMENT_NAMES: Record<string, string> = {
   settings: 'Settings',
   profile: 'Profile',
   builder: 'Studio',
+  collections: 'CMS Collections',
+  submissions: 'Form Submissions',
   store: 'App Store',
   'real-estate': 'Real Estate',
   healthcare: 'Healthcare',

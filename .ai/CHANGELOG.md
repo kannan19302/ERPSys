@@ -5,6 +5,37 @@
 
 ---
 
+## [2026-06-20] Web Studio — Rich Block Library, Forms, E-commerce & Publish Workflow
+
+### Added
+- **Rich block library** (`apps/web/src/components/builder/blocks/RichBlocks.tsx`): Navbar (with live cart badge), Footer, Rich Text (HTML), Image, Gallery, Columns, Logo Cloud, CTA Banner — bringing the page builder to 18+ block types. A single shared registry (`blocks/registry.tsx`) now feeds both the canvas preview and the public `PublicPageRenderer`.
+- **Contact Form block**: renders a configurable form and posts to the public `/api/v1/public/web/forms/submit` endpoint, landing leads straight in the Form Submissions inbox.
+- **E-commerce**: new `WebOrder` Prisma model + migration `20260620140000_add_web_orders`. A `useCart` localStorage hook, **Add to Cart** on product collection cards, a **Cart & Checkout** block that posts to a public `/api/v1/public/web/checkout` endpoint (totals recomputed server-side, order number issued), and a **Web Studio → Orders** admin page with revenue/pending/fulfilled stats and status management. 2 new service tests (builder suite now 119 passing).
+- **Asset picker**: Image/Gallery block fields and the inspector can pick from the Asset Manager (image assets) or paste a URL, with a live thumbnail.
+- **Page publish workflow**: the page builder now has Save Draft, **Preview** (opens the live `/{slug}`), and Publish / Update Live with a "Live" status indicator.
+- **Navigation**: Orders added to the Web Studio hub + sidebar + breadcrumbs.
+
+### Changed
+- `CollectionBlock` renders an **Add to Cart** button for `PRODUCT`-kind collections.
+
+## [2026-06-20] Web Studio — Collection-bound Blocks & Visual Block Inspector
+
+### Added
+- **Collection List block** (`apps/web/src/components/builder/blocks/CollectionBlock.tsx`): a CMS-bound page block that renders published items from any Web Studio collection (products with pricing, projects/portfolio, team, testimonials with star ratings, etc.). Self-fetching so it works identically in the builder canvas (authenticated, current tenant) and on the live public site (public API). Responsive grid/list layouts, featured-only filter, item limit, auto-derives title/image/price/subtitle from the collection's field metadata.
+- **Block registry wiring**: `collection` registered in both the canvas preview (`builder/web/canvas`) and the public renderer (`PublicPageRenderer`) so it renders end-to-end — content modeled in Collections now appears on real pages.
+- **Real visual block inspector** (`builder/web/pages`): replaced the stubbed "properties would appear here" panel with a schema-driven inspector. Per-block-type editable fields (hero headline/subtitle/CTAs/alignment; collection picker + layout/columns/limit/featured; CTA, text, features). The collection picker is populated from the tenant's collections; edits live-sync to the canvas via the existing postMessage flow.
+- **Expanded section palette**: added Collection List, CTA Banner and Text Block to the page builder palette.
+
+## [2026-06-20] Web Studio — CMS Collections Engine (dynamic content modeling)
+
+### Added
+- **CMS Collections** — the headless content backbone that makes Web Studio a true end-to-end CMS (Webflow/Wix/Sanity-class), suitable for e-commerce, portfolios and company sites. New Prisma models `WebCollection`, `WebCollectionItem`, `WebFormSubmission` + idempotent migration `20260620120000_add_web_cms_collections`.
+- **Dynamic content types**: define collections with typed fields (Text, RichText, Number, Price, Boolean, Date, Image, Gallery, Select, Color, URL, Email, Tags, Reference). Manage entries with auto-slugging, draft/published status, featured flag and ordering.
+- **Ready-made presets** (`web-collections.presets.ts`): one-click Products, Projects, Team, Testimonials, Blog, Services, Events — each seeded with field schema + sample content so the CMS is usable out of the box.
+- **Backend** (`WebCollectionsService` + routes on `BuilderController`): full CRUD for collections + items, preset seeding, and a form-submissions inbox. 8 new unit tests (builder suite now 117 passing).
+- **Public API** (`WebPublicController`, unauthenticated, `/api/v1/public/web/...`): published collection reads (`collections/:slug`, `collections/:slug/:itemSlug`) and public form submission capture (`forms/submit`) for the live customer-facing website. Tenant resolved by slug (defaults to `system`).
+- **Web Studio UI**: new `builder/web/collections` page — collection gallery, preset/custom creation modal with a field-schema builder, and a dynamic entry editor drawer that renders inputs from each collection's field definitions. New `builder/web/submissions` inbox (read/archive/spam/delete). Wired into the Web Studio hub + sidebar nav + breadcrumbs.
+
 ## [2026-06-20] Navigation — Breadcrumbs Duplicate Removal & Grey Theme Styling
 
 ### Changed

@@ -59,12 +59,23 @@ import {
   type PublishModuleInput,
   type RollbackModuleInput,
   type InstallBuilderAppInput,
+  createWebCollectionSchema,
+  updateWebCollectionSchema,
+  createWebCollectionItemSchema,
+  updateWebCollectionItemSchema,
+  seedWebCollectionSchema,
+  type CreateWebCollectionInput,
+  type UpdateWebCollectionInput,
+  type CreateWebCollectionItemInput,
+  type UpdateWebCollectionItemInput,
+  type SeedWebCollectionInput,
 } from '@unerp/shared';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { BuilderService } from './builder.service';
+import { WebCollectionsService } from './web-collections.service';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -79,7 +90,10 @@ interface AuthenticatedRequest extends Request {
 @Controller('builder')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class BuilderController {
-  constructor(private readonly builderService: BuilderService) {}
+  constructor(
+    private readonly builderService: BuilderService,
+    private readonly webCollections: WebCollectionsService,
+  ) {}
 
   // ─── Stats ──────────────────────────────────────
   @Get('stats')
@@ -888,5 +902,160 @@ export class BuilderController {
   @Permissions('builder.page.update')
   async updateWebSettings(@Req() req: AuthenticatedRequest, @Body() data: any) {
     return this.builderService.updateWebSettings(req.user.tenantId, data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // WEB STUDIO — CMS COLLECTIONS
+  // ---------------------------------------------------------------------------
+  @Get('web-collections/presets')
+  @Permissions('builder.web.read')
+  async listCollectionPresets() {
+    return this.webCollections.listPresets();
+  }
+
+  @Get('web-collections')
+  @Permissions('builder.web.read')
+  async getCollections(@Req() req: AuthenticatedRequest) {
+    return this.webCollections.getCollections(req.user.tenantId);
+  }
+
+  @Get('web-collections/:id')
+  @Permissions('builder.web.read')
+  async getCollection(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.webCollections.getCollectionById(req.user.tenantId, id);
+  }
+
+  @Post('web-collections')
+  @Permissions('builder.web.create')
+  async createCollection(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(createWebCollectionSchema)) dto: CreateWebCollectionInput,
+  ) {
+    return this.webCollections.createCollection(req.user.tenantId, dto, req.user.userId);
+  }
+
+  @Post('web-collections/seed')
+  @Permissions('builder.web.create')
+  async seedCollection(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(seedWebCollectionSchema)) dto: SeedWebCollectionInput,
+  ) {
+    return this.webCollections.seedCollection(req.user.tenantId, dto.preset, req.user.userId);
+  }
+
+  @Patch('web-collections/:id')
+  @Permissions('builder.web.update')
+  async updateCollection(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateWebCollectionSchema)) dto: UpdateWebCollectionInput,
+  ) {
+    return this.webCollections.updateCollection(req.user.tenantId, id, dto);
+  }
+
+  @Delete('web-collections/:id')
+  @Permissions('builder.web.delete')
+  async deleteCollection(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.webCollections.deleteCollection(req.user.tenantId, id);
+  }
+
+  // ─── Collection items ───
+  @Get('web-collections/:id/items')
+  @Permissions('builder.web.read')
+  async getCollectionItems(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.webCollections.getItems(req.user.tenantId, id, {
+      search,
+      status,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
+  }
+
+  @Get('web-collections/:id/items/:itemId')
+  @Permissions('builder.web.read')
+  async getCollectionItem(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Param('itemId') itemId: string) {
+    return this.webCollections.getItemById(req.user.tenantId, id, itemId);
+  }
+
+  @Post('web-collections/:id/items')
+  @Permissions('builder.web.create')
+  async createCollectionItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(createWebCollectionItemSchema)) dto: CreateWebCollectionItemInput,
+  ) {
+    return this.webCollections.createItem(req.user.tenantId, id, dto, req.user.userId);
+  }
+
+  @Patch('web-collections/:id/items/:itemId')
+  @Permissions('builder.web.update')
+  async updateCollectionItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('itemId') itemId: string,
+    @Body(new ZodValidationPipe(updateWebCollectionItemSchema)) dto: UpdateWebCollectionItemInput,
+  ) {
+    return this.webCollections.updateItem(req.user.tenantId, id, itemId, dto);
+  }
+
+  @Delete('web-collections/:id/items/:itemId')
+  @Permissions('builder.web.delete')
+  async deleteCollectionItem(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Param('itemId') itemId: string) {
+    return this.webCollections.deleteItem(req.user.tenantId, id, itemId);
+  }
+
+  // ─── Form submissions (inbox) ───
+  @Get('web-form-submissions')
+  @Permissions('builder.web.read')
+  async getFormSubmissions(
+    @Req() req: AuthenticatedRequest,
+    @Query('formName') formName?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.webCollections.getSubmissions(req.user.tenantId, { formName, status });
+  }
+
+  @Patch('web-form-submissions/:id')
+  @Permissions('builder.web.update')
+  async updateFormSubmission(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() body: { status: string }) {
+    return this.webCollections.updateSubmissionStatus(req.user.tenantId, id, body.status);
+  }
+
+  @Delete('web-form-submissions/:id')
+  @Permissions('builder.web.delete')
+  async deleteFormSubmission(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.webCollections.deleteSubmission(req.user.tenantId, id);
+  }
+
+  // ─── Storefront orders ───
+  @Get('web-orders')
+  @Permissions('builder.web.read')
+  async getOrders(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.webCollections.getOrders(req.user.tenantId, { status });
+  }
+
+  @Get('web-orders/stats')
+  @Permissions('builder.web.read')
+  async getOrderStats(@Req() req: AuthenticatedRequest) {
+    return this.webCollections.getOrderStats(req.user.tenantId);
+  }
+
+  @Patch('web-orders/:id')
+  @Permissions('builder.web.update')
+  async updateOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() body: { status: string }) {
+    return this.webCollections.updateOrderStatus(req.user.tenantId, id, body.status);
+  }
+
+  @Delete('web-orders/:id')
+  @Permissions('builder.web.delete')
+  async deleteOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.webCollections.deleteOrder(req.user.tenantId, id);
   }
 }

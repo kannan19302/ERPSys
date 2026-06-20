@@ -12,6 +12,9 @@ import {
   Code2,
   Layers,
   SearchCheck,
+  Database,
+  Inbox,
+  ShoppingCart,
 } from 'lucide-react';
 
 interface WebStats {
@@ -91,11 +94,32 @@ export default function WebBuilderPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-4)' }}>
         {[
           {
+            title: 'CMS Collections',
+            description: 'Model dynamic content — products, projects, team, blog',
+            icon: Database, color: '#6366f1',
+            href: '/builder/web/collections',
+            count: 'Dynamic content',
+          },
+          {
             title: 'Pages',
-            description: 'Design page layouts with drag-and-drop sections',
+            description: 'Visual builder with 18+ blocks, CMS binding & publish',
             icon: Monitor, color: '#7c3aed',
             href: '/builder/web/pages',
             count: `${stats.pages} pages`,
+          },
+          {
+            title: 'Orders',
+            description: 'Storefront orders, revenue and fulfillment',
+            icon: ShoppingCart, color: '#10b981',
+            href: '/builder/web/orders',
+            count: 'E-commerce',
+          },
+          {
+            title: 'Form Submissions',
+            description: 'Leads, contacts and newsletter sign-ups inbox',
+            icon: Inbox, color: '#0891b2',
+            href: '/builder/web/submissions',
+            count: 'Inbox',
           },
           {
             title: 'Blog Posts',

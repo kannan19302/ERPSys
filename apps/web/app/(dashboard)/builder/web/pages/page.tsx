@@ -4,17 +4,105 @@ import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Globe, PlusCircle, Search, Edit3, Trash2, Eye, Move, Layers, LayoutGrid, Image, Zap, Type, Tag, FileText, Monitor, LayoutTemplate, CheckCircle } from 'lucide-react';
+import { Globe, PlusCircle, Search, Edit3, Trash2, Eye, Move, Layers, LayoutGrid, Image, Zap, Type, Tag, FileText, Monitor, LayoutTemplate, CheckCircle, Database } from 'lucide-react';
 
 const SECTIONS_PALETTE = [
+  { type: 'navbar', label: 'Navbar', icon: Layers },
   { type: 'hero', label: 'Hero Banner', icon: Monitor },
-  { type: 'trust', label: 'Trust Bar', icon: Layers },
+  { type: 'collection', label: 'Collection List', icon: Database },
   { type: 'features', label: 'Features Grid', icon: LayoutGrid },
+  { type: 'columns', label: 'Columns', icon: LayoutGrid },
+  { type: 'image', label: 'Image', icon: Image },
+  { type: 'gallery', label: 'Gallery', icon: Image },
+  { type: 'logos', label: 'Logo Cloud', icon: Layers },
+  { type: 'trust', label: 'Trust Bar', icon: Layers },
   { type: 'social', label: 'Social Proof', icon: Type },
   { type: 'steps', label: 'How It Works', icon: LayoutTemplate },
   { type: 'pricing', label: 'Pricing Table', icon: Tag },
   { type: 'faq', label: 'FAQ Accordion', icon: FileText },
+  { type: 'text', label: 'Rich Text', icon: FileText },
+  { type: 'cta', label: 'CTA Banner', icon: Zap },
+  { type: 'contact', label: 'Contact Form', icon: FileText },
+  { type: 'cart', label: 'Cart & Checkout', icon: Tag },
+  { type: 'footer', label: 'Footer', icon: Layers },
 ];
+
+// Inspector schema per block type — drives the right-hand property editor.
+const BLOCK_INSPECTOR: Record<string, { name: string; label: string; type: 'text' | 'textarea' | 'select' | 'number' | 'checkbox' | 'asset'; options?: string[] }[]> = {
+  hero: [
+    { name: 'title', label: 'Headline', type: 'text' },
+    { name: 'subtitle', label: 'Subheadline', type: 'textarea' },
+    { name: 'primaryCta', label: 'Primary Button', type: 'text' },
+    { name: 'primaryUrl', label: 'Primary URL', type: 'text' },
+    { name: 'secondaryCta', label: 'Secondary Button', type: 'text' },
+    { name: 'alignment', label: 'Alignment', type: 'select', options: ['center', 'left'] },
+  ],
+  collection: [
+    { name: 'collectionSlug', label: 'Collection', type: 'select', options: [] }, // filled at runtime
+    { name: 'title', label: 'Section Title', type: 'text' },
+    { name: 'subtitle', label: 'Subtitle', type: 'textarea' },
+    { name: 'layout', label: 'Layout', type: 'select', options: ['grid', 'list'] },
+    { name: 'columns', label: 'Columns', type: 'select', options: ['2', '3', '4'] },
+    { name: 'limit', label: 'Max Items', type: 'number' },
+    { name: 'featuredOnly', label: 'Featured only', type: 'checkbox' },
+  ],
+  features: [
+    { name: 'title', label: 'Title', type: 'text' },
+    { name: 'subtitle', label: 'Subtitle', type: 'textarea' },
+  ],
+  cta: [
+    { name: 'title', label: 'Title', type: 'text' },
+    { name: 'subtitle', label: 'Subtitle', type: 'textarea' },
+    { name: 'buttonText', label: 'Button Text', type: 'text' },
+    { name: 'buttonUrl', label: 'Button URL', type: 'text' },
+  ],
+  text: [
+    { name: 'title', label: 'Heading', type: 'text' },
+    { name: 'content', label: 'Content (HTML)', type: 'textarea' },
+    { name: 'align', label: 'Align', type: 'select', options: ['left', 'center'] },
+  ],
+  image: [
+    { name: 'url', label: 'Image URL', type: 'asset' },
+    { name: 'caption', label: 'Caption', type: 'text' },
+  ],
+  gallery: [
+    { name: 'title', label: 'Title', type: 'text' },
+    { name: 'images', label: 'Image URLs (one per line)', type: 'textarea' },
+    { name: 'columns', label: 'Columns', type: 'select', options: ['2', '3', '4'] },
+  ],
+  columns: [
+    { name: 'col1Title', label: 'Column 1 Title', type: 'text' },
+    { name: 'col1Body', label: 'Column 1 Body', type: 'textarea' },
+    { name: 'col2Title', label: 'Column 2 Title', type: 'text' },
+    { name: 'col2Body', label: 'Column 2 Body', type: 'textarea' },
+    { name: 'col3Title', label: 'Column 3 Title', type: 'text' },
+    { name: 'col3Body', label: 'Column 3 Body', type: 'textarea' },
+  ],
+  logos: [
+    { name: 'title', label: 'Heading', type: 'text' },
+    { name: 'logos', label: 'Logo URLs (one per line)', type: 'textarea' },
+  ],
+  navbar: [
+    { name: 'brand', label: 'Brand Name', type: 'text' },
+    { name: 'links', label: 'Links (Label=/url per line)', type: 'textarea' },
+    { name: 'showCart', label: 'Show cart icon', type: 'checkbox' },
+  ],
+  footer: [
+    { name: 'brand', label: 'Brand Name', type: 'text' },
+    { name: 'tagline', label: 'Tagline', type: 'textarea' },
+    { name: 'links', label: 'Links (Label=/url per line)', type: 'textarea' },
+    { name: 'copyright', label: 'Copyright', type: 'text' },
+  ],
+  contact: [
+    { name: 'title', label: 'Title', type: 'text' },
+    { name: 'subtitle', label: 'Subtitle', type: 'textarea' },
+    { name: 'formName', label: 'Form Name (inbox label)', type: 'text' },
+    { name: 'buttonText', label: 'Button Text', type: 'text' },
+  ],
+  cart: [
+    { name: 'title', label: 'Title', type: 'text' },
+  ],
+};
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -53,8 +141,22 @@ function WebBuilderPagesPageContent() {
   // Local state for page sections during editing
   const [sections, setSections] = useState<any[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  
+  const [collections, setCollections] = useState<any[]>([]);
+  const [assets, setAssets] = useState<any[]>([]);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || '';
+    const auth = { headers: { Authorization: `Bearer ${token}` } };
+    fetch('/api/v1/builder/web-collections', auth).then((r) => (r.ok ? r.json() : [])).then((d) => setCollections(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch('/api/v1/builder/web-assets', auth).then((r) => (r.ok ? r.json() : [])).then((d) => setAssets(Array.isArray(d) ? d.filter((a: any) => a.type === 'IMAGE') : [])).catch(() => {});
+  }, []);
+
+  const selectedSection = sections.find((s) => s.id === selectedSectionId) || null;
+  const updateContent = (patch: Record<string, any>) => {
+    setSections((prev) => prev.map((s) => (s.id === selectedSectionId ? { ...s, content: { ...(s.content || {}), ...patch } } : s)));
+  };
 
   useEffect(() => {
     if (editingPage) {
@@ -112,10 +214,32 @@ function WebBuilderPagesPageContent() {
     return () => window.removeEventListener('message', handleMessage);
   }, [sections]);
 
-  const handlePublish = async () => {
+  const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const handleSaveDraft = async () => {
     if (!editingPage) return;
+    setSavingState('saving');
     await updateItem(editingPage.id, { sections: JSON.stringify(sections) });
-    alert("Page sections saved successfully!");
+    setSavingState('saved');
+    setTimeout(() => setSavingState('idle'), 1500);
+  };
+
+  const handlePublishPage = async () => {
+    if (!editingPage) return;
+    setSavingState('saving');
+    await updateItem(editingPage.id, { sections: JSON.stringify(sections), status: 'PUBLISHED' });
+    setSavingState('saved');
+    setTimeout(() => setSavingState('idle'), 1500);
+  };
+
+  const handleUnpublish = async () => {
+    if (!editingPage) return;
+    await updateItem(editingPage.id, { status: 'DRAFT' });
+  };
+
+  const handlePreview = () => {
+    if (!editingPage) return;
+    window.open(`/${editingPage.slug}`, '_blank');
   };
 
   const filtered = PAGES_DB.filter((p: any) => p.name?.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -159,14 +283,27 @@ function WebBuilderPagesPageContent() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           {activeTab === 'editor' && (
-            <button className="frappe-btn frappe-btn-secondary" onClick={() => { setActiveTab('list'); setEditingPageId(null); }}>
-              Back to List
-            </button>
+            <>
+              <button className="frappe-btn frappe-btn-secondary" onClick={() => { setActiveTab('list'); setEditingPageId(null); }}>
+                Back to List
+              </button>
+              {editingPage?.status === 'PUBLISHED' && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: 'var(--color-success)', fontWeight: 600 }}>
+                  <CheckCircle size={13} /> Live
+                </span>
+              )}
+              <button className="frappe-btn frappe-btn-secondary" onClick={handlePreview}>
+                <Eye size={15} /> <span>Preview</span>
+              </button>
+              <button className="frappe-btn frappe-btn-secondary" onClick={handleSaveDraft}>
+                {savingState === 'saving' ? 'Saving…' : savingState === 'saved' ? 'Saved ✓' : 'Save Draft'}
+              </button>
+            </>
           )}
           {activeTab === 'editor' ? (
-            <button className="frappe-btn frappe-btn-primary" onClick={handlePublish}>
+            <button className="frappe-btn frappe-btn-primary" onClick={handlePublishPage}>
               <CheckCircle size={15} />
-              <span>Publish Changes</span>
+              <span>{editingPage?.status === 'PUBLISHED' ? 'Update Live' : 'Publish'}</span>
             </button>
           ) : (
             <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
@@ -328,28 +465,60 @@ function WebBuilderPagesPageContent() {
             </div>
           </div>
 
-          {/* Right Sidebar: Settings */}
-          {selectedSectionId && (
-            <div className="frappe-card" style={{ width: '300px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-              <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid var(--color-border)', fontWeight: 'var(--weight-bold)' }}>
-                Block Properties
+          {/* Right Sidebar: Block Inspector */}
+          {selectedSection && (
+            <div className="frappe-card" style={{ width: '320px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+              <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: 'var(--weight-bold)' }}>Block Properties</span>
+                <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}>{selectedSection.type}</span>
               </div>
-              <div style={{ padding: 'var(--space-4)', flexGrow: 1, overflowY: 'auto' }}>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
-                  Inline editor properties for {sections.find(s => s.id === selectedSectionId)?.type} would appear here.
-                  (e.g., Title, subtitle, CTAs, Image Uploads).
-                </p>
-                <div style={{ marginTop: 'var(--space-4)' }}>
-                  <label className="frappe-label">Title</label>
-                  <input className="frappe-input" type="text" placeholder="Update title..." onChange={(e) => {
-                    const newSections = [...sections];
-                    const s = newSections.find(sec => sec.id === selectedSectionId);
-                    if(s) {
-                      s.content = { ...s.content, title: e.target.value };
-                      setSections(newSections);
-                    }
-                  }} />
-                </div>
+              <div style={{ padding: 'var(--space-4)', flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {(BLOCK_INSPECTOR[selectedSection.type] || [{ name: 'title', label: 'Title', type: 'text' }]).map((field) => {
+                  const value = (selectedSection.content || {})[field.name];
+                  // Collection picker gets its options from the tenant's collections.
+                  const options = field.name === 'collectionSlug'
+                    ? collections.map((c) => ({ label: `${c.icon || ''} ${c.name}`, value: c.slug }))
+                    : (field.options || []).map((o) => ({ label: o, value: o }));
+                  return (
+                    <div key={field.name}>
+                      {field.type !== 'checkbox' && <label className="frappe-label" style={{ fontSize: 'var(--text-xs)' }}>{field.label}</label>}
+                      {field.type === 'textarea' ? (
+                        <textarea className="frappe-input" value={value || ''} onChange={(e) => updateContent({ [field.name]: e.target.value })} style={{ minHeight: 64, resize: 'vertical' }} />
+                      ) : field.type === 'select' ? (
+                        <select className="frappe-input" value={value ?? ''} onChange={(e) => updateContent({ [field.name]: e.target.value })}>
+                          <option value="">{field.name === 'collectionSlug' ? 'Choose a collection…' : 'Select…'}</option>
+                          {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      ) : field.type === 'number' ? (
+                        <input className="frappe-input" type="number" value={value ?? ''} onChange={(e) => updateContent({ [field.name]: e.target.value === '' ? undefined : Number(e.target.value) })} />
+                      ) : (field.type as string) === 'asset' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <input className="frappe-input" type="text" value={value || ''} placeholder="Image URL" onChange={(e) => updateContent({ [field.name]: e.target.value })} />
+                          {assets.length > 0 && (
+                            <select className="frappe-input" value="" onChange={(e) => e.target.value && updateContent({ [field.name]: e.target.value })}>
+                              <option value="">📁 Pick from Asset Manager…</option>
+                              {assets.map((a) => <option key={a.id} value={a.url}>{a.name}</option>)}
+                            </select>
+                          )}
+                          {value && <img src={value} alt="" style={{ maxHeight: 80, borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} />}
+                        </div>
+                      ) : field.type === 'checkbox' ? (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--text-sm)', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={!!value} onChange={(e) => updateContent({ [field.name]: e.target.checked })} /> {field.label}
+                        </label>
+                      ) : (
+                        <input className="frappe-input" type="text" value={value || ''} onChange={(e) => updateContent({ [field.name]: e.target.value })} />
+                      )}
+                    </div>
+                  );
+                })}
+                {selectedSection.type === 'collection' && !((selectedSection.content || {}).collectionSlug) && (
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', padding: 'var(--space-3)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)' }}>
+                    {collections.length === 0
+                      ? <>No collections yet. Create one in <strong>CMS Collections</strong> first.</>
+                      : <>Pick a collection above to render its published items here.</>}
+                  </div>
+                )}
               </div>
             </div>
           )}
