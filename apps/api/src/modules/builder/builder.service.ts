@@ -790,7 +790,7 @@ export class BuilderService {
     });
   }
 
-  async addPageToModule(tenantId: string, moduleId: string, page: { name: string; slug: string; type: string; formId?: string; dashboardId?: string; layout?: any[] }) {
+  async addPageToModule(tenantId: string, moduleId: string, page: { name: string; slug: string; type: string; formId?: string | null; dashboardId?: string | null; layout?: any[] }) {
     const mod = await prisma.builderModule.findFirst({ where: { id: moduleId, tenantId } });
     if (!mod) throw new NotFoundException('Module not found');
 

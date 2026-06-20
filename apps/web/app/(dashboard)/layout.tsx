@@ -716,12 +716,131 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
   );
 }
 
+const SEGMENT_NAMES: Record<string, string> = {
+  apps: 'Apps',
+  crm: 'CRM',
+  finance: 'Finance',
+  hr: 'HR',
+  inventory: 'Inventory',
+  procurement: 'Procurement',
+  projects: 'Projects',
+  manufacturing: 'Manufacturing',
+  pos: 'POS',
+  communication: 'Communication',
+  documents: 'Documents',
+  analytics: 'Analytics',
+  workflows: 'Workflows',
+  admin: 'Administration',
+  settings: 'Settings',
+  profile: 'Profile',
+  builder: 'Builder Studio',
+  store: 'App Store',
+  'real-estate': 'Real Estate',
+  healthcare: 'Healthcare',
+  education: 'Education',
+  'field-service': 'Field Service',
+  saas: 'SaaS',
+  security: 'Security',
+  marketplace: 'Marketplace',
+  'api-platform': 'API Platform',
+  'api-key-whitelists': 'API Key Whitelists',
+  'api-integration-hub': 'API Integration Hub',
+  'i18n-localization': 'i18n Localization',
+  'sync-monitor': 'Sync Monitor',
+  'devops-telemetry': 'DevOps & Telemetry',
+  customers: 'Customers',
+  vendors: 'Vendors',
+  contacts: 'Contacts',
+  leads: 'Leads',
+  opportunities: 'Opportunities',
+  quotations: 'Quotations',
+  reports: 'Reports',
+  'sales-orders': 'Sales Orders',
+  activities: 'Activities',
+  'email-templates': 'Email Templates',
+  advanced: 'Advanced',
+  'purchase-orders': 'Purchase Orders',
+  'purchase-receipts': 'Purchase Receipts',
+  returns: 'Returns',
+  rfqs: 'RFQs',
+  'supplier-quotations': 'Supplier Quotations',
+  'delivery-notes': 'Delivery Notes',
+  orders: 'Orders',
+  'client-portal': 'Client Portal',
+  health: 'Strategic Health',
+  portfolios: 'Portfolios',
+  workloads: 'Workloads',
+  boms: 'BOMs',
+  configurator: 'Configurator',
+  diagnostics: 'Diagnostics',
+  mrp: 'MRP',
+  quality: 'Quality',
+  'shop-floor': 'Shop Floor',
+  designer: 'Receipt Designer',
+  'ap-automation': 'AP Automation',
+  'ar-automation': 'AR Automation',
+  'bank-accounts': 'Bank Accounts',
+  budgeting: 'Budgeting',
+  'chart-of-accounts': 'Chart of Accounts',
+  'financial-periods': 'Financial Periods',
+  'fixed-assets': 'Fixed Assets',
+  'journal-entries': 'Journal Entries',
+  'tax-engine': 'Tax Engine',
+  'tax-filing': 'Tax Filing',
+  treasury: 'Treasury',
+  appraisals: 'Appraisals',
+  assets: 'Assets',
+  attendance: 'Attendance',
+  benefits: 'Benefits',
+  compliance: 'Compliance',
+  feedback: 'Feedback',
+  goals: 'Goals',
+  holidays: 'Holidays',
+  leaves: 'Leaves',
+  offboarding: 'Offboarding',
+  onboarding: 'Onboarding',
+  payroll: 'Payroll',
+  positions: 'Positions',
+  recruitment: 'Recruitment',
+  'self-service': 'Self-Service',
+  shifts: 'Shifts',
+  skills: 'Skills',
+  succession: 'Succession',
+  surveys: 'Surveys',
+  tickets: 'Tickets',
+  trainings: 'Trainings',
+  batches: 'Batches',
+  'bin-locations': 'Bin Locations',
+  'cycle-counts': 'Cycle Counts',
+  'qa-inspections': 'QA Inspections',
+  'serial-numbers': 'Serial Numbers',
+  'stock-entries': 'Stock Entries',
+  'stock-ledger': 'Stock Ledger',
+  'stock-levels': 'Stock Levels',
+  valuations: 'Valuations',
+  warehouses: 'Warehouses',
+  escalations: 'Escalations',
+  simulation: 'Simulation',
+  portal: 'Portal'
+};
+
+const formatSegment = (segment: string): string => {
+  const name = SEGMENT_NAMES[segment.toLowerCase()];
+  if (name) {
+    return name;
+  }
+  return segment
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -851,6 +970,30 @@ export default function DashboardLayout({
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
   const hideSidebar = isAppsLanding || pathname === '/profile' || pathname.startsWith('/profile/');
   const appNav = getAppSpecificNavigation(pathname);
+
+  // Dynamic Breadcrumb Computation
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const showBreadcrumbs = !isAppsLanding && !pathname.startsWith('/builder') && pathSegments.length > 0;
+
+  const breadcrumbsList = [];
+  if (showBreadcrumbs) {
+    // Always start with the Desk/Apps root link
+    breadcrumbsList.push({
+      name: 'Apps',
+      href: '/apps',
+    });
+
+    let currentPath = '';
+    pathSegments.forEach((segment) => {
+      currentPath += `/${segment}`;
+      if (segment === 'apps') return; // Skip duplicate apps segment
+
+      breadcrumbsList.push({
+        name: formatSegment(segment),
+        href: currentPath,
+      });
+    });
+  }
 
   // Define all apps like in apps/page.tsx for the switcher hierarchy
   const allApplications = [
@@ -1464,6 +1607,27 @@ export default function DashboardLayout({
           }}
         >
           <div style={{ maxWidth: pathname.startsWith('/builder') ? '100%' : 'var(--content-max-width)', margin: '0 auto' }}>
+            {showBreadcrumbs && breadcrumbsList.length > 0 && (
+              <nav className="frappe-breadcrumb" aria-label="breadcrumb">
+                {breadcrumbsList.map((crumb, idx) => {
+                  const isLast = idx === breadcrumbsList.length - 1;
+                  return (
+                    <React.Fragment key={crumb.href}>
+                      {idx > 0 && <span className="frappe-breadcrumb-separator">/</span>}
+                      {isLast ? (
+                        <span className="frappe-breadcrumb-active">
+                          {crumb.name}
+                        </span>
+                      ) : (
+                        <Link href={crumb.href} className="frappe-breadcrumb-link">
+                          {crumb.name}
+                        </Link>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </nav>
+            )}
             {children}
           </div>
         </main>

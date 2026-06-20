@@ -916,3 +916,41 @@ img {
   transform: translateX(2px);
 }
 
+/* ─────────────────────────────────────────────────
+   FRAPPE / ERPNEXT GLOBAL BREADCRUMBS
+   ───────────────────────────────────────────────── */
+
+.frappe-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-normal);
+}
+
+.frappe-breadcrumb-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.frappe-breadcrumb-link:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.frappe-breadcrumb-active {
+  color: var(--color-text);
+  pointer-events: none;
+}
+
+.frappe-breadcrumb-separator {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  user-select: none;
+  font-size: 0.95em;
+  margin: 0 var(--space-1);
+}

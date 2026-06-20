@@ -5,6 +5,32 @@
 
 ---
 
+## [2026-06-20] Navigation — Breadcrumbs Duplicate Removal & Grey Theme Styling
+
+### Changed
+- **Removed Duplicate Breadcrumbs**: Removed local breadcrumb navigation rendering from the shared [PageHeader](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/packages/ui/src/components/page-header.tsx) component. This cleanly resolves duplicates across all ERP pages since pages use PageHeader while the layout renders breadcrumbs centrally.
+- **Grey Styling theme**: Replaced the bright blue link styles on central breadcrumbs in [globals.css](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/packages/ui/src/styles/globals.css) with clean, soft grey link colors (`var(--color-text-secondary)`) matching the requested reference format.
+- **Interactive States & Separation**: Configured `/` separator margin/opacity and hover colors to shift dynamically from grey to dark (`var(--color-text)`).
+- **Active Segment Selection**: Updated the [layout.tsx](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/web/app/%28dashboard%29/layout.tsx) template segment loop to detect the final active page, styling it as unclickable dark text (`.frappe-breadcrumb-active`) while retaining parent routes as clickable grey link triggers.
+
+## [2026-06-20] Fix — NestJS API Compilation Mismatch & Next.js Runtime Cache Reset
+
+### Fixed
+- **App Page Builder Service**: Resolved a TypeScript compilation error in `builder.service.ts` where `addPageToModule` had a mismatch with `AddAppPageInput`'s `formId` and `dashboardId` types (which allowed `null` but the service signature only allowed `string | undefined`). Updated signature to accept `string | null` for both arguments.
+- **Server Startup**: Restored NestJS server to a healthy compiled state, allowing the backend API and Next.js frontend to work correctly under dev mode.
+- **Next.js Runtime Chunk Resolution**: Resolved the runtime chunk loading error `Cannot find module './6543.js'` by stopping the active Next.js development server process, clearing the `.next/` cache directory, and launching a fresh compiler process.
+
+
+
+## [2026-06-20] Navigation — ERP-wide Dynamic Page Breadcrumbs Rollout
+
+### Added
+- **Dynamic Breadcrumbs Engine**: Implemented central breadcrumbs rendering at the top of the content viewport in `apps/web/app/(dashboard)/layout.tsx` to automatically supply navigation to all child pages in the system.
+- **Segment Names Dictionary**: Registered human-readable translations for all core module roots and standard sub-page URL segments.
+- **Dynamic Key Checker**: Programmed an identifier scanner in `formatSegment` to auto-detect database IDs/slug hashes (Pure numeric, UUID, CUID, long alphanumeric) and resolve them to clean `'Detail'` labels.
+- **Breadcrumbs CSS Design**: Added `.frappe-breadcrumb` classes to `globals.css` with blue links and light grey `/` separators, adhering strictly to the user screenshots and Frappe UX guidelines.
+- **Guidelines Enforcement**: Added breadcrumb navigation policies to `AGENTS.md` to secure consistency across new pages.
+
 ## [2026-06-20] Navigation — Dropdown Styling Revamp & Tree Connector Visuals
 
 ### Changed

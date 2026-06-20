@@ -11,7 +11,6 @@ export const PageHeader: FC<PageHeaderProps> = ({
   title,
   description,
   actions,
-  breadcrumbs,
 }) => {
   return (
     <div
@@ -22,37 +21,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
         marginBottom: 'var(--space-6)',
       }}
     >
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav
-          aria-label="Breadcrumb"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            fontSize: 'var(--text-sm)',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          {breadcrumbs.map((crumb, index) => (
-            <span key={crumb.label} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              {index > 0 && <span style={{ opacity: 0.5 }}>/</span>}
-              {crumb.href ? (
-                <a
-                  href={crumb.href}
-                  style={{
-                    color: 'var(--color-text-secondary)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  {crumb.label}
-                </a>
-              ) : (
-                <span style={{ color: 'var(--color-text)' }}>{crumb.label}</span>
-              )}
-            </span>
-          ))}
-        </nav>
-      )}
+
 
       <div
         style={{

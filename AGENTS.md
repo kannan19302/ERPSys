@@ -62,8 +62,9 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 ### UI/UX Aesthetics
 5. **Always follow the Frappe/ERPNext UI aesthetic** outlined in Section 8 of `.ai/CONVENTIONS.md`. Apply psychological HCI principles (Hick's Law, Fitts's Law) by removing unnecessary icons, keeping borders soft, and avoiding hardcoded pixels or hex colors.
    - Use `design-tokens.css` strictly for spacing, colors, and typography.
-   - For all layouts, use the global UI utility classes defined in `globals.css` (e.g., `.frappe-card`, `.frappe-form-group`, `.frappe-input`, `.frappe-btn`, `.frappe-grid-3`).
+   - For all layouts, use the global UI utility classes defined in `globals.css` (e.g., `.frappe-card`, `.frappe-form-group`, `.frappe-input`, `.frappe-btn`, `.frappe-grid-3`, `.frappe-breadcrumb`).
    - Do NOT use inline styles for forms or layout. Always use the predefined `.frappe-*` utility classes to achieve 90+ UX consistently across all modules.
+   - **Page Breadcrumb Navigation**: Every application page must display a dynamic breadcrumb header navigation representing the hierarchy of parent pages: `Apps / [Application Name] / [Sub-pages]...`. This is handled centrally in `apps/web/app/(dashboard)/layout.tsx`. If creating new route paths, register their human-readable segment mappings in `SEGMENT_NAMES` in `layout.tsx`.
 
 ### Architecture
 6. **Never import directly between ERP modules.** Modules communicate via domain events only. Read [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 4 (Event-Driven Communication).
