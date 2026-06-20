@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
@@ -62,6 +62,34 @@ export class AnalyticsController {
   @Permissions('analytics.kpi.read')
   async getKPIs(@Req() req: AuthenticatedRequest) {
     return this.analyticsService.getKPIs(req.user.tenantId);
+  }
+
+  @Get('kpis/:code/drilldown')
+  @Permissions('analytics.kpi.read')
+  async getKpiDrilldown(@Req() req: AuthenticatedRequest, @Param('code') code: string) {
+    return this.analyticsService.getKpiDrilldown(req.user.tenantId, code);
+  }
+
+  @Get('insights')
+  @Permissions('analytics.report.read')
+  async getInsights(@Req() req: AuthenticatedRequest) {
+    return this.analyticsService.getInsights(req.user.tenantId);
+  }
+
+  @Get('export/:dataset')
+  @Permissions('analytics.report.read')
+  async exportDataset(@Req() req: AuthenticatedRequest, @Param('dataset') dataset: string) {
+    return this.analyticsService.exportDataset(req.user.tenantId, dataset);
+  }
+
+  @Patch('dashboards/:id')
+  @Permissions('analytics.dashboard.create')
+  async updateDashboard(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { name?: string; description?: string; layout?: unknown }
+  ) {
+    return this.analyticsService.updateDashboard(req.user.tenantId, id, dto);
   }
 
   @Post('reports/:id/pivot')

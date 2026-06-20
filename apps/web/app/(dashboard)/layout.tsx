@@ -11,6 +11,7 @@ import {
   BarChart3,
   Package,
   ShieldAlert,
+  LayoutDashboard,
   Menu,
   ChevronLeft,
   ChevronRight,
@@ -336,6 +337,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: PieChart,
       items: [
         { name: 'BI Analytics Dashboard', href: '/analytics', icon: PieChart },
+        { name: 'Dashboard Builder', href: '/analytics/builder', icon: LayoutDashboard },
+        { name: 'Smart Insights', href: '/analytics/insights', icon: ShieldAlert },
         {
           name: 'Data Tools',
           isHeader: true,
