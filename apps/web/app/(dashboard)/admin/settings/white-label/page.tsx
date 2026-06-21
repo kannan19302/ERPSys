@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Save, Upload, Smartphone, PaintBucket } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Save, Upload, Smartphone, PaintBucket, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/builder/ToastProvider';
+
+const API_BASE = '/api/v1/admin/platform';
+
+function authHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+}
 
 export default function WhiteLabelSettings() {
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
-  
+  const [loading, setLoading] = useState(true);
+
   const [settings, setSettings] = useState({
     appName: 'UniERP',
     primaryColor: '#10b981',
@@ -16,17 +24,45 @@ export default function WhiteLabelSettings() {
     fontFamily: 'Inter',
     enablePWA: true,
     theme: 'light',
+    logoUrl: '',
   });
 
-  const handleSave = () => {
+  const loadSettings = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/white-label`, { headers: authHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(prev => ({ ...prev, ...data }));
+      }
+    } catch {
+      // Use defaults on error
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadSettings(); }, [loadSettings]);
+
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${API_BASE}/white-label`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(settings),
+      });
+      if (res.ok) {
+        showToast('White-label settings saved successfully!', 'success');
+        document.documentElement.style.setProperty('--color-primary', settings.primaryColor);
+        document.documentElement.style.setProperty('--color-secondary', settings.secondaryColor);
+      } else {
+        showToast('Failed to save settings', 'error');
+      }
+    } catch {
+      showToast('Failed to save settings', 'error');
+    } finally {
       setSaving(false);
-      showToast('White-label settings saved successfully!', 'success');
-      // Apply CSS variables dynamically as an example of white-labeling
-      document.documentElement.style.setProperty('--color-primary', settings.primaryColor);
-      document.documentElement.style.setProperty('--color-secondary', settings.secondaryColor);
-    }, 1000);
+    }
   };
 
   return (

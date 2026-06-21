@@ -326,17 +326,66 @@ export class PlatformService {
   }
 
   /**
+   * White-Label Settings.
+   */
+  async getWhiteLabelSettings(tenantId: string) {
+    const setting = await prisma.setting.findUnique({
+      where: { tenantId_key: { tenantId, key: 'platform.white-label' } },
+    });
+    if (!setting) {
+      return { appName: 'UniERP', primaryColor: '#10b981', secondaryColor: '#3b82f6', borderRadius: '8px', fontFamily: 'Inter', enablePWA: true, theme: 'light', logoUrl: '' };
+    }
+    return setting.value;
+  }
+
+  async saveWhiteLabelSettings(tenantId: string, config: any) {
+    await prisma.setting.upsert({
+      where: { tenantId_key: { tenantId, key: 'platform.white-label' } },
+      update: { value: config as any, category: 'platform' },
+      create: { tenantId, key: 'platform.white-label', value: config as any, category: 'platform' },
+    });
+    return config;
+  }
+
+  /**
    * System Update status.
    */
-  async getSystemUpdates() {
+  async getSystemUpdates(tenantId: string) {
+    const fs = await import('fs');
+    const path = await import('path');
+    let currentVersion = 'v1.0.0';
+    try {
+      const pkgPath = path.resolve(process.cwd(), 'package.json');
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      currentVersion = `v${pkg.version || '1.0.0'}`;
+    } catch {}
+
+    const setting = await prisma.setting.findUnique({
+      where: { tenantId_key: { tenantId, key: 'platform.system-updates' } },
+    });
+
+    const lastCheck = setting?.value as any;
     return {
-      currentVersion: 'v1.4.2',
-      latestVersion: 'v1.4.3',
-      updateAvailable: true,
-      releaseNotes: [
-        { version: 'v1.4.3', date: '2026-06-21', fixes: ['Security login rate limit logic fixes', 'SSO OIDC verification redirect bugs'] },
-        { version: 'v1.4.2', date: '2026-06-18', fixes: ['Consolidated sidebar layout configurations', 'Added nested storage app logic'] },
-      ],
+      currentVersion,
+      latestVersion: lastCheck?.latestVersion || currentVersion,
+      updateAvailable: lastCheck?.latestVersion ? lastCheck.latestVersion !== currentVersion : false,
+      lastCheckedAt: lastCheck?.checkedAt || null,
+      releaseNotes: lastCheck?.releaseNotes || [],
     };
+  }
+
+  async checkForUpdates(tenantId: string) {
+    const current = await this.getSystemUpdates(tenantId);
+    const checkResult = {
+      latestVersion: current.currentVersion,
+      checkedAt: new Date().toISOString(),
+      releaseNotes: [],
+    };
+    await prisma.setting.upsert({
+      where: { tenantId_key: { tenantId, key: 'platform.system-updates' } },
+      update: { value: checkResult as any, category: 'platform' },
+      create: { tenantId, key: 'platform.system-updates', value: checkResult as any, category: 'platform' },
+    });
+    return { ...current, lastCheckedAt: checkResult.checkedAt };
   }
 }

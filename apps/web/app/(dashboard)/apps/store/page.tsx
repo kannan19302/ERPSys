@@ -1,849 +1,577 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Card, PageHeader, Badge } from '@unerp/ui';
+import { Card, Badge } from '@unerp/ui';
 import {
-  Search,
-  ArrowLeft,
-  Download,
-  Star,
-  TrendingUp,
-  Heart,
-  GraduationCap,
-  Building2,
-  Wrench,
-  Truck,
-  ShoppingBag,
-  Cpu,
-  Landmark,
-  Users,
-  Leaf,
-  Plane,
-  Utensils,
-  Palette,
-  Wifi,
+  Search, ArrowLeft, Download, Star, TrendingUp, Heart, ChevronRight,
+  SlidersHorizontal, LayoutGrid, List, Loader2, Sparkles, Package,
+  BarChart3, Cpu, Users, Settings, Zap, DollarSign, ShoppingBag,
+  Factory, Shield, ChevronLeft,
 } from 'lucide-react';
 
-interface StoreApp {
+interface MarketplaceApp {
   id: string;
+  slug: string;
   name: string;
   description: string;
-  longDescription: string;
-  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
-  color: string;
+  longDescription?: string;
   category: string;
-  rating: number;
-  reviews: number;
-  installed: boolean;
-  price: 'Free' | 'Included' | 'Premium';
-  publisher: string;
-  version: string;
-}
-
-const storeApps: StoreApp[] = [
-  // Already installed apps
-  {
-    id: 'healthcare',
-    name: 'Healthcare Module',
-    description: 'Patient EHR, appointments, pharmacy, and insurance claims.',
-    longDescription: 'Complete healthcare management with electronic health records, prescription management, lab orders, and HIPAA-compliant audit trails.',
-    icon: Heart,
-    color: 'var(--color-danger)',
-    category: 'Industry',
-    rating: 4.8,
-    reviews: 142,
-    installed: false,
-    price: 'Included',
-    publisher: 'UniERP Core',
-    version: '1.0.0',
-  },
-  {
-    id: 'education',
-    name: 'Education Module',
-    description: 'Student management, courses, fees, and library.',
-    longDescription: 'Comprehensive education management covering admissions, timetabling, fee collection, attendance tracking, and library circulation.',
-    icon: GraduationCap,
-    color: '#2563eb',
-    category: 'Industry',
-    rating: 4.7,
-    reviews: 98,
-    installed: false,
-    price: 'Included',
-    publisher: 'UniERP Core',
-    version: '1.0.0',
-  },
-  {
-    id: 'real-estate',
-    name: 'Real Estate Module',
-    description: 'Property registry, leases, and maintenance.',
-    longDescription: 'Property portfolio management with lease lifecycle, tenant portals, commission tracking, and NOI valuation modelling.',
-    icon: Building2,
-    color: '#ca8a04',
-    category: 'Industry',
-    rating: 4.6,
-    reviews: 67,
-    installed: false,
-    price: 'Included',
-    publisher: 'UniERP Core',
-    version: '1.0.0',
-  },
-  {
-    id: 'field-service',
-    name: 'Field Service Module',
-    description: 'Tickets, technician dispatch, and preventive maintenance.',
-    longDescription: 'On-site service management with SLA tracking, GPS route mapping, technician checklists, and auto-invoicing for parts and labor.',
-    icon: Wrench,
-    color: '#78716c',
-    category: 'Industry',
-    rating: 4.5,
-    reviews: 53,
-    installed: false,
-    price: 'Included',
-    publisher: 'UniERP Core',
-    version: '1.0.0',
-  },
-  // Available for install — NEW modules
-  {
-    id: 'logistics-pro',
-    name: 'Logistics Pro',
-    description: 'Advanced fleet management and route optimization.',
-    longDescription: 'Multi-modal freight management with real-time GPS fleet tracking, route optimization AI, fuel cost analytics, and driver compliance.',
-    icon: Truck,
-    color: '#f97316',
-    category: 'Industry',
-    rating: 4.9,
-    reviews: 203,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Marketplace',
-    version: '2.1.0',
-  },
-  {
-    id: 'ecommerce-bridge',
-    name: 'E-Commerce Bridge',
-    description: 'Sync orders from Shopify, WooCommerce, and Amazon.',
-    longDescription: 'Bi-directional sync engine connecting your ERP inventory and pricing to major e-commerce platforms with real-time stock level updates.',
-    icon: ShoppingBag,
-    color: 'var(--color-success)',
-    category: 'Integration',
-    rating: 4.7,
-    reviews: 312,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Marketplace',
-    version: '1.5.0',
-  },
-  {
-    id: 'ai-forecasting',
-    name: 'AI Demand Forecasting',
-    description: 'ML-powered demand prediction and inventory optimization.',
-    longDescription: 'Machine learning models that analyze historical sales, seasonality, and market signals to predict demand and auto-generate reorder suggestions.',
-    icon: Cpu,
-    color: '#8b5cf6',
-    category: 'Intelligence',
-    rating: 4.6,
-    reviews: 87,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Labs',
-    version: '0.9.0',
-  },
-  {
-    id: 'govt-compliance',
-    name: 'Government Compliance',
-    description: 'GST, VAT, IRAS, HMRC tax filing automation.',
-    longDescription: 'Automated tax computation and e-filing for multiple jurisdictions. Supports GST (India), VAT (EU/UK), and IRAS (Singapore) with audit-ready reports.',
-    icon: Landmark,
-    color: '#0ea5e9',
-    category: 'Finance',
-    rating: 4.8,
-    reviews: 176,
-    installed: false,
-    price: 'Free',
-    publisher: 'UniERP Core',
-    version: '1.2.0',
-  },
-  {
-    id: 'hr-recruitment',
-    name: 'HR Recruitment Suite',
-    description: 'Job postings, applicant tracking, and interview scheduling.',
-    longDescription: 'End-to-end recruitment with career portal, resume parsing, interview scheduling, offer letter generation, and onboarding checklists.',
-    icon: Users,
-    color: '#ec4899',
-    category: 'HR',
-    rating: 4.5,
-    reviews: 134,
-    installed: false,
-    price: 'Free',
-    publisher: 'UniERP Core',
-    version: '1.0.0',
-  },
-  {
-    id: 'sustainability',
-    name: 'ESG & Sustainability',
-    description: 'Carbon tracking, ESG reporting, and compliance.',
-    longDescription: 'Track carbon emissions, energy consumption, and waste across operations. Generate ESG reports aligned with GRI, SASB, and TCFD frameworks.',
-    icon: Leaf,
-    color: '#16a34a',
-    category: 'Intelligence',
-    rating: 4.4,
-    reviews: 42,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Labs',
-    version: '0.8.0',
-  },
-  {
-    id: 'travel-expense',
-    name: 'Travel & Expense',
-    description: 'Trip planning, expense claims, and receipt OCR.',
-    longDescription: 'Automated travel booking integrations, smart receipt scanning with OCR, policy compliance checks, and reimbursement workflow.',
-    icon: Plane,
-    color: '#06b6d4',
-    category: 'Operations',
-    rating: 4.6,
-    reviews: 91,
-    installed: false,
-    price: 'Free',
-    publisher: 'UniERP Core',
-    version: '1.1.0',
-  },
-  {
-    id: 'food-service',
-    name: 'Food & Beverage',
-    description: 'Restaurant management, menu costing, and kitchen display.',
-    longDescription: 'Recipe management with ingredient costing, table reservations, kitchen display system (KDS), and integration with POS terminals.',
-    icon: Utensils,
-    color: '#ea580c',
-    category: 'Industry',
-    rating: 4.3,
-    reviews: 38,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Marketplace',
-    version: '1.0.0',
-  },
-  {
-    id: 'brand-portal',
-    name: 'Brand & Marketing Portal',
-    description: 'Digital asset management and campaign tracking.',
-    longDescription: 'Centralized brand asset library, marketing campaign performance tracking, email template builder, and social media scheduling.',
-    icon: Palette,
-    color: '#d946ef',
-    category: 'Marketing',
-    rating: 4.2,
-    reviews: 29,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Labs',
-    version: '0.7.0',
-  },
-  {
-    id: 'iot-connector',
-    name: 'IoT Device Connector',
-    description: 'Connect sensors, PLCs, and smart devices.',
-    longDescription: 'MQTT/HTTP bridge for industrial IoT devices. Monitor machine telemetry, trigger alerts on threshold breaches, and feed data into analytics.',
-    icon: Wifi,
-    color: '#14b8a6',
-    category: 'Integration',
-    rating: 4.1,
-    reviews: 22,
-    installed: false,
-    price: 'Premium',
-    publisher: 'UniERP Labs',
-    version: '0.5.0',
-  },
-];
-
-const storeCategories = ['All', 'Industry', 'Integration', 'Intelligence', 'Finance', 'HR', 'Operations', 'Marketing'];
-
-// Live apps published from the Custom App Builder (scope GLOBAL, or this tenant's ORG apps).
-interface BuilderStoreApp {
-  id: string;
-  appId: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  longDescription: string | null;
   icon: string | null;
-  color: string | null;
-  category: string;
   publisher: string;
+  publisherLogo?: string;
   version: string;
-  scope: string;
-  installCount: number;
-  isOwn: boolean;
-  installed: boolean;
-  installedVersion: string | null;
-  updateAvailable: boolean;
+  pricing: string;
+  price: number | null;
+  rating: number;
+  reviewCount: number;
+  installs: number;
+  features: string[];
+  tags: string[];
+  screenshots: { url: string; caption: string }[];
+  featured: boolean;
+  verified: boolean;
+  status: string;
 }
+
+interface AppCollection {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  featured: boolean;
+  items: { app: MarketplaceApp }[];
+}
+
+const API_BASE = '/api/v1/admin/marketplace';
+
+function authHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+}
+
+const categoryMeta: Record<string, { icon: React.ReactNode; color: string }> = {
+  'Analytics': { icon: <BarChart3 size={20} />, color: '#6366f1' },
+  'AI & Automation': { icon: <Cpu size={20} />, color: '#8b5cf6' },
+  'HR': { icon: <Users size={20} />, color: '#ec4899' },
+  'Integrations': { icon: <Zap size={20} />, color: '#f59e0b' },
+  'Operations': { icon: <Settings size={20} />, color: '#6b7280' },
+  'Manufacturing': { icon: <Factory size={20} />, color: '#f97316' },
+  'Finance': { icon: <DollarSign size={20} />, color: '#10b981' },
+  'Sales': { icon: <ShoppingBag size={20} />, color: '#3b82f6' },
+};
 
 export default function AppStorePage() {
+  const [apps, setApps] = useState<MarketplaceApp[]>([]);
+  const [collections, setCollections] = useState<AppCollection[]>([]);
+  const [installedSlugs, setInstalledSlugs] = useState<Set<string>>(new Set());
+  const [favoriteSlugs, setFavoriteSlugs] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [installedApps, setInstalledApps] = useState<Set<string>>(new Set());
-  const [installingId, setInstallingId] = useState<string | null>(null);
-  const [uninstallingId, setUninstallingId] = useState<string | null>(null);
-  const [builderApps, setBuilderApps] = useState<BuilderStoreApp[]>([]);
-  const [builderBusyId, setBuilderBusyId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState('');
+  const [activePricing, setActivePricing] = useState('');
+  const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'newest' | 'price_asc' | 'price_desc'>('popular');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [installingSlug, setInstallingSlug] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [categoryStats, setCategoryStats] = useState<{ category: string; count: number }[]>([]);
 
-  const fetchBuilderApps = React.useCallback(async () => {
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const loadApps = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/builder/marketplace', { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setBuilderApps(await res.json());
-    } catch {
-      // no builder apps available
-    }
+      const params = new URLSearchParams();
+      if (activeCategory) params.set('category', activeCategory);
+      if (searchQuery) params.set('search', searchQuery);
+      if (activePricing) params.set('pricing', activePricing);
+      params.set('sort', sortBy);
+      params.set('page', String(page));
+      params.set('limit', '24');
+      const res = await fetch(`${API_BASE}/apps?${params}`, { headers: authHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setApps(data.apps);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
+      }
+    } catch {}
+  }, [activeCategory, searchQuery, activePricing, sortBy, page]);
+
+  const loadCollections = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/collections`, { headers: authHeaders() });
+      if (res.ok) setCollections(await res.json());
+    } catch {}
   }, []);
 
-  useEffect(() => { fetchBuilderApps(); }, [fetchBuilderApps]);
-
-  const handleBuilderInstall = async (app: BuilderStoreApp) => {
-    setBuilderBusyId(app.id);
+  const loadInstalled = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/builder/marketplace/install', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ moduleId: app.id }),
-      });
-      if (res.ok) await fetchBuilderApps();
-    } catch {
-      // install failed
-    } finally {
-      setBuilderBusyId(null);
-    }
-  };
+      const res = await fetch(`${API_BASE}/installed`, { headers: authHeaders() });
+      if (res.ok) {
+        const list = await res.json();
+        setInstalledSlugs(new Set(list.map((a: any) => a.appSlug)));
+      }
+    } catch {}
+  }, []);
 
-  const handleBuilderUninstall = async (app: BuilderStoreApp) => {
-    setBuilderBusyId(app.id);
+  const loadFavorites = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/builder/marketplace/uninstall', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ moduleId: app.id }),
-      });
-      if (res.ok) await fetchBuilderApps();
-    } catch {
-      // uninstall failed
-    } finally {
-      setBuilderBusyId(null);
-    }
-  };
+      const res = await fetch(`${API_BASE}/favorites`, { headers: authHeaders() });
+      if (res.ok) {
+        const list = await res.json();
+        setFavoriteSlugs(new Set(list.map((f: any) => f.app?.slug).filter(Boolean)));
+      }
+    } catch {}
+  }, []);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/stats`, { headers: authHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setCategoryStats(data.categories || []);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
-    const fetchInstalled = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/v1/saas/installed-apps', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          // Merge core-installed apps and DB-installed apps
-          const coreInstalled = storeApps.filter(a => a.installed).map(a => a.id);
-          setInstalledApps(new Set([...coreInstalled, ...data]));
-        }
-      } catch {
-        // failed to load installed apps
-      }
-    };
-    fetchInstalled();
+    Promise.all([loadApps(), loadCollections(), loadInstalled(), loadFavorites(), loadStats()])
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleInstall = async (appId: string) => {
-    setInstallingId(appId);
+  useEffect(() => { loadApps(); }, [loadApps]);
+
+  const handleInstall = async (slug: string) => {
+    setInstallingSlug(slug);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/saas/install', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ appId })
-      });
+      const res = await fetch(`${API_BASE}/install/${slug}`, { method: 'POST', headers: authHeaders() });
       if (res.ok) {
-        setInstalledApps((prev) => new Set([...prev, appId]));
+        setInstalledSlugs(prev => new Set([...prev, slug]));
+        showToast('App installed successfully!');
+      } else {
+        showToast('Failed to install app', 'error');
       }
     } catch {
-      // failed to install app
+      showToast('Failed to install app', 'error');
     } finally {
-      setInstallingId(null);
+      setInstallingSlug(null);
     }
   };
 
-  const handleUninstall = async (appId: string) => {
-    setUninstallingId(appId);
+  const handleUninstall = async (slug: string) => {
+    setInstallingSlug(slug);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/saas/uninstall', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ appId })
-      });
+      const res = await fetch(`${API_BASE}/uninstall/${slug}`, { method: 'DELETE', headers: authHeaders() });
       if (res.ok) {
-        setInstalledApps((prev) => {
-          const next = new Set(prev);
-          next.delete(appId);
-          return next;
-        });
+        setInstalledSlugs(prev => { const s = new Set(prev); s.delete(slug); return s; });
+        showToast('App uninstalled');
       }
     } catch {
-      // failed to uninstall app
+      showToast('Failed to uninstall', 'error');
     } finally {
-      setUninstallingId(null);
+      setInstallingSlug(null);
     }
   };
 
-  const filtered = storeApps.filter((app) => {
-    const matchesSearch =
-      app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCat = selectedCategory === 'All' || app.category === selectedCategory;
-    return matchesSearch && matchesCat;
-  });
+  const toggleFavorite = async (slug: string) => {
+    const isFav = favoriteSlugs.has(slug);
+    try {
+      if (isFav) {
+        await fetch(`${API_BASE}/favorites/${slug}`, { method: 'DELETE', headers: authHeaders() });
+        setFavoriteSlugs(prev => { const s = new Set(prev); s.delete(slug); return s; });
+      } else {
+        await fetch(`${API_BASE}/favorites/${slug}`, { method: 'POST', headers: authHeaders() });
+        setFavoriteSlugs(prev => new Set([...prev, slug]));
+      }
+    } catch {}
+  };
 
-  const featured = storeApps.filter((a) => !a.installed && a.rating >= 4.6).slice(0, 3);
+  const seedApps = async () => {
+    try {
+      await fetch(`${API_BASE}/seed`, { method: 'POST', headers: authHeaders() });
+      showToast('Marketplace seeded with apps, collections & changelogs!');
+      setLoading(true);
+      await Promise.all([loadApps(), loadCollections(), loadStats()]);
+      setLoading(false);
+    } catch {}
+  };
+
+  const featuredApps = apps.filter(a => a.featured).slice(0, 4);
+  const allCategories = Object.keys(categoryMeta);
+
+  const renderStars = (rating: number) => {
+    const r = Number(rating) || 0;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+        {[1, 2, 3, 4, 5].map(s => (
+          <Star key={s} size={11} style={{ color: s <= Math.floor(r) ? '#f59e0b' : 'var(--color-border)' }} fill={s <= Math.floor(r) ? '#f59e0b' : 'none'} />
+        ))}
+      </div>
+    );
+  };
+
+  const renderAppCard = (app: MarketplaceApp) => {
+    const isInstalled = installedSlugs.has(app.slug);
+    const isFav = favoriteSlugs.has(app.slug);
+    const isBusy = installingSlug === app.slug;
+
+    if (viewMode === 'list') {
+      return (
+        <div key={app.slug} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
+          <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: `${categoryMeta[app.category]?.color || '#6366f1'}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+            {app.icon || '📦'}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Link href={`/apps/store/${app.slug}`} style={{ textDecoration: 'none', color: 'var(--color-text)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{app.name}</span>
+                {app.verified && <Shield size={12} style={{ color: 'var(--color-success)' }} />}
+              </div>
+            </Link>
+            <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.description}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
+            {renderStars(app.rating)}
+            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{Number(app.rating).toFixed(1)}</span>
+          </div>
+          <Badge variant={app.pricing === 'FREE' ? 'success' : app.pricing === 'FREEMIUM' ? 'info' : 'warning'} style={{ flexShrink: 0 }}>
+            {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
+          </Badge>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
+            <button onClick={(e) => { e.preventDefault(); toggleFavorite(app.slug); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)' }}>
+              <Heart size={16} fill={isFav ? '#ef4444' : 'none'} />
+            </button>
+            {isInstalled ? (
+              <button onClick={() => handleUninstall(app.slug)} disabled={isBusy} style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer' }}>
+                {isBusy ? '...' : 'Uninstall'}
+              </button>
+            ) : (
+              <button onClick={() => handleInstall(app.slug)} disabled={isBusy} style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary)', color: '#fff', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer' }}>
+                {isBusy ? '...' : 'Install'}
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <Card key={app.slug} padding="lg" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', border: '1px solid var(--color-border)', transition: 'transform 0.2s ease, box-shadow 0.2s ease', position: 'relative' }}
+        onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
+        onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+
+        <button onClick={() => toggleFavorite(app.slug)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)', zIndex: 1 }}>
+          <Heart size={16} fill={isFav ? '#ef4444' : 'none'} />
+        </button>
+
+        <Link href={`/apps/store/${app.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: `${categoryMeta[app.category]?.color || '#6366f1'}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+              {app.icon || '📦'}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <h3 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{app.name}</h3>
+                {app.verified && <Shield size={12} style={{ color: 'var(--color-success)' }} />}
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+                {app.publisher} · v{app.version}
+              </div>
+            </div>
+          </div>
+
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {app.description}
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+              {renderStars(app.rating)}
+              <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>{Number(app.rating).toFixed(1)} ({app.reviewCount})</span>
+            </div>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Download size={10} /> {app.installs.toLocaleString()}
+            </span>
+            <Badge variant={app.pricing === 'FREE' ? 'success' : app.pricing === 'FREEMIUM' ? 'info' : 'warning'} style={{ fontSize: '10px' }}>
+              {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
+            </Badge>
+          </div>
+        </Link>
+
+        <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
+          {isInstalled ? (
+            <button onClick={() => handleUninstall(app.slug)} disabled={isBusy} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}>
+              {isBusy ? <Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> : null}
+              {isBusy ? 'Uninstalling...' : 'Installed · Uninstall'}
+            </button>
+          ) : (
+            <button onClick={() => handleInstall(app.slug)} disabled={isBusy} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: 'none', background: isBusy ? 'var(--color-bg-sunken)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: isBusy ? 'var(--color-text-secondary)' : '#fff', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', boxShadow: isBusy ? 'none' : '0 2px 8px rgba(99,102,241,0.3)' }}>
+              {isBusy ? <Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Download size={14} />}
+              {isBusy ? 'Installing...' : 'Install'}
+            </button>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+        <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-primary)' }} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
-      <PageHeader
-        title="App Store"
-        description="Discover, search, and install modules to extend your ERP capabilities."
-        breadcrumbs={[
-          { label: 'Apps', href: '/apps' },
-          { label: 'Store' },
-        ]}
-        actions={
-          <Link
-            href="/apps"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              padding: 'var(--space-2) var(--space-4)',
-              background: 'var(--color-bg-elevated)',
-              color: 'var(--color-text)',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 'var(--weight-medium)',
-              fontSize: 'var(--text-sm)',
-              textDecoration: 'none',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <ArrowLeft size={16} /> Back to Apps
-          </Link>
-        }
-      />
+      {toast && (
+        <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 1000, padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)', color: '#fff', fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', boxShadow: 'var(--shadow-lg)', animation: 'fadeInUp 0.3s ease-out' }}>
+          {toast.message}
+        </div>
+      )}
 
-      {/* Featured Banner */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #1e1b4b, #312e81, #4338ca)',
-          borderRadius: 'var(--radius-xl)',
-          padding: 'var(--space-8)',
-          color: 'var(--color-bg-elevated)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-        <div style={{ position: 'absolute', bottom: '-40px', right: '80px', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-            <TrendingUp size={16} />
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8 }}>Featured & Trending</span>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-1)' }}>
+            <Link href="/apps" style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
+              <ArrowLeft size={18} />
+            </Link>
+            <h1 style={{ margin: 0, fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Package style={{ color: 'var(--color-primary)' }} /> App Store
+            </h1>
           </div>
-          <h2 style={{ margin: '0 0 var(--space-2)', fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>
-            Extend Your ERP with Powerful Modules
-          </h2>
-          <p style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', opacity: 0.8, maxWidth: '600px' }}>
-            Browse {storeApps.filter((a) => !a.installed).length}+ modules across industries, integrations, and intelligence.
-            Install with one click and start using immediately.
+          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+            {total} apps available · Discover, install, and manage extensions
           </p>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-            {featured.map((app) => (
-              <div
-                key={app.id}
-                style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: 'var(--space-3) var(--space-4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-3)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  minWidth: '200px',
-                }}
-              >
-                <app.icon size={20} style={{ color: app.color }} />
-                <div>
-                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{app.name}</div>
-                  <div style={{ fontSize: '10px', opacity: 0.7 }}>{app.rating} ★ · {app.reviews} reviews</div>
-                </div>
-              </div>
-            ))}
-          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+          <Link href="/apps/store/favorites" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)', textDecoration: 'none', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
+            <Heart size={14} /> Favorites
+          </Link>
+          <Link href="/apps/store/collections" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)', textDecoration: 'none', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
+            <Sparkles size={14} /> Collections
+          </Link>
+          {apps.length === 0 && (
+            <button onClick={seedApps} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary)', color: '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: 'pointer' }}>
+              Seed Marketplace
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Built in your workspace — live apps from the Custom App Builder */}
-      {builderApps.filter((a) => {
-        const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || (a.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCat = selectedCategory === 'All' || a.category === selectedCategory;
-        return matchesSearch && matchesCat;
-      }).length > 0 && (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
-            <Cpu size={18} style={{ color: 'var(--color-primary)' }} />
-            <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>Built in your workspace</h3>
-            <Badge variant="info">Custom Apps</Badge>
+      {/* Hero Banner */}
+      {featuredApps.length > 0 && !activeCategory && !searchQuery && (
+        <div style={{ background: 'linear-gradient(135deg, #1e1b4b, #312e81, #4338ca)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-8)', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -20, right: -20, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+          <div style={{ position: 'absolute', bottom: -40, right: 80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+              <TrendingUp size={16} />
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: 1, opacity: 0.8 }}>Featured & Trending</span>
+            </div>
+            <h2 style={{ margin: '0 0 var(--space-2)', fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>
+              Extend Your ERP with Powerful Modules
+            </h2>
+            <p style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', opacity: 0.8, maxWidth: 600 }}>
+              Browse {total}+ apps across {categoryStats.length} categories. Install with one click and start using immediately.
+            </p>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+              {featuredApps.map(app => (
+                <Link key={app.slug} href={`/apps/store/${app.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-3) var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)', border: '1px solid rgba(255,255,255,0.15)', minWidth: 200, transition: 'background 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                    <div style={{ fontSize: 22 }}>{app.icon || '📦'}</div>
+                    <div>
+                      <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{app.name}</div>
+                      <div style={{ fontSize: 10, opacity: 0.7 }}>{Number(app.rating).toFixed(1)} ★ · {app.installs.toLocaleString()} installs</div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
-            {builderApps.filter((a) => {
-              const matchesSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || (a.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-              const matchesCat = selectedCategory === 'All' || a.category === selectedCategory;
-              return matchesSearch && matchesCat;
-            }).map((app) => {
-              const busy = builderBusyId === app.id;
-              const color = app.color || 'var(--color-primary)';
-              return (
-                <Card key={app.id} padding="lg" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', border: '1px solid var(--color-border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-lg)', background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 22 }}>
-                      {app.icon || '📦'}
+        </div>
+      )}
+
+      {/* Collections Row */}
+      {collections.filter(c => c.featured).length > 0 && !activeCategory && !searchQuery && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+            <h2 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>
+              <Sparkles size={18} style={{ color: 'var(--color-primary)', marginRight: 8, verticalAlign: 'middle' }} />
+              Curated Collections
+            </h2>
+            <Link href="/apps/store/collections" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+              View all <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-3)' }}>
+            {collections.filter(c => c.featured).slice(0, 3).map(col => (
+              <Link key={col.slug} href={`/apps/store/collections/${col.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Card padding="md" style={{ border: '1px solid var(--color-border)', transition: 'border-color 0.2s', cursor: 'pointer' }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                  onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => e.currentTarget.style.borderColor = 'var(--color-border)'}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+                    <span style={{ fontSize: 28 }}>{col.icon || '📦'}</span>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)' }}>{col.name}</h3>
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{col.items.length} apps</span>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{app.name}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '2px' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{app.publisher}</span>
-                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>·</span>
-                        <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>v{app.version}</span>
-                      </div>
-                    </div>
-                    <Badge variant={app.scope === 'GLOBAL' ? 'info' : 'default'}>{app.scope === 'GLOBAL' ? 'Global' : 'Org'}</Badge>
                   </div>
-
-                  <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                    {app.longDescription || app.description || 'A custom application built in your workspace.'}
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                      <Download size={12} /> {app.installCount} installs
-                    </span>
-                    <span style={{ fontSize: '10px', color, fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{app.category}</span>
-                    {app.isOwn && <Badge variant="success">Yours</Badge>}
-                  </div>
-
-                  <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)', display: 'flex', gap: 'var(--space-2)' }}>
-                    {app.installed ? (
-                      <>
-                        {app.updateAvailable && (
-                          <button onClick={() => handleBuilderInstall(app)} disabled={busy}
-                            style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: busy ? 'wait' : 'pointer' }}>
-                            {busy ? 'Updating…' : `Update to v${app.version}`}
-                          </button>
-                        )}
-                        <button onClick={() => handleBuilderUninstall(app)} disabled={busy}
-                          style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: busy ? 'wait' : 'pointer' }}>
-                          {busy && !app.updateAvailable ? 'Uninstalling…' : 'Uninstall'}
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={() => handleBuilderInstall(app)} disabled={busy}
-                        style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: 'none', background: busy ? 'var(--color-bg-sunken)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: busy ? 'var(--color-text-secondary)' : '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: busy ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}>
-                        <Download size={15} /> {busy ? 'Installing…' : 'Install'}
-                      </button>
-                    )}
-                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>{col.description}</p>
                 </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Category Grid */}
+      {!activeCategory && !searchQuery && (
+        <div>
+          <h2 style={{ margin: '0 0 var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>Browse by Category</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-3)' }}>
+            {allCategories.map(cat => {
+              const meta = categoryMeta[cat];
+              const stat = categoryStats.find(s => s.category === cat);
+              return (
+                <button key={cat} onClick={() => { setActiveCategory(cat); setPage(1); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = meta.color; e.currentTarget.style.background = `${meta.color}08`; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-bg-elevated)'; }}>
+                  <div style={{ color: meta.color }}>{meta.icon}</div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{cat}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>{stat?.count || 0} apps</div>
+                  </div>
+                </button>
               );
             })}
           </div>
         </div>
       )}
 
-      {/* Search & Filter */}
-      <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: '1 1 300px', minWidth: '200px' }}>
-          <Search
-            size={16}
-            style={{
-              position: 'absolute',
-              left: 'var(--space-3)',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--color-text-tertiary)',
-            }}
-          />
+      {/* Search, Filter & Sort Bar */}
+      <Card padding="md" style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: '1 1 300px', minWidth: 200 }}>
+          <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
           <input
-            id="store-search-input"
-            type="text"
-            placeholder="Search modules, integrations, and extensions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              fontSize: 'var(--text-sm)',
-              outline: 'none',
-              color: 'var(--color-text)',
-            }}
+            type="text" placeholder="Search apps..." value={searchQuery}
+            onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
+            style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none', color: 'var(--color-text)' }}
           />
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
-          {storeCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              style={{
-                padding: 'var(--space-1) var(--space-3)',
-                borderRadius: 'var(--radius-full)',
-                border: selectedCategory === cat ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
-                background: selectedCategory === cat ? 'var(--color-primary)' : 'transparent',
-                color: selectedCategory === cat ? 'var(--color-bg-elevated)' : 'var(--color-text-secondary)',
-                fontSize: 'var(--text-xs)',
-                fontWeight: 'var(--weight-medium)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+
+        {activeCategory && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)', background: `${categoryMeta[activeCategory]?.color || '#6366f1'}15`, color: categoryMeta[activeCategory]?.color || '#6366f1', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)' }}>
+            {activeCategory}
+            <button onClick={() => { setActiveCategory(''); setPage(1); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, fontSize: 14, lineHeight: 1 }}>×</button>
+          </div>
+        )}
+
+        <button onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: showFilters ? 'var(--color-primary)' : 'transparent', color: showFilters ? '#fff' : 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)' }}>
+          <SlidersHorizontal size={14} /> Filters
+        </button>
+
+        <select value={sortBy} onChange={e => { setSortBy(e.target.value as any); setPage(1); }}
+          style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 'var(--text-xs)', cursor: 'pointer', outline: 'none' }}>
+          <option value="popular">Most Popular</option>
+          <option value="rating">Top Rated</option>
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+
+        <div style={{ display: 'flex', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+          <button onClick={() => setViewMode('grid')} style={{ padding: '6px 10px', border: 'none', background: viewMode === 'grid' ? 'var(--color-primary)' : 'transparent', color: viewMode === 'grid' ? '#fff' : 'var(--color-text-secondary)', cursor: 'pointer' }}>
+            <LayoutGrid size={14} />
+          </button>
+          <button onClick={() => setViewMode('list')} style={{ padding: '6px 10px', border: 'none', borderLeft: '1px solid var(--color-border)', background: viewMode === 'list' ? 'var(--color-primary)' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--color-text-secondary)', cursor: 'pointer' }}>
+            <List size={14} />
+          </button>
         </div>
       </Card>
 
-      {/* Store Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: 'var(--space-4)',
-        }}
-      >
-        {filtered.map((app) => {
-          const isInstalled = installedApps.has(app.id);
-          const isInstalling = installingId === app.id;
+      {/* Filter Panel */}
+      {showFilters && (
+        <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, display: 'block' }}>Pricing</label>
+            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+              {['', 'FREE', 'PAID', 'FREEMIUM'].map(p => (
+                <button key={p} onClick={() => { setActivePricing(p); setPage(1); }}
+                  style={{ padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)', border: activePricing === p ? '1px solid var(--color-primary)' : '1px solid var(--color-border)', background: activePricing === p ? 'var(--color-primary)' : 'transparent', color: activePricing === p ? '#fff' : 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+                  {p || 'All'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, display: 'block' }}>Category</label>
+            <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
+              <button onClick={() => { setActiveCategory(''); setPage(1); }}
+                style={{ padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)', border: !activeCategory ? '1px solid var(--color-primary)' : '1px solid var(--color-border)', background: !activeCategory ? 'var(--color-primary)' : 'transparent', color: !activeCategory ? '#fff' : 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+                All
+              </button>
+              {allCategories.map(cat => (
+                <button key={cat} onClick={() => { setActiveCategory(cat); setPage(1); }}
+                  style={{ padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)', border: activeCategory === cat ? '1px solid var(--color-primary)' : '1px solid var(--color-border)', background: activeCategory === cat ? 'var(--color-primary)' : 'transparent', color: activeCategory === cat ? '#fff' : 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
 
-          return (
-            <Card
-              key={app.id}
-              padding="lg"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--space-3)',
-                border: '1px solid var(--color-border)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                cursor: 'default',
-              }}
-              onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-              }}
-              onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: 'var(--radius-lg)',
-                    background: `${app.color}18`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <app.icon size={24} style={{ color: app.color }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>
-                    {app.name}
-                  </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '2px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{app.publisher}</span>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>·</span>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>v{app.version}</span>
-                  </div>
-                </div>
-                <Badge variant={app.price === 'Free' ? 'success' : app.price === 'Included' ? 'info' : 'warning'}>
-                  {app.price}
-                </Badge>
-              </div>
-
-              {/* Description */}
-              <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                {app.longDescription}
-              </p>
-
-              {/* Rating & Stats */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star
-                      key={s}
-                      size={12}
-                      style={{ color: s <= Math.floor(app.rating) ? 'var(--color-warning)' : 'var(--color-border)' }}
-                      fill={s <= Math.floor(app.rating) ? 'var(--color-warning)' : 'none'}
-                    />
-                  ))}
-                </div>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>
-                  {app.rating} ({app.reviews})
-                </span>
-                <span style={{ fontSize: '10px', color: app.color, fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {app.category}
-                </span>
-              </div>
-
-              {/* Action */}
-              <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
-                {isInstalled ? (
-                  <button
-                    onClick={() => handleUninstall(app.id)}
-                    disabled={uninstallingId === app.id}
-                    style={{
-                      width: '100%',
-                      padding: 'var(--space-2)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-danger)',
-                      background: 'transparent',
-                      color: 'var(--color-danger)',
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 'var(--weight-semibold)',
-                      cursor: uninstallingId === app.id ? 'wait' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 'var(--space-2)',
-                      transition: 'all 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (uninstallingId !== app.id) {
-                        e.currentTarget.style.background = 'var(--color-danger)';
-                        e.currentTarget.style.color = 'var(--color-bg-elevated)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (uninstallingId !== app.id) {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = 'var(--color-danger)';
-                      }
-                    }}
-                  >
-                    {uninstallingId === app.id ? (
-                      <>
-                        <div
-                          style={{
-                            width: '14px',
-                            height: '14px',
-                            borderRadius: '50%',
-                            border: '2px solid var(--color-danger)',
-                            borderTopColor: 'transparent',
-                            animation: 'spin 0.8s linear infinite',
-                          }}
-                        />
-                        Uninstalling...
-                      </>
-                    ) : (
-                      <>Uninstall</>
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleInstall(app.id)}
-                    disabled={isInstalling}
-                    style={{
-                      width: '100%',
-                      padding: 'var(--space-2)',
-                      borderRadius: 'var(--radius-md)',
-                      border: 'none',
-                      background: isInstalling
-                        ? 'var(--color-bg-sunken)'
-                        : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                      color: isInstalling ? 'var(--color-text-secondary)' : 'var(--color-bg-elevated)',
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 'var(--weight-semibold)',
-                      cursor: isInstalling ? 'wait' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 'var(--space-2)',
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                      boxShadow: isInstalling ? 'none' : '0 2px 8px rgba(99, 102, 241, 0.3)',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isInstalling) {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    {isInstalling ? (
-                      <>
-                        <div
-                          style={{
-                            width: '14px',
-                            height: '14px',
-                            borderRadius: '50%',
-                            border: '2px solid var(--color-text-tertiary)',
-                            borderTopColor: 'transparent',
-                            animation: 'spin 0.8s linear infinite',
-                          }}
-                        />
-                        Installing...
-                      </>
-                    ) : (
-                      <>
-                        <Download size={15} /> Install
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
-          <Search size={48} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-4)' }} />
-          <h4 style={{ margin: '0 0 var(--space-1)', fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>
-            No Modules Found
-          </h4>
-          <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-            Try adjusting your search or category filter.
-          </p>
+      {/* App Grid/List */}
+      {viewMode === 'grid' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+          {apps.map(renderAppCard)}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          {apps.map(renderAppCard)}
         </div>
       )}
 
-      {/* Inline keyframes for spinner */}
+      {apps.length === 0 && !loading && (
+        <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
+          <Search size={48} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-4)' }} />
+          <h4 style={{ margin: '0 0 var(--space-1)', fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>No Apps Found</h4>
+          <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Try adjusting your search or filters.</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+            style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', color: page === 1 ? 'var(--color-text-tertiary)' : 'var(--color-text)', cursor: page === 1 ? 'default' : 'pointer', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ChevronLeft size={14} /> Previous
+          </button>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Page {page} of {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+            style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', color: page === totalPages ? 'var(--color-text-tertiary)' : 'var(--color-text)', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Next <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
       <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </div>
   );

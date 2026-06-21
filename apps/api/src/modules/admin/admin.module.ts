@@ -17,6 +17,26 @@ import { OperationsController } from './operations.controller';
 import { OperationsService } from './operations.service';
 import { PlatformController } from './platform.controller';
 import { PlatformService } from './platform.service';
+import { CustomFieldsController } from './custom-fields.controller';
+import { CustomFieldsService } from './custom-fields.service';
+import { AutomationRulesController } from './automation-rules.controller';
+import { AutomationRulesService } from './automation-rules.service';
+import { RecycleBinController } from './recycle-bin.controller';
+import { RecycleBinService } from './recycle-bin.service';
+import { AlertsController } from './alerts.controller';
+import { AlertsService } from './alerts.service';
+import { MarketplaceController } from './marketplace.controller';
+import { MarketplaceService } from './marketplace.service';
+import { BulkOperationsController } from './bulk-operations.controller';
+import { BulkOperationsService } from './bulk-operations.service';
+import { DelegationController } from './delegation.controller';
+import { DelegationService } from './delegation.service';
+import { DataQualityController } from './data-quality.controller';
+import { DataQualityService } from './data-quality.service';
+import { SubscriptionController } from './subscription.controller';
+import { SubscriptionService } from './subscription.service';
+import { OrgHierarchyController } from './org-hierarchy.controller';
+import { OrgHierarchyService } from './org-hierarchy.service';
 
 @Module({
   controllers: [
@@ -29,6 +49,16 @@ import { PlatformService } from './platform.service';
     AnnouncementsController,
     OperationsController,
     PlatformController,
+    CustomFieldsController,
+    AutomationRulesController,
+    RecycleBinController,
+    AlertsController,
+    MarketplaceController,
+    BulkOperationsController,
+    DelegationController,
+    DataQualityController,
+    SubscriptionController,
+    OrgHierarchyController,
   ],
   providers: [
     AdminService,
@@ -40,6 +70,16 @@ import { PlatformService } from './platform.service';
     AnnouncementsService,
     OperationsService,
     PlatformService,
+    CustomFieldsService,
+    AutomationRulesService,
+    RecycleBinService,
+    AlertsService,
+    MarketplaceService,
+    BulkOperationsService,
+    DelegationService,
+    DataQualityService,
+    SubscriptionService,
+    OrgHierarchyService,
   ],
   exports: [
     AdminService,
@@ -51,6 +91,16 @@ import { PlatformService } from './platform.service';
     AnnouncementsService,
     OperationsService,
     PlatformService,
+    CustomFieldsService,
+    AutomationRulesService,
+    RecycleBinService,
+    AlertsService,
+    MarketplaceService,
+    BulkOperationsService,
+    DelegationService,
+    DataQualityService,
+    SubscriptionService,
+    OrgHierarchyService,
   ],
 })
 export class AdminModule {}

@@ -158,9 +158,27 @@ export class PlatformController {
     return this.platformService.getUsageAnalytics(req.user.tenantId);
   }
 
+  @Get('white-label')
+  @Permissions('admin.platform.read')
+  async getWhiteLabelSettings(@Req() req: AuthenticatedRequest) {
+    return this.platformService.getWhiteLabelSettings(req.user.tenantId);
+  }
+
+  @Post('white-label')
+  @Permissions('admin.platform.update')
+  async saveWhiteLabelSettings(@Req() req: AuthenticatedRequest, @Body() body: any) {
+    return this.platformService.saveWhiteLabelSettings(req.user.tenantId, body);
+  }
+
   @Get('updates')
   @Permissions('admin.platform.read')
-  async getSystemUpdates() {
-    return this.platformService.getSystemUpdates();
+  async getSystemUpdates(@Req() req: AuthenticatedRequest) {
+    return this.platformService.getSystemUpdates(req.user.tenantId);
+  }
+
+  @Post('check-updates')
+  @Permissions('admin.platform.update')
+  async checkForUpdates(@Req() req: AuthenticatedRequest) {
+    return this.platformService.checkForUpdates(req.user.tenantId);
   }
 }

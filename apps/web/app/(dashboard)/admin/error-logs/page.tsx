@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, RefreshCw, Search, AlertTriangle, Info } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AlertCircle, RefreshCw, Search, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 
 interface LogEntry {
-  timestamp: string;
+  id: string;
+  timestamp?: string;
+  createdAt?: string;
   level: string;
-  context: string;
+  context?: string;
+  source?: string;
   message: string;
+  resolved?: boolean;
+  resolvedBy?: string;
 }
 
 export default function ErrorLogsPage() {
@@ -15,6 +20,9 @@ export default function ErrorLogsPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('ALL');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const getHeaders = () => {
     const token = localStorage.getItem('token');
@@ -24,24 +32,41 @@ export default function ErrorLogsPage() {
     };
   };
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/admin/operations/logs', { headers: getHeaders() });
+      const res = await fetch(`/api/v1/admin/operations/logs?page=${page}&pageSize=50`, { headers: getHeaders() });
       if (res.ok) {
         const data = await res.json();
-        setLogs(data);
+        if (Array.isArray(data)) {
+          setLogs(data);
+        } else if (data.data) {
+          setLogs(data.data);
+          setTotalPages(data.totalPages || 1);
+        }
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   useEffect(() => {
-    fetchLogs();
-  }, []);
+    if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }
+  }, [toast]);
+
+  const resolveLog = async (id: string) => {
+    try {
+      const res = await fetch(`/api/v1/admin/operations/logs/${id}/resolve`, { method: 'POST', headers: getHeaders() });
+      if (res.ok) {
+        setLogs(prev => prev.map(l => l.id === id ? { ...l, resolved: true } : l));
+        setToast({ message: 'Error resolved', type: 'success' });
+      }
+    } catch {}
+  };
 
   const getLevelIcon = (level: string) => {
     if (level === 'ERROR') return <AlertCircle size={14} style={{ color: 'var(--color-error)' }} />;
@@ -56,8 +81,9 @@ export default function ErrorLogsPage() {
   };
 
   const filteredLogs = logs.filter(log => {
+    const ctx = log.context || log.source || '';
     const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.context.toLowerCase().includes(searchTerm.toLowerCase());
+      ctx.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = levelFilter === 'ALL' || log.level === levelFilter;
     return matchesSearch && matchesLevel;
   });
@@ -121,20 +147,29 @@ export default function ErrorLogsPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {filteredLogs.map((log, idx) => (
-              <div key={idx} style={{
+              <div key={log.id || idx} style={{
                 padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border)',
                 fontFamily: 'monospace', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px',
+                opacity: log.resolved ? 0.5 : 1,
                 ...getLevelStyle(log.level)
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     {getLevelIcon(log.level)}
                     <span style={{ fontWeight: 'bold' }}>[{log.level}]</span>
-                    <span style={{ color: 'var(--color-text-secondary)' }}>({log.context})</span>
+                    <span style={{ color: 'var(--color-text-secondary)' }}>({log.context || log.source})</span>
+                    {log.resolved && <span style={{ fontSize: '9px', background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '1px 6px', borderRadius: 'var(--radius-full)' }}>Resolved</span>}
                   </div>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '10px' }}>
-                    {new Date(log.timestamp).toLocaleString()}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    {!log.resolved && log.id && (
+                      <button onClick={() => resolveLog(log.id)} style={{ background: 'none', border: '1px solid var(--color-success)', color: 'var(--color-success)', padding: '2px 8px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <CheckCircle size={10} /> Resolve
+                      </button>
+                    )}
+                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '10px' }}>
+                      {new Date(log.timestamp || log.createdAt || '').toLocaleString()}
+                    </span>
+                  </div>
                 </div>
                 <div style={{ color: 'var(--color-text)', wordBreak: 'break-all', paddingLeft: '22px' }}>
                   {log.message}
@@ -150,6 +185,20 @@ export default function ErrorLogsPage() {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-2)' }}>
+          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="frappe-btn frappe-btn-secondary" style={{ fontSize: 'var(--text-sm)' }}>Previous</button>
+          <span style={{ padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Page {page} of {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="frappe-btn frappe-btn-secondary" style={{ fontSize: 'var(--text-sm)' }}>Next</button>
+        </div>
+      )}
+
+      {toast && (
+        <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 1000, padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)', color: '#fff', fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', boxShadow: 'var(--shadow-lg)' }}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

@@ -4111,12 +4111,17 @@ model InstalledApp {
   id          String   @id @default(cuid())
   tenantId    String   @map("tenant_id")
   appId       String   @map("app_id")
+  appSlug     String?  @map("app_slug")
+  appName     String?  @map("app_name")
   installedAt DateTime @default(now()) @map("installed_at")
+  installedBy String?  @map("installed_by")
+  status      String   @default("ACTIVE") // ACTIVE | DISABLED | PENDING
+  config      Json     @default("{}")
 
   // ─── Builder-app installs (null for static catalog apps) ───
   source           String  @default("CATALOG") // CATALOG | BUILDER
-  sourceModuleId   String? @map("source_module_id") // BuilderModule.id this was installed from
-  releaseId        String? @map("release_id") // pinned AppRelease.id
+  sourceModuleId   String? @map("source_module_id")
+  releaseId        String? @map("release_id")
   installedVersion String? @map("installed_version")
   provisioned      Json    @default("{}") // {pageRegistryIds:[], schemaRegistryIds:[]} for teardown on uninstall
 
@@ -6841,5 +6846,438 @@ model IpRestriction {
   @@unique([tenantId, ipRange])
   @@map("ip_restrictions")
 }
+
+// ════════════════════════════════════════════════
+// ADMIN — OPERATIONS & PLATFORM EXTENSIONS
+// ════════════════════════════════════════════════
+
+model BackgroundJob {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  queueName   String    @map("queue_name")
+  jobType     String    @map("job_type")
+  payload     Json      @default("{}")
+  status      String    @default("PENDING")
+  result      Json?
+  error       String?   @db.Text
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3) @map("max_attempts")
+  priority    Int       @default(0)
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, queueName])
+  @@index([status])
+  @@map("background_jobs")
+}
+
+model ScheduledTask {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  description String?
+  expression  String
+  handler     String
+  config      Json      @default("{}")
+  status      String    @default("ACTIVE")
+  lastRunAt   DateTime? @map("last_run_at")
+  nextRunAt   DateTime? @map("next_run_at")
+  lastResult  String?   @map("last_result")
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("scheduled_tasks")
+}
+
+model ErrorLog {
+  id         String    @id @default(cuid())
+  tenantId   String?   @map("tenant_id")
+  level      String    @default("ERROR")
+  source     String
+  message    String    @db.Text
+  stack      String?   @db.Text
+  metadata   Json      @default("{}")
+  userId     String?   @map("user_id")
+  requestId  String?   @map("request_id")
+  resolved   Boolean   @default(false)
+  resolvedBy String?   @map("resolved_by")
+  resolvedAt DateTime? @map("resolved_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, createdAt])
+  @@index([level])
+  @@map("error_logs")
+}
+
+model MarketplaceApp {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String   @db.Text
+  longDescription String?  @map("long_description") @db.Text
+  category        String
+  icon            String?
+  publisher       String
+  publisherLogo   String?  @map("publisher_logo")
+  publisherWebsite String? @map("publisher_website")
+  version         String
+  pricing         String   @default("FREE") // FREE | PAID | FREEMIUM
+  price           Decimal? @db.Decimal(10, 2)
+  rating          Decimal  @default(0) @db.Decimal(3, 2)
+  reviewCount     Int      @default(0) @map("review_count")
+  installs        Int      @default(0)
+  features        Json     @default("[]")
+  screenshots     Json     @default("[]") // [{url, caption}]
+  tags            Json     @default("[]") // string[]
+  metadata        Json     @default("{}")
+  requiresApps    Json     @default("[]") @map("requires_apps") // slug[] of prerequisite apps
+  configSchema    Json     @default("{}") @map("config_schema") // JSON Schema for post-install config
+  supportUrl      String?  @map("support_url")
+  documentationUrl String? @map("documentation_url")
+  privacyPolicyUrl String? @map("privacy_policy_url")
+  featured        Boolean  @default(false)
+  verified        Boolean  @default(false)
+  status          String   @default("PUBLISHED") // PUBLISHED | DRAFT | ARCHIVED
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  reviews         AppReview[]
+  changelogs      AppChangelog[]
+  collectionItems AppCollectionItem[]
+  favorites       AppFavorite[]
+
+  @@index([category])
+  @@index([featured])
+  @@map("marketplace_apps")
+}
+
+model AppReview {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  userId          String   @map("user_id")
+  userName        String   @map("user_name")
+  appId           String   @map("app_id")
+  rating          Int      // 1-5
+  title           String?
+  body            String?  @db.Text
+  helpfulCount    Int      @default(0) @map("helpful_count")
+  verifiedPurchase Boolean @default(false) @map("verified_purchase")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  app MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, appId])
+  @@index([appId])
+  @@map("app_reviews")
+}
+
+model AppChangelog {
+  id          String   @id @default(cuid())
+  appId       String   @map("app_id")
+  version     String
+  changes     String   @db.Text
+  publishedAt DateTime @default(now()) @map("published_at")
+
+  app MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, version])
+  @@index([appId])
+  @@map("app_changelogs")
+}
+
+model AppCollection {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?  @db.Text
+  icon        String?
+  coverImage  String?  @map("cover_image")
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0) @map("sort_order")
+  status      String   @default("ACTIVE") // ACTIVE | DRAFT
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  items AppCollectionItem[]
+
+  @@map("app_collections")
+}
+
+model AppCollectionItem {
+  id           String @id @default(cuid())
+  collectionId String @map("collection_id")
+  appId        String @map("app_id")
+  sortOrder    Int    @default(0) @map("sort_order")
+
+  collection AppCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  app        MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, appId])
+  @@map("app_collection_items")
+}
+
+model AppFavorite {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  appId     String   @map("app_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  app MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, appId])
+  @@index([userId])
+  @@map("app_favorites")
+}
+
+model AppSubmission {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  submittedBy   String   @map("submitted_by")
+  submitterName String   @map("submitter_name")
+  name          String
+  slug          String
+  description   String   @db.Text
+  longDescription String? @map("long_description") @db.Text
+  category      String
+  icon          String?
+  version       String   @default("1.0.0")
+  pricing       String   @default("FREE")
+  price         Decimal? @db.Decimal(10, 2)
+  features      Json     @default("[]")
+  screenshots   Json     @default("[]")
+  tags          Json     @default("[]")
+  supportUrl    String?  @map("support_url")
+  status        String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewNotes   String?  @map("review_notes") @db.Text
+  reviewedBy    String?  @map("reviewed_by")
+  reviewedAt    DateTime? @map("reviewed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([tenantId])
+  @@map("app_submissions")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — CUSTOM FIELDS ENGINE
+// ════════════════════════════════════════════════
+
+model CustomFieldDefinition {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  entityType   String    @map("entity_type")
+  fieldName    String    @map("field_name")
+  label        String
+  fieldType    String    @map("field_type")
+  description  String?
+  isRequired   Boolean   @default(false) @map("is_required")
+  defaultValue String?   @map("default_value")
+  options      Json      @default("[]")
+  validation   Json      @default("{}")
+  sortOrder    Int       @default(0) @map("sort_order")
+  section      String    @default("Custom Fields")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdBy    String    @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  values CustomFieldValue[]
+
+  @@unique([tenantId, entityType, fieldName])
+  @@index([tenantId, entityType])
+  @@map("custom_field_definitions")
+}
+
+model CustomFieldValue {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  fieldId    String   @map("field_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  value      String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  field CustomFieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([fieldId, entityId])
+  @@index([tenantId, entityType, entityId])
+  @@map("custom_field_values")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — AUTOMATION RULE EXECUTION LOG
+// ════════════════════════════════════════════════
+
+model AutomationRuleExecution {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ruleId      String   @map("rule_id")
+  status      String
+  triggerData Json     @default("{}") @map("trigger_data")
+  result      Json     @default("{}")
+  durationMs  Int?     @map("duration_ms")
+  error       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, ruleId])
+  @@index([createdAt])
+  @@map("automation_rule_executions")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — RECYCLE BIN
+// ════════════════════════════════════════════════
+
+model RecycleBinItem {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  entityType String    @map("entity_type")
+  entityId   String    @map("entity_id")
+  entityName String?   @map("entity_name")
+  entityData Json      @map("entity_data")
+  deletedBy  String    @map("deleted_by")
+  deletedAt  DateTime  @default(now()) @map("deleted_at")
+  expiresAt  DateTime  @map("expires_at")
+  restored   Boolean   @default(false)
+  restoredAt DateTime? @map("restored_at")
+  restoredBy String?   @map("restored_by")
+
+  @@index([tenantId, entityType])
+  @@index([expiresAt])
+  @@map("recycle_bin")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — ALERTS & THRESHOLDS
+// ════════════════════════════════════════════════
+
+model AdminAlert {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  type        String
+  severity    String   @default("WARNING")
+  title       String
+  message     String   @db.Text
+  metadata    Json     @default("{}")
+  isRead      Boolean  @default(false) @map("is_read")
+  isDismissed Boolean  @default(false) @map("is_dismissed")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, isRead])
+  @@map("admin_alerts")
+}
+
+model AlertThreshold {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  metric      String
+  operator    String
+  value       Decimal   @db.Decimal(15, 2)
+  severity    String    @default("WARNING")
+  isActive    Boolean   @default(true) @map("is_active")
+  notifyEmail Boolean   @default(true) @map("notify_email")
+  cooldownMin Int       @default(60) @map("cooldown_min")
+  lastFiredAt DateTime? @map("last_fired_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, metric])
+  @@map("alert_thresholds")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — BULK OPERATIONS
+// ════════════════════════════════════════════════
+
+model BulkOperation {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  operationType String    @map("operation_type")
+  entityType    String    @map("entity_type")
+  totalRecords  Int       @default(0) @map("total_records")
+  processed     Int       @default(0)
+  failed        Int       @default(0)
+  status        String    @default("PENDING")
+  criteria      Json      @default("{}")
+  changes       Json      @default("{}")
+  errorLog      Json      @default("[]") @map("error_log")
+  createdBy     String    @map("created_by")
+  startedAt     DateTime? @map("started_at")
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, status])
+  @@map("bulk_operations")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — DELEGATION / OUT-OF-OFFICE
+// ════════════════════════════════════════════════
+
+model Delegation {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  delegatorId String    @map("delegator_id")
+  delegateId  String    @map("delegate_id")
+  type        String    @default("ALL")
+  workflowId  String?   @map("workflow_id")
+  reason      String?
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId, delegatorId])
+  @@index([tenantId, delegateId])
+  @@map("delegations")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — DATA QUALITY / DUPLICATE DETECTION
+// ════════════════════════════════════════════════
+
+model DuplicateSet {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  entityType   String    @map("entity_type")
+  recordIds    Json      @map("record_ids")
+  matchScore   Decimal   @map("match_score") @db.Decimal(5, 2)
+  matchFields  Json      @map("match_fields")
+  status       String    @default("PENDING")
+  mergedIntoId String?   @map("merged_into_id")
+  resolvedBy   String?   @map("resolved_by")
+  resolvedAt   DateTime? @map("resolved_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, entityType, status])
+  @@map("duplicate_sets")
+}
+
+// ════════════════════════════════════════════════
+// ADMIN — BILLING & SUBSCRIPTION
+// ════════════════════════════════════════════════
+
+model BillingEvent {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  type        String
+  amount      Decimal  @db.Decimal(15, 2)
+  currency    String   @default("USD")
+  description String
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, createdAt])
+  @@map("billing_events")
+}
+
 
 

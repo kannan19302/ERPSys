@@ -8,8 +8,11 @@ export class OperationsService {
    * Get dynamic System Health statistics.
    */
   async getSystemHealth() {
+    // Measure actual DB latency
+    const start = Date.now();
     const dbStatus = await this.checkDatabase();
-    
+    const apiLatencyMs = Date.now() - start;
+
     // Calculate system resources
     const freeMem = os.freemem();
     const totalMem = os.totalmem();
@@ -30,13 +33,10 @@ export class OperationsService {
         cpuUsage: Math.min(100, Math.max(2, cpuUsage)),
         memoryUsage: memUsage,
         totalMemoryGB: Math.round(totalMem / (1024 * 1024 * 1024)),
-        apiLatencyMs: Math.round(Math.random() * 45 + 5), // dynamic response time
+        apiLatencyMs,
       },
       services: {
         database: dbStatus,
-        redis: 'HEALTHY',
-        minio: 'HEALTHY',
-        queueProcessor: 'RUNNING',
       },
     };
   }
@@ -51,56 +51,156 @@ export class OperationsService {
   }
 
   /**
-   * Get background queues / BullMQ jobs metrics.
+   * Get background queues / job metrics grouped by queue.
    */
-  async getBackgroundJobs() {
-    // Return structured queue statistics
-    return [
-      { name: 'email-delivery-queue', active: 0, waiting: 0, completed: 1421, failed: 2 },
-      { name: 'document-generation-queue', active: 0, waiting: 0, completed: 894, failed: 0 },
-      { name: 'billing-runs-queue', active: 1, waiting: 0, completed: 24, failed: 1 },
-      { name: 'data-import-export-queue', active: 0, waiting: 0, completed: 104, failed: 0 },
-      { name: 'inventory-forecast-queue', active: 0, waiting: 0, completed: 12, failed: 0 },
-    ];
+  async getBackgroundJobs(tenantId: string) {
+    const jobs = await prisma.backgroundJob.groupBy({
+      by: ['queueName', 'status'],
+      where: { tenantId },
+      _count: { id: true },
+    });
+
+    // Pivot into per-queue summaries
+    const queueMap = new Map<string, { name: string; active: number; waiting: number; completed: number; failed: number }>();
+    for (const row of jobs) {
+      if (!queueMap.has(row.queueName)) {
+        queueMap.set(row.queueName, { name: row.queueName, active: 0, waiting: 0, completed: 0, failed: 0 });
+      }
+      const entry = queueMap.get(row.queueName)!;
+      const count = row._count.id;
+      switch (row.status) {
+        case 'ACTIVE':
+        case 'RUNNING':
+          entry.active += count;
+          break;
+        case 'PENDING':
+        case 'WAITING':
+          entry.waiting += count;
+          break;
+        case 'COMPLETED':
+          entry.completed += count;
+          break;
+        case 'FAILED':
+          entry.failed += count;
+          break;
+      }
+    }
+
+    return Array.from(queueMap.values());
   }
 
   /**
-   * Retry failed background jobs.
+   * Retry all failed background jobs for a tenant.
    */
-  async retryJobs() {
-    return { success: true, message: 'All failed background jobs have been scheduled for retry.' };
+  async retryJobs(tenantId: string) {
+    const result = await prisma.backgroundJob.updateMany({
+      where: { tenantId, status: 'FAILED' },
+      data: { status: 'PENDING', attempts: 0, error: null, startedAt: null, completedAt: null },
+    });
+
+    return {
+      success: true,
+      message: `${result.count} failed job(s) have been scheduled for retry.`,
+      retriedCount: result.count,
+    };
   }
 
   /**
    * Get scheduled cron tasks.
    */
-  async getScheduledTasks() {
-    return [
-      { id: 'cron-1', name: 'Database Automatic Backup', expression: '0 0 * * *', nextRun: 'At 12:00 AM', status: 'ACTIVE' },
-      { id: 'cron-2', name: 'Invoice Overdue Escalator', expression: '0 1 * * *', nextRun: 'At 01:00 AM', status: 'ACTIVE' },
-      { id: 'cron-3', name: 'Queue Cleanups', expression: '0 2 * * 0', nextRun: 'Sunday at 02:00 AM', status: 'ACTIVE' },
-      { id: 'cron-4', name: 'Usage Metrics Sync', expression: '*/30 * * * *', nextRun: 'In 18 minutes', status: 'ACTIVE' },
-      { id: 'cron-5', name: 'Inventory Replenishment Check', expression: '0 6 * * *', nextRun: 'At 06:00 AM', status: 'PAUSED' },
-    ];
+  async getScheduledTasks(tenantId: string) {
+    const tasks = await prisma.scheduledTask.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return tasks.map((t) => ({
+      id: t.id,
+      name: t.name,
+      expression: t.expression,
+      handler: t.handler,
+      nextRun: t.nextRunAt ? t.nextRunAt.toISOString() : null,
+      lastRun: t.lastRunAt ? t.lastRunAt.toISOString() : null,
+      lastResult: t.lastResult,
+      status: t.status,
+    }));
   }
 
   /**
-   * Trigger a scheduled task execution.
+   * Trigger a scheduled task execution by creating a background job for it.
    */
-  async triggerTask(taskId: string) {
-    return { success: true, message: `Task ${taskId} has been triggered successfully in the background.` };
+  async triggerTask(tenantId: string, taskId: string) {
+    const task = await prisma.scheduledTask.findFirst({
+      where: { id: taskId, tenantId },
+    });
+
+    if (!task) {
+      return { success: false, message: `Task ${taskId} not found.` };
+    }
+
+    const job = await prisma.backgroundJob.create({
+      data: {
+        tenantId,
+        queueName: `scheduled-${task.handler}`,
+        jobType: task.handler,
+        payload: task.config ?? {},
+        status: 'PENDING',
+        priority: 10,
+      },
+    });
+
+    await prisma.scheduledTask.update({
+      where: { id: taskId },
+      data: { lastRunAt: new Date() },
+    });
+
+    return {
+      success: true,
+      message: `Task "${task.name}" triggered successfully.`,
+      jobId: job.id,
+    };
   }
 
   /**
-   * Query structured error logs.
+   * Query structured error logs with pagination.
    */
-  async getErrorLogs() {
-    return [
-      { timestamp: new Date(Date.now() - 500000).toISOString(), level: 'ERROR', context: 'MailerService', message: 'Failed to send transactional invoice PDF to client: SMTP Timeout' },
-      { timestamp: new Date(Date.now() - 1500000).toISOString(), level: 'WARN', context: 'SecurityInterceptor', message: 'Rate limit threshold exceeded for client IP 192.168.1.52' },
-      { timestamp: new Date(Date.now() - 2500000).toISOString(), level: 'ERROR', context: 'DocumentRenderer', message: 'Error compiling Handlebars template: missing closing bracket in invoice.html' },
-      { timestamp: new Date(Date.now() - 3500000).toISOString(), level: 'ERROR', context: 'WorkflowService', message: 'Failed to escalate workflow approval chain: Manager hierarchy cycle detected' },
-    ];
+  async getErrorLogs(tenantId: string, page = 1, pageSize = 50) {
+    const skip = (page - 1) * pageSize;
+
+    const [logs, total] = await Promise.all([
+      prisma.errorLog.findMany({
+        where: { tenantId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      prisma.errorLog.count({ where: { tenantId } }),
+    ]);
+
+    return {
+      data: logs.map((l) => ({
+        id: l.id,
+        timestamp: l.createdAt.toISOString(),
+        level: l.level,
+        context: l.source,
+        message: l.message,
+        stack: l.stack,
+        resolved: l.resolved,
+        requestId: l.requestId,
+      })),
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  async resolveErrorLog(id: string, resolvedBy: string) {
+    await prisma.errorLog.update({
+      where: { id },
+      data: { resolved: true, resolvedBy, resolvedAt: new Date() },
+    });
+    return { success: true };
   }
 
   /**
@@ -148,29 +248,41 @@ export class OperationsService {
   }
 
   /**
-   * Real database tables listing and schema metadata query.
+   * Real database tables listing with actual row counts.
    */
   async getDbSchema() {
     try {
       const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
         ORDER BY table_name ASC
       `;
-      
+
+      // Get actual row counts via pg statistics (fast, approximate)
+      const counts = await prisma.$queryRaw<Array<{ relname: string; n_live_tup: bigint }>>`
+        SELECT relname, n_live_tup
+        FROM pg_stat_user_tables
+        WHERE schemaname = 'public'
+      `;
+
+      const countMap = new Map<string, number>();
+      for (const row of counts) {
+        countMap.set(row.relname, Number(row.n_live_tup));
+      }
+
       return tables.map(t => ({
         tableName: t.table_name,
-        rowCount: Math.round(Math.random() * 1200 + 10), // mock row count for visual stats
+        rowCount: countMap.get(t.table_name) ?? 0,
         status: 'ACTIVE',
       }));
     } catch {
       // Fallback
       return [
-        { tableName: 'tenants', rowCount: 1, status: 'ACTIVE' },
-        { tableName: 'users', rowCount: 4, status: 'ACTIVE' },
-        { tableName: 'roles', rowCount: 8, status: 'ACTIVE' },
-        { tableName: 'organizations', rowCount: 1, status: 'ACTIVE' },
+        { tableName: 'tenants', rowCount: 0, status: 'ACTIVE' },
+        { tableName: 'users', rowCount: 0, status: 'ACTIVE' },
+        { tableName: 'roles', rowCount: 0, status: 'ACTIVE' },
+        { tableName: 'organizations', rowCount: 0, status: 'ACTIVE' },
       ];
     }
   }

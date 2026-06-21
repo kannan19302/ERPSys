@@ -581,6 +581,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           { name: 'Password Policies', href: '/admin/password-policy', icon: Key },
           { name: 'Session Management', href: '/admin/sessions', icon: Clock },
           { name: 'Login impersonation', href: '/admin/impersonate', icon: UserIcon },
+          { name: 'Delegations & OOO', href: '/admin/delegations', icon: Users },
         ]
       },
       {
@@ -609,6 +610,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           { name: 'Email Approvals', href: '/admin/workflows/email', icon: Mail },
           { name: 'Escalation Logs', href: '/admin/workflows/escalations', icon: ShieldAlert },
           { name: 'Workflow Simulator', href: '/admin/workflows/simulation', icon: Play },
+          { name: 'Automation Rules', href: '/admin/automation-rules', icon: Zap },
         ]
       },
       {
@@ -632,6 +634,9 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           { name: 'Error Logs', href: '/admin/error-logs', icon: ShieldAlert },
           { name: 'Backup & Restore', href: '/admin/backups', icon: Database },
           { name: 'DB Schema Manager', href: '/admin/db-schema', icon: Database },
+          { name: 'Recycle Bin', href: '/admin/recycle-bin', icon: Layers },
+          { name: 'Admin Alerts', href: '/admin/alerts', icon: Bell },
+          { name: 'Bulk Operations', href: '/admin/bulk-operations', icon: Layers },
         ]
       },
       {
@@ -646,6 +651,11 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           { name: 'Custom Domains', href: '/admin/domains', icon: Globe },
           { name: 'Environment Manager', href: '/admin/environments', icon: Server },
           { name: 'System Updates', href: '/admin/updates', icon: Cpu },
+          { name: 'White-Label & PWA', href: '/admin/settings/white-label', icon: Image },
+          { name: 'Custom Fields', href: '/admin/custom-fields', icon: Settings },
+          { name: 'Marketplace', href: '/admin/marketplace', icon: Box },
+          { name: 'Subscription & Billing', href: '/admin/subscription', icon: CreditCard },
+          { name: 'Organization Hierarchy', href: '/admin/org-hierarchy', icon: Building },
         ]
       },
       {
@@ -663,6 +673,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           { name: 'i18n Localization', href: '/admin/localization', icon: Globe },
           { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
           { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
+          { name: 'Data Quality', href: '/admin/data-quality', icon: ShieldCheck },
         ]
       },
       {

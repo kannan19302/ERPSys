@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, UseGuards, UseInterceptors, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
@@ -29,32 +29,46 @@ export class OperationsController {
 
   @Get('jobs')
   @Permissions('admin.operations.read')
-  async getBackgroundJobs() {
-    return this.operationsService.getBackgroundJobs();
+  async getBackgroundJobs(@Req() req: AuthenticatedRequest) {
+    return this.operationsService.getBackgroundJobs(req.user.tenantId);
   }
 
   @Post('jobs/retry')
   @Permissions('admin.operations.update')
-  async retryJobs() {
-    return this.operationsService.retryJobs();
+  async retryJobs(@Req() req: AuthenticatedRequest) {
+    return this.operationsService.retryJobs(req.user.tenantId);
   }
 
   @Get('tasks')
   @Permissions('admin.operations.read')
-  async getScheduledTasks() {
-    return this.operationsService.getScheduledTasks();
+  async getScheduledTasks(@Req() req: AuthenticatedRequest) {
+    return this.operationsService.getScheduledTasks(req.user.tenantId);
   }
 
   @Post('tasks/:id/trigger')
   @Permissions('admin.operations.update')
-  async triggerTask(@Param('id') id: string) {
-    return this.operationsService.triggerTask(id);
+  async triggerTask(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.operationsService.triggerTask(req.user.tenantId, id);
   }
 
   @Get('logs')
   @Permissions('admin.operations.read')
-  async getErrorLogs() {
-    return this.operationsService.getErrorLogs();
+  async getErrorLogs(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.operationsService.getErrorLogs(
+      req.user.tenantId,
+      page ? parseInt(page, 10) : 1,
+      pageSize ? parseInt(pageSize, 10) : 50,
+    );
+  }
+
+  @Post('logs/:id/resolve')
+  @Permissions('admin.operations.update')
+  async resolveErrorLog(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.operationsService.resolveErrorLog(id, req.user.email);
   }
 
   @Get('backups')
