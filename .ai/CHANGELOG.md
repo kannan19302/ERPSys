@@ -19,6 +19,7 @@
   - Safely checked array elements and cast dynamic properties (`as any`) in `handleItemChange` within `requisitions/page.tsx` and `blanket-agreements/page.tsx`.
   - Replaced invalid `"secondary"` badge variant values with `"default"` across multiple pages (`blanket-agreements/page.tsx`, `purchase-orders/[id]/page.tsx`, `requisitions/page.tsx`, and `public/bids/[rfqNumber]/page.tsx`).
   - Resolved state update type incompatibility for `linePrices` (`Record`) in `public/bids/[rfqNumber]/page.tsx` using a functional state updater.
+  - Resolved search input text overlapping with magnifying glass search icons by defining the missing `--space-9` design token (`2.25rem` / `36px`) centrally in `packages/ui/src/tokens/design-tokens.css`, instantly correcting all 25 instances across all ERP application search bars.
 
 ---
 
