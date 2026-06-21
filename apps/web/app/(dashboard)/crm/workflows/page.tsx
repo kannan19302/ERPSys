@@ -93,7 +93,12 @@ export default function WorkflowsPage() {
   const addCondition = () => setFormConditions([...formConditions, { field: '', operator: 'equals', value: '' }]);
   const removeCondition = (idx: number) => setFormConditions(formConditions.filter((_, i) => i !== idx));
   const updateCondition = (idx: number, key: keyof WorkflowCondition, val: string) => {
-    const updated = [...formConditions]; updated[idx] = { ...updated[idx], [key]: val }; setFormConditions(updated);
+    const updated = [...formConditions];
+    const existing = updated[idx];
+    if (existing) {
+      updated[idx] = { ...existing, [key]: val } as WorkflowCondition;
+      setFormConditions(updated);
+    }
   };
   const addAction = () => setFormActions([...formActions, { type: 'SEND_EMAIL', config: {} }]);
   const removeAction = (idx: number) => setFormActions(formActions.filter((_, i) => i !== idx));
@@ -161,8 +166,8 @@ export default function WorkflowsPage() {
               {filtered.map(rule => (
                 <tr key={rule.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: 'var(--space-3)', fontWeight: 500 }}>{rule.name}</td>
-                  <td style={{ padding: 'var(--space-3)' }}><Badge variant="secondary">{rule.entity}</Badge></td>
-                  <td style={{ padding: 'var(--space-3)' }}><Badge variant="secondary">{rule.trigger.replace(/_/g, ' ')}</Badge></td>
+                  <td style={{ padding: 'var(--space-3)' }}><Badge variant="default">{rule.entity}</Badge></td>
+                  <td style={{ padding: 'var(--space-3)' }}><Badge variant="default">{rule.trigger.replace(/_/g, ' ')}</Badge></td>
                   <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{rule.conditions.length}</td>
                   <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>{rule.actions.length}</td>
                   <td style={{ padding: 'var(--space-3)' }}>

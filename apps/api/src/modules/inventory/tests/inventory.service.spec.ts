@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { InventoryService } from '../inventory.service';
-import { Prisma, Product, StockEntry, QualityInspection } from '@prisma/client';
+import { Product } from '@prisma/client';
 
 vi.mock('@unerp/database', () => {
   const mockTx = {

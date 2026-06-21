@@ -106,11 +106,13 @@ export default function SequencesPage() {
 
   const updateStep = (idx: number, field: string, value: string | number) => {
     const updated = [...formSteps];
+    const existing = updated[idx];
+    if (!existing) return;
     if (field === 'templateId') {
       const tpl = templates.find(t => t.id === value);
-      updated[idx] = { ...updated[idx], templateId: value as string, templateName: tpl?.name || '' };
+      updated[idx] = { ...existing, templateId: value as string, templateName: tpl?.name || '' };
     } else if (field === 'delayDays') {
-      updated[idx] = { ...updated[idx], delayDays: Number(value) };
+      updated[idx] = { ...existing, delayDays: Number(value) };
     }
     setFormSteps(updated);
   };
@@ -119,8 +121,13 @@ export default function SequencesPage() {
     const target = idx + dir;
     if (target < 0 || target >= formSteps.length) return;
     const updated = [...formSteps];
-    [updated[idx], updated[target]] = [updated[target], updated[idx]];
-    setFormSteps(updated.map((s, i) => ({ ...s, sortOrder: i + 1 })));
+    const item1 = updated[idx];
+    const item2 = updated[target];
+    if (item1 && item2) {
+      updated[idx] = item2;
+      updated[target] = item1;
+      setFormSteps(updated.map((s, i) => ({ ...s, sortOrder: i + 1 })));
+    }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -169,7 +176,7 @@ export default function SequencesPage() {
             <div style={{ padding: 'var(--space-5)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
                 <h3 style={{ margin: 0, fontSize: 'var(--font-size-md)', fontWeight: 600 }}>{seq.name}</h3>
-                <Badge variant={seq.active ? 'default' : 'secondary'}>{seq.active ? 'Active' : 'Inactive'}</Badge>
+                <Badge variant={seq.active ? 'success' : 'default'}>{seq.active ? 'Active' : 'Inactive'}</Badge>
               </div>
               {seq.description && (
                 <p style={{ margin: 0, marginBottom: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{seq.description}</p>

@@ -15,8 +15,19 @@ export default function POSReportsPage() {
             const res = await fetch(`/api/v1/pos/summary/daily${params}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setSummary(await res.json());
-        } catch { /* silent */ }
+            if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data === 'object' && !data.statusCode) {
+                    setSummary(data);
+                } else {
+                    setSummary(null);
+                }
+            } else {
+                setSummary(null);
+            }
+        } catch {
+            setSummary(null);
+        }
         setLoading(false);
     };
 
@@ -38,11 +49,11 @@ export default function POSReportsPage() {
                 <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
                         {[
-                            { label: 'Total Sales', value: `$${summary.totalSales.toFixed(2)}`, icon: <TrendingUp size={20} />, color: 'var(--color-success)' },
-                            { label: 'Net Sales', value: `$${summary.netSales.toFixed(2)}`, icon: <DollarSign size={20} />, color: 'var(--color-primary)' },
-                            { label: 'Returns', value: `$${summary.totalReturns.toFixed(2)}`, icon: <ShoppingBag size={20} />, color: 'var(--color-warning)' },
-                            { label: 'Transactions', value: String(summary.totalTransactions), icon: <ShoppingBag size={20} />, color: 'var(--color-primary)' },
-                            { label: 'Avg Order Value', value: `$${summary.averageOrderValue.toFixed(2)}`, icon: <DollarSign size={20} />, color: 'var(--color-primary)' },
+                            { label: 'Total Sales', value: `$${(summary.totalSales ?? 0).toFixed(2)}`, icon: <TrendingUp size={20} />, color: 'var(--color-success)' },
+                            { label: 'Net Sales', value: `$${(summary.netSales ?? 0).toFixed(2)}`, icon: <DollarSign size={20} />, color: 'var(--color-primary)' },
+                            { label: 'Returns', value: `$${(summary.totalReturns ?? 0).toFixed(2)}`, icon: <ShoppingBag size={20} />, color: 'var(--color-warning)' },
+                            { label: 'Transactions', value: String(summary.totalTransactions ?? 0), icon: <ShoppingBag size={20} />, color: 'var(--color-primary)' },
+                            { label: 'Avg Order Value', value: `$${(summary.averageOrderValue ?? 0).toFixed(2)}`, icon: <DollarSign size={20} />, color: 'var(--color-primary)' },
                         ].map((stat, i) => (
                             <div key={i} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
@@ -60,7 +71,7 @@ export default function POSReportsPage() {
                             Object.entries(summary.paymentBreakdown).map(([method, amount]: [string, any]) => (
                                 <div key={method} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }}>
                                     <span>{method}</span>
-                                    <span style={{ fontWeight: 'var(--weight-bold)' }}>${Number(amount).toFixed(2)}</span>
+                                    <span style={{ fontWeight: 'var(--weight-bold)' }}>${Number(amount ?? 0).toFixed(2)}</span>
                                 </div>
                             ))
                         ) : (

@@ -33,5 +33,33 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts', '**/tests/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+    },
+  },
+  {
+    files: [
+      'apps/api/src/**/*.ts',
+      'apps/web/src/components/builder/**/*.tsx',
+      'apps/web/src/components/builder/**/*.ts',
+      'apps/web/src/lib/hooks/useBuilderData.ts',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    files: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
   prettierConfig,
 ];

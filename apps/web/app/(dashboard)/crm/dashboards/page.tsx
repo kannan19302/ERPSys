@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
+import { Card, PageHeader, StatusBadge, Spinner, Button, Badge } from '@unerp/ui';
 import { LayoutDashboard, Plus, X, Copy, Share2, Star, Calendar, Grid3X3, Users, Lock } from 'lucide-react';
 
 interface Dashboard {
@@ -96,9 +96,15 @@ export default function DashboardsPage() {
 
   return (
     <div style={{ padding: 'var(--spacing-6)' }}>
-      <PageHeader title="Dashboards" breadcrumbs={breadcrumbs}>
-        <Button onClick={() => setShowModal(true)}><Plus style={{ width: 16, height: 16, marginRight: 6 }} /> New Dashboard</Button>
-      </PageHeader>
+      <PageHeader
+        title="Dashboards"
+        breadcrumbs={breadcrumbs}
+        actions={
+          <Button onClick={() => setShowModal(true)}>
+            <Plus style={{ width: 16, height: 16, marginRight: 6 }} /> New Dashboard
+          </Button>
+        }
+      />
 
       {/* Summary Stats */}
       <div style={{
@@ -173,7 +179,7 @@ export default function DashboardsPage() {
                 </h3>
               </div>
               <div style={{ display: 'flex', gap: 'var(--spacing-1)', flexWrap: 'wrap' }}>
-                {db.isDefault && <StatusBadge status="active" label="Default" />}
+                {db.isDefault && <Badge variant="success">Default</Badge>}
                 {db.isShared ? (
                   <span style={{
                     display: 'flex',

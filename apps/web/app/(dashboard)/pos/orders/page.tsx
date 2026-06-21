@@ -31,10 +31,23 @@ export default function POSOrdersPage() {
             const res = await fetch(`/api/v1/pos/orders?${params}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            const data = await res.json();
-            setOrders(data.data || []);
-            setTotalPages(data.totalPages || 1);
-        } catch { /* silent */ }
+            if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data === 'object' && !data.statusCode) {
+                    setOrders(data.data || []);
+                    setTotalPages(data.totalPages || 1);
+                } else {
+                    setOrders([]);
+                    setTotalPages(1);
+                }
+            } else {
+                setOrders([]);
+                setTotalPages(1);
+            }
+        } catch {
+            setOrders([]);
+            setTotalPages(1);
+        }
         setLoading(false);
     };
 
@@ -46,8 +59,19 @@ export default function POSOrdersPage() {
             const res = await fetch(`/api/v1/pos/orders/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setSelectedOrder(await res.json());
-        } catch { /* silent */ }
+            if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data === 'object' && !data.statusCode) {
+                    setSelectedOrder(data);
+                } else {
+                    setSelectedOrder(null);
+                }
+            } else {
+                setSelectedOrder(null);
+            }
+        } catch {
+            setSelectedOrder(null);
+        }
     };
 
     const statusColor = (s: string) => {

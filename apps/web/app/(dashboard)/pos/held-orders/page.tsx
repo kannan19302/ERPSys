@@ -14,8 +14,15 @@ export default function POSHeldOrdersPage() {
             const res = await fetch('/api/v1/pos/held-orders', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setHeldOrders(await res.json());
-        } catch { /* silent */ }
+            if (res.ok) {
+                const data = await res.json();
+                setHeldOrders(Array.isArray(data) ? data : []);
+            } else {
+                setHeldOrders([]);
+            }
+        } catch {
+            setHeldOrders([]);
+        }
         setLoading(false);
     };
 
@@ -56,7 +63,7 @@ export default function POSHeldOrdersPage() {
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-secondary)' }}>Loading...</div>
-            ) : heldOrders.length === 0 ? (
+            ) : !Array.isArray(heldOrders) || heldOrders.length === 0 ? (
                 <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                     No held orders. Park a cart from the POS terminal to see it here.
                 </div>

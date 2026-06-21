@@ -484,13 +484,16 @@ export default function StockEntriesPage() {
                               value={item.productId}
                               onChange={(e) => {
                                 const updated = [...entryItems];
-                                const p = products.find(prod => prod.id === e.target.value);
-                                updated[idx] = {
-                                  ...updated[idx],
-                                  productId: e.target.value,
-                                  valuationRate: p ? p.costPrice : 0
-                                };
-                                setEntryItems(updated);
+                                const existing = updated[idx];
+                                if (existing) {
+                                  const p = products.find(prod => prod.id === e.target.value);
+                                  updated[idx] = {
+                                    ...existing,
+                                    productId: e.target.value,
+                                    valuationRate: p ? p.costPrice : 0
+                                  };
+                                  setEntryItems(updated);
+                                }
                               }}
                               required
                             >
@@ -507,8 +510,14 @@ export default function StockEntriesPage() {
                               value={item.qty}
                               onChange={(e) => {
                                 const updated = [...entryItems];
-                                updated[idx].qty = parseFloat(e.target.value) || 1;
-                                setEntryItems(updated);
+                                const existing = updated[idx];
+                                if (existing) {
+                                  updated[idx] = {
+                                    ...existing,
+                                    qty: parseFloat(e.target.value) || 1
+                                  };
+                                  setEntryItems(updated);
+                                }
                               }}
                               placeholder="Qty"
                               required
@@ -521,8 +530,14 @@ export default function StockEntriesPage() {
                               value={item.valuationRate}
                               onChange={(e) => {
                                 const updated = [...entryItems];
-                                updated[idx].valuationRate = parseFloat(e.target.value) || 0;
-                                setEntryItems(updated);
+                                const existing = updated[idx];
+                                if (existing) {
+                                  updated[idx] = {
+                                    ...existing,
+                                    valuationRate: parseFloat(e.target.value) || 0
+                                  };
+                                  setEntryItems(updated);
+                                }
                               }}
                               placeholder="Rate ($)"
                             />
@@ -555,8 +570,14 @@ export default function StockEntriesPage() {
                                     value={item.batchNumber || ''}
                                     onChange={(e) => {
                                       const updated = [...entryItems];
-                                      updated[idx].batchNumber = e.target.value;
-                                      setEntryItems(updated);
+                                      const existing = updated[idx];
+                                      if (existing) {
+                                        updated[idx] = {
+                                          ...existing,
+                                          batchNumber: e.target.value
+                                        };
+                                        setEntryItems(updated);
+                                      }
                                     }}
                                   />
                                 </div>
@@ -572,8 +593,14 @@ export default function StockEntriesPage() {
                                     value={item.serialNo || ''}
                                     onChange={(e) => {
                                       const updated = [...entryItems];
-                                      updated[idx].serialNo = e.target.value;
-                                      setEntryItems(updated);
+                                      const existing = updated[idx];
+                                      if (existing) {
+                                        updated[idx] = {
+                                          ...existing,
+                                          serialNo: e.target.value
+                                        };
+                                        setEntryItems(updated);
+                                      }
                                     }}
                                   />
                                 </div>
@@ -587,8 +614,14 @@ export default function StockEntriesPage() {
                                     value={item.fromBinId || ''}
                                     onChange={(e) => {
                                       const updated = [...entryItems];
-                                      updated[idx].fromBinId = e.target.value;
-                                      setEntryItems(updated);
+                                      const existing = updated[idx];
+                                      if (existing) {
+                                        updated[idx] = {
+                                          ...existing,
+                                          fromBinId: e.target.value
+                                        };
+                                        setEntryItems(updated);
+                                      }
                                     }}
                                   >
                                     <option value="">-- Select Bin --</option>
@@ -607,8 +640,14 @@ export default function StockEntriesPage() {
                                     value={item.toBinId || ''}
                                     onChange={(e) => {
                                       const updated = [...entryItems];
-                                      updated[idx].toBinId = e.target.value;
-                                      setEntryItems(updated);
+                                      const existing = updated[idx];
+                                      if (existing) {
+                                        updated[idx] = {
+                                          ...existing,
+                                          toBinId: e.target.value
+                                        };
+                                        setEntryItems(updated);
+                                      }
                                     }}
                                   >
                                     <option value="">-- Select Bin --</option>

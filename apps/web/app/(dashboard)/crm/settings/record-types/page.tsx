@@ -117,7 +117,7 @@ export default function RecordTypesPage() {
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {ENTITIES.map(e => (
           <button key={e} onClick={() => setActiveEntity(e)} style={{ padding: '8px 16px', borderRadius: '6px', border: activeEntity === e ? '2px solid var(--color-primary)' : '1px solid var(--border-primary)', backgroundColor: activeEntity === e ? 'var(--color-primary)' : 'var(--bg-secondary)', color: activeEntity === e ? '#fff' : 'var(--text-primary)', fontWeight: 500, fontSize: '13px', cursor: 'pointer' }}>
-            {e} {entityCounts[e] > 0 && <span style={{ marginLeft: '4px', opacity: 0.7 }}>({entityCounts[e]})</span>}
+            {e} {(entityCounts[e] ?? 0) > 0 && <span style={{ marginLeft: '4px', opacity: 0.7 }}>({entityCounts[e] ?? 0})</span>}
           </button>
         ))}
       </div>
@@ -152,7 +152,7 @@ export default function RecordTypesPage() {
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)' }}>{rt.name}</div>
-                      {rt.isDefault && <Badge variant="success" style={{ marginTop: '2px' }}>Default</Badge>}
+                      {rt.isDefault && <span style={{ display: 'inline-block', marginTop: '2px' }}><Badge variant="success">Default</Badge></span>}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '4px' }}>

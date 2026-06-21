@@ -186,7 +186,7 @@ export default function ContactDetailPage() {
                       <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{act.subject}</div>
                       {act.description && <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 2 }}>{act.description}</div>}
                       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)', marginTop: 4 }}>
-                        <Badge variant="secondary">{act.type}</Badge> · {new Date(act.createdAt).toLocaleDateString()}
+                        <Badge variant="default">{act.type}</Badge> · {new Date(act.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>

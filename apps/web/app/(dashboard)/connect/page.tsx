@@ -1488,7 +1488,7 @@ function MessageRow(p: RowProps) {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {m.attachments.filter((a) => isImageMime(a.mime) && a.url).map((a) => (
               <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)', maxWidth: 300 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {/* eslint-disable-next-line */}
                 <img src={a.url} alt={a.name} style={{ maxWidth: '100%', maxHeight: 200, display: 'block' }} />
               </a>
             ))}

@@ -1,11 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { BuilderController } from '../builder.controller';
-import { BuilderService } from '../builder.service';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('BuilderController', () => {
   let controller: BuilderController;
-  let service: BuilderService;
 
   beforeEach(async () => {
     const generateMockService = () => ({

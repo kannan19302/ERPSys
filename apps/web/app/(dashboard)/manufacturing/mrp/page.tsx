@@ -283,7 +283,7 @@ export default function MRPPage() {
                         </span>
                       ))}
                       {isConflict && (
-                        <AlertTriangle size={10} style={{ color: 'var(--color-danger)' }} title="Workstation Overload Conflict!" />
+                        <span title="Workstation Overload Conflict!"><AlertTriangle size={10} style={{ color: 'var(--color-danger)' }} /></span>
                       )}
                     </div>
                   );

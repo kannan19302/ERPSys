@@ -195,11 +195,15 @@ export default function DashboardCanvasPage() {
 
   return (
     <div style={{ padding: 'var(--spacing-6)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)' }}>
-      <PageHeader title={dashboard.name} breadcrumbs={breadcrumbs}>
-        <Button onClick={() => setEditMode(!editMode)}>
-          {editMode ? <><Eye style={{ width: 16, height: 16, marginRight: 6 }} /> View Mode</> : <><Edit3 style={{ width: 16, height: 16, marginRight: 6 }} /> Edit Mode</>}
-        </Button>
-      </PageHeader>
+      <PageHeader
+        title={dashboard.name}
+        breadcrumbs={breadcrumbs}
+        actions={
+          <Button onClick={() => setEditMode(!editMode)}>
+            {editMode ? <><Eye style={{ width: 16, height: 16, marginRight: 6 }} /> View Mode</> : <><Edit3 style={{ width: 16, height: 16, marginRight: 6 }} /> Edit Mode</>}
+          </Button>
+        }
+      />
 
       {dashboard.description && (
         <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{dashboard.description}</p>

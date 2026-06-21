@@ -78,7 +78,14 @@ export default function BattlecardsPage() {
   const updateRow = (field: 'strengths' | 'weaknesses', i: number, val: string) => { const arr = [...form[field]]; arr[i] = val; setForm({ ...form, [field]: arr }); };
   const addObjection = () => setForm({ ...form, objections: [...form.objections, { objection: '', response: '' }] });
   const removeObjection = (i: number) => setForm({ ...form, objections: form.objections.filter((_, idx) => idx !== i) });
-  const updateObjection = (i: number, key: 'objection' | 'response', val: string) => { const arr = [...form.objections]; arr[i] = { ...arr[i], [key]: val }; setForm({ ...form, objections: arr }); };
+  const updateObjection = (i: number, key: 'objection' | 'response', val: string) => {
+    const arr = [...form.objections];
+    const existing = arr[i];
+    if (existing) {
+      arr[i] = { ...existing, [key]: val };
+      setForm({ ...form, objections: arr });
+    }
+  };
 
   const filtered = battlecards.filter((bc) => bc.competitorName.toLowerCase().includes(search.toLowerCase()));
   const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'CRM', href: '/crm' }, { label: 'Battlecards' }];
@@ -95,9 +102,15 @@ export default function BattlecardsPage() {
 
   return (
     <div style={{ padding: 'var(--spacing-6)' }}>
-      <PageHeader title="Battlecards" breadcrumbs={breadcrumbs}>
-        <Button onClick={() => setShowModal(true)}><Plus style={{ width: 16, height: 16, marginRight: 6 }} /> New Battlecard</Button>
-      </PageHeader>
+      <PageHeader
+        title="Battlecards"
+        breadcrumbs={breadcrumbs}
+        actions={
+          <Button onClick={() => setShowModal(true)}>
+            <Plus style={{ width: 16, height: 16, marginRight: 6 }} /> New Battlecard
+          </Button>
+        }
+      />
 
       <div style={{ marginTop: 'var(--spacing-4)', maxWidth: 400, position: 'relative' }}>
         <Search style={{ width: 16, height: 16, position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />

@@ -201,7 +201,7 @@ export default function BOMsPage() {
   // Render tree node recursively
   const renderTreeNode = (node: TreeNode) => {
     return (
-      <div key={node.id} style={{ marginLeft: '24px', borderLeft: '1px dashed var(--color-border)', paddingLeft: '16px', marginVertical: '8px' }}>
+      <div key={node.id} style={{ marginLeft: '24px', borderLeft: '1px dashed var(--color-border)', paddingLeft: '16px', marginTop: '8px', marginBottom: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: '6px' }}>
           <GitCommit size={14} style={{ color: node.hasSubAssembly ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold' }}>{node.productName}</span>

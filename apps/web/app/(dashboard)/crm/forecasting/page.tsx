@@ -153,7 +153,7 @@ export default function ForecastingPage() {
                   <div key={t.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 'var(--font-size-sm)' }}>
                       <span style={{ fontWeight: 500 }}>{t.name}</span>
-                      <Badge variant="secondary">{t.period}</Badge>
+                      <Badge variant="default">{t.period}</Badge>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <div style={{ flex: 1, height: 10, borderRadius: 5, background: 'var(--color-border)', overflow: 'hidden' }}>

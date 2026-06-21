@@ -93,11 +93,15 @@ export default function PlaybooksPage() {
 
   return (
     <div style={{ padding: 'var(--spacing-6)' }}>
-      <PageHeader title="Playbooks" breadcrumbs={breadcrumbs}>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} /> New Playbook
-        </Button>
-      </PageHeader>
+      <PageHeader
+        title="Playbooks"
+        breadcrumbs={breadcrumbs}
+        actions={
+          <Button onClick={() => setShowModal(true)}>
+            <Plus style={{ width: 16, height: 16, marginRight: 6 }} /> New Playbook
+          </Button>
+        }
+      />
 
       {/* Summary Stats */}
       <div style={{
@@ -151,8 +155,7 @@ export default function PlaybooksPage() {
                 </h3>
               </div>
               <StatusBadge
-                status={pb.isActive ? 'active' : 'inactive'}
-                label={pb.isActive ? 'Active' : 'Inactive'}
+                status={pb.isActive ? 'ACTIVE' : 'INACTIVE'}
               />
             </div>
 

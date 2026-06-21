@@ -200,7 +200,6 @@ export class WebCollectionsService {
     let slug = slugify(desired);
     let n = 1;
     // Ensure uniqueness within the collection.
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const clash = await prisma.webCollectionItem.findFirst({
         where: { collectionId, slug, ...(ignoreId ? { NOT: { id: ignoreId } } : {}) },

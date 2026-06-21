@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/client-s3';
 import * as crypto from 'crypto';
@@ -18,6 +18,7 @@ async function streamToBuffer(stream: any): Promise<Buffer> {
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
   private s3Client: S3Client;
   private bucketName: string;
 
@@ -33,7 +34,7 @@ export class DocumentsService {
     });
     this.bucketName = process.env.S3_BUCKET || 'unerp-uploads';
     this.ensureBucketExists().catch((err) => {
-      console.error('Failed to initialize MinIO bucket:', err.message);
+      this.logger.error(`Failed to initialize MinIO bucket: ${err.message}`);
     });
   }
 
@@ -43,9 +44,9 @@ export class DocumentsService {
     } catch {
       try {
         await this.s3Client.send(new CreateBucketCommand({ Bucket: this.bucketName }));
-        console.log(`MinIO bucket "${this.bucketName}" created successfully.`);
+        this.logger.log(`MinIO bucket "${this.bucketName}" created successfully.`);
       } catch (err: any) {
-        console.warn(`Could not create bucket: ${err.message}`);
+        this.logger.warn(`Could not create bucket: ${err.message}`);
       }
     }
   }
@@ -511,7 +512,7 @@ export class DocumentsService {
             })
           );
         } catch (err: any) {
-          console.warn(`S3 delete failed for ${version.fileUrl}: ${err.message}`);
+          this.logger.warn(`S3 delete failed for ${version.fileUrl}: ${err.message}`);
         }
       }
     }
@@ -554,7 +555,7 @@ export class DocumentsService {
           })
         );
       } catch (err: any) {
-        console.warn(`S3 delete failed for ${version.fileUrl}: ${err.message}`);
+        this.logger.warn(`S3 delete failed for ${version.fileUrl}: ${err.message}`);
       }
     }
 
