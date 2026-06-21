@@ -54,6 +54,26 @@ function Write-Warn   { param([string]$msg) Write-Host "  [WARN] $msg" -Foregrou
 function Write-Fail   { param([string]$msg) Write-Host "  [FAIL] $msg" -ForegroundColor Red }
 
 # --------------------------------------------------------
+# Step 0: Terminate stale node processes & clear cache
+# --------------------------------------------------------
+Write-Step "Step 0/7 - Releasing active file locks & clearing cache..."
+$nodeProcs = Get-Process -Name "node" -ErrorAction SilentlyContinue
+if ($nodeProcs) {
+  Write-Warn "Stale Node.js processes detected. Terminating servers to release file locks..."
+  Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
+  Start-Sleep -Seconds 2
+  Write-Ok "Stale servers terminated."
+} else {
+  Write-Ok "No file locks found."
+}
+
+$webNext = Join-Path $ROOT "apps\web\.next"
+if (Test-Path $webNext) {
+  Remove-Item -Recurse -Force $webNext -ErrorAction SilentlyContinue
+  Write-Ok "Next.js cache directory cleared."
+}
+
+# --------------------------------------------------------
 # Step 1: Ensure Docker Desktop is running
 # --------------------------------------------------------
 Write-Step "Step 1/7 - Checking Docker daemon..."

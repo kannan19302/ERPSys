@@ -3,7 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, Spinner, Badge } from '@unerp/ui';
 import {
-  AlertCircle
+  AlertCircle,
+  QrCode,
+  Calendar,
+  Layers,
+  MapPin,
+  ClipboardList
 } from 'lucide-react';
 
 interface Product {
@@ -20,10 +25,12 @@ interface Warehouse {
 
 interface SerialNumber {
   id: string;
-  serialNumber: string;
-  status: string;
+  serialNo: string;
+  status: 'AVAILABLE' | 'RESERVED' | 'SOLD' | 'IN_REPAIR' | 'SCRAPPED' | 'RETURNED';
+  warrantyExpiry?: string;
   product?: {
     name: string;
+    sku: string;
   };
 }
 
@@ -38,6 +45,8 @@ export default function SerialNumbersPage() {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedWarehouse, setSelectedWarehouse] = useState('');
   const [serialInput, setSerialInput] = useState('');
+  const [warrantyDate, setWarrantyDate] = useState('');
+  const [notes, setNotes] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -53,16 +62,19 @@ export default function SerialNumbersPage() {
       ]);
 
       if (pRes.ok) {
-        const prods = await pRes.json();
-        setProducts(Array.isArray(prods) ? prods : (prods?.data || []));
+        const prods = await pRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setProducts(prods);
         if (prods.length > 0) setSelectedProduct(prods[0].id);
       }
       if (wRes.ok) {
-        const whs = await wRes.json();
-        setWarehouses(Array.isArray(whs) ? whs : (whs?.data || []));
+        const whs = await wRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setWarehouses(whs);
         if (whs.length > 0) setSelectedWarehouse(whs[0].id);
       }
-      if (snRes.ok) setSerialNumbers(await snRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (snRes.ok) {
+        const snList = await snRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setSerialNumbers(snList);
+      }
     } catch {
       setError('Serving local mock fallback registry.');
       setProducts([
@@ -76,9 +88,10 @@ export default function SerialNumbersPage() {
       setSerialNumbers([
         {
           id: 'sn-1',
-          serialNumber: 'SN-998811-A',
+          serialNo: 'SN-998811-A',
           status: 'AVAILABLE',
-          product: { name: 'Refined Vibranium Alloy Ingot' }
+          warrantyExpiry: new Date(Date.now() + 86400000 * 365).toISOString(),
+          product: { name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' }
         }
       ]);
     } finally {
@@ -102,31 +115,41 @@ export default function SerialNumbersPage() {
         },
         body: JSON.stringify({
           productId: selectedProduct,
-          warehouseId: selectedWarehouse,
-          serialNumber: serialInput
+          warehouseId: selectedWarehouse || undefined,
+          serialNo: serialInput,
+          warrantyExpiry: warrantyDate || undefined,
+          notes: notes || undefined
         })
       });
       if (!res.ok) throw new Error();
       setSerialInput('');
+      setWarrantyDate('');
+      setNotes('');
       loadData();
     } catch {
       // Mock local update
       const selectedProdObj = products.find(p => p.id === selectedProduct);
       const newMock: SerialNumber = {
         id: `sn-mock-${Date.now()}`,
-        serialNumber: serialInput,
+        serialNo: serialInput,
         status: 'AVAILABLE',
-        product: { name: selectedProdObj?.name || 'Vibranium Ingot' }
+        warrantyExpiry: warrantyDate || undefined,
+        product: {
+          name: selectedProdObj?.name || 'Vibranium Ingot',
+          sku: selectedProdObj?.sku || 'SKU-VIB-001'
+        }
       };
       setSerialNumbers(prev => [newMock, ...prev]);
       setSerialInput('');
+      setWarrantyDate('');
+      setNotes('');
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="Serial Numbers"
+        title="Serialized Asset Registry"
         description="Register and trace individual serialized assets to manage precise product lifecycles."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory', href: '/inventory' }, { label: 'Serial Numbers' }]}
       />
@@ -134,7 +157,7 @@ export default function SerialNumbersPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 
@@ -152,22 +175,35 @@ export default function SerialNumbersPage() {
                 <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
                   <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Serial Number</th>
                   <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product Name</th>
+                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Warranty Expiration</th>
                   <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {serialNumbers.map(sn => (
                   <tr key={sn.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)', fontFamily: 'monospace' }}>{sn.serialNumber}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{sn.product?.name}</td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)', fontFamily: 'monospace' }}>
+                      {sn.serialNo}
+                    </td>
                     <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                      <Badge variant={sn.status === 'AVAILABLE' ? 'success' : 'info'}>{sn.status}</Badge>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 'var(--weight-semibold)' }}>{sn.product?.name}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>{sn.product?.sku}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>
+                      {sn.warrantyExpiry ? new Date(sn.warrantyExpiry).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                      <Badge variant={sn.status === 'AVAILABLE' ? 'success' : sn.status === 'SOLD' ? 'info' : 'warning'}>
+                        {sn.status}
+                      </Badge>
                     </td>
                   </tr>
                 ))}
                 {serialNumbers.length === 0 && (
                   <tr>
-                    <td colSpan={3} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
+                    <td colSpan={4} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
                       No unique serial numbers cataloged.
                     </td>
                   </tr>
@@ -182,46 +218,64 @@ export default function SerialNumbersPage() {
               <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Register Serial Number</h4>
             </div>
             <form onSubmit={handleRegisterSerial} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product SKU</label>
+              <div className="frappe-form-group">
+                <label className="frappe-label">Product SKU *</label>
                 <select
                   className="frappe-input"
                   value={selectedProduct}
                   onChange={(e) => setSelectedProduct(e.target.value)}
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
+                  required
                 >
                   {products.map(p => (
                     <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
                   ))}
                 </select>
               </div>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Warehouse</label>
+              <div className="frappe-form-group">
+                <label className="frappe-label">Warehouse Depot</label>
                 <select
                   className="frappe-input"
                   value={selectedWarehouse}
                   onChange={(e) => setSelectedWarehouse(e.target.value)}
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                 >
+                  <option value="">-- Unassigned --</option>
                   {warehouses.map(w => (
                     <option key={w.id} value={w.id}>{w.name}</option>
                   ))}
                 </select>
               </div>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Serial Number String</label>
+              <div className="frappe-form-group">
+                <label className="frappe-label">Serial Number String *</label>
                 <input
                   type="text"
                   className="frappe-input"
                   value={serialInput}
                   onChange={(e) => setSerialInput(e.target.value)}
                   placeholder="e.g. SN-998811-A"
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
                   required
                 />
               </div>
-              <button type="submit" className="frappe-btn frappe-btn-primary" style={{ width: '100%', padding: 'var(--space-2) var(--space-3)' }}>
-                Register Serial
+              <div className="frappe-form-group">
+                <label className="frappe-label">Warranty Expiry Date</label>
+                <input
+                  type="date"
+                  className="frappe-input"
+                  value={warrantyDate}
+                  onChange={(e) => setWarrantyDate(e.target.value)}
+                />
+              </div>
+              <div className="frappe-form-group">
+                <label className="frappe-label">Notes</label>
+                <textarea
+                  className="frappe-input"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Asset specifications or repair details..."
+                  style={{ minHeight: '60px' }}
+                />
+              </div>
+              <button type="submit" className="frappe-btn frappe-btn-primary">
+                Register Serial Number
               </button>
             </form>
           </Card>

@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Badge } from '@unerp/ui';
 import {
-  AlertCircle
+  AlertCircle,
+  MapPin,
+  Layers,
+  Plus
 } from 'lucide-react';
 
 interface Warehouse {
@@ -14,10 +17,14 @@ interface Warehouse {
 
 interface BinLocation {
   id: string;
-  name: string;
-  zone?: string;
-  shelf?: string;
+  code: string;
+  name?: string;
+  zone: string;
+  aisle?: string;
+  rack?: string;
   bin?: string;
+  capacity?: number;
+  warehouse: { name: string; code: string };
 }
 
 export default function BinLocationsPage() {
@@ -28,9 +35,13 @@ export default function BinLocationsPage() {
 
   // Form states
   const [selectedWarehouse, setSelectedWarehouse] = useState('');
+  const [binCode, setBinCode] = useState('');
   const [locationName, setLocationName] = useState('');
-  const [zone, setZone] = useState('');
-  const [shelfId, setShelfId] = useState('');
+  const [zone, setZone] = useState('A');
+  const [aisle, setAisle] = useState('');
+  const [rack, setRack] = useState('');
+  const [binVal, setBinVal] = useState('');
+  const [capacity, setCapacity] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -45,11 +56,14 @@ export default function BinLocationsPage() {
       ]);
 
       if (wRes.ok) {
-        const whs = await wRes.json();
-        setWarehouses(Array.isArray(whs) ? whs : (whs?.data || []));
+        const whs = await wRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setWarehouses(whs);
         if (whs.length > 0) setSelectedWarehouse(whs[0].id);
       }
-      if (binRes.ok) setBinLocations(await binRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (binRes.ok) {
+        const bins = await binRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setBinLocations(bins);
+      }
     } catch {
       setError('Serving local mock fallback registry.');
       setWarehouses([
@@ -59,10 +73,13 @@ export default function BinLocationsPage() {
       setBinLocations([
         {
           id: 'bin-1',
+          code: 'A-04-02-01',
           name: 'Row-4-Shelf-2',
-          zone: 'Zone-A',
-          shelf: 'Shelf-2',
-          bin: 'Bin-1'
+          zone: 'A',
+          aisle: '04',
+          rack: '02',
+          bin: '01',
+          warehouse: { name: 'Schenectady Central Depot', code: 'WH-NY-01' }
         }
       ]);
     } finally {
@@ -86,36 +103,56 @@ export default function BinLocationsPage() {
         },
         body: JSON.stringify({
           warehouseId: selectedWarehouse,
-          name: locationName,
-          zone: zone || undefined,
-          shelf: shelfId || undefined
+          code: binCode,
+          name: locationName || undefined,
+          zone: zone || 'A',
+          aisle: aisle || undefined,
+          rack: rack || undefined,
+          bin: binVal || undefined,
+          capacity: capacity ? Number(capacity) : undefined
         })
       });
       if (!res.ok) throw new Error();
+      setBinCode('');
       setLocationName('');
-      setZone('');
-      setShelfId('');
+      setZone('A');
+      setAisle('');
+      setRack('');
+      setBinVal('');
+      setCapacity('');
       loadData();
     } catch {
       // Mock local update
+      const targetWh = warehouses.find(w => w.id === selectedWarehouse);
       const newMock: BinLocation = {
         id: `bin-mock-${Date.now()}`,
-        name: locationName,
-        zone: zone || 'None',
-        shelf: shelfId || 'None',
-        bin: 'None'
+        code: binCode,
+        name: locationName || undefined,
+        zone: zone || 'A',
+        aisle: aisle || undefined,
+        rack: rack || undefined,
+        bin: binVal || undefined,
+        capacity: capacity ? Number(capacity) : undefined,
+        warehouse: {
+          name: targetWh?.name || 'Schenectady Central Depot',
+          code: targetWh?.code || 'WH-NY-01'
+        }
       };
       setBinLocations(prev => [newMock, ...prev]);
+      setBinCode('');
       setLocationName('');
-      setZone('');
-      setShelfId('');
+      setZone('A');
+      setAisle('');
+      setRack('');
+      setBinVal('');
+      setCapacity('');
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="Bin Configurations"
+        title="Storage Bin Locations"
         description="Configure fine-grained warehouse storage layouts, zones, shelves, and packaging bins."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory', href: '/inventory' }, { label: 'Bin Configurations' }]}
       />
@@ -123,7 +160,7 @@ export default function BinLocationsPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 
@@ -139,24 +176,30 @@ export default function BinLocationsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Location Code</th>
+                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Bin Location Code</th>
+                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Display Name</th>
                   <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Zone</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Shelf ID</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Bin ID</th>
+                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Aisle / Rack / Bin</th>
+                  <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Warehouse</th>
                 </tr>
               </thead>
               <tbody>
                 {binLocations.map(bin => (
                   <tr key={bin.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)', fontFamily: 'monospace' }}>{bin.name}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{bin.zone || 'None'}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{bin.shelf || 'None'}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{bin.bin || 'None'}</td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)', fontFamily: 'monospace' }}>
+                      {bin.code}
+                    </td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{bin.name || 'N/A'}</td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}><Badge variant="info">Zone {bin.zone}</Badge></td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>
+                      {bin.aisle || '-' } / {bin.rack || '-'} / {bin.bin || '-'}
+                    </td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{bin.warehouse?.name}</td>
                   </tr>
                 ))}
                 {binLocations.length === 0 && (
                   <tr>
-                    <td colSpan={4} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
+                    <td colSpan={5} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
                       No warehouse bin locations cataloged.
                     </td>
                   </tr>
@@ -171,54 +214,97 @@ export default function BinLocationsPage() {
               <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>Add Bin Location</h4>
             </div>
             <form onSubmit={handleCreateBin} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Warehouse Depot</label>
+              <div className="frappe-form-group">
+                <label className="frappe-label">Warehouse Depot *</label>
                 <select
                   className="frappe-input"
                   value={selectedWarehouse}
                   onChange={(e) => setSelectedWarehouse(e.target.value)}
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
+                  required
                 >
                   {warehouses.map(w => (
                     <option key={w.id} value={w.id}>{w.name}</option>
                   ))}
                 </select>
               </div>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Location Name</label>
-                <input
-                  type="text"
-                  className="frappe-input"
-                  value={locationName}
-                  onChange={(e) => setLocationName(e.target.value)}
-                  placeholder="e.g. Row-4-Shelf-2"
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                  required
-                />
+              <div className="frappe-grid-2">
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Bin Code *</label>
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    value={binCode}
+                    onChange={(e) => setBinCode(e.target.value)}
+                    placeholder="A-04-02-01"
+                    required
+                  />
+                </div>
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Display Name</label>
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    value={locationName}
+                    onChange={(e) => setLocationName(e.target.value)}
+                    placeholder="Row-4-Shelf-2"
+                  />
+                </div>
               </div>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Zone</label>
-                <input
-                  type="text"
-                  className="frappe-input"
-                  value={zone}
-                  onChange={(e) => setZone(e.target.value)}
-                  placeholder="e.g. Zone-A"
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                />
+              <div className="frappe-grid-2">
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Zone</label>
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    value={zone}
+                    onChange={(e) => setZone(e.target.value)}
+                    placeholder="A"
+                  />
+                </div>
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Aisle</label>
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    value={aisle}
+                    onChange={(e) => setAisle(e.target.value)}
+                    placeholder="04"
+                  />
+                </div>
               </div>
-              <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Shelf ID</label>
-                <input
-                  type="text"
-                  className="frappe-input"
-                  value={shelfId}
-                  onChange={(e) => setShelfId(e.target.value)}
-                  placeholder="e.g. Shelf-2"
-                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                />
+              <div className="frappe-grid-3">
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Rack</label>
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    value={rack}
+                    onChange={(e) => setRack(e.target.value)}
+                    placeholder="02"
+                  />
+                </div>
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Bin</label>
+                  <input
+                    type="text"
+                    className="frappe-input"
+                    value={binVal}
+                    onChange={(e) => setBinVal(e.target.value)}
+                    placeholder="01"
+                  />
+                </div>
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Capacity</label>
+                  <input
+                    type="number"
+                    className="frappe-input"
+                    value={capacity}
+                    onChange={(e) => setCapacity(e.target.value)}
+                    placeholder="1000"
+                  />
+                </div>
               </div>
-              <button type="submit" className="frappe-btn frappe-btn-primary" style={{ width: '100%', padding: 'var(--space-2) var(--space-3)' }}>
+              <button type="submit" className="frappe-btn frappe-btn-primary">
                 Add Bin Location
               </button>
             </form>

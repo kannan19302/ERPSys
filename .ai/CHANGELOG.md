@@ -5,6 +5,30 @@
 
 ---
 
+## [2026-06-21] Inventory & Stock — Dashboard Analytics & Route Restructuring
+
+### Added
+- **Inventory Dashboard** (`apps/web/app/(dashboard)/inventory/page.tsx`): Built a premium, visually stunning inventory dashboard utilizing HSL custom properties. Includes real-time statistics (total items, active products, active warehouses), custom SVG-based visual charts (donut chart showing stock value breakdown by category, and warehouse distribution progress bars), replenishment urgency lists, and a modular quick-actions operations hub.
+- **Relocated Products Catalog Route**: Moved the product catalog from `/inventory` to `/inventory/products`.
+- **Breadcrumbs Segment Names & Sidebar Navigation**: Added the new `/inventory/products` segment path and configured the sidebar links under `layout.tsx` to cleanly route the dashboard to `/inventory` and the catalog to `/inventory/products`.
+
+### Changed
+- **Default Products Catalog Layout**: Configured the default catalog layout format state to show the list view first instead of grid view (`/inventory/products/page.tsx`).
+- **Product Detail Back Redirection**: Programmed the '< Back' button, error fallback redirect, and path breadcrumbs stack on the product details page (`/inventory/products/[id]/page.tsx`) to correctly navigate to the new `/inventory/products` catalog route instead of `/inventory`.
+
+---
+
+## [2026-06-21] Inventory & Stock — Market Top Competitor #1 Overhaul
+
+### Added
+- **Product Detail Page** (`apps/web/app/(dashboard)/inventory/products/[id]/page.tsx`): Created a high-fidelity client page supporting dynamic variant matrices, mini warehouse stock grids, and paginated Stock Ledger audit timelines.
+- **Overhauled Product Catalog** (`apps/web/app/(dashboard)/inventory/page.tsx`): Integrated category tree sidebar navigation, Grid/List/Kanban view switchers, in-stock valuation rates, and click-through detail routes.
+- **Overhauled Stock Entries** (`apps/web/app/(dashboard)/inventory/stock-entries/page.tsx`): Rewired warehouse material transactions with dynamic warehouse-specific bin dropdowns, interactive serial/batch tracking forms, and E2E voucher submissions and cancellation reversals.
+- **Overhauled Stock Ledger** (`apps/web/app/(dashboard)/inventory/stock-ledger/page.tsx`): Re-engineered continuous audit tables with custom product/warehouse dropdown selections, real-time client-side CSV exports, and running balance tracking columns.
+- **Overhauled Warehouse Directory** (`apps/web/app/(dashboard)/inventory/warehouses/page.tsx`): Implemented card-based warehouse listings with unique product counters, active status selectors, and add/edit forms.
+
+---
+
 ## [2026-06-21] Drive — Google Drive UI, AES-256 S3 Envelope Encryption & Advanced Sharing
 
 ### Added

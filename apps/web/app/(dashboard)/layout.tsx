@@ -272,7 +272,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Inventory & Stock',
       icon: Package,
       items: [
-        { name: 'Products Catalog', href: '/inventory', icon: Package },
+        { name: 'Inventory Dashboard', href: '/inventory', icon: Home },
+        { name: 'Products Catalog', href: '/inventory/products', icon: Package },
         { name: 'Warehouse Stock Levels', href: '/inventory/stock-levels', icon: Layers },
         { name: 'Warehouse Directory', href: '/inventory/warehouses', icon: Warehouse },
         {
@@ -299,6 +300,13 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           items: [
             { name: 'Bin Configurations', href: '/inventory/bin-locations', icon: MapPin },
             { name: 'Cycle Count Audits', href: '/inventory/cycle-counts', icon: ClipboardCheck },
+          ]
+        },
+        {
+          name: 'System & Configuration',
+          isHeader: true,
+          items: [
+            { name: 'Advanced Hub', href: '/inventory/advanced', icon: Settings },
           ]
         }
       ] as SidebarItem[]

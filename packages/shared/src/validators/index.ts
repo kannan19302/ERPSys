@@ -1583,3 +1583,214 @@ export const updateDashboardLayoutSchema = z.object({
   })),
 });
 export type UpdateDashboardLayoutInput = z.infer<typeof updateDashboardLayoutSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 11+: Advanced Inventory
+// ════════════════════════════════════════════════════
+
+export const createCategorySchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  slug: z.string().min(1, 'Slug is required').max(200),
+  description: z.string().max(2000).optional().nullable(),
+  parentId: z.string().optional().nullable(),
+  imageUrl: z.string().url().optional().nullable(),
+  sortOrder: z.number().int().default(0),
+  isActive: z.boolean().default(true),
+});
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+
+export const updateCategorySchema = createCategorySchema.partial();
+export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
+
+export const createVariantSchema = z.object({
+  parentSkuId: z.string().min(1, 'Parent SKU ID is required'),
+  sku: z.string().min(1, 'SKU is required').max(50),
+  name: z.string().min(1, 'Variant name is required').max(200),
+  attributes: z.record(z.unknown()).default({}),
+  costPrice: z.number().nonnegative('Cost price must be non-negative'),
+  sellPrice: z.number().nonnegative('Sell price must be non-negative'),
+  barcode: z.string().max(100).optional().nullable(),
+  isActive: z.boolean().default(true),
+});
+export type CreateVariantInput = z.infer<typeof createVariantSchema>;
+
+export const createBinLocationSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  zone: z.string().min(1, 'Zone is required').max(50).default('A'),
+  aisle: z.string().max(50).optional().nullable(),
+  rack: z.string().max(50).optional().nullable(),
+  bin: z.string().max(50).optional().nullable(),
+  code: z.string().min(1, 'Code is required').max(100),
+  name: z.string().max(200).optional().nullable(),
+  description: z.string().max(1000).optional().nullable(),
+  capacity: z.number().positive().optional().nullable(),
+  isActive: z.boolean().default(true),
+});
+export type CreateBinLocationInput = z.infer<typeof createBinLocationSchema>;
+
+export const createSerialNumberSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().optional().nullable(),
+  serialNo: z.string().min(1, 'Serial No is required').max(100),
+  status: z.enum(['AVAILABLE', 'RESERVED', 'SOLD', 'IN_REPAIR', 'SCRAPPED', 'RETURNED']).default('AVAILABLE'),
+  purchaseDate: z.string().optional().nullable(),
+  warrantyExpiry: z.string().optional().nullable(),
+  purchaseOrderId: z.string().optional().nullable(),
+  salesOrderId: z.string().optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  customFields: z.record(z.unknown()).default({}),
+});
+export type CreateSerialNumberInput = z.infer<typeof createSerialNumberSchema>;
+
+export const updateSerialNumberSchema = createSerialNumberSchema.partial();
+export type UpdateSerialNumberInput = z.infer<typeof updateSerialNumberSchema>;
+
+export const createBatchSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  batchNo: z.string().min(1, 'Batch No is required').max(100),
+  lotNo: z.string().max(100).optional().nullable(),
+  quantity: z.number().nonnegative().default(0),
+  manufactureDate: z.string().optional().nullable(),
+  expiryDate: z.string().optional().nullable(),
+  supplierBatchNo: z.string().max(100).optional().nullable(),
+  costPrice: z.number().nonnegative().optional().nullable(),
+  status: z.enum(['ACTIVE', 'PARTIALLY_USED', 'EXHAUSTED', 'EXPIRED', 'QUARANTINE']).default('ACTIVE'),
+  notes: z.string().max(2000).optional().nullable(),
+});
+export type CreateBatchInput = z.infer<typeof createBatchSchema>;
+
+export const updateBatchSchema = createBatchSchema.partial();
+export type UpdateBatchInput = z.infer<typeof updateBatchSchema>;
+
+export const createCycleCountItemSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  binLocationId: z.string().optional().nullable(),
+  expectedQty: z.number(),
+  countedQty: z.number().optional().nullable(),
+  remarks: z.string().max(1000).optional().nullable(),
+});
+
+export const createCycleCountSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  countedBy: z.string().optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  items: z.array(createCycleCountItemSchema).min(1, 'At least one item is required'),
+});
+export type CreateCycleCountInput = z.infer<typeof createCycleCountSchema>;
+
+export const submitCycleCountSchema = z.object({
+  items: z.array(z.object({
+    id: z.string().min(1, 'Item ID is required'),
+    countedQty: z.number().nonnegative('Counted quantity must be non-negative'),
+    remarks: z.string().max(1000).optional().nullable(),
+  })).min(1, 'At least one item is required'),
+  remarks: z.string().max(2000).optional().nullable(),
+});
+export type SubmitCycleCountInput = z.infer<typeof submitCycleCountSchema>;
+
+export const createQACheckpointSchema = z.object({
+  parameter: z.string().min(1, 'Parameter is required'),
+  criteria: z.string().min(1, 'Criteria is required'),
+  sortOrder: z.number().int().default(0),
+});
+
+export const createQAInspectionSchema = z.object({
+  referenceType: z.enum(['PURCHASE_RECEIPT', 'STOCK_ENTRY', 'PRODUCTION']),
+  referenceId: z.string().min(1, 'Reference ID is required'),
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().optional().nullable(),
+  inspectedQty: z.number().positive('Inspected quantity must be positive'),
+  inspectedBy: z.string().optional().nullable(),
+  remarks: z.string().max(2000).optional().nullable(),
+  checkpoints: z.array(createQACheckpointSchema).min(1, 'At least one checkpoint is required'),
+});
+export type CreateQAInspectionInput = z.infer<typeof createQAInspectionSchema>;
+
+export const submitQAInspectionSchema = z.object({
+  status: z.enum(['PASS', 'FAIL', 'PARTIAL', 'CANCELLED']),
+  disposition: z.string().max(200).optional().nullable(),
+  acceptedQty: z.number().nonnegative(),
+  rejectedQty: z.number().nonnegative(),
+  remarks: z.string().max(2000).optional().nullable(),
+  checkpoints: z.array(z.object({
+    id: z.string().min(1),
+    result: z.enum(['PASS', 'FAIL', 'NA']),
+    observedValue: z.string().max(200).optional().nullable(),
+    remarks: z.string().max(1000).optional().nullable(),
+  })).min(1),
+});
+export type SubmitQAInspectionInput = z.infer<typeof submitQAInspectionSchema>;
+
+export const createReorderRuleSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().optional().nullable(),
+  minQty: z.number().nonnegative(),
+  maxQty: z.number().nonnegative().optional().nullable(),
+  reorderQty: z.number().positive(),
+  leadTimeDays: z.number().int().nonnegative().default(0),
+  preferredVendorId: z.string().optional().nullable(),
+  autoCreatePO: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+});
+export type CreateReorderRuleInput = z.infer<typeof createReorderRuleSchema>;
+
+export const createKitItemSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  sortOrder: z.number().int().default(0),
+});
+
+export const createKitSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  name: z.string().min(1, 'Kit name is required').max(200),
+  description: z.string().max(2000).optional().nullable(),
+  sellPrice: z.number().nonnegative(),
+  discount: z.number().min(0).max(100).default(0),
+  isActive: z.boolean().default(true),
+  components: z.array(createKitItemSchema).min(1, 'At least one component is required'),
+});
+export type CreateKitInput = z.infer<typeof createKitSchema>;
+
+export const createStockEntryItemSchema = z.object({
+  productId: z.string().min(1, 'Product is required'),
+  fromWarehouseId: z.string().optional().nullable(),
+  toWarehouseId: z.string().optional().nullable(),
+  fromBinId: z.string().optional().nullable(),
+  toBinId: z.string().optional().nullable(),
+  uomId: z.string().optional().nullable(),
+  qty: z.number().positive('Quantity must be greater than zero'),
+  valuationRate: z.number().nonnegative().optional(),
+  batchId: z.string().optional().nullable(),
+  batchNumber: z.string().optional().nullable(),
+  serialNo: z.string().optional().nullable(),
+  serialNumber: z.string().optional().nullable(),
+  sortOrder: z.number().int().default(0),
+});
+
+export const createStockEntrySchema = z.object({
+  type: z.enum(['MATERIAL_RECEIPT', 'MATERIAL_ISSUE', 'MATERIAL_TRANSFER', 'STOCK_ADJUSTMENT', 'OPENING_STOCK', 'SCRAP']),
+  purpose: z.string().optional().nullable(),
+  remarks: z.string().max(2000).optional().nullable(),
+  fromWarehouseId: z.string().optional().nullable(),
+  toWarehouseId: z.string().optional().nullable(),
+  referenceDoc: z.string().optional().nullable(),
+  referenceType: z.string().optional().nullable(),
+  items: z.array(createStockEntryItemSchema).min(1, 'At least one item is required'),
+});
+export type CreateStockEntryInput = z.infer<typeof createStockEntrySchema>;
+
+export const updateStockEntrySchema = createStockEntrySchema.partial();
+export type UpdateStockEntryInput = z.infer<typeof updateStockEntrySchema>;
+
+export const transferStockSchema = z.object({
+  fromWarehouseId: z.string().min(1, 'Source warehouse is required'),
+  toWarehouseId: z.string().min(1, 'Destination warehouse is required'),
+  items: z.array(z.object({
+    productId: z.string().min(1, 'Product is required'),
+    qty: z.number().positive('Quantity must be greater than zero'),
+    batchId: z.string().optional().nullable(),
+    serialNo: z.string().optional().nullable(),
+  })).min(1, 'At least one item is required'),
+  remarks: z.string().max(2000).optional().nullable(),
+});
+export type TransferStockInput = z.infer<typeof transferStockSchema>;

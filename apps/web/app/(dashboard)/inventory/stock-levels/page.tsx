@@ -17,7 +17,7 @@ interface StockLevelData {
   sku: string;
   warehouseName: string;
   quantity: number;
-  reorderLevel: number;
+  reorderPoint: number | null;
 }
 
 export default function StockLevelsPage() {
@@ -32,25 +32,29 @@ export default function StockLevelsPage() {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('/api/v1/inventory/stock', {
+      const res = await fetch('/api/v1/inventory/stock-levels', {
         headers: { Authorization: `Bearer ${token || ''}` },
       });
       if (!res.ok) throw new Error();
-      const data = await res.json();
+      const json = await res.json();
+      const list = Array.isArray(json) ? json : (json?.data || []);
+      
       interface StockPayload {
         id: string;
         product: { name: string; sku: string };
         warehouse: { name: string };
         quantity: string | number;
+        reorderPoint: string | number | null;
       }
-      const typedData = data as StockPayload[];
+      
+      const typedData = list as StockPayload[];
       setStockLevels(typedData.map((s) => ({
         id: s.id,
         productName: s.product.name,
         sku: s.product.sku,
         warehouseName: s.warehouse.name,
         quantity: Number(s.quantity),
-        reorderLevel: 10 // Mock default reorder level
+        reorderPoint: s.reorderPoint !== null ? Number(s.reorderPoint) : null
       })));
     } catch {
       setError('Serving local mock fallback registry.');
@@ -61,7 +65,7 @@ export default function StockLevelsPage() {
           sku: 'SKU-VIB-001',
           warehouseName: 'Schenectady Central Depot',
           quantity: 45,
-          reorderLevel: 10
+          reorderPoint: 10
         },
         {
           id: 'stock-2',
@@ -69,7 +73,7 @@ export default function StockLevelsPage() {
           sku: 'SKU-KEV-404',
           warehouseName: 'Schenectady Central Depot',
           quantity: 8,
-          reorderLevel: 15
+          reorderPoint: 15
         }
       ]);
     } finally {
@@ -87,7 +91,9 @@ export default function StockLevelsPage() {
     s.warehouseName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const lowStockCount = stockLevels.filter(s => s.quantity <= s.reorderLevel).length;
+  const getLowStockCount = () => {
+    return stockLevels.filter(s => s.reorderPoint !== null && s.quantity <= s.reorderPoint).length;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
@@ -96,7 +102,7 @@ export default function StockLevelsPage() {
         description="Monitor physical quantities on hand across all company storage depots and warehouses."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory', href: '/inventory' }, { label: 'Stock Levels' }]}
         actions={
-          <Button variant="outline" onClick={() => window.location.href = '/inventory/advanced?tab=entries'} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Button variant="outline" onClick={() => window.location.href = '/inventory/stock-entries'} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <ArrowRightLeft size={14} />
             Stock Adjustments
           </Button>
@@ -106,12 +112,12 @@ export default function StockLevelsPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 
       {/* Stock Levels Stats Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+      <div className="frappe-grid-3">
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total SKU Stock Records</span>
@@ -132,7 +138,7 @@ export default function StockLevelsPage() {
             </div>
           </div>
           <h4 style={{ fontSize: 'var(--text-xl)', color: 'var(--color-danger-text)', margin: 'var(--space-2) 0 0' }}>
-            {lowStockCount}
+            {getLowStockCount()}
           </h4>
         </Card>
 
@@ -190,23 +196,26 @@ export default function StockLevelsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((s) => (
-                <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{s.sku}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>{s.productName}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{s.warehouseName}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: s.quantity <= s.reorderLevel ? 'var(--color-danger-text)' : 'inherit' }}>
-                    {s.quantity}
-                  </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                    {s.quantity <= s.reorderLevel ? (
-                      <Badge variant="danger">LOW STOCK (Reorder: {s.reorderLevel})</Badge>
-                    ) : (
-                      <Badge variant="success">IN STOCK</Badge>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {filteredItems.map((s) => {
+                const isLow = s.reorderPoint !== null && s.quantity <= s.reorderPoint;
+                return (
+                  <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{s.sku}</td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>{s.productName}</td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{s.warehouseName}</td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: isLow ? 'var(--color-danger)' : 'inherit' }}>
+                      {s.quantity}
+                    </td>
+                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                      {isLow ? (
+                        <Badge variant="danger">LOW STOCK (Reorder: {s.reorderPoint})</Badge>
+                      ) : (
+                        <Badge variant="success">IN STOCK</Badge>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

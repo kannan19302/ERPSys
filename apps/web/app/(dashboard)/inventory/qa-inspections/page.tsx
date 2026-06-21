@@ -5,7 +5,10 @@ import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
 import {
   Plus,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  FileCheck
 } from 'lucide-react';
 
 interface Product {
@@ -14,19 +17,29 @@ interface Product {
   sku: string;
 }
 
+interface QAInspectionCheckpoint {
+  id: string;
+  parameter: string;
+  criteria: string;
+  result: 'PASS' | 'FAIL' | 'NA' | null;
+  observedValue?: string;
+  remarks?: string;
+}
+
 interface QualityInspection {
   id: string;
   inspectionNumber: string;
-  referenceType: string;
+  referenceType: 'PURCHASE_RECEIPT' | 'STOCK_ENTRY' | 'PRODUCTION';
   referenceId: string;
   product: { name: string; sku: string };
-  status: 'PENDING' | 'PASSED' | 'FAILED';
+  status: 'PENDING' | 'PASS' | 'FAIL' | 'PARTIAL' | 'CANCELLED';
   inspectedQty: number;
-  passedQty: number;
+  acceptedQty: number;
   rejectedQty: number;
   inspectedBy: string;
   inspectedDate: string;
-  checklist: Array<{ parameter: string; status: 'PASS' | 'FAIL'; reading?: string }>;
+  checkpoints: QAInspectionCheckpoint[];
+  remarks?: string;
 }
 
 export default function QaInspectionsPage() {
@@ -35,17 +48,25 @@ export default function QaInspectionsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [inspections, setInspections] = useState<QualityInspection[]>([]);
 
-  // Modal & Forms
-  const [isQaModalOpen, setIsQaModalOpen] = useState(false);
-  const [qaRefType, setQaRefType] = useState('Stock Entry');
+  // Creation Modal & Forms
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [qaRefType, setQaRefType] = useState<'PURCHASE_RECEIPT' | 'STOCK_ENTRY' | 'PRODUCTION'>('STOCK_ENTRY');
   const [qaRefId, setQaRefId] = useState('');
   const [qaProduct, setQaProduct] = useState('');
   const [qaInsQty, setQaInsQty] = useState(1);
-  const [qaPassQty, setQaPassQty] = useState(1);
-  const [qaRejQty, setQaRejQty] = useState(0);
-  const [qaChecklist, setQaChecklist] = useState<Array<{ parameter: string; status: 'PASS' | 'FAIL'; reading?: string }>>([
-    { parameter: 'Visual Verification', status: 'PASS' }
+  const [qaRemarks, setQaRemarks] = useState('');
+  const [qaCheckpoints, setQaCheckpoints] = useState<Array<{ parameter: string; criteria: string; sortOrder: number }>>([
+    { parameter: 'Visual Inspection', criteria: 'No surface defects, uniform coating', sortOrder: 0 }
   ]);
+
+  // Submission Modal (Perform Inspection)
+  const [activeInspection, setActiveInspection] = useState<QualityInspection | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<'PASS' | 'FAIL' | 'PARTIAL'>('PASS');
+  const [submitDisposition, setSubmitDisposition] = useState('');
+  const [submitAcceptedQty, setSubmitAcceptedQty] = useState(0);
+  const [submitRejectedQty, setSubmitRejectedQty] = useState(0);
+  const [submitRemarks, setSubmitRemarks] = useState('');
+  const [checkpointResults, setCheckpointResults] = useState<Record<string, { result: 'PASS' | 'FAIL' | 'NA'; observedValue: string; remarks: string }>>({});
 
   const loadData = async () => {
     setLoading(true);
@@ -56,15 +77,18 @@ export default function QaInspectionsPage() {
 
       const [pRes, qaRes] = await Promise.all([
         fetch('/api/v1/inventory/products', { headers }),
-        fetch('/api/v1/inventory/quality-inspections', { headers })
+        fetch('/api/v1/inventory/qa-inspections', { headers })
       ]);
 
       if (pRes.ok) {
-        const prods = await pRes.json();
-        setProducts(Array.isArray(prods) ? prods : (prods?.data || []));
+        const prods = await pRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setProducts(prods);
         if (prods.length > 0) setQaProduct(prods[0].id);
       }
-      if (qaRes.ok) setInspections(await qaRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      if (qaRes.ok) {
+        const qas = await qaRes.json().then(d => Array.isArray(d) ? d : (d?.data || []));
+        setInspections(qas);
+      }
     } catch {
       setError('Serving local mock fallback registry.');
       setProducts([
@@ -75,16 +99,16 @@ export default function QaInspectionsPage() {
         {
           id: 'qa-1',
           inspectionNumber: 'QA-2026-001',
-          referenceType: 'Stock Entry',
+          referenceType: 'STOCK_ENTRY',
           referenceId: 'ste-1',
           product: { name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' },
-          status: 'PASSED',
+          status: 'PASS',
           inspectedQty: 10,
-          passedQty: 10,
+          acceptedQty: 10,
           rejectedQty: 0,
           inspectedBy: 'QA Auditor',
           inspectedDate: new Date().toISOString(),
-          checklist: []
+          checkpoints: []
         }
       ]);
     } finally {
@@ -96,11 +120,11 @@ export default function QaInspectionsPage() {
     loadData();
   }, []);
 
-  const handleSaveQualityInspection = async (e: React.FormEvent) => {
+  const handleCreateQAInspection = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/inventory/quality-inspections', {
+      const res = await fetch('/api/v1/inventory/qa-inspections', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -110,54 +134,89 @@ export default function QaInspectionsPage() {
           referenceType: qaRefType,
           referenceId: qaRefId,
           productId: qaProduct,
-          inspectedQty: qaInsQty,
-          passedQty: qaPassQty,
-          rejectedQty: qaRejQty,
-          checklist: qaChecklist
+          inspectedQty: Number(qaInsQty),
+          remarks: qaRemarks,
+          checkpoints: qaCheckpoints
         })
       });
       if (!res.ok) throw new Error();
-      setIsQaModalOpen(false);
+      setIsCreateModalOpen(false);
       setQaRefId('');
-      setQaChecklist([{ parameter: 'Visual Verification', status: 'PASS' }]);
+      setQaRemarks('');
+      setQaCheckpoints([{ parameter: 'Visual Inspection', criteria: 'No surface defects', sortOrder: 0 }]);
       loadData();
     } catch {
-      // Mock local update
-      const selectedProdObj = products.find(p => p.id === qaProduct);
-      const newMock: QualityInspection = {
-        id: `qa-mock-${Date.now()}`,
-        inspectionNumber: `QA-MOCK-${Math.floor(1000 + Math.random() * 9000)}`,
-        referenceType: qaRefType,
-        referenceId: qaRefId,
-        product: {
-          name: selectedProdObj?.name || 'Vibranium Ingot',
-          sku: selectedProdObj?.sku || 'SKU-VIB-001'
-        },
-        status: qaRejQty > 0 ? 'FAILED' : 'PASSED',
-        inspectedQty: qaInsQty,
-        passedQty: qaPassQty,
-        rejectedQty: qaRejQty,
-        inspectedBy: 'Local Auditor',
-        inspectedDate: new Date().toISOString(),
-        checklist: qaChecklist
+      alert('Local update fallback (inspection logged)');
+      setIsCreateModalOpen(false);
+    }
+  };
+
+  const handleOpenPerform = (qa: QualityInspection) => {
+    setActiveInspection(qa);
+    setSubmitStatus('PASS');
+    setSubmitDisposition('Released to Stock');
+    setSubmitAcceptedQty(qa.inspectedQty);
+    setSubmitRejectedQty(0);
+    setSubmitRemarks('');
+
+    const initialResults: typeof checkpointResults = {};
+    qa.checkpoints.forEach((cp) => {
+      initialResults[cp.id] = {
+        result: 'PASS',
+        observedValue: '',
+        remarks: ''
       };
-      setInspections(prev => [newMock, ...prev]);
-      setIsQaModalOpen(false);
-      setQaRefId('');
-      setQaChecklist([{ parameter: 'Visual Verification', status: 'PASS' }]);
+    });
+    setCheckpointResults(initialResults);
+  };
+
+  const handleSubmitPerform = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeInspection) return;
+
+    const formattedCheckpoints = Object.entries(checkpointResults).map(([id, data]) => ({
+      id,
+      result: data.result,
+      observedValue: data.observedValue || undefined,
+      remarks: data.remarks || undefined
+    }));
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/v1/inventory/qa-inspections/${activeInspection.id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          status: submitStatus,
+          disposition: submitDisposition,
+          acceptedQty: Number(submitAcceptedQty),
+          rejectedQty: Number(submitRejectedQty),
+          remarks: submitRemarks,
+          checkpoints: formattedCheckpoints
+        })
+      });
+      if (!res.ok) throw new Error();
+      setActiveInspection(null);
+      loadData();
+    } catch {
+      alert('Audit submitted (mock mode)');
+      setActiveInspection(null);
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="QA Inspections"
+        title="QA Inspections Queue"
         description="Verify raw material shipments, inspect production lots, and log compliance checklists."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory', href: '/inventory' }, { label: 'QA Inspections' }]}
         actions={
-          <Button variant="primary" onClick={() => setIsQaModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <Plus size={14} />
-            Log QA Audit
+            Log QA Audit Checklist
           </Button>
         }
       />
@@ -165,7 +224,7 @@ export default function QaInspectionsPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 
@@ -180,28 +239,44 @@ export default function QaInspectionsPage() {
               <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
                 <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>QA ID</th>
                 <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Ref Type/ID</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Qty Checked</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Audit Date</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Ref Slip / ID</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Qty Inspected</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Disposition Status</th>
+                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {inspections.map(insp => (
                 <tr key={insp.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>{insp.inspectionNumber}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span>{insp.product.name}</span>
-                      <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>{insp.product.sku}</span>
+                      <span style={{ fontWeight: 'var(--weight-semibold)' }}>{insp.product?.name}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>{insp.product?.sku}</span>
                     </div>
                   </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{insp.referenceType} ({insp.referenceId.slice(0, 8)})</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Passed: {Number(insp.passedQty)} / Total: {Number(insp.inspectedQty)}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                    <Badge variant={insp.status === 'PASSED' ? 'success' : 'danger'}>{insp.status}</Badge>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>
+                    {insp.referenceType.replace('_', ' ')} ({insp.referenceId.slice(0, 8)})
                   </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{new Date(insp.inspectedDate).toLocaleDateString()}</td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>
+                    Passed: {insp.acceptedQty} / Total: {insp.inspectedQty}
+                  </td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                    <Badge variant={insp.status === 'PASS' ? 'success' : insp.status === 'PENDING' ? 'warning' : 'danger'}>
+                      {insp.status}
+                    </Badge>
+                  </td>
+                  <td style={{ padding: 'var(--space-4) var(--space-5)', textAlign: 'right' }}>
+                    {insp.status === 'PENDING' && (
+                      <button
+                        onClick={() => handleOpenPerform(insp)}
+                        className="frappe-btn frappe-btn-primary"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                      >
+                        Perform Check
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
               {inspections.length === 0 && (
@@ -216,179 +291,155 @@ export default function QaInspectionsPage() {
         </Card>
       )}
 
-      {/* CREATE QUALITY INSPECTION MODAL OVERLAY */}
-      {isQaModalOpen && (
+      {/* LOG INSPECTION MODAL */}
+      {isCreateModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
-          <div className="frappe-card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', margin: 'auto', boxShadow: 'var(--shadow-xl)', background: 'var(--color-bg-elevated)' }}>
-            <div className="frappe-card-header flex items-center justify-between" style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
-              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-lg)' }}>Log Quality Inspection Audit</span>
-              <button onClick={() => setIsQaModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
+          <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
+            <div className="frappe-card-header flex items-center justify-between" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
+              <span className="font-semibold text-base">Create Inspection Checkpoints Record</span>
+              <button onClick={() => setIsCreateModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
             </div>
-            <div className="frappe-card-body" style={{ padding: 'var(--space-5)' }}>
-              <form onSubmit={handleSaveQualityInspection} className="flex flex-col gap-4" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <div className="frappe-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                  <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Reference Slip Type *</label>
-                    <select
-                      className="frappe-input"
-                      value={qaRefType}
-                      onChange={(e) => setQaRefType(e.target.value)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                    >
-                      <option value="Stock Entry">Stock Entry</option>
-                      <option value="Purchase Receipt">Purchase Receipt</option>
+            <div className="frappe-card-body" style={{ padding: '20px' }}>
+              <form onSubmit={handleCreateQAInspection} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="frappe-grid-2">
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Reference Document Type</label>
+                    <select className="frappe-input" value={qaRefType} onChange={e => setQaRefType(e.target.value as any)}>
+                      <option value="STOCK_ENTRY">Stock Entry</option>
+                      <option value="PURCHASE_RECEIPT">Purchase Receipt</option>
                     </select>
                   </div>
-                  <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Reference ID *</label>
-                    <input
-                      type="text"
-                      className="frappe-input"
-                      value={qaRefId}
-                      onChange={(e) => setQaRefId(e.target.value)}
-                      placeholder="STE-XX or PO-XX"
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                      required
-                    />
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Reference ID (UUID/Code)</label>
+                    <input type="text" className="frappe-input" value={qaRefId} onChange={e => setQaRefId(e.target.value)} required />
                   </div>
                 </div>
 
-                <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                  <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product to Inspect *</label>
-                  <select
-                    className="frappe-input"
-                    value={qaProduct}
-                    onChange={(e) => setQaProduct(e.target.value)}
-                    style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                  >
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="frappe-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
-                  <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Inspected Qty</label>
-                    <input
-                      type="number"
-                      className="frappe-input"
-                      value={qaInsQty}
-                      onChange={(e) => setQaInsQty(parseFloat(e.target.value) || 1)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                      required
-                    />
+                <div className="frappe-grid-2">
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Select Product</label>
+                    <select className="frappe-input" value={qaProduct} onChange={e => setQaProduct(e.target.value)} required>
+                      {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
                   </div>
-                  <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Passed Qty</label>
-                    <input
-                      type="number"
-                      className="frappe-input"
-                      value={qaPassQty}
-                      onChange={(e) => {
-                        const passed = parseFloat(e.target.value) || 0;
-                        setQaPassQty(passed);
-                        setQaRejQty(Math.max(0, qaInsQty - passed));
-                      }}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                      required
-                    />
-                  </div>
-                  <div className="frappe-form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                    <label className="frappe-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Rejected Qty</label>
-                    <input
-                      type="number"
-                      className="frappe-input"
-                      value={qaRejQty}
-                      onChange={(e) => setQaRejQty(parseFloat(e.target.value) || 0)}
-                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                      required
-                    />
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Inspected Lot Qty</label>
+                    <input type="number" className="frappe-input" value={qaInsQty} onChange={e => setQaInsQty(Number(e.target.value))} required />
                   </div>
                 </div>
 
-                <div className="border-t border-muted pt-4" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
-                  <div className="flex items-center justify-between mb-2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                    <span className="text-xs font-bold" style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)' }}>QA Checklist Parameters</span>
-                    <button
-                      type="button"
-                      onClick={() => setQaChecklist([...qaChecklist, { parameter: '', status: 'PASS' }])}
-                      className="frappe-btn frappe-btn-secondary"
-                      style={{ padding: '4px 8px', fontSize: '11px' }}
-                    >
-                      Add Parameter
-                    </button>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center mb-2" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span className="font-semibold text-xs">QA Inspection Criteria checklist</span>
+                    <Button variant="outline" type="button" onClick={() => setQaCheckpoints([...qaCheckpoints, { parameter: '', criteria: '', sortOrder: qaCheckpoints.length }])} style={{ padding: '4px 8px', fontSize: '11px' }}>Add Row</Button>
                   </div>
-
-                  {qaChecklist.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 items-center mb-2" style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                      <input
-                        type="text"
-                        className="frappe-input flex-1"
-                        placeholder="e.g. Dimensions Check"
-                        value={item.parameter}
-                        onChange={(e) => {
-                          const updated = [...qaChecklist];
-                          if (updated[idx]) {
-                            updated[idx].parameter = e.target.value;
-                            setQaChecklist(updated);
-                          }
-                        }}
-                        style={{ flex: 1, padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                        required
-                      />
-                      <select
-                        className="frappe-input"
-                        style={{ width: '90px', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                        value={item.status}
-                        onChange={(e) => {
-                          const updated = [...qaChecklist];
-                          if (updated[idx]) {
-                            updated[idx].status = e.target.value as 'PASS' | 'FAIL';
-                            setQaChecklist(updated);
-                          }
-                        }}
-                      >
-                        <option value="PASS">PASS</option>
-                        <option value="FAIL">FAIL</option>
-                      </select>
-                      <input
-                        type="text"
-                        className="frappe-input flex-1"
-                        placeholder="Reading/Note"
-                        value={item.reading || ''}
-                        onChange={(e) => {
-                          const updated = [...qaChecklist];
-                          if (updated[idx]) {
-                            updated[idx].reading = e.target.value;
-                            setQaChecklist(updated);
-                          }
-                        }}
-                        style={{ flex: 1, padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}
-                      />
-                      {qaChecklist.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = qaChecklist.filter((_, i) => i !== idx);
-                            setQaChecklist(updated);
-                          }}
-                          style={{ border: 'none', background: 'none', color: 'var(--color-danger-text)', cursor: 'pointer' }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
+                  {qaCheckpoints.map((cp, idx) => (
+                    <div key={idx} className="flex gap-2 items-center mb-2" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input type="text" className="frappe-input flex-1" style={{ flex: 1 }} placeholder="Param (e.g. Dimensions)" value={cp.parameter} onChange={e => {
+                        const updated = [...qaCheckpoints];
+                        if (updated[idx]) {
+                          updated[idx].parameter = e.target.value;
+                          setQaCheckpoints(updated);
+                        }
+                      }} required />
+                      <input type="text" className="frappe-input flex-1" style={{ flex: 1 }} placeholder="Criteria (e.g. +/- 0.5mm)" value={cp.criteria} onChange={e => {
+                        const updated = [...qaCheckpoints];
+                        if (updated[idx]) {
+                          updated[idx].criteria = e.target.value;
+                          setQaCheckpoints(updated);
+                        }
+                      }} required />
                     </div>
                   ))}
                 </div>
 
-                <div className="flex justify-end gap-2 border-t border-muted pt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
-                  <Button variant="outline" type="button" onClick={() => setIsQaModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" type="submit">
-                    Submit Audit Report
-                  </Button>
+                <div className="flex justify-end gap-2 mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                  <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                  <Button variant="primary" type="submit">Log Checklist</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PERFORM INSPECTION MODAL */}
+      {activeInspection && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
+          <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
+            <div className="frappe-card-header flex items-center justify-between" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
+              <span className="font-semibold text-base">Perform Quality Check: {activeInspection.inspectionNumber}</span>
+              <button onClick={() => setActiveInspection(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
+            </div>
+            <div className="frappe-card-body" style={{ padding: '20px' }}>
+              <form onSubmit={handleSubmitPerform} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ padding: '12px', background: 'var(--color-bg-sunken)', borderRadius: '6px', fontSize: 'var(--text-xs)' }}>
+                  <div><strong>Product:</strong> {activeInspection.product?.name}</div>
+                  <div><strong>Total Inspected Lot:</strong> {activeInspection.inspectedQty}</div>
+                </div>
+
+                <div className="border-t pt-2">
+                  <span className="font-semibold text-xs mb-2 block">Checkpoint Verification</span>
+                  {activeInspection.checkpoints.map((cp) => (
+                    <div key={cp.id} style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '8px', marginBottom: '8px' }}>
+                      <div className="flex justify-between" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span><strong>{cp.parameter}:</strong> {cp.criteria}</span>
+                        <select className="frappe-input" style={{ width: '90px', padding: '2px 4px' }} value={checkpointResults[cp.id]?.result} onChange={e => {
+                          setCheckpointResults({
+                            ...checkpointResults,
+                            [cp.id]: { ...checkpointResults[cp.id]!, result: e.target.value as any }
+                          });
+                        }}>
+                          <option value="PASS">PASS</option>
+                          <option value="FAIL">FAIL</option>
+                          <option value="NA">N/A</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2 mt-2" style={{ display: 'flex', gap: '8px' }}>
+                        <input type="text" className="frappe-input text-xs" style={{ flex: 1 }} placeholder="Observed Value" value={checkpointResults[cp.id]?.observedValue} onChange={e => {
+                          setCheckpointResults({
+                            ...checkpointResults,
+                            [cp.id]: { ...checkpointResults[cp.id]!, observedValue: e.target.value }
+                          });
+                        }} />
+                        <input type="text" className="frappe-input text-xs" style={{ flex: 1 }} placeholder="Remarks/Deviation" value={checkpointResults[cp.id]?.remarks} onChange={e => {
+                          setCheckpointResults({
+                            ...checkpointResults,
+                            [cp.id]: { ...checkpointResults[cp.id]!, remarks: e.target.value }
+                          });
+                        }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="frappe-grid-3">
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Final Status</label>
+                    <select className="frappe-input" value={submitStatus} onChange={e => setSubmitStatus(e.target.value as any)}>
+                      <option value="PASS">PASS</option>
+                      <option value="FAIL">FAIL</option>
+                      <option value="PARTIAL">PARTIAL</option>
+                    </select>
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Accepted Qty</label>
+                    <input type="number" className="frappe-input" value={submitAcceptedQty} onChange={e => setSubmitAcceptedQty(Number(e.target.value))} required />
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Rejected Qty</label>
+                    <input type="number" className="frappe-input" value={submitRejectedQty} onChange={e => setSubmitRejectedQty(Number(e.target.value))} required />
+                  </div>
+                </div>
+
+                <div className="frappe-form-group">
+                  <label className="frappe-label">Disposition Verdict / Action</label>
+                  <input type="text" className="frappe-input" value={submitDisposition} onChange={e => setSubmitDisposition(e.target.value)} placeholder="e.g. Scrapped, Restocked, Quarantine" />
+                </div>
+
+                <div className="flex justify-end gap-2 mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                  <Button variant="outline" type="button" onClick={() => setActiveInspection(null)}>Cancel</Button>
+                  <Button variant="primary" type="submit">Submit Verdict</Button>
                 </div>
               </form>
             </div>
