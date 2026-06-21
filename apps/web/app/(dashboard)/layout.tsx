@@ -371,12 +371,12 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       ]
     };
   }
-  if (pathname.startsWith('/communication')) {
+  if (pathname.startsWith('/connect') || pathname.startsWith('/communication')) {
     return {
-      title: 'Communication',
+      title: 'Connect',
       icon: MessageSquare,
       items: [
-        { name: 'Internal Chats', href: '/communication', icon: MessageSquare },
+        { name: 'Chat & Spaces', href: '/connect', icon: MessageSquare },
         { name: 'Advanced Messaging & Threading', href: '/communication/advanced', icon: Mail }
       ]
     };
@@ -544,7 +544,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Manufacturing', href: '/manufacturing', icon: Hammer, type: 'App' },
   { name: 'Business Intelligence', href: '/analytics', icon: PieChart, type: 'App' },
   { name: 'Document Management', href: '/documents', icon: FolderOpen, type: 'App' },
-  { name: 'Communication', href: '/communication', icon: MessageSquare, type: 'App' },
+  { name: 'Connect', href: '/connect', icon: MessageSquare, type: 'App' },
   { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
   { name: 'Workflows', href: '/workflows', icon: GitFork, type: 'App' },
   { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
@@ -733,7 +733,8 @@ const SEGMENT_NAMES: Record<string, string> = {
   projects: 'Projects',
   manufacturing: 'Manufacturing',
   pos: 'POS',
-  communication: 'Communication',
+  communication: 'Connect',
+  connect: 'Connect',
   documents: 'Documents',
   analytics: 'Analytics',
   workflows: 'Workflows',
@@ -1018,7 +1019,7 @@ export default function DashboardLayout({
     { id: 'manufacturing', name: 'Manufacturing', href: '/manufacturing', icon: Hammer, installed: true },
     { id: 'analytics', name: 'Business Intelligence', href: '/analytics', icon: PieChart, installed: true },
     { id: 'documents', name: 'Document Management', href: '/documents', icon: FolderOpen, installed: true },
-    { id: 'communication', name: 'Communication', href: '/communication', icon: MessageSquare, installed: true },
+    { id: 'communication', name: 'Connect', href: '/connect', icon: MessageSquare, installed: true },
     { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
     { id: 'workflows', name: 'Workflows', href: '/workflows', icon: GitFork, installed: true },
     { id: 'storage', name: 'Files & Storage', href: '/storage', icon: HardDrive, installed: true },

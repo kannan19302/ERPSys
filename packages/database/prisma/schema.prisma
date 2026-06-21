@@ -1414,30 +1414,171 @@ model Channel {
   name        String
   description String?
   type        String   @default("PUBLIC") // PUBLIC, PRIVATE
+  kind        String   @default("CHANNEL") // CHANNEL, DM, GROUP
+  spaceId     String?  @map("space_id")
+  topic       String?
   createdBy   String?  @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   messages Message[]
+  members  ChannelMember[]
+  space    ConnectSpace?   @relation(fields: [spaceId], references: [id])
 
-  @@unique([tenantId, orgId, name])
   @@index([tenantId])
+  @@index([tenantId, spaceId])
   @@map("channels")
 }
 
 model Message {
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  channelId String    @map("channel_id")
+  userId    String    @map("user_id")
+  content   String    @db.Text
+  kind      String    @default("USER") // USER, SYSTEM
+  parentId  String?   @map("parent_id")
+  pinned    Boolean   @default(false)
+  attachments Json    @default("[]")
+  meetingId String?   @map("meeting_id")
+  editedAt  DateTime? @map("edited_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  bookmarks MessageBookmark[]
+
+  channel   Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  parent    Message?          @relation("MessageThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Message[]         @relation("MessageThread")
+  reactions MessageReaction[]
+
+  @@index([tenantId])
+  @@index([channelId, parentId])
+  @@map("messages")
+}
+
+model ConnectSpace {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  orgId     String   @map("org_id")
+  name      String
+  emoji     String   @default("#")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  channels Channel[]
+
+  @@index([tenantId])
+  @@map("connect_spaces")
+}
+
+model ChannelMember {
   id        String   @id @default(cuid())
   tenantId  String   @map("tenant_id")
   channelId String   @map("channel_id")
   userId    String   @map("user_id")
-  content   String   @db.Text
+  starred   Boolean  @default(false)
+  muted     Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
 
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
+  @@unique([channelId, userId])
+  @@index([tenantId, userId])
+  @@map("channel_members")
+}
+
+model ChannelRead {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  channelId  String   @map("channel_id")
+  userId     String   @map("user_id")
+  lastReadAt DateTime @default(now()) @map("last_read_at")
+
+  @@unique([channelId, userId])
+  @@index([tenantId, userId])
+  @@map("channel_reads")
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("message_reactions")
+}
+
+model MessageBookmark {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([tenantId, userId])
+  @@map("message_bookmarks")
+}
+
+model UserPresence {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  userId      String   @map("user_id")
+  presence    String   @default("ACTIVE") // ACTIVE, AWAY, BRB, DND, OOO, INACTIVE
+  statusText  String?  @map("status_text")
+  statusEmoji String?  @map("status_emoji")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId])
   @@index([tenantId])
-  @@map("messages")
+  @@map("user_presence")
+}
+
+model ConnectMeeting {
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  channelId String?   @map("channel_id")
+  code      String
+  title     String
+  hostId    String    @map("host_id")
+  active    Boolean   @default(true)
+  startedAt DateTime  @default(now()) @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+
+  @@index([tenantId])
+  @@map("connect_meetings")
+}
+
+model CalendarEvent {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  title        String
+  date         String // YYYY-MM-DD
+  time         String // HH:MM
+  durationMins Int      @default(30) @map("duration_mins")
+  meetingCode  String?  @map("meeting_code")
+  attendees    Json     @default("[]")
+  description  String?  @db.Text
+  location     String?
+  color        String?
+  allDay       Boolean  @default(false) @map("all_day")
+  recurrence   String   @default("none") // none, daily, weekly, biweekly, monthly, yearly
+  createdBy    String   @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@map("calendar_events")
 }
 
 model Notification {
