@@ -203,6 +203,71 @@ export interface AuditLog {
 
 export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT';
 
+// ── Change History (Field-Level Audit Trail) ──
+export interface FieldChange {
+  field: string;
+  label: string;
+  oldValue: unknown;
+  newValue: unknown;
+}
+
+export type ChangeAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE';
+
+export interface ChangeHistoryEntry {
+  id: string;
+  tenantId: string;
+  userId: string;
+  userName: string;
+  entityType: string;
+  entityId: string;
+  action: ChangeAction;
+  fieldChanges: FieldChange[];
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+}
+
+// ── Permission Registry ──
+export type PermissionLevel = 'endpoint' | 'page' | 'component' | 'field' | 'record';
+
+export interface PermissionDefinition {
+  code: string;
+  module: string;
+  resource: string;
+  action: string;
+  level: PermissionLevel;
+  description: string;
+}
+
+export type FieldAccessLevel = 'hidden' | 'readonly' | 'editable';
+
+export interface AccessPackageData {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string | null;
+  permissions: string[];
+  fieldAccess: Record<string, Record<string, FieldAccessLevel>>;
+  recordFilter: Record<string, Record<string, unknown>>;
+  isSystem: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ResolvedAccess {
+  endpoints: string[];
+  pages: string[];
+  components: string[];
+  fields: Record<string, Record<string, FieldAccessLevel>>;
+  recordFilters: Record<string, Record<string, unknown>>;
+}
+
+// ── Demo Data ──
+export interface DemoDataStatus {
+  loaded: boolean;
+  loadedAt: Date | null;
+  modules: Record<string, { count: number; loaded: boolean }>;
+}
+
 // ── Purchase Requisitions ──
 export interface PurchaseRequisition {
   id: string;

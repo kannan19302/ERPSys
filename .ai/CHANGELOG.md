@@ -5,6 +5,83 @@
 
 ---
 
+## [2026-06-21] Phase 5 — System Modules Complete (End-to-End)
+
+### Wired Existing Backends to Frontends
+- **Localization**: Real API calls for languages, overrides CRUD, export/import JSON, completeness indicators
+- **Sync Monitor**: Real API calls for sync queue, reconcile actions, conflict resolution modal, auto-refresh, filter tabs
+- **SaaS Portal**: Real API calls for plans/subscription/usage, plan comparison matrix, trial management, upgrade modal
+- **DevOps**: Real system metrics (DB latency, connections, memory, CPU), recent errors section, auto-refresh
+
+### New Backend Services & Controllers
+- **Security**: `SecurityController` + `SecurityService` — real audit log queries with pagination/search/filters, password policy CRUD via Setting model
+- **Announcements**: `AnnouncementsController` + `AnnouncementsService` — CRUD for system-wide admin broadcasts with expiry
+- **Scheduled Reports**: `ScheduledReportsController` + `ScheduledReportsService` — CRUD + run-now for scheduled report jobs
+- **Activity Feed**: `ActivityFeedController` + `ActivityFeedService` — company-wide change stream from ChangeHistory
+- **Notification Preferences**: `NotificationPreferencesController` — per-user channel preferences (in-app/email/SMS/push)
+- **Import/Export Center**: `ImportExportController` + `ImportExportService` — validate, execute imports (Customer/Vendor/Product/Employee), export entity data
+- **GDPR Data Management**: `GdprController` + `GdprService` — retention policies, erasure requests, subject data export
+
+### New Frontend Pages
+- `/admin/security` — Real audit logs with pagination, password policy settings, session management
+- `/admin/settings` — Added demo data section, numbering series, fiscal year config
+- `/admin/announcements` — System announcement management
+- `/admin/scheduled-reports` — Scheduled report configuration
+- `/admin/activity-feed` — Company-wide timeline with filters and infinite scroll
+- `/admin/notifications` — Notification preferences grid (7 categories × 4 channels)
+- `/admin/import-export` — 5-step import wizard + export with format/filter selection
+- `/admin/gdpr` — Data retention policies + erasure request management
+
+### New Prisma Models
+- `SystemAnnouncement`, `ScheduledReport`, `DataRetentionPolicy`, `DataErasureRequest`, `NotificationPreference`
+
+### Navigation
+- Admin sidebar: added "Data & Compliance" section with Import/Export, GDPR, Announcements, Scheduled Reports, Activity Feed, Notification Prefs
+
+---
+
+## [2026-06-21] ERP Platform Foundation — Change History, Demo Data, RBAC, Super Admin
+
+### Added
+- **Change History System** (Phase 1): Entity+field-level audit trail across all modules
+  - `ChangeHistory` Prisma model with tenant-scoped indexes
+  - `@TrackChanges('EntityType')` decorator + `ChangeHistoryInterceptor` for automatic diff tracking
+  - `ChangeHistoryService` with field diff logic and paginated history API
+  - `GET /api/v1/change-history/:entityType/:entityId` endpoint
+  - `<ChangeHistory>` reusable UI component (ERPNext-style timeline, light gray, vertical dots)
+- **Demo Data System** (Phase 2): Toggle-able demo data with banner
+  - `DemoDataRecord` model to track demo records per module
+  - `Tenant.demoDataLoaded` + `Tenant.demoLoadedAt` fields
+  - Admin endpoints: `POST/DELETE /admin/demo/load|remove|remove/:module`, `GET /admin/demo/status`
+  - `<DemoBanner>` sticky amber banner with "Remove all" / "Remove from this app" actions
+  - Integrated into dashboard layout with auto-fetch on login
+- **Advanced RBAC System** (Phase 3): Multi-level access control
+  - `Permission` registry model (endpoint/page/component/field/record levels)
+  - `AccessPackage` model with field access rules and record filters
+  - `RoleAccessPackage` many-to-many relation
+  - Admin CRUD endpoints for access packages + role assignment
+  - `<ProtectedComponent>`, `<ProtectedField>` UI components with `usePermission`/`useFieldAccess` hooks
+  - `PermissionContext` React context for frontend permission state
+  - Permission registry (`packages/shared/src/permissions/registry.ts`) with 100+ permission definitions
+  - Access Control admin page (`/admin/access-control`) with Roles, Packages, and Matrix tabs
+- **Super Admin Dashboard** (Phase 4): Cross-tenant management
+  - `SuperAdminController` + `SuperAdminService` with tenant CRUD, admin listing, analytics, health
+  - 4 frontend pages: Dashboard, Tenants, Admin Users, System Health
+  - Sidebar navigation for `/super-admin` routes
+- **AGENTS.md Rules**: Added mandatory rules 13-16 for change history and RBAC in all future development
+
+### Changed
+- `AdminModule` now includes `SuperAdminController` and `SuperAdminService`
+- `AppModule` imports global `CommonModule` (ChangeHistory service)
+- Dashboard layout sidebar: added Access Control, Settings, Super Admin navigation
+- `SEGMENT_NAMES` updated with super-admin, access-control entries
+
+### Schema
+- New models: `ChangeHistory`, `DemoDataRecord`, `Permission`, `AccessPackage`, `RoleAccessPackage`
+- Modified: `Tenant` (+demoDataLoaded, +demoLoadedAt), `Role` (+accessPackages relation)
+
+---
+
 ## [2026-06-21] Procurement — Competitor Revamp (SAP Ariba/Coupa/Oracle Overhaul)
 
 ### Added

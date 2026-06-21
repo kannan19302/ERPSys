@@ -77,10 +77,18 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 11. **Never store secrets in code.** Use environment variables. Reference `.env.example` for the required variables.
 12. **Never disable CORS, rate limiting, or security headers** without explicit approval.
 
+### Change History (Audit Trail)
+13. **Every entity mutation endpoint MUST use `@TrackChanges('EntityType')` decorator.** This ensures field-level change history is recorded automatically. Import from `../../common/decorators/track-changes.decorator` and apply `@UseInterceptors(ChangeHistoryInterceptor)` alongside.
+14. **Every record detail page MUST include `<ChangeHistory entityType="X" entityId={id} />` at the bottom.** This displays the ERPNext-style edit timeline in light gray below the main content. Import from `@unerp/ui`.
+
+### RBAC & Access Control
+15. **Every new endpoint MUST use `@Permissions('module.resource.action')` decorator.** Register new permissions in `packages/shared/src/permissions/registry.ts`.
+16. **Every UI component that controls a privileged action MUST be wrapped in `<ProtectedComponent permission="x">`** to conditionally render based on user permissions. Import from `@unerp/ui`.
+
 ### Process
-13. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules.
-14. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
-15. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
+17. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules.
+18. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
+19. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
 16. **Always develop End-to-End.** When requested to "develop" or "build" a page or feature, AI agents MUST provide a completely end-to-end working implementation. This includes the database schema (Prisma), backend API (NestJS Controllers/Services), and the frontend (Next.js) hooked up to the API. Do not just build frontend mocks unless explicitly requested.
 17. **Zero-Code Builder Philosophy.** The Builder Studio module is strictly a **No-Code / Low-Code environment** aimed at non-technical users. AI agents MUST NOT provide "code snippets", "developer instructions", or expect the user to manually copy-paste React code to deploy forms. All form deployment, layout adjustment, and page creation MUST be handled via visual UI controls and dynamic rendering (via the Page Registry). Read `.ai/BUILDER_STUDIO_CONVENTIONS.md`.
 

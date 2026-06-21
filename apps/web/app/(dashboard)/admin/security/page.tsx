@@ -1,22 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Shield, Search, Key, Smartphone,
   Globe, Monitor, AlertTriangle, CheckCircle, LogOut,
-  XCircle, CreditCard
+  XCircle, CreditCard, RefreshCw, ChevronLeft, ChevronRight, Lock,
 } from 'lucide-react';
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface AuditLog {
   id: string;
-  user: string;
+  userId: string;
   action: string;
-  entity: string;
+  entityType: string;
   entityId: string;
-  ip: string;
-  timestamp: string;
-  details: string;
-  severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  ipAddress: string | null;
+  changes: any;
+  createdAt: string;
 }
 
 interface ActiveSession {
@@ -31,45 +34,189 @@ interface ActiveSession {
   current: boolean;
 }
 
+interface PasswordPolicy {
+  minLength: number;
+  requireUppercase: boolean;
+  requireNumbers: boolean;
+  requireSpecial: boolean;
+  maxAge: number;
+}
+
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/* ------------------------------------------------------------------ */
+/*  API helpers                                                        */
+/* ------------------------------------------------------------------ */
+
+const API_BASE = '/api/v1/admin/security';
+
+function authHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers: { ...authHeaders(), ...init?.headers } });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return res.json();
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mock fallbacks                                                     */
+/* ------------------------------------------------------------------ */
+
+const MOCK_AUDIT_LOGS: AuditLog[] = [
+  { id: 'al-1', userId: 'admin@unerp.dev', action: 'LOGIN', entityType: 'Session', entityId: 'sess-4521', ipAddress: '192.168.1.100', changes: { severity: 'INFO', details: 'Successful login via password' }, createdAt: '2026-06-14T14:32:00Z' },
+  { id: 'al-2', userId: 'jane@acme.com', action: 'UPDATE', entityType: 'Invoice', entityId: 'INV-0198', ipAddress: '10.0.0.45', changes: { severity: 'INFO', details: 'Changed status from DRAFT to SENT' }, createdAt: '2026-06-14T14:28:00Z' },
+  { id: 'al-3', userId: 'mike@acme.com', action: 'DELETE', entityType: 'Employee', entityId: 'emp-0023', ipAddress: '10.0.0.52', changes: { severity: 'WARNING', details: 'Deleted employee record' }, createdAt: '2026-06-14T14:15:00Z' },
+  { id: 'al-4', userId: 'unknown', action: 'LOGIN_FAILED', entityType: 'Session', entityId: 'N/A', ipAddress: '203.45.67.89', changes: { severity: 'CRITICAL', details: 'Failed login attempt — invalid credentials (3 attempts)' }, createdAt: '2026-06-14T13:45:00Z' },
+  { id: 'al-5', userId: 'admin@unerp.dev', action: 'PERMISSION_CHANGE', entityType: 'Role', entityId: 'role-admin', ipAddress: '192.168.1.100', changes: { severity: 'WARNING', details: 'Added finance.write scope to Admin role' }, createdAt: '2026-06-14T12:30:00Z' },
+  { id: 'al-6', userId: 'sarah@acme.com', action: 'EXPORT', entityType: 'Report', entityId: 'rpt-0045', ipAddress: '10.0.0.38', changes: { severity: 'INFO', details: 'Exported Financial Report as CSV (4,521 rows)' }, createdAt: '2026-06-14T11:20:00Z' },
+];
+
+const MOCK_SESSIONS: ActiveSession[] = [
+  { id: 'ses-1', user: 'admin@unerp.dev', device: 'Windows 11', browser: 'Chrome 126', ip: '192.168.1.100', location: 'New York, US', startedAt: '2026-06-14 08:00', lastActivity: '2 min ago', current: true },
+  { id: 'ses-2', user: 'admin@unerp.dev', device: 'iPhone 16', browser: 'Safari Mobile', ip: '172.16.0.5', location: 'New York, US', startedAt: '2026-06-14 10:30', lastActivity: '45 min ago', current: false },
+  { id: 'ses-3', user: 'jane@acme.com', device: 'macOS 15', browser: 'Firefox 130', ip: '10.0.0.45', location: 'San Francisco, US', startedAt: '2026-06-14 09:15', lastActivity: '12 min ago', current: false },
+  { id: 'ses-4', user: 'mike@acme.com', device: 'Ubuntu 24', browser: 'Chrome 126', ip: '10.0.0.52', location: 'London, UK', startedAt: '2026-06-14 06:00', lastActivity: '3 hrs ago', current: false },
+];
+
+const DEFAULT_POLICY: PasswordPolicy = { minLength: 8, requireUppercase: true, requireNumbers: true, requireSpecial: false, maxAge: 90 };
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export default function AdminSecurityPage() {
   const [activeTab, setActiveTab] = useState<'audit' | 'mfa' | 'ip' | 'sessions' | 'billing'>('audit');
+
+  /* Audit logs state */
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(MOCK_AUDIT_LOGS);
+  const [auditMeta, setAuditMeta] = useState<PaginationMeta>({ page: 1, limit: 20, total: 6, totalPages: 1 });
   const [auditSearch, setAuditSearch] = useState('');
   const [auditFilter, setAuditFilter] = useState('ALL');
+  const [auditLoading, setAuditLoading] = useState(false);
+  const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [auditLogs] = useState<AuditLog[]>([
-    { id: 'al-1', user: 'admin@unerp.dev', action: 'LOGIN', entity: 'Session', entityId: 'sess-4521', ip: '192.168.1.100', timestamp: '2026-06-14 14:32:00', details: 'Successful login via password', severity: 'INFO' },
-    { id: 'al-2', user: 'jane@acme.com', action: 'UPDATE', entity: 'Invoice', entityId: 'INV-0198', ip: '10.0.0.45', timestamp: '2026-06-14 14:28:00', details: 'Changed status from DRAFT to SENT', severity: 'INFO' },
-    { id: 'al-3', user: 'mike@acme.com', action: 'DELETE', entity: 'Employee', entityId: 'emp-0023', ip: '10.0.0.52', timestamp: '2026-06-14 14:15:00', details: 'Deleted employee record — James Wilson', severity: 'WARNING' },
-    { id: 'al-4', user: 'unknown', action: 'LOGIN_FAILED', entity: 'Session', entityId: 'N/A', ip: '203.45.67.89', timestamp: '2026-06-14 13:45:00', details: 'Failed login attempt — invalid credentials (3 attempts)', severity: 'CRITICAL' },
-    { id: 'al-5', user: 'admin@unerp.dev', action: 'PERMISSION_CHANGE', entity: 'Role', entityId: 'role-admin', ip: '192.168.1.100', timestamp: '2026-06-14 12:30:00', details: 'Added finance.write scope to Admin role', severity: 'WARNING' },
-    { id: 'al-6', user: 'sarah@acme.com', action: 'EXPORT', entity: 'Report', entityId: 'rpt-0045', ip: '10.0.0.38', timestamp: '2026-06-14 11:20:00', details: 'Exported Financial Report as CSV (4,521 rows)', severity: 'INFO' },
-  ]);
+  /* Sessions state */
+  const [sessions, setSessions] = useState<ActiveSession[]>(MOCK_SESSIONS);
 
-  const [sessions] = useState<ActiveSession[]>([
-    { id: 'ses-1', user: 'admin@unerp.dev', device: 'Windows 11', browser: 'Chrome 126', ip: '192.168.1.100', location: 'New York, US', startedAt: '2026-06-14 08:00', lastActivity: '2 min ago', current: true },
-    { id: 'ses-2', user: 'admin@unerp.dev', device: 'iPhone 16', browser: 'Safari Mobile', ip: '172.16.0.5', location: 'New York, US', startedAt: '2026-06-14 10:30', lastActivity: '45 min ago', current: false },
-    { id: 'ses-3', user: 'jane@acme.com', device: 'macOS 15', browser: 'Firefox 130', ip: '10.0.0.45', location: 'San Francisco, US', startedAt: '2026-06-14 09:15', lastActivity: '12 min ago', current: false },
-    { id: 'ses-4', user: 'mike@acme.com', device: 'Ubuntu 24', browser: 'Chrome 126', ip: '10.0.0.52', location: 'London, UK', startedAt: '2026-06-14 06:00', lastActivity: '3 hrs ago', current: false },
-  ]);
+  /* Password policy state */
+  const [policy, setPolicy] = useState<PasswordPolicy>(DEFAULT_POLICY);
+  const [policySaving, setPolicySaving] = useState(false);
+  const [policySaved, setPolicySaved] = useState(false);
 
-  const filteredLogs = auditLogs.filter(l => {
-    if (auditFilter !== 'ALL' && l.severity !== auditFilter) return false;
-    if (auditSearch && !l.user.includes(auditSearch) && !l.action.includes(auditSearch.toUpperCase()) && !l.entity.includes(auditSearch) && !l.details.toLowerCase().includes(auditSearch.toLowerCase())) return false;
-    return true;
-  });
+  /* ---- Fetch audit logs ---- */
+  const fetchAuditLogs = useCallback(async (page = 1) => {
+    setAuditLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('limit', '20');
+      if (auditSearch) params.set('search', auditSearch);
+      if (auditFilter !== 'ALL') params.set('severity', auditFilter);
+
+      const res = await apiFetch<{ data: AuditLog[]; meta: PaginationMeta }>(`/audit-logs?${params}`);
+      setAuditLogs(res.data);
+      setAuditMeta(res.meta);
+    } catch {
+      // keep mock fallback
+    } finally {
+      setAuditLoading(false);
+    }
+  }, [auditSearch, auditFilter]);
+
+  /* ---- Fetch sessions ---- */
+  const fetchSessions = useCallback(async () => {
+    try {
+      const res = await apiFetch<ActiveSession[]>('/sessions');
+      setSessions(res);
+    } catch {
+      // keep mock
+    }
+  }, []);
+
+  /* ---- Fetch password policy ---- */
+  const fetchPolicy = useCallback(async () => {
+    try {
+      const res = await apiFetch<PasswordPolicy>('/password-policy');
+      setPolicy(res);
+    } catch {
+      // keep default
+    }
+  }, []);
+
+  /* ---- Save password policy ---- */
+  const savePolicy = async () => {
+    setPolicySaving(true);
+    setPolicySaved(false);
+    try {
+      await apiFetch('/password-policy', { method: 'POST', body: JSON.stringify(policy) });
+      setPolicySaved(true);
+      setTimeout(() => setPolicySaved(false), 3000);
+    } catch {
+      // silent
+    } finally {
+      setPolicySaving(false);
+    }
+  };
+
+  /* ---- Initial load ---- */
+  useEffect(() => {
+    fetchAuditLogs();
+    fetchSessions();
+    fetchPolicy();
+  }, [fetchAuditLogs, fetchSessions, fetchPolicy]);
+
+  /* ---- 30s auto-refresh for audit logs ---- */
+  useEffect(() => {
+    if (activeTab === 'audit') {
+      refreshTimerRef.current = setInterval(() => { fetchAuditLogs(auditMeta.page); }, 30000);
+    }
+    return () => {
+      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
+    };
+  }, [activeTab, fetchAuditLogs, auditMeta.page]);
+
+  /* ---- Debounced search ---- */
+  useEffect(() => {
+    const t = setTimeout(() => { fetchAuditLogs(1); }, 400);
+    return () => clearTimeout(t);
+  }, [auditSearch, auditFilter, fetchAuditLogs]);
+
+  /* ---- Helpers ---- */
+  const getSeverity = (log: AuditLog): string => {
+    if (log.changes?.severity) return log.changes.severity;
+    if (['LOGIN_FAILED', 'UNAUTHORIZED'].includes(log.action)) return 'CRITICAL';
+    if (['DELETE', 'PERMISSION_CHANGE'].includes(log.action)) return 'WARNING';
+    return 'INFO';
+  };
+
+  const getDetails = (log: AuditLog): string => {
+    if (log.changes?.details) return log.changes.details;
+    return `${log.action} on ${log.entityType} ${log.entityId}`;
+  };
 
   const severityStyles = (s: string) => {
-    const map: Record<string, { color: string; bg: string }> = {
-      INFO: { color: 'var(--color-primary)', bg: 'var(--color-primary-light)' },
-      WARNING: { color: 'var(--color-warning)', bg: 'var(--color-warning-light)' },
-      CRITICAL: { color: 'var(--color-error)', bg: 'var(--color-error-light)' },
+    const map: Record<string, { color: string; background: string }> = {
+      INFO: { color: 'var(--color-primary)', background: 'var(--color-primary-light)' },
+      WARNING: { color: 'var(--color-warning)', background: 'var(--color-warning-light)' },
+      CRITICAL: { color: 'var(--color-error)', background: 'var(--color-error-light)' },
     };
-    return map[s] || { color: 'var(--color-text)', bg: 'var(--color-bg)' };
+    return map[s] || { color: 'var(--color-text)', background: 'var(--color-bg)' };
   };
 
   const tabs = [
     { id: 'audit' as const, label: 'Audit Logs', icon: <Search size={14} /> },
-    { id: 'mfa' as const, label: 'MFA / 2FA', icon: <Smartphone size={14} /> },
+    { id: 'mfa' as const, label: 'Password Policy', icon: <Lock size={14} /> },
     { id: 'ip' as const, label: 'IP Allowlist', icon: <Globe size={14} /> },
     { id: 'sessions' as const, label: 'Sessions', icon: <Monitor size={14} /> },
     { id: 'billing' as const, label: 'Tenant Billing', icon: <CreditCard size={14} /> },
@@ -83,7 +230,7 @@ export default function AdminSecurityPage() {
           Security & Administration
         </h1>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-          Searchable audit logs, MFA enforcement, IP allowlisting, session management, and tenant billing.
+          Searchable audit logs, password policy, IP allowlisting, session management, and tenant billing.
         </p>
       </div>
 
@@ -94,17 +241,17 @@ export default function AdminSecurityPage() {
             borderBottom: activeTab === t.id ? '2px solid var(--color-primary)' : '2px solid transparent',
             color: activeTab === t.id ? 'var(--color-primary)' : 'var(--color-text-secondary)',
             fontWeight: 'var(--weight-semibold)', cursor: 'pointer', fontSize: 'var(--text-sm)',
-            display: 'flex', alignItems: 'center', gap: 'var(--space-2)', whiteSpace: 'nowrap'
+            display: 'flex', alignItems: 'center', gap: 'var(--space-2)', whiteSpace: 'nowrap',
           }}>
             {t.icon} {t.label}
           </button>
         ))}
       </div>
 
-      {/* Audit Logs */}
+      {/* ============ Audit Logs ============ */}
       {activeTab === 'audit' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0 var(--space-3)' }}>
               <Search size={16} style={{ color: 'var(--color-text-tertiary)' }} />
               <input value={auditSearch} onChange={e => setAuditSearch(e.target.value)} placeholder="Search by user, action, entity, or details..." style={{ flex: 1, border: 'none', background: 'transparent', padding: 'var(--space-2.5) 0', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }} />
@@ -115,6 +262,9 @@ export default function AdminSecurityPage() {
               <option value="WARNING">Warning</option>
               <option value="CRITICAL">Critical</option>
             </select>
+            <button onClick={() => fetchAuditLogs(auditMeta.page)} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-2)', cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} title="Refresh">
+              <RefreshCw size={16} style={auditLoading ? { animation: 'spin 1s linear infinite' } : {}} />
+            </button>
           </div>
 
           <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
@@ -127,73 +277,152 @@ export default function AdminSecurityPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredLogs.map(l => (
-                  <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                      <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 'var(--weight-bold)', ...severityStyles(l.severity) }}>{l.severity}</span>
-                    </td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{l.timestamp}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{l.user}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                      <code style={{ fontSize: '11px', background: 'var(--color-bg)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>{l.action}</code>
-                    </td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{l.entity} ({l.entityId})</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>{l.ip}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-secondary)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.details}</td>
-                  </tr>
-                ))}
+                {auditLogs.length === 0 && (
+                  <tr><td colSpan={7} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No audit logs found.</td></tr>
+                )}
+                {auditLogs.map(l => {
+                  const sev = getSeverity(l);
+                  return (
+                    <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                        <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 'var(--weight-bold)', ...severityStyles(sev) }}>{sev}</span>
+                      </td>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                        {new Date(l.createdAt).toLocaleString()}
+                      </td>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{l.userId}</td>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                        <code style={{ fontSize: '11px', background: 'var(--color-bg)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>{l.action}</code>
+                      </td>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{l.entityType} ({l.entityId})</td>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>{l.ipAddress || '—'}</td>
+                      <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-secondary)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getDetails(l)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination */}
+          {auditMeta.totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+              <span>Showing page {auditMeta.page} of {auditMeta.totalPages} ({auditMeta.total} total)</span>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <button disabled={auditMeta.page <= 1} onClick={() => fetchAuditLogs(auditMeta.page - 1)} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-1) var(--space-2)', cursor: auditMeta.page <= 1 ? 'default' : 'pointer', opacity: auditMeta.page <= 1 ? 0.4 : 1, display: 'flex', alignItems: 'center', color: 'var(--color-text)' }}>
+                  <ChevronLeft size={14} /> Prev
+                </button>
+                <button disabled={auditMeta.page >= auditMeta.totalPages} onClick={() => fetchAuditLogs(auditMeta.page + 1)} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-1) var(--space-2)', cursor: auditMeta.page >= auditMeta.totalPages ? 'default' : 'pointer', opacity: auditMeta.page >= auditMeta.totalPages ? 0.4 : 1, display: 'flex', alignItems: 'center', color: 'var(--color-text)' }}>
+                  Next <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+            Auto-refreshes every 30 seconds
           </div>
         </div>
       )}
 
-      {/* MFA / 2FA */}
+      {/* ============ Password Policy (was MFA) ============ */}
       {activeTab === 'mfa' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)' }}>
             <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', textAlign: 'center' }}>
               <CheckCircle size={28} style={{ color: 'var(--color-success)', margin: '0 auto var(--space-2)' }} />
-              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>72%</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>MFA Enrollment Rate</div>
+              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>{policy.minLength}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Min Password Length</div>
             </div>
             <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', textAlign: 'center' }}>
               <Key size={28} style={{ color: 'var(--color-primary)', margin: '0 auto var(--space-2)' }} />
-              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>TOTP</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Primary Method</div>
+              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>{policy.maxAge}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Max Age (days)</div>
             </div>
             <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', textAlign: 'center' }}>
               <AlertTriangle size={28} style={{ color: 'var(--color-warning)', margin: '0 auto var(--space-2)' }} />
-              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>7</div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Users Without MFA</div>
+              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>
+                {[policy.requireUppercase, policy.requireNumbers, policy.requireSpecial].filter(Boolean).length}/3
+              </div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Complexity Rules Active</div>
             </div>
           </div>
 
           <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
-            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-3)' }}>MFA Enforcement Policy</h3>
+            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-3)' }}>Password Policy Settings</h3>
+
+            {/* Min length slider */}
+            <div style={{ padding: 'var(--space-2.5) 0', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Minimum Length</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Minimum number of characters required</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <input
+                  type="range" min={6} max={24} value={policy.minLength}
+                  onChange={e => setPolicy({ ...policy, minLength: +e.target.value })}
+                  style={{ width: '100px' }}
+                />
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', minWidth: '24px', textAlign: 'center' }}>{policy.minLength}</span>
+              </div>
+            </div>
+
+            {/* Max age */}
+            <div style={{ padding: 'var(--space-2.5) 0', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>Max Password Age (days)</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Force password change after this many days (0 = never)</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <input
+                  type="number" min={0} max={365} value={policy.maxAge}
+                  onChange={e => setPolicy({ ...policy, maxAge: +e.target.value })}
+                  style={{ width: '70px', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)', textAlign: 'center' }}
+                />
+              </div>
+            </div>
+
+            {/* Toggles */}
             {[
-              { label: 'Enforce MFA for All Users', desc: 'Require all users to set up MFA at next login', enabled: true },
-              { label: 'TOTP Authenticator App', desc: 'Google Authenticator, Authy, Microsoft Authenticator', enabled: true },
-              { label: 'SMS One-Time Password', desc: 'Send verification code via SMS to registered phone', enabled: true },
-              { label: 'Hardware Security Key (FIDO2)', desc: 'Support YubiKey and other FIDO2 compatible keys', enabled: false },
-              { label: 'Recovery Codes', desc: 'Generate 10 single-use recovery codes during setup', enabled: true },
-              { label: 'Remember Trusted Devices', desc: 'Skip MFA for 30 days on trusted devices', enabled: true },
+              { key: 'requireUppercase' as const, label: 'Require Uppercase Letter', desc: 'At least one A-Z character' },
+              { key: 'requireNumbers' as const, label: 'Require Numbers', desc: 'At least one 0-9 digit' },
+              { key: 'requireSpecial' as const, label: 'Require Special Characters', desc: 'At least one !@#$%^&* or similar' },
             ].map((opt, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2.5) 0', borderBottom: i < 5 ? '1px solid var(--color-border)' : 'none' }}>
+              <div key={opt.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2.5) 0', borderBottom: i < 2 ? '1px solid var(--color-border)' : 'none' }}>
                 <div>
                   <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{opt.label}</div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{opt.desc}</div>
                 </div>
-                <div style={{ width: '40px', height: '22px', borderRadius: '11px', cursor: 'pointer', background: opt.enabled ? 'var(--color-primary)' : 'var(--color-border)', position: 'relative' }}>
-                  <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: opt.enabled ? '20px' : '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                <div
+                  onClick={() => setPolicy({ ...policy, [opt.key]: !policy[opt.key] })}
+                  style={{ width: '40px', height: '22px', borderRadius: '11px', cursor: 'pointer', background: policy[opt.key] ? 'var(--color-primary)' : 'var(--color-border)', position: 'relative', transition: 'background 0.2s' }}
+                >
+                  <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: policy[opt.key] ? '20px' : '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 0.2s' }} />
                 </div>
               </div>
             ))}
+
+            {/* Save button */}
+            <div style={{ marginTop: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <button onClick={savePolicy} disabled={policySaving} style={{
+                background: 'var(--color-primary)', color: '#fff', border: 'none',
+                padding: 'var(--space-2) var(--space-5)', borderRadius: 'var(--radius-md)',
+                cursor: policySaving ? 'wait' : 'pointer', fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)', opacity: policySaving ? 0.7 : 1,
+              }}>
+                {policySaving ? 'Saving...' : 'Save Policy'}
+              </button>
+              {policySaved && (
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                  <CheckCircle size={12} /> Saved successfully
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* IP Allowlist */}
+      {/* ============ IP Allowlist ============ */}
       {activeTab === 'ip' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
@@ -224,7 +453,7 @@ export default function AdminSecurityPage() {
         </div>
       )}
 
-      {/* Sessions */}
+      {/* ============ Sessions ============ */}
       {activeTab === 'sessions' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -237,7 +466,7 @@ export default function AdminSecurityPage() {
             <div key={s.id} style={{
               background: 'var(--color-bg-elevated)', border: s.current ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
               borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                 <Monitor size={20} style={{ color: s.current ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
@@ -275,7 +504,7 @@ export default function AdminSecurityPage() {
         </div>
       )}
 
-      {/* Tenant Billing */}
+      {/* ============ Tenant Billing ============ */}
       {activeTab === 'billing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>

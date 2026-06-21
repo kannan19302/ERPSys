@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
@@ -13,6 +13,13 @@ export class DevopsController {
   @Permissions('admin.devops.read')
   async getMetrics() {
     return this.devopsService.getSystemMetrics();
+  }
+
+  @Get('errors')
+  @Permissions('admin.devops.read')
+  async getRecentErrors(@Req() req: any) {
+    const tenantId = req.user?.tenantId;
+    return this.devopsService.getRecentErrors(tenantId);
   }
 
   @Get('integrations')

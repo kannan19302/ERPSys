@@ -1,9 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Building, Image as ImageIcon, LayoutGrid, Plug, Shield, Loader2, Check } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Building, Image as ImageIcon, LayoutGrid, Plug, Shield, Loader2, Check, Database, Hash, Calendar } from 'lucide-react';
 
 type Tab = 'general' | 'branding' | 'modules' | 'integrations';
+
+interface DemoStatus {
+  loaded: boolean;
+  modules: Record<string, boolean>;
+}
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -24,12 +34,36 @@ export default function AdminSettingsPage() {
       inventory: true,
       manufacturing: false,
       pos: false,
-    }
+    },
+    invoicePrefix: 'INV-',
+    poPrefix: 'PO-',
+    soPrefix: 'SO-',
+    fiscalYearStartMonth: 1,
   });
+
+  const [demoStatus, setDemoStatus] = useState<DemoStatus>({ loaded: false, modules: {} });
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  const getToken = () => localStorage.getItem('token');
+
+  const fetchDemoStatus = useCallback(async () => {
+    try {
+      const token = getToken();
+      if (!token) return;
+      const res = await fetch('http://localhost:3001/api/v1/admin/demo/status', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setDemoStatus(await res.json());
+      }
+    } catch {
+      // demo status unavailable
+    }
+  }, []);
 
   const fetchSettings = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       if (!token) return;
 
       const res = await fetch('http://localhost:3001/api/v1/admin/settings', {
@@ -55,7 +89,11 @@ export default function AdminSettingsPage() {
             inventory: true,
             manufacturing: false,
             pos: false,
-          }
+          },
+          invoicePrefix: settings.invoicePrefix || 'INV-',
+          poPrefix: settings.poPrefix || 'PO-',
+          soPrefix: settings.soPrefix || 'SO-',
+          fiscalYearStartMonth: org.fiscalYearStartMonth || settings.fiscalYearStartMonth || 1,
         });
       }
     } catch {
@@ -67,24 +105,25 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+    fetchDemoStatus();
+  }, [fetchDemoStatus]);
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
   const handleSave = async (updatedFields?: Partial<typeof formData>) => {
     setSaveStatus('saving');
     setMessage(null);
-    
+
     const fieldsToSave = {
       ...formData,
       ...updatedFields
     };
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const res = await fetch('http://localhost:3001/api/v1/admin/settings', {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
@@ -114,6 +153,49 @@ export default function AdminSettingsPage() {
       modules: nextModules
     }));
     handleSave({ modules: nextModules });
+  };
+
+  const handleLoadDemo = async () => {
+    setDemoLoading(true);
+    try {
+      const token = getToken();
+      const res = await fetch('http://localhost:3001/api/v1/admin/demo/load', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Demo data loaded successfully.' });
+        fetchDemoStatus();
+      } else {
+        setMessage({ type: 'error', text: 'Failed to load demo data.' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Error loading demo data.' });
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
+  const handleRemoveDemo = async () => {
+    if (!window.confirm('Are you sure you want to remove all demo data? This action cannot be undone.')) return;
+    setDemoLoading(true);
+    try {
+      const token = getToken();
+      const res = await fetch('http://localhost:3001/api/v1/admin/demo/load', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Demo data removed successfully.' });
+        fetchDemoStatus();
+      } else {
+        setMessage({ type: 'error', text: 'Failed to remove demo data.' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Error removing demo data.' });
+    } finally {
+      setDemoLoading(false);
+    }
   };
 
   if (loading) {
@@ -201,12 +283,12 @@ export default function AdminSettingsPage() {
                   <p className="text-sm text-muted-foreground mt-1">Basic details about your company.</p>
                 </div>
                 <hr className="border-border" />
-                
+
                 <div className="frappe-grid-2">
                   <div className="frappe-form-group">
                     <label className="frappe-label">Company Name</label>
-                    <input 
-                      className="frappe-input" 
+                    <input
+                      className="frappe-input"
                       value={formData.companyName}
                       onChange={e => setFormData({...formData, companyName: e.target.value})}
                       onBlur={() => handleSave()}
@@ -214,9 +296,9 @@ export default function AdminSettingsPage() {
                   </div>
                   <div className="frappe-form-group">
                     <label className="frappe-label">Registration No. / Tax ID</label>
-                    <input 
-                      className="frappe-input" 
-                      placeholder="e.g. TX-123456" 
+                    <input
+                      className="frappe-input"
+                      placeholder="e.g. TX-123456"
                       value={formData.taxId}
                       onChange={e => setFormData({...formData, taxId: e.target.value})}
                       onBlur={() => handleSave()}
@@ -226,31 +308,31 @@ export default function AdminSettingsPage() {
 
                 <div className="frappe-form-group">
                   <label className="frappe-label">Primary Address</label>
-                  <input 
-                    className="frappe-input mb-2" 
-                    placeholder="Street Address" 
+                  <input
+                    className="frappe-input mb-2"
+                    placeholder="Street Address"
                     value={formData.address.street}
                     onChange={e => setFormData({...formData, address: {...formData.address, street: e.target.value}})}
                     onBlur={() => handleSave()}
                   />
                   <div className="frappe-grid-3">
-                    <input 
-                      className="frappe-input" 
-                      placeholder="City" 
+                    <input
+                      className="frappe-input"
+                      placeholder="City"
                       value={formData.address.city}
                       onChange={e => setFormData({...formData, address: {...formData.address, city: e.target.value}})}
                       onBlur={() => handleSave()}
                     />
-                    <input 
-                      className="frappe-input" 
-                      placeholder="State/Province" 
+                    <input
+                      className="frappe-input"
+                      placeholder="State/Province"
                       value={formData.address.state}
                       onChange={e => setFormData({...formData, address: {...formData.address, state: e.target.value}})}
                       onBlur={() => handleSave()}
                     />
-                    <input 
-                      className="frappe-input" 
-                      placeholder="ZIP/Postal Code" 
+                    <input
+                      className="frappe-input"
+                      placeholder="ZIP/Postal Code"
                       value={formData.address.zip}
                       onChange={e => setFormData({...formData, address: {...formData.address, zip: e.target.value}})}
                       onBlur={() => handleSave()}
@@ -261,7 +343,7 @@ export default function AdminSettingsPage() {
                 <div className="frappe-grid-2">
                   <div className="frappe-form-group">
                     <label className="frappe-label">Primary Currency</label>
-                    <select 
+                    <select
                       className="frappe-input"
                       value={formData.currency}
                       onChange={e => {
@@ -277,7 +359,7 @@ export default function AdminSettingsPage() {
                   </div>
                   <div className="frappe-form-group">
                     <label className="frappe-label">Timezone</label>
-                    <select 
+                    <select
                       className="frappe-input"
                       value={formData.timezone}
                       onChange={e => {
@@ -293,6 +375,119 @@ export default function AdminSettingsPage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Fiscal Year Section */}
+                <hr className="border-border" />
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><Calendar size={18} className="text-primary"/> Fiscal Year</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Set your organization's fiscal year start month.</p>
+                </div>
+                <div className="frappe-grid-2">
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Fiscal Year Start Month</label>
+                    <select
+                      className="frappe-input"
+                      value={formData.fiscalYearStartMonth}
+                      onChange={e => {
+                        const val = Number(e.target.value);
+                        setFormData({...formData, fiscalYearStartMonth: val});
+                        handleSave({ fiscalYearStartMonth: val });
+                      }}
+                    >
+                      {MONTHS.map((m, i) => (
+                        <option key={i + 1} value={i + 1}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Numbering Series Section */}
+                <hr className="border-border" />
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><Hash size={18} className="text-primary"/> Numbering Series</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Configure document number prefixes for invoices, purchase orders, and sales orders.</p>
+                </div>
+                <div className="frappe-grid-3">
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Invoice Prefix</label>
+                    <input
+                      className="frappe-input"
+                      placeholder="INV-"
+                      value={formData.invoicePrefix}
+                      onChange={e => setFormData({...formData, invoicePrefix: e.target.value})}
+                      onBlur={() => handleSave()}
+                    />
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Purchase Order Prefix</label>
+                    <input
+                      className="frappe-input"
+                      placeholder="PO-"
+                      value={formData.poPrefix}
+                      onChange={e => setFormData({...formData, poPrefix: e.target.value})}
+                      onBlur={() => handleSave()}
+                    />
+                  </div>
+                  <div className="frappe-form-group">
+                    <label className="frappe-label">Sales Order Prefix</label>
+                    <input
+                      className="frappe-input"
+                      placeholder="SO-"
+                      value={formData.soPrefix}
+                      onChange={e => setFormData({...formData, soPrefix: e.target.value})}
+                      onBlur={() => handleSave()}
+                    />
+                  </div>
+                </div>
+
+                {/* Demo Data Section */}
+                <hr className="border-border" />
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><Database size={18} className="text-primary"/> Demo Data</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Load or remove sample data for testing and evaluation.</p>
+                </div>
+                <div className="border border-border rounded-lg p-4 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium">Demo Data Status: </span>
+                      <span className={`text-sm font-semibold ${demoStatus.loaded ? 'text-success' : 'text-muted-foreground'}`}>
+                        {demoStatus.loaded ? 'Loaded' : 'Not loaded'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className="frappe-btn frappe-btn-primary text-xs"
+                        onClick={handleLoadDemo}
+                        disabled={demoLoading}
+                      >
+                        {demoLoading ? 'Processing...' : 'Load Demo Data'}
+                      </button>
+                      {demoStatus.loaded && (
+                        <button
+                          className="frappe-btn frappe-btn-secondary text-xs"
+                          onClick={handleRemoveDemo}
+                          disabled={demoLoading}
+                          style={{ color: 'var(--color-danger, #dc2626)' }}
+                        >
+                          Remove All Demo Data
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {Object.keys(demoStatus.modules).length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Per-module demo data status:</span>
+                      <div className="frappe-grid-3">
+                        {Object.entries(demoStatus.modules).map(([mod, loaded]) => (
+                          <label key={mod} className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={loaded} readOnly className="accent-primary" />
+                            <span style={{ textTransform: 'capitalize' }}>{mod}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -303,7 +498,7 @@ export default function AdminSettingsPage() {
                   <p className="text-sm text-muted-foreground mt-1">Customize the look and feel of your ERP tenant.</p>
                 </div>
                 <hr className="border-border" />
-                
+
                 <div className="flex gap-6 items-start">
                   <div className="w-32 h-32 bg-muted rounded-xl flex items-center justify-center border border-border border-dashed">
                     <ImageIcon size={32} className="text-muted-foreground opacity-50" />
@@ -320,7 +515,7 @@ export default function AdminSettingsPage() {
                 <div className="frappe-form-group mt-4">
                   <label className="frappe-label">Primary Brand Color (Hex)</label>
                   <div className="flex items-center gap-3">
-                    <input 
+                    <input
                       type="color"
                       className="w-10 h-10 p-0 border border-border rounded cursor-pointer"
                       value={formData.primaryColor}
@@ -330,8 +525,8 @@ export default function AdminSettingsPage() {
                         handleSave({ primaryColor: val });
                       }}
                     />
-                    <input 
-                      className="frappe-input w-32 font-mono text-sm" 
+                    <input
+                      className="frappe-input w-32 font-mono text-sm"
                       value={formData.primaryColor}
                       onChange={e => setFormData({...formData, primaryColor: e.target.value})}
                       onBlur={() => handleSave()}
@@ -349,7 +544,7 @@ export default function AdminSettingsPage() {
                   <p className="text-sm text-muted-foreground mt-1">Enable or disable specific ERP modules for your workspace.</p>
                 </div>
                 <hr className="border-border" />
-                
+
                 <div className="flex flex-col gap-4">
                   {[
                     { id: 'finance', name: 'Finance & Accounting', desc: 'General ledger, invoicing, chart of accounts.' },
@@ -365,9 +560,9 @@ export default function AdminSettingsPage() {
                         <span className="text-xs text-muted-foreground">{mod.desc}</span>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          className="sr-only peer" 
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
                           checked={formData.modules[mod.id as keyof typeof formData.modules] || false}
                           onChange={() => handleModuleToggle(mod.id as keyof typeof formData.modules)}
                         />
@@ -386,7 +581,7 @@ export default function AdminSettingsPage() {
                   <p className="text-sm text-muted-foreground mt-1">Connect your workspace to external services.</p>
                 </div>
                 <hr className="border-border" />
-                
+
                 <div className="flex flex-col gap-4">
                   <div className="border border-border rounded-lg overflow-hidden">
                     <div className="bg-muted/50 p-4 border-b border-border flex justify-between items-center">

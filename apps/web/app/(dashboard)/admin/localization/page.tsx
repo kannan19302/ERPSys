@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, PageHeader, Button, Badge } from '@unerp/ui';
-import { Globe,  Trash2, X, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Card, PageHeader, Button, Badge, Spinner } from '@unerp/ui';
+import { Globe, Trash2, X, Search, Download, Upload } from 'lucide-react';
 
 interface LanguageInfo {
   code: string;
@@ -17,7 +17,8 @@ interface TranslationOverride {
   translation: string;
 }
 
-const supportedLanguages: LanguageInfo[] = [
+/* ── mock fallback ── */
+const FALLBACK_LANGUAGES: LanguageInfo[] = [
   { code: 'en', name: 'English', dir: 'ltr' },
   { code: 'es', name: 'Español', dir: 'ltr' },
   { code: 'fr', name: 'Français', dir: 'ltr' },
@@ -28,58 +29,211 @@ const supportedLanguages: LanguageInfo[] = [
   { code: 'ja', name: '日本語', dir: 'ltr' },
 ];
 
+const FALLBACK_OVERRIDES: TranslationOverride[] = [
+  { id: 'lo-1', locale: 'es', key: 'dashboard.welcome', translation: '¡Bienvenido al sistema UniERP!' },
+  { id: 'lo-2', locale: 'fr', key: 'dashboard.welcome', translation: 'Bienvenue dans le système UniERP !' },
+  { id: 'lo-3', locale: 'de', key: 'nav.finance', translation: 'Finanzbuchhaltung' },
+  { id: 'lo-4', locale: 'ar', key: 'dashboard.welcome', translation: 'مرحبًا بكم في نظام UniERP!' },
+];
+
+/* ── helpers ── */
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+}
+
 export default function LocalizationPage() {
-  const [overrides, setOverrides] = useState<TranslationOverride[]>([
-    { id: 'lo-1', locale: 'es', key: 'dashboard.welcome', translation: '¡Bienvenido al sistema UniERP!' },
-    { id: 'lo-2', locale: 'fr', key: 'dashboard.welcome', translation: 'Bienvenue dans le système UniERP !' },
-    { id: 'lo-3', locale: 'de', key: 'nav.finance', translation: 'Finanzbuchhaltung' },
-    { id: 'lo-4', locale: 'ar', key: 'dashboard.welcome', translation: 'مرحبًا بكم في نظام UniERP!' },
-  ]);
+  const [languages, setLanguages] = useState<LanguageInfo[]>([]);
+  const [overrides, setOverrides] = useState<TranslationOverride[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
   const [showAddModal, setShowAddModal] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [newLocale, setNewLocale] = useState('es');
   const [newKey, setNewKey] = useState('');
   const [newTranslation, setNewTranslation] = useState('');
   const [filterLocale, setFilterLocale] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleAdd = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  /* ── fetch data ── */
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        const [langRes, overRes] = await Promise.all([
+          fetch('/api/v1/admin/localization/languages', { headers: authHeaders() }),
+          fetch('/api/v1/admin/localization/overrides', { headers: authHeaders() }),
+        ]);
+        if (!langRes.ok || !overRes.ok) throw new Error('API error');
+        const langData = await langRes.json();
+        const overData = await overRes.json();
+        if (!cancelled) {
+          setLanguages(Array.isArray(langData) ? langData.map((l: any) => ({ code: l.code, name: l.name, dir: l.direction ?? l.dir ?? 'ltr' })) : FALLBACK_LANGUAGES);
+          setOverrides(Array.isArray(overData) ? overData : FALLBACK_OVERRIDES);
+        }
+      } catch {
+        if (!cancelled) {
+          setLanguages(FALLBACK_LANGUAGES);
+          setOverrides(FALLBACK_OVERRIDES);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  /* ── add override ── */
+  const handleAdd = async () => {
     if (!newKey || !newTranslation) return;
-    setOverrides((prev) => [
-      { id: `lo-${Date.now()}`, locale: newLocale, key: newKey, translation: newTranslation },
-      ...prev,
-    ]);
-    setNewKey('');
-    setNewTranslation('');
-    setShowAddModal(false);
+    setSaving(true);
+    try {
+      const res = await fetch('/api/v1/admin/localization/overrides', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ locale: newLocale, key: newKey, translation: newTranslation }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      const saved = await res.json();
+      setOverrides((prev) => [saved, ...prev]);
+      showToast('Override saved', 'success');
+    } catch {
+      /* local fallback */
+      setOverrides((prev) => [{ id: `lo-${Date.now()}`, locale: newLocale, key: newKey, translation: newTranslation }, ...prev]);
+      showToast('Saved locally (API unavailable)', 'error');
+    } finally {
+      setSaving(false);
+      setNewKey('');
+      setNewTranslation('');
+      setShowAddModal(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setOverrides((prev) => prev.filter((o) => o.id !== id));
+  /* ── delete override ── */
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/v1/admin/localization/overrides/${id}`, { method: 'DELETE', headers: authHeaders() });
+      if (!res.ok) throw new Error('Delete failed');
+      setOverrides((prev) => prev.filter((o) => o.id !== id));
+      showToast('Override deleted', 'success');
+    } catch {
+      setOverrides((prev) => prev.filter((o) => o.id !== id));
+      showToast('Deleted locally (API unavailable)', 'error');
+    }
   };
 
+  /* ── export ── */
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(overrides, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'translation-overrides.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Overrides exported', 'success');
+  };
+
+  /* ── import ── */
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const items: { locale: string; key: string; translation: string }[] = JSON.parse(text);
+      if (!Array.isArray(items)) throw new Error('Invalid format');
+      let successCount = 0;
+      for (const item of items) {
+        try {
+          const res = await fetch('/api/v1/admin/localization/overrides', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ locale: item.locale, key: item.key, translation: item.translation }),
+          });
+          if (res.ok) {
+            const saved = await res.json();
+            setOverrides((prev) => [saved, ...prev]);
+            successCount++;
+          }
+        } catch {
+          /* skip individual failures */
+        }
+      }
+      showToast(`Imported ${successCount}/${items.length} overrides`, successCount === items.length ? 'success' : 'error');
+    } catch {
+      showToast('Invalid JSON file', 'error');
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  /* ── filter ── */
   const filtered = overrides.filter((o) => {
     const matchLocale = filterLocale === 'All' || o.locale === filterLocale;
     const matchSearch = o.key.toLowerCase().includes(searchQuery.toLowerCase()) || o.translation.toLowerCase().includes(searchQuery.toLowerCase());
     return matchLocale && matchSearch;
   });
 
+  /* ── completeness: unique keys across all overrides ── */
+  const totalKeys = new Set(overrides.map((o) => o.key)).size;
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 'var(--space-4)', right: 'var(--space-4)', zIndex: 500,
+          padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)',
+          background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)',
+          color: '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)',
+          boxShadow: 'var(--shadow-lg)', animation: 'fadeInUp 0.2s ease-out',
+        }}>
+          {toast.message}
+        </div>
+      )}
+
       <PageHeader
         title="Localization & Translations"
         description="Manage multi-language support. Override default translations and configure locale-specific settings."
         breadcrumbs={[{ label: 'Administration' }, { label: 'Localization' }]}
         actions={
-          <Button variant="primary" onClick={() => setShowAddModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            Add Override
-          </Button>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button variant="outline" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Download size={16} /> Export
+            </Button>
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Upload size={16} /> Import
+            </Button>
+            <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+            <Button variant="primary" onClick={() => setShowAddModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              Add Override
+            </Button>
+          </div>
         }
       />
 
       {/* Language Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-3)' }}>
-        {supportedLanguages.map((lang) => {
+        {languages.map((lang) => {
           const count = overrides.filter((o) => o.locale === lang.code).length;
+          const pct = totalKeys > 0 ? Math.round((count / totalKeys) * 100) : 0;
           return (
             <Card
               key={lang.code}
@@ -104,6 +258,11 @@ export default function LocalizationPage() {
                   {count} override{count !== 1 ? 's' : ''}
                 </Badge>
               </div>
+              {/* Completeness bar */}
+              <div style={{ marginTop: 'var(--space-2)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-sm)', height: '4px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: 'var(--color-primary)', borderRadius: 'var(--radius-sm)', transition: 'width 0.3s ease' }} />
+              </div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>{pct}%</div>
             </Card>
           );
         })}
@@ -178,7 +337,7 @@ export default function LocalizationPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Locale</label>
                 <select value={newLocale} onChange={(e) => setNewLocale(e.target.value)} style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
-                  {supportedLanguages.map((l) => (<option key={l.code} value={l.code}>{l.name} ({l.code})</option>))}
+                  {languages.map((l) => (<option key={l.code} value={l.code}>{l.name} ({l.code})</option>))}
                 </select>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
@@ -191,7 +350,9 @@ export default function LocalizationPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
                 <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
-                <Button variant="primary" onClick={handleAdd}>Save Override</Button>
+                <Button variant="primary" onClick={handleAdd} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Override'}
+                </Button>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
+import { DemoBanner } from '@unerp/ui';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare, Trash2, Percent } from 'lucide-react';
@@ -537,8 +538,18 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: ShieldAlert,
       items: [
         { name: 'Users List', href: '/admin/users', icon: ShieldAlert },
+        { name: 'Access Control', href: '/admin/access-control', icon: ShieldCheck },
         { name: 'Security Control Hub', href: '/admin/security', icon: ShieldCheck },
+        { name: 'Settings', href: '/admin/settings', icon: Settings },
         { name: 'App Marketplace', href: '/admin/marketplace', icon: Package },
+        {
+          name: 'Monitoring',
+          isHeader: true,
+          items: [
+            { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
+            { name: 'Notifications', href: '/admin/notifications', icon: Bell },
+          ]
+        },
         {
           name: 'System Platform',
           isHeader: true,
@@ -549,7 +560,31 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
             { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
             { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
           ]
+        },
+        {
+          name: 'Data & Compliance',
+          isHeader: true,
+          items: [
+            { name: 'Import / Export', href: '/admin/import-export', icon: Upload },
+            { name: 'GDPR & Privacy', href: '/admin/gdpr', icon: ShieldCheck },
+            { name: 'Announcements', href: '/admin/announcements', icon: Bell },
+            { name: 'Scheduled Reports', href: '/admin/scheduled-reports', icon: FileText },
+            { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
+            { name: 'Notification Prefs', href: '/admin/notifications', icon: Bell },
+          ]
         }
+      ]
+    };
+  }
+  if (pathname.startsWith('/super-admin')) {
+    return {
+      title: 'Super Admin',
+      icon: ShieldAlert,
+      items: [
+        { name: 'Dashboard', href: '/super-admin', icon: Home },
+        { name: 'Tenants', href: '/super-admin/tenants', icon: Building },
+        { name: 'Admin Users', href: '/super-admin/admins', icon: Users },
+        { name: 'System Health', href: '/super-admin/health', icon: Activity },
       ]
     };
   }
@@ -918,7 +953,17 @@ const SEGMENT_NAMES: Record<string, string> = {
   simulation: 'Simulation',
   requisitions: 'Requisitions',
   'blanket-agreements': 'Blanket Agreements',
-  portal: 'Portal'
+  portal: 'Portal',
+  'super-admin': 'Super Admin',
+  'access-control': 'Access Control',
+  tenants: 'Tenants',
+  admins: 'Admin Users',
+  'activity-feed': 'Activity Feed',
+  announcements: 'Announcements',
+  'scheduled-reports': 'Scheduled Reports',
+  notifications: 'Notifications',
+  'import-export': 'Import / Export',
+  gdpr: 'GDPR',
 };
 
 const formatSegment = (segment: string): string => {
@@ -948,6 +993,7 @@ export default function DashboardLayout({
   const [searchQuery, setSearchQuery] = useState('');
   const [installedApps, setInstalledApps] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+  const [demoDataLoaded, setDemoDataLoaded] = useState(false);
 
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
   const tenantDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -1038,6 +1084,13 @@ export default function DashboardLayout({
         }
       };
       fetchInstalledApps();
+
+      // Fetch demo data status
+      fetch('/api/v1/admin/demo/status', {
+        headers: { 'Authorization': `Bearer ${storedToken}` }
+      }).then(res => res.ok ? res.json() : null)
+        .then(data => { if (data?.loaded) setDemoDataLoaded(true); })
+        .catch(() => {});
     } else {
       router.push('/login');
     }
@@ -1724,6 +1777,12 @@ export default function DashboardLayout({
                   );
                 })}
               </nav>
+            )}
+            {demoDataLoaded && (
+              <DemoBanner
+                currentModule={pathname.split('/')[1]}
+                onRemoved={() => setDemoDataLoaded(false)}
+              />
             )}
             {children}
           </div>

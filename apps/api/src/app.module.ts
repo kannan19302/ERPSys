@@ -33,9 +33,13 @@ import { PwaModule } from './modules/pwa/pwa.module';
 import { DevopsModule } from './modules/devops/devops.module';
 import { SaasModule } from './modules/saas/saas.module';
 import { BuilderModule } from './modules/builder/builder.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
+    // Global shared services (change history, etc.)
+    CommonModule,
+
     // Event-driven communication between modules
     EventEmitterModule.forRoot({
       wildcard: true,

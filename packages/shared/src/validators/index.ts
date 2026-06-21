@@ -1849,3 +1849,51 @@ export const transferStockSchema = z.object({
   remarks: z.string().max(2000).optional().nullable(),
 });
 export type TransferStockInput = z.infer<typeof transferStockSchema>;
+
+// ════════════════════════════════════════════════════
+// Change History
+// ════════════════════════════════════════════════════
+
+export const changeHistoryQuerySchema = z.object({
+  entityType: z.string().min(1),
+  entityId: z.string().min(1),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+export type ChangeHistoryQueryInput = z.infer<typeof changeHistoryQuerySchema>;
+
+// ════════════════════════════════════════════════════
+// Access Packages
+// ════════════════════════════════════════════════════
+
+export const createAccessPackageSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(500).optional(),
+  permissions: z.array(z.string()).default([]),
+  fieldAccess: z.record(z.record(z.enum(['hidden', 'readonly', 'editable']))).default({}),
+  recordFilter: z.record(z.record(z.unknown())).default({}),
+});
+export type CreateAccessPackageInput = z.infer<typeof createAccessPackageSchema>;
+
+export const updateAccessPackageSchema = createAccessPackageSchema.partial();
+export type UpdateAccessPackageInput = z.infer<typeof updateAccessPackageSchema>;
+
+export const assignAccessPackageSchema = z.object({
+  roleId: z.string().min(1),
+  accessPackageId: z.string().min(1),
+});
+export type AssignAccessPackageInput = z.infer<typeof assignAccessPackageSchema>;
+
+// ════════════════════════════════════════════════════
+// Demo Data
+// ════════════════════════════════════════════════════
+
+export const loadDemoDataSchema = z.object({
+  modules: z.array(z.string()).optional(),
+});
+export type LoadDemoDataInput = z.infer<typeof loadDemoDataSchema>;
+
+export const removeDemoDataSchema = z.object({
+  module: z.string().optional(),
+});
+export type RemoveDemoDataInput = z.infer<typeof removeDemoDataSchema>;

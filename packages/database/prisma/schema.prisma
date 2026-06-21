@@ -28,10 +28,15 @@ model Tenant {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users         User[]
-  organizations Organization[]
-  subscription  TenantSubscription?
-  installedApps InstalledApp[]
+  demoDataLoaded Boolean   @default(false) @map("demo_data_loaded")
+  demoLoadedAt   DateTime? @map("demo_loaded_at")
+
+  users            User[]
+  organizations    Organization[]
+  subscription     TenantSubscription?
+  installedApps    InstalledApp[]
+  demoDataRecords  DemoDataRecord[]
+  accessPackages   AccessPackage[]
 
   @@map("tenants")
 }
@@ -70,7 +75,8 @@ model Role {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  users UserRole[]
+  users          UserRole[]
+  accessPackages RoleAccessPackage[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -6573,5 +6579,170 @@ model BlanketPurchaseAgreementItem {
   @@index([tenantId])
   @@index([agreementId])
   @@map("blanket_purchase_agreement_items")
+}
+
+// ─── Change History (Entity + Field-Level Audit Trail) ───
+
+model ChangeHistory {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  userName     String   @map("user_name")
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id")
+  action       String
+  fieldChanges Json     @default("[]") @map("field_changes")
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, userId])
+  @@map("change_history")
+}
+
+// ─── Demo Data Tracking ───
+
+model DemoDataRecord {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  module     String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, entityType, entityId])
+  @@index([tenantId, module])
+  @@map("demo_data_records")
+}
+
+// ─── Permission Registry ───
+
+model Permission {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  module      String
+  resource    String
+  action      String
+  level       String  @default("endpoint")
+  description String?
+
+  @@index([module])
+  @@map("permissions")
+}
+
+// ─── Access Packages (Bundled Permission Sets) ───
+
+model AccessPackage {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  description  String?
+  permissions  Json     @default("[]")
+  fieldAccess  Json     @default("{}") @map("field_access")
+  recordFilter Json     @default("{}") @map("record_filter")
+  isSystem     Boolean  @default(false) @map("is_system")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roles  RoleAccessPackage[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("access_packages")
+}
+
+model RoleAccessPackage {
+  roleId          String @map("role_id")
+  accessPackageId String @map("access_package_id")
+
+  role          Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  accessPackage AccessPackage @relation(fields: [accessPackageId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, accessPackageId])
+  @@map("role_access_packages")
+}
+
+// ════════════════════════════════════════════════
+// SYSTEM ANNOUNCEMENTS
+// ════════════════════════════════════════════════
+
+model SystemAnnouncement {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  title     String
+  message   String
+  type      String   @default("info")
+  priority  String   @default("normal")
+  isActive  Boolean  @default(true) @map("is_active")
+  expiresAt DateTime? @map("expires_at")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, isActive])
+  @@map("system_announcements")
+}
+
+// ════════════════════════════════════════════════
+// SCHEDULED REPORTS
+// ════════════════════════════════════════════════
+
+model ScheduledReport {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  reportType  String   @map("report_type")
+  schedule    String
+  recipients  Json     @default("[]")
+  filters     Json     @default("{}")
+  format      String   @default("pdf")
+  isActive    Boolean  @default(true) @map("is_active")
+  lastRunAt   DateTime? @map("last_run_at")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("scheduled_reports")
+}
+
+// ════════════════════════════════════════════════
+// GDPR & DATA GOVERNANCE
+// ════════════════════════════════════════════════
+
+model DataRetentionPolicy {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  entityType   String   @map("entity_type")
+  retentionDays Int     @map("retention_days")
+  action       String   @default("archive")
+  isActive     Boolean  @default(true) @map("is_active")
+  lastRunAt    DateTime? @map("last_run_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, entityType])
+  @@index([tenantId])
+  @@map("data_retention_policies")
+}
+
+model DataErasureRequest {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  requestedBy String   @map("requested_by")
+  subjectEmail String  @map("subject_email")
+  subjectName  String?  @map("subject_name")
+  status      String   @default("PENDING")
+  entityTypes Json     @default("[]") @map("entity_types")
+  erasedAt    DateTime? @map("erased_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, status])
+  @@map("data_erasure_requests")
 }
 
