@@ -61,7 +61,7 @@ const applications: AppDefinition[] = [
   { id: 'projects', name: 'Project Management', description: 'Projects, tasks, milestones, and timesheets', href: '/projects', icon: Briefcase, color: '#06b6d4', category: 'Projects', installed: true },
   { id: 'manufacturing', name: 'Manufacturing', description: 'BOM, work orders, and production planning', href: '/manufacturing', icon: Hammer, color: '#84cc16', category: 'Operations', installed: true },
   { id: 'analytics', name: 'Business Intelligence', description: 'Custom dashboards and analytics reports', href: '/analytics', icon: PieChart, color: '#a855f7', category: 'Intelligence', installed: true },
-  { id: 'documents', name: 'Document Management', description: 'File storage, folders, and version control', href: '/documents', icon: FolderOpen, color: '#eab308', category: 'Files', installed: true },
+  { id: 'drive', name: 'Drive', description: 'Sleek document library, sharing, and version control', href: '/drive', icon: FolderOpen, color: '#eab308', category: 'Files', installed: true },
   { id: 'communication', name: 'Connect', description: 'Spaces, chat, threads, DMs, meetings, and calendar', href: '/connect', icon: MessageSquare, color: 'var(--color-success)', category: 'Communication', installed: true },
   { id: 'pos', name: 'POS & Retail', description: 'Point of sale terminals and cash registers', href: '/pos', icon: Store, color: '#e11d48', category: 'Finance', installed: true },
   { id: 'workflows', name: 'Workflows', description: 'Approval chains and automation engine', href: '/workflows', icon: GitFork, color: '#0ea5e9', category: 'Platform', installed: true },

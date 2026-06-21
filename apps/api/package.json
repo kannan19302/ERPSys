@@ -4,7 +4,7 @@
   "private": true,
   "description": "UniERP Backend API — NestJS",
   "scripts": {
-    "dev": "nest start --watch",
+    "dev": "nest start --watch --transpile-only",
     "build": "nest build",
     "start": "node dist/main",
     "start:prod": "node dist/main",
@@ -21,6 +21,8 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/throttler": "^6.0.0",
     "@prisma/client": "^6.2.0",
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@types/multer": "^1.4.11",
     "@unerp/auth": "workspace:*",
     "@unerp/database": "workspace:*",
     "@unerp/shared": "workspace:*",

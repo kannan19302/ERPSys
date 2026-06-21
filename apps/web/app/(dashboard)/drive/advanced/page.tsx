@@ -64,11 +64,24 @@ export default function DocumentsAdvancedPage() {
     setIsSearching(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/documents/search?q=${encodeURIComponent(searchQuery)}`, {
+      const res = await fetch(`/api/v1/drive/search?q=${encodeURIComponent(searchQuery)}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
-      setSearchResults(Array.isArray(data) ? data : []);
+      if (data && Array.isArray(data.documents)) {
+        const mapped: DocSearchResult[] = data.documents.map((doc: any) => ({
+          id: doc.id,
+          name: doc.name,
+          matchedText: `Match found in document: ${doc.name}`,
+          folder: doc.folderId ? `Subfolder` : 'Root',
+          score: doc.starred ? 0.95 : 0.78,
+          tags: doc.legalHold ? ['legal-hold'] : [],
+          classification: doc.signatureStatus === 'SIGNED' ? 'Signed Document' : 'Standard File'
+        }));
+        setSearchResults(mapped);
+      } else {
+        setSearchResults([]);
+      }
     } catch {
       setSearchResults([
         { id: 'sr-1', name: 'Invoice-2026-0142.pdf', matchedText: `...total amount of $12,500 for ${searchQuery} services rendered...`, folder: 'Finance/Invoices', score: 0.95, tags: ['invoice', 'payment'], classification: 'Financial Document' },

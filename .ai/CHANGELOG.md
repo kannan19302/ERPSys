@@ -5,6 +5,24 @@
 
 ---
 
+## [2026-06-21] Drive — Google Drive UI, AES-256 S3 Envelope Encryption & Advanced Sharing
+
+### Added
+- **Google Drive UI**: Created a premium, high-fidelity Google Drive clone at `/drive` with custom nested folder navigation, double-click traversal, path breadcrumbs stack, responsive grids/lists, and collapsible Details Side Drawer.
+- **Envelope Encryption**: Programmed on-the-fly AES-256-CBC envelope encryption for document binary buffer streams uploaded directly to MinIO (S3-compatible object storage) with unique database-indexed IVs.
+- **OneDrive-style Sharing**: Integrated custom share configuration inputs including password protection and link expiration calendar dates.
+- **Box-style Compliance**: Added active Legal Hold toggles to folders and files to block deletion workflows.
+- **Digital Signatures & Versions**: Wired e-signature requests and multi-version upload/download decrypter streams directly.
+- **Sidebar Nav Split**: Separated Drive and Storage explorer links cleanly under layout and home screens.
+- **Self-Healing S3 Bucket Initialization**: Configured automated checks in backend `DocumentsService` (`createDocument` and `addVersion`) to verify and create the target MinIO bucket dynamically on demand, handling instances where the storage container boots late.
+
+### Fixed
+- **TS6133 Error**: Removed unused `Readable` import in `documents.service.ts` to clean compiler status.
+- **Sidebar Active Highlighting**: Added `/drive` and `/storage` to exact path matches in `layout.tsx` to prevent overlapping active link states when viewing child routes (like `/drive/advanced` or `/storage/advanced`).
+- **MinIO Container Startup**: Started the `unerp-minio` container using docker-compose, enabling S3-compatible file storage local binding.
+- **Shared/Starred/Trash Nested Folder Duplication**: Fixed `getFolders` and `getDocuments` query filtration in `documents.service.ts` where `parentId`/`folderId` was ignored for non-personal views, preventing infinite folder opening loops and duplicate displays during navigation.
+- **Double Click Navigation Guard**: Implemented navigation guards in `drive/page.tsx` (`handleEnterFolder`) to block race conditions from rapid double-clicks and guaranteed React list key uniqueness with composite `${folder.id}-${index}` strings.
+
 ## [2026-06-20] Web Studio — Rich Block Library, Forms, E-commerce & Publish Workflow
 
 ### Added

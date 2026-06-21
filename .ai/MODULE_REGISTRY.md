@@ -39,7 +39,7 @@
 | 9 | **Project Management** | `apps/api/src/modules/projects` | 🟢 ACTIVE | 3 | admin, hr, finance | Project, Task, Timesheet, Milestone, Budget, ProjectPortfolio, ProjectRisk, ChangeRequest |
 | 10 | **Manufacturing (MRP)** | `apps/api/src/modules/manufacturing` | 🟢 ACTIVE | 3 | inventory, procurement, sales | BOM, WorkOrder, ProductionPlan, Routing, ScrapEntry |
 | 11 | **Business Intelligence** | `apps/api/src/modules/analytics` | 🟢 ACTIVE | 4 | all core modules | Dashboard, Report, KPI, Widget, ScheduledReport |
-| 12 | **Document Management** | `apps/api/src/modules/documents` | 🟢 ACTIVE | 4 | admin | Document, Folder, Version, Template, Signature |
+| 12 | **Drive** (renamed from Documents) | `apps/api/src/modules/documents` | 🟢 ACTIVE | 4 | admin | Document, Folder, Version, Template, Signature, FolderShare, DocumentShare (Google Drive UI, AES-256 S3 envelope encryption, legal holds, password protected and expiring share links) |
 | 13 | **Connect** (Communication) | `apps/api/src/modules/communication` | 🟢 ACTIVE | 4 | admin | Message, Channel, Notification, EmailTemplate, Presence*, Meeting* |
 | 14 | **POS & Retail** | `apps/api/src/modules/pos` | 🟢 ACTIVE | 5 | inventory, sales, finance | POSTerminal, Register, Receipt, Shift, CashEntry |
 | 15 | **Advanced Inventory** | `apps/api/src/modules/inventory` (ext) | 🟢 ACTIVE | 5 | inventory | SerialNumber, Batch, BinLocation, CycleCount, Valuation |

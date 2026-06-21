@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare } from 'lucide-react';
+import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare, Trash2 } from 'lucide-react';
 import {
   Home,
   CreditCard,
@@ -403,22 +403,27 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       ]
     };
   }
-  if (pathname.startsWith('/documents') || pathname.startsWith('/storage')) {
+  if (pathname.startsWith('/drive')) {
     return {
-      title: 'Document Management',
+      title: 'Drive',
       icon: FolderOpen,
       items: [
-        { name: 'Documents & Folders', href: '/documents', icon: FolderOpen },
-        { name: 'Advanced Document Mgmt', href: '/documents/advanced', icon: FileText },
-        {
-          name: 'Cloud Storage',
-          isHeader: true,
-          items: [
-            { name: 'Files Explorer', href: '/storage', icon: HardDrive },
-            { name: 'Presigned Urls', href: '/storage', icon: Key },
-            { name: 'Storage & Templates Pro', href: '/storage/advanced', icon: Database },
-          ]
-        }
+        { name: 'My Drive', href: '/drive', icon: FolderOpen },
+        { name: 'Shared with me', href: '/drive?view=shared', icon: Users },
+        { name: 'Recent', href: '/drive?view=recent', icon: Clock },
+        { name: 'Starred', href: '/drive?view=starred', icon: Star },
+        { name: 'Trash', href: '/drive?view=trash', icon: Trash2 },
+        { name: 'E-Signatures & Tools', href: '/drive/advanced', icon: FileText },
+      ]
+    };
+  }
+  if (pathname.startsWith('/storage')) {
+    return {
+      title: 'Files & Storage',
+      icon: HardDrive,
+      items: [
+        { name: 'Files Explorer', href: '/storage', icon: HardDrive },
+        { name: 'Storage & Templates Pro', href: '/storage/advanced', icon: Database },
       ]
     };
   }
@@ -594,7 +599,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Project Management', href: '/projects', icon: Briefcase, type: 'App' },
   { name: 'Manufacturing', href: '/manufacturing', icon: Hammer, type: 'App' },
   { name: 'Business Intelligence', href: '/analytics', icon: PieChart, type: 'App' },
-  { name: 'Document Management', href: '/documents', icon: FolderOpen, type: 'App' },
+  { name: 'Drive', href: '/drive', icon: FolderOpen, type: 'App' },
   { name: 'Connect', href: '/connect', icon: MessageSquare, type: 'App' },
   { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
   { name: 'Workflows', href: '/workflows', icon: GitFork, type: 'App' },
@@ -712,11 +717,18 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
       const itemPath = parts[0] || '';
       const itemQuery = parts[1] || '';
       
-      const isPathMatch = (itemPath === '/inventory' || itemPath === '/builder' || itemPath === '/dashboard')
+      const isPathMatch = (itemPath === '/inventory' || itemPath === '/builder' || itemPath === '/dashboard' || itemPath === '/drive' || itemPath === '/storage')
         ? pathname === itemPath 
         : (pathname === itemPath || pathname.startsWith(itemPath + '/'));
         
       if (!isPathMatch) return false;
+
+      if (itemPath === '/drive') {
+        const activeView = searchParams.get('view') || 'personal';
+        const itemParams = new URLSearchParams(itemQuery);
+        const itemView = itemParams.get('view') || 'personal';
+        return activeView === itemView;
+      }
 
       if ((itemPath.includes('/hr/advanced') || itemPath.includes('/inventory/advanced')) && itemQuery) {
         const activeTab = searchParams.get('tab') || (itemPath.includes('/hr/advanced') ? 'payroll' : 'entries');
@@ -786,7 +798,7 @@ const SEGMENT_NAMES: Record<string, string> = {
   pos: 'POS',
   communication: 'Connect',
   connect: 'Connect',
-  documents: 'Documents',
+  drive: 'Drive',
   analytics: 'Analytics',
   workflows: 'Workflows',
   admin: 'Administration',
@@ -1069,7 +1081,7 @@ export default function DashboardLayout({
     { id: 'projects', name: 'Project Management', href: '/projects', icon: Briefcase, installed: true },
     { id: 'manufacturing', name: 'Manufacturing', href: '/manufacturing', icon: Hammer, installed: true },
     { id: 'analytics', name: 'Business Intelligence', href: '/analytics', icon: PieChart, installed: true },
-    { id: 'documents', name: 'Document Management', href: '/documents', icon: FolderOpen, installed: true },
+    { id: 'drive', name: 'Drive', href: '/drive', icon: FolderOpen, installed: true },
     { id: 'communication', name: 'Connect', href: '/connect', icon: MessageSquare, installed: true },
     { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
     { id: 'workflows', name: 'Workflows', href: '/workflows', icon: GitFork, installed: true },

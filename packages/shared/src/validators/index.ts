@@ -1400,7 +1400,7 @@ export const createApprovalProcessSchema = z.object({
 });
 export type CreateApprovalProcessInput = z.infer<typeof createApprovalProcessSchema>;
 
-export const updateApprovalProcessSchema = createApprovalProcessSchema.partial();
+export const updateApprovalProcessSchema = createApprovalProcessSchema.partial().extend({ isActive: z.boolean().optional() });
 export type UpdateApprovalProcessInput = z.infer<typeof updateApprovalProcessSchema>;
 
 export const submitApprovalSchema = z.object({

@@ -37,7 +37,7 @@ export class AppInstalledGuard implements CanActivate {
       'projects',
       'manufacturing',
       'analytics',
-      'documents',
+      'drive',
       'communication',
       'pos',
       'workflows',

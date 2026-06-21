@@ -1344,10 +1344,14 @@ model Folder {
   createdBy String?  @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  starred   Boolean  @default(false) @map("starred")
+  legalHold Boolean  @default(false) @map("legal_hold")
 
   parent    Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id])
   children  Folder[]   @relation("FolderHierarchy")
   documents Document[]
+  shares    FolderShare[]
 
   @@index([tenantId])
   @@map("folders")
@@ -1365,10 +1369,13 @@ model Document {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
+  starred         Boolean   @default(false) @map("starred")
+  legalHold       Boolean   @default(false) @map("legal_hold")
 
   folder     Folder?           @relation(fields: [folderId], references: [id])
   versions   DocumentVersion[]
   signatures Signature[]
+  shares     DocumentShare[]
 
   @@index([tenantId])
   @@map("documents")
@@ -1383,11 +1390,46 @@ model DocumentVersion {
   fileSize      Int      @map("file_size")
   createdBy     String?  @map("created_by")
   createdAt     DateTime @default(now()) @map("created_at")
+  iv            String?  @map("iv")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@map("document_versions")
+}
+
+model FolderShare {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  folderId  String   @map("folder_id")
+  userId    String   @map("user_id")
+  role      String   @default("VIEWER") // VIEWER, EDITOR
+  password  String?  @map("password_hash")
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  folder    Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("folder_shares")
+}
+
+model DocumentShare {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  documentId String   @map("document_id")
+  userId     String   @map("user_id")
+  role       String   @default("VIEWER") // VIEWER, EDITOR
+  password   String?  @map("password_hash")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("document_shares")
 }
 
 model DocumentTemplate {

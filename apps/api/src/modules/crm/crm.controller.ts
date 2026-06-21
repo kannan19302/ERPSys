@@ -887,7 +887,7 @@ export class CrmController {
   @Get('approval-requests/pending')
   @Permissions('crm.contact.read')
   async getPendingApprovals(@Req() req: AuthenticatedRequest) {
-    return this.crmService.getPendingApprovals(req.user.tenantId);
+    return this.crmService.getPendingApprovals(req.user.tenantId, req.user.userId);
   }
 
   @Get('approval-requests/:entityType/:entityId')
@@ -997,7 +997,7 @@ export class CrmController {
   @Delete('comments/:id')
   @Permissions('crm.contact.delete')
   async deleteComment(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.crmService.deleteComment(req.user.tenantId, id);
+    return this.crmService.deleteComment(req.user.tenantId, id, req.user.userId);
   }
 
   @Post('comments/:id/pin')

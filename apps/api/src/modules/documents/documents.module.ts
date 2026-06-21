@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DocumentsController } from './documents.controller';
+import { DriveController } from './drive.controller';
 import { DocumentsService } from './documents.service';
 
 @Module({
-  controllers: [DocumentsController],
+  controllers: [DriveController],
   providers: [DocumentsService],
   exports: [DocumentsService],
 })

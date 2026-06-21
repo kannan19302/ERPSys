@@ -132,8 +132,9 @@ Write-Step "Step 4/7 - Synchronizing Prisma database schema..."
 Push-Location $ROOT
 try {
   & pnpm db:push
+  & pnpm --filter @unerp/database build
   if ($LASTEXITCODE -ne 0) {
-    Write-Fail "Database sync failed. Check DATABASE_URL in apps/api/.env"
+    Write-Fail "Database sync/build failed. Check DATABASE_URL in apps/api/.env"
     Pop-Location
     exit 1
   }
