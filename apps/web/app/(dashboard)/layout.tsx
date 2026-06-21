@@ -70,6 +70,11 @@ import {
   Send,
   Upload,
   Plug,
+  Webhook,
+  ExternalLink,
+  Box,
+  Shield,
+  Download,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -557,9 +562,9 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       try {
         const u = JSON.parse(userJson);
         isSuperAdmin = u.role === 'SUPER_ADMIN' || u.email === 'admin@uni-erp.com';
-      } catch {}
+      } catch { }
     }
-    
+
     const items: SidebarItem[] = [
       { name: 'Dashboard', href: '/admin', icon: Home },
       {
@@ -1141,7 +1146,6 @@ const SEGMENT_NAMES: Record<string, string> = {
   'data-retention': 'Data Retention',
   'login-customizer': 'Login Customizer',
   'email-config': 'SMTP Server',
-  'email-templates': 'Email Templates',
   maintenance: 'Maintenance Mode',
   'system-health': 'System Health',
   jobs: 'Background Jobs',
@@ -1298,7 +1302,7 @@ export default function DashboardLayout({
         headers: { 'Authorization': `Bearer ${storedToken}` }
       }).then(res => res.ok ? res.json() : null)
         .then(data => { if (data?.loaded) setDemoDataLoaded(true); })
-        .catch(() => {});
+        .catch(() => { });
     } else {
       router.push('/login');
     }
