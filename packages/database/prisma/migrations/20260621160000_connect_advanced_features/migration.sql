@@ -25,3 +25,7 @@ ALTER TABLE "calendar_events" ADD COLUMN IF NOT EXISTS "location" TEXT;
 ALTER TABLE "calendar_events" ADD COLUMN IF NOT EXISTS "color" TEXT;
 ALTER TABLE "calendar_events" ADD COLUMN IF NOT EXISTS "all_day" BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE "calendar_events" ADD COLUMN IF NOT EXISTS "recurrence" TEXT NOT NULL DEFAULT 'none';
+
+-- AddForeignKey
+ALTER TABLE "message_bookmarks" ADD CONSTRAINT "message_bookmarks_message_id_fkey" FOREIGN KEY ("message_id") REFERENCES "messages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

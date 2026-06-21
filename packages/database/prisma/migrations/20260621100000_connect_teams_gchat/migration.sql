@@ -100,3 +100,16 @@ CREATE TABLE IF NOT EXISTS "calendar_events" (
     CONSTRAINT "calendar_events_pkey" PRIMARY KEY ("id")
 );
 CREATE INDEX IF NOT EXISTS "calendar_events_tenant_id_idx" ON "calendar_events"("tenant_id");
+
+-- AddForeignKey
+ALTER TABLE "channels" ADD CONSTRAINT "channels_space_id_fkey" FOREIGN KEY ("space_id") REFERENCES "connect_spaces"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "messages" ADD CONSTRAINT "messages_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "messages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "channel_members" ADD CONSTRAINT "channel_members_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "message_reactions" ADD CONSTRAINT "message_reactions_message_id_fkey" FOREIGN KEY ("message_id") REFERENCES "messages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

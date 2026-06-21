@@ -646,8 +646,10 @@ async function main() {
         warehouseId: warehouse.id,
         name: 'Aisle-4-Shelf-B',
         zone: 'Zone-A',
-        shelf: 'Shelf-B',
+        aisle: 'Aisle-4',
+        rack: 'Rack-B',
         bin: 'Bin-12',
+        code: 'A4RB12',
       },
     });
     console.log('Phase 5 (POS & Advanced Inventory) initial seed data complete.');
