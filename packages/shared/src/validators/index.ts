@@ -1113,3 +1113,473 @@ export const updateWebOrderSchema = z.object({
   status: z.enum(['PENDING', 'PAID', 'FULFILLED', 'CANCELLED']),
 });
 export type UpdateWebOrderInput = z.infer<typeof updateWebOrderSchema>;
+
+// ════════════════════════════════════════════════
+// CRM Phase 1: Opportunity Line Items & Price Books
+// ════════════════════════════════════════════════
+
+export const createOpportunityLineItemSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1).max(500),
+  quantity: z.number().positive(),
+  unitPrice: z.number().nonnegative(),
+  discount: z.number().min(0).max(100).default(0),
+  sortOrder: z.number().int().nonnegative().default(0),
+});
+export type CreateOpportunityLineItemInput = z.infer<typeof createOpportunityLineItemSchema>;
+export const updateOpportunityLineItemSchema = createOpportunityLineItemSchema.partial();
+export type UpdateOpportunityLineItemInput = z.infer<typeof updateOpportunityLineItemSchema>;
+
+export const createPriceBookSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  currency: z.string().length(3).default('USD'),
+  isDefault: z.boolean().default(false),
+  validFrom: z.string().optional(),
+  validTo: z.string().optional(),
+});
+export type CreatePriceBookInput = z.infer<typeof createPriceBookSchema>;
+export const updatePriceBookSchema = createPriceBookSchema.partial();
+export type UpdatePriceBookInput = z.infer<typeof updatePriceBookSchema>;
+
+export const createPriceBookEntrySchema = z.object({
+  productId: z.string().min(1),
+  listPrice: z.number().nonnegative(),
+  minQuantity: z.number().positive().default(1),
+});
+export type CreatePriceBookEntryInput = z.infer<typeof createPriceBookEntrySchema>;
+
+// ════════════════════════════════════════════════
+// CRM Phase 2: Contact Tags
+// ════════════════════════════════════════════════
+
+export const createContactTagSchema = z.object({
+  name: z.string().min(1).max(50),
+  color: z.string().max(7).default('#3b82f6'),
+});
+export type CreateContactTagInput = z.infer<typeof createContactTagSchema>;
+
+export const mergeContactsSchema = z.object({
+  primaryContactId: z.string().min(1),
+  secondaryContactId: z.string().min(1),
+});
+export type MergeContactsInput = z.infer<typeof mergeContactsSchema>;
+
+// ════════════════════════════════════════════════
+// CRM Phase 3: Sales Targets & Reports
+// ════════════════════════════════════════════════
+
+export const createSalesTargetSchema = z.object({
+  userId: z.string().optional(),
+  period: z.string().min(1).max(20),
+  targetType: z.enum(['REVENUE', 'DEALS', 'UNITS']).default('REVENUE'),
+  target: z.number().positive(),
+});
+export type CreateSalesTargetInput = z.infer<typeof createSalesTargetSchema>;
+export const updateSalesTargetSchema = createSalesTargetSchema.partial();
+export type UpdateSalesTargetInput = z.infer<typeof updateSalesTargetSchema>;
+
+export const createSavedReportSchema = z.object({
+  name: z.string().min(1).max(100),
+  type: z.enum(['PIPELINE', 'LEADS', 'ACTIVITIES', 'REVENUE', 'CONVERSION']),
+  filters: z.record(z.any()).default({}),
+  columns: z.array(z.string()).default([]),
+  chartType: z.enum(['BAR', 'LINE', 'PIE', 'FUNNEL']).optional(),
+  isShared: z.boolean().default(false),
+  schedule: z.string().optional(),
+});
+export type CreateSavedReportInput = z.infer<typeof createSavedReportSchema>;
+
+// ════════════════════════════════════════════════
+// CRM Phase 4: Workflow Automation & Sequences
+// ════════════════════════════════════════════════
+
+export const createCrmWorkflowRuleSchema = z.object({
+  name: z.string().min(1).max(100),
+  entity: z.enum(['LEAD', 'OPPORTUNITY', 'ACTIVITY', 'CONTACT']),
+  trigger: z.enum(['ON_CREATE', 'ON_UPDATE', 'ON_STAGE_CHANGE', 'ON_STATUS_CHANGE', 'SCHEDULED']),
+  conditions: z.array(z.object({
+    field: z.string(),
+    operator: z.enum(['EQUALS', 'NOT_EQUALS', 'CONTAINS', 'GT', 'LT', 'GTE', 'LTE', 'IN', 'NOT_IN']),
+    value: z.any(),
+  })).default([]),
+  actions: z.array(z.object({
+    type: z.enum(['ASSIGN', 'CREATE_ACTIVITY', 'SEND_EMAIL', 'UPDATE_FIELD', 'NOTIFY']),
+    config: z.record(z.any()),
+  })).min(1),
+  isActive: z.boolean().default(true),
+});
+export type CreateCrmWorkflowRuleInput = z.infer<typeof createCrmWorkflowRuleSchema>;
+export const updateCrmWorkflowRuleSchema = createCrmWorkflowRuleSchema.partial();
+export type UpdateCrmWorkflowRuleInput = z.infer<typeof updateCrmWorkflowRuleSchema>;
+
+export const createEmailSequenceSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  steps: z.array(z.object({
+    templateId: z.string().min(1),
+    delayDays: z.number().int().min(0).default(1),
+    sortOrder: z.number().int().nonnegative().default(0),
+  })).min(1),
+});
+export type CreateEmailSequenceInput = z.infer<typeof createEmailSequenceSchema>;
+
+export const enrollSequenceSchema = z.object({
+  contactId: z.string().optional(),
+  leadId: z.string().optional(),
+});
+export type EnrollSequenceInput = z.infer<typeof enrollSequenceSchema>;
+
+// ════════════════════════════════════════════════
+// CRM Phase 5: Territories & Commissions
+// ════════════════════════════════════════════════
+
+export const createSalesTerritorySchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  criteria: z.record(z.any()).default({}),
+  parentId: z.string().optional(),
+  managerId: z.string().optional(),
+});
+export type CreateSalesTerritoryInput = z.infer<typeof createSalesTerritorySchema>;
+export const updateSalesTerritorySchema = createSalesTerritorySchema.partial();
+export type UpdateSalesTerritoryInput = z.infer<typeof updateSalesTerritorySchema>;
+
+export const addTeamMemberSchema = z.object({
+  userId: z.string().min(1),
+  role: z.enum(['REP', 'MANAGER', 'DIRECTOR']).default('REP'),
+});
+export type AddTeamMemberInput = z.infer<typeof addTeamMemberSchema>;
+
+export const createCommissionRuleSchema = z.object({
+  name: z.string().min(1).max(100),
+  type: z.enum(['PERCENTAGE', 'FLAT', 'TIERED']).default('PERCENTAGE'),
+  rate: z.number().min(0).max(100),
+  tiers: z.array(z.object({
+    min: z.number().nonnegative(),
+    max: z.number().positive(),
+    rate: z.number().min(0).max(100),
+  })).default([]),
+  appliesToAll: z.boolean().default(true),
+  productIds: z.array(z.string()).default([]),
+});
+export type CreateCommissionRuleInput = z.infer<typeof createCommissionRuleSchema>;
+export const updateCommissionRuleSchema = createCommissionRuleSchema.partial();
+export type UpdateCommissionRuleInput = z.infer<typeof updateCommissionRuleSchema>;
+
+export const calculateCommissionsSchema = z.object({
+  periodStart: z.string().min(1),
+  periodEnd: z.string().min(1),
+});
+export type CalculateCommissionsInput = z.infer<typeof calculateCommissionsSchema>;
+
+// ════════════════════════════════════════════════
+// CRM Phase 6: Web Forms & Documents
+// ════════════════════════════════════════════════
+
+export const createWebToLeadFormSchema = z.object({
+  name: z.string().min(1).max(100),
+  fields: z.array(z.object({
+    name: z.string().min(1),
+    label: z.string().min(1),
+    type: z.enum(['TEXT', 'EMAIL', 'PHONE', 'SELECT', 'TEXTAREA', 'NUMBER']),
+    required: z.boolean().default(false),
+    options: z.array(z.string()).optional(),
+  })).min(1),
+  settings: z.object({
+    redirectUrl: z.string().optional(),
+    notifyEmail: z.string().email().optional(),
+    assignToId: z.string().optional(),
+    sourceId: z.string().optional(),
+    campaignId: z.string().optional(),
+  }).default({}),
+});
+export type CreateWebToLeadFormInput = z.infer<typeof createWebToLeadFormSchema>;
+export const updateWebToLeadFormSchema = createWebToLeadFormSchema.partial();
+export type UpdateWebToLeadFormInput = z.infer<typeof updateWebToLeadFormSchema>;
+
+export const submitWebFormSchema = z.object({
+  data: z.record(z.string()),
+});
+export type SubmitWebFormInput = z.infer<typeof submitWebFormSchema>;
+
+export const createCrmDocumentSchema = z.object({
+  name: z.string().min(1).max(200),
+  type: z.enum(['PROPOSAL', 'CONTRACT', 'ATTACHMENT', 'OTHER']),
+  fileUrl: z.string().min(1),
+  fileSize: z.number().int().positive().optional(),
+  mimeType: z.string().optional(),
+  entityType: z.enum(['LEAD', 'OPPORTUNITY', 'CUSTOMER', 'CONTACT', 'QUOTATION']),
+  entityId: z.string().min(1),
+});
+export type CreateCrmDocumentInput = z.infer<typeof createCrmDocumentSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 7: Custom Fields
+// ════════════════════════════════════════════════════
+
+const customFieldEntityEnum = z.enum([
+  'CUSTOMER', 'CONTACT', 'LEAD', 'OPPORTUNITY', 'QUOTATION', 'VENDOR',
+]);
+
+export const createCustomFieldSchema = z.object({
+  entity: customFieldEntityEnum,
+  fieldName: z.string().regex(/^[a-z][a-z0-9_]*$/, 'Must start with lowercase letter, only a-z 0-9 _'),
+  label: z.string().min(1).max(200),
+  fieldType: z.enum([
+    'TEXT', 'NUMBER', 'DECIMAL', 'DATE', 'DATETIME', 'BOOLEAN',
+    'PICKLIST', 'MULTI_PICKLIST', 'URL', 'EMAIL', 'PHONE',
+    'TEXTAREA', 'LOOKUP', 'FORMULA',
+  ]),
+  description: z.string().max(500).optional(),
+  isRequired: z.boolean().optional(),
+  defaultValue: z.string().optional(),
+  options: z.array(z.object({
+    value: z.string().min(1),
+    label: z.string().min(1),
+    color: z.string().optional(),
+  })).optional(),
+  validation: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+    regex: z.string().optional(),
+    maxLength: z.number().int().positive().optional(),
+  }).optional(),
+  lookupEntity: z.string().optional(),
+  formulaExpr: z.string().optional(),
+  sortOrder: z.number().int().optional(),
+  section: z.string().optional(),
+});
+export type CreateCustomFieldInput = z.infer<typeof createCustomFieldSchema>;
+
+export const updateCustomFieldSchema = createCustomFieldSchema.partial();
+export type UpdateCustomFieldInput = z.infer<typeof updateCustomFieldSchema>;
+
+export const upsertCustomFieldValuesSchema = z.object({
+  values: z.array(z.object({
+    fieldId: z.string().min(1),
+    value: z.string().nullable(),
+  })),
+});
+export type UpsertCustomFieldValuesInput = z.infer<typeof upsertCustomFieldValuesSchema>;
+
+export const createRecordTypeSchema = z.object({
+  entity: customFieldEntityEnum,
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).optional(),
+  fieldLayout: z.array(z.object({
+    section: z.string().min(1),
+    fields: z.array(z.string()),
+  })).optional(),
+  pipelineId: z.string().optional(),
+  isDefault: z.boolean().optional(),
+});
+export type CreateRecordTypeInput = z.infer<typeof createRecordTypeSchema>;
+
+export const updateRecordTypeSchema = createRecordTypeSchema.partial();
+export type UpdateRecordTypeInput = z.infer<typeof updateRecordTypeSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 8: Approvals
+// ════════════════════════════════════════════════════
+
+export const createApprovalProcessSchema = z.object({
+  name: z.string().min(1).max(200),
+  entity: z.enum(['QUOTATION', 'OPPORTUNITY', 'DISCOUNT', 'SALES_ORDER']),
+  triggerConditions: z.array(z.object({
+    field: z.string().min(1),
+    operator: z.enum(['EQUALS', 'NOT_EQUALS', 'GREATER_THAN', 'LESS_THAN', 'CONTAINS', 'IN']),
+    value: z.string().min(1),
+  })),
+  steps: z.array(z.object({
+    order: z.number().int().positive(),
+    approverType: z.enum(['USER', 'ROLE', 'MANAGER']),
+    approverId: z.string().optional(),
+    autoApproveAfterHours: z.number().positive().optional(),
+  })).min(1),
+});
+export type CreateApprovalProcessInput = z.infer<typeof createApprovalProcessSchema>;
+
+export const updateApprovalProcessSchema = createApprovalProcessSchema.partial();
+export type UpdateApprovalProcessInput = z.infer<typeof updateApprovalProcessSchema>;
+
+export const submitApprovalSchema = z.object({
+  entityType: z.string().min(1),
+  entityId: z.string().min(1),
+  processId: z.string().optional(),
+});
+export type SubmitApprovalInput = z.infer<typeof submitApprovalSchema>;
+
+export const approvalActionSchema = z.object({
+  comments: z.string().max(2000).optional(),
+});
+export type ApprovalActionInput = z.infer<typeof approvalActionSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 9: CPQ
+// ════════════════════════════════════════════════════
+
+export const createQuotationTemplateSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).optional(),
+  headerHtml: z.string().optional(),
+  footerHtml: z.string().optional(),
+  termsTemplate: z.string().optional(),
+  logoUrl: z.string().url().optional(),
+  colorScheme: z.object({
+    primary: z.string().optional(),
+    accent: z.string().optional(),
+  }).optional(),
+  isDefault: z.boolean().optional(),
+});
+export type CreateQuotationTemplateInput = z.infer<typeof createQuotationTemplateSchema>;
+
+export const updateQuotationTemplateSchema = createQuotationTemplateSchema.partial();
+export type UpdateQuotationTemplateInput = z.infer<typeof updateQuotationTemplateSchema>;
+
+export const sendForSignatureSchema = z.object({
+  signerName: z.string().min(1).max(200),
+  signerEmail: z.string().email(),
+});
+export type SendForSignatureInput = z.infer<typeof sendForSignatureSchema>;
+
+export const submitSignatureSchema = z.object({
+  signatureData: z.string().min(1),
+});
+export type SubmitSignatureInput = z.infer<typeof submitSignatureSchema>;
+
+export const createQuotationVersionSchema = z.object({
+  changeNote: z.string().max(500).optional(),
+});
+export type CreateQuotationVersionInput = z.infer<typeof createQuotationVersionSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 10: Collaboration
+// ════════════════════════════════════════════════════
+
+export const createCrmCommentSchema = z.object({
+  body: z.string().min(1).max(10000),
+  parentId: z.string().optional(),
+  mentions: z.array(z.string()).optional(),
+});
+export type CreateCrmCommentInput = z.infer<typeof createCrmCommentSchema>;
+
+export const updateCrmCommentSchema = z.object({
+  body: z.string().min(1).max(10000),
+});
+export type UpdateCrmCommentInput = z.infer<typeof updateCrmCommentSchema>;
+
+export const createCrmNoteSchema = z.object({
+  title: z.string().max(200).optional(),
+  body: z.string().min(1).max(50000),
+  noteType: z.enum(['GENERAL', 'MEETING_NOTES', 'COMPETITIVE_INTEL', 'OBJECTION', 'NEXT_STEPS']).optional(),
+});
+export type CreateCrmNoteInput = z.infer<typeof createCrmNoteSchema>;
+
+export const updateCrmNoteSchema = createCrmNoteSchema.partial();
+export type UpdateCrmNoteInput = z.infer<typeof updateCrmNoteSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 11: Playbooks
+// ════════════════════════════════════════════════════
+
+export const createPlaybookSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  pipelineId: z.string().optional(),
+});
+export type CreatePlaybookInput = z.infer<typeof createPlaybookSchema>;
+
+export const updatePlaybookSchema = createPlaybookSchema.partial();
+export type UpdatePlaybookInput = z.infer<typeof updatePlaybookSchema>;
+
+export const playbookStageSchema = z.object({
+  stageName: z.string().min(1).max(200),
+  guidanceNotes: z.string().optional(),
+  checklist: z.array(z.object({
+    item: z.string().min(1),
+    isRequired: z.boolean().default(false),
+  })).optional(),
+  requiredFields: z.array(z.string()).optional(),
+  talkingPoints: z.array(z.string()).optional(),
+  exitCriteria: z.array(z.object({
+    criterion: z.string().min(1),
+    isRequired: z.boolean().default(false),
+  })).optional(),
+  sortOrder: z.number().int().optional(),
+});
+export type PlaybookStageInput = z.infer<typeof playbookStageSchema>;
+
+export const createBattlecardSchema = z.object({
+  competitor: z.string().min(1).max(200),
+  playbookId: z.string().optional(),
+  strengths: z.array(z.string()).optional(),
+  weaknesses: z.array(z.string()).optional(),
+  objections: z.array(z.object({
+    objection: z.string().min(1),
+    response: z.string().min(1),
+  })).optional(),
+  winStrategy: z.string().optional(),
+  loseReasons: z.array(z.string()).optional(),
+});
+export type CreateBattlecardInput = z.infer<typeof createBattlecardSchema>;
+
+export const updateBattlecardSchema = createBattlecardSchema.partial();
+export type UpdateBattlecardInput = z.infer<typeof updateBattlecardSchema>;
+
+// ════════════════════════════════════════════════════
+// Phase 12: Dashboards
+// ════════════════════════════════════════════════════
+
+export const createCrmDashboardSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).optional(),
+  isShared: z.boolean().optional(),
+});
+export type CreateCrmDashboardInput = z.infer<typeof createCrmDashboardSchema>;
+
+export const updateCrmDashboardSchema = createCrmDashboardSchema.partial();
+export type UpdateCrmDashboardInput = z.infer<typeof updateCrmDashboardSchema>;
+
+export const createDashboardWidgetSchema = z.object({
+  widgetType: z.enum([
+    'KPI_CARD', 'BAR_CHART', 'LINE_CHART', 'PIE_CHART',
+    'FUNNEL', 'TABLE', 'LEADERBOARD', 'GAUGE',
+  ]),
+  title: z.string().min(1).max(200),
+  dataSource: z.enum([
+    'PIPELINE', 'LEADS', 'ACTIVITIES', 'REVENUE',
+    'TARGETS', 'CONVERSIONS', 'COMMISSIONS',
+  ]),
+  config: z.object({
+    metric: z.string().min(1),
+    groupBy: z.string().optional(),
+    dateRange: z.enum([
+      'TODAY', 'THIS_WEEK', 'THIS_MONTH', 'THIS_QUARTER',
+      'THIS_YEAR', 'LAST_7_DAYS', 'LAST_30_DAYS', 'LAST_90_DAYS',
+      'LAST_YEAR', 'CUSTOM',
+    ]).optional(),
+    filters: z.record(z.string()).optional(),
+    colorScheme: z.string().optional(),
+    threshold: z.object({
+      warning: z.number(),
+      danger: z.number(),
+    }).optional(),
+  }),
+  refreshInterval: z.number().int().min(0).max(1440).optional(),
+});
+export type CreateDashboardWidgetInput = z.infer<typeof createDashboardWidgetSchema>;
+
+export const updateDashboardWidgetSchema = createDashboardWidgetSchema.partial();
+export type UpdateDashboardWidgetInput = z.infer<typeof updateDashboardWidgetSchema>;
+
+export const updateDashboardLayoutSchema = z.object({
+  layout: z.array(z.object({
+    widgetId: z.string().min(1),
+    x: z.number().int().min(0),
+    y: z.number().int().min(0),
+    w: z.number().int().min(1).max(12),
+    h: z.number().int().min(1).max(8),
+  })),
+});
+export type UpdateDashboardLayoutInput = z.infer<typeof updateDashboardLayoutSchema>;

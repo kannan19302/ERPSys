@@ -64,6 +64,10 @@ import {
   Inbox,
   Image,
   Code2,
+  Zap,
+  BookOpen,
+  Send,
+  Upload,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -199,18 +203,65 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           items: [
             { name: 'Leads', href: '/crm/leads', icon: TrendingUp },
             { name: 'Opportunities', href: '/crm/opportunities', icon: BarChart3 },
+            { name: 'Products', href: '/crm/products', icon: Package },
+            { name: 'Price Books', href: '/crm/price-books', icon: BookOpen },
             { name: 'Quotations', href: '/crm/quotations', icon: FileText },
             { name: 'Sales Orders', href: '/crm/sales-orders', icon: ClipboardList },
           ]
         },
         {
-          name: 'Activities & Analytics',
+          name: 'Marketing & Outreach',
           isHeader: true,
           items: [
-            { name: 'Marketing Campaigns', href: '/crm/campaigns', icon: Target },
-            { name: 'Activities', href: '/crm/activities', icon: Activity },
+            { name: 'Campaigns', href: '/crm/campaigns', icon: Target },
+            { name: 'Web Forms', href: '/crm/forms', icon: Globe },
+            { name: 'Email Sequences', href: '/crm/sequences', icon: Send },
             { name: 'Email Templates', href: '/crm/email-templates', icon: Mail },
-            { name: 'CRM Reports', href: '/crm/reports', icon: PieChart },
+          ]
+        },
+        {
+          name: 'Automation & Workflows',
+          isHeader: true,
+          items: [
+            { name: 'Workflow Rules', href: '/crm/workflows', icon: Zap },
+            { name: 'Approvals', href: '/crm/approvals', icon: CheckSquare },
+            { name: 'Activities', href: '/crm/activities', icon: Activity },
+            { name: 'Documents', href: '/crm/documents', icon: FolderOpen },
+          ]
+        },
+        {
+          name: 'Sales Enablement',
+          isHeader: true,
+          items: [
+            { name: 'Playbooks', href: '/crm/playbooks', icon: BookOpen },
+            { name: 'Battlecards', href: '/crm/battlecards', icon: Target },
+          ]
+        },
+        {
+          name: 'Teams & Territories',
+          isHeader: true,
+          items: [
+            { name: 'Territories', href: '/crm/territories', icon: MapPin },
+            { name: 'Commissions', href: '/crm/commissions', icon: DollarSign },
+          ]
+        },
+        {
+          name: 'Analytics & Reports',
+          isHeader: true,
+          items: [
+            { name: 'Forecasting', href: '/crm/forecasting', icon: TrendingUp },
+            { name: 'Reports', href: '/crm/reports', icon: PieChart },
+            { name: 'Dashboards', href: '/crm/dashboards', icon: Layers },
+            { name: 'Advanced', href: '/crm/advanced', icon: Settings },
+          ]
+        },
+        {
+          name: 'Settings',
+          isHeader: true,
+          items: [
+            { name: 'Custom Fields', href: '/crm/settings/custom-fields', icon: Database },
+            { name: 'Record Types', href: '/crm/settings/record-types', icon: Layers },
+            { name: 'Approval Processes', href: '/crm/settings/approvals', icon: ShieldCheck },
           ]
         },
       ] as SidebarItem[]

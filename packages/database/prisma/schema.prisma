@@ -284,13 +284,15 @@ model Contact {
   department String?
   isPrimary  Boolean   @default(false) @map("is_primary")
   isActive   Boolean   @default(true) @map("is_active")
+  score      Int       @default(0)
   notes      String?
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
   deletedAt  DateTime? @map("deleted_at")
 
-  customer   Customer?  @relation(fields: [customerId], references: [id])
-  activities Activity[] // Added for inverse relation
+  customer   Customer?      @relation(fields: [customerId], references: [id])
+  activities Activity[]
+  tags       ContactTagLink[]
 
   @@unique([tenantId, orgId, email])
   @@index([tenantId])
@@ -389,10 +391,15 @@ model Opportunity {
   updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
 
+  currency       String    @default("USD")
+  weightedAmount Decimal?  @map("weighted_amount") @db.Decimal(15, 2)
+  stageEnteredAt DateTime? @map("stage_entered_at")
+
   customer   Customer?      @relation(fields: [customerId], references: [id])
   lead       Lead?          @relation("LeadOpportunity", fields: [leadId], references: [id])
   pipeline   SalesPipeline? @relation(fields: [pipelineId], references: [id])
   activities Activity[]
+  lineItems  OpportunityLineItem[]
 
   @@index([tenantId])
   @@index([tenantId, stage])
@@ -489,6 +496,8 @@ model Product {
   mrpPlannedItems        MRPPlannedItem[]
   subcontractingOrders   SubcontractingOrder[]
   ncrRecords             NonConformanceReport[]
+  opportunityLineItems   OpportunityLineItem[]
+  priceBookEntries       PriceBookEntry[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -867,13 +876,20 @@ model Quotation {
   notes              String?
   termsConditions    String?   @map("terms_conditions")
   convertedToOrderId String?   @map("converted_to_order_id")
+  templateId         String?   @map("template_id")
+  version            Int       @default(1)
+  opportunityId      String?   @map("opportunity_id")
+  contactId          String?   @map("contact_id")
   createdBy          String?   @map("created_by")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
 
-  customer  Customer        @relation(fields: [customerId], references: [id])
-  lineItems QuotationItem[]
+  customer    Customer            @relation(fields: [customerId], references: [id])
+  lineItems   QuotationItem[]
+  sections    QuotationSection[]
+  versions    QuotationVersion[]
+  signatures  QuotationSignature[]
 
   @@unique([tenantId, orgId, quotationNumber])
   @@index([tenantId])
@@ -892,8 +908,9 @@ model QuotationItem {
   unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
   taxRate     Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
   taxAmount   Decimal @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  totalAmount Decimal @map("total_amount") @db.Decimal(15, 2)
-  sortOrder   Int     @default(0) @map("sort_order")
+  totalAmount Decimal  @map("total_amount") @db.Decimal(15, 2)
+  sortOrder   Int      @default(0) @map("sort_order")
+  sectionId   String?  @map("section_id")
 
   quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
 
@@ -4631,4 +4648,735 @@ model CustomRecord {
   @@index([tenantId, schemaId])
   @@index([tenantId, createdAt])
   @@map("custom_records")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 1: Product Catalog & Deal Revenue
+// ════════════════════════════════════════════════
+
+model OpportunityLineItem {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  opportunityId String   @map("opportunity_id")
+  productId     String?  @map("product_id")
+  description   String
+  quantity      Decimal  @db.Decimal(15, 3)
+  unitPrice     Decimal  @map("unit_price") @db.Decimal(15, 2)
+  discount      Decimal  @default(0) @db.Decimal(5, 2)
+  totalAmount   Decimal  @map("total_amount") @db.Decimal(15, 2)
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  product     Product?    @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([opportunityId])
+  @@map("opportunity_line_items")
+}
+
+model PriceBook {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  description String?
+  currency    String    @default("USD")
+  isDefault   Boolean   @default(false) @map("is_default")
+  validFrom   DateTime? @map("valid_from")
+  validTo     DateTime? @map("valid_to")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  entries PriceBookEntry[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("price_books")
+}
+
+model PriceBookEntry {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  priceBookId String   @map("price_book_id")
+  productId   String   @map("product_id")
+  listPrice   Decimal  @map("list_price") @db.Decimal(15, 2)
+  minQuantity Decimal  @default(1) @map("min_quantity") @db.Decimal(15, 3)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  priceBook PriceBook @relation(fields: [priceBookId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@unique([priceBookId, productId, minQuantity])
+  @@index([tenantId])
+  @@map("price_book_entries")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 2: Contact Tags
+// ════════════════════════════════════════════════
+
+model ContactTag {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  color     String   @default("#3b82f6")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  contacts ContactTagLink[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("contact_tags")
+}
+
+model ContactTagLink {
+  id        String @id @default(cuid())
+  contactId String @map("contact_id")
+  tagId     String @map("tag_id")
+
+  contact Contact    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tag     ContactTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, tagId])
+  @@map("contact_tag_links")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 3: Sales Targets & Reports
+// ════════════════════════════════════════════════
+
+model SalesTarget {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  orgId      String   @map("org_id")
+  userId     String?  @map("user_id")
+  period     String
+  targetType String   @default("REVENUE") @map("target_type")
+  target     Decimal  @db.Decimal(15, 2)
+  achieved   Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, period, targetType])
+  @@index([tenantId])
+  @@map("sales_targets")
+}
+
+model SavedReport {
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  name      String
+  type      String
+  filters   Json      @default("{}")
+  columns   Json      @default("[]")
+  chartType String?   @map("chart_type")
+  isShared  Boolean   @default(false) @map("is_shared")
+  createdBy String    @map("created_by")
+  schedule  String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@map("saved_reports")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 4: Workflow Automation & Email Sequences
+// ════════════════════════════════════════════════
+
+model CrmWorkflowRule {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  orgId      String    @map("org_id")
+  name       String
+  entity     String
+  trigger    String
+  conditions Json      @default("[]")
+  actions    Json      @default("[]")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdBy  String    @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([tenantId, entity, trigger])
+  @@map("crm_workflow_rules")
+}
+
+model EmailSequence {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  steps       EmailSequenceStep[]
+  enrollments EmailSequenceEnrollment[]
+
+  @@index([tenantId])
+  @@map("email_sequences")
+}
+
+model EmailSequenceStep {
+  id         String @id @default(cuid())
+  sequenceId String @map("sequence_id")
+  templateId String @map("template_id")
+  delayDays  Int    @default(1) @map("delay_days")
+  sortOrder  Int    @default(0) @map("sort_order")
+
+  sequence EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@index([sequenceId])
+  @@map("email_sequence_steps")
+}
+
+model EmailSequenceEnrollment {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  sequenceId  String    @map("sequence_id")
+  contactId   String?   @map("contact_id")
+  leadId      String?   @map("lead_id")
+  currentStep Int       @default(0) @map("current_step")
+  status      String    @default("ACTIVE")
+  nextSendAt  DateTime? @map("next_send_at")
+  enrolledAt  DateTime  @default(now()) @map("enrolled_at")
+  completedAt DateTime? @map("completed_at")
+
+  sequence EmailSequence @relation(fields: [sequenceId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("email_sequence_enrollments")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 5: Territory & Commissions
+// ════════════════════════════════════════════════
+
+model SalesTerritory {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  description String?
+  criteria    Json      @default("{}")
+  parentId    String?   @map("parent_id")
+  managerId   String?   @map("manager_id")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  parent   SalesTerritory?  @relation("TerritoryHierarchy", fields: [parentId], references: [id])
+  children SalesTerritory[] @relation("TerritoryHierarchy")
+  members  SalesTeamMember[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("sales_territories")
+}
+
+model SalesTeamMember {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  territoryId String   @map("territory_id")
+  userId      String   @map("user_id")
+  role        String   @default("REP")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  territory SalesTerritory @relation(fields: [territoryId], references: [id], onDelete: Cascade)
+
+  @@unique([territoryId, userId])
+  @@index([tenantId])
+  @@map("sales_team_members")
+}
+
+model CommissionRule {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  orgId        String   @map("org_id")
+  name         String
+  type         String   @default("PERCENTAGE")
+  rate         Decimal  @db.Decimal(5, 2)
+  tiers        Json     @default("[]")
+  appliesToAll Boolean  @default(true) @map("applies_to_all")
+  productIds   Json     @default("[]") @map("product_ids")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  entries CommissionEntry[]
+
+  @@index([tenantId])
+  @@map("commission_rules")
+}
+
+model CommissionEntry {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  userId        String   @map("user_id")
+  opportunityId String   @map("opportunity_id")
+  ruleId        String   @map("rule_id")
+  amount        Decimal  @db.Decimal(15, 2)
+  status        String   @default("PENDING")
+  periodStart   DateTime @map("period_start")
+  periodEnd     DateTime @map("period_end")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  rule CommissionRule @relation(fields: [ruleId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("commission_entries")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 6: Web Forms & Documents
+// ════════════════════════════════════════════════
+
+model WebToLeadForm {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  fields      Json      @default("[]")
+  settings    Json      @default("{}")
+  embedCode   String?   @map("embed_code")
+  isActive    Boolean   @default(true) @map("is_active")
+  submissions Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@map("web_to_lead_forms")
+}
+
+model CrmDocument {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  orgId      String    @map("org_id")
+  name       String
+  type       String
+  fileUrl    String    @map("file_url")
+  fileSize   Int?      @map("file_size")
+  mimeType   String?   @map("mime_type")
+  entityType String    @map("entity_type")
+  entityId   String    @map("entity_id")
+  uploadedBy String    @map("uploaded_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@map("crm_documents")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 7: Custom Fields & Record Types
+// ════════════════════════════════════════════════
+
+model CrmCustomField {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  orgId        String    @map("org_id")
+  entity       String
+  fieldName    String    @map("field_name")
+  label        String
+  fieldType    String    @map("field_type")
+  description  String?
+  isRequired   Boolean   @default(false) @map("is_required")
+  defaultValue String?   @map("default_value")
+  options      Json      @default("[]")
+  validation   Json      @default("{}")
+  lookupEntity String?   @map("lookup_entity")
+  formulaExpr  String?   @map("formula_expr")
+  sortOrder    Int       @default(0) @map("sort_order")
+  section      String    @default("Custom Fields")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdBy    String    @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  values CrmCustomFieldValue[]
+
+  @@unique([tenantId, entity, fieldName])
+  @@index([tenantId])
+  @@index([tenantId, entity])
+  @@map("crm_custom_fields")
+}
+
+model CrmCustomFieldValue {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  fieldId    String   @map("field_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  value      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  field CrmCustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([fieldId, entityId])
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@map("crm_custom_field_values")
+}
+
+model CrmRecordType {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  entity      String
+  name        String
+  description String?
+  fieldLayout Json      @default("[]") @map("field_layout")
+  pipelineId  String?   @map("pipeline_id")
+  isDefault   Boolean   @default(false) @map("is_default")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@unique([tenantId, entity, name])
+  @@index([tenantId])
+  @@map("crm_record_types")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 8: Approval Workflows
+// ════════════════════════════════════════════════
+
+model ApprovalProcess {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  name              String
+  entity            String
+  triggerConditions Json      @default("[]") @map("trigger_conditions")
+  steps             Json      @default("[]")
+  isActive          Boolean   @default(true) @map("is_active")
+  createdBy         String    @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  requests ApprovalRequest[]
+
+  @@index([tenantId])
+  @@index([tenantId, entity])
+  @@map("crm_approval_processes")
+}
+
+model ApprovalRequest {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  processId   String    @map("process_id")
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  status      String    @default("PENDING")
+  currentStep Int       @default(0) @map("current_step")
+  submittedBy String    @map("submitted_by")
+  submittedAt DateTime  @default(now()) @map("submitted_at")
+  completedAt DateTime? @map("completed_at")
+  metadata    Json      @default("{}")
+
+  process ApprovalProcess @relation(fields: [processId], references: [id])
+  actions ApprovalAction[]
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, status])
+  @@map("crm_approval_requests")
+}
+
+model ApprovalAction {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  requestId String   @map("request_id")
+  step      Int
+  action    String
+  userId    String   @map("user_id")
+  comments  String?
+  actedAt   DateTime @default(now()) @map("acted_at")
+
+  request ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@map("crm_approval_actions")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 9: Advanced Quotation Builder
+// ════════════════════════════════════════════════
+
+model QuotationSection {
+  id          String  @id @default(cuid())
+  tenantId    String  @map("tenant_id")
+  quotationId String  @map("quotation_id")
+  title       String
+  description String?
+  sortOrder   Int     @default(0) @map("sort_order")
+  isOptional  Boolean @default(false) @map("is_optional")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+  @@map("quotation_sections")
+}
+
+model QuotationVersion {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  quotationId   String   @map("quotation_id")
+  versionNumber Int      @map("version_number")
+  snapshot      Json
+  changedBy     String   @map("changed_by")
+  changeNote    String?  @map("change_note")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@unique([quotationId, versionNumber])
+  @@index([tenantId])
+  @@index([quotationId])
+  @@map("quotation_versions")
+}
+
+model QuotationTemplate {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  name          String
+  description   String?
+  headerHtml    String?   @map("header_html")
+  footerHtml    String?   @map("footer_html")
+  termsTemplate String?   @map("terms_template")
+  logoUrl       String?   @map("logo_url")
+  colorScheme   Json      @default("{}") @map("color_scheme")
+  isDefault     Boolean   @default(false) @map("is_default")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@map("quotation_templates")
+}
+
+model QuotationSignature {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  quotationId   String    @map("quotation_id")
+  signerName    String    @map("signer_name")
+  signerEmail   String    @map("signer_email")
+  status        String    @default("PENDING")
+  signedAt      DateTime? @map("signed_at")
+  ipAddress     String?   @map("ip_address")
+  signatureData String?   @map("signature_data")
+  token         String    @unique
+  expiresAt     DateTime  @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
+
+  @@index([tenantId])
+  @@index([quotationId])
+  @@map("quotation_signatures")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 10: Deal Rooms & Collaboration
+// ════════════════════════════════════════════════
+
+model CrmComment {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  entityType String    @map("entity_type")
+  entityId   String    @map("entity_id")
+  parentId   String?   @map("parent_id")
+  body       String
+  mentions   Json      @default("[]")
+  isPinned   Boolean   @default(false) @map("is_pinned")
+  createdBy  String    @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  parent  CrmComment?  @relation("CommentThread", fields: [parentId], references: [id])
+  replies CrmComment[] @relation("CommentThread")
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@map("crm_comments")
+}
+
+model CrmFollower {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([entityType, entityId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("crm_followers")
+}
+
+model CrmNote {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  entityType String    @map("entity_type")
+  entityId   String    @map("entity_id")
+  title      String?
+  body       String
+  noteType   String    @default("GENERAL") @map("note_type")
+  isPinned   Boolean   @default(false) @map("is_pinned")
+  createdBy  String    @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@map("crm_notes")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 11: Sales Playbooks & Guided Selling
+// ════════════════════════════════════════════════
+
+model SalesPlaybook {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  description String?
+  pipelineId  String?   @map("pipeline_id")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  stages      PlaybookStage[]
+  battlecards Battlecard[]
+
+  @@index([tenantId])
+  @@map("sales_playbooks")
+}
+
+model PlaybookStage {
+  id             String @id @default(cuid())
+  tenantId       String @map("tenant_id")
+  playbookId     String @map("playbook_id")
+  stageName      String @map("stage_name")
+  guidanceNotes  String? @map("guidance_notes")
+  checklist      Json   @default("[]")
+  requiredFields Json   @default("[]") @map("required_fields")
+  talkingPoints  Json   @default("[]") @map("talking_points")
+  exitCriteria   Json   @default("[]") @map("exit_criteria")
+  sortOrder      Int    @default(0) @map("sort_order")
+
+  playbook SalesPlaybook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+
+  @@unique([playbookId, stageName])
+  @@index([tenantId])
+  @@map("playbook_stages")
+}
+
+model Battlecard {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  playbookId  String?   @map("playbook_id")
+  competitor  String
+  strengths   Json      @default("[]")
+  weaknesses  Json      @default("[]")
+  objections  Json      @default("[]")
+  winStrategy String?   @map("win_strategy")
+  loseReasons Json      @default("[]") @map("lose_reasons")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  playbook SalesPlaybook? @relation(fields: [playbookId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, competitor])
+  @@map("battlecards")
+}
+
+model OpportunityChecklist {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  opportunityId    String    @map("opportunity_id")
+  stageChecklistId String    @map("stage_checklist_id")
+  isCompleted      Boolean   @default(false) @map("is_completed")
+  completedBy      String?   @map("completed_by")
+  completedAt      DateTime? @map("completed_at")
+
+  @@unique([opportunityId, stageChecklistId])
+  @@index([tenantId])
+  @@index([opportunityId])
+  @@map("opportunity_checklists")
+}
+
+// ════════════════════════════════════════════════
+// CRM Phase 12: Dashboard Builder
+// ════════════════════════════════════════════════
+
+model CrmDashboard {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  description String?
+  layout      Json      @default("[]")
+  isDefault   Boolean   @default(false) @map("is_default")
+  isShared    Boolean   @default(false) @map("is_shared")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  widgets CrmDashboardWidget[]
+
+  @@index([tenantId])
+  @@index([tenantId, createdBy])
+  @@map("crm_dashboards")
+}
+
+model CrmDashboardWidget {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  dashboardId     String   @map("dashboard_id")
+  widgetType      String   @map("widget_type")
+  title           String
+  dataSource      String   @map("data_source")
+  config          Json     @default("{}")
+  refreshInterval Int      @default(0) @map("refresh_interval")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  dashboard CrmDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("crm_dashboard_widgets")
 }

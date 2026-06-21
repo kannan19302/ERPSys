@@ -2,18 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
-import { Calendar, ArrowLeft, Activity, CheckCircle } from 'lucide-react';
+import { Card, PageHeader, StatusBadge, Spinner, Button, Badge } from '@unerp/ui';
+import { Calendar, ArrowLeft, Activity, CheckCircle, Plus, Trash2, Package, X } from 'lucide-react';
 import Link from 'next/link';
+
+interface LineItem {
+    id: string; productId: string | null; description: string; quantity: number;
+    unitPrice: number; discount: number; totalAmount: number;
+    product?: { id: string; name: string; sku: string } | null;
+}
 
 interface OpportunityDetail {
     id: string; name: string; stage: string; amount: number | null; probability: number;
     expectedCloseDate: string | null; actualCloseDate: string | null; competitor: string | null;
     lossReason: string | null; notes: string | null; createdAt: string;
+    currency?: string; weightedAmount?: number | null;
     customer?: { id: string; name: string } | null;
     lead?: { id: string; firstName: string; lastName: string } | null;
     pipeline?: { id: string; name: string; stages: unknown } | null;
     activities?: Array<{ id: string; type: string; subject: string; description: string | null; createdAt: string }>;
+    lineItems?: LineItem[];
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -26,6 +34,10 @@ export default function OpportunityDetailPage() {
     const params = useParams();
     const [opp, setOpp] = useState<OpportunityDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'details' | 'lineItems'>('details');
+    const [showAddItem, setShowAddItem] = useState(false);
+    const [itemForm, setItemForm] = useState({ description: '', quantity: 1, unitPrice: 0, discount: 0, productId: '' });
+    const [products, setProducts] = useState<Array<{ id: string; name: string; sku: string; sellPrice: number }>>([]);
 
     useEffect(() => {
         const fetchOpp = async () => {
@@ -50,6 +62,43 @@ export default function OpportunityDetailPage() {
         };
         fetchOpp();
     }, [params.id]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/v1/crm/products', { headers: { Authorization: `Bearer ${token || ''}` } });
+                if (res.ok) setProducts(await res.json());
+            } catch { /* fallback */ }
+        };
+        fetchProducts();
+    }, []);
+
+    const handleAddLineItem = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/v1/crm/opportunities/${params.id}/line-items`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
+                body: JSON.stringify({ ...itemForm, quantity: Number(itemForm.quantity), unitPrice: Number(itemForm.unitPrice), discount: Number(itemForm.discount), productId: itemForm.productId || undefined }),
+            });
+            if (res.ok) {
+                setShowAddItem(false);
+                setItemForm({ description: '', quantity: 1, unitPrice: 0, discount: 0, productId: '' });
+                window.location.reload();
+            }
+        } catch { /* fallback */ }
+    };
+
+    const handleDeleteLineItem = async (itemId: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            await fetch(`/api/v1/crm/opportunities/${params.id}/line-items/${itemId}`, {
+                method: 'DELETE', headers: { Authorization: `Bearer ${token || ''}` },
+            });
+            if (opp) setOpp({ ...opp, lineItems: (opp.lineItems || []).filter((i) => i.id !== itemId) });
+        } catch { /* fallback */ }
+    };
 
     const handleStageChange = async (newStage: string) => {
         const token = localStorage.getItem('token');
@@ -102,7 +151,119 @@ export default function OpportunityDetailPage() {
                 )}
             </Card>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)' }}>
+            {/* Tab Navigation */}
+            <div style={{ display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--color-border)' }}>
+                {(['details', 'lineItems'] as const).map((tab) => (
+                    <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                        padding: '8px 16px', border: 'none', cursor: 'pointer', fontWeight: activeTab === tab ? 'var(--weight-bold)' : 'var(--weight-normal)',
+                        color: activeTab === tab ? 'var(--color-primary)' : 'var(--color-text-muted)', background: 'none',
+                        borderBottom: activeTab === tab ? '2px solid var(--color-primary)' : '2px solid transparent', marginBottom: '-2px',
+                    }}>
+                        {tab === 'details' ? 'Deal Details' : `Line Items (${opp.lineItems?.length || 0})`}
+                    </button>
+                ))}
+            </div>
+
+            {activeTab === 'lineItems' && (
+                <Card padding="md">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+                        <h4 style={{ margin: 0 }}>Products & Line Items</h4>
+                        <Button variant="primary" size="sm" onClick={() => setShowAddItem(true)}><Plus size={14} /> Add Item</Button>
+                    </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ background: 'var(--color-bg-sunken)' }}>
+                                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Product</th>
+                                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Description</th>
+                                <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Qty</th>
+                                <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Unit Price</th>
+                                <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Discount</th>
+                                <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Total</th>
+                                <th style={{ padding: '10px 12px', width: 40 }}></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(opp.lineItems || []).map((item) => (
+                                <tr key={item.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                    <td style={{ padding: '10px 12px' }}>
+                                        {item.product ? <span><Package size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />{item.product.name}</span> : <span style={{ color: 'var(--color-text-muted)' }}>Custom</span>}
+                                    </td>
+                                    <td style={{ padding: '10px 12px', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{item.description}</td>
+                                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{Number(item.quantity)}</td>
+                                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>${Number(item.unitPrice).toLocaleString()}</td>
+                                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{Number(item.discount)}%</td>
+                                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 'var(--weight-semibold)' }}>${Number(item.totalAmount).toLocaleString()}</td>
+                                    <td style={{ padding: '10px 12px' }}>
+                                        <button onClick={() => handleDeleteLineItem(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}><Trash2 size={14} /></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {(opp.lineItems || []).length > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 'var(--space-3)', borderTop: '2px solid var(--color-border)', marginTop: 'var(--space-2)' }}>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Deal Total</div>
+                                <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>${(opp.lineItems || []).reduce((s, i) => s + Number(i.totalAmount), 0).toLocaleString()}</div>
+                                {opp.weightedAmount != null && <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Weighted: ${Number(opp.weightedAmount).toLocaleString()}</div>}
+                            </div>
+                        </div>
+                    )}
+                    {(opp.lineItems || []).length === 0 && <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-muted)' }}>No line items yet. Add products to this deal.</div>}
+                </Card>
+            )}
+
+            {/* Add Line Item Modal */}
+            {showAddItem && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+                    <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', width: '100%', maxWidth: 480, boxShadow: 'var(--shadow-lg)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+                            <h3 style={{ margin: 0 }}>Add Line Item</h3>
+                            <button onClick={() => setShowAddItem(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleAddLineItem} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)', marginBottom: 4 }}>Product (optional)</label>
+                                <select value={itemForm.productId} onChange={(e) => {
+                                    const p = products.find((pr) => pr.id === e.target.value);
+                                    setItemForm({ ...itemForm, productId: e.target.value, description: p ? p.name : itemForm.description, unitPrice: p ? p.sellPrice : itemForm.unitPrice });
+                                }} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+                                    <option value="">Custom item</option>
+                                    {products.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.sku}) - ${p.sellPrice}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)', marginBottom: 4 }}>Description *</label>
+                                <input required value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)', marginBottom: 4 }}>Quantity *</label>
+                                    <input type="number" required min={1} value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: Number(e.target.value) })} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)', marginBottom: 4 }}>Unit Price *</label>
+                                    <input type="number" required min={0} step={0.01} value={itemForm.unitPrice} onChange={(e) => setItemForm({ ...itemForm, unitPrice: Number(e.target.value) })} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)', marginBottom: 4 }}>Discount %</label>
+                                    <input type="number" min={0} max={100} value={itemForm.discount} onChange={(e) => setItemForm({ ...itemForm, discount: Number(e.target.value) })} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+                                </div>
+                            </div>
+                            <div style={{ background: 'var(--color-bg-sunken)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', textAlign: 'right' }}>
+                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Estimated Total: </span>
+                                <span style={{ fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>${(itemForm.quantity * itemForm.unitPrice * (1 - itemForm.discount / 100)).toLocaleString()}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                                <Button variant="outline" size="sm" onClick={() => setShowAddItem(false)}>Cancel</Button>
+                                <Button variant="primary" size="sm" type="submit">Add Item</Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'details' && <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)' }}>
                 {/* Main Content */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     {/* Deal Info */}
@@ -167,7 +328,7 @@ export default function OpportunityDetailPage() {
                         </div>
                     </Card>
                 </div>
-            </div>
+            </div>}
         </div>
     );
 }

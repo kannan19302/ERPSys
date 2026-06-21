@@ -6,8 +6,16 @@ import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
 import {
   Users, TrendingUp, BarChart3, Target, ChevronRight,
   AlertCircle,
-  Activity, UserPlus, DollarSign, PieChart
+  Activity, UserPlus, DollarSign, PieChart, Zap, BookOpen,
+  FileText, MapPin, Package, Globe, Layers
 } from 'lucide-react';
+
+interface ForecastData {
+  bestCase: number;
+  commit: number;
+  worstCase: number;
+  dealCount: number;
+}
 
 interface DashboardStats {
   totalCustomers: number;
@@ -15,17 +23,20 @@ interface DashboardStats {
   totalLeads: number;
   totalOpportunities: number;
   pipelineValue: number;
+  weightedPipeline: number;
   winRate: number;
   recentActivities: Array<{ id: string; type: string; subject: string; createdAt: string }>;
   leadStatusBreakdown: Record<string, number>;
   opportunityStageBreakdown: Record<string, { count: number; totalAmount: number }>;
+  forecast: ForecastData;
 }
 
 export default function CrmDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalCustomers: 0, totalVendors: 0, totalLeads: 0, totalOpportunities: 0,
-    pipelineValue: 0, winRate: 0, recentActivities: [],
-    leadStatusBreakdown: {}, opportunityStageBreakdown: {}
+    pipelineValue: 0, weightedPipeline: 0, winRate: 0, recentActivities: [],
+    leadStatusBreakdown: {}, opportunityStageBreakdown: {},
+    forecast: { bestCase: 0, commit: 0, worstCase: 0, dealCount: 0 }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +51,15 @@ export default function CrmDashboard() {
     const headers = { Authorization: `Bearer ${token || ''}` };
 
     try {
-      const [customersRes, vendorsRes, leadsRes, opportunitiesRes, winRateRes, activitiesRes] = await Promise.all([
+      const [customersRes, vendorsRes, leadsRes, opportunitiesRes, winRateRes, activitiesRes, forecastRes, healthRes] = await Promise.all([
         fetch('/api/v1/crm/customers', { headers }),
         fetch('/api/v1/crm/vendors', { headers }),
         fetch('/api/v1/crm/leads', { headers }),
         fetch('/api/v1/crm/opportunities', { headers }),
         fetch('/api/v1/crm/analytics/win-rate', { headers }),
         fetch('/api/v1/crm/activities', { headers }),
+        fetch('/api/v1/crm/analytics/forecast', { headers }),
+        fetch('/api/v1/crm/analytics/pipeline-health', { headers }),
       ]);
 
       const customers = customersRes.ok ? await customersRes.json() : [];
@@ -55,6 +68,8 @@ export default function CrmDashboard() {
       const opportunities = opportunitiesRes.ok ? await opportunitiesRes.json() : [];
       const winRateData = winRateRes.ok ? await winRateRes.json() : {};
       const activities = activitiesRes.ok ? (await activitiesRes.json()).slice(0, 5) : [];
+      const forecast = forecastRes.ok ? await forecastRes.json() : { bestCase: 0, commit: 0, worstCase: 0, dealCount: 0 };
+      const health = healthRes.ok ? await healthRes.json() : { weightedPipeline: 0 };
 
       const stageBreakdown: Record<string, { count: number; totalAmount: number }> = {};
       let pipelineValue = 0;
@@ -78,17 +93,20 @@ export default function CrmDashboard() {
         totalOpportunities: opportunities.length,
         pipelineValue,
         winRate: winRateData.winRate || 0,
+        weightedPipeline: health.weightedPipeline || 0,
         recentActivities: activities,
         leadStatusBreakdown: statusBreakdown,
         opportunityStageBreakdown: stageBreakdown,
+        forecast,
       });
     } catch {
       setError('Could not load CRM data. Using demo mode.');
       setStats({
         totalCustomers: 3, totalVendors: 2, totalLeads: 12, totalOpportunities: 8,
-        pipelineValue: 245000, winRate: 42,
+        pipelineValue: 245000, weightedPipeline: 98000, winRate: 42,
         recentActivities: [],
         leadStatusBreakdown: { NEW: 5, CONTACTED: 4, QUALIFIED: 2, DISQUALIFIED: 1 },
+        forecast: { bestCase: 245000, commit: 120000, worstCase: 70000, dealCount: 8 },
         opportunityStageBreakdown: {
           PROSPECTING: { count: 3, totalAmount: 45000 },
           QUALIFICATION: { count: 2, totalAmount: 80000 },
@@ -167,12 +185,42 @@ export default function CrmDashboard() {
         </Card>
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Weighted Pipeline</span>
+            <TrendingUp size={18} style={{ color: 'var(--color-info)' }} />
+          </div>
+          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>${stats.weightedPipeline.toLocaleString()}</h3>
+        </Card>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Win Rate</span>
             <BarChart3 size={18} style={{ color: 'var(--color-success)' }} />
           </div>
           <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>{stats.winRate}%</h3>
         </Card>
       </div>
+
+      {/* Forecast Cards */}
+      <Card padding="md">
+        <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>Revenue Forecast</h4>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--space-4)' }}>
+          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-success)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Best Case</span>
+            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0', color: 'var(--color-success)' }}>${stats.forecast.bestCase.toLocaleString()}</p>
+          </div>
+          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-primary)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Commit (70%+)</span>
+            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0', color: 'var(--color-primary)' }}>${stats.forecast.commit.toLocaleString()}</p>
+          </div>
+          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-warning)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Worst Case (90%+)</span>
+            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0', color: 'var(--color-warning)' }}>${stats.forecast.worstCase.toLocaleString()}</p>
+          </div>
+          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-text-muted)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Open Deals</span>
+            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0' }}>{stats.forecast.dealCount}</p>
+          </div>
+        </div>
+      </Card>
 
       {/* Two-column layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
@@ -255,6 +303,48 @@ export default function CrmDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
               <PieChart size={16} style={{ color: 'var(--color-danger)' }} />
               <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Reports</span>
+              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
+            </div>
+          </Link>
+          <Link href="/crm/products" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+              <Package size={16} style={{ color: 'var(--color-primary)' }} />
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Products</span>
+              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
+            </div>
+          </Link>
+          <Link href="/crm/forecasting" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+              <TrendingUp size={16} style={{ color: 'var(--color-success)' }} />
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Forecasting</span>
+              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
+            </div>
+          </Link>
+          <Link href="/crm/workflows" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+              <Zap size={16} style={{ color: 'var(--color-warning)' }} />
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Workflows</span>
+              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
+            </div>
+          </Link>
+          <Link href="/crm/territories" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+              <MapPin size={16} style={{ color: 'var(--color-info)' }} />
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Territories</span>
+              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
+            </div>
+          </Link>
+          <Link href="/crm/forms" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+              <Globe size={16} style={{ color: 'var(--color-secondary)' }} />
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Web Forms</span>
+              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
+            </div>
+          </Link>
+          <Link href="/crm/documents" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+              <FileText size={16} style={{ color: 'var(--color-text-muted)' }} />
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Documents</span>
               <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
             </div>
           </Link>
