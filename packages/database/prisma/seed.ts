@@ -1514,6 +1514,59 @@ async function main() {
     },
   });
 
+  // Seed Workstation Shifts
+  await prisma.workstationShift.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        workstationId: wsCNC.id,
+        name: 'Day Shift A',
+        startTime: '08:00',
+        endTime: '16:00',
+        daysOfWeek: [1, 2, 3, 4, 5],
+      },
+      {
+        tenantId: tenant.id,
+        workstationId: wsASM.id,
+        name: 'Night Shift B',
+        startTime: '16:00',
+        endTime: '00:00',
+        daysOfWeek: [1, 2, 3, 4, 5],
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  // Seed Equipment Tools
+  await prisma.equipmentTool.upsert({
+    where: { tenantId_code: { tenantId: tenant.id, code: 'TL-CNC-01' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      workstationId: wsCNC.id,
+      name: 'Diamond Blade Cutter',
+      code: 'TL-CNC-01',
+      maxCycles: 500,
+      currentCycles: 120,
+      status: 'OK',
+    },
+  });
+
+  await prisma.equipmentTool.upsert({
+    where: { tenantId_code: { tenantId: tenant.id, code: 'TL-ASM-02' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      workstationId: wsASM.id,
+      name: 'Laser Welder Nozzle',
+      code: 'TL-ASM-02',
+      maxCycles: 1000,
+      currentCycles: 980,
+      status: 'OK',
+    },
+  });
+
+
   // Find laptop product
   const laptop = await prisma.product.findFirst({ where: { tenantId: tenant.id, sku: 'SKU-LAP-001' } });
   if (laptop) {
@@ -1710,6 +1763,67 @@ async function main() {
         status: 'OPEN',
         loggedBy: 'inspector.qc@unerp.dev',
       },
+    });
+
+    // Pre-seed Engineering Change Order (ECO)
+    await prisma.engineeringChangeOrder.create({
+      data: {
+        tenantId: tenant.id,
+        bomId: bom.id,
+        changeDescription: 'Upgrade chassis to grade-A brushed aluminum finish and motherboard BIOS configuration updates.',
+        requestedBy: 'lead.designer@unerp.dev',
+        status: 'PENDING',
+      },
+    });
+
+    // Pre-seed operations execution steps for WOs
+    const routing = Array.isArray(bom.routingJson) ? bom.routingJson : JSON.parse(bom.routingJson as string || '[]');
+    for (const step of routing) {
+      await prisma.workOrderOperation.create({
+        data: {
+          tenantId: tenant.id,
+          workOrderId: wo2.id,
+          sequence: step.sequence,
+          name: step.name,
+          workstationCode: step.workstationCode,
+          durationMinutes: step.durationMinutes,
+          status: step.sequence === 1 ? 'RUNNING' : 'PENDING',
+          startedAt: step.sequence === 1 ? new Date() : null,
+        },
+      });
+      await prisma.workOrderOperation.create({
+        data: {
+          tenantId: tenant.id,
+          workOrderId: wo3.id,
+          sequence: step.sequence,
+          name: step.name,
+          workstationCode: step.workstationCode,
+          durationMinutes: step.durationMinutes,
+          status: 'COMPLETED',
+          startedAt: new Date(Date.now() - 4 * 3600 * 1000),
+          completedAt: new Date(Date.now() - 3.5 * 3600 * 1000),
+        },
+      });
+    }
+
+    // Pre-seed material genealogy component lot consumptions
+    await prisma.workOrderComponentConsumption.createMany({
+      data: [
+        {
+          tenantId: tenant.id,
+          workOrderId: wo3.id,
+          productId: component1.id,
+          lotNumber: 'LOT-CHASSIS-CNC-2026',
+          quantityConsumed: 10,
+        },
+        {
+          tenantId: tenant.id,
+          workOrderId: wo3.id,
+          productId: component2.id,
+          lotNumber: 'LOT-MOBO-INT-2026',
+          quantityConsumed: 10,
+        },
+      ],
     });
   }
 

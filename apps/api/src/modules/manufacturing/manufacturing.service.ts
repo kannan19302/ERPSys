@@ -116,11 +116,12 @@ export class ManufacturingService {
     // 1. Calculate Standard Cost
     const standardCost = Number(bom.standardCost) * dto.quantity;
 
-    // 2. Capacity Constraint Scheduling (APS)
+    // 2. Capacity Constraint Scheduling (APS) with Shift adjustments
     let finalStartDate = dto.startDate ? new Date(dto.startDate) : new Date();
     if (dto.workstationId) {
       const workstation = await prisma.workstation.findFirst({
         where: { id: dto.workstationId, tenantId },
+        include: { shifts: true },
       });
       if (workstation) {
         // Find existing work orders scheduled at this workstation
@@ -133,30 +134,61 @@ export class ManufacturingService {
         });
 
         const workstationHoursAllocated = existingWO.reduce(
-          (sum, wo) => sum + Number(wo.quantity) * 2, // assume 2 hours per unit assembly average
+          (sum, wo) => sum + Number(wo.quantity) * 2, // assume 2 hours per unit average
           0
         );
 
-        // If allocated hours exceeds workstation capacity, shift the start date out
+        // Adjust hours based on shifts if configured
+        let dailyCapacity = 8.0; // default 8 hours
+        if (workstation.shifts.length > 0) {
+          dailyCapacity = workstation.shifts.reduce((sum, shift) => {
+            const [startHour, startMin] = (shift.startTime || '08:00').split(':').map(Number);
+            const [endHour, endMin] = (shift.endTime || '16:00').split(':').map(Number);
+            const duration = (endHour || 16) - (startHour || 8) + ((endMin || 0) - (startMin || 0)) / 60;
+            return sum + duration;
+          }, 0);
+        }
+
         if (workstationHoursAllocated > Number(workstation.capacityHours)) {
           const hoursExceeded = workstationHoursAllocated - Number(workstation.capacityHours);
-          const daysToShift = Math.ceil(hoursExceeded / 8); // assume 8 hour shift day
+          const daysToShift = Math.ceil(hoursExceeded / dailyCapacity);
           finalStartDate.setDate(finalStartDate.getDate() + daysToShift);
         }
       }
     }
 
-    return prisma.workOrder.create({
-      data: {
-        tenantId,
-        bomId: dto.bomId,
-        workOrderNumber: dto.workOrderNumber,
-        quantity: new Prisma.Decimal(dto.quantity),
-        startDate: finalStartDate,
-        status: 'DRAFT',
-        workstationId: dto.workstationId || null,
-        standardCost: new Prisma.Decimal(standardCost),
-      },
+    return prisma.$transaction(async (tx) => {
+      const wo = await tx.workOrder.create({
+        data: {
+          tenantId,
+          bomId: dto.bomId,
+          workOrderNumber: dto.workOrderNumber,
+          quantity: new Prisma.Decimal(dto.quantity),
+          startDate: finalStartDate,
+          status: 'DRAFT',
+          workstationId: dto.workstationId || null,
+          standardCost: new Prisma.Decimal(standardCost),
+        },
+      });
+
+      // Generate sequential operation steps from BOM routingJson
+      const routing = Array.isArray(bom.routingJson) ? bom.routingJson : [];
+      let seq = 1;
+      for (const step of routing as Array<{ sequence?: number; name?: string; workstationCode?: string; durationMinutes?: number }>) {
+        await tx.workOrderOperation.create({
+          data: {
+            tenantId,
+            workOrderId: wo.id,
+            sequence: step.sequence || seq++,
+            name: step.name || `Operation ${seq}`,
+            workstationCode: step.workstationCode || 'WS-ASM',
+            durationMinutes: step.durationMinutes || 30,
+            status: 'PENDING',
+          },
+        });
+      }
+
+      return wo;
     });
   }
 
@@ -783,5 +815,413 @@ export class ManufacturingService {
     }
 
     return loadList;
+  }
+
+  // ==========================================
+  // COMPETITOR EXPANSION ENDPOINTS
+  // ==========================================
+
+  async getBOMTree(tenantId: string, id: string): Promise<unknown> {
+    const bom = await prisma.bOM.findFirst({
+      where: { id, tenantId },
+      include: { items: true },
+    });
+    if (!bom) throw new NotFoundException('BOM not found');
+
+    const getChildren = async (currentBomId: string): Promise<unknown[]> => {
+      const items = await prisma.bOMItem.findMany({
+        where: { bomId: currentBomId, tenantId },
+      });
+      const result = [];
+      for (const item of items) {
+        const product = await prisma.product.findFirst({ where: { id: item.productId, tenantId } });
+        const childBom = await prisma.bOM.findFirst({
+          where: { productId: item.productId, tenantId, isActive: true },
+        });
+        result.push({
+          id: item.id,
+          productId: item.productId,
+          productName: product?.name || 'Unknown Component',
+          sku: product?.sku || '',
+          quantity: Number(item.quantity),
+          type: item.type,
+          hasSubAssembly: !!childBom,
+          subAssemblyBomId: childBom?.id || null,
+          children: childBom ? await getChildren(childBom.id) : [],
+        });
+      }
+      return result;
+    };
+
+    return {
+      id: bom.id,
+      name: bom.name,
+      code: bom.code,
+      version: bom.version,
+      status: bom.status,
+      materialCost: Number(bom.materialCost),
+      overheadCost: Number(bom.overheadCost),
+      standardCost: Number(bom.standardCost),
+      routingJson: bom.routingJson,
+      children: await getChildren(bom.id),
+    };
+  }
+
+  async getWorkOrderOperations(tenantId: string, workOrderId: string) {
+    return prisma.workOrderOperation.findMany({
+      where: { tenantId, workOrderId },
+      orderBy: { sequence: 'asc' },
+    });
+  }
+
+  async startOperationStep(tenantId: string, workOrderId: string, operationId: string, operatorId?: string) {
+    const op = await prisma.workOrderOperation.findFirst({
+      where: { id: operationId, workOrderId, tenantId },
+    });
+    if (!op) throw new NotFoundException('Operation step not found');
+
+    return prisma.workOrderOperation.update({
+      where: { id: operationId },
+      data: {
+        status: 'RUNNING',
+        startedAt: new Date(),
+        operatorId: operatorId || null,
+      },
+    });
+  }
+
+  async completeOperationStep(
+    tenantId: string,
+    workOrderId: string,
+    operationId: string,
+    dto: { scrapQuantity?: number; lotNumberConsumed?: string; componentProductId?: string }
+  ) {
+    const op = await prisma.workOrderOperation.findFirst({
+      where: { id: operationId, workOrderId, tenantId },
+    });
+    if (!op) throw new NotFoundException('Operation step not found');
+
+    const updated = await prisma.workOrderOperation.update({
+      where: { id: operationId },
+      data: {
+        status: 'COMPLETED',
+        completedAt: new Date(),
+      },
+    });
+
+    if (dto.lotNumberConsumed && dto.componentProductId) {
+      await prisma.workOrderComponentConsumption.create({
+        data: {
+          tenantId,
+          workOrderId,
+          productId: dto.componentProductId,
+          lotNumber: dto.lotNumberConsumed,
+          quantityConsumed: new Prisma.Decimal(1),
+        },
+      });
+    }
+
+    const workstation = await prisma.workstation.findFirst({
+      where: { code: op.workstationCode, tenantId },
+      include: { tools: true },
+    });
+    if (workstation && workstation.tools.length > 0) {
+      for (const tool of workstation.tools) {
+        const nextCycles = tool.currentCycles + 1;
+        const autoCalibration = nextCycles >= tool.maxCycles;
+        await prisma.equipmentTool.update({
+          where: { id: tool.id },
+          data: {
+            currentCycles: nextCycles,
+            status: autoCalibration ? 'NEEDS_CALIBRATION' : tool.status,
+          },
+        });
+
+        if (autoCalibration) {
+          await prisma.maintenanceRequest.create({
+            data: {
+              tenantId,
+              workstationId: workstation.id,
+              type: 'PREVENTIVE',
+              priority: 'HIGH',
+              title: `Auto Calibration: ${tool.name}`,
+              description: `Tool ${tool.code} on ${workstation.name} exceeded its limit of ${tool.maxCycles} cycles.`,
+              status: 'REQUESTED',
+            },
+          });
+        }
+      }
+    }
+
+    return updated;
+  }
+
+  async getEquipmentTools(tenantId: string) {
+    return prisma.equipmentTool.findMany({
+      where: { tenantId },
+      include: { workstation: true },
+      orderBy: { code: 'asc' },
+    });
+  }
+
+  async getWorkstationShifts(tenantId: string) {
+    return prisma.workstationShift.findMany({
+      where: { tenantId },
+      include: { workstation: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createWorkstationShift(
+    tenantId: string,
+    dto: { workstationId: string; name: string; startTime: string; endTime: string; daysOfWeek: number[] }
+  ) {
+    return prisma.workstationShift.create({
+      data: {
+        tenantId,
+        workstationId: dto.workstationId,
+        name: dto.name,
+        startTime: dto.startTime,
+        endTime: dto.endTime,
+        daysOfWeek: dto.daysOfWeek,
+      },
+    });
+  }
+
+  async getSubcontractingMaterials(tenantId: string, orderId: string) {
+    return prisma.subcontractingMaterial.findMany({
+      where: { tenantId, subcontractingOrderId: orderId },
+      include: { product: true },
+    });
+  }
+
+  async issueSubcontractingMaterials(
+    tenantId: string,
+    orderId: string,
+    materials: Array<{ productId: string; quantity: number; warehouseId: string }>
+  ) {
+    return prisma.$transaction(async (tx) => {
+      for (const mat of materials) {
+        const existing = await tx.subcontractingMaterial.findFirst({
+          where: { tenantId, subcontractingOrderId: orderId, productId: mat.productId },
+        });
+
+        if (existing) {
+          await tx.subcontractingMaterial.update({
+            where: { id: existing.id },
+            data: {
+              issuedQty: new Prisma.Decimal(Number(existing.issuedQty) + mat.quantity),
+            },
+          });
+        } else {
+          await tx.subcontractingMaterial.create({
+            data: {
+              tenantId,
+              subcontractingOrderId: orderId,
+              productId: mat.productId,
+              requiredQty: new Prisma.Decimal(mat.quantity),
+              issuedQty: new Prisma.Decimal(mat.quantity),
+            },
+          });
+        }
+
+        const invItem = await tx.inventoryItem.findFirst({
+          where: { tenantId, productId: mat.productId, warehouseId: mat.warehouseId },
+        });
+        if (invItem) {
+          await tx.inventoryItem.update({
+            where: { id: invItem.id },
+            data: {
+              quantity: new Prisma.Decimal(Math.max(0, Number(invItem.quantity) - mat.quantity)),
+            },
+          });
+        }
+      }
+
+      await tx.subcontractingOrder.update({
+        where: { id: orderId },
+        data: { status: 'MATERIALS_SHIPPED' },
+      });
+
+      return { success: true };
+    });
+  }
+
+  async reconcileSubcontractingMaterials(
+    tenantId: string,
+    orderId: string,
+    materials: Array<{ productId: string; quantity: number }>
+  ) {
+    return prisma.$transaction(async (tx) => {
+      for (const mat of materials) {
+        const existing = await tx.subcontractingMaterial.findFirst({
+          where: { tenantId, subcontractingOrderId: orderId, productId: mat.productId },
+        });
+        if (existing) {
+          await tx.subcontractingMaterial.update({
+            where: { id: existing.id },
+            data: {
+              consumedQty: new Prisma.Decimal(Number(existing.consumedQty) + mat.quantity),
+            },
+          });
+        }
+      }
+      return { success: true };
+    });
+  }
+
+  async getECOs(tenantId: string) {
+    return prisma.engineeringChangeOrder.findMany({
+      where: { tenantId },
+      include: { bom: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async submitECO(tenantId: string, dto: { bomId: string; changeDescription: string; requestedBy: string }) {
+    await prisma.bOM.update({
+      where: { id: dto.bomId },
+      data: { status: 'UNDER_REVIEW' },
+    });
+
+    return prisma.engineeringChangeOrder.create({
+      data: {
+        tenantId,
+        bomId: dto.bomId,
+        changeDescription: dto.changeDescription,
+        requestedBy: dto.requestedBy,
+        status: 'PENDING',
+      },
+    });
+  }
+
+  async resolveECO(tenantId: string, ecoId: string, status: string, approvedBy?: string) {
+    const eco = await prisma.engineeringChangeOrder.findFirst({
+      where: { id: ecoId, tenantId },
+    });
+    if (!eco) throw new NotFoundException('ECO not found');
+
+    await prisma.engineeringChangeOrder.update({
+      where: { id: ecoId },
+      data: {
+        status,
+        approvedBy: approvedBy || 'QC Manager',
+      },
+    });
+
+    await prisma.bOM.update({
+      where: { id: eco.bomId },
+      data: {
+        status: status === 'APPROVED' ? 'APPROVED' : 'APPROVED',
+      },
+    });
+
+    return { success: true };
+  }
+
+  async getLotGenealogy(tenantId: string, lotNumber: string): Promise<unknown> {
+    const consumptions = await prisma.workOrderComponentConsumption.findMany({
+      where: { tenantId, lotNumber },
+      include: {
+        workOrder: {
+          include: { bom: true },
+        },
+        product: true,
+      },
+    });
+
+    const workOrder = await prisma.workOrder.findFirst({
+      where: { tenantId, lotNumber },
+      include: {
+        bom: true,
+        componentConsumptions: {
+          include: { product: true },
+        },
+      },
+    });
+
+    return {
+      lotNumber,
+      downstream: consumptions.map((c) => ({
+        workOrderId: c.workOrderId,
+        workOrderNumber: c.workOrder.workOrderNumber,
+        finishedProductName: c.workOrder.bom.name,
+        finishedProductLot: c.workOrder.lotNumber,
+        quantityConsumed: Number(c.quantityConsumed),
+      })),
+      upstream: workOrder ? {
+        workOrderNumber: workOrder.workOrderNumber,
+        quantityProduced: Number(workOrder.quantity),
+        components: workOrder.componentConsumptions.map((c) => ({
+          productId: c.productId,
+          productName: c.product.name,
+          sku: c.product.sku,
+          consumedLot: c.lotNumber,
+          quantityConsumed: Number(c.quantityConsumed),
+        })),
+      } : null,
+    };
+  }
+
+  async getDetailedOEEAnalytics(tenantId: string) {
+    const downtimeLogs = await prisma.machineDowntimeLog.findMany({ where: { tenantId } });
+    const workstations = await prisma.workstation.findMany({ where: { tenantId } });
+
+    const totalCapacityHours = workstations.reduce((sum, w) => sum + Number(w.capacityHours), 0) || 240;
+    const totalDowntimeMinutes = downtimeLogs.reduce((sum, d) => sum + (d.durationMinutes || 0), 0);
+    const totalDowntimeHours = totalDowntimeMinutes / 60;
+
+    const availability = totalCapacityHours > 0 
+      ? Math.max(0, Math.min(100, ((totalCapacityHours - totalDowntimeHours) / totalCapacityHours) * 100))
+      : 95;
+
+    const completedWOs = await prisma.workOrder.findMany({
+      where: { tenantId, status: 'COMPLETED' },
+      include: { bom: true },
+    });
+    
+    let totalStandardMinutes = 0;
+    let totalActualMinutes = 0;
+
+    for (const wo of completedWOs) {
+      const routing = Array.isArray(wo.bom.routingJson) ? wo.bom.routingJson : [];
+      const stdDuration = (routing as any[]).reduce((sum, step) => sum + Number(step.durationMinutes || 0), 0);
+      totalStandardMinutes += stdDuration * Number(wo.quantity);
+
+      if (wo.startDate && wo.endDate) {
+        const actualMin = Math.round((wo.endDate.getTime() - wo.startDate.getTime()) / 60000);
+        totalActualMinutes += actualMin;
+      } else {
+        totalActualMinutes += stdDuration * Number(wo.quantity) * 1.05;
+      }
+    }
+
+    const performance = totalActualMinutes > 0 
+      ? Math.max(0, Math.min(100, (totalStandardMinutes / totalActualMinutes) * 100))
+      : 92;
+
+    const qualityInspections = await prisma.qualityInspection.findMany({ where: { tenantId } });
+    const totalInspected = qualityInspections.reduce((sum, qi) => sum + Number(qi.inspectedQty), 0);
+    const totalPassed = qualityInspections.reduce((sum, qi) => sum + Number(qi.passedQty), 0);
+
+    const quality = totalInspected > 0 
+      ? (totalPassed / totalInspected) * 100
+      : 98;
+
+    const overallOEE = Math.round((availability * performance * quality) / 10000);
+
+    return {
+      availability: Math.round(availability),
+      performance: Math.round(performance),
+      quality: Math.round(quality),
+      oee: overallOEE,
+      downtimeLogs: downtimeLogs.map((log) => ({
+        id: log.id,
+        workstationName: workstations.find(w => w.id === log.workstationId)?.name || 'Unknown',
+        downtimeCode: log.downtimeCode,
+        durationMinutes: log.durationMinutes,
+        startTime: log.startTime,
+      })),
+    };
   }
 }

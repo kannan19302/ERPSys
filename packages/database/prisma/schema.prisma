@@ -519,6 +519,8 @@ model Product {
   inventoryValuations    InventoryValuation[]
   productKit             ProductKit?
   productKitItems        ProductKitItem[]
+  subcontractingMaterials SubcontractingMaterial[]
+  componentConsumptions   WorkOrderComponentConsumption[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -1251,6 +1253,9 @@ model BOM {
   overheadCost Decimal  @default(0) @map("overhead_cost") @db.Decimal(15, 3)
   standardCost Decimal  @default(0) @map("standard_cost") @db.Decimal(15, 3)
   routingJson  Json     @default("[]") // Operations list
+  version      String   @default("1.0")
+  status       String   @default("APPROVED") // APPROVED, UNDER_REVIEW, ARCHIVED
+  previousBomId String?  @map("previous_bom_id")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -1258,6 +1263,7 @@ model BOM {
   workOrders           WorkOrder[]
   mrpPlannedItems      MRPPlannedItem[]
   subcontractingOrders SubcontractingOrder[]
+  ecos                 EngineeringChangeOrder[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -1299,9 +1305,11 @@ model WorkOrder {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  bom         BOM                    @relation(fields: [bomId], references: [id])
-  workstation Workstation?           @relation(fields: [workstationId], references: [id])
-  ncrRecords  NonConformanceReport[]
+  bom                  BOM                             @relation(fields: [bomId], references: [id])
+  workstation          Workstation?                    @relation(fields: [workstationId], references: [id])
+  ncrRecords           NonConformanceReport[]
+  operations           WorkOrderOperation[]
+  componentConsumptions WorkOrderComponentConsumption[]
 
   @@unique([tenantId, workOrderNumber])
   @@index([tenantId])
@@ -4289,6 +4297,8 @@ model Workstation {
   workOrders   WorkOrder[]
   downtimeLogs MachineDowntimeLog[]
   maintenance  MaintenanceRequest[]
+  shifts       WorkstationShift[]
+  tools        EquipmentTool[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -4422,12 +4432,118 @@ model SubcontractingOrder {
   deliveryDate DateTime? @map("delivery_date")
   createdAt    DateTime  @default(now()) @map("created_at")
 
-  vendor  Vendor  @relation(fields: [vendorId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
-  bom     BOM?    @relation(fields: [bomId], references: [id])
+  vendor    Vendor                   @relation(fields: [vendorId], references: [id])
+  product   Product                  @relation(fields: [productId], references: [id])
+  bom       BOM?                     @relation(fields: [bomId], references: [id])
+  materials SubcontractingMaterial[]
 
   @@index([tenantId])
   @@map("subcontracting_orders")
+}
+
+model WorkOrderOperation {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  workOrderId     String    @map("work_order_id")
+  sequence        Int
+  name            String
+  workstationCode String    @map("workstation_code")
+  durationMinutes Int       @map("duration_minutes")
+  status          String    @default("PENDING") // PENDING, RUNNING, COMPLETED
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  operatorId      String?   @map("operator_id")
+
+  workOrder       WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([workOrderId])
+  @@map("work_order_operations")
+}
+
+model WorkstationShift {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  workstationId String   @map("workstation_id")
+  name          String
+  startTime     String   @map("start_time") // e.g. "08:00"
+  endTime       String   @map("end_time") // e.g. "16:00"
+  daysOfWeek    Int[]    @map("days_of_week") // e.g. [1, 2, 3, 4, 5]
+
+  workstation   Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([workstationId])
+  @@map("workstation_shifts")
+}
+
+model SubcontractingMaterial {
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  subcontractingOrderId String   @map("subcontracting_order_id")
+  productId             String   @map("product_id")
+  requiredQty           Decimal  @map("required_qty") @db.Decimal(15, 3)
+  issuedQty             Decimal  @default(0) @map("issued_qty") @db.Decimal(15, 3)
+  consumedQty           Decimal  @default(0) @map("consumed_qty") @db.Decimal(15, 3)
+
+  subcontractingOrder   SubcontractingOrder @relation(fields: [subcontractingOrderId], references: [id], onDelete: Cascade)
+  product               Product             @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([subcontractingOrderId])
+  @@map("subcontracting_materials")
+}
+
+model EquipmentTool {
+  id                 String    @id @default(cuid())
+  tenantId           String    @map("tenant_id")
+  workstationId      String    @map("workstation_id")
+  name               String
+  code               String
+  maxCycles          Int       @map("max_cycles")
+  currentCycles      Int       @default(0) @map("current_cycles")
+  lastCalibrationDate DateTime? @map("last_calibration_date")
+  status             String    @default("OK") // OK, NEEDS_CALIBRATION, OUT_OF_SERVICE
+
+  workstation        Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([workstationId])
+  @@map("equipment_tools")
+}
+
+model EngineeringChangeOrder {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  bomId            String   @map("bom_id")
+  changeDescription String   @map("change_description")
+  requestedBy      String   @map("requested_by")
+  approvedBy       String?  @map("approved_by")
+  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  bom              BOM      @relation(fields: [bomId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([bomId])
+  @@map("engineering_change_orders")
+}
+
+model WorkOrderComponentConsumption {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  workOrderId      String   @map("work_order_id")
+  productId        String   @map("product_id")
+  lotNumber        String   @map("lot_number") // Lot of raw component consumed
+  quantityConsumed Decimal  @map("quantity_consumed") @db.Decimal(15, 3)
+
+  workOrder        WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  product          Product   @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([workOrderId])
+  @@map("work_order_component_consumptions")
 }
 
 // ════════════════════════════════════════════════

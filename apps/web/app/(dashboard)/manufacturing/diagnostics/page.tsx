@@ -1,15 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Activity, Gauge, AlertTriangle, Settings, Wrench } from 'lucide-react';
-
-interface WorkstationLoad {
-  workstation: string;
-  capacityHours: number;
-  allocatedHours: number;
-  status: string;
-  utilizationRate: number;
-}
+import { Activity, Gauge, AlertTriangle, Settings, Wrench, Search, RefreshCw, Layers } from 'lucide-react';
 
 interface DiagnosticSensor {
   machineName: string;
@@ -19,18 +11,54 @@ interface DiagnosticSensor {
   status: 'ONLINE' | 'MAINTENANCE' | 'OFFLINE';
 }
 
-interface WorkOrder {
-  id: string;
-  oeeScore?: string | number | null;
-  scrapQuantity?: string | number | null;
+interface OeeDetails {
+  oee: number;
+  availability: number;
+  performance: number;
+  quality: number;
+  downtimeLogs: Array<{
+    id: string;
+    workstationName: string;
+    downtimeCode: string;
+    durationMinutes: number;
+    startTime: string;
+  }>;
+}
+
+interface GenealogyResult {
+  lotNumber: string;
+  downstream: Array<{
+    workOrderId: string;
+    workOrderNumber: string;
+    finishedProductName: string;
+    finishedProductLot: string;
+    quantityConsumed: number;
+  }>;
+  upstream: {
+    workOrderNumber: string;
+    quantityProduced: number;
+    components: Array<{
+      productId: string;
+      productName: string;
+      sku: string;
+      consumedLot: string;
+      quantityConsumed: number;
+    }>;
+  } | null;
 }
 
 export default function MESDiagnosticsPage() {
-  const [workstationLoad, setWorkstationLoad] = useState<WorkstationLoad[]>([]);
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // OEE State
+  const [oeeData, setOeeData] = useState<OeeDetails | null>(null);
 
-  // IoT Sensor Diagnostic Simulation State
+  // Genealogy Search State
+  const [searchLot, setSearchLot] = useState('LOT-CHASSIS-CNC-2026');
+  const [genealogy, setGenealogy] = useState<GenealogyResult | null>(null);
+  const [genLoading, setGenLoading] = useState(false);
+
+  // IoT Sensor Telemetry simulation
   const [sensors, setSensors] = useState<DiagnosticSensor[]>([
     { machineName: 'CNC Cutting Machine', temperature: 62.4, vibration: 1.8, vibrationStatus: 'NORMAL', status: 'ONLINE' },
     { machineName: 'Assembly Line A', temperature: 48.1, vibration: 0.9, vibrationStatus: 'NORMAL', status: 'ONLINE' },
@@ -40,23 +68,42 @@ export default function MESDiagnosticsPage() {
   const [simLog, setSimLog] = useState<string[]>(['System diagnostics monitoring active.', 'No active anomalies detected.']);
 
   useEffect(() => {
-    fetchData();
+    fetchOeeData();
+    handleSearchGenealogy();
   }, []);
 
-  const fetchData = async () => {
+  const fetchOeeData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const [loadRes, ordersRes] = await Promise.all([
-        fetch('http://localhost:3001/api/v1/manufacturing/workstations/load-balancing', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/v1/manufacturing/work-orders', { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
-      if (loadRes.ok) setWorkstationLoad(await loadRes.ok ? await loadRes.json() : []);
-      if (ordersRes.ok) setWorkOrders(await ordersRes.ok ? await ordersRes.json() : []);
+      const res = await fetch('http://localhost:3001/api/v1/manufacturing/diagnostics/oee', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setOeeData(await res.json());
+      }
     } catch {
       // Ignored
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearchGenealogy = async () => {
+    if (!searchLot) return;
+    try {
+      setGenLoading(true);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3001/api/v1/manufacturing/diagnostics/genealogy/${searchLot}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setGenealogy(await res.json());
+      }
+    } catch {
+      // Ignored
+    } finally {
+      setGenLoading(false);
     }
   };
 
@@ -91,110 +138,171 @@ export default function MESDiagnosticsPage() {
     }, 1000);
   };
 
-  const getOeeAverage = () => {
-    const scoredOrders = workOrders.filter((w) => w.oeeScore !== null && w.oeeScore !== undefined);
-    if (scoredOrders.length === 0) return 85;
-    const sum = scoredOrders.reduce((acc, curr) => acc + Number(curr.oeeScore), 0);
-    return Math.round(sum / scoredOrders.length);
-  };
-
-  const getTotalScrap = () => {
-    return workOrders.reduce((acc, curr) => acc + Number(curr.scrapQuantity || 0), 0);
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* Page Header */}
-      <div>
-        <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <Settings size={28} style={{ color: 'var(--color-primary)' }} />
-          MES Diagnostics & Telemetry
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>
-          Real-time shop floor performance monitoring, OEE indexes, and IoT device sensor telemetry feeds
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <Settings size={28} style={{ color: 'var(--color-primary)' }} />
+            MES Diagnostics & Telemetry
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>
+            Real-time OEE breakdowns, equipment cycle telemetry, and upstream/downstream material genealogy lot tracking.
+          </p>
+        </div>
+        <button
+          onClick={fetchOeeData}
+          style={{
+            background: 'none',
+            border: '1px solid var(--color-border)',
+            padding: 'var(--space-2) var(--space-4)',
+            borderRadius: 'var(--radius-lg)',
+            cursor: 'pointer',
+            fontSize: 'var(--text-sm)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <RefreshCw size={14} /> Refresh Data
+        </button>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>Loading shop floor diagnostics...</div>
+        <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>Loading diagnostics...</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Key Metrics Header */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)' }}>
-            <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-              <Gauge size={36} style={{ color: 'var(--color-primary)' }} />
-              <div>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Shop Floor Health (Avg OEE)</p>
-                <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)', marginTop: '2px' }}>{getOeeAverage()}%</p>
+          
+          {/* Detailed OEE breakdowns row */}
+          {oeeData && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: 'var(--space-4)' }}>
+              <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                <Gauge size={40} style={{ color: 'var(--color-success)' }} />
+                <div>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Overall Equipment Effectiveness (OEE)</p>
+                  <p style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-success)', marginTop: '2px' }}>{oeeData.oee}%</p>
+                </div>
+              </div>
+              <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                <Activity size={32} style={{ color: 'var(--color-primary)' }} />
+                <div>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Availability Rate</p>
+                  <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', marginTop: '2px' }}>{oeeData.availability}%</p>
+                </div>
+              </div>
+              <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                <Settings size={32} style={{ color: 'var(--color-warning)' }} />
+                <div>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Performance Rate</p>
+                  <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', marginTop: '2px' }}>{oeeData.performance}%</p>
+                </div>
+              </div>
+              <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                <AlertTriangle size={32} style={{ color: 'var(--color-danger)' }} />
+                <div>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Quality Rate</p>
+                  <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', marginTop: '2px' }}>{oeeData.quality}%</p>
+                </div>
               </div>
             </div>
-            <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-              <AlertTriangle size={36} style={{ color: 'var(--color-danger)' }} />
-              <div>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Total Material Waste / Scrap</p>
-                <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-danger)', marginTop: '2px' }}>{getTotalScrap()} units</p>
-              </div>
-            </div>
-            <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-              <Activity size={36} style={{ color: 'var(--color-success)' }} />
-              <div>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Workstation Capacity Utilization</p>
-                <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-success)', marginTop: '2px' }}>
-                  {workstationLoad.length > 0
-                    ? Math.round(workstationLoad.reduce((acc, curr) => acc + curr.utilizationRate, 0) / workstationLoad.length)
-                    : 0}%
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--space-6)' }}>
-            {/* Workstation Load Balancer Card */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 'var(--space-6)' }}>
+            
+            {/* LOT GENEALOGY EXPLORER */}
             <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <Wrench size={18} style={{ color: 'var(--color-primary)' }} /> Workstation Load Balancing
-                </h3>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Based on active Work Orders</span>
+              <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Layers size={18} style={{ color: 'var(--color-primary)' }} />
+                Material Genealogy Explorer
+              </h3>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Enter Lot Number to trace (e.g. LOT-CHASSIS-CNC-2026)..."
+                  value={searchLot}
+                  onChange={(e) => setSearchLot(e.target.value)}
+                  style={{ flex: 1, padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                />
+                <button
+                  onClick={handleSearchGenealogy}
+                  style={{
+                    background: 'var(--color-primary)',
+                    color: 'white',
+                    border: 'none',
+                    padding: 'var(--space-2) var(--space-4)',
+                    borderRadius: 'var(--radius-lg)',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Search size={14} /> Trace Lot
+                </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                {workstationLoad.map((load, index) => (
-                  <div key={index} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', background: 'var(--color-bg)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                      <div>
-                        <p style={{ fontWeight: 'bold', fontSize: 'var(--text-sm)' }}>{load.workstation}</p>
-                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                          Allocated: {load.allocatedHours} hrs / Cap: {load.capacityHours} hrs
-                        </p>
+              {genLoading ? (
+                <div style={{ padding: '24px', textAlign: 'center' }}>Tracing lot genealogy...</div>
+              ) : genealogy ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '16px' }}>
+                  
+                  {/* Upstream Components (Recipe Ingredients) */}
+                  <div>
+                    <h4 style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Upstream Genealogy (Component Ingredients)</h4>
+                    {genealogy.upstream ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                          Produced via WO: {genealogy.upstream.workOrderNumber} (Yield: {genealogy.upstream.quantityProduced} units)
+                        </div>
+                        {genealogy.upstream.components.map((c, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', background: 'var(--color-bg-hover)', padding: '6px 12px', borderRadius: '6px' }}>
+                            <span>{c.productName} ({c.sku})</span>
+                            <span style={{ fontWeight: 'bold' }}>Lot: {c.consumedLot}</span>
+                          </div>
+                        ))}
                       </div>
-                      <span style={{
-                        fontSize: '9px', fontWeight: 'bold', padding: '2px 8px', borderRadius: 'var(--radius-full)',
-                        background: load.status === 'OVERLOADED' ? 'var(--color-danger-light)' : 'var(--color-success-light)',
-                        color: load.status === 'OVERLOADED' ? 'var(--color-danger)' : 'var(--color-success)',
-                      }}>
-                        {load.status}
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div style={{ width: '100%', height: '8px', background: 'var(--color-border)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                      <div style={{
-                        width: `${Math.min(load.utilizationRate, 100)}%`, height: '100%',
-                        background: load.status === 'OVERLOADED' ? 'var(--color-danger)' : 'var(--color-primary)',
-                        borderRadius: 'var(--radius-full)',
-                      }} />
-                    </div>
+                    ) : (
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                        No upstream history. This lot is a purchased raw material component.
+                      </p>
+                    )}
                   </div>
-                ))}
-              </div>
+
+                  {/* Downstream Consumption */}
+                  <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+                    <h4 style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Downstream Genealogy (Finished Assemblies Consumed In)</h4>
+                    {genealogy.downstream && genealogy.downstream.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {genealogy.downstream.map((d, i) => (
+                          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px', background: 'var(--color-bg-hover)', padding: '8px 12px', borderRadius: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>
+                              <span>Assembly: {d.finishedProductName}</span>
+                              <span style={{ color: 'var(--color-success)' }}>Resulting Lot: {d.finishedProductLot}</span>
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                              Consumed in WO: {d.workOrderNumber} | Qty Consumed: {d.quantityConsumed} units
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                        This lot has not been consumed in any downstream manufacturing WOs.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            {/* IoT Real-time Diagnostics Sensor Readout Panel */}
+            {/* IoT Sensor telemetry card */}
             <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <Settings size={18} style={{ color: 'var(--color-primary)' }} /> IoT Machine Sensor Monitoring
+                  <Wrench size={18} style={{ color: 'var(--color-primary)' }} /> IoT Sensor Monitoring
                 </h3>
                 <button
                   onClick={handleTriggerSimulation}
@@ -241,7 +349,7 @@ export default function MESDiagnosticsPage() {
                 ))}
               </div>
 
-              {/* Simulation Log Stream */}
+              {/* Simulation logs stream */}
               <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-3)', flex: 1, minHeight: '100px' }}>
                 <p style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase' }}>Diagnostics Telemetry Logs</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

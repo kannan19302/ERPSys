@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Plus, Trash, Check, X } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -11,8 +11,9 @@ interface Product {
 
 interface CheckItem {
   parameter: string;
-  minVal: number;
-  maxVal: number;
+  minVal: number | string;
+  maxVal: number | string;
+  type?: 'NUMERIC' | 'PASS_FAIL';
 }
 
 interface QualityPlan {
@@ -20,7 +21,7 @@ interface QualityPlan {
   name: string;
   code: string;
   productId: string;
-  checks: Array<CheckItem>;
+  checks: Array<CheckItem> | string;
   status: string;
 }
 
@@ -51,8 +52,10 @@ export default function QualityManagement() {
     productId: '',
     name: '',
     code: '',
-    checks: '[{"parameter": "Thickness Check (mm)", "minVal": 1.4, "maxVal": 1.6}]',
   });
+  const [planChecks, setPlanChecks] = useState<CheckItem[]>([
+    { parameter: 'Thickness Check (mm)', minVal: '1.4', maxVal: '1.6', type: 'NUMERIC' }
+  ]);
 
   // Log Inspection Form State
   const [isInspectModalOpen, setIsInspectModalOpen] = useState(false);
@@ -65,8 +68,10 @@ export default function QualityManagement() {
     inspectedQty: '10',
     passedQty: '10',
     inspectedBy: 'admin@unerp.dev',
-    checklistJson: '[{"parameter": "Thickness Check", "target": "1.5", "actual": "1.5", "status": "PASS"}]',
   });
+  const [inspectChecklist, setInspectChecklist] = useState<any[]>([
+    { parameter: 'Thickness Check', target: '1.5', actual: '1.5', status: 'PASS' }
+  ]);
 
   // NCR Resolve Modal State
   const [isNcrModalOpen, setIsNcrModalOpen] = useState(false);
@@ -111,12 +116,16 @@ export default function QualityManagement() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newPlan),
+        body: JSON.stringify({
+          ...newPlan,
+          checks: JSON.stringify(planChecks),
+        }),
       });
 
       if (!res.ok) throw new Error('Failed to create quality plan');
       setIsPlanModalOpen(false);
-      setNewPlan({ productId: '', name: '', code: '', checks: '[{"parameter": "Thickness Check (mm)", "minVal": 1.4, "maxVal": 1.6}]' });
+      setNewPlan({ productId: '', name: '', code: '' });
+      setPlanChecks([{ parameter: 'Thickness Check (mm)', minVal: '1.4', maxVal: '1.6', type: 'NUMERIC' }]);
       fetchData();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error');
@@ -137,6 +146,7 @@ export default function QualityManagement() {
           ...inspectForm,
           inspectedQty: parseFloat(inspectForm.inspectedQty),
           passedQty: parseFloat(inspectForm.passedQty),
+          checklistJson: JSON.stringify(inspectChecklist),
         }),
       });
 
@@ -190,7 +200,7 @@ export default function QualityManagement() {
             Quality Control & NCR Log
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>
-            Manage quality inspection plans, log test checklists, and track non-conformance reports.
+            Manage quality inspection plans, template parameters builder, and resolve non-conformance reports.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -303,7 +313,7 @@ export default function QualityManagement() {
 
           {/* Quality Standards & Plans */}
           <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)' }}>
-            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-4)' }}>Inspection Gate Templates</h3>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-4)' }}>Inspection templates</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {plans.map((plan) => (
                 <div
@@ -322,26 +332,23 @@ export default function QualityManagement() {
                     <ul style={{ paddingLeft: 'var(--space-4)', marginTop: '4px', fontSize: 'var(--text-xs)' }}>
                       {(typeof plan.checks === 'string' ? JSON.parse(plan.checks) : plan.checks).map((check: CheckItem, idx: number) => (
                         <li key={idx} style={{ color: 'var(--color-text-secondary)' }}>
-                          {check.parameter}: Min {check.minVal} / Max {check.maxVal}
+                          {check.parameter}: {check.type === 'PASS_FAIL' ? 'Pass/Fail Check' : `Min ${check.minVal} / Max ${check.maxVal}`}
                         </li>
                       ))}
                     </ul>
                   </div>
                 </div>
               ))}
-              {plans.length === 0 && (
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>No custom plans created yet.</p>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Plan Modal */}
+      {/* Plan Modal (Checklist Builder) */}
       {isPlanModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-          <form onSubmit={handleCreatePlan} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', width: '450px', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>Create Quality Inspection Plan</h3>
+          <form onSubmit={handleCreatePlan} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', width: '500px', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>Build Quality Inspection Plan</h3>
             
             <div>
               <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Associate Product</label>
@@ -353,19 +360,66 @@ export default function QualityManagement() {
               </select>
             </div>
 
-            <div>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Plan Template Name</label>
-              <input required type="text" placeholder="e.g. Outgoing QC Standards" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Template Name</label>
+                <input required type="text" placeholder="e.g. Dimensions Check" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Plan Code</label>
+                <input required type="text" placeholder="e.g. QP-LAP-01" value={newPlan.code} onChange={(e) => setNewPlan({ ...newPlan, code: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
+              </div>
             </div>
 
+            {/* Checklist items list */}
             <div>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Plan Code</label>
-              <input required type="text" placeholder="e.g. QP-LAP-01" value={newPlan.code} onChange={(e) => setNewPlan({ ...newPlan, code: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
-            </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-secondary)' }}>Parameters & Validation Specs</label>
+                <button
+                  type="button"
+                  onClick={() => setPlanChecks([...planChecks, { parameter: '', minVal: '0', maxVal: '100', type: 'NUMERIC' }])}
+                  style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontSize: 'var(--text-xs)', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  + Add Check Row
+                </button>
+              </div>
 
-            <div>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Checks Configuration (JSON Array)</label>
-              <textarea required value={newPlan.checks} onChange={(e) => setNewPlan({ ...newPlan, checks: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)', height: '80px', fontFamily: 'monospace', fontSize: 'var(--text-xs)' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '150px', overflowY: 'auto' }}>
+                {planChecks.map((chk, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 60px 60px 40px', gap: '6px', alignItems: 'center' }}>
+                    <input required type="text" placeholder="Param Name" value={chk.parameter} onChange={(e) => {
+                      const updated = [...planChecks];
+                      updated[idx]!.parameter = e.target.value;
+                      setPlanChecks(updated);
+                    }} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+
+                    <select value={chk.type} onChange={(e) => {
+                      const updated = [...planChecks];
+                      updated[idx]!.type = e.target.value as any;
+                      setPlanChecks(updated);
+                    }} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+                      <option value="NUMERIC">Numeric</option>
+                      <option value="PASS_FAIL">Pass/Fail</option>
+                    </select>
+
+                    <input required type="text" placeholder="Min" disabled={chk.type === 'PASS_FAIL'} value={chk.minVal} onChange={(e) => {
+                      const updated = [...planChecks];
+                      updated[idx]!.minVal = e.target.value;
+                      setPlanChecks(updated);
+                    }} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+
+                    <input required type="text" placeholder="Max" disabled={chk.type === 'PASS_FAIL'} value={chk.maxVal} onChange={(e) => {
+                      const updated = [...planChecks];
+                      updated[idx]!.maxVal = e.target.value;
+                      setPlanChecks(updated);
+                    }} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+
+                    <button type="button" onClick={() => setPlanChecks(planChecks.filter((_, i) => i !== idx))} style={{ border: 'none', background: 'none', color: 'var(--color-danger)', cursor: 'pointer' }}>
+                      <Trash size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
@@ -380,7 +434,7 @@ export default function QualityManagement() {
       {isInspectModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
           <form onSubmit={handleLogInspection} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', width: '450px', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>Record Inspection Checklist Results</h3>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>Record Quality Check Results</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
@@ -388,7 +442,7 @@ export default function QualityManagement() {
                 <input required type="text" placeholder="e.g. INSP-2026-001" value={inspectForm.inspectionNumber} onChange={(e) => setInspectForm({ ...inspectForm, inspectionNumber: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
               </div>
               <div>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product ID</label>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product</label>
                 <select required value={inspectForm.productId} onChange={(e) => setInspectForm({ ...inspectForm, productId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }}>
                   <option value="">Select Product...</option>
                   {products.map((p) => (
@@ -401,10 +455,10 @@ export default function QualityManagement() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Ref ID (WO or PO ID)</label>
-                <input required type="text" placeholder="e.g. woId_cuid" value={inspectForm.referenceId} onChange={(e) => setInspectForm({ ...inspectForm, referenceId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
+                <input required type="text" placeholder="e.g. WO ID" value={inspectForm.referenceId} onChange={(e) => setInspectForm({ ...inspectForm, referenceId: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }} />
               </div>
               <div>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status Result</label>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Overall Result</label>
                 <select value={inspectForm.status} onChange={(e) => setInspectForm({ ...inspectForm, status: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)' }}>
                   <option value="PASSED">PASSED</option>
                   <option value="FAILED">FAILED</option>
@@ -423,9 +477,51 @@ export default function QualityManagement() {
               </div>
             </div>
 
+            {/* Checklist checklist */}
             <div>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Checklist Logging (JSON Array)</label>
-              <textarea required value={inspectForm.checklistJson} onChange={(e) => setInspectForm({ ...inspectForm, checklistJson: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: 'var(--space-1)', height: '60px', fontFamily: 'monospace', fontSize: 'var(--text-xs)' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-1)' }}>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-secondary)' }}>Inspection Parameters Roster</label>
+                <button
+                  type="button"
+                  onClick={() => setInspectChecklist([...inspectChecklist, { parameter: '', target: '1.0', actual: '1.0', status: 'PASS' }])}
+                  style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontSize: 'var(--text-xs)', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  + Add Item
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '120px', overflowY: 'auto' }}>
+                {inspectChecklist.map((item, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 60px 30px', gap: '4px', alignItems: 'center' }}>
+                    <input required type="text" placeholder="Param" value={item.parameter} onChange={(e) => {
+                      const updated = [...inspectChecklist];
+                      updated[idx]!.parameter = e.target.value;
+                      setInspectChecklist(updated);
+                    }} style={{ padding: '2px 4px', fontSize: 'var(--text-xs)', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                    <input required type="text" placeholder="Target" value={item.target} onChange={(e) => {
+                      const updated = [...inspectChecklist];
+                      updated[idx]!.target = e.target.value;
+                      setInspectChecklist(updated);
+                    }} style={{ padding: '2px 4px', fontSize: 'var(--text-xs)', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                    <input required type="text" placeholder="Actual" value={item.actual} onChange={(e) => {
+                      const updated = [...inspectChecklist];
+                      updated[idx]!.actual = e.target.value;
+                      setInspectChecklist(updated);
+                    }} style={{ padding: '2px 4px', fontSize: 'var(--text-xs)', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                    <select value={item.status} onChange={(e) => {
+                      const updated = [...inspectChecklist];
+                      updated[idx]!.status = e.target.value;
+                      setInspectChecklist(updated);
+                    }} style={{ padding: '2px 4px', fontSize: '10px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                      <option value="PASS">PASS</option>
+                      <option value="FAIL">FAIL</option>
+                    </select>
+                    <button type="button" onClick={() => setInspectChecklist(inspectChecklist.filter((_, i) => i !== idx))} style={{ border: 'none', background: 'none', color: 'var(--color-danger)', cursor: 'pointer' }}>
+                      <Trash size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>

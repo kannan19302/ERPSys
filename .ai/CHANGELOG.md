@@ -5,6 +5,21 @@
 
 ---
 
+## [2026-06-21] Manufacturing — Competitor Revamp (SAP/NetSuite/Odoo MRP Overhaul)
+
+### Added
+- **Recursive Multi-Level BOM Explosion** (`apps/api/src/modules/manufacturing/manufacturing.service.ts`): Built recursive `getBOMTree` endpoint to traverse component formulas and render hierarchical sub-assembly trees. Added a matching visual tree drawer on the BOMs catalog.
+- **Workstation Gantt Scheduler Timeline** (`apps/web/app/(dashboard)/manufacturing/mrp/page.tsx`): Upgraded the scheduling views to render an interactive workstation allocation Gantt chart mapping jobs and shifts.
+- **MES Operator Routing Clock-in/out** (`apps/web/app/(dashboard)/manufacturing/shop-floor/page.tsx`): Overhauled the operator shop-floor terminal, enabling operators to check-in/out of sequence steps, log lot numbers, and increment machine tool cycles.
+- **Lot Genealogy Trace Explorer** (`apps/web/app/(dashboard)/manufacturing/diagnostics/page.tsx`): Created a double-sided genealogy tracing layout searching component lot consumption histories (upstream and downstream).
+- **OEE Metrics breakdown** (`apps/api/src/modules/manufacturing/manufacturing.service.ts`): Wired multi-dimensional OEE calculation (Availability, Performance, Quality components) with downtime log charts.
+- **Engineering Change Orders (ECO)** (`apps/web/app/(dashboard)/manufacturing/boms/page.tsx`): Added BOM revision control (v1.0, v1.1) and approval routing to prevent modification of active production formulas without a change request.
+- **Tooling Cycle Counters & PM Integration**: Created automated cycle counts on workstations equipment tools, auto-raising preventive maintenance requests if wear limit is exceeded.
+- **Enhanced Spec-based Quality Templates** (`apps/web/app/(dashboard)/manufacturing/quality/page.tsx`): Rearchitected inspection checklists supporting custom checkbox/numeric range templates instead of plain text strings.
+- **Robust Unit Testing Suite** (`apps/api/src/modules/manufacturing/tests/manufacturing.service.spec.ts`): Added 7 comprehensive test blocks verifying capacity adjustments, recursive trees, OEE scores, tool cycles, ECOs, and lot tracers.
+
+---
+
 ## [2026-06-21] Inventory & Stock — Dashboard Analytics & Route Restructuring
 
 ### Added

@@ -274,4 +274,125 @@ export class ManufacturingController {
   ): Promise<unknown> {
     return this.manufacturingService.updateSubcontractingStatus(req.user.tenantId, id, dto.status);
   }
+
+  // ==========================================
+  // ADVANCED GAPS ENDPOINTS
+  // ==========================================
+
+  @Get('boms/:id/tree')
+  @Permissions('manufacturing.bom.read')
+  async getBOMTree(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.manufacturingService.getBOMTree(req.user.tenantId, id);
+  }
+
+  @Get('work-orders/:id/operations')
+  @Permissions('manufacturing.work-order.read')
+  async getWorkOrderOperations(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.manufacturingService.getWorkOrderOperations(req.user.tenantId, id);
+  }
+
+  @Post('work-orders/:id/operations/:opId/start')
+  @Permissions('manufacturing.work-order.update')
+  async startOperationStep(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('opId') opId: string
+  ): Promise<unknown> {
+    return this.manufacturingService.startOperationStep(req.user.tenantId, id, opId, req.user.email);
+  }
+
+  @Post('work-orders/:id/operations/:opId/complete')
+  @Permissions('manufacturing.work-order.update')
+  async completeOperationStep(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('opId') opId: string,
+    @Body() dto: { scrapQuantity?: number; lotNumberConsumed?: string; componentProductId?: string }
+  ): Promise<unknown> {
+    return this.manufacturingService.completeOperationStep(req.user.tenantId, id, opId, dto);
+  }
+
+  @Get('tools')
+  @Permissions('manufacturing.work-order.read')
+  async getEquipmentTools(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.manufacturingService.getEquipmentTools(req.user.tenantId);
+  }
+
+  @Get('shifts')
+  @Permissions('manufacturing.work-order.read')
+  async getWorkstationShifts(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.manufacturingService.getWorkstationShifts(req.user.tenantId);
+  }
+
+  @Post('shifts')
+  @Permissions('manufacturing.work-order.create')
+  async createWorkstationShift(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { workstationId: string; name: string; startTime: string; endTime: string; daysOfWeek: number[] }
+  ): Promise<unknown> {
+    return this.manufacturingService.createWorkstationShift(req.user.tenantId, dto);
+  }
+
+  @Get('subcontracting/:id/materials')
+  @Permissions('manufacturing.bom.read')
+  async getSubcontractingMaterials(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.manufacturingService.getSubcontractingMaterials(req.user.tenantId, id);
+  }
+
+  @Post('subcontracting/:id/issue')
+  @Permissions('manufacturing.bom.update')
+  async issueSubcontractingMaterials(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { materials: Array<{ productId: string; quantity: number; warehouseId: string }> }
+  ): Promise<unknown> {
+    return this.manufacturingService.issueSubcontractingMaterials(req.user.tenantId, id, dto.materials);
+  }
+
+  @Post('subcontracting/:id/reconcile')
+  @Permissions('manufacturing.bom.update')
+  async reconcileSubcontractingMaterials(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { materials: Array<{ productId: string; quantity: number }> }
+  ): Promise<unknown> {
+    return this.manufacturingService.reconcileSubcontractingMaterials(req.user.tenantId, id, dto.materials);
+  }
+
+  @Get('ecos')
+  @Permissions('manufacturing.bom.read')
+  async getECOs(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.manufacturingService.getECOs(req.user.tenantId);
+  }
+
+  @Post('ecos')
+  @Permissions('manufacturing.bom.create')
+  async submitECO(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { bomId: string; changeDescription: string; requestedBy: string }
+  ): Promise<unknown> {
+    return this.manufacturingService.submitECO(req.user.tenantId, dto);
+  }
+
+  @Post('ecos/:id/resolve')
+  @Permissions('manufacturing.bom.update')
+  async resolveECO(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { status: string }
+  ): Promise<unknown> {
+    return this.manufacturingService.resolveECO(req.user.tenantId, id, dto.status, req.user.email);
+  }
+
+  @Get('diagnostics/oee')
+  @Permissions('manufacturing.work-order.read')
+  async getDetailedOEEAnalytics(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.manufacturingService.getDetailedOEEAnalytics(req.user.tenantId);
+  }
+
+  @Get('diagnostics/genealogy/:lotNumber')
+  @Permissions('manufacturing.work-order.read')
+  async getLotGenealogy(@Req() req: AuthenticatedRequest, @Param('lotNumber') lotNumber: string): Promise<unknown> {
+    return this.manufacturingService.getLotGenealogy(req.user.tenantId, lotNumber);
+  }
 }
