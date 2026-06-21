@@ -5,6 +5,23 @@
 
 ---
 
+## [2026-06-21] Procurement — Competitor Revamp (SAP Ariba/Coupa/Oracle Overhaul)
+
+### Added
+- **Purchase Requisition (PR) & Approvals** (`apps/web/app/(dashboard)/procurement/requisitions/page.tsx`): Built employee-purchasing request forms with dynamic multi-row line items, department budgeting, and workflow actions (Approve, Reject, Convert to PO draft).
+- **Blanket Purchase Agreements (BPA)** (`apps/web/app/(dashboard)/procurement/blanket-agreements/page.tsx`): Added long-term supply contracts with fixed pre-negotiated prices, contract consumption progress tracking, and drawdown PO release actions.
+- **3-Way Matching Checklist** (`apps/web/app/(dashboard)/procurement/purchase-orders/[id]/page.tsx`): Overhauled PO details to integrate an interactive 3-Way Match Check comparing ordered quantities/pricing against warehouse receipts (GRN) and vendor invoices.
+- **Supplier Performance Scorecard** (`apps/web/app/(dashboard)/procurement/vendors/[id]/scorecard/page.tsx`): Created analytical dashboards compiling quality acceptance metrics, defect rates, average shipment lead times, and OTD performance.
+- **Public Supplier Bidding Portal** (`apps/web/app/public/bids/[rfqNumber]/page.tsx`): Designed an unauthenticated workspace for external vendors to review RFQ details and submit binding bids directly.
+
+### Fixed
+- **TypeScript Typecheck Errors**:
+  - Safely checked array elements and cast dynamic properties (`as any`) in `handleItemChange` within `requisitions/page.tsx` and `blanket-agreements/page.tsx`.
+  - Replaced invalid `"secondary"` badge variant values with `"default"` across multiple pages (`blanket-agreements/page.tsx`, `purchase-orders/[id]/page.tsx`, `requisitions/page.tsx`, and `public/bids/[rfqNumber]/page.tsx`).
+  - Resolved state update type incompatibility for `linePrices` (`Record`) in `public/bids/[rfqNumber]/page.tsx` using a functional state updater.
+
+---
+
 ## [2026-06-21] Manufacturing — Competitor Revamp (SAP/NetSuite/Odoo MRP Overhaul)
 
 ### Added

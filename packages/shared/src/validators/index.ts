@@ -396,6 +396,61 @@ export type CreatePurchaseReturnInput = z.infer<typeof createPurchaseReturnSchem
 export const updatePurchaseReturnSchema = createPurchaseReturnSchema.partial().omit({ returnNumber: true });
 export type UpdatePurchaseReturnInput = z.infer<typeof updatePurchaseReturnSchema>;
 
+export const createPurchaseRequisitionSchema = z.object({
+  requisitionNumber: z.string().min(1, 'Requisition number is required').max(50),
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().max(2000).optional(),
+  departmentId: z.string().optional(),
+  requiredDate: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(
+    z.object({
+      productId: z.string().optional(),
+      description: z.string().min(1, 'Description is required'),
+      quantity: z.number().positive(),
+      estimatedPrice: z.number().nonnegative(),
+    })
+  ).min(1, 'At least one line item is required'),
+});
+export type CreatePurchaseRequisitionInput = z.infer<typeof createPurchaseRequisitionSchema>;
+
+export const createBlanketPurchaseAgreementSchema = z.object({
+  agreementNumber: z.string().min(1, 'Agreement number is required').max(50),
+  vendorId: z.string().min(1, 'Vendor is required'),
+  title: z.string().min(1, 'Title is required').max(200),
+  startDate: z.string(),
+  endDate: z.string(),
+  agreementLimit: z.number().positive(),
+  currency: z.string().length(3).default('USD'),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(
+    z.object({
+      productId: z.string().optional(),
+      description: z.string().min(1, 'Description is required'),
+      quantity: z.number().positive(),
+      unitPrice: z.number().nonnegative(),
+    })
+  ).min(1, 'At least one line item is required'),
+});
+export type CreateBlanketPurchaseAgreementInput = z.infer<typeof createBlanketPurchaseAgreementSchema>;
+
+export const submitPublicBidSchema = z.object({
+  vendorId: z.string().min(1, 'Vendor ID is required'),
+  quotationNumber: z.string().min(1, 'Quotation number is required').max(50),
+  validUntil: z.string().min(1, 'Valid until date is required'),
+  notes: z.string().max(2000).optional(),
+  lineItems: z.array(
+    z.object({
+      productId: z.string().optional(),
+      description: z.string().min(1, 'Description is required'),
+      quantity: z.number().positive(),
+      unitPrice: z.number().nonnegative(),
+      taxRate: z.number().min(0).max(100).default(0),
+    })
+  ).min(1),
+});
+export type SubmitPublicBidInput = z.infer<typeof submitPublicBidSchema>;
+
 // ── Sales Schemas ──
 
 export const createQuotationLineSchema = z.object({

@@ -223,9 +223,9 @@ describe('ProcurementService', () => {
       vi.mocked(prisma.purchaseReturn.findMany).mockResolvedValue(mockReturns as never);
 
       const result = await service.getPurchaseReturns('tenant-1');
-      expect(result.data || result).toHaveLength(1);
-      expect((result.data || result)[0]?.returnNumber).toBe('PR-001');
-      expect((result.data || result)[0]?.vendorName).toBe('Test Vendor');
+      expect(result).toHaveLength(1);
+      expect(result[0]?.returnNumber).toBe('PR-001');
+      expect(result[0]?.vendorName).toBe('Test Vendor');
     });
 
     it('should create a purchase return and debit note', async () => {
@@ -278,6 +278,88 @@ describe('ProcurementService', () => {
 
       // Verify that findFirst was called to check if PO exists
       expect(prisma.purchaseOrder.findFirst).toHaveBeenCalled();
+    });
+  });
+
+  describe('Requisition & Blanket Agreement Services', () => {
+    beforeEach(() => {
+      prisma.purchaseRequisition = {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      } as any;
+      prisma.purchaseRequisitionItem = {
+        create: vi.fn(),
+      } as any;
+      prisma.blanketPurchaseAgreement = {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      } as any;
+      prisma.blanketPurchaseAgreementItem = {
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      } as any;
+      prisma.supplierQuotation = {
+        findFirst: vi.fn(),
+        create: vi.fn(),
+      } as any;
+      prisma.supplierQuotationItem = {
+        create: vi.fn(),
+      } as any;
+      prisma.rFQ = {
+        findFirst: vi.fn(),
+        update: vi.fn(),
+      } as any;
+    });
+
+    it('should calculate vendor performance metrics', async () => {
+      vi.mocked(prisma.vendor.findFirst).mockResolvedValue({ id: 'v-1', name: 'Apex Metal' } as any);
+      vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValue([
+        {
+          id: 'po-1',
+          totalAmount: { toString: () => '5000' },
+          orderDate: new Date(Date.now() - 10 * 24 * 3600 * 1000),
+          expectedDate: new Date(),
+          receipts: [
+            {
+              receivedDate: new Date(),
+              lineItems: [
+                { receivedQty: { toString: () => '10' }, acceptedQty: { toString: () => '9' } }
+              ]
+            }
+          ]
+        }
+      ] as any);
+
+      const metrics = await service.getVendorPerformanceMetrics('tenant-1', 'v-1');
+      expect(metrics.vendorName).toBe('Apex Metal');
+      expect(metrics.qualityRate).toBe(90);
+      expect(metrics.onTimeDeliveryRate).toBe(100);
+    });
+
+    it('should generate a 3-way match report', async () => {
+      vi.mocked(prisma.purchaseOrder.findFirst).mockResolvedValue({
+        id: 'po-1',
+        poNumber: 'PO-001',
+        lineItems: [
+          { productId: 'p-1', description: 'Steel Sheet', quantity: { toString: () => '10' }, unitPrice: { toString: () => '100' } }
+        ],
+        receipts: [
+          {
+            lineItems: [
+              { productId: 'p-1', receivedQty: { toString: () => '10' }, acceptedQty: { toString: () => '10' } }
+            ]
+          }
+        ]
+      } as any);
+
+      const match = await service.getThreeWayMatchReport('tenant-1', 'po-1');
+      expect(match.poNumber).toBe('PO-001');
+      expect(match.items[0].qtyMatch).toBe(true);
     });
   });
 });

@@ -4,12 +4,17 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ProcurementService } from './procurement.service';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import {
   CreatePurchaseOrderInput,
   CreatePurchaseReceiptInput,
   CreateRFQInput,
   CreateSupplierQuotationInput,
   CreatePurchaseReturnInput,
+  createPurchaseRequisitionSchema,
+  CreatePurchaseRequisitionInput,
+  createBlanketPurchaseAgreementSchema,
+  CreateBlanketPurchaseAgreementInput,
 } from '@unerp/shared';
 
 interface AuthenticatedRequest extends Request {
@@ -142,5 +147,97 @@ export class ProcurementController {
   async createPurchaseReturn(@Req() req: AuthenticatedRequest, @Body() dto: CreatePurchaseReturnInput): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.procurementService.createPurchaseReturn(req.user.tenantId, orgId, dto, req.user.userId || 'system');
+  }
+
+  // ── PURCHASE REQUISITIONS ─────────────────────────
+
+  @Get('requisitions')
+  @Permissions('procurement.purchase-order.read')
+  async getRequisitions(@Req() req: AuthenticatedRequest) {
+    return this.procurementService.getRequisitions(req.user.tenantId);
+  }
+
+  @Get('requisitions/:id')
+  @Permissions('procurement.purchase-order.read')
+  async getRequisitionById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.getRequisitionById(req.user.tenantId, id);
+  }
+
+  @Post('requisitions')
+  @Permissions('procurement.purchase-order.create')
+  async createRequisition(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(createPurchaseRequisitionSchema)) dto: CreatePurchaseRequisitionInput,
+  ) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.procurementService.createRequisition(req.user.tenantId, orgId, dto, req.user.userId || 'system');
+  }
+
+  @Patch('requisitions/:id/approve')
+  @Permissions('procurement.purchase-order.update')
+  async approveRequisition(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.updateRequisitionStatus(req.user.tenantId, id, 'APPROVED', req.user.userId || 'system');
+  }
+
+  @Patch('requisitions/:id/reject')
+  @Permissions('procurement.purchase-order.update')
+  async rejectRequisition(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.updateRequisitionStatus(req.user.tenantId, id, 'REJECTED', req.user.userId || 'system');
+  }
+
+  @Post('requisitions/:id/convert-po')
+  @Permissions('procurement.purchase-order.create')
+  async convertRequisitionToPO(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.convertRequisitionToPO(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  // ── BLANKET PURCHASE AGREEMENTS ───────────────────
+
+  @Get('blanket-agreements')
+  @Permissions('procurement.purchase-order.read')
+  async getBlanketAgreements(@Req() req: AuthenticatedRequest) {
+    return this.procurementService.getBlanketAgreements(req.user.tenantId);
+  }
+
+  @Get('blanket-agreements/:id')
+  @Permissions('procurement.purchase-order.read')
+  async getBlanketAgreementById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.getBlanketAgreementById(req.user.tenantId, id);
+  }
+
+  @Post('blanket-agreements')
+  @Permissions('procurement.purchase-order.create')
+  async createBlanketAgreement(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ZodValidationPipe(createBlanketPurchaseAgreementSchema)) dto: CreateBlanketPurchaseAgreementInput,
+  ) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.procurementService.createBlanketAgreement(req.user.tenantId, orgId, dto, req.user.userId || 'system');
+  }
+
+  @Post('blanket-agreements/:id/release')
+  @Permissions('procurement.purchase-order.create')
+  async createReleaseOrder(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { items: Array<{ itemId: string; releaseQty: number }> },
+  ) {
+    return this.procurementService.createReleaseOrder(req.user.tenantId, id, dto, req.user.userId || 'system');
+  }
+
+  // ── SUPPLIER SCORECARD ─────────────────────────────
+
+  @Get('vendors/:id/scorecard')
+  @Permissions('procurement.purchase-order.read')
+  async getVendorPerformanceMetrics(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.getVendorPerformanceMetrics(req.user.tenantId, id);
+  }
+
+  // ── 3-WAY MATCH CHECK ──────────────────────────────
+
+  @Get('purchase-orders/:id/three-way-match')
+  @Permissions('procurement.purchase-order.read')
+  async getThreeWayMatchReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.procurementService.getThreeWayMatchReport(req.user.tenantId, id);
   }
 }

@@ -2040,6 +2040,114 @@ async function main() {
     await seedWebTemplates(prisma, tenant.id);
   }
 
+  // Seed Requisitions & Blanket Agreements
+  const defaultOrg = await prisma.organization.findFirst({ where: { tenantId: tenant.id } });
+  const defaultDept = await prisma.department.findFirst({ where: { tenantId: tenant.id, code: 'FINANCE' } });
+  const lapProduct = await prisma.product.findFirst({ where: { tenantId: tenant.id, sku: 'SKU-LAP-001' } });
+  const monProduct = await prisma.product.findFirst({ where: { tenantId: tenant.id, sku: 'SKU-MON-002' } });
+
+  if (defaultOrg && lapProduct && monProduct) {
+    const existingReq = await prisma.purchaseRequisition.findFirst({
+      where: { tenantId: tenant.id, requisitionNumber: 'PR-2026-001' }
+    });
+    if (!existingReq) {
+      const pr = await prisma.purchaseRequisition.create({
+        data: {
+          tenantId: tenant.id,
+          orgId: defaultOrg.id,
+          requisitionNumber: 'PR-2026-001',
+          title: 'Office Hardware Replenishment',
+          description: 'Departmental laptop and monitor refresh request',
+          status: 'PENDING_APPROVAL',
+          requestedById: adminUser.id,
+          departmentId: defaultDept?.id || null,
+          estimatedCost: 1550,
+          notes: 'Standard approval flow is active'
+        }
+      });
+
+      await prisma.purchaseRequisitionItem.createMany({
+        data: [
+          {
+            tenantId: tenant.id,
+            requisitionId: pr.id,
+            productId: lapProduct.id,
+            description: lapProduct.name,
+            quantity: 2,
+            estimatedPrice: 650,
+            totalAmount: 1300,
+            sortOrder: 0
+          },
+          {
+            tenantId: tenant.id,
+            requisitionId: pr.id,
+            productId: monProduct.id,
+            description: monProduct.name,
+            quantity: 1,
+            estimatedPrice: 250,
+            totalAmount: 250,
+            sortOrder: 1
+          }
+        ]
+      });
+    }
+
+    // Seed Blanket Agreements
+    const existingBpa = await prisma.blanketPurchaseAgreement.findFirst({
+      where: { tenantId: tenant.id, agreementNumber: 'BPA-2026-001' }
+    });
+    const defaultVendor = await prisma.vendor.findFirst({ where: { tenantId: tenant.id } });
+    if (!existingBpa && defaultVendor) {
+      const start = new Date();
+      const end = new Date();
+      end.setFullYear(end.getFullYear() + 1);
+
+      const bpa = await prisma.blanketPurchaseAgreement.create({
+        data: {
+          tenantId: tenant.id,
+          orgId: defaultOrg.id,
+          vendorId: defaultVendor.id,
+          agreementNumber: 'BPA-2026-001',
+          title: 'Annual Hardware Supply Agreement',
+          status: 'ACTIVE',
+          startDate: start,
+          endDate: end,
+          agreementLimit: 50000,
+          releasedAmount: 0,
+          currency: 'USD',
+          notes: 'Pre-negotiated contract prices'
+        }
+      });
+
+      await prisma.blanketPurchaseAgreementItem.createMany({
+        data: [
+          {
+            tenantId: tenant.id,
+            agreementId: bpa.id,
+            productId: lapProduct.id,
+            description: lapProduct.name,
+            quantity: 50,
+            releasedQty: 0,
+            unitPrice: 600,
+            totalAmount: 30000,
+            sortOrder: 0
+          },
+          {
+            tenantId: tenant.id,
+            agreementId: bpa.id,
+            productId: monProduct.id,
+            description: monProduct.name,
+            quantity: 100,
+            releasedQty: 0,
+            unitPrice: 200,
+            totalAmount: 20000,
+            sortOrder: 1
+          }
+        ]
+      });
+    }
+  }
+
   console.log('🚀 Database seeding complete!');
 }
 

@@ -137,6 +137,8 @@ model Organization {
   campaigns            Campaign[]
   salesReturns         SalesReturn[]
   purchaseReturns      PurchaseReturn[]
+  purchaseRequisitions PurchaseRequisition[]
+  blanketPurchaseAgreements BlanketPurchaseAgreement[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -159,6 +161,7 @@ model Department {
   employees      Employee[]
   journalEntries JournalEntry[]
   positions      Position[]
+  purchaseRequisitions PurchaseRequisition[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -264,6 +267,7 @@ model Vendor {
   supplierQuotations   SupplierQuotation[]
   purchaseReturns      PurchaseReturn[]
   subcontractingOrders SubcontractingOrder[]
+  blanketPurchaseAgreements BlanketPurchaseAgreement[]
 
   @@index([tenantId])
   @@map("vendors")
@@ -521,6 +525,8 @@ model Product {
   productKitItems        ProductKitItem[]
   subcontractingMaterials SubcontractingMaterial[]
   componentConsumptions   WorkOrderComponentConsumption[]
+  purchaseRequisitionItems PurchaseRequisitionItem[]
+  blanketPurchaseAgreementItems BlanketPurchaseAgreementItem[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -724,10 +730,14 @@ model PurchaseOrder {
 
   rfqId               String? @map("rfq_id")
   supplierQuotationId String? @map("supplier_quotation_id")
+  requisitionId       String? @map("requisition_id")
+  blanketAgreementId  String? @map("blanket_agreement_id")
 
   vendor            Vendor              @relation(fields: [vendorId], references: [id])
   rfq               RFQ?                @relation(fields: [rfqId], references: [id])
   supplierQuotation SupplierQuotation?  @relation(fields: [supplierQuotationId], references: [id])
+  requisition       PurchaseRequisition? @relation(fields: [requisitionId], references: [id], onDelete: SetNull)
+  blanketAgreement  BlanketPurchaseAgreement? @relation(fields: [blanketAgreementId], references: [id], onDelete: SetNull)
   lineItems         PurchaseOrderItem[]
   receipts          PurchaseReceipt[]
   debitNotes        DebitNote[]
@@ -6465,5 +6475,103 @@ model ProductKitItem {
   @@index([tenantId])
   @@index([kitId])
   @@map("product_kit_items")
+}
+
+model PurchaseRequisition {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  requisitionNumber String  @map("requisition_number")
+  title          String
+  description    String?
+  status         String    @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, CONVERTED
+  requestedById  String    @map("requested_by_id")
+  departmentId   String?   @map("department_id")
+  requiredDate   DateTime? @map("required_date")
+  estimatedCost  Decimal   @default(0) @map("estimated_cost") @db.Decimal(15, 2)
+  notes          String?
+  approvedBy     String?   @map("approved_by")
+  approvedAt     DateTime? @map("approved_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization   Organization             @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  department     Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  lineItems      PurchaseRequisitionItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([tenantId, orgId, requisitionNumber])
+  @@index([tenantId])
+  @@map("purchase_requisitions")
+}
+
+model PurchaseRequisitionItem {
+  id             String  @id @default(cuid())
+  tenantId       String  @map("tenant_id")
+  requisitionId  String  @map("requisition_id")
+  productId      String? @map("product_id")
+  description    String
+  quantity       Decimal @db.Decimal(15, 3)
+  estimatedPrice Decimal @map("estimated_price") @db.Decimal(15, 2)
+  totalAmount    Decimal @map("total_amount") @db.Decimal(15, 2)
+  sortOrder      Int     @default(0) @map("sort_order")
+
+  requisition    PurchaseRequisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  product        Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([requisitionId])
+  @@map("purchase_requisition_items")
+}
+
+model BlanketPurchaseAgreement {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  vendorId       String    @map("vendor_id")
+  agreementNumber String   @map("agreement_number")
+  title          String
+  status         String    @default("ACTIVE") // ACTIVE, EXPIRED, TERMINATED
+  startDate      DateTime  @map("start_date")
+  endDate        DateTime  @map("end_date")
+  agreementLimit Decimal   @map("agreement_limit") @db.Decimal(15, 2)
+  releasedAmount Decimal   @default(0) @map("released_amount") @db.Decimal(15, 2)
+  currency       String    @default("USD")
+  notes          String?
+  createdBy      String?   @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization   Organization                  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  vendor         Vendor                        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  lineItems      BlanketPurchaseAgreementItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([tenantId, orgId, agreementNumber])
+  @@index([tenantId])
+  @@index([vendorId])
+  @@map("blanket_purchase_agreements")
+}
+
+model BlanketPurchaseAgreementItem {
+  id             String  @id @default(cuid())
+  tenantId       String  @map("tenant_id")
+  agreementId    String  @map("agreement_id")
+  productId      String? @map("product_id")
+  description    String
+  quantity       Decimal @db.Decimal(15, 3)
+  releasedQty    Decimal @default(0) @map("released_qty") @db.Decimal(15, 3)
+  unitPrice      Decimal @map("unit_price") @db.Decimal(15, 2)
+  totalAmount    Decimal @map("total_amount") @db.Decimal(15, 2)
+  sortOrder      Int     @default(0) @map("sort_order")
+
+  agreement      BlanketPurchaseAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  product        Product?                 @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([agreementId])
+  @@map("blanket_purchase_agreement_items")
 }
 

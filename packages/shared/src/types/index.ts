@@ -202,3 +202,104 @@ export interface AuditLog {
 }
 
 export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT';
+
+// ── Purchase Requisitions ──
+export interface PurchaseRequisition {
+  id: string;
+  tenantId: string;
+  orgId: string;
+  requisitionNumber: string;
+  title: string;
+  description: string | null;
+  status: string;
+  requestedById: string;
+  departmentId: string | null;
+  requiredDate: string | null;
+  estimatedCost: number;
+  notes: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lineItems?: PurchaseRequisitionItem[];
+}
+
+export interface PurchaseRequisitionItem {
+  id: string;
+  tenantId: string;
+  requisitionId: string;
+  productId: string | null;
+  description: string;
+  quantity: number;
+  estimatedPrice: number;
+  totalAmount: number;
+  sortOrder: number;
+}
+
+// ── Blanket Purchase Agreements ──
+export interface BlanketPurchaseAgreement {
+  id: string;
+  tenantId: string;
+  orgId: string;
+  vendorId: string;
+  agreementNumber: string;
+  title: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  agreementLimit: number;
+  releasedAmount: number;
+  currency: string;
+  notes: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lineItems?: BlanketPurchaseAgreementItem[];
+}
+
+export interface BlanketPurchaseAgreementItem {
+  id: string;
+  tenantId: string;
+  agreementId: string;
+  productId: string | null;
+  description: string;
+  quantity: number;
+  releasedQty: number;
+  unitPrice: number;
+  totalAmount: number;
+  sortOrder: number;
+}
+
+// ── Supplier Scorecard ──
+export interface SupplierScorecard {
+  vendorId: string;
+  vendorName: string;
+  onTimeDeliveryRate: number; // percentage (0-100)
+  qualityRate: number; // percentage (0-100) based on GRN accepted vs total
+  totalOrders: number;
+  totalSpend: number;
+  defectRate: number; // percentage (0-100)
+  avgLeadTimeDays: number;
+}
+
+// ── 3-Way Match Check ──
+export interface ThreeWayMatchResult {
+  purchaseOrderId: string;
+  poNumber: string;
+  status: 'MATCHED' | 'DISCREPANCY' | 'PENDING';
+  overallMatch: boolean;
+  items: ThreeWayMatchItem[];
+}
+
+export interface ThreeWayMatchItem {
+  productId: string | null;
+  description: string;
+  orderedQty: number;
+  receivedQty: number;
+  invoicedQty: number;
+  orderedUnitPrice: number;
+  receivedUnitPrice: number;
+  invoicedUnitPrice: number;
+  qtyMatch: boolean;
+  priceMatch: boolean;
+}

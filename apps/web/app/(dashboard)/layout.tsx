@@ -318,6 +318,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       icon: ShoppingCart,
       items: [
         { name: 'Procurement Dashboard', href: '/procurement', icon: ShoppingCart },
+        { name: 'Purchase Requisitions', href: '/procurement/requisitions', icon: ClipboardCheck },
+        { name: 'Blanket Agreements', href: '/procurement/blanket-agreements', icon: Layers },
         { name: 'Purchase Orders', href: '/procurement/purchase-orders', icon: FileText },
         { name: 'Purchase Receipts (GRN)', href: '/procurement/purchase-receipts', icon: Truck },
         { name: 'Supplier Returns', href: '/procurement/returns', icon: History },
@@ -914,6 +916,8 @@ const SEGMENT_NAMES: Record<string, string> = {
   warehouses: 'Warehouses',
   escalations: 'Escalations',
   simulation: 'Simulation',
+  requisitions: 'Requisitions',
+  'blanket-agreements': 'Blanket Agreements',
   portal: 'Portal'
 };
 

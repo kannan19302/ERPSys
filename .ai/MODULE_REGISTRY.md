@@ -26,7 +26,7 @@
 | 3 | **Human Resources** | `apps/api/src/modules/hr` | 🟢 ENHANCED | 1 | admin, finance | Employee (paginated, detail, update, bulk ops, events, stats, KPI), Department management |
 | 4 | **CRM & Sales** | `apps/api/src/modules/crm` | 🟢 ENHANCED | 1 | admin | Contact, Lead, Opportunity, Activity, Pipeline, LineItem, PriceBook, ContactTag, SalesTarget, SavedReport, WorkflowRule, EmailSequence, Territory, Commission, WebForm, Document, CustomField, RecordType, ApprovalProcess, QuotationTemplate, QuotationSignature, Comment, Note, Follower, Playbook, Battlecard, Dashboard |
 | 5 | **Inventory & Warehouse** | `apps/api/src/modules/inventory` | 🟢 ENHANCED | 1 | admin | Product (paginated, detail, update, bulk ops), Warehouse (full CRUD), Stock Levels, Inventory Stats |
-| 6 | **Procurement** | `apps/api/src/modules/procurement` | 🟢 ACTIVE | 2 | admin, finance, inventory, crm | Vendor, PurchaseOrder, PurchaseReceipt, RFQ, GoodsReceipt |
+| 6 | **Procurement** | `apps/api/src/modules/procurement` | 🟢 ENHANCED | 2 | admin, finance, inventory, crm | Vendor, PurchaseOrder, PurchaseReceipt, RFQ, GoodsReceipt, PurchaseRequisition, BlanketPurchaseAgreement |
 | 7 | **Sales & Orders** | `apps/api/src/modules/sales` | 🟢 ACTIVE | 2 | admin, finance, inventory, crm | Quotation, SalesOrder, DeliveryNote, Return, SalesPipeline |
 | 8 | **Supply Chain** | `apps/api/src/modules/supply-chain` | 🟢 ACTIVE | 2 | inventory, procurement, sales | Shipment, Carrier, Route, DemandForecast |
 
