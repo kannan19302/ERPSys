@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare, Trash2 } from 'lucide-react';
+import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare, Trash2, Percent } from 'lucide-react';
 import {
   Home,
   CreditCard,
@@ -450,8 +450,20 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'POS & Retail',
       icon: Store,
       items: [
-        { name: 'POS Terminals', href: '/pos', icon: Store },
+        { name: 'POS Terminal', href: '/pos', icon: Store },
+        { name: 'POS Orders', href: '/pos/orders', icon: ShoppingCart },
+        { name: 'Customers & Loyalty', href: '/pos/customers', icon: Users },
+        { name: 'Sales Analytics', href: '/pos/reports', icon: BarChart3 },
         { name: 'Advanced POS Features', href: '/pos/advanced', icon: Activity },
+        {
+          name: 'Retail Tools',
+          isHeader: true,
+          items: [
+            { name: 'Held / Parked Carts', href: '/pos/held-orders', icon: Clock },
+            { name: 'Promotions Engine', href: '/pos/promotions', icon: Percent },
+            { name: 'Layaway Plans', href: '/pos/layaway', icon: DollarSign },
+          ]
+        },
         {
           name: 'Customizer',
           isHeader: true,
@@ -650,16 +662,16 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
-           const pages = await res.json();
-           if (isMounted) setCustomPages(Array.isArray(pages) ? pages : (pages?.data || []));
+          const pages = await res.json();
+          if (isMounted) setCustomPages(Array.isArray(pages) ? pages : (pages?.data || []));
         } else {
-           // fallback
-           const reg = localStorage.getItem('unerp_page_registry');
-           if (reg && isMounted) setCustomPages(JSON.parse(reg));
+          // fallback
+          const reg = localStorage.getItem('unerp_page_registry');
+          if (reg && isMounted) setCustomPages(JSON.parse(reg));
         }
       } catch {
-         const reg = localStorage.getItem('unerp_page_registry');
-         if (reg && isMounted) setCustomPages(JSON.parse(reg));
+        const reg = localStorage.getItem('unerp_page_registry');
+        if (reg && isMounted) setCustomPages(JSON.parse(reg));
       }
     };
     load();
@@ -673,7 +685,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
   const enhancedItems = React.useMemo(() => {
     const activeModulePrefix = pathname.split('/')[1];
     const moduleCustomPages = customPages.filter(p => p.module.toLowerCase() === activeModulePrefix?.toLowerCase() && !p.isOverride && p.status === 'PUBLISHED');
-    
+
     if (moduleCustomPages.length === 0) return appNav.items;
 
     const newItems = [...appNav.items];
@@ -688,7 +700,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
       isHeader: true,
       items: customLinks
     });
-    
+
     return newItems;
   }, [appNav.items, customPages, pathname]);
 
@@ -724,11 +736,11 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: s
       const parts = href.split('?');
       const itemPath = parts[0] || '';
       const itemQuery = parts[1] || '';
-      
+
       const isPathMatch = (itemPath === '/inventory' || itemPath === '/builder' || itemPath === '/dashboard' || itemPath === '/drive' || itemPath === '/storage')
-        ? pathname === itemPath 
+        ? pathname === itemPath
         : (pathname === itemPath || pathname.startsWith(itemPath + '/'));
-        
+
       if (!isPathMatch) return false;
 
       if (itemPath === '/drive') {
