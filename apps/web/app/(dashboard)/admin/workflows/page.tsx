@@ -37,7 +37,7 @@ interface ApprovalRequest {
   };
 }
 
-export default function WorkflowsPage() {
+export default function AdminWorkflowsPage() {
   const [loading, setLoading] = useState(true);
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);

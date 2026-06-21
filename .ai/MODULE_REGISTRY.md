@@ -21,7 +21,7 @@
 
 | # | Module | Package Path | Status | Phase | Dependencies | Key Entities |
 |:--|:---|:---|:---|:---|:---|:---|
-| 1 | **Administration** | `apps/api/src/modules/admin` | 🟢 ACTIVE | 0 | auth, database | Tenant, User, Role, Permission, Setting |
+| 1 | **Admin** | `apps/api/src/modules/admin` | 🟢 ACTIVE | 0 | auth, database | Tenant, User, Role, Permission, Setting, Workflows, Localization, Sync, DevOps, Super Admin |
 | 2 | **Finance & Accounting** | `apps/api/src/modules/finance` | 🟢 ENHANCED | 1 | admin, database | Invoice, Payment (paginated, bulk ops, send/void, events, stats, KPI) |
 | 3 | **Human Resources** | `apps/api/src/modules/hr` | 🟢 ENHANCED | 1 | admin, finance | Employee (paginated, detail, update, bulk ops, events, stats, KPI), Department management |
 | 4 | **CRM & Sales** | `apps/api/src/modules/crm` | 🟢 ENHANCED | 1 | admin | Contact, Lead, Opportunity, Activity, Pipeline, LineItem, PriceBook, ContactTag, SalesTarget, SavedReport, WorkflowRule, EmailSequence, Territory, Commission, WebForm, Document, CustomField, RecordType, ApprovalProcess, QuotationTemplate, QuotationSignature, Comment, Note, Follower, Playbook, Battlecard, Dashboard |
@@ -39,15 +39,15 @@
 | 9 | **Project Management** | `apps/api/src/modules/projects` | 🟢 ACTIVE | 3 | admin, hr, finance | Project, Task, Timesheet, Milestone, Budget, ProjectPortfolio, ProjectRisk, ChangeRequest |
 | 10 | **Manufacturing (MRP)** | `apps/api/src/modules/manufacturing` | 🟢 ENHANCED | 3 | inventory, procurement, sales | BOM, WorkOrder, ProductionPlan, Routing, ScrapEntry, WorkOrderOperation, WorkstationShift, SubcontractingMaterial, EquipmentTool, EngineeringChangeOrder, WorkOrderComponentConsumption |
 | 11 | **Business Intelligence** | `apps/api/src/modules/analytics` | 🟢 ACTIVE | 4 | all core modules | Dashboard, Report, KPI, Widget, ScheduledReport |
-| 12 | **Drive** (renamed from Documents) | `apps/api/src/modules/documents` | 🟢 ACTIVE | 4 | admin | Document, Folder, Version, Template, Signature, FolderShare, DocumentShare (Google Drive UI, AES-256 S3 envelope encryption, legal holds, password protected and expiring share links) |
+| 12 | **Drive** | `apps/api/src/modules/documents` | 🟢 ACTIVE | 4 | admin | Document, Folder, Version, Template, Signature, FolderShare, DocumentShare, GeneratedDocument, TemplateDesigner, StorageQuotas, MediaConversion (Google Drive UI, AES-256 S3 envelope encryption, legal holds, password protected and expiring share links, PDF templates, quotas, conversion) |
 | 13 | **Connect** (Communication) | `apps/api/src/modules/communication` | 🟢 ACTIVE | 4 | admin | Message, Channel, Notification, EmailTemplate, Presence*, Meeting* |
 | 14 | **POS & Retail** | `apps/api/src/modules/pos` | 🟢 ACTIVE | 5 | inventory, sales, finance | POSTerminal, Register, Receipt, Shift, CashEntry |
 | 15 | **Advanced Inventory** | `apps/api/src/modules/inventory` (ext) | 🟢 ACTIVE | 5 | inventory | SerialNumber, Batch, BinLocation, CycleCount, Valuation |
 | 16 | **Advanced Finance** | `apps/api/src/modules/finance` (ext) | 🟢 ACTIVE | 6 | finance, sales, procurement | ChartOfAccounts, GeneralLedger, BankRecon, Budget, TaxReturn |
 | 17 | **Advanced HR** | `apps/api/src/modules/hr` (ext) | 🟢 ACTIVE | 7 | hr, finance | PayrollRun, LeavePolicy, ShiftSchedule, Appraisal, Training |
-| 18 | **Workflow Engine** | `apps/api/src/modules/workflow` | 🟢 ACTIVE | 8 | all modules | Workflow, WorkflowStep, ApprovalChain, Delegation, SLA |
+| 18 | **Workflow Engine** | `apps/api/src/modules/admin` (ext) | 🟢 ACTIVE | 8 | all modules | Workflow, WorkflowStep, ApprovalChain, Delegation, SLA (consolidated into Admin app) |
 | 19 | **Notifications** | `apps/api/src/modules/notifications` | 🟢 ACTIVE | 9 | communication, workflow | NotificationChannel, Preference, Digest, WebSocketEvent |
-| 20 | **File Storage** | `apps/api/src/modules/storage` | 🟢 ACTIVE | 10 | documents, finance | File, Bucket, DocumentTemplate, GeneratedDocument |
+| 20 | **File Storage** | `apps/api/src/modules/documents` (ext) | 🟢 ACTIVE | 10 | drive | File, Bucket, DocumentTemplate, GeneratedDocument (consolidated into Drive app) |
 | 21 | **Advanced Reporting** | `apps/api/src/modules/reporting` | 🟢 ACTIVE | 11 | analytics, finance | DashboardLayout, Widget, SavedView, ScheduledReport |
 
 ---

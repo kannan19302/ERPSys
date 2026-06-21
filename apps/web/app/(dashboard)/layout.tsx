@@ -424,7 +424,23 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
         { name: 'Recent', href: '/drive?view=recent', icon: Clock },
         { name: 'Starred', href: '/drive?view=starred', icon: Star },
         { name: 'Trash', href: '/drive?view=trash', icon: Trash2 },
-        { name: 'E-Signatures & Tools', href: '/drive/advanced', icon: FileText },
+        {
+          name: 'Document Tools',
+          isHeader: true,
+          items: [
+            { name: 'Generated Documents', href: '/drive/templates', icon: FileText },
+            { name: 'Template Designer', href: '/drive/designer', icon: Settings },
+          ]
+        },
+        {
+          name: 'Advanced & Tools',
+          isHeader: true,
+          items: [
+            { name: 'E-Signatures & OCR', href: '/drive/advanced', icon: FileText },
+            { name: 'Storage Quotas', href: '/drive/quotas', icon: Database },
+            { name: 'Media Conversion', href: '/drive/media', icon: Image },
+          ]
+        }
       ]
     };
   }
@@ -533,47 +549,100 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
     };
   }
   if (pathname.startsWith('/admin')) {
+    // Check if user is a super admin
+    const userJson = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let isSuperAdmin = false;
+    if (userJson) {
+      try {
+        const u = JSON.parse(userJson);
+        isSuperAdmin = u.role === 'SUPER_ADMIN' || u.email === 'admin@uni-erp.com';
+      } catch {}
+    }
+    
+    const items: SidebarItem[] = [
+      { name: 'Dashboard', href: '/admin', icon: Home },
+      {
+        name: 'Identity & Access',
+        isHeader: true,
+        items: [
+          { name: 'Users Directory', href: '/admin/users', icon: Users },
+          { name: 'Roles & Permissions', href: '/admin/access-control', icon: ShieldCheck },
+          { name: 'SSO Configuration', href: '/admin/sso', icon: Key },
+        ]
+      },
+      {
+        name: 'Security & Compliance',
+        isHeader: true,
+        items: [
+          { name: 'Security Control Hub', href: '/admin/security', icon: ShieldAlert },
+          { name: 'GDPR & Privacy', href: '/admin/gdpr', icon: ShieldCheck },
+        ]
+      },
+      {
+        name: 'Automation & Workflows',
+        isHeader: true,
+        items: [
+          { name: 'Approval Workflows', href: '/admin/workflows', icon: GitFork },
+          { name: 'Advanced Engine', href: '/admin/workflows/advanced', icon: Workflow },
+          { name: 'Escalation Logs', href: '/admin/workflows/escalations', icon: ShieldAlert },
+          { name: 'Workflow Simulator', href: '/admin/workflows/simulation', icon: Play },
+        ]
+      },
+      {
+        name: 'Branding & Communication',
+        isHeader: true,
+        items: [
+          { name: 'Announcements', href: '/admin/announcements', icon: Bell },
+        ]
+      },
+      {
+        name: 'Platform Settings',
+        isHeader: true,
+        items: [
+          { name: 'General Settings', href: '/admin/settings', icon: Settings },
+          { name: 'App Marketplace', href: '/admin/marketplace', icon: Package },
+        ]
+      },
+      {
+        name: 'Data & Integration',
+        isHeader: true,
+        items: [
+          { name: 'API Keys & Webhooks', href: '/admin/api-keys', icon: Key },
+          { name: 'API Integration Hub', href: '/admin/api-platform', icon: Server },
+          { name: 'Import / Export', href: '/admin/import-export', icon: Upload },
+          { name: 'i18n Localization', href: '/admin/localization', icon: Globe },
+          { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
+          { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
+        ]
+      },
+      {
+        name: 'Reports',
+        isHeader: true,
+        items: [
+          { name: 'Scheduled Reports', href: '/admin/scheduled-reports', icon: FileText },
+          { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
+          { name: 'Notification Prefs', href: '/admin/notifications', icon: Bell },
+        ]
+      }
+    ];
+
+    if (isSuperAdmin) {
+      items.push({
+        name: 'Super Admin Tools',
+        isHeader: true,
+        items: [
+          { name: 'Super Admin Dashboard', href: '/admin/super-admin', icon: Home },
+          { name: 'Tenants', href: '/admin/super-admin/tenants', icon: Building },
+          { name: 'Admin Users', href: '/admin/super-admin/admins', icon: Users },
+          { name: 'System Health', href: '/admin/super-admin/health', icon: Activity },
+        ]
+      });
+    }
+
     return {
-      title: 'Administration',
+      title: 'Admin Control Center',
       icon: ShieldAlert,
-      items: [
-        { name: 'Users List', href: '/admin/users', icon: ShieldAlert },
-        { name: 'Access Control', href: '/admin/access-control', icon: ShieldCheck },
-        { name: 'Security Control Hub', href: '/admin/security', icon: ShieldCheck },
-        { name: 'Settings', href: '/admin/settings', icon: Settings },
-        { name: 'App Marketplace', href: '/admin/marketplace', icon: Package },
-        {
-          name: 'Monitoring',
-          isHeader: true,
-          items: [
-            { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
-            { name: 'Notifications', href: '/admin/notifications', icon: Bell },
-          ]
-        },
-        {
-          name: 'System Platform',
-          isHeader: true,
-          items: [
-            { name: 'API Key Whitelists', href: '/admin/api-keys', icon: Key },
-            { name: 'API Integration Hub', href: '/admin/api-platform', icon: Server },
-            { name: 'i18n Localization', href: '/admin/localization', icon: Globe },
-            { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
-            { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
-          ]
-        },
-        {
-          name: 'Data & Compliance',
-          isHeader: true,
-          items: [
-            { name: 'Import / Export', href: '/admin/import-export', icon: Upload },
-            { name: 'GDPR & Privacy', href: '/admin/gdpr', icon: ShieldCheck },
-            { name: 'Announcements', href: '/admin/announcements', icon: Bell },
-            { name: 'Scheduled Reports', href: '/admin/scheduled-reports', icon: FileText },
-            { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
-            { name: 'Notification Prefs', href: '/admin/notifications', icon: Bell },
-          ]
-        }
-      ]
+      items
     };
   }
   if (pathname.startsWith('/super-admin')) {
@@ -659,10 +728,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Drive', href: '/drive', icon: FolderOpen, type: 'App' },
   { name: 'Connect', href: '/connect', icon: MessageSquare, type: 'App' },
   { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
-  { name: 'Workflows', href: '/workflows', icon: GitFork, type: 'App' },
-  { name: 'Files & Storage', href: '/storage', icon: HardDrive, type: 'App' },
-  { name: 'API Platform', href: '/admin/api-keys', icon: Key, type: 'App' },
-  { name: 'Administration', href: '/admin/users', icon: ShieldAlert, type: 'App' },
+  { name: 'Admin', href: '/admin', icon: ShieldAlert, type: 'App' },
   { name: 'Studio', href: '/builder', icon: Cpu, type: 'App' },
   // Actions — General
   { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
@@ -857,8 +923,7 @@ const SEGMENT_NAMES: Record<string, string> = {
   connect: 'Connect',
   drive: 'Drive',
   analytics: 'Analytics',
-  workflows: 'Workflows',
-  admin: 'Administration',
+  admin: 'Admin',
   settings: 'Settings',
   profile: 'Profile',
   builder: 'Studio',
@@ -964,6 +1029,10 @@ const SEGMENT_NAMES: Record<string, string> = {
   notifications: 'Notifications',
   'import-export': 'Import / Export',
   gdpr: 'GDPR',
+  workflows: 'Workflows',
+  templates: 'Templates',
+  quotas: 'Storage Quotas',
+  media: 'Media Conversion',
 };
 
 const formatSegment = (segment: string): string => {
@@ -1161,18 +1230,13 @@ export default function DashboardLayout({
     { id: 'drive', name: 'Drive', href: '/drive', icon: FolderOpen, installed: true },
     { id: 'communication', name: 'Connect', href: '/connect', icon: MessageSquare, installed: true },
     { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
-    { id: 'workflows', name: 'Workflows', href: '/workflows', icon: GitFork, installed: true },
-    { id: 'storage', name: 'Files & Storage', href: '/storage', icon: HardDrive, installed: true },
     { id: 'healthcare', name: 'Healthcare Module', href: '/healthcare', icon: Activity, installed: false },
     { id: 'education', name: 'Education Module', href: '/education', icon: GraduationCap, installed: false },
     { id: 'real-estate', name: 'Real Estate Module', href: '/real-estate', icon: Building2, installed: false },
     { id: 'field-service', name: 'Field Service Module', href: '/field-service', icon: Wrench, installed: false },
     { id: 'api-keys', name: 'API Platform', href: '/admin/api-keys', icon: Key, installed: true },
-    { id: 'localization', name: 'Localization', href: '/admin/localization', icon: Globe, installed: true },
-    { id: 'sync', name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone, installed: true },
-    { id: 'devops', name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server, installed: true },
     { id: 'saas', name: 'SaaS Portal', href: '/saas/portal', icon: Cloud, installed: true },
-    { id: 'admin', name: 'Administration', href: '/admin/users', icon: ShieldAlert, installed: true },
+    { id: 'admin', name: 'Admin', href: '/admin', icon: ShieldAlert, installed: true },
     { id: 'app-store', name: 'App Store', href: '/apps/store', icon: ShoppingBag, installed: true },
     { id: 'builder', name: 'Studio', href: '/builder', icon: Cpu, installed: true },
   ];
@@ -1182,13 +1246,7 @@ export default function DashboardLayout({
       id: 'developer',
       name: 'Developer',
       color: '#334155',
-      appIds: ['api-keys', 'app-store', 'builder', 'devops'],
-    },
-    {
-      id: 'system',
-      name: 'System',
-      color: '#dc2626',
-      appIds: ['admin', 'localization', 'sync', 'saas'],
+      appIds: ['api-keys', 'app-store', 'builder', 'saas'],
     },
   ];
 

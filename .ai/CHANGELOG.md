@@ -5,6 +5,28 @@
 
 ---
 
+## [2026-06-21] Admin Module Consolidation & Drive Restructuring
+
+### Reorganized
+- **Admin Consolidation**:
+  - Removed "System" dropdown folder and combined 4 sub-apps (Admin, Localization, Sync, DevOps) into a single "Admin" app.
+  - Reorganized `/admin` sidebar navigation with grouped sections: Identity & Access, Security & Compliance, Automation & Workflows, Branding & Communication, Platform Settings, Data & Integration, Reports, and Super Admin.
+  - Moved workflows module from `/workflows` to `/admin/workflows` (including page, advanced, escalations, and simulation pages).
+  - Deleted old `/workflows` directory.
+- **Drive Restructuring**:
+  - Moved "Files & Storage" features from `/storage` into `/drive`.
+  - Added new pages under `/drive` for Templates, Designer, Storage Quotas, and Media Conversion.
+  - Deleted old `/storage` directory.
+- **Super Admin**:
+  - Merged `/super-admin` into the consolidated Admin app under `/admin/super-admin`.
+  - Deleted old `/super-admin` directory.
+
+### Updated
+- `layout.tsx` — Updated segment naming mappings, apps switcher sidebar items, global search index items, and main applications index list.
+- `apps/page.tsx` — Consolidated application list to remove separate tiles for workflows, storage, localization, sync, and devops; updated description for Admin.
+
+---
+
 ## [2026-06-21] Phase 5 — System Modules Complete (End-to-End)
 
 ### Wired Existing Backends to Frontends
