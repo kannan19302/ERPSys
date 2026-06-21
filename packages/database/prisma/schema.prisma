@@ -37,6 +37,10 @@ model Tenant {
   installedApps    InstalledApp[]
   demoDataRecords  DemoDataRecord[]
   accessPackages   AccessPackage[]
+  ssoConfigs       SsoConfig[]
+  userSessions     UserSession[]
+  userGroups       UserGroup[]
+  ipRestrictions   IpRestriction[]
 
   @@map("tenants")
 }
@@ -56,8 +60,10 @@ model User {
   deletedAt    DateTime? @map("deleted_at")
   preferences  Json      @default("{}")
 
-  tenant Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  roles  UserRole[]
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roles            UserRole[]
+  userSessions     UserSession[]
+  groupMemberships UserGroupMember[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -6745,4 +6751,95 @@ model DataErasureRequest {
   @@index([tenantId, status])
   @@map("data_erasure_requests")
 }
+
+model SsoConfig {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  providerType     String   @map("provider_type") // e.g. SAML, OIDC
+  name             String
+  clientId         String?  @map("client_id")
+  clientSecret     String?  @map("client_secret")
+  issuerUrl        String?  @map("issuer_url")
+  authorizationUrl String?  @map("authorization_url")
+  tokenUrl         String?  @map("token_url")
+  userInfoUrl      String?  @map("user_info_url")
+  samlMetadataUrl  String?  @map("saml_metadata_url")
+  samlMetadataXml  String?  @map("saml_metadata_xml")
+  samlEntryPoint   String?  @map("saml_entry_point")
+  samlIssuer       String?  @map("saml_issuer")
+  samlCert         String?  @map("saml_cert")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, providerType])
+  @@map("sso_configs")
+}
+
+model UserSession {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  userId         String    @map("user_id")
+  token          String    @unique
+  device         String?
+  browser        String?
+  ipAddress      String?   @map("ip_address")
+  location       String?
+  isActive       Boolean   @default(true) @map("is_active")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at")
+  expiresAt      DateTime? @map("expires_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model UserGroup {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members UserGroupMember[]
+
+  @@unique([tenantId, name])
+  @@map("user_groups")
+}
+
+model UserGroupMember {
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@map("user_group_members")
+}
+
+model IpRestriction {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ipRange     String   @map("ip_range")
+  description String?
+  ruleType    String   @default("ALLOW") @map("rule_type")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, ipRange])
+  @@map("ip_restrictions")
+}
+
 

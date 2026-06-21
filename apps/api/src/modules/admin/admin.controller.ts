@@ -165,4 +165,69 @@ export class AdminController {
   ): Promise<unknown> {
     return this.adminService.unassignAccessPackageFromRole(accessPackageId, roleId);
   }
+
+  // ── User Groups ──
+
+  @Get('groups')
+  @Permissions('admin.user-group.read')
+  async getGroups(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.adminService.getGroups(req.user.tenantId);
+  }
+
+  @Post('groups')
+  @Permissions('admin.user-group.create')
+  async createGroup(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: { name: string; description?: string; isActive?: boolean },
+  ): Promise<unknown> {
+    return this.adminService.createGroup(req.user.tenantId, body);
+  }
+
+  @Patch('groups/:id')
+  @Permissions('admin.user-group.update')
+  async updateGroup(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: { name?: string; description?: string; isActive?: boolean },
+  ): Promise<unknown> {
+    return this.adminService.updateGroup(req.user.tenantId, id, body);
+  }
+
+  @Delete('groups/:id')
+  @Permissions('admin.user-group.delete')
+  async deleteGroup(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    return this.adminService.deleteGroup(req.user.tenantId, id);
+  }
+
+  @Get('groups/:id/members')
+  @Permissions('admin.user-group.read')
+  async getGroupMembers(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    return this.adminService.getGroupMembers(req.user.tenantId, id);
+  }
+
+  @Post('groups/:id/members')
+  @Permissions('admin.user-group.update')
+  async addGroupMembers(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body('userIds') userIds: string[],
+  ): Promise<unknown> {
+    return this.adminService.addGroupMembers(req.user.tenantId, id, userIds);
+  }
+
+  @Delete('groups/:id/members/:userId')
+  @Permissions('admin.user-group.update')
+  async removeGroupMember(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+  ): Promise<unknown> {
+    return this.adminService.removeGroupMember(req.user.tenantId, id, userId);
+  }
 }

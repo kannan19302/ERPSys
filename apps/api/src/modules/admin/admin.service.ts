@@ -364,4 +364,162 @@ export class AdminService {
       where: { roleId_accessPackageId: { roleId, accessPackageId } },
     });
   }
+
+  // ── User Groups ──
+
+  async getGroups(tenantId: string) {
+    return prisma.userGroup.findMany({
+      where: { tenantId },
+      include: {
+        _count: {
+          select: { members: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createGroup(tenantId: string, dto: { name: string; description?: string; isActive?: boolean }) {
+    const existing = await prisma.userGroup.findFirst({
+      where: { tenantId, name: dto.name },
+    });
+    if (existing) {
+      throw new BadRequestException('A user group with this name already exists.');
+    }
+    return prisma.userGroup.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        description: dto.description,
+        isActive: dto.isActive ?? true,
+      },
+    });
+  }
+
+  async updateGroup(tenantId: string, id: string, dto: { name?: string; description?: string; isActive?: boolean }) {
+    const group = await prisma.userGroup.findFirst({
+      where: { id, tenantId },
+    });
+    if (!group) {
+      throw new NotFoundException('User group not found');
+    }
+
+    if (dto.name && dto.name !== group.name) {
+      const existing = await prisma.userGroup.findFirst({
+        where: { tenantId, name: dto.name, NOT: { id } },
+      });
+      if (existing) {
+        throw new BadRequestException('A user group with this name already exists.');
+      }
+    }
+
+    const data: Record<string, any> = {};
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+
+    return prisma.userGroup.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteGroup(tenantId: string, id: string) {
+    const group = await prisma.userGroup.findFirst({
+      where: { id, tenantId },
+    });
+    if (!group) {
+      throw new NotFoundException('User group not found');
+    }
+
+    await prisma.userGroup.delete({
+      where: { id },
+    });
+    return { success: true, message: 'User group deleted' };
+  }
+
+  async getGroupMembers(tenantId: string, groupId: string) {
+    const group = await prisma.userGroup.findFirst({
+      where: { id: groupId, tenantId },
+    });
+    if (!group) {
+      throw new NotFoundException('User group not found');
+    }
+
+    const memberships = await prisma.userGroupMember.findMany({
+      where: { groupId },
+      include: {
+        user: true,
+      },
+    });
+
+    return memberships.map((m) => ({
+      id: m.user.id,
+      email: m.user.email,
+      firstName: m.user.firstName,
+      lastName: m.user.lastName,
+      avatar: m.user.avatar,
+      status: m.user.status,
+      joinedAt: m.joinedAt,
+    }));
+  }
+
+  async addGroupMembers(tenantId: string, groupId: string, userIds: string[]) {
+    const group = await prisma.userGroup.findFirst({
+      where: { id: groupId, tenantId },
+    });
+    if (!group) {
+      throw new NotFoundException('User group not found');
+    }
+
+    const added = [];
+    for (const userId of userIds) {
+      // Check user exists in tenant
+      const user = await prisma.user.findFirst({
+        where: { id: userId, tenantId },
+      });
+      if (!user) continue;
+
+      // Check if already member
+      const existing = await prisma.userGroupMember.findUnique({
+        where: {
+          groupId_userId: { groupId, userId },
+        },
+      });
+      if (existing) continue;
+
+      const member = await prisma.userGroupMember.create({
+        data: { groupId, userId },
+      });
+      added.push(member);
+    }
+
+    return { success: true, count: added.length };
+  }
+
+  async removeGroupMember(tenantId: string, groupId: string, userId: string) {
+    const group = await prisma.userGroup.findFirst({
+      where: { id: groupId, tenantId },
+    });
+    if (!group) {
+      throw new NotFoundException('User group not found');
+    }
+
+    const member = await prisma.userGroupMember.findUnique({
+      where: {
+        groupId_userId: { groupId, userId },
+      },
+    });
+    if (!member) {
+      throw new NotFoundException('User is not a member of this group');
+    }
+
+    await prisma.userGroupMember.delete({
+      where: {
+        groupId_userId: { groupId, userId },
+      },
+    });
+
+    return { success: true, message: 'Member removed from group' };
+  }
 }

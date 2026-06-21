@@ -13,10 +13,44 @@ import { GdprController } from './gdpr.controller';
 import { GdprService } from './gdpr.service';
 import { AnnouncementsController } from './announcements.controller';
 import { AnnouncementsService } from './announcements.service';
+import { OperationsController } from './operations.controller';
+import { OperationsService } from './operations.service';
+import { PlatformController } from './platform.controller';
+import { PlatformService } from './platform.service';
 
 @Module({
-  controllers: [AdminController, SuperAdminController, SecurityController, ActivityFeedController, ImportExportController, GdprController, AnnouncementsController],
-  providers: [AdminService, SuperAdminService, SecurityService, ActivityFeedService, ImportExportService, GdprService, AnnouncementsService],
-  exports: [AdminService, SuperAdminService, SecurityService, ActivityFeedService, ImportExportService, GdprService, AnnouncementsService],
+  controllers: [
+    AdminController,
+    SuperAdminController,
+    SecurityController,
+    ActivityFeedController,
+    ImportExportController,
+    GdprController,
+    AnnouncementsController,
+    OperationsController,
+    PlatformController,
+  ],
+  providers: [
+    AdminService,
+    SuperAdminService,
+    SecurityService,
+    ActivityFeedService,
+    ImportExportService,
+    GdprService,
+    AnnouncementsService,
+    OperationsService,
+    PlatformService,
+  ],
+  exports: [
+    AdminService,
+    SuperAdminService,
+    SecurityService,
+    ActivityFeedService,
+    ImportExportService,
+    GdprService,
+    AnnouncementsService,
+    OperationsService,
+    PlatformService,
+  ],
 })
 export class AdminModule {}

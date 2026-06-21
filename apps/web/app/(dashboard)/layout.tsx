@@ -566,8 +566,13 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
         isHeader: true,
         items: [
           { name: 'Users Directory', href: '/admin/users', icon: Users },
+          { name: 'User Groups & Teams', href: '/admin/groups', icon: Users },
           { name: 'Roles & Permissions', href: '/admin/access-control', icon: ShieldCheck },
           { name: 'SSO Configuration', href: '/admin/sso', icon: Key },
+          { name: 'MFA / 2FA Settings', href: '/admin/mfa', icon: Smartphone },
+          { name: 'Password Policies', href: '/admin/password-policy', icon: Key },
+          { name: 'Session Management', href: '/admin/sessions', icon: Clock },
+          { name: 'Login impersonation', href: '/admin/impersonate', icon: UserIcon },
         ]
       },
       {
@@ -575,6 +580,11 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
         isHeader: true,
         items: [
           { name: 'Security Control Hub', href: '/admin/security', icon: ShieldAlert },
+          { name: 'IP Whitelist & Geo Rules', href: '/admin/ip-restrictions', icon: Globe },
+          { name: 'Audit Trail Viewer', href: '/admin/audit-trail', icon: History },
+          { name: 'Login History', href: '/admin/login-history', icon: Clock },
+          { name: 'Data Retention Policies', href: '/admin/data-retention', icon: Database },
+          { name: 'Compliance Reports', href: '/admin/compliance', icon: ShieldCheck },
           { name: 'GDPR & Privacy', href: '/admin/gdpr', icon: ShieldCheck },
         ]
       },
@@ -592,15 +602,35 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
         name: 'Branding & Communication',
         isHeader: true,
         items: [
+          { name: 'Custom Login Page', href: '/admin/login-customizer', icon: Image },
+          { name: 'Email Server (SMTP)', href: '/admin/email-config', icon: Mail },
+          { name: 'Email Templates', href: '/admin/email-templates', icon: FileText },
           { name: 'Announcements', href: '/admin/announcements', icon: Bell },
+          { name: 'Maintenance Mode', href: '/admin/maintenance', icon: ShieldAlert },
         ]
       },
       {
-        name: 'Platform Settings',
+        name: 'System Operations',
+        isHeader: true,
+        items: [
+          { name: 'System Health', href: '/admin/system-health', icon: Activity },
+          { name: 'Background Jobs', href: '/admin/jobs', icon: Layers },
+          { name: 'Scheduled Tasks', href: '/admin/scheduled-tasks', icon: CalendarDays },
+          { name: 'Error Logs', href: '/admin/error-logs', icon: ShieldAlert },
+          { name: 'Backup & Restore', href: '/admin/backups', icon: Database },
+          { name: 'DB Schema Manager', href: '/admin/db-schema', icon: Database },
+        ]
+      },
+      {
+        name: 'Platform Configuration',
         isHeader: true,
         items: [
           { name: 'General Settings', href: '/admin/settings', icon: Settings },
-          { name: 'App Marketplace', href: '/admin/marketplace', icon: Package },
+          { name: 'Module Manager', href: '/admin/modules', icon: Settings },
+          { name: 'Feature Flags', href: '/admin/feature-flags', icon: Zap },
+          { name: 'Custom Domains', href: '/admin/domains', icon: Globe },
+          { name: 'Environment Manager', href: '/admin/environments', icon: Server },
+          { name: 'System Updates', href: '/admin/updates', icon: Cpu },
         ]
       },
       {
@@ -622,6 +652,7 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           { name: 'Scheduled Reports', href: '/admin/scheduled-reports', icon: FileText },
           { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
           { name: 'Notification Prefs', href: '/admin/notifications', icon: Bell },
+          { name: 'Tenant Usage Analytics', href: '/admin/tenant-analytics', icon: BarChart3 },
         ]
       }
     ];
@@ -750,6 +781,35 @@ const GLOBAL_SEARCH_ITEMS = [
   // Finance — Planning & Reporting
   { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart, type: 'Action' },
   { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen, type: 'Action' },
+  // Admin — Actions & Pages
+  { name: 'User Groups & Teams', href: '/admin/groups', icon: Users, type: 'Action' },
+  { name: 'SSO Configuration', href: '/admin/sso', icon: Key, type: 'Action' },
+  { name: 'MFA / 2FA Settings', href: '/admin/mfa', icon: Smartphone, type: 'Action' },
+  { name: 'Password Policies', href: '/admin/password-policy', icon: Key, type: 'Action' },
+  { name: 'Session Management', href: '/admin/sessions', icon: Clock, type: 'Action' },
+  { name: 'Login Impersonation', href: '/admin/impersonate', icon: UserIcon, type: 'Action' },
+  { name: 'IP Whitelist & Geo Rules', href: '/admin/ip-restrictions', icon: Globe, type: 'Action' },
+  { name: 'Audit Trail Viewer', href: '/admin/audit-trail', icon: History, type: 'Action' },
+  { name: 'Login History', href: '/admin/login-history', icon: Clock, type: 'Action' },
+  { name: 'Data Retention Policies', href: '/admin/data-retention', icon: Database, type: 'Action' },
+  { name: 'Compliance Reports', href: '/admin/compliance', icon: ShieldCheck, type: 'Action' },
+  { name: 'Custom Login Page Designer', href: '/admin/login-customizer', icon: Image, type: 'Action' },
+  { name: 'Email Server (SMTP) Configuration', href: '/admin/email-config', icon: Mail, type: 'Action' },
+  { name: 'Email Templates Manager', href: '/admin/email-templates', icon: FileText, type: 'Action' },
+  { name: 'Announcements', href: '/admin/announcements', icon: Bell, type: 'Action' },
+  { name: 'Maintenance Mode Control', href: '/admin/maintenance', icon: ShieldAlert, type: 'Action' },
+  { name: 'System Health Dashboard', href: '/admin/system-health', icon: Activity, type: 'Action' },
+  { name: 'Background Jobs Monitor', href: '/admin/jobs', icon: Layers, type: 'Action' },
+  { name: 'Scheduled Tasks Cron Manager', href: '/admin/scheduled-tasks', icon: CalendarDays, type: 'Action' },
+  { name: 'Error Logs Viewer', href: '/admin/error-logs', icon: ShieldAlert, type: 'Action' },
+  { name: 'Backup & Restore Manager', href: '/admin/backups', icon: Database, type: 'Action' },
+  { name: 'DB Schema Manager', href: '/admin/db-schema', icon: Database, type: 'Action' },
+  { name: 'Module Manager', href: '/admin/modules', icon: Settings, type: 'Action' },
+  { name: 'Feature Flags Toggles', href: '/admin/feature-flags', icon: Zap, type: 'Action' },
+  { name: 'Custom Domains Configuration', href: '/admin/domains', icon: Globe, type: 'Action' },
+  { name: 'Environment Sync Sandbox', href: '/admin/environments', icon: Server, type: 'Action' },
+  { name: 'System Updates Checker', href: '/admin/updates', icon: Cpu, type: 'Action' },
+  { name: 'Tenant Usage & Storage Analytics', href: '/admin/tenant-analytics', icon: BarChart3, type: 'Action' },
 ];
 
 function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] }; pathname: string; collapsed: boolean }) {
@@ -1033,6 +1093,31 @@ const SEGMENT_NAMES: Record<string, string> = {
   templates: 'Templates',
   quotas: 'Storage Quotas',
   media: 'Media Conversion',
+  groups: 'User Groups',
+  mfa: 'MFA Settings',
+  'password-policy': 'Password Policies',
+  sessions: 'Sessions',
+  impersonate: 'Impersonate User',
+  'ip-restrictions': 'IP Restrictions',
+  'audit-trail': 'Audit Trail',
+  'login-history': 'Login History',
+  'data-retention': 'Data Retention',
+  'login-customizer': 'Login Customizer',
+  'email-config': 'SMTP Server',
+  'email-templates': 'Email Templates',
+  maintenance: 'Maintenance Mode',
+  'system-health': 'System Health',
+  jobs: 'Background Jobs',
+  'scheduled-tasks': 'Scheduled Tasks',
+  'error-logs': 'Error Logs',
+  backups: 'Database Backups',
+  'db-schema': 'Database Schema',
+  modules: 'Module Manager',
+  'feature-flags': 'Feature Flags',
+  domains: 'Custom Domains',
+  environments: 'Environments',
+  updates: 'System Updates',
+  'tenant-analytics': 'Tenant Analytics',
 };
 
 const formatSegment = (segment: string): string => {

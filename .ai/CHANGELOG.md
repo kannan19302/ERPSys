@@ -5,15 +5,55 @@
 
 ---
 
-## [2026-06-21] Admin Module Consolidation & Drive Restructuring
+## [2026-06-21] Dedicated Page Security Split
+
+### Added
+- **Dedicated Sub-Pages for Security Control Hub**:
+  - Replaced Next.js transparent page redirects with full standalone operational pages:
+    - `/admin/audit-trail` (Audit logs search table with severity filters)
+    - `/admin/login-history` (Security authentication actions logs grid)
+    - `/admin/password-policy` (Password rule complexity constraints and age configuration form)
+    - `/admin/mfa` (Multi-Factor authentication settings management panel)
+    - `/admin/ip-restrictions` (Network IP/CIDR whitelist and blacklist rules manager)
+    - `/admin/sessions` (Active device user session listings with revoke triggers)
+    - `/admin/impersonate` (Sandbox directory to impersonate tenant members with secure login bypass)
+    - `/admin/data-retention` (Entity lifetime policy CRUD scheduler)
+    - `/admin/compliance` (Score analyser showing security compliance parameters checklist)
+
+## [2026-06-21] Admin Consolidation, Operations, Branding & Platform (Sprint 1–5 Complete)
+
+### Added
+- **Sprint 4 & 5 Operations UI Pages**:
+  - `System Health` (`/admin/system-health`): Real-time CPU, memory, and database status widgets with auto-refresh (10s).
+  - `Background Jobs` (`/admin/jobs`): Telemetry monitor for BullMQ worker queues with action triggers to retry failed jobs.
+  - `Scheduled Tasks` (`/admin/scheduled-tasks`): Cron schedule viewer with manual trigger actions.
+  - `Error Logs` (`/admin/error-logs`): Searchable monospace logger UI console with level filters (ERROR/WARN).
+  - `Backup & Restore` (`/admin/backups`): Cold Postgres dump generator list with download actions.
+  - `DB Schema Manager` (`/admin/db-schema`): Schema metadata viewer querying Postgres dynamic tables row volume counts.
+- **Sprint 4 & 5 Branding & Platform UI Pages**:
+  - `Email Server (SMTP)` (`/admin/email-config`): Host, username, password credentials and sender identity form with connection test mail dispatcher.
+  - `Email Templates` (`/admin/email-templates`): Categories-bound grid list and dialog editor drawer with placeholder variables insert list.
+  - `Module Manager` (`/admin/modules`): Toggle switch dashboard enabling/disabling core modules (Finance, HR, CRM, Inventory, Procurement, MRP, POS) globally.
+  - `Feature Flags` (`/admin/feature-flags`): Selective rollout beta keys toggle editor.
+  - `Custom Domains` (`/admin/domains`): Custom host link wizard detailing DNS records (CNAME/TXT) verified dynamically.
+  - `Environment Manager` (`/admin/environments`): Production/Staging/Development sandbox state monitor and synchronization.
+  - `Maintenance Mode` (`/admin/maintenance`): Global lockout toggler and custom warning banner message writer.
+  - `Tenant Usage Analytics` (`/admin/tenant-analytics`): Counters for records (Users, Invoices, Products, API Hits) and progress bar for storage bytes quota.
+  - `System Updates` (`/admin/updates`): Update checker showing current vs latest software version status and release logs.
+- **Identity & Access Page Redirects**:
+  - Created server-side redirects on `/admin/mfa`, `/admin/password-policy`, `/admin/sessions`, and `/admin/impersonate` routing to targeted tabs inside `/admin/security` hub.
+- **Navigation & Search Integration**:
+  - Registered all new sub-pages in sidebar navigation.
+  - Added new routes to `SEGMENT_NAMES` for correct breadcrumbs translation.
+  - Added all 25 new pages and actions to `GLOBAL_SEARCH_ITEMS` command palette search catalog.
 
 ### Reorganized
-- **Admin Consolidation**:
+- **Admin Consolidation (Sprint 1)**:
   - Removed "System" dropdown folder and combined 4 sub-apps (Admin, Localization, Sync, DevOps) into a single "Admin" app.
   - Reorganized `/admin` sidebar navigation with grouped sections: Identity & Access, Security & Compliance, Automation & Workflows, Branding & Communication, Platform Settings, Data & Integration, Reports, and Super Admin.
   - Moved workflows module from `/workflows` to `/admin/workflows` (including page, advanced, escalations, and simulation pages).
   - Deleted old `/workflows` directory.
-- **Drive Restructuring**:
+- **Drive Restructuring (Sprint 1)**:
   - Moved "Files & Storage" features from `/storage` into `/drive`.
   - Added new pages under `/drive` for Templates, Designer, Storage Quotas, and Media Conversion.
   - Deleted old `/storage` directory.
