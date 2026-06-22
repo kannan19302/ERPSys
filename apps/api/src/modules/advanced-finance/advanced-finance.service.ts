@@ -931,7 +931,7 @@ export class AdvancedFinanceService {
    * Generate a structured legal e-invoice from a sales Invoice.
    * Supports UBL 2.1 / PEPPOL BIS XML and India GST (IRN + signed QR payload).
    */
-  async generateEInvoice(tenantId: string, orgId: string, invoiceId: string, format = 'UBL') {
+  async generateEInvoice(tenantId: string, _orgId: string, invoiceId: string, format = 'UBL') {
     const fmt = (format || 'UBL').toUpperCase();
     if (!['UBL', 'PEPPOL', 'GST_IRN'].includes(fmt)) throw new BadRequestException(`Unsupported e-invoice format: ${fmt}`);
 

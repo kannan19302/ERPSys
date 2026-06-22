@@ -637,7 +637,7 @@ export class SalesService {
   async getQuotationById(tenantId: string, id: string) {
     const q = await prisma.quotation.findFirst({
       where: { id, tenantId, deletedAt: null },
-      include: { customer: true, lineItems: { include: { product: true } } },
+      include: { customer: true, lineItems: true },
     });
     if (!q) throw new NotFoundException('Quotation not found');
     return q;

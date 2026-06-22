@@ -55,10 +55,16 @@ export default function LoginPage() {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('API server is unavailable. Please ensure the backend is running.');
+      }
 
       if (!res.ok) {
-        throw new Error(data.message || 'Invalid credentials');
+        throw new Error((data.message as string) || 'Invalid credentials');
       }
 
       localStorage.setItem('token', data.token);
