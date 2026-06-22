@@ -70,15 +70,15 @@ export class OrgHierarchyService {
         code: data.code,
         name: data.name,
         parentId: data.parentId || null,
-        budget: data.budget ?? null,
       },
     });
   }
 
   async updateCostCenter(tenantId: string, id: string, data: { name?: string; code?: string; parentId?: string | null; budget?: number | null; isActive?: boolean }) {
+    const { budget, ...rest } = data;
     return prisma.costCenter.update({
       where: { id, tenantId },
-      data,
+      data: rest,
     });
   }
 

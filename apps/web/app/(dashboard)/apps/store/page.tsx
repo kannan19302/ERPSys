@@ -32,6 +32,7 @@ interface MarketplaceApp {
   featured: boolean;
   verified: boolean;
   status: string;
+  metadata?: { isSystem?: boolean };
 }
 
 interface AppCollection {
@@ -222,6 +223,7 @@ export default function AppStorePage() {
     const isInstalled = installedSlugs.has(app.slug);
     const isFav = favoriteSlugs.has(app.slug);
     const isBusy = installingSlug === app.slug;
+    const isSystem = app.metadata?.isSystem === true;
 
     if (viewMode === 'list') {
       return (
@@ -246,10 +248,16 @@ export default function AppStorePage() {
             {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
           </Badge>
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
-            <button onClick={(e) => { e.preventDefault(); toggleFavorite(app.slug); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)' }}>
-              <Heart size={16} fill={isFav ? '#ef4444' : 'none'} />
-            </button>
-            {isInstalled ? (
+            {!isSystem && (
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(app.slug); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)' }}>
+                <Heart size={16} fill={isFav ? '#ef4444' : 'none'} />
+              </button>
+            )}
+            {isSystem ? (
+              <button disabled style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: 'not-allowed' }}>
+                System App
+              </button>
+            ) : isInstalled ? (
               <button onClick={() => handleUninstall(app.slug)} disabled={isBusy} style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer' }}>
                 {isBusy ? '...' : 'Uninstall'}
               </button>
@@ -268,9 +276,11 @@ export default function AppStorePage() {
         onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
         onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
 
-        <button onClick={() => toggleFavorite(app.slug)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)', zIndex: 1 }}>
-          <Heart size={16} fill={isFav ? '#ef4444' : 'none'} />
-        </button>
+        {!isSystem && (
+          <button onClick={() => toggleFavorite(app.slug)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)', zIndex: 1 }}>
+            <Heart size={16} fill={isFav ? '#ef4444' : 'none'} />
+          </button>
+        )}
 
         <Link href={`/apps/store/${app.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
@@ -307,7 +317,11 @@ export default function AppStorePage() {
         </Link>
 
         <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
-          {isInstalled ? (
+          {isSystem ? (
+            <button disabled style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              System App
+            </button>
+          ) : isInstalled ? (
             <button onClick={() => handleUninstall(app.slug)} disabled={isBusy} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}>
               {isBusy ? <Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> : null}
               {isBusy ? 'Uninstalling...' : 'Installed · Uninstall'}

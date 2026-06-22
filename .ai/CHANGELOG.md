@@ -5,6 +5,26 @@
 
 ---
 
+## [2026-06-21] App Store System Applications Integration
+
+### Added
+- **Marketplace Core System Catalog**:
+  - Integrated 18 core system applications (Finance, HR, CRM, Inventory, Procurement, Sales, Supply Chain, Projects, Manufacturing, POS, Analytics, Drive, Connect, etc.) into the App Store catalog.
+  - Core system apps show up as "Installed" by default and cannot be uninstalled by the user.
+  - Added a system warning notice/banner on the app detail page to inform users that these core dependencies are pre-installed and cannot be uninstalled.
+  - Added backend checks to throw `ForbiddenException` if users attempt to uninstall a system app.
+  - Seeded all required system applications and corresponding `InstalledApp` mappings for existing and new tenants.
+
+### Fixed
+- **Typescript Compilation & Prisma Mismatches**:
+  - Resolved `appSlug` query select mismatch in `saas.service.ts` and `marketplace.service.ts` by regenerating Prisma client and building the database package.
+  - Fixed `org-hierarchy.service.ts` cost center creation and update compiler errors by removing the non-existent `budget` field from direct Prisma queries.
+  - Fixed `bulk-operations.service.ts` database column mappings from `processedRecords` and `failedRecords` to the actual database columns `processed` and `failed`.
+  - Resolved union type properties checking for `appData.price` and `appData.metadata` in `marketplace.service.ts` by casting `appData as any` inside `seedDefaultApps()`.
+  - Corrected `operations.service.spec.ts` unit tests to access `result.data.length` for paginated error logs, and passed missing `tenantId` parameters.
+
+---
+
 ## [2026-06-21] Dedicated Page Security Split
 
 ### Added

@@ -103,9 +103,14 @@ export class SaasService {
   async getInstalledApps(tenantId: string) {
     const installed = await prisma.installedApp.findMany({
       where: { tenantId },
-      select: { appId: true },
+      select: { appId: true, appSlug: true },
     });
-    return installed.map((i) => i.appId);
+    const list = new Set<string>();
+    for (const i of installed) {
+      if (i.appId) list.add(i.appId);
+      if (i.appSlug) list.add(i.appSlug);
+    }
+    return Array.from(list);
   }
 
   async installApp(tenantId: string, appId: string) {

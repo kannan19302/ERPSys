@@ -49,6 +49,7 @@ interface AppDetail {
   changelogs: Changelog[];
   ratingDistribution: { rating: number; count: number }[];
   relatedApps: AppDetail[];
+  metadata?: { isSystem?: boolean };
 }
 
 interface Review {
@@ -346,7 +347,11 @@ export default function AppDetailPage() {
             </div>
 
             <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
-              {isInstalled ? (
+              {app.metadata?.isSystem ? (
+                <button disabled style={{ flex: 1, padding: 'var(--space-2.5)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', cursor: 'not-allowed' }}>
+                  System App
+                </button>
+              ) : isInstalled ? (
                 <button onClick={handleUninstall} disabled={installing} style={{ flex: 1, padding: 'var(--space-2.5)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', cursor: installing ? 'wait' : 'pointer' }}>
                   {installing ? 'Uninstalling...' : 'Uninstall'}
                 </button>
@@ -355,10 +360,21 @@ export default function AppDetailPage() {
                   {installing ? 'Installing...' : 'Install App'}
                 </button>
               )}
-              <button onClick={toggleFavorite} style={{ padding: 'var(--space-2.5)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', cursor: 'pointer', color: isFavorite ? '#ef4444' : 'var(--color-text-secondary)' }}>
-                <Heart size={18} fill={isFavorite ? '#ef4444' : 'none'} />
-              </button>
+              {!app.metadata?.isSystem && (
+                <button onClick={toggleFavorite} style={{ padding: 'var(--space-2.5)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', cursor: 'pointer', color: isFavorite ? '#ef4444' : 'var(--color-text-secondary)' }}>
+                  <Heart size={18} fill={isFavorite ? '#ef4444' : 'none'} />
+                </button>
+              )}
             </div>
+
+            {app.metadata?.isSystem && (
+              <div style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-sunken)', border: '1px solid var(--color-border)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
+                <Shield size={14} style={{ color: 'var(--color-primary)', flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  This is a core system application. It is pre-installed and cannot be uninstalled.
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

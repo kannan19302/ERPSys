@@ -15,7 +15,7 @@ export class MarketplaceService {
     page?: number;
     limit?: number;
   }) {
-    const { category, search, tags, pricing, featured, sort = 'popular', page = 1, limit = 24 } = opts;
+    const { category, search, pricing, featured, sort = 'popular', page = 1, limit = 24 } = opts;
     const where: any = { status: 'PUBLISHED' };
     if (category) where.category = category;
     if (pricing) where.pricing = pricing;
@@ -146,6 +146,11 @@ export class MarketplaceService {
       where: { tenantId, appSlug },
     });
     if (!installed) throw new NotFoundException('App not installed');
+
+    const app = await prisma.marketplaceApp.findUnique({ where: { slug: appSlug } });
+    if (app && (app.metadata as any)?.isSystem) {
+      throw new ForbiddenException('System applications cannot be uninstalled');
+    }
 
     await prisma.installedApp.delete({ where: { id: installed.id } });
     await prisma.marketplaceApp.update({
@@ -464,10 +469,191 @@ export class MarketplaceService {
   // ─── Seed Data ───
 
   async seedDefaultApps() {
-    const count = await prisma.marketplaceApp.count();
-    if (count > 0) return { message: 'Apps already seeded', count };
+    const systemApps = [
+      {
+        slug: 'dashboard', name: 'Dashboard',
+        description: 'Overview of key metrics and KPIs across all modules.',
+        longDescription: 'The UniERP Dashboard provides a centralized overview of your entire business. Access real-time widgets, key performance indicators (KPIs), and critical notifications in one place. Customize layout widgets for finance, HR, inventory, and sales to keep your finger on the pulse of your operations.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Real-time KPI cards', 'Activity feed monitoring', 'Custom widget layout', 'In-app notification center'],
+        tags: ['dashboard', 'home', 'overview', 'kpi'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'finance', name: 'Finance & Accounting',
+        description: 'Double-entry bookkeeping, ledger, invoices, payments, and financial reporting.',
+        longDescription: 'Manage your company\'s financial health with our comprehensive double-entry accounting engine. Features include accounts receivable, accounts payable, general ledger posting, bank reconciliation, multi-currency transactions, and real-time generation of balance sheets, profit & loss statements, and tax returns.',
+        category: 'Finance', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Double-entry bookkeeping', 'General Ledger', 'Invoices & Payments', 'Financial statements (P&L, Balance Sheet)'],
+        tags: ['finance', 'accounting', 'ledger', 'invoice', 'payments'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'hr', name: 'Human Resources',
+        description: 'Employee directory, department structures, leave management, and attendance.',
+        longDescription: 'Streamline employee lifecycle management and operations. Keep a centralized directory of employee records, contracts, departments, and roles. Manage leave requests, shift calendars, holidays, and attendance tracking seamlessly integrated with payroll processing.',
+        category: 'HR', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Employee directory', 'Org chart & department hierarchy', 'Leave management workflow', 'Attendance tracking'],
+        tags: ['hr', 'employees', 'leaves', 'attendance', 'people'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'crm', name: 'CRM & Sales',
+        description: 'Customer profiles, lead tracking, opportunities, and pipeline management.',
+        longDescription: 'Empower your sales team to close more deals. Manage customer registers, log contact details, track sales leads, and manage pipelines through multiple custom stages. Leverage interaction logging (calls, emails, meetings) to build strong customer relationships.',
+        category: 'Sales', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Customer & contact management', 'Lead intake and scoring', 'Opportunity pipeline management', 'Activity tracking (meetings, calls)'],
+        tags: ['crm', 'sales', 'leads', 'pipeline', 'customers'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'inventory', name: 'Inventory & Stock',
+        description: 'Warehouse locations, product catalogs, stock valuation, and serial/batch tracking.',
+        longDescription: 'Take control of your physical stock levels. Define warehouses with bin locations, track product units of measurement, configure automatic reorder thresholds, and trace inventory movements with FIFO, LIFO, or moving average valuation.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Multi-warehouse management', 'SKU & barcode catalog', 'Stock movements & ledger', 'Reorder level automation'],
+        tags: ['inventory', 'stock', 'warehouse', 'products', 'sku'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'procurement', name: 'Procurement',
+        description: 'Vendor registry, RFQs, purchase orders, and goods receipts.',
+        longDescription: 'Manage the procure-to-pay workflow easily. Register vendors and track performance. Raise Requests for Quotations (RFQs), issue Purchase Orders (POs), and record Goods Receipt Notes (GRN) to automatically update warehouse inventory levels.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Vendor management', 'Request for Quotation (RFQ)', 'Purchase Order generation', 'Goods Receipt Notes (GRN)'],
+        tags: ['procurement', 'purchase', 'vendors', 'po', 'goods-receipt'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'sales', name: 'Sales & Orders',
+        description: 'Quotations, sales orders, delivery notes, and invoicing workflows.',
+        longDescription: 'Complete your order-to-cash lifecycle efficiently. Generate and email quotes to clients, convert approved quotes to Sales Orders, issue Delivery Notes to logistics, and trigger invoice creation automatically upon delivery.',
+        category: 'Sales', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Client quotations', 'Sales Orders pipeline', 'Delivery Notes', 'Auto invoice creation'],
+        tags: ['sales', 'orders', 'quotations', 'billing', 'delivery'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'supply-chain', name: 'Supply Chain',
+        description: 'Shipment tracking, carrier management, and demand forecasting.',
+        longDescription: 'Optimize distribution and logistics pipelines. Monitor outbound shipments, assign carriers, calculate logistics rates, and leverage historical demand data to forecast future inventory stocking requirements.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Outbound shipment tracking', 'Logistics carrier registry', 'Shipping cost calculations', 'Demand forecasting models'],
+        tags: ['shipping', 'supply-chain', 'logistics', 'carriers', 'forecasting'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'projects', name: 'Project Management',
+        description: 'Projects, tasks, Gantt charts, timesheets, and budget monitoring.',
+        longDescription: 'Track time-bound operations and client services. Create projects with milestones and tasks. Plan visual schedules using Gantt charts, record employee work hours on timesheets, and manage actual vs. budgeted project costs.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Project milestones & tasks', 'Interactive Gantt charts', 'Employee timesheets', 'Budget & cost tracking'],
+        tags: ['projects', 'tasks', 'gantt', 'timesheets', 'budgeting'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'manufacturing', name: 'Manufacturing',
+        description: 'Bill of Materials (BOM), work orders, production routing, and MRP.',
+        longDescription: 'Plan and execute raw material conversion workflows. Define multi-level Bills of Materials (BOM), set up workstations and resource capacity, issue Work Orders, and run Manufacturing Resource Planning (MRP) calculations to generate purchase requisitions.',
+        category: 'Manufacturing', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Bill of Materials (BOM)', 'Workstation & capacity planning', 'Work Order routing', 'MRP calculations'],
+        tags: ['manufacturing', 'mrp', 'bom', 'production', 'workstations'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'analytics', name: 'Business Intelligence',
+        description: 'Custom reporting, pivots, visual dashboards, and automated exports.',
+        longDescription: 'Unlock hidden potential in your database. Construct visual charts and dashboards via a drag-and-drop builder, build custom spreadsheet-like pivot tables, and schedule reports to be automatically emailed in PDF or CSV formats.',
+        category: 'Analytics', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Drag-and-drop dashboard widgets', 'Pivot table matrices', 'Query builder filters', 'Scheduled email exports (PDF/CSV)'],
+        tags: ['analytics', 'reporting', 'bi', 'dashboards', 'charts'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'drive', name: 'Drive',
+        description: 'Centralized document library, folder sharing, and version control.',
+        longDescription: 'Manage files and compliance documentation in a unified workspace. Organize documents in hierarchies, customize permissions per folder, view version histories, and share time-expiring external links safely.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['File & folder structure', 'Version history tracking', 'Expiring share links', 'Access permissions control'],
+        tags: ['drive', 'storage', 'files', 'documents', 'sharing'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'communication', name: 'Connect',
+        description: 'Internal messaging spaces, group chat, calendar, and meetings.',
+        longDescription: 'Bridge internal collaboration gaps. Join discussion channels, start thread replies, send direct messages (DMs), schedule company-wide calendars, and launch unified meetings directly from your ERP dashboard.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Chat spaces & channels', 'Direct messaging & threads', 'Company-wide calendar', 'Web meetings integration'],
+        tags: ['connect', 'chat', 'messaging', 'calendar', 'collaboration'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'pos', name: 'POS & Retail',
+        description: 'Point-of-Sale terminal checkout, registers, barcode scanners, and shifts.',
+        longDescription: 'Run physical retail frontends with ease. Launch retail terminals, scan product barcodes, manage cash register draw limits, track employee register shifts, print receipts, and sync inventory counts in real-time.',
+        category: 'Sales', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Retail checkout interface', 'Barcode scanning support', 'Cash register drawer control', 'Shift management'],
+        tags: ['pos', 'retail', 'terminal', 'checkout', 'billing'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'api-keys', name: 'API Platform',
+        description: 'Developer public keys, webhooks subscriptions, and rate limiting.',
+        longDescription: 'Integrate external tools with the UniERP API ecosystem. Developers can create public API keys, configure event webhook subscriptions (e.g. order.created, invoice.paid), and monitor rate limits and webhook delivery logs.',
+        category: 'AI & Automation', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['API key generation & rotation', 'Webhooks subscriptions manager', 'Webhook delivery logging', 'Rate limit rules config'],
+        tags: ['api', 'webhooks', 'developer', 'integrations'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'saas', name: 'SaaS Portal',
+        description: 'SaaS tenant subscription billing, plans, and resource utilization counters.',
+        longDescription: 'For SaaS deployments: manage billing, upgrade or downgrade pricing packages, review active Stripe subscription statuses, and monitor resource usage counters (users count, storage MB, api calls count).',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Billing subscription status', 'Usage metrics monitoring', 'Plan upgrades & options'],
+        tags: ['saas', 'billing', 'subscription', 'usage', 'stripe'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'admin', name: 'Admin Console',
+        description: 'RBAC authorization, workflow builders, system logging, and settings.',
+        longDescription: 'Central command for your ERP instance. Configure tenants, manage users, assign security roles and permissions, construct approval workflows, view system logs, verify data backups, and customize look-and-feel branding.',
+        category: 'Operations', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['User & role RBAC matrix', 'Workflow approval engines', 'System configurations', 'Audit log registries'],
+        tags: ['admin', 'settings', 'security', 'backup', 'rbac'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+      {
+        slug: 'builder', name: 'Studio',
+        description: 'No-code visual page builder, schema creator, and CMS designer.',
+        longDescription: 'Empower non-technical users to build custom modules. Visually design forms and layouts using a drag-and-drop editor, construct new database tables, define relationships, and deploy custom pages instantly without writing code.',
+        category: 'AI & Automation', publisher: 'UniERP', version: '1.0.0', pricing: 'FREE', rating: 5.0, installs: 5000, verified: true, featured: false,
+        features: ['Visual form layout editor', 'Dynamic schema architect', 'Page registry deployments', 'No-code workflows'],
+        tags: ['builder', 'no-code', 'studio', 'pages', 'forms'],
+        screenshots: [],
+        metadata: { isSystem: true },
+      },
+    ];
 
     const apps = [
+      ...systemApps,
       {
         slug: 'advanced-analytics', name: 'Advanced Analytics',
         description: 'Interactive dashboards with pivot tables, trend analysis, and custom KPI tracking.',
@@ -868,16 +1054,41 @@ export class MarketplaceService {
     ];
 
     for (const appData of apps) {
-      await prisma.marketplaceApp.create({ data: appData as any });
+      const d = appData as any;
+      await prisma.marketplaceApp.upsert({
+        where: { slug: d.slug },
+        update: {
+          name: d.name,
+          description: d.description,
+          longDescription: d.longDescription,
+          category: d.category,
+          publisher: d.publisher,
+          version: d.version,
+          pricing: d.pricing,
+          price: d.price,
+          rating: d.rating,
+          verified: d.verified,
+          featured: d.featured,
+          features: d.features as any,
+          tags: d.tags as any,
+          metadata: d.metadata as any,
+        },
+        create: d,
+      });
     }
 
     for (const { appSlug, entries } of changelogs) {
       const app = await prisma.marketplaceApp.findUnique({ where: { slug: appSlug } });
       if (app) {
         for (const entry of entries) {
-          await prisma.appChangelog.create({
-            data: { appId: app.id, version: entry.version, changes: entry.changes },
+          const exists = await prisma.appChangelog.findFirst({
+            where: { appId: app.id, version: entry.version },
           });
+          if (!exists) {
+            await prisma.appChangelog.create({
+              data: { appId: app.id, version: entry.version, changes: entry.changes },
+            });
+          }
         }
       }
     }
@@ -891,7 +1102,18 @@ export class MarketplaceService {
     ];
 
     for (const col of collections) {
-      const collection = await prisma.appCollection.create({ data: col });
+      const collection = await prisma.appCollection.upsert({
+        where: { slug: col.slug },
+        update: {
+          name: col.name,
+          description: col.description,
+          icon: col.icon,
+          featured: col.featured,
+          sortOrder: col.sortOrder,
+        },
+        create: col,
+      });
+
       const appSlugsForCollection: Record<string, string[]> = {
         'staff-picks': ['advanced-analytics', 'payroll-engine', 'multi-currency', 'approval-workflow-engine', 'helpdesk-support'],
         'getting-started': ['expense-management', 'data-import-export', 'document-management', 'time-attendance', 'helpdesk-support'],
@@ -904,10 +1126,53 @@ export class MarketplaceService {
       for (let i = 0; i < slugs.length; i++) {
         const app = await prisma.marketplaceApp.findUnique({ where: { slug: slugs[i] } });
         if (app) {
-          await prisma.appCollectionItem.create({
-            data: { collectionId: collection.id, appId: app.id, sortOrder: i },
+          const itemExists = await prisma.appCollectionItem.findFirst({
+            where: { collectionId: collection.id, appId: app.id },
           });
+          if (!itemExists) {
+            await prisma.appCollectionItem.create({
+              data: { collectionId: collection.id, appId: app.id, sortOrder: i },
+            });
+          }
         }
+      }
+    }
+
+    // Auto-install seeded system apps for all existing tenants
+    const tenants = await prisma.tenant.findMany();
+    const systemSlugs = [
+      'dashboard', 'finance', 'hr', 'crm', 'inventory', 'procurement',
+      'sales', 'supply-chain', 'projects', 'manufacturing', 'analytics',
+      'drive', 'communication', 'pos', 'api-keys', 'saas', 'admin', 'builder'
+    ];
+    const dbSystemApps = await prisma.marketplaceApp.findMany({
+      where: { slug: { in: systemSlugs } }
+    });
+
+    for (const tenant of tenants) {
+      for (const app of dbSystemApps) {
+        await prisma.installedApp.upsert({
+          where: {
+            tenantId_appId: {
+              tenantId: tenant.id,
+              appId: app.slug,
+            },
+          },
+          update: {
+            appSlug: app.slug,
+            appName: app.name,
+            installedVersion: app.version,
+            status: 'ACTIVE',
+          },
+          create: {
+            tenantId: tenant.id,
+            appId: app.slug,
+            appSlug: app.slug,
+            appName: app.name,
+            installedVersion: app.version,
+            status: 'ACTIVE',
+          },
+        });
       }
     }
 

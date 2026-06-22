@@ -25,8 +25,8 @@ export class BulkOperationsService {
         changes: data.changes,
         status: 'PROCESSING',
         totalRecords: 0,
-        processedRecords: 0,
-        failedRecords: 0,
+        processed: 0,
+        failed: 0,
         createdBy: userId,
       },
     });
@@ -102,8 +102,8 @@ export class BulkOperationsService {
         data: {
           status: 'COMPLETED',
           totalRecords,
-          processedRecords,
-          failedRecords: failedRecords > 0 ? failedRecords : 0,
+          processed: processedRecords,
+          failed: failedRecords > 0 ? failedRecords : 0,
           completedAt: new Date(),
         },
       });
