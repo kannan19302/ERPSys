@@ -68,8 +68,8 @@ export default function CustomFieldsPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/crm/custom-fields', { headers: { Authorization: `Bearer ${token || ''}` } });
-      if (res.ok) { setFields(await res.json()); } else { setFields(MOCK_FIELDS); }
-    } catch { setFields(MOCK_FIELDS); }
+      if (res.ok) { setFields(await res.json()); } else { setFields([]); }
+    } catch { setFields([]); }
     finally { setLoading(false); }
   };
 

@@ -61,8 +61,8 @@ export default function ApprovalSettingsPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/crm/approval-processes', { headers: { Authorization: `Bearer ${token || ''}` } });
-      if (res.ok) { setProcesses(await res.json()); } else { setProcesses(MOCK_PROCESSES); }
-    } catch { setProcesses(MOCK_PROCESSES); }
+      if (res.ok) { setProcesses(await res.json()); } else { setProcesses([]); }
+    } catch { setProcesses([]); }
     finally { setLoading(false); }
   };
 

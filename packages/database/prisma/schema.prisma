@@ -729,7 +729,9 @@ model PurchaseOrder {
   taxAmount       Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
   discountAmount  Decimal   @default(0) @map("discount_amount") @db.Decimal(15, 2)
   totalAmount     Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
+  paidAmount      Decimal   @default(0) @map("paid_amount") @db.Decimal(15, 2)
   currency        String    @default("USD")
+  exchangeRate    Decimal   @default(1) @map("exchange_rate") @db.Decimal(15, 6)
   shippingAddress Json?     @map("shipping_address")
   notes           String?
   internalNotes   String?   @map("internal_notes")
@@ -2537,6 +2539,54 @@ model ExchangeRate {
   @@unique([tenantId, fromCurrency, toCurrency, date])
   @@index([tenantId])
   @@map("exchange_rates")
+}
+
+// Period-end foreign-currency revaluation of open monetary balances (AR, AP, FX bank accounts).
+// Produces unrealized FX gain/loss and posts an adjusting journal.
+model CurrencyRevaluation {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  orgId         String   @map("org_id")
+  runNumber     String   @map("run_number")
+  asOfDate      DateTime @map("as_of_date")
+  baseCurrency  String   @default("USD") @map("base_currency")
+  status        String   @default("POSTED") // POSTED, REVERSED
+  totalGain     Decimal  @default(0) @map("total_gain") @db.Decimal(15, 2)
+  totalLoss     Decimal  @default(0) @map("total_loss") @db.Decimal(15, 2)
+  netAdjustment Decimal  @default(0) @map("net_adjustment") @db.Decimal(15, 2)
+  journalId     String?  @map("journal_id")
+  lines         Json // [{ source, ref, currency, foreignAmount, bookRate, currentRate, bookValue, currentValue, delta }]
+  createdBy     String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, orgId, runNumber])
+  @@index([tenantId])
+  @@index([tenantId, asOfDate])
+  @@map("currency_revaluations")
+}
+
+// Structured legal e-invoice generated from a sales Invoice (UBL 2.1 / PEPPOL BIS / India GST IRN).
+model EInvoice {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  invoiceId   String    @map("invoice_id")
+  format      String // UBL, PEPPOL, GST_IRN
+  status      String    @default("GENERATED") // GENERATED, SIGNED, SENT, ACKNOWLEDGED, CANCELLED
+  irn         String?   @map("irn") // India GST Invoice Reference Number
+  qrPayload   String?   @map("qr_payload")
+  documentXml String    @map("document_xml") // serialized structured document
+  ackNumber   String?   @map("ack_number")
+  ackDate     DateTime? @map("ack_date")
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, invoiceId, format])
+  @@index([tenantId])
+  @@index([tenantId, invoiceId])
+  @@map("e_invoices")
 }
 
 model Account {

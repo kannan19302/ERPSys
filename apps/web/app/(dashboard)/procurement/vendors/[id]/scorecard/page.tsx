@@ -49,7 +49,7 @@ export default function VendorScorecardPage() {
       if (!res.ok) throw new Error();
       setScorecard(await res.json());
     } catch {
-      setError('Serving local mock fallback supplier scorecard analytics.');
+      setError('Could not load data. Please try again.');
       setScorecard({
         vendorId,
         vendorName: 'Apex Metal Solutions',
@@ -136,7 +136,7 @@ export default function VendorScorecardPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock performance analytics)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

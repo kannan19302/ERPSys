@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
 import {
   Plus, X, DollarSign, Percent, Calculator, AlertCircle,
   Award, FileText, CheckCircle, Clock, CreditCard
@@ -55,6 +55,8 @@ export default function CommissionsPage() {
   const [calcStart, setCalcStart] = useState('');
   const [calcEnd, setCalcEnd] = useState('');
 
+  const toast = useToast();
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -76,18 +78,11 @@ export default function CommissionsPage() {
         const d = await entriesRes.json();
         setEntries(Array.isArray(d) ? d : (d?.data || []));
       }
-    } catch {
-      setError('Serving local mock fallback data.');
-      setRules([
-        { id: 'cr-1', name: 'Standard Sales Commission', type: 'PERCENTAGE', rate: 10, appliesTo: 'ALL', isActive: true, _count: { entries: 24 }, createdAt: new Date().toISOString() },
-        { id: 'cr-2', name: 'Enterprise Bonus', type: 'FLAT', rate: 500, appliesTo: 'ENTERPRISE', isActive: true, _count: { entries: 8 }, createdAt: new Date().toISOString() },
-        { id: 'cr-3', name: 'Tiered Q4 Accelerator', type: 'TIERED', rate: 15, appliesTo: 'ALL', isActive: false, _count: { entries: 3 }, createdAt: new Date().toISOString() },
-      ]);
-      setEntries([
-        { id: 'ce-1', userId: 'u-1', userName: 'Sarah Johnson', opportunityId: 'opp-1', opportunityName: 'Acme Corp Deal', ruleId: 'cr-1', ruleName: 'Standard Sales Commission', amount: 5400, status: 'PAID', periodStart: '2026-05-01', periodEnd: '2026-05-31', createdAt: new Date().toISOString() },
-        { id: 'ce-2', userId: 'u-2', userName: 'Mike Chen', opportunityId: 'opp-2', opportunityName: 'TechStart Upgrade', ruleId: 'cr-1', ruleName: 'Standard Sales Commission', amount: 2100, status: 'APPROVED', periodStart: '2026-06-01', periodEnd: '2026-06-30', createdAt: new Date().toISOString() },
-        { id: 'ce-3', userId: 'u-1', userName: 'Sarah Johnson', opportunityId: 'opp-3', opportunityName: 'GlobalTech Expansion', ruleId: 'cr-2', ruleName: 'Enterprise Bonus', amount: 500, status: 'PENDING', periodStart: '2026-06-01', periodEnd: '2026-06-30', createdAt: new Date().toISOString() },
-      ]);
+    } catch (err) {
+      setError('Could not load commission data. Please try again.');
+      toast.error('Could not load commissions', err instanceof Error ? err.message : undefined);
+      setRules([]);
+      setEntries([]);
     } finally {
       setLoading(false);
     }
@@ -107,14 +102,12 @@ export default function CommissionsPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error(`Save failed (${res.status})`);
       setModalSuccess(true);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1500);
-    } catch {
-      setModalSuccess(true);
-      const mock: CommissionRule = { id: `cr-mock-${Date.now()}`, name: ruleName, type: ruleType, rate: Number(ruleRate), appliesTo: ruleAppliesTo, isActive: true, _count: { entries: 0 }, createdAt: new Date().toISOString() };
-      setRules(prev => [mock, ...prev]);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); }, 1500);
+      toast.success('Commission rule created', `"${ruleName}" has been added.`);
+      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1200);
+    } catch (err) {
+      toast.error('Could not create rule', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -131,12 +124,12 @@ export default function CommissionsPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify({ periodStart: calcStart, periodEnd: calcEnd }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error(`Calculation failed (${res.status})`);
       setModalSuccess(true);
-      setTimeout(() => { setIsCalcModalOpen(false); setModalSuccess(false); setCalcStart(''); setCalcEnd(''); loadData(); }, 1500);
-    } catch {
-      setModalSuccess(true);
-      setTimeout(() => { setIsCalcModalOpen(false); setModalSuccess(false); setCalcStart(''); setCalcEnd(''); }, 1500);
+      toast.success('Commissions calculated', 'Entries generated for the selected period.');
+      setTimeout(() => { setIsCalcModalOpen(false); setModalSuccess(false); setCalcStart(''); setCalcEnd(''); loadData(); }, 1200);
+    } catch (err) {
+      toast.error('Could not calculate commissions', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setSubmitting(false);
     }

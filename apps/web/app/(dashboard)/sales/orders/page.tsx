@@ -137,19 +137,10 @@ export default function SalesOrdersHub() {
       if (customersRes.ok) setCustomers(await customersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (productsRes.ok) setProducts(await productsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
-      setError('Serving local mock fallback registry.');
-      setOrders([
-        { id: 'so-1', orderNumber: 'SO-2026-001', status: 'CONFIRMED', orderDate: new Date().toISOString(), deliveryDate: new Date().toISOString(), customerName: 'Acme Corp', totalAmount: 25000, currency: 'USD', salesChannel: 'B2B', paymentMethod: 'BANK_TRANSFER', paymentStatus: 'UNPAID', lineItemCount: 1, deliveryNotesCount: 0 },
-        { id: 'so-2', orderNumber: 'SO-2026-002', status: 'CREDIT_HOLD', orderDate: new Date().toISOString(), deliveryDate: null, customerName: 'Wayne Enterprises', totalAmount: 85000, currency: 'USD', salesChannel: 'B2B', paymentMethod: null, paymentStatus: 'UNPAID', lineItemCount: 1, deliveryNotesCount: 0 },
-        { id: 'so-3', orderNumber: 'SO-2026-003', status: 'DELIVERED', orderDate: new Date().toISOString(), deliveryDate: new Date().toISOString(), customerName: 'John Doe (Direct)', totalAmount: 1200, currency: 'USD', salesChannel: 'D2C', paymentMethod: 'CREDIT_CARD', paymentStatus: 'PAID', lineItemCount: 1, deliveryNotesCount: 1 }
-      ]);
-      setCustomers([
-        { id: 'c-1', name: 'Acme Corp', creditLimit: 20000 },
-        { id: 'c-2', name: 'Wayne Enterprises', creditLimit: 50000 }
-      ]);
-      setProducts([
-        { id: 'p-1', name: 'Premium Office Desks', price: 1200 }
-      ]);
+      setError('Could not load data. Please try again.');
+      setOrders([]);
+      setCustomers([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -239,29 +230,9 @@ export default function SalesOrdersHub() {
         loadData();
       }, 1500);
     } catch {
-      setModalSuccess(true);
-      const sub = lineItems.reduce((acc, l) => acc + l.quantity * l.unitPrice, 0);
-      const tax = lineItems.reduce((acc, l) => acc + (l.quantity * l.unitPrice * l.taxRate) / 100, 0);
-      const mockNew: SalesOrder = {
-        id: `so-mock-${Date.now()}`,
-        orderNumber,
-        status: salesChannel === 'B2B' ? 'DRAFT' : 'CONFIRMED',
-        orderDate: new Date().toISOString(),
-        deliveryDate: deliveryDate ? new Date(deliveryDate).toISOString() : null,
-        customerName: customers.find(c => c.id === customerId)?.name || 'Retail Guest',
-        totalAmount: sub + tax,
-        currency: 'USD',
-        salesChannel,
-        paymentMethod,
-        paymentStatus,
-        lineItemCount: lineItems.length,
-        deliveryNotesCount: 0
-      };
-      setOrders(prev => [mockNew, ...prev]);
-      setTimeout(() => {
-        setIsCreateModalOpen(false);
-        resetForm();
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -312,13 +283,9 @@ export default function SalesOrdersHub() {
         loadData();
       }, 1500);
     } catch {
-      setModalSuccess(true);
-      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, paymentStatus: 'PAID', status: o.status === 'DRAFT' ? 'CONFIRMED' : o.status } : o));
-      setTimeout(() => {
-        setIsPaymentModalOpen(false);
-        setModalSuccess(false);
-        setSelectedOrder(null);
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -362,13 +329,9 @@ export default function SalesOrdersHub() {
         loadData();
       }, 1500);
     } catch {
-      setModalSuccess(true);
-      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: 'DELIVERED', deliveryNotesCount: 1 } : o));
-      setTimeout(() => {
-        setIsDeliveryModalOpen(false);
-        setModalSuccess(false);
-        setSelectedOrder(null);
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }

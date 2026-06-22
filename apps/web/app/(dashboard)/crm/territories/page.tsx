@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
 import {
   Plus, X, MapPin, Users, DollarSign, TrendingUp,
   ChevronRight, AlertCircle, Award, Layers
@@ -42,6 +42,8 @@ export default function TerritoriesPage() {
   const [parentId, setParentId] = useState('');
   const [managerId, setManagerId] = useState('');
 
+  const toast = useToast();
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -53,30 +55,18 @@ export default function TerritoriesPage() {
         fetch('/api/v1/crm/territories', { headers }),
         fetch('/api/v1/crm/analytics/territory-performance', { headers }),
       ]);
-
-      if (terrRes.ok) {
-        const d = await terrRes.json();
-        setTerritories(Array.isArray(d) ? d : (d?.data || []));
-      } else {
-        throw new Error();
-      }
-
+      if (!terrRes.ok) throw new Error(`Request failed (${terrRes.status})`);
+      const d = await terrRes.json();
+      setTerritories(Array.isArray(d) ? d : (d?.data || []));
       if (perfRes.ok) {
         const p = await perfRes.json();
         setPerformance(Array.isArray(p) ? p : (p?.data || []));
       }
-    } catch {
-      setError('Serving local mock fallback data.');
-      setTerritories([
-        { id: 't-1', name: 'North America', description: 'US and Canada operations', parentId: null, managerId: null, parent: null, manager: { id: 'u-1', name: 'Sarah Johnson' }, children: [{ id: 't-2', name: 'US West' }], _count: { members: 12, children: 2 }, createdAt: new Date().toISOString() },
-        { id: 't-2', name: 'US West', description: 'Western US region', parentId: 't-1', managerId: null, parent: { id: 't-1', name: 'North America' }, manager: { id: 'u-2', name: 'Mike Chen' }, children: [], _count: { members: 5, children: 0 }, createdAt: new Date().toISOString() },
-        { id: 't-3', name: 'EMEA', description: 'Europe, Middle East, and Africa', parentId: null, managerId: null, parent: null, manager: { id: 'u-3', name: 'Emma Wilson' }, children: [], _count: { members: 8, children: 1 }, createdAt: new Date().toISOString() },
-      ]);
-      setPerformance([
-        { territoryId: 't-1', territoryName: 'North America', memberCount: 12, dealCount: 34, revenue: 542000 },
-        { territoryId: 't-3', territoryName: 'EMEA', memberCount: 8, dealCount: 21, revenue: 318000 },
-        { territoryId: 't-2', territoryName: 'US West', memberCount: 5, dealCount: 14, revenue: 215000 },
-      ]);
+    } catch (err) {
+      setError('Could not load territories. Please try again.');
+      toast.error('Could not load territories', err instanceof Error ? err.message : undefined);
+      setTerritories([]);
+      setPerformance([]);
     } finally {
       setLoading(false);
     }
@@ -96,14 +86,12 @@ export default function TerritoriesPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error(`Save failed (${res.status})`);
       setModalSuccess(true);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1500);
-    } catch {
-      setModalSuccess(true);
-      const mock: Territory = { id: `t-mock-${Date.now()}`, name, description: description || null, parentId: parentId || null, managerId: managerId || null, _count: { members: 0, children: 0 }, createdAt: new Date().toISOString() };
-      setTerritories(prev => [mock, ...prev]);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); }, 1500);
+      toast.success('Territory created', `"${name}" has been added.`);
+      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1200);
+    } catch (err) {
+      toast.error('Could not create territory', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setSubmitting(false);
     }

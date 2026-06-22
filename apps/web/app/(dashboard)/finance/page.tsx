@@ -90,56 +90,7 @@ export default function FinancePage() {
     } catch {
       setError('Could not connect to API server.');
       // Local mock data
-      setInvoices([
-        {
-          id: 'inv-1',
-          invoiceNumber: 'INV-2026-001',
-          customerName: 'Stark Industries',
-          status: 'PAID',
-          issueDate: new Date(Date.now() - 30 * 24 * 3600000).toLocaleDateString(),
-          dueDate: new Date(Date.now() - 15 * 24 * 3600000).toLocaleDateString(),
-          subtotal: 5000,
-          taxAmount: 750,
-          totalAmount: 5750,
-          paidAmount: 5750,
-          currency: 'USD',
-          lineItems: [
-            { description: 'Vibranium Fabrication Alloy', quantity: 2, unitPrice: 2500, taxRate: 15 }
-          ]
-        },
-        {
-          id: 'inv-2',
-          invoiceNumber: 'INV-2026-002',
-          customerName: 'Wayne Enterprises',
-          status: 'PARTIALLY_PAID',
-          issueDate: new Date(Date.now() - 10 * 24 * 3600000).toLocaleDateString(),
-          dueDate: new Date(Date.now() + 20 * 24 * 3600000).toLocaleDateString(),
-          subtotal: 12000,
-          taxAmount: 1800,
-          totalAmount: 13800,
-          paidAmount: 6000,
-          currency: 'USD',
-          lineItems: [
-            { description: 'Tactical Kevlar Weaving Grid', quantity: 4, unitPrice: 3000, taxRate: 15 }
-          ]
-        },
-        {
-          id: 'inv-3',
-          invoiceNumber: 'INV-2026-003',
-          customerName: 'Oscorp Technologies',
-          status: 'DRAFT',
-          issueDate: new Date().toLocaleDateString(),
-          dueDate: new Date(Date.now() + 30 * 24 * 3600000).toLocaleDateString(),
-          subtotal: 3500,
-          taxAmount: 525,
-          totalAmount: 4025,
-          paidAmount: 0,
-          currency: 'USD',
-          lineItems: [
-            { description: 'Bio-Chemical Catalyst Assay', quantity: 1, unitPrice: 3500, taxRate: 15 }
-          ]
-        }
-      ]);
+      setInvoices([]);
     }
 
     // Fetch Customers
@@ -233,38 +184,9 @@ export default function FinancePage() {
         fetchData();
       }, 1500);
     } catch {
-      // Mock local update if API fails
-      setModalSuccess(true);
-      const selCust = customers.find(c => c.id === customerId);
-      const sub = lineItems.reduce((acc, l) => acc + (l.quantity * l.unitPrice), 0);
-      const tax = lineItems.reduce((acc, l) => acc + (l.quantity * l.unitPrice * (l.taxRate / 100)), 0);
-      
-      const newMockInvoice: InvoiceData = {
-        id: `inv-mock-${Date.now()}`,
-        invoiceNumber,
-        customerName: selCust ? selCust.name : 'Unknown Customer',
-        status: 'DRAFT',
-        issueDate: new Date().toLocaleDateString(),
-        dueDate: new Date(dueDate).toLocaleDateString(),
-        subtotal: sub,
-        taxAmount: tax,
-        totalAmount: sub + tax,
-        paidAmount: 0,
-        currency: 'USD',
-        lineItems: lineItems.map((li, idx) => ({ ...li, id: `li-${idx}` }))
-      };
-      
-      setInvoices(prev => [newMockInvoice, ...prev]);
-
-      setTimeout(() => {
-        setIsCreateModalOpen(false);
-        setInvoiceNumber('');
-        setCustomerId('');
-        setDueDate('');
-        setNotes('');
-        setLineItems([{ description: 'Consulting Services', quantity: 1, unitPrice: 1000, taxRate: 15 }]);
-        setModalSuccess(false);
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -314,25 +236,9 @@ export default function FinancePage() {
         fetchData();
       }, 1500);
     } catch {
-      // Mock local payment update
-      setModalSuccess(true);
-      setInvoices(prev => prev.map(inv => {
-        if (inv.id === selectedInvoice.id) {
-          const nextPaid = inv.paidAmount + Number(paymentAmount);
-          return {
-            ...inv,
-            paidAmount: nextPaid,
-            status: nextPaid >= inv.totalAmount ? 'PAID' : 'PARTIALLY_PAID'
-          };
-        }
-        return inv;
-      }));
-
-      setTimeout(() => {
-        setIsPaymentModalOpen(false);
-        setSelectedInvoice(null);
-        setModalSuccess(false);
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -363,7 +269,7 @@ export default function FinancePage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

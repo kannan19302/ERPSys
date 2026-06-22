@@ -44,7 +44,7 @@ export default function PlaybooksPage() {
       const data = await res.json();
       setPlaybooks(Array.isArray(data) ? data : data.data || MOCK_PLAYBOOKS);
     } catch {
-      setPlaybooks(MOCK_PLAYBOOKS);
+      setPlaybooks([]);
     } finally {
       setLoading(false);
     }

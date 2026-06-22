@@ -115,9 +115,9 @@ const USAGE_META: Record<string, { label: string; icon: React.ComponentType<any>
 };
 
 export default function SaasPortalPage() {
-  const [plans, setPlans] = useState<Plan[]>(MOCK_PLANS);
-  const [subscription, setSubscription] = useState<Subscription>(MOCK_SUBSCRIPTION);
-  const [usage, setUsage] = useState<UsageRecord[]>(MOCK_USAGE);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [usage, setUsage] = useState<UsageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showComparison, setShowComparison] = useState(false);
   const [upgradeTarget, setUpgradeTarget] = useState<Plan | null>(null);
@@ -144,7 +144,7 @@ export default function SaasPortalPage() {
       if (subRes) setSubscription(subRes);
       if (usageRes) setUsage(usageRes);
     } catch {
-      // keep mock fallbacks
+      // no data — UI shows an empty/loading state rather than fabricated plans
     } finally {
       setLoading(false);
     }
@@ -172,9 +172,31 @@ export default function SaasPortalPage() {
     }
   };
 
-  const trialDaysLeft = subscription.trialEndsAt
+  const trialDaysLeft = subscription?.trialEndsAt
     ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt).getTime() - Date.now()) / 86400000))
     : 0;
+
+  // No subscription loaded yet (or the request failed) — show an honest state instead of a fabricated plan.
+  if (!subscription) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <PageHeader
+          title="SaaS Portal & Subscription"
+          description="Manage your subscription plan, monitor resource usage, and configure billing preferences."
+          breadcrumbs={[{ label: 'SaaS', href: '/saas/portal' }, { label: 'Portal' }]}
+        />
+        <Card style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+          {loading ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> Loading subscription data…
+            </span>
+          ) : (
+            'Could not load your subscription. Please refresh to try again.'
+          )}
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>

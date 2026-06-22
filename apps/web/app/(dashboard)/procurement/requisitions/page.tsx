@@ -106,78 +106,11 @@ export default function RequisitionsPage() {
         setProducts(Array.isArray(prodData) ? prodData : prodData?.data || []);
       }
     } catch {
-      setError('Serving local mock fallback registry.');
+      setError('Could not load data. Please try again.');
       // Mock data matching exact database schema
-      setRequisitions([
-        {
-          id: 'pr-1',
-          requisitionNumber: 'PR-2026-001',
-          title: 'Q3 Development Team Hardware',
-          description: 'MacBook Pro laptops for new engineers',
-          status: 'PENDING_APPROVAL',
-          requestedById: 'user-admin',
-          departmentId: 'dept-1',
-          departmentName: 'Engineering',
-          requiredDate: new Date(Date.now() + 15 * 24 * 3600 * 1000).toISOString(),
-          estimatedCost: 7500,
-          notes: 'Standard onboarding equipment budget allocation.',
-          approvedBy: null,
-          approvedAt: null,
-          createdAt: new Date().toISOString(),
-          lineItems: [
-            {
-              id: 'pri-1',
-              productId: 'prod-1',
-              productName: 'MacBook Pro 16-inch',
-              description: 'M3 Max, 32GB RAM, 1TB SSD',
-              quantity: 3,
-              estimatedPrice: 2500,
-              totalAmount: 7500
-            }
-          ]
-        },
-        {
-          id: 'pr-2',
-          requisitionNumber: 'PR-2026-002',
-          title: 'Office Stationary Stocking',
-          description: 'Pens, notebooks, printer paper refill',
-          status: 'APPROVED',
-          requestedById: 'user-admin',
-          departmentId: 'dept-2',
-          departmentName: 'Administration',
-          requiredDate: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString(),
-          estimatedCost: 450,
-          notes: 'Quarterly supply replenish',
-          approvedBy: 'manager-1',
-          approvedAt: new Date().toISOString(),
-          createdAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-          lineItems: [
-            {
-              id: 'pri-2',
-              description: 'Eco-friendly ballpoint pens (Pack of 50)',
-              quantity: 5,
-              estimatedPrice: 30,
-              totalAmount: 150
-            },
-            {
-              id: 'pri-3',
-              description: 'A4 Printing Paper reams',
-              quantity: 20,
-              estimatedPrice: 15,
-              totalAmount: 300
-            }
-          ]
-        }
-      ]);
-      setDepartments([
-        { id: 'dept-1', name: 'Engineering' },
-        { id: 'dept-2', name: 'Administration' },
-        { id: 'dept-3', name: 'Sales & Marketing' }
-      ]);
-      setProducts([
-        { id: 'prod-1', name: 'MacBook Pro 16-inch', sku: 'SKU-LAP-002' },
-        { id: 'prod-2', name: 'Standing Desk Dual-Motor', sku: 'SKU-DES-001' }
-      ]);
+      setRequisitions([]);
+      setDepartments([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -261,35 +194,9 @@ export default function RequisitionsPage() {
       setIsModalOpen(false);
       loadData();
     } catch {
-      // Mock local fallback append
-      const estCost = items.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0);
-      const newMock: Requisition = {
-        id: `pr-mock-${Date.now()}`,
-        requisitionNumber,
-        title,
-        description: description || null,
-        status: 'PENDING_APPROVAL',
-        requestedById: 'user-admin',
-        departmentId: selectedDepartment || null,
-        departmentName: departments.find(d => d.id === selectedDepartment)?.name || 'General',
-        requiredDate: requiredDate ? new Date(requiredDate).toISOString() : null,
-        estimatedCost: estCost,
-        notes: notes || null,
-        approvedBy: null,
-        approvedAt: null,
-        createdAt: new Date().toISOString(),
-        lineItems: items.map((item, idx) => ({
-          id: `pri-mock-${idx}-${Date.now()}`,
-          productId: item.productId || undefined,
-          productName: products.find(p => p.id === item.productId)?.name,
-          description: item.description,
-          quantity: item.quantity,
-          estimatedPrice: item.estimatedPrice,
-          totalAmount: item.quantity * item.estimatedPrice
-        }))
-      };
-      setRequisitions([newMock, ...requisitions]);
-      setIsModalOpen(false);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -390,7 +297,7 @@ export default function RequisitionsPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

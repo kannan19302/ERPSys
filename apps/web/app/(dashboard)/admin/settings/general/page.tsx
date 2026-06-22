@@ -184,31 +184,31 @@ export default function GeneralSettingsPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading general settings...</div>;
+    return <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading general settings...</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-4xl animate-fade-in-up">
-      <div className="flex justify-between items-center">
+    <div className="animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', width: '100%', maxWidth: '56rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-2xl font-semibold">General Settings</h1>
-          <p className="text-muted-foreground text-sm">Configure your tenant-level organization profile, numbering series, and demo data.</p>
+          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-semibold)' }}>General Settings</h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>Configure your tenant-level organization profile, numbering series, and demo data.</p>
         </div>
-        <div className="flex items-center gap-1.5 text-xs bg-muted/40 px-3 py-1.5 rounded-lg border border-border h-fit font-medium">
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: 'var(--text-xs)', paddingInline: 'var(--space-3)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', fontWeight: 'var(--weight-medium)' }}>
           {saveStatus === 'saving' && (
-            <span className="text-muted-foreground flex items-center gap-1.5">
+            <span style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
               <Loader2 size={12} className="animate-spin text-warning" />
               <span>Saving changes...</span>
             </span>
           )}
           {saveStatus === 'saved' && (
-            <span className="text-success flex items-center gap-1.5">
+            <span style={{ display: 'flex', alignItems: 'center' }}>
               <Check size={14} className="text-success" />
               <span>All changes saved</span>
             </span>
           )}
           {saveStatus === 'error' && (
-            <span className="text-danger flex items-center gap-1.5 font-bold">
+            <span style={{ display: 'flex', alignItems: 'center', fontWeight: 'var(--weight-bold)' }}>
               <span>Error saving changes</span>
             </span>
           )}
@@ -221,10 +221,10 @@ export default function GeneralSettingsPage() {
         </div>
       )}
 
-      <div className="frappe-card p-6 md:p-8 flex flex-col gap-6">
+      <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2"><Building size={18} className="text-primary"/> Organization Profile</h3>
-          <p className="text-sm text-muted-foreground mt-1">Basic details about your company.</p>
+          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Building size={18} style={{ color: 'var(--color-primary)' }}/> Organization Profile</h3>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Basic details about your company.</p>
         </div>
         <hr className="border-border" />
 
@@ -253,7 +253,7 @@ export default function GeneralSettingsPage() {
         <div className="frappe-form-group">
           <label className="frappe-label">Primary Address</label>
           <input
-            className="frappe-input mb-2"
+            style={{ marginBottom: 'var(--space-2)' }}
             placeholder="Street Address"
             value={formData.address.street}
             onChange={e => setFormData({...formData, address: {...formData.address, street: e.target.value}})}
@@ -323,8 +323,8 @@ export default function GeneralSettingsPage() {
         {/* Fiscal Year Section */}
         <hr className="border-border" />
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2"><Calendar size={18} className="text-primary"/> Fiscal Year</h3>
-          <p className="text-sm text-muted-foreground mt-1">Set your organization's fiscal year start month.</p>
+          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Calendar size={18} style={{ color: 'var(--color-primary)' }}/> Fiscal Year</h3>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Set your organization's fiscal year start month.</p>
         </div>
         <div className="frappe-grid-2">
           <div className="frappe-form-group">
@@ -348,8 +348,8 @@ export default function GeneralSettingsPage() {
         {/* Numbering Series Section */}
         <hr className="border-border" />
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2"><Hash size={18} className="text-primary"/> Numbering Series</h3>
-          <p className="text-sm text-muted-foreground mt-1">Configure document number prefixes for invoices, purchase orders, and sales orders.</p>
+          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Hash size={18} style={{ color: 'var(--color-primary)' }}/> Numbering Series</h3>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Configure document number prefixes for invoices, purchase orders, and sales orders.</p>
         </div>
         <div className="frappe-grid-3">
           <div className="frappe-form-group">
@@ -387,20 +387,20 @@ export default function GeneralSettingsPage() {
         {/* Demo Data Section */}
         <hr className="border-border" />
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2"><Database size={18} className="text-primary"/> Demo Data</h3>
-          <p className="text-sm text-muted-foreground mt-1">Load or remove sample data for testing and evaluation.</p>
+          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Database size={18} style={{ color: 'var(--color-primary)' }}/> Demo Data</h3>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Load or remove sample data for testing and evaluation.</p>
         </div>
-        <div className="border border-border rounded-lg p-4 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+        <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <span className="text-sm font-medium">Demo Data Status: </span>
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Demo Data Status: </span>
               <span className={`text-sm font-semibold ${demoStatus.loaded ? 'text-success' : 'text-muted-foreground'}`}>
                 {demoStatus.loaded ? 'Loaded' : 'Not loaded'}
               </span>
             </div>
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <button
-                className="frappe-btn frappe-btn-primary text-xs"
+                style={{ fontSize: 'var(--text-xs)' }}
                 onClick={handleLoadDemo}
                 disabled={demoLoading}
               >
@@ -408,10 +408,9 @@ export default function GeneralSettingsPage() {
               </button>
               {demoStatus.loaded && (
                 <button
-                  className="frappe-btn frappe-btn-secondary text-xs"
+                  style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger, #dc2626)' }}
                   onClick={handleRemoveDemo}
                   disabled={demoLoading}
-                  style={{ color: 'var(--color-danger, #dc2626)' }}
                 >
                   Remove All Demo Data
                 </button>
@@ -419,11 +418,11 @@ export default function GeneralSettingsPage() {
             </div>
           </div>
           {Object.keys(demoStatus.modules).length > 0 && (
-            <div className="flex flex-col gap-2">
-              <span className="text-xs text-muted-foreground font-medium">Per-module demo data status:</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Per-module demo data status:</span>
               <div className="frappe-grid-3">
                 {Object.entries(demoStatus.modules).map(([mod, loaded]) => (
-                  <label key={mod} className="flex items-center gap-2 text-sm">
+                  <label key={mod} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
                     <input type="checkbox" checked={loaded} readOnly className="accent-primary" />
                     <span style={{ textTransform: 'capitalize' }}>{mod}</span>
                   </label>

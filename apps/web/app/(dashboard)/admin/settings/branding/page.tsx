@@ -56,63 +56,63 @@ export default function BrandingSettingsPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading branding settings...</div>;
+    return <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading branding settings...</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-4xl animate-fade-in-up">
-      <div className="flex justify-between items-center">
+    <div className="animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', width: '100%', maxWidth: '56rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-2xl font-semibold">Branding & Appearance</h1>
-          <p className="text-muted-foreground text-sm">Customize the system UI themes, color palettes, and logos.</p>
+          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-semibold)' }}>Branding & Appearance</h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>Customize the system UI themes, color palettes, and logos.</p>
         </div>
-        <div className="flex items-center gap-1.5 text-xs bg-muted/40 px-3 py-1.5 rounded-lg border border-border h-fit font-medium">
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: 'var(--text-xs)', paddingInline: 'var(--space-3)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', fontWeight: 'var(--weight-medium)' }}>
           {saveStatus === 'saving' && (
-            <span className="text-muted-foreground flex items-center gap-1.5">
+            <span style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
               <Loader2 size={12} className="animate-spin text-warning" />
               <span>Saving changes...</span>
             </span>
           )}
           {saveStatus === 'saved' && (
-            <span className="text-success flex items-center gap-1.5">
+            <span style={{ display: 'flex', alignItems: 'center' }}>
               <Check size={14} className="text-success" />
               <span>All changes saved</span>
             </span>
           )}
           {saveStatus === 'error' && (
-            <span className="text-danger flex items-center gap-1.5 font-bold">
+            <span style={{ display: 'flex', alignItems: 'center', fontWeight: 'var(--weight-bold)' }}>
               <span>Error saving changes</span>
             </span>
           )}
         </div>
       </div>
 
-      <div className="frappe-card p-6 md:p-8 flex flex-col gap-6">
+      <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2"><ImageIcon size={18} className="text-primary"/> Branding</h3>
-          <p className="text-sm text-muted-foreground mt-1">Customize the visual assets of your ERP client.</p>
+          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><ImageIcon size={18} style={{ color: 'var(--color-primary)' }}/> Branding</h3>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Customize the visual assets of your ERP client.</p>
         </div>
         <hr className="border-border" />
 
-        <div className="flex gap-6 items-start">
-          <div className="w-32 h-32 bg-muted rounded-xl flex items-center justify-center border border-border border-dashed">
-            <ImageIcon size={32} className="text-muted-foreground opacity-50" />
+        <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'flex-start' }}>
+          <div style={{ borderRadius: 'var(--radius-xl)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
+            <ImageIcon size={32} style={{ color: 'var(--color-text-secondary)', opacity: '0.5' }} />
           </div>
-          <div className="flex flex-col gap-2">
-            <h4 className="font-medium text-sm">Company Logo</h4>
-            <p className="text-xs text-muted-foreground">Upload your organization's logo. It will be used in the sidebar and on generated PDF documents.</p>
-            <div className="mt-2">
-              <button className="frappe-btn frappe-btn-secondary text-xs">Choose File</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <h4 style={{ fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)' }}>Company Logo</h4>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Upload your organization's logo. It will be used in the sidebar and on generated PDF documents.</p>
+            <div style={{ marginTop: 'var(--space-2)' }}>
+              <button style={{ fontSize: 'var(--text-xs)' }}>Choose File</button>
             </div>
           </div>
         </div>
 
-        <div className="frappe-form-group mt-4">
+        <div style={{ marginTop: 'var(--space-4)' }}>
           <label className="frappe-label">Primary Brand Color (Hex)</label>
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <input
               type="color"
-              className="w-10 h-10 p-0 border border-border rounded cursor-pointer"
+              style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
               value={primaryColor}
               onChange={e => {
                 const val = e.target.value;
@@ -121,13 +121,13 @@ export default function BrandingSettingsPage() {
               }}
             />
             <input
-              className="frappe-input w-32 font-mono text-sm"
+              style={{ fontSize: 'var(--text-sm)' }}
               value={primaryColor}
               onChange={e => setPrimaryColor(e.target.value)}
               onBlur={() => handleSave(primaryColor)}
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">Used for primary buttons, active states, and highlights.</p>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Used for primary buttons, active states, and highlights.</p>
         </div>
       </div>
     </div>

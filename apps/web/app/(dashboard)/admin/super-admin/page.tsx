@@ -73,8 +73,8 @@ export default function SuperAdminDashboardPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(message);
-      setAnalytics(MOCK_ANALYTICS);
-      setHealth(MOCK_HEALTH);
+      setAnalytics(null);
+      setHealth(null);
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ export default function SuperAdminDashboardPage() {
           borderRadius: 'var(--radius-md)',
           fontSize: 'var(--text-sm)',
         }}>
-          {error} — showing demo data
+          {error}
         </div>
       )}
 

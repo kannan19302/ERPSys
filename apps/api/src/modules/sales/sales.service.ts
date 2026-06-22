@@ -500,9 +500,11 @@ export class SalesService {
 
   // ── SALES RETURNS ──────────────────────────────
 
-  async getSalesReturns(tenantId: string) {
+  async getSalesReturns(tenantId: string, status?: string) {
+    const where: any = { tenantId };
+    if (status) where.status = status;
     const returns = await prisma.salesReturn.findMany({
-      where: { tenantId },
+      where,
       include: { customer: true, salesOrder: true, lineItems: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -630,5 +632,96 @@ export class SalesService {
 
       return sr;
     });
+  }
+
+  async getQuotationById(tenantId: string, id: string) {
+    const q = await prisma.quotation.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: { customer: true, lineItems: { include: { product: true } } },
+    });
+    if (!q) throw new NotFoundException('Quotation not found');
+    return q;
+  }
+
+  async updateQuotationStatus(tenantId: string, id: string, status: string) {
+    const q = await prisma.quotation.findFirst({ where: { id, tenantId } });
+    if (!q) throw new NotFoundException('Quotation not found');
+    return prisma.quotation.update({ where: { id }, data: { status } });
+  }
+
+  async getDeliveryNotes(tenantId: string, orderId?: string) {
+    const where: any = { tenantId };
+    if (orderId) where.salesOrderId = orderId;
+    return prisma.deliveryNote.findMany({
+      where,
+      include: { salesOrder: true, lineItems: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getDeliveryNoteById(tenantId: string, id: string) {
+    const dn = await prisma.deliveryNote.findFirst({
+      where: { id, tenantId },
+      include: { salesOrder: { include: { customer: true } }, lineItems: true },
+    });
+    if (!dn) throw new NotFoundException('Delivery note not found');
+    return dn;
+  }
+
+  async markDeliveryNoteShipped(tenantId: string, id: string, trackingNumber?: string, carrier?: string) {
+    const dn = await prisma.deliveryNote.findFirst({ where: { id, tenantId } });
+    if (!dn) throw new NotFoundException('Delivery note not found');
+    return prisma.deliveryNote.update({
+      where: { id },
+      data: { status: 'IN_TRANSIT', trackingNumber, carrierName: carrier },
+    });
+  }
+
+  async getSalesReturnById(tenantId: string, id: string) {
+    const sr = await prisma.salesReturn.findFirst({
+      where: { id, tenantId },
+      include: { salesOrder: { include: { customer: true } }, lineItems: { include: { product: true } } },
+    });
+    if (!sr) throw new NotFoundException('Sales return not found');
+    return sr;
+  }
+
+  async processReturn(tenantId: string, id: string, action: 'APPROVE' | 'REJECT' | 'RECEIVE' | 'REFUND', notes?: string, userId?: string) {
+    const sr = await prisma.salesReturn.findFirst({ where: { id, tenantId } });
+    if (!sr) throw new NotFoundException('Sales return not found');
+
+    const statusMap: Record<string, string> = {
+      APPROVE: 'APPROVED',
+      REJECT: 'REJECTED',
+      RECEIVE: 'RECEIVED',
+      REFUND: 'REFUNDED',
+    };
+
+    const updated = await prisma.salesReturn.update({
+      where: { id },
+      data: { status: statusMap[action] || action, reason: notes || (sr as any).reason },
+    });
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit('sales.return.processed', { tenantId, salesReturnId: id, action, userId });
+    }
+
+    return updated;
+  }
+
+  async getSalesStats(tenantId: string) {
+    const [totalOrders, pendingOrders, totalRevenue, returnsCount] = await Promise.all([
+      prisma.salesOrder.count({ where: { tenantId, deletedAt: null } }),
+      prisma.salesOrder.count({ where: { tenantId, deletedAt: null, status: { in: ['DRAFT', 'CONFIRMED'] } } }),
+      prisma.salesOrder.aggregate({ where: { tenantId, deletedAt: null, status: { not: 'CANCELLED' } }, _sum: { totalAmount: true } }),
+      prisma.salesReturn.count({ where: { tenantId } }),
+    ]);
+
+    return {
+      totalOrders,
+      pendingOrders,
+      totalRevenue: Number(totalRevenue._sum.totalAmount || 0),
+      returnsCount,
+    };
   }
 }

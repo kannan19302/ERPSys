@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@unerp/ui/styles';
+import { ToastProvider } from '@unerp/ui';
 import { CommandPalette } from '@/components/CommandPalette';
 
 export const metadata: Metadata = {
@@ -20,8 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <body>
-        <CommandPalette />
-        {children}
+        <ToastProvider>
+          <CommandPalette />
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

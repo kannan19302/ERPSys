@@ -80,15 +80,15 @@ export default function AdvancedHRPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="frappe-grid-3">
             {group.modules.map((mod) => (
-              <Link key={mod.href} href={mod.href} className="no-underline">
-                <Card padding="md" className="hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/30 h-full">
-                  <div className="flex items-start gap-4 h-full">
-                    <div className="p-2.5 rounded-lg bg-primary/5 text-primary flex-shrink-0" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Link key={mod.href} href={mod.href} style={{ textDecoration: 'none' }}>
+                <Card padding="md" className="hover:shadow-md transition-all hover:border-primary/30" style={{ cursor: 'pointer', border: '1px solid transparent', height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)', height: '100%' }}>
+                    <div style={{ borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {mod.icon}
                     </div>
-                    <div className="flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ flex: '1', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0 }} className="text-foreground">
                         {mod.label}
                       </h3>
@@ -96,7 +96,7 @@ export default function AdvancedHRPage() {
                         {mod.desc}
                       </p>
                     </div>
-                    <ChevronRight size={14} className="text-muted-foreground flex-shrink-0 align-self-center" style={{ marginTop: 'auto', marginBottom: 'auto' }} />
+                    <ChevronRight size={14} style={{ color: 'var(--color-text-secondary)', flexShrink: 0, marginTop: 'auto', marginBottom: 'auto' }} />
                   </div>
                 </Card>
               </Link>

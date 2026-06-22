@@ -170,22 +170,22 @@ export default function APAutomationPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (loading) return <div style={{ padding: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin h-8 w-8" style={{ color: 'var(--color-primary)' }} /></div>;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">AP Automation</h1>
-          <p className="text-muted-foreground mt-1">3-Way matching, payment scheduling, and AP runs.</p>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}>AP Automation</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>3-Way matching, payment scheduling, and AP runs.</p>
         </div>
-        <div className="flex gap-2">
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <Button variant="outline" onClick={fetchData}>
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw style={{ marginRight: 'var(--space-2)' }} />
             Refresh Data
           </Button>
           <Button onClick={() => alert('Rules configuration updated.')}>
-            <Settings className="mr-2 h-4 w-4" />
+            <Settings style={{ marginRight: 'var(--space-2)' }} />
             Configure AP Rules
           </Button>
         </div>
@@ -194,16 +194,16 @@ export default function APAutomationPage() {
       {/* Forms Section */}
       {showScheduleForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Schedule New Payment</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Schedule New Payment</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreateSchedule} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Vendor</label>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreateSchedule} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Vendor</label>
                   <select 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                    style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} 
                     required 
                     value={scheduleData.vendorId} 
                     onChange={e => setScheduleData({ ...scheduleData, vendorId: e.target.value })}
@@ -214,10 +214,10 @@ export default function APAutomationPage() {
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Amount ($)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Amount ($)</label>
                   <input 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                    style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} 
                     type="number" 
                     required 
                     placeholder="1500.00" 
@@ -225,10 +225,10 @@ export default function APAutomationPage() {
                     onChange={e => setScheduleData({ ...scheduleData, amount: e.target.value })} 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Due Date</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Due Date</label>
                   <input 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                    style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} 
                     type="date" 
                     required 
                     value={scheduleData.dueDate} 
@@ -236,7 +236,7 @@ export default function APAutomationPage() {
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowScheduleForm(false)}>Cancel</Button>
                 <Button type="submit">Schedule Payment</Button>
               </div>
@@ -247,16 +247,16 @@ export default function APAutomationPage() {
 
       {showRunForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Create Payment Run</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Create Payment Run</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreateRun} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Bank Account</label>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreateRun} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Bank Account</label>
                   <select 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                    style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} 
                     required 
                     value={runData.bankAccountId} 
                     onChange={e => setRunData({ ...runData, bankAccountId: e.target.value })}
@@ -267,10 +267,10 @@ export default function APAutomationPage() {
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Total Amount ($)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Total Amount ($)</label>
                   <input 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                    style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} 
                     type="number" 
                     required 
                     placeholder="25000.00" 
@@ -278,10 +278,10 @@ export default function APAutomationPage() {
                     onChange={e => setRunData({ ...runData, totalAmount: e.target.value })} 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Run Date</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Run Date</label>
                   <input 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
+                    style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} 
                     type="date" 
                     required 
                     value={runData.runDate} 
@@ -289,7 +289,7 @@ export default function APAutomationPage() {
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowRunForm(false)}>Cancel</Button>
                 <Button type="submit">Create Payment Run</Button>
               </div>
@@ -298,18 +298,18 @@ export default function APAutomationPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="frappe-grid-2">
         {/* Payment Schedules */}
-        <Card className="flex flex-col h-full border-primary/20 hover:border-primary/50 transition-colors">
-          <div className="p-6 border-b bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-                <ShieldCheck className="h-6 w-6 text-indigo-700 dark:text-indigo-400" />
+        <Card className="border-primary/20 hover:border-primary/50 transition-colors" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <div className="bg-indigo-100 dark:bg-indigo-900/30" style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-xl)' }}>
+                <ShieldCheck className="text-indigo-700 dark:text-indigo-400" style={{ height: '24px', width: '24px' }} />
               </div>
-              <div className="flex-1 flex justify-between items-center">
+              <div style={{ flex: '1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 className="font-bold text-lg">3-Way PO Matching</h3>
-                  <p className="text-sm text-muted-foreground">Pending verification schedules</p>
+                  <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>3-Way PO Matching</h3>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Pending verification schedules</p>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => setShowScheduleForm(!showScheduleForm)}>
                   <Plus className="h-4 w-4" />
@@ -317,49 +317,49 @@ export default function APAutomationPage() {
               </div>
             </div>
           </div>
-          <div className="p-0 flex-1 overflow-auto max-h-[400px]">
+          <div style={{ flex: '1', overflow: 'auto' }}>
             {schedules.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500 opacity-50" />
+              <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                <CheckCircle2 style={{ marginBottom: 'var(--space-2)', opacity: '0.5' }} />
                 <p>All POs matched and verified.</p>
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <table style={{ width: '100%', fontSize: 'var(--text-sm)' }}>
                 <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3 font-medium">Vendor</th>
-                    <th className="p-3 font-medium">Due Date</th>
-                    <th className="p-3 font-medium text-right">Amount</th>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Vendor</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Due Date</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {schedules.map((sch) => (
-                    <tr key={sch.id} className="border-b hover:bg-muted/30">
-                      <td className="p-3 font-medium">{sch.vendor?.name || 'Unknown'}</td>
-                      <td className="p-3 text-muted-foreground">{new Date(sch.dueDate).toLocaleDateString()}</td>
-                      <td className="p-3 text-right font-medium">${Number(sch.amount).toFixed(2)}</td>
+                    <tr key={sch.id} className="hover:bg-muted/30" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>{sch.vendor?.name || 'Unknown'}</td>
+                      <td style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>{new Date(sch.dueDate).toLocaleDateString()}</td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 'var(--weight-medium)' }}>${Number(sch.amount).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
           </div>
-          <div className="p-4 border-t bg-muted/10">
-            <Button variant="outline" className="w-full" onClick={handleRunMatchingEngine}>Run Matching Engine <ArrowRight className="ml-2 h-4 w-4" /></Button>
+          <div style={{ padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <Button variant="outline" style={{ width: '100%' }} onClick={handleRunMatchingEngine}>Run Matching Engine <ArrowRight style={{ marginLeft: 'var(--space-2)' }} /></Button>
           </div>
         </Card>
 
         {/* Payment Runs */}
-        <Card className="flex flex-col h-full border-primary/20 hover:border-primary/50 transition-colors">
-          <div className="p-6 border-b bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                <CreditCard className="h-6 w-6 text-green-700 dark:text-green-400" />
+        <Card className="border-primary/20 hover:border-primary/50 transition-colors" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <div className="bg-green-100 dark:bg-green-900/30" style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-xl)' }}>
+                <CreditCard className="text-green-700 dark:text-green-400" style={{ height: '24px', width: '24px' }} />
               </div>
-              <div className="flex-1 flex justify-between items-center">
+              <div style={{ flex: '1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 className="font-bold text-lg">Payment Runs</h3>
-                  <p className="text-sm text-muted-foreground">Batch AP wire and check runs</p>
+                  <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>Payment Runs</h3>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Batch AP wire and check runs</p>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => setShowRunForm(!showRunForm)}>
                   <Plus className="h-4 w-4" />
@@ -367,34 +367,34 @@ export default function APAutomationPage() {
               </div>
             </div>
           </div>
-          <div className="p-0 flex-1 overflow-auto max-h-[400px]">
+          <div style={{ flex: '1', overflow: 'auto' }}>
             {runs.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
+              <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                 <p>No active payment runs.</p>
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <table style={{ width: '100%', fontSize: 'var(--text-sm)' }}>
                 <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3 font-medium">Date</th>
-                    <th className="p-3 font-medium">Account</th>
-                    <th className="p-3 font-medium text-right">Total</th>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Date</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Account</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {runs.map((run) => (
-                    <tr key={run.id} className="border-b hover:bg-muted/30">
-                      <td className="p-3">{new Date(run.runDate).toLocaleDateString()}</td>
-                      <td className="p-3 text-muted-foreground">{run.bankAccount?.bankName}</td>
-                      <td className="p-3 text-right font-medium text-primary">${Number(run.totalAmount).toFixed(2)}</td>
+                    <tr key={run.id} className="hover:bg-muted/30" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-3)' }}>{new Date(run.runDate).toLocaleDateString()}</td>
+                      <td style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>{run.bankAccount?.bankName}</td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)' }}>${Number(run.totalAmount).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
           </div>
-          <div className="p-4 border-t bg-muted/10">
-            <Button className="w-full" onClick={() => setShowRunForm(!showRunForm)}>Create Payment Run <Plus className="ml-2 h-4 w-4" /></Button>
+          <div style={{ padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <Button style={{ width: '100%' }} onClick={() => setShowRunForm(!showRunForm)}>Create Payment Run <Plus style={{ marginLeft: 'var(--space-2)' }} /></Button>
           </div>
         </Card>
       </div>

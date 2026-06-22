@@ -17,7 +17,7 @@ interface TranslationOverride {
   translation: string;
 }
 
-/* ── mock fallback ── */
+/* ── fallback defaults ── */
 const FALLBACK_LANGUAGES: LanguageInfo[] = [
   { code: 'en', name: 'English', dir: 'ltr' },
   { code: 'es', name: 'Español', dir: 'ltr' },

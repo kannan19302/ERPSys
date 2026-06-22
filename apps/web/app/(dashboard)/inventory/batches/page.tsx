@@ -67,23 +67,9 @@ export default function BatchesPage() {
         setBatches(bl);
       }
     } catch {
-      setError('Serving local mock fallback registry.');
-      setProducts([
-        { id: 'prod-1', name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' },
-        { id: 'prod-2', name: 'Tactical Kevlar Micro-Weave', sku: 'SKU-KEV-404' }
-      ]);
-      setBatches([
-        {
-          id: 'b-1',
-          batchNo: 'LOT-2026-B',
-          lotNo: 'L-99',
-          quantity: 50,
-          usedQty: 10,
-          status: 'ACTIVE',
-          expiryDate: new Date(Date.now() + 86400000 * 30).toISOString(),
-          product: { name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' }
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setProducts([]);
+      setBatches([]);
     } finally {
       setLoading(false);
     }
@@ -122,28 +108,8 @@ export default function BatchesPage() {
       setNotes('');
       loadData();
     } catch {
-      // Mock local update
-      const selectedProdObj = products.find(p => p.id === selectedProduct);
-      const newMock: Batch = {
-        id: `batch-mock-${Date.now()}`,
-        batchNo: batchCode,
-        lotNo: lotCode,
-        quantity: Number(batchQty),
-        usedQty: 0,
-        status: 'ACTIVE',
-        expiryDate: expiryDate || undefined,
-        product: {
-          name: selectedProdObj?.name || 'Vibranium Ingot',
-          sku: selectedProdObj?.sku || 'SKU-VIB-001'
-        }
-      };
-      setBatches(prev => [newMock, ...prev]);
-      setBatchCode('');
-      setLotCode('');
-      setBatchQty('');
-      setExpiryDate('');
-      setSupplierBatch('');
-      setNotes('');
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     }
   };
 

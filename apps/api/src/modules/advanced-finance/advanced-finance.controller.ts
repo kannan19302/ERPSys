@@ -305,4 +305,27 @@ export class AdvancedFinanceController {
     return this.financeService.createTreasuryTransaction(req.user.tenantId, req.user.orgId || '', body);
   }
   @Get('inter-company-transfers') async getInterCompanyTransfers(@Req() req: AuthenticatedRequest) { return this.financeService.getInterCompanyTransfers(req.user.tenantId); }
+
+  @Get('currency-revaluations') @Permissions('finance.report.read')
+  async getCurrencyRevaluations(@Req() req: AuthenticatedRequest) { return this.financeService.getCurrencyRevaluations(req.user.tenantId); }
+
+  @Post('currency-revaluations/run') @Permissions('finance.invoice.create')
+  async runCurrencyRevaluation(@Req() req: AuthenticatedRequest, @Body() body: { asOfDate?: string; baseCurrency?: string }) {
+    return this.financeService.runCurrencyRevaluation(req.user.tenantId, req.user.orgId || 'org-system-default', body.asOfDate || new Date().toISOString(), body.baseCurrency || 'USD');
+  }
+
+  @Get('e-invoices') @Permissions('finance.invoice.read')
+  async getEInvoices(@Req() req: AuthenticatedRequest, @Query('invoiceId') invoiceId?: string) {
+    return this.financeService.getEInvoices(req.user.tenantId, invoiceId);
+  }
+
+  @Get('e-invoices/:id') @Permissions('finance.invoice.read')
+  async getEInvoiceById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.financeService.getEInvoiceById(req.user.tenantId, id);
+  }
+
+  @Post('e-invoices/generate') @Permissions('finance.invoice.create')
+  async generateEInvoice(@Req() req: AuthenticatedRequest, @Body() body: { invoiceId: string; format?: string }) {
+    return this.financeService.generateEInvoice(req.user.tenantId, req.user.orgId || 'org-system-default', body.invoiceId, body.format || 'UBL');
+  }
 }

@@ -59,14 +59,9 @@ export default function ProcurementDashboard() {
         setVendorsCount(v.length);
       }
     } catch {
-      setError('Serving local mock fallback registry.');
-      setPos([
-        { id: 'po-1', poNumber: 'PO-2026-001', status: 'APPROVED', orderDate: new Date().toISOString(), vendorName: 'Oscorp Chemical Supply', totalAmount: 2090, currency: 'USD' },
-        { id: 'po-2', poNumber: 'PO-2026-002', status: 'DRAFT', orderDate: new Date().toISOString(), vendorName: 'LexCorp Heavy Industries', totalAmount: 4500, currency: 'USD' }
-      ]);
-      setRfqs([
-        { id: 'rfq-1', rfqNumber: 'RFQ-2026-001', status: 'SENT', quotesCount: 2 }
-      ]);
+      setError('Could not load data. Please try again.');
+      setPos([]);
+      setRfqs([]);
       setVendorsCount(2);
     } finally {
       setLoading(false);
@@ -92,7 +87,7 @@ export default function ProcurementDashboard() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback dashboard)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

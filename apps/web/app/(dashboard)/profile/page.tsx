@@ -155,14 +155,14 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading profile...</div>;
+    return <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading profile...</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto p-4 md:p-8 animate-fade-in-up">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">User Profile</h1>
-        <p className="text-muted-foreground text-sm">Manage your personal information, security, and preferences.</p>
+    <div className="max-w-7xl mx-auto md:p-8 animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', width: '100%', padding: 'var(--space-4)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-semibold)' }}>User Profile</h1>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>Manage your personal information, security, and preferences.</p>
       </div>
 
       {message && (
@@ -174,39 +174,39 @@ export default function ProfilePage() {
       <div className="frappe-grid-2">
         {/* Personal Info */}
         <div className="frappe-card h-fit">
-          <div className="frappe-card-header flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <User size={18} className="text-primary" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <User size={18} style={{ color: 'var(--color-primary)' }} />
               <span>Personal Information</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-normal">
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: 'var(--text-xs)' }}>
               {saveStatus === 'saving' && (
-                <span className="text-muted-foreground flex items-center gap-1">
+                <span style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                   <Loader2 size={12} className="animate-spin text-warning" />
                   Saving...
                 </span>
               )}
               {saveStatus === 'saved' && (
-                <span className="text-success flex items-center gap-1">
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                   <Check size={14} className="text-success" />
                   Saved
                 </span>
               )}
               {saveStatus === 'error' && (
-                <span className="text-danger flex items-center gap-1">
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                   Error
                 </span>
               )}
             </div>
           </div>
-          <div className="frappe-card-body flex flex-col gap-4">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
+              <div style={{ borderRadius: '9999px', backgroundColor: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary)', fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>
                 {user?.firstName?.[0]}{user?.lastName?.[0]}
               </div>
-              <div className="flex flex-col">
-                <button className="frappe-btn frappe-btn-secondary text-xs py-1 px-3">Upload Photo</button>
-                <span className="text-xs text-muted-foreground mt-1">JPG, GIF or PNG. Max size of 800K</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <button style={{ fontSize: 'var(--text-xs)', paddingInline: 'var(--space-3)' }}>Upload Photo</button>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>JPG, GIF or PNG. Max size of 800K</span>
               </div>
             </div>
 
@@ -234,7 +234,7 @@ export default function ProfilePage() {
             <div className="frappe-form-group">
               <label className="frappe-label">Email Address</label>
               <input className="frappe-input bg-muted" defaultValue={user?.email || ''} readOnly />
-              <p className="text-xs text-muted-foreground mt-1">Contact your admin to change your email address.</p>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Contact your admin to change your email address.</p>
             </div>
 
             <div className="frappe-form-group">
@@ -245,7 +245,7 @@ export default function ProfilePage() {
             <hr className="border-border my-2" />
             
             <div className="frappe-form-group">
-              <label className="frappe-label flex items-center gap-2"><Globe size={14}/> Language</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Globe size={14}/> Language</label>
               <select 
                 className="frappe-input" 
                 value={formData.language} 
@@ -261,7 +261,7 @@ export default function ProfilePage() {
               </select>
             </div>
             <div className="frappe-form-group">
-              <label className="frappe-label flex items-center gap-2"><Monitor size={14}/> Theme</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Monitor size={14}/> Theme</label>
               <select 
                 className="frappe-input" 
                 value={formData.theme} 
@@ -284,13 +284,13 @@ export default function ProfilePage() {
         </div>
 
         {/* Security & Authentication */}
-        <div className="flex flex-col gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <div className="frappe-card">
-            <div className="frappe-card-header flex items-center gap-2">
-              <Shield size={18} className="text-primary" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Shield size={18} style={{ color: 'var(--color-primary)' }} />
               Security & Authentication
             </div>
-            <div className="frappe-card-body flex flex-col gap-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div className="frappe-form-group">
                 <label className="frappe-label">Current Password</label>
                 <input 
@@ -335,49 +335,49 @@ export default function ProfilePage() {
 
               <hr className="border-border my-2" />
               
-              <div className="flex items-center justify-between">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <h4 className="text-sm font-semibold flex items-center gap-2"><Smartphone size={16}/> Two-Factor Authentication</h4>
-                  <p className="text-xs text-muted-foreground mt-1">Add an extra layer of security to your account.</p>
+                  <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}><Smartphone size={16}/> Two-Factor Authentication</h4>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Add an extra layer of security to your account.</p>
                 </div>
-                <button className="frappe-btn frappe-btn-primary text-xs py-1 px-3">Enable 2FA</button>
+                <button style={{ fontSize: 'var(--text-xs)', paddingInline: 'var(--space-3)' }}>Enable 2FA</button>
               </div>
             </div>
           </div>
 
           {/* Active Sessions */}
           <div className="frappe-card">
-            <div className="frappe-card-header flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Monitor size={18} className="text-primary" />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <Monitor size={18} style={{ color: 'var(--color-primary)' }} />
                 Active Sessions
               </div>
-              <button className="frappe-btn frappe-btn-secondary text-xs py-1 px-3 flex items-center gap-1">
+              <button style={{ fontSize: 'var(--text-xs)', paddingInline: 'var(--space-3)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 <LogOut size={14} /> Revoke all others
               </button>
             </div>
             <div className="frappe-card-body p-0">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-muted/50 border-b border-border">
+              <table style={{ width: '100%', fontSize: 'var(--text-sm)', textAlign: 'left' }}>
+                <thead style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <tr>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Device</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">IP Address</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Last Active</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                    <th style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text-secondary)' }}>Device</th>
+                    <th style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text-secondary)' }}>IP Address</th>
+                    <th style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text-secondary)' }}>Last Active</th>
+                    <th style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text-secondary)' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-border">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Monitor size={16} className="text-muted-foreground" />
+                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                        <Monitor size={16} style={{ color: 'var(--color-text-secondary)' }} />
                         <span>Windows • Chrome</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs">192.168.1.1</td>
-                    <td className="px-4 py-3">Just now</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success/10 text-success text-xs font-medium">
+                    <td style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>192.168.1.1</td>
+                    <td style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)' }}>Just now</td>
+                    <td style={{ paddingInline: 'var(--space-4)', paddingBlock: 'var(--space-3)' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', paddingInline: 'var(--space-2)', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)' }}>
                         <Check size={12} /> Current
                       </span>
                     </td>

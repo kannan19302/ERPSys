@@ -98,39 +98,8 @@ export default function StockLedgerPage() {
         balanceQty: Number(entry.balanceQty)
       })));
     } catch {
-      setError('Serving local mock fallback registry.');
-      setLedgerEntries([
-        {
-          id: 'sl-1',
-          createdAt: new Date().toISOString(),
-          productId: 'prod-1',
-          warehouseId: 'wh-1',
-          quantity: 45,
-          valuationRate: 8500,
-          balanceQty: 45,
-          voucherType: 'STOCK_ENTRY',
-          voucherNumber: 'STE-2026-00001',
-          voucherId: 'ste-1',
-          batchNumber: 'BAT-VIB-02',
-          product: { name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001', unit: 'KG' },
-          warehouse: { name: 'Schenectady Central Depot', code: 'WH-NY-01' }
-        },
-        {
-          id: 'sl-2',
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-          productId: 'prod-2',
-          warehouseId: 'wh-1',
-          quantity: -2,
-          valuationRate: 450,
-          balanceQty: 10,
-          voucherType: 'STOCK_ENTRY',
-          voucherNumber: 'STE-2026-00002',
-          voucherId: 'ste-2',
-          serialNumber: 'SN-KEV-99',
-          product: { name: 'Tactical Kevlar Micro-Weave', sku: 'SKU-KEV-404', unit: 'ROLL' },
-          warehouse: { name: 'Schenectady Central Depot', code: 'WH-NY-01' }
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setLedgerEntries([]);
     } finally {
       setLoading(false);
     }
@@ -188,7 +157,7 @@ export default function StockLedgerPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

@@ -307,8 +307,8 @@ export default function CycleCountsPage() {
       {isCreateModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
           <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
-            <div className="frappe-card-header flex items-center justify-between" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
-              <span className="font-semibold text-base">Setup Physical Count Session</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' ,  padding: '12px 16px', display: 'flex', justifyContent: 'space-between'  }}>
+              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Setup Physical Count Session</span>
               <button onClick={() => setIsCreateModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
             </div>
             <div className="frappe-card-body" style={{ padding: '20px' }}>
@@ -324,14 +324,14 @@ export default function CycleCountsPage() {
                   <input type="text" className="frappe-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. Month-end audits" />
                 </div>
 
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center mb-2" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span className="font-semibold text-xs">Products Worksheet List</span>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' ,  display: 'flex', justifyContent: 'space-between'  }}>
+                    <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-xs)' }}>Products Worksheet List</span>
                     <Button variant="outline" type="button" onClick={() => setNewCountItems([...newCountItems, { productId: '', expectedQty: 0 }])} style={{ padding: '4px 8px', fontSize: '11px' }}>Add Product</Button>
                   </div>
                   {newCountItems.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 items-center mb-2" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <select className="frappe-input flex-1" value={item.productId} onChange={e => {
+                    <div key={idx} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' ,  display: 'flex', gap: '8px', alignItems: 'center'  }}>
+                      <select style={{ flex: '1' }} value={item.productId} onChange={e => {
                         const updated = [...newCountItems];
                         if (updated[idx]) {
                           updated[idx].productId = e.target.value;
@@ -352,7 +352,7 @@ export default function CycleCountsPage() {
                   ))}
                 </div>
 
-                <div className="flex justify-end gap-2 mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' ,  display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px'  }}>
                   <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
                   <Button variant="primary" type="submit">Create worksheet</Button>
                 </div>
@@ -366,8 +366,8 @@ export default function CycleCountsPage() {
       {activeCountSession && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
           <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
-            <div className="frappe-card-header flex items-center justify-between" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
-              <span className="font-semibold text-base">Enter Physical Count Measurements</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' ,  padding: '12px 16px', display: 'flex', justifyContent: 'space-between'  }}>
+              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Enter Physical Count Measurements</span>
               <button onClick={() => setActiveCountSession(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
             </div>
             <div className="frappe-card-body" style={{ padding: '20px' }}>
@@ -409,7 +409,7 @@ export default function CycleCountsPage() {
                         <td style={{ padding: '8px', textAlign: 'right' }}>
                           <input
                             type="text"
-                            className="frappe-input text-xs"
+                            style={{ fontSize: 'var(--text-xs)' }}
                             placeholder="Verification notes..."
                             value={worksheetCounts[item.id]?.remarks || ''}
                             onChange={e => {
@@ -430,7 +430,7 @@ export default function CycleCountsPage() {
                   <input type="text" className="frappe-input" value={worksheetRemarks} onChange={e => setWorksheetRemarks(e.target.value)} placeholder="All counts checked by inventory manager" />
                 </div>
 
-                <div className="flex justify-end gap-2 mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' ,  display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px'  }}>
                   <Button variant="outline" type="button" onClick={() => setActiveCountSession(null)}>Cancel</Button>
                   <Button variant="primary" type="submit">Submit worksheet counts</Button>
                 </div>

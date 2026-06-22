@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Badge, Spinner } from '@unerp/ui';
+import { Card, PageHeader, Button, Badge, Spinner, useToast } from '@unerp/ui';
 import {
   Plus, Trash2, Zap, ToggleLeft, ToggleRight,
   Search, X, Settings, Layers, Activity
@@ -35,31 +35,46 @@ export default function WorkflowsPage() {
   const [formActions, setFormActions] = useState<WorkflowAction[]>([{ type: 'SEND_EMAIL', config: {} }]);
   const [formActive, setFormActive] = useState(true);
 
-  const mockRules: WorkflowRule[] = [
-    { id: 'w1', name: 'Auto-assign high-score leads', entity: 'LEAD', trigger: 'ON_CREATE', conditions: [{ field: 'score', operator: 'greater_than', value: '80' }], actions: [{ type: 'ASSIGN_OWNER', config: { owner: 'senior-rep' } }], active: true, createdAt: new Date().toISOString() },
-    { id: 'w2', name: 'Notify on stage change', entity: 'OPPORTUNITY', trigger: 'ON_STAGE_CHANGE', conditions: [{ field: 'stage', operator: 'equals', value: 'NEGOTIATION' }], actions: [{ type: 'SEND_NOTIFICATION', config: { message: 'Deal moved to negotiation' } }, { type: 'CREATE_TASK', config: { subject: 'Prepare contract' } }], active: true, createdAt: new Date(Date.now() - 86400000).toISOString() },
-    { id: 'w3', name: 'Follow-up on new activities', entity: 'ACTIVITY', trigger: 'ON_CREATE', conditions: [{ field: 'type', operator: 'equals', value: 'MEETING' }], actions: [{ type: 'CREATE_TASK', config: { subject: 'Send meeting notes' } }], active: false, createdAt: new Date(Date.now() - 3 * 86400000).toISOString() },
-  ];
+  const toast = useToast();
+  const authHeaders = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''}` });
 
   useEffect(() => {
     const load = async () => {
-      const token = localStorage.getItem('token');
       try {
-        const res = await fetch('/api/v1/crm/workflows', { headers: { Authorization: `Bearer ${token || ''}` } });
-        if (res.ok) { const d = await res.json(); setRules(Array.isArray(d) ? d : (d?.data || mockRules)); }
-        else throw new Error();
-      } catch { setRules(mockRules); }
-      finally { setLoading(false); }
+        const res = await fetch('/api/v1/crm/workflows', { headers: authHeaders() });
+        if (!res.ok) throw new Error(`Request failed (${res.status})`);
+        const d = await res.json(); setRules(Array.isArray(d) ? d : (d?.data || []));
+      } catch (err) {
+        toast.error('Could not load workflows', err instanceof Error ? err.message : 'Please try again.');
+        setRules([]);
+      } finally { setLoading(false); }
     };
     load();
-  }, []);
+  }, [toast]);
 
-  const toggleActive = (id: string) => {
-    setRules(rules.map(r => r.id === id ? { ...r, active: !r.active } : r));
+  const toggleActive = async (id: string) => {
+    const prev = rules;
+    setRules(rules.map(r => r.id === id ? { ...r, active: !r.active } : r)); // optimistic
+    try {
+      const res = await fetch(`/api/v1/crm/workflows/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+    } catch (err) {
+      setRules(prev); // revert
+      toast.error('Could not update workflow', err instanceof Error ? err.message : 'Please try again.');
+    }
   };
 
-  const deleteRule = (id: string) => {
-    setRules(rules.filter(r => r.id !== id));
+  const deleteRule = async (id: string) => {
+    const prev = rules;
+    setRules(rules.filter(r => r.id !== id)); // optimistic
+    try {
+      const res = await fetch(`/api/v1/crm/workflows/${id}`, { method: 'DELETE', headers: authHeaders() });
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      toast.success('Workflow deleted');
+    } catch (err) {
+      setRules(prev); // revert
+      toast.error('Could not delete workflow', err instanceof Error ? err.message : 'Please try again.');
+    }
   };
 
   const resetForm = () => {
@@ -78,15 +93,15 @@ export default function WorkflowsPage() {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify(body),
       });
-      if (res.ok) {
-        const created = await res.json();
-        setRules([created, ...rules]);
-      } else throw new Error();
-    } catch {
-      const newRule: WorkflowRule = { id: `w-${Date.now()}`, ...body, createdAt: new Date().toISOString() };
-      setRules([newRule, ...rules]);
+      if (!res.ok) throw new Error(`Save failed (${res.status})`);
+      const created = await res.json();
+      setRules([created, ...rules]);
+      toast.success('Workflow created', `"${formName}" is now active.`);
+      setIsModalOpen(false); resetForm();
+    } catch (err) {
+      toast.error('Could not create workflow', err instanceof Error ? err.message : 'Please try again.');
     } finally {
-      setSubmitting(false); setIsModalOpen(false); resetForm();
+      setSubmitting(false);
     }
   };
 

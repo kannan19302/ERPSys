@@ -59,25 +59,8 @@ export default function WarehousesPage() {
       const wList = Array.isArray(data) ? data : (data?.data || []);
       setWarehouses(wList);
     } catch {
-      setError('Serving local mock fallback registry.');
-      setWarehouses([
-        {
-          id: 'wh-1',
-          code: 'WH-NY-01',
-          name: 'Schenectady Central Depot',
-          address: '404 Industrial Blvd, Schenectady, NY',
-          isActive: true,
-          _count: { inventoryItems: 12 }
-        },
-        {
-          id: 'wh-2',
-          code: 'WH-CA-02',
-          name: 'Silicon Valley Logistics Hub',
-          address: '101 Innovation Way, San Jose, CA',
-          isActive: true,
-          _count: { inventoryItems: 5 }
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setWarehouses([]);
     } finally {
       setLoading(false);
     }
@@ -152,26 +135,9 @@ export default function WarehousesPage() {
         fetchData();
       }, 1000);
     } catch (err: any) {
-      // Fallback local updates for mock evaluations
-      setModalSuccess(true);
-      const mockW: WarehouseData = {
-        id: editId || `wh-mock-${Date.now()}`,
-        name,
-        code,
-        address,
-        isActive,
-        _count: { inventoryItems: editId ? (warehouses.find(w => w.id === editId)?._count?.inventoryItems || 0) : 0 }
-      };
-
-      if (editId) {
-        setWarehouses(prev => prev.map(w => w.id === editId ? mockW : w));
-      } else {
-        setWarehouses(prev => [...prev, mockW]);
-      }
-
-      setTimeout(() => {
-        setIsModalOpen(false);
-      }, 1000);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -206,7 +172,7 @@ export default function WarehousesPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

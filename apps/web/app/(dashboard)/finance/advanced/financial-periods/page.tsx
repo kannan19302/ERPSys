@@ -82,43 +82,43 @@ export default function FinancialPeriodsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (loading) return <div style={{ padding: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin h-8 w-8" style={{ color: 'var(--color-primary)' }} /></div>;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Financial Periods</h1>
-          <p className="text-muted-foreground mt-1">Manage period-end close workflows and lock transactions.</p>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}>Financial Periods</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Manage period-end close workflows and lock transactions.</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus style={{ marginRight: 'var(--space-2)' }} />
           New Period
         </Button>
       </div>
 
       {showForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Create New Financial Period</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Create New Financial Period</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Period Name (e.g. FY2026-Q1)</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Period Name (e.g. FY2026-Q1)</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Start Date</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" type="date" required value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Start Date</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="date" required value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">End Date</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" type="date" required value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>End Date</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="date" required value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
                 <Button type="submit">Save Period</Button>
               </div>
@@ -127,38 +127,38 @@ export default function FinancialPeriodsPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="frappe-grid-3">
         {periods.map(period => (
           <Card key={period.id} className={period.status === 'CLOSED' ? 'opacity-70 bg-muted/30' : 'border-primary/10 hover:border-primary/30 transition-colors'}>
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Calendar className="h-5 w-5 text-primary" />
+            <div style={{ padding: 'var(--space-6)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+                <div style={{ padding: 'var(--space-2)', backgroundColor: 'var(--color-primary-light)', borderRadius: 'var(--radius-lg)' }}>
+                  <Calendar style={{ height: '20px', width: '20px', color: 'var(--color-primary)' }} />
                 </div>
                 <div className={`px-2 py-1 rounded text-xs font-medium ${period.status === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {period.status}
                 </div>
               </div>
-              <h3 className="font-semibold text-lg mb-1">{period.name}</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <h3 style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-lg)', marginBottom: 'var(--space-1)' }}>{period.name}</h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
                 {new Date(period.startDate).toLocaleDateString()} — {new Date(period.endDate).toLocaleDateString()}
               </p>
               <Button 
                 variant={period.status === 'OPEN' ? 'danger' : 'outline'} 
-                className="w-full" 
+                style={{ width: '100%' }} 
                 onClick={() => toggleStatus(period.id, period.status)}
               >
                 {period.status === 'OPEN' ? (
-                  <><Lock className="mr-2 h-4 w-4" /> Close Period</>
+                  <><Lock style={{ marginRight: 'var(--space-2)' }} /> Close Period</>
                 ) : (
-                  <><Unlock className="mr-2 h-4 w-4" /> Reopen Period</>
+                  <><Unlock style={{ marginRight: 'var(--space-2)' }} /> Reopen Period</>
                 )}
               </Button>
             </div>
           </Card>
         ))}
         {periods.length === 0 && !showForm && (
-          <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+          <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)' }}>
             No financial periods found. Create one to get started.
           </div>
         )}

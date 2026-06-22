@@ -77,7 +77,7 @@ export default function PublicBiddingPage() {
       });
       setLinePrices(initialPrices);
     } catch {
-      setError('Serving local mock fallback RFQ invitation.');
+      setError('Could not load data. Please try again.');
       
       // Mock RFQ matching schema
       setRfq({
@@ -103,11 +103,7 @@ export default function PublicBiddingPage() {
         ]
       });
 
-      setVendors([
-        { id: 'v-1', name: 'Apex Metal Solutions' },
-        { id: 'v-2', name: 'LexCorp Heavy Industries' },
-        { id: 'v-3', name: 'Oscorp Chemical Supply' }
-      ]);
+      setVendors([]);
 
       const initialPrices: Record<string, { unitPrice: number; taxRate: number }> = {
         'rfqi-1': { unitPrice: 0, taxRate: 10 },
@@ -172,8 +168,9 @@ export default function PublicBiddingPage() {
       if (!res.ok) throw new Error('Submission failed');
       setSubmittedSuccess(true);
     } catch {
-      // Local mock fallback success
-      setSubmittedSuccess(true);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -241,7 +238,7 @@ export default function PublicBiddingPage() {
         {error && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
             <AlertCircle size={16} />
-            <span>Note: {error} (Serving local mock fallback bid environment)</span>
+            <span>Note: {error}</span>
           </div>
         )}
 

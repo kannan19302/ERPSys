@@ -64,7 +64,7 @@ export default function SystemHealthPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load health data';
       setError(message);
-      setHealth(MOCK_HEALTH);
+      setHealth(null);
     } finally {
       setLoading(false);
       setLastRefresh(new Date());
@@ -102,7 +102,7 @@ export default function SystemHealthPage() {
           borderRadius: 'var(--radius-md)',
           fontSize: 'var(--text-sm)',
         }}>
-          {error} — showing demo data
+          {error}
         </div>
       )}
 

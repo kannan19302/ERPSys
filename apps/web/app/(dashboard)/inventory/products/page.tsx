@@ -108,53 +108,9 @@ export default function InventoryProductsPage() {
         stockQty: stockMap[p.id] !== undefined ? stockMap[p.id] : Math.floor(Math.random() * 50)
       })));
     } catch {
-      setError('Serving local mock fallback registry.');
-      setCategories([
-        { id: 'cat-1', name: 'Minerals', slug: 'minerals' },
-        { id: 'cat-2', name: 'Fabrics', slug: 'fabrics' },
-        { id: 'cat-3', name: 'Services', slug: 'services' }
-      ]);
-      setProducts([
-        {
-          id: 'prod-1',
-          sku: 'SKU-VIB-001',
-          name: 'Refined Vibranium Alloy Ingot',
-          description: 'High-density refined vibranium for energy absorption grids.',
-          type: 'STORABLE',
-          category: 'Minerals',
-          unit: 'KG',
-          costPrice: 8500,
-          sellPrice: 12000,
-          isActive: true,
-          stockQty: 45
-        },
-        {
-          id: 'prod-2',
-          sku: 'SKU-KEV-404',
-          name: 'Tactical Kevlar Micro-Weave',
-          description: 'Ballistic defense grade polymer roll.',
-          type: 'STORABLE',
-          category: 'Fabrics',
-          unit: 'ROLL',
-          costPrice: 450,
-          sellPrice: 750,
-          isActive: true,
-          stockQty: 12
-        },
-        {
-          id: 'prod-3',
-          sku: 'SKU-SVC-CON',
-          name: 'Systems Integration Consulting',
-          description: 'Hourly technology deployment consulting services.',
-          type: 'SERVICE',
-          category: 'Services',
-          unit: 'HRS',
-          costPrice: 0,
-          sellPrice: 150,
-          isActive: true,
-          stockQty: 0
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setCategories([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -205,28 +161,9 @@ export default function InventoryProductsPage() {
         fetchData();
       }, 1200);
     } catch {
-      // Mock local update
-      setModalSuccess(true);
-      const newMockProd: ProductData = {
-        id: `prod-mock-${Date.now()}`,
-        sku,
-        name,
-        description: description || null,
-        type,
-        category: category || 'General',
-        unit,
-        costPrice,
-        sellPrice,
-        isActive: true,
-        stockQty: 0
-      };
-
-      setProducts(prev => [newMockProd, ...prev]);
-
-      setTimeout(() => {
-        setIsProductModalOpen(false);
-        resetProductForm();
-      }, 1200);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -279,7 +216,7 @@ export default function InventoryProductsPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

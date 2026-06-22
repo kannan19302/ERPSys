@@ -116,52 +116,52 @@ export default function BudgetingPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (loading) return <div style={{ padding: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin h-8 w-8" style={{ color: 'var(--color-primary)' }} /></div>;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Budgeting & Planning</h1>
-          <p className="text-muted-foreground mt-1">Cost center budgets, project budgets, and rolling forecast scenarios.</p>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}>Budgeting & Planning</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Cost center budgets, project budgets, and rolling forecast scenarios.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowScenarioForm(!showScenarioForm)}><Plus className="mr-2 h-4 w-4" /> New Scenario</Button>
-          <Button onClick={() => setShowBudgetForm(!showBudgetForm)}><Plus className="mr-2 h-4 w-4" /> New Budget</Button>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <Button variant="outline" onClick={() => setShowScenarioForm(!showScenarioForm)}><Plus style={{ marginRight: 'var(--space-2)' }} /> New Scenario</Button>
+          <Button onClick={() => setShowBudgetForm(!showBudgetForm)}><Plus style={{ marginRight: 'var(--space-2)' }} /> New Budget</Button>
         </div>
       </div>
 
       {showBudgetForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Allocate New Budget</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Allocate New Budget</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreateBudget} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">GL Account</label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required value={budgetData.accountId} onChange={e => setBudgetData({ ...budgetData, accountId: e.target.value })}>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreateBudget} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>GL Account</label>
+                  <select style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required value={budgetData.accountId} onChange={e => setBudgetData({ ...budgetData, accountId: e.target.value })}>
                     <option value="">Select Account</option>
                     {accounts.map(acc => (
                       <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Budget Amount</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="number" required placeholder="50000" value={budgetData.amount} onChange={e => setBudgetData({ ...budgetData, amount: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Budget Amount</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="number" required placeholder="50000" value={budgetData.amount} onChange={e => setBudgetData({ ...budgetData, amount: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Start Date</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="date" required value={budgetData.startDate} onChange={e => setBudgetData({ ...budgetData, startDate: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Start Date</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="date" required value={budgetData.startDate} onChange={e => setBudgetData({ ...budgetData, startDate: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">End Date</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="date" required value={budgetData.endDate} onChange={e => setBudgetData({ ...budgetData, endDate: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>End Date</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="date" required value={budgetData.endDate} onChange={e => setBudgetData({ ...budgetData, endDate: e.target.value })} />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowBudgetForm(false)}>Cancel</Button>
                 <Button type="submit">Allocate Budget</Button>
               </div>
@@ -172,29 +172,29 @@ export default function BudgetingPage() {
 
       {showScenarioForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Create Forecast Scenario</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Create Forecast Scenario</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreateScenario} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Scenario Name</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required placeholder="FY2027 Optimistic Case" value={scenarioData.name} onChange={e => setScenarioData({ ...scenarioData, name: e.target.value })} />
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreateScenario} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Scenario Name</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required placeholder="FY2027 Optimistic Case" value={scenarioData.name} onChange={e => setScenarioData({ ...scenarioData, name: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Description</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Reflects 15% revenue growth projection" value={scenarioData.description} onChange={e => setScenarioData({ ...scenarioData, description: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Description</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} placeholder="Reflects 15% revenue growth projection" value={scenarioData.description} onChange={e => setScenarioData({ ...scenarioData, description: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required value={scenarioData.status} onChange={e => setScenarioData({ ...scenarioData, status: e.target.value })}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Status</label>
+                  <select style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required value={scenarioData.status} onChange={e => setScenarioData({ ...scenarioData, status: e.target.value })}>
                     <option value="DRAFT">DRAFT</option>
                     <option value="ACTIVE">ACTIVE</option>
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowScenarioForm(false)}>Cancel</Button>
                 <Button type="submit">Create Scenario</Button>
               </div>
@@ -203,30 +203,30 @@ export default function BudgetingPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="frappe-grid-3">
         {/* Scenarios Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="flex flex-col border-primary/20">
-            <div className="p-6 border-b bg-muted/20">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-indigo-500" />
-                  <h3 className="font-bold text-lg">Forecast Scenarios</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Card style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <TrendingUp style={{ height: '20px', width: '20px' }} />
+                  <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>Forecast Scenarios</h3>
                 </div>
-                <Button variant="ghost" size="sm" className="h-8 px-2"><Plus className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" style={{ paddingInline: 'var(--space-2)' }}><Plus className="h-4 w-4" /></Button>
               </div>
             </div>
-            <div className="p-4 space-y-3">
+            <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {scenarios.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No scenarios defined.</p>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', textAlign: 'center', paddingBlock: 'var(--space-4)' }}>No scenarios defined.</p>
               ) : (
                 scenarios.map(scn => (
-                  <div key={scn.id} className="p-3 border rounded-lg hover:border-primary/50 cursor-pointer transition-colors bg-card">
-                    <div className="flex justify-between items-start">
-                      <span className="font-medium text-sm">{scn.name}</span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-muted rounded">{scn.status}</span>
+                  <div key={scn.id} className="hover:border-primary/50 transition-colors bg-card" style={{ padding: 'var(--space-3)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span style={{ fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)' }}>{scn.name}</span>
+                      <span style={{ fontWeight: 'var(--weight-bold)', paddingInline: 'var(--space-2)', borderRadius: 'var(--radius-sm)' }}>{scn.status}</span>
                     </div>
-                    {scn.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{scn.description}</p>}
+                    {scn.description && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{scn.description}</p>}
                   </div>
                 ))
               )}
@@ -235,52 +235,52 @@ export default function BudgetingPage() {
         </div>
 
         {/* Budgets Main */}
-        <div className="lg:col-span-2 space-y-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           <Card className="border-primary/20">
-            <div className="p-6 border-b bg-muted/20 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <Target className="h-5 w-5 text-blue-700 dark:text-blue-400" />
+            <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30" style={{ borderRadius: 'var(--radius-lg)' }}>
+                  <Target className="text-blue-700 dark:text-blue-400" style={{ height: '20px', width: '20px' }} />
                 </div>
                 <div>
-                  <h3 className="font-bold">Allocated Budgets</h3>
+                  <h3 style={{ fontWeight: 'var(--weight-bold)' }}>Allocated Budgets</h3>
                 </div>
               </div>
             </div>
-            <div className="p-0 overflow-x-auto">
-              <table className="w-full text-sm">
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', fontSize: 'var(--text-sm)' }}>
                 <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-4 font-medium">Account</th>
-                    <th className="p-4 font-medium">Dimension</th>
-                    <th className="p-4 font-medium">Period</th>
-                    <th className="p-4 font-medium text-right">Amount</th>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
+                    <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>Account</th>
+                    <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>Dimension</th>
+                    <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>Period</th>
+                    <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {budgets.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="p-8 text-center text-muted-foreground">
+                      <td colSpan={4} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                         No budget allocations found.
                       </td>
                     </tr>
                   ) : (
                     budgets.map(b => (
-                      <tr key={b.id} className="border-b hover:bg-muted/30">
-                        <td className="p-4 font-medium">{b.account?.name || 'Unknown Account'}</td>
-                        <td className="p-4 text-muted-foreground">
+                      <tr key={b.id} className="hover:bg-muted/30" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>{b.account?.name || 'Unknown Account'}</td>
+                        <td style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
                           {b.costCenter ? (
-                            <span className="inline-flex items-center gap-1"><Layers className="h-3 w-3"/> {b.costCenter.name}</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}><Layers className="h-3 w-3"/> {b.costCenter.name}</span>
                           ) : b.project ? (
-                            <span className="inline-flex items-center gap-1"><PieChart className="h-3 w-3"/> {b.project.name}</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}><PieChart className="h-3 w-3"/> {b.project.name}</span>
                           ) : (
                             'Company Wide'
                           )}
                         </td>
-                        <td className="p-4 text-xs text-muted-foreground">
+                        <td style={{ padding: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
                           {new Date(b.startDate).toLocaleDateString()} - {new Date(b.endDate).toLocaleDateString()}
                         </td>
-                        <td className="p-4 text-right font-bold text-primary">${Number(b.amount).toLocaleString()}</td>
+                        <td style={{ padding: 'var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-bold)', color: 'var(--color-primary)' }}>${Number(b.amount).toLocaleString()}</td>
                       </tr>
                     ))
                   )}

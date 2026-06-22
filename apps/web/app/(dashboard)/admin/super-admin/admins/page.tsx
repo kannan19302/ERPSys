@@ -51,7 +51,7 @@ export default function AdminUsersListPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load admin users';
       setError(message);
-      setAdmins(MOCK_ADMINS);
+      setAdmins([]);
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export default function AdminUsersListPage() {
           borderRadius: 'var(--radius-md)',
           fontSize: 'var(--text-sm)',
         }}>
-          {error} — showing demo data
+          {error}
         </div>
       )}
 

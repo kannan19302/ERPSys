@@ -49,12 +49,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           {title}
         </span>
         <div
-          style={{
-            padding: 'var(--space-2)',
-            background: 'var(--color-primary-light)',
-            color: 'var(--color-primary)',
-            borderRadius: 'var(--radius-md)',
-          }}
+          style={{ padding: 'var(--space-2)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', borderRadius: 'var(--radius-md)' }}
         >
           <Icon size={18} />
         </div>
@@ -66,13 +61,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
           <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 'var(--weight-semibold)',
-              color: trend === 'up' ? 'var(--color-success)' : 'var(--color-danger)',
-            }}
+            style={{ display: 'inline-flex', alignItems: 'center', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: trend === 'up' ? 'var(--color-success)' : 'var(--color-danger)' }}
           >
             {trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
             {change}
@@ -227,7 +216,7 @@ function DashboardContent() {
       {loadingCustom ? (
         <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading dashboard...</div>
       ) : customDashboard ? (
-        <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', padding: '16px', minHeight: '600px' }}>
+        <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0.05)', padding: '16px', minHeight: '600px' }}>
           <GridLayout
             className="layout"
             layout={customLayout}
@@ -324,22 +313,20 @@ function DashboardContent() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '180px', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
-                    <div className="relative w-[130px] h-[130px] rounded-full flex items-center justify-center" style={{
-                      background: 'conic-gradient(var(--color-primary) 0% 40%, #10b981 40% 70%, #f59e0b 70% 90%, #8b5cf6 90% 100%)'
-                    }}>
-                      <div className="absolute w-[86px] h-[86px] rounded-full flex flex-col justify-center items-center" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+                    <div style={{ position: 'relative', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'conic-gradient(var(--color-primary) 0% 40%, #10b981 40% 70%, #f59e0b 70% 90%, #8b5cf6 90% 100%)' }}>
+                      <div style={{ position: 'absolute', borderRadius: '9999px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--color-bg-elevated)' }}>
                         <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--color-text)' }}>{globalMetrics.totalCustomRecords || 0}</span>
                         <span style={{ fontSize: '9px', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Submissions</span>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1.5 text-xs text-text">
+                    <div style={{ display: 'flex', flexDirection: 'column', fontSize: 'var(--text-xs)' }}>
                       {globalStats.charts.submissionsByApp.slice(0, 4).map((app: any, idx: number) => {
                         const colors = ['var(--color-primary)', '#10b981', '#f59e0b', '#8b5cf6'];
                         const color = colors[idx % colors.length];
                         const pct = globalMetrics.totalCustomRecords > 0 ? Math.round((app.count / globalMetrics.totalCustomRecords) * 100) : 0;
                         return (
-                          <div key={app.appName} className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+                          <div key={app.appName} style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ borderRadius: '9999px', background: color }} />
                             <span>{app.appName} ({pct}%)</span>
                           </div>
                         );
@@ -353,17 +340,17 @@ function DashboardContent() {
                 <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-4)' }}>
                   Monthly Custom Record Submissions
                 </h3>
-                <div className="h-[180px] flex flex-col justify-between pt-2">
-                  <div className="flex-1 flex items-end justify-between px-2 gap-3">
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div style={{ flex: '1', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingInline: 'var(--space-2)', gap: 'var(--space-3)' }}>
                     {(globalStats?.charts?.monthlySubmissionsTrend || []).map((d: any, i: number) => {
                       const maxVal = Math.max(...(globalStats?.charts?.monthlySubmissionsTrend || []).map((x: any) => x.count), 1);
                       return (
-                        <div key={i} className="group flex-1 flex flex-col items-center h-full justify-end relative">
-                          <div className="absolute bottom-full mb-1 bg-text text-card text-[10px] py-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md" style={{ backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
+                        <div key={i} style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}>
+                          <div className="bottom-full bg-text text-card text-[10px] py-1 px-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ position: 'absolute', marginBottom: 'var(--space-1)', borderRadius: 'var(--radius-sm)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow-md)', backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
                             {d.count} records
                           </div>
                           <div
-                            className="w-full rounded-t hover:brightness-110 transition-all cursor-pointer"
+                            className="rounded-t hover:brightness-110 transition-all" style={{ width: '100%', cursor: 'pointer' }}
                             style={{
                               height: `${Math.max(4, (d.count / maxVal) * 90)}%`,
                               background: 'linear-gradient(to top, var(--color-primary-light), var(--color-primary))',
@@ -374,9 +361,9 @@ function DashboardContent() {
                       );
                     })}
                   </div>
-                  <div className="flex justify-between border-t pt-2 text-[10px] text-muted-foreground px-2">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', paddingInline: 'var(--space-2)' }}>
                     {(globalStats?.charts?.monthlySubmissionsTrend || []).map((d: any, i: number) => (
-                      <span key={i} className="w-[10%] text-center">{d.month}</span>
+                      <span key={i} style={{ textAlign: 'center' }}>{d.month}</span>
                     ))}
                   </div>
                 </div>
@@ -385,7 +372,7 @@ function DashboardContent() {
 
             {/* Custom apps catalog */}
             <Card padding="lg">
-              <div className="flex justify-between items-center mb-4">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
                 <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>
                   Custom Applications Workspace
                 </h3>
@@ -403,17 +390,7 @@ function DashboardContent() {
                   {globalStats.customApps.map((app: any) => (
                     <div
                       key={app.id}
-                      style={{
-                        border: '1px solid var(--color-border)',
-                        borderRadius: 'var(--radius-lg)',
-                        background: 'var(--color-bg)',
-                        padding: 'var(--space-4)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 'var(--space-3)',
-                        transition: 'border-color 0.2s ease',
-                        cursor: 'pointer'
-                      }}
+                      style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', background: 'var(--color-bg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', transition: 'border-color 0.2s ease', cursor: 'pointer' }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
                       onClick={() => router.push(`/builder/erp/apps/${app.id}`)}
@@ -422,14 +399,7 @@ function DashboardContent() {
                         <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
                           {app.name}
                         </span>
-                        <span style={{
-                          fontSize: '10px',
-                          fontWeight: 'bold',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          background: app.status === 'ACTIVE' || app.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                          color: app.status === 'ACTIVE' || app.status === 'Active' ? '#10b981' : '#f59e0b'
-                        }}>
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', background: app.status === 'ACTIVE' || app.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: app.status === 'ACTIVE' || app.status === 'Active' ? '#10b981' : '#f59e0b' }}>
                           {app.status}
                         </span>
                       </div>
@@ -477,7 +447,7 @@ function DashboardContent() {
                   {globalStats.recentSubmissions.map((sub: any) => (
                     <div key={sub.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-3)' }}>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>
                             New submission to {sub.schemaName}
                           </span>
@@ -518,21 +488,7 @@ function DashboardContent() {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 <button
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-3)',
-                    padding: 'var(--space-3)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: 'var(--color-text)',
-                    fontWeight: 'var(--weight-medium)',
-                    fontSize: 'var(--text-sm)',
-                    transition: 'all 0.2s ease',
-                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)', fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)', transition: 'all 0.2s ease' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = 'var(--color-primary)';
                     e.currentTarget.style.background = 'var(--color-primary-light)';
@@ -550,21 +506,7 @@ function DashboardContent() {
                 </button>
 
                 <button
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-3)',
-                    padding: 'var(--space-3)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: 'var(--color-text)',
-                    fontWeight: 'var(--weight-medium)',
-                    fontSize: 'var(--text-sm)',
-                    transition: 'all 0.2s ease',
-                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)', fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)', transition: 'all 0.2s ease' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = 'var(--color-primary)';
                     e.currentTarget.style.background = 'var(--color-primary-light)';
@@ -582,21 +524,7 @@ function DashboardContent() {
                 </button>
 
                 <button
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-3)',
-                    padding: 'var(--space-3)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-bg)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: 'var(--color-text)',
-                    fontWeight: 'var(--weight-medium)',
-                    fontSize: 'var(--text-sm)',
-                    transition: 'all 0.2s ease',
-                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)', fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)', transition: 'all 0.2s ease' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = 'var(--color-primary)';
                     e.currentTarget.style.background = 'var(--color-primary-light)';

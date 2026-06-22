@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner, Button, Badge } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Button, Badge, useToast } from '@unerp/ui';
 import { CheckCircle, XCircle, Clock, X, AlertTriangle, Inbox, Search, Filter } from 'lucide-react';
 
 interface ApprovalRequest {
@@ -32,6 +32,7 @@ export default function ApprovalsPage() {
   const [rejectedToday, setRejectedToday] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterEntity, setFilterEntity] = useState<string>('ALL');
+  const toast = useToast();
 
   useEffect(() => { fetchPending(); }, []);
 
@@ -43,10 +44,10 @@ export default function ApprovalsPage() {
       if (res.ok) {
         const data = await res.json();
         setRequests(Array.isArray(data) ? data : data.requests || MOCK_REQUESTS);
-        setApprovedToday(data.approvedToday ?? 3);
-        setRejectedToday(data.rejectedToday ?? 1);
-      } else { setRequests(MOCK_REQUESTS); setApprovedToday(3); setRejectedToday(1); }
-    } catch { setRequests(MOCK_REQUESTS); setApprovedToday(3); setRejectedToday(1); }
+        setApprovedToday(data.approvedToday ?? 0);
+        setRejectedToday(data.rejectedToday ?? 0);
+      } else { setRequests([]); setApprovedToday(0); setRejectedToday(0); }
+    } catch { setRequests([]); setApprovedToday(0); setRejectedToday(0); }
     finally { setLoading(false); }
   };
 
@@ -59,18 +60,23 @@ export default function ApprovalsPage() {
       const endpoint = type === 'approve'
         ? `/api/v1/crm/approval-requests/${request.id}/approve`
         : `/api/v1/crm/approval-requests/${request.id}/reject`;
-      await fetch(endpoint, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify({ comments }),
       });
-    } catch { /* proceed with local update */ }
-    setRequests(prev => prev.filter(r => r.id !== request.id));
-    if (type === 'approve') setApprovedToday(p => p + 1);
-    else setRejectedToday(p => p + 1);
-    setActionModal(null);
-    setComments('');
-    setSubmitting(false);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      setRequests(prev => prev.filter(r => r.id !== request.id));
+      if (type === 'approve') setApprovedToday(p => p + 1);
+      else setRejectedToday(p => p + 1);
+      toast.success(type === 'approve' ? 'Request approved' : 'Request rejected');
+      setActionModal(null);
+      setComments('');
+    } catch (err) {
+      toast.error('Action failed', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const urgentCount = requests.filter(r => {

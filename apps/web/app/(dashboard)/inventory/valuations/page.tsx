@@ -38,29 +38,8 @@ export default function ValuationsPage() {
       setValuationItems(json.products || []);
       setTotalValue(json.totalValue || 0);
     } catch {
-      setError('Serving local mock fallback registry.');
-      setValuationItems([
-        {
-          productId: 'prod-1',
-          sku: 'SKU-VIB-001',
-          name: 'Refined Vibranium Alloy Ingot',
-          quantity: 45,
-          unit: 'KG',
-          costingMethod: 'AVERAGE',
-          unitCost: 8500,
-          value: 382500
-        },
-        {
-          productId: 'prod-2',
-          sku: 'SKU-KEV-404',
-          name: 'Tactical Kevlar Micro-Weave',
-          quantity: 8,
-          unit: 'ROLL',
-          costingMethod: 'AVERAGE',
-          unitCost: 450,
-          value: 3600
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setValuationItems([]);
       setTotalValue(386100);
     } finally {
       setLoading(false);

@@ -53,7 +53,7 @@ export default function TenantsPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load tenants';
       setError(message);
-      setTenants(MOCK_TENANTS);
+      setTenants([]);
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export default function TenantsPage() {
           borderRadius: 'var(--radius-md)',
           fontSize: 'var(--text-sm)',
         }}>
-          {error} — showing demo data
+          {error}
         </div>
       )}
 

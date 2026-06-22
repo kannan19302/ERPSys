@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Badge, Spinner } from '@unerp/ui';
+import { Card, PageHeader, Button, Badge, Spinner, useToast } from '@unerp/ui';
 import {
   Plus, X, Mail, Clock, Users, Layers,
   ChevronUp, ChevronDown, Trash2, Search, Zap
@@ -30,44 +30,7 @@ export default function SequencesPage() {
     { templateId: '', templateName: '', delayDays: 0, sortOrder: 1 },
   ]);
 
-  const mockTemplates: EmailTemplate[] = [
-    { id: 'tpl-1', name: 'Welcome Introduction' },
-    { id: 'tpl-2', name: 'Product Overview' },
-    { id: 'tpl-3', name: 'Case Study Share' },
-    { id: 'tpl-4', name: 'Meeting Request' },
-    { id: 'tpl-5', name: 'Follow-up Nudge' },
-    { id: 'tpl-6', name: 'Final Check-in' },
-  ];
-
-  const mockSequences: Sequence[] = [
-    {
-      id: 's1', name: 'New Lead Nurture', description: 'Automated 4-step sequence for new inbound leads',
-      steps: [
-        { templateId: 'tpl-1', templateName: 'Welcome Introduction', delayDays: 0, sortOrder: 1 },
-        { templateId: 'tpl-2', templateName: 'Product Overview', delayDays: 3, sortOrder: 2 },
-        { templateId: 'tpl-3', templateName: 'Case Study Share', delayDays: 7, sortOrder: 3 },
-        { templateId: 'tpl-4', templateName: 'Meeting Request', delayDays: 10, sortOrder: 4 },
-      ],
-      enrollmentCount: 142, active: true, createdAt: new Date().toISOString(),
-    },
-    {
-      id: 's2', name: 'Re-engagement Campaign', description: 'Win back cold leads with a 3-touch sequence',
-      steps: [
-        { templateId: 'tpl-5', templateName: 'Follow-up Nudge', delayDays: 0, sortOrder: 1 },
-        { templateId: 'tpl-3', templateName: 'Case Study Share', delayDays: 5, sortOrder: 2 },
-        { templateId: 'tpl-6', templateName: 'Final Check-in', delayDays: 14, sortOrder: 3 },
-      ],
-      enrollmentCount: 67, active: true, createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-    {
-      id: 's3', name: 'Post-Demo Follow Up', description: 'Follow up after product demonstrations',
-      steps: [
-        { templateId: 'tpl-5', templateName: 'Follow-up Nudge', delayDays: 1, sortOrder: 1 },
-        { templateId: 'tpl-4', templateName: 'Meeting Request', delayDays: 5, sortOrder: 2 },
-      ],
-      enrollmentCount: 31, active: false, createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    },
-  ];
+  const toast = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -78,17 +41,16 @@ export default function SequencesPage() {
           fetch('/api/v1/crm/sequences', { headers: h }),
           fetch('/api/v1/crm/email-templates', { headers: h }),
         ]);
-        if (seqRes.ok) { const d = await seqRes.json(); setSequences(Array.isArray(d) ? d : (d?.data || mockSequences)); }
-        else throw new Error();
-        if (tplRes.ok) { const d = await tplRes.json(); setTemplates(Array.isArray(d) ? d : (d?.data || mockTemplates)); }
-        else setTemplates(mockTemplates);
-      } catch {
-        setSequences(mockSequences);
-        setTemplates(mockTemplates);
+        if (!seqRes.ok) throw new Error(`Request failed (${seqRes.status})`);
+        const d = await seqRes.json(); setSequences(Array.isArray(d) ? d : (d?.data || []));
+        if (tplRes.ok) { const t = await tplRes.json(); setTemplates(Array.isArray(t) ? t : (t?.data || [])); }
+      } catch (err) {
+        toast.error('Could not load sequences', err instanceof Error ? err.message : 'Please try again.');
+        setSequences([]);
       } finally { setLoading(false); }
     };
     load();
-  }, []);
+  }, [toast]);
 
   const resetForm = () => {
     setFormName(''); setFormDesc('');

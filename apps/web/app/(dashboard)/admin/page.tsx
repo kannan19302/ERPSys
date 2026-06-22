@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       setStats(data?.data || data);
     } catch (err: unknown) {
-      setStats(MOCK_STATS);
+      setStats(null);
     } finally {
       setLoading(false);
     }

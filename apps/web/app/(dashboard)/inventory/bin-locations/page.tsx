@@ -65,23 +65,9 @@ export default function BinLocationsPage() {
         setBinLocations(bins);
       }
     } catch {
-      setError('Serving local mock fallback registry.');
-      setWarehouses([
-        { id: 'wh-1', name: 'Schenectady Central Depot', code: 'WH-NY-01' },
-        { id: 'wh-2', name: 'Silicon Valley Logistics Hub', code: 'WH-CA-02' }
-      ]);
-      setBinLocations([
-        {
-          id: 'bin-1',
-          code: 'A-04-02-01',
-          name: 'Row-4-Shelf-2',
-          zone: 'A',
-          aisle: '04',
-          rack: '02',
-          bin: '01',
-          warehouse: { name: 'Schenectady Central Depot', code: 'WH-NY-01' }
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setWarehouses([]);
+      setBinLocations([]);
     } finally {
       setLoading(false);
     }
@@ -122,30 +108,8 @@ export default function BinLocationsPage() {
       setCapacity('');
       loadData();
     } catch {
-      // Mock local update
-      const targetWh = warehouses.find(w => w.id === selectedWarehouse);
-      const newMock: BinLocation = {
-        id: `bin-mock-${Date.now()}`,
-        code: binCode,
-        name: locationName || undefined,
-        zone: zone || 'A',
-        aisle: aisle || undefined,
-        rack: rack || undefined,
-        bin: binVal || undefined,
-        capacity: capacity ? Number(capacity) : undefined,
-        warehouse: {
-          name: targetWh?.name || 'Schenectady Central Depot',
-          code: targetWh?.code || 'WH-NY-01'
-        }
-      };
-      setBinLocations(prev => [newMock, ...prev]);
-      setBinCode('');
-      setLocationName('');
-      setZone('A');
-      setAisle('');
-      setRack('');
-      setBinVal('');
-      setCapacity('');
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     }
   };
 

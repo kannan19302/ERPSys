@@ -63,32 +63,32 @@ export default function TaxFilingPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (loading) return <div style={{ padding: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin h-8 w-8" style={{ color: 'var(--color-primary)' }} /></div>;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tax Filings & Compliance</h1>
-          <p className="text-muted-foreground mt-1">Generate regulatory compliance payloads and file returns.</p>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}>Tax Filings & Compliance</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Generate regulatory compliance payloads and file returns.</p>
         </div>
         <Button onClick={() => setShowFilingForm(!showFilingForm)}>
-          <Send className="mr-2 h-4 w-4" />
+          <Send style={{ marginRight: 'var(--space-2)' }} />
           Prepare New Return
         </Button>
       </div>
 
       {showFilingForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Prepare Statutory Return</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Prepare Statutory Return</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreateFiling} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Return Type</label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required value={filingData.filingType} onChange={e => setFilingData({ ...filingData, filingType: e.target.value })}>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreateFiling} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Return Type</label>
+                  <select style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required value={filingData.filingType} onChange={e => setFilingData({ ...filingData, filingType: e.target.value })}>
                     <option value="">Select Return Type</option>
                     <option value="GST-3B">GST-3B Returns</option>
                     <option value="GSTR-1">GSTR-1 Sales</option>
@@ -96,16 +96,16 @@ export default function TaxFilingPage() {
                     <option value="TDS-26Q">TDS Section 26Q</option>
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Period Start</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="date" required value={filingData.periodStart} onChange={e => setFilingData({ ...filingData, periodStart: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Period Start</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="date" required value={filingData.periodStart} onChange={e => setFilingData({ ...filingData, periodStart: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Period End</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="date" required value={filingData.periodEnd} onChange={e => setFilingData({ ...filingData, periodEnd: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Period End</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="date" required value={filingData.periodEnd} onChange={e => setFilingData({ ...filingData, periodEnd: e.target.value })} />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowFilingForm(false)}>Cancel</Button>
                 <Button type="submit">Generate Return Draft</Button>
               </div>
@@ -114,53 +114,53 @@ export default function TaxFilingPage() {
         </Card>
       )}
 
-      <Card className="flex flex-col border-primary/20">
-        <div className="p-6 border-b bg-muted/20">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-              <UploadCloud className="h-6 w-6 text-indigo-700 dark:text-indigo-400" />
+      <Card style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <div className="bg-indigo-100 dark:bg-indigo-900/30" style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-xl)' }}>
+              <UploadCloud className="text-indigo-700 dark:text-indigo-400" style={{ height: '24px', width: '24px' }} />
             </div>
             <div>
-              <h3 className="font-bold text-lg">Statutory Filing Register</h3>
-              <p className="text-sm text-muted-foreground">Historical and drafted compliance returns</p>
+              <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>Statutory Filing Register</h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Historical and drafted compliance returns</p>
             </div>
           </div>
         </div>
-        <div className="p-0 overflow-auto">
+        <div style={{ overflow: 'auto' }}>
           {filings.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
+            <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+              <FileText style={{ marginBottom: 'var(--space-4)' }} />
               <p>No statutory filings found for this period.</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table style={{ width: '100%', fontSize: 'var(--text-sm)' }}>
               <thead>
-                <tr className="border-b bg-muted/50 text-left">
-                  <th className="p-4 font-medium">Return Type</th>
-                  <th className="p-4 font-medium">Period</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium text-right">Actions</th>
+                <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
+                  <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>Return Type</th>
+                  <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>Period</th>
+                  <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)' }}>Status</th>
+                  <th style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filings.map((filing) => (
-                  <tr key={filing.id} className="border-b hover:bg-muted/30">
-                    <td className="p-4 font-bold">{filing.filingType}</td>
-                    <td className="p-4 text-muted-foreground">
+                  <tr key={filing.id} className="hover:bg-muted/30" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: 'var(--space-4)', fontWeight: 'var(--weight-bold)' }}>{filing.filingType}</td>
+                    <td style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
                       {new Date(filing.periodStart).toLocaleDateString()} - {new Date(filing.periodEnd).toLocaleDateString()}
                     </td>
-                    <td className="p-4">
+                    <td style={{ padding: 'var(--space-4)' }}>
                       {filing.status === 'FILED' ? (
-                        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md text-xs font-medium">
+                        <span className="dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-1" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-success)', paddingInline: 'var(--space-2)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)' }}>
                           <CheckCircle className="h-3 w-3" /> FILED
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-md text-xs font-medium">
+                        <span className="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 py-1" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', paddingInline: 'var(--space-2)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)' }}>
                           {filing.status}
                         </span>
                       )}
                     </td>
-                    <td className="p-4 text-right">
+                    <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
                       <Button variant="ghost" size="sm" onClick={() => alert(JSON.stringify(filing, null, 2))}>View Payload</Button>
                     </td>
                   </tr>

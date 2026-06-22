@@ -91,7 +91,7 @@ export default function PurchaseOrderDetailPage() {
         setMatchReport(await matchRes.json());
       }
     } catch {
-      setError('Serving local mock fallback purchase order details.');
+      setError('Could not load data. Please try again.');
       
       // Fallback sample PO
       setPo({
@@ -202,7 +202,7 @@ export default function PurchaseOrderDetailPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback PO Details)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

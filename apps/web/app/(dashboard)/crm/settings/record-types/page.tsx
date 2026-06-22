@@ -52,8 +52,8 @@ export default function RecordTypesPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/crm/record-types', { headers: { Authorization: `Bearer ${token || ''}` } });
-      if (res.ok) { setRecordTypes(await res.json()); } else { setRecordTypes(MOCK_RECORD_TYPES); }
-    } catch { setRecordTypes(MOCK_RECORD_TYPES); }
+      if (res.ok) { setRecordTypes(await res.json()); } else { setRecordTypes([]); }
+    } catch { setRecordTypes([]); }
     finally { setLoading(false); }
   };
 

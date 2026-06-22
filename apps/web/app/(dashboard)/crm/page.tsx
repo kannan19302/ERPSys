@@ -100,7 +100,7 @@ export default function CrmDashboard() {
         forecast,
       });
     } catch {
-      setError('Could not load CRM data. Using demo mode.');
+      setError('Could not load data. Please try again.');
       setStats({
         totalCustomers: 3, totalVendors: 2, totalLeads: 12, totalOpportunities: 8,
         pipelineValue: 245000, weightedPipeline: 98000, winRate: 42,

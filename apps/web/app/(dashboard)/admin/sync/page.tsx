@@ -17,7 +17,7 @@ interface SyncEntry {
 
 type FilterTab = 'ALL' | 'PENDING' | 'RECONCILED' | 'CONFLICT';
 
-/* ── mock fallback ── */
+/* ── fallback defaults ── */
 const FALLBACK_ENTRIES: SyncEntry[] = [
   { id: 'sync-1', clientId: 'client-iphone-14-pro', operation: 'CREATE', entityType: 'ServiceTicket', payload: '{"title":"Offline Ticket #1"}', status: 'PENDING', errorMessage: null, createdAt: new Date().toLocaleString() },
   { id: 'sync-2', clientId: 'client-pixel-8', operation: 'UPDATE', entityType: 'StockEntry', payload: '{"qty":10}', status: 'RECONCILED', errorMessage: null, createdAt: new Date(Date.now() - 7200000).toLocaleString() },

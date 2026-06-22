@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class AdvancedFinanceService {
@@ -755,5 +756,262 @@ export class AdvancedFinanceService {
     const transfer = await prisma.interCompanyTransfer.findFirst({ where: { id: transferId, tenantId } });
     if (!transfer) throw new NotFoundException('Transfer not found');
     return prisma.interCompanyTransfer.update({ where: { id: transferId }, data: { status: 'APPROVED' } });
+  }
+
+  // ════════════════════════════════════════════════
+  // TIER 5: Foreign-Currency Revaluation (unrealized FX gain/loss)
+  // ════════════════════════════════════════════════
+
+  /** Latest rate converting `from` -> `to` as of a date, using direct or inverse exchange-rate rows. */
+  private async getRateAsOf(tenantId: string, from: string, to: string, asOf: Date): Promise<number | null> {
+    if (from === to) return 1;
+    const direct = await prisma.exchangeRate.findFirst({ where: { tenantId, fromCurrency: from, toCurrency: to, date: { lte: asOf } }, orderBy: { date: 'desc' } });
+    if (direct) return Number(direct.rate);
+    const inverse = await prisma.exchangeRate.findFirst({ where: { tenantId, fromCurrency: to, toCurrency: from, date: { lte: asOf } }, orderBy: { date: 'desc' } });
+    if (inverse && Number(inverse.rate) !== 0) return 1 / Number(inverse.rate);
+    return null;
+  }
+
+  /** Find an account by code, or create it if absent (used for FX adjustment accounts). */
+  private async ensureAccount(tenantId: string, orgId: string, code: string, name: string, type: string) {
+    const existing = await prisma.account.findFirst({ where: { tenantId, orgId, code } });
+    if (existing) return existing;
+    return prisma.account.create({ data: { tenantId, orgId, code, name, type } });
+  }
+
+  async getCurrencyRevaluations(tenantId: string) {
+    return prisma.currencyRevaluation.findMany({ where: { tenantId }, orderBy: { asOfDate: 'desc' }, take: 100 });
+  }
+
+  /**
+   * Revalue open foreign-currency AR balances to the base currency at the as-of rate,
+   * recognising unrealized FX gain/loss and posting an adjusting journal.
+   */
+  async runCurrencyRevaluation(tenantId: string, orgId: string, asOfDate: string, baseCurrency = 'USD') {
+    let resolvedOrgId = orgId;
+    if (!orgId || orgId === 'org-system-default') {
+      const org = await prisma.organization.findFirst({ where: { tenantId } });
+      if (!org) throw new BadRequestException('No Organization found.');
+      resolvedOrgId = org.id;
+    }
+    const asOf = new Date(asOfDate);
+    const base = (baseCurrency || 'USD').toUpperCase();
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        tenantId, orgId: resolvedOrgId,
+        status: { notIn: ['PAID', 'VOID', 'CANCELLED', 'DRAFT'] },
+        currency: { not: base },
+      },
+    });
+
+    const lines: Array<Record<string, unknown>> = [];
+    let totalGain = 0, totalLoss = 0;
+    // `delta` on each line is gain-positive (favourable FX movement increases it).
+    let arNet = 0, apNet = 0; // signed base-currency revaluation per sub-ledger
+
+    // --- AR: open foreign-currency sales invoices (asset; gain when current rate rises) ---
+    for (const inv of invoices) {
+      const outstanding = Number(inv.totalAmount) - Number(inv.paidAmount);
+      if (outstanding <= 0) continue;
+      const bookRate = Number(inv.exchangeRate) || 1;
+      const currentRate = await this.getRateAsOf(tenantId, inv.currency, base, asOf);
+      if (currentRate === null) continue; // no rate available — cannot revalue this balance
+      const bookValue = outstanding * bookRate;
+      const currentValue = outstanding * currentRate;
+      const delta = Number((currentValue - bookValue).toFixed(2));
+      if (Math.abs(delta) < 0.01) continue;
+      arNet += delta;
+      if (delta > 0) totalGain += delta; else totalLoss += Math.abs(delta);
+      lines.push({
+        source: 'AR_INVOICE', ref: inv.invoiceNumber, invoiceId: inv.id, currency: inv.currency,
+        foreignAmount: outstanding, bookRate, currentRate,
+        bookValue: Number(bookValue.toFixed(2)), currentValue: Number(currentValue.toFixed(2)), delta,
+      });
+    }
+
+    // --- AP: open foreign-currency purchase orders (liability; gain when current rate falls) ---
+    const purchaseOrders = await prisma.purchaseOrder.findMany({
+      where: {
+        tenantId, orgId: resolvedOrgId,
+        status: { notIn: ['DRAFT', 'CANCELLED'] },
+        currency: { not: base },
+      },
+    });
+    for (const po of purchaseOrders) {
+      const outstanding = Number(po.totalAmount) - Number(po.paidAmount);
+      if (outstanding <= 0) continue;
+      const bookRate = Number(po.exchangeRate) || 1;
+      const currentRate = await this.getRateAsOf(tenantId, po.currency, base, asOf);
+      if (currentRate === null) continue;
+      const bookValue = outstanding * bookRate;
+      const currentValue = outstanding * currentRate;
+      // Liability: owing more base currency (currentValue > bookValue) is a loss, so gain = book - current.
+      const delta = Number((bookValue - currentValue).toFixed(2));
+      if (Math.abs(delta) < 0.01) continue;
+      apNet += delta;
+      if (delta > 0) totalGain += delta; else totalLoss += Math.abs(delta);
+      lines.push({
+        source: 'AP_PO', ref: po.poNumber, purchaseOrderId: po.id, currency: po.currency,
+        foreignAmount: outstanding, bookRate, currentRate,
+        bookValue: Number(bookValue.toFixed(2)), currentValue: Number(currentValue.toFixed(2)), delta,
+      });
+    }
+
+    arNet = Number(arNet.toFixed(2));
+    apNet = Number(apNet.toFixed(2));
+    const netAdjustment = Number((totalGain - totalLoss).toFixed(2));
+    const runNumber = `REVAL-${asOf.toISOString().slice(0, 10)}-${Date.now().toString().slice(-6)}`;
+
+    let journalId: string | null = null;
+    if (Math.abs(netAdjustment) >= 0.01) {
+      // Sub-ledger reserves offset the unrealized gain/loss P&L account; net is posted to gain or loss.
+      const arReserve = await this.ensureAccount(tenantId, resolvedOrgId, '1190', 'FX Revaluation Reserve (AR)', 'ASSET');
+      const apReserve = await this.ensureAccount(tenantId, resolvedOrgId, '2190', 'FX Revaluation Reserve (AP)', 'LIABILITY');
+      const fxGain = await this.ensureAccount(tenantId, resolvedOrgId, '4900', 'Unrealized FX Gain', 'REVENUE');
+      const fxLoss = await this.ensureAccount(tenantId, resolvedOrgId, '5900', 'Unrealized FX Loss', 'EXPENSE');
+      const entries: { accountId: string; debit: number; credit: number; description?: string }[] = [];
+      if (Math.abs(arNet) >= 0.01) {
+        entries.push({ accountId: arReserve.id, debit: arNet > 0 ? arNet : 0, credit: arNet < 0 ? -arNet : 0, description: 'AR FX revaluation' });
+      }
+      if (Math.abs(apNet) >= 0.01) {
+        // Gain on AP (apNet>0) reduces the liability reserve -> debit; loss -> credit.
+        entries.push({ accountId: apReserve.id, debit: apNet > 0 ? apNet : 0, credit: apNet < 0 ? -apNet : 0, description: 'AP FX revaluation' });
+      }
+      const amount = Math.abs(netAdjustment);
+      if (netAdjustment > 0) entries.push({ accountId: fxGain.id, debit: 0, credit: amount, description: 'Unrealized FX gain' });
+      else entries.push({ accountId: fxLoss.id, debit: amount, credit: 0, description: 'Unrealized FX loss' });
+      const journal = await this.createJournal(tenantId, resolvedOrgId, {
+        entryNumber: runNumber, notes: `FX revaluation as of ${asOf.toISOString().slice(0, 10)}`, entries,
+      });
+      journalId = journal?.id ?? null;
+    }
+
+    const revaluation = await prisma.currencyRevaluation.create({
+      data: {
+        tenantId, orgId: resolvedOrgId, runNumber, asOfDate: asOf, baseCurrency: base, status: 'POSTED',
+        totalGain: new Prisma.Decimal(totalGain), totalLoss: new Prisma.Decimal(totalLoss),
+        netAdjustment: new Prisma.Decimal(netAdjustment), journalId, lines: lines as never, createdBy: 'system',
+      },
+    });
+    await this.logFinanceAudit(prisma, tenantId, 'CurrencyRevaluation', revaluation.id, 'CREATE', { netAdjustment, items: lines.length }, 'system');
+
+    return {
+      id: revaluation.id, runNumber, asOfDate: asOf.toISOString(), baseCurrency: base,
+      itemsRevalued: lines.length, arNet, apNet,
+      totalGain: Number(totalGain.toFixed(2)), totalLoss: Number(totalLoss.toFixed(2)),
+      netAdjustment, journalId, lines,
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // TIER 5: E-Invoicing (UBL 2.1 / PEPPOL BIS / India GST IRN)
+  // ════════════════════════════════════════════════
+
+  private escapeXml(value: unknown): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+
+  async getEInvoices(tenantId: string, invoiceId?: string) {
+    return prisma.eInvoice.findMany({
+      where: { tenantId, ...(invoiceId ? { invoiceId } : {}) },
+      orderBy: { createdAt: 'desc' }, take: 200,
+    });
+  }
+
+  async getEInvoiceById(tenantId: string, id: string) {
+    const doc = await prisma.eInvoice.findFirst({ where: { id, tenantId } });
+    if (!doc) throw new NotFoundException('E-invoice not found');
+    return doc;
+  }
+
+  /**
+   * Generate a structured legal e-invoice from a sales Invoice.
+   * Supports UBL 2.1 / PEPPOL BIS XML and India GST (IRN + signed QR payload).
+   */
+  async generateEInvoice(tenantId: string, orgId: string, invoiceId: string, format = 'UBL') {
+    const fmt = (format || 'UBL').toUpperCase();
+    if (!['UBL', 'PEPPOL', 'GST_IRN'].includes(fmt)) throw new BadRequestException(`Unsupported e-invoice format: ${fmt}`);
+
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId }, include: { customer: true, lineItems: true },
+    });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+    if (invoice.status === 'DRAFT') throw new BadRequestException('Cannot issue an e-invoice for a draft invoice.');
+
+    const supplier = await prisma.organization.findFirst({ where: { id: invoice.orgId, tenantId } })
+      ?? await prisma.organization.findFirst({ where: { tenantId } });
+    const e = (v: unknown) => this.escapeXml(v);
+    const taxableValue = Number(invoice.subtotal) - Number(invoice.discountAmount);
+
+    let documentXml: string;
+    let irn: string | null = null;
+    let qrPayload: string | null = null;
+
+    if (fmt === 'GST_IRN') {
+      // India GST: IRN is the SHA-256 hash of supplier GSTIN + document number + financial year.
+      const fy = (() => {
+        const d = new Date(invoice.issueDate); const y = d.getFullYear(); const m = d.getMonth() + 1;
+        return m >= 4 ? `${y}-${String((y + 1) % 100).padStart(2, '0')}` : `${y - 1}-${String(y % 100).padStart(2, '0')}`;
+      })();
+      const gstin = supplier?.taxId || 'URP';
+      irn = createHash('sha256').update(`${gstin}${invoice.invoiceNumber}${fy}`).digest('hex');
+      qrPayload = [`SellerGstin:${gstin}`, `BuyerGstin:${invoice.customer?.taxId || 'URP'}`, `DocNo:${invoice.invoiceNumber}`,
+        `DocDt:${new Date(invoice.issueDate).toISOString().slice(0, 10)}`, `TotInvVal:${Number(invoice.totalAmount).toFixed(2)}`,
+        `Irn:${irn}`].join(';');
+      documentXml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<GstInvoice version="1.1">',
+        `  <Irn>${e(irn)}</Irn>`,
+        `  <DocDtls><Typ>INV</Typ><No>${e(invoice.invoiceNumber)}</No><Dt>${e(new Date(invoice.issueDate).toISOString().slice(0, 10))}</Dt></DocDtls>`,
+        `  <SellerDtls><Gstin>${e(gstin)}</Gstin><LglNm>${e(supplier?.legalName || supplier?.name)}</LglNm></SellerDtls>`,
+        `  <BuyerDtls><Gstin>${e(invoice.customer?.taxId || 'URP')}</Gstin><LglNm>${e(invoice.customer?.name)}</LglNm></BuyerDtls>`,
+        `  <ValDtls><AssVal>${taxableValue.toFixed(2)}</AssVal><TotInvVal>${Number(invoice.totalAmount).toFixed(2)}</TotInvVal></ValDtls>`,
+        '  <ItemList>',
+        ...invoice.lineItems.map((li, i) => `    <Item><SlNo>${i + 1}</SlNo><PrdDesc>${e(li.description)}</PrdDesc><Qty>${Number(li.quantity)}</Qty><UnitPrice>${Number(li.unitPrice).toFixed(2)}</UnitPrice><TotAmt>${Number(li.totalAmount).toFixed(2)}</TotAmt><GstRt>${Number(li.taxRate)}</GstRt></Item>`),
+        '  </ItemList>',
+        '</GstInvoice>',
+      ].join('\n');
+    } else {
+      // UBL 2.1 / PEPPOL BIS Billing 3.0
+      const profile = fmt === 'PEPPOL' ? 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0' : 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2';
+      documentXml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">',
+        `  <cbc:CustomizationID>${e(profile)}</cbc:CustomizationID>`,
+        `  <cbc:ID>${e(invoice.invoiceNumber)}</cbc:ID>`,
+        `  <cbc:IssueDate>${e(new Date(invoice.issueDate).toISOString().slice(0, 10))}</cbc:IssueDate>`,
+        `  <cbc:DueDate>${e(new Date(invoice.dueDate).toISOString().slice(0, 10))}</cbc:DueDate>`,
+        '  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>',
+        `  <cbc:DocumentCurrencyCode>${e(invoice.currency)}</cbc:DocumentCurrencyCode>`,
+        `  <cac:AccountingSupplierParty><cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>${e(supplier?.legalName || supplier?.name)}</cbc:RegistrationName>${supplier?.taxId ? `<cbc:CompanyID>${e(supplier.taxId)}</cbc:CompanyID>` : ''}</cac:PartyLegalEntity></cac:Party></cac:AccountingSupplierParty>`,
+        `  <cac:AccountingCustomerParty><cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>${e(invoice.customer?.name)}</cbc:RegistrationName>${invoice.customer?.taxId ? `<cbc:CompanyID>${e(invoice.customer.taxId)}</cbc:CompanyID>` : ''}</cac:PartyLegalEntity></cac:Party></cac:AccountingCustomerParty>`,
+        `  <cac:TaxTotal><cbc:TaxAmount currencyID="${e(invoice.currency)}">${Number(invoice.taxAmount).toFixed(2)}</cbc:TaxAmount></cac:TaxTotal>`,
+        `  <cac:LegalMonetaryTotal><cbc:LineExtensionAmount currencyID="${e(invoice.currency)}">${taxableValue.toFixed(2)}</cbc:LineExtensionAmount><cbc:TaxInclusiveAmount currencyID="${e(invoice.currency)}">${Number(invoice.totalAmount).toFixed(2)}</cbc:TaxInclusiveAmount><cbc:PayableAmount currencyID="${e(invoice.currency)}">${Number(invoice.totalAmount).toFixed(2)}</cbc:PayableAmount></cac:LegalMonetaryTotal>`,
+        ...invoice.lineItems.map((li, i) => [
+          '  <cac:InvoiceLine>',
+          `    <cbc:ID>${i + 1}</cbc:ID>`,
+          `    <cbc:InvoicedQuantity>${Number(li.quantity)}</cbc:InvoicedQuantity>`,
+          `    <cbc:LineExtensionAmount currencyID="${e(invoice.currency)}">${Number(li.totalAmount).toFixed(2)}</cbc:LineExtensionAmount>`,
+          `    <cac:Item><cbc:Name>${e(li.description)}</cbc:Name></cac:Item>`,
+          `    <cac:Price><cbc:PriceAmount currencyID="${e(invoice.currency)}">${Number(li.unitPrice).toFixed(2)}</cbc:PriceAmount></cac:Price>`,
+          '  </cac:InvoiceLine>',
+        ].join('\n')),
+        '</Invoice>',
+      ].join('\n');
+    }
+
+    const data = {
+      tenantId, orgId: invoice.orgId, invoiceId: invoice.id, format: fmt, status: 'GENERATED',
+      irn, qrPayload, documentXml, createdBy: 'system',
+    };
+    const doc = await prisma.eInvoice.upsert({
+      where: { tenantId_invoiceId_format: { tenantId, invoiceId: invoice.id, format: fmt } },
+      create: data, update: { documentXml, irn, qrPayload, status: 'GENERATED' },
+    });
+    await this.logFinanceAudit(prisma, tenantId, 'EInvoice', doc.id, 'GENERATE', { format: fmt, invoiceNumber: invoice.invoiceNumber }, 'system');
+    return doc;
   }
 }

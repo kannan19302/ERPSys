@@ -51,16 +51,9 @@ export default function OpportunitiesPage() {
             if (oppsRes.ok) setOpportunities(await oppsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
             if (customersRes.ok) setCustomers((await customersRes.json()).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
         } catch {
-            setError('Using demo data');
-            setCustomers([{ id: 'c1', name: 'Stark Industries' }, { id: 'c2', name: 'Wayne Enterprises' }]);
-            setOpportunities([
-                { id: 'o1', name: 'Arc Reactor Supply Deal', stage: 'PROSPECTING', amount: 50000, probability: 20, customer: { id: 'c1', name: 'Stark Industries' }, _count: { activities: 3 } },
-                { id: 'o2', name: 'Batmobile Fleet Upgrade', stage: 'QUALIFICATION', amount: 120000, probability: 35, customer: { id: 'c2', name: 'Wayne Enterprises' }, expectedCloseDate: '2026-08-15', _count: { activities: 5 } },
-                { id: 'o3', name: 'AI Security System', stage: 'PROPOSAL', amount: 75000, probability: 60, customer: { id: 'c1', name: 'Stark Industries' }, _count: { activities: 2 } },
-                { id: 'o4', name: 'Data Center Cooling', stage: 'NEGOTIATION', amount: 200000, probability: 80, customer: { id: 'c2', name: 'Wayne Enterprises' }, expectedCloseDate: '2026-07-01', _count: { activities: 8 } },
-                { id: 'o5', name: 'Drone Fleet Maintenance', stage: 'CLOSED_WON', amount: 35000, probability: 100, customer: { id: 'c1', name: 'Stark Industries' }, _count: { activities: 6 } },
-                { id: 'o6', name: 'Solar Grid Project', stage: 'CLOSED_LOST', amount: 90000, probability: 0, customer: { id: 'c2', name: 'Wayne Enterprises' }, _count: { activities: 4 } },
-            ]);
+            setError('Could not load data. Please try again.');
+            setCustomers([]);
+            setOpportunities([]);
         } finally { setLoading(false); }
     };
 

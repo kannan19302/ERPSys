@@ -77,40 +77,40 @@ export default function BankAccountsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (loading) return <div style={{ padding: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin h-8 w-8" style={{ color: 'var(--color-primary)' }} /></div>;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Bank Accounts</h1>
-          <p className="text-muted-foreground mt-1">Manage treasury, bank accounts, and petty cash.</p>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}>Bank Accounts</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Manage treasury, bank accounts, and petty cash.</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus style={{ marginRight: 'var(--space-2)' }} />
           Add Bank Account
         </Button>
       </div>
 
       {showForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Register New Bank Account</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Register New Bank Account</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">Bank Name</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" required value={formData.bankName} onChange={e => setFormData({ ...formData, bankName: e.target.value })} placeholder="Chase Bank" />
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Bank Name</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required value={formData.bankName} onChange={e => setFormData({ ...formData, bankName: e.target.value })} placeholder="Chase Bank" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">Account Number / IBAN</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" required value={formData.accountNumber} onChange={e => setFormData({ ...formData, accountNumber: e.target.value })} placeholder="1234567890" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Account Number / IBAN</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required value={formData.accountNumber} onChange={e => setFormData({ ...formData, accountNumber: e.target.value })} placeholder="1234567890" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">Currency</label>
-                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value })} className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Currency</label>
+                  <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value })} className="h-10 border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
                     <option value="">Select Currency</option>
                     
                       <option value="USD">USD - US Dollar</option>
@@ -120,9 +120,9 @@ export default function BankAccountsPage() {
                     
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">Linked GL Account</label>
-                  <select value={formData.accountId} onChange={(e) => setFormData({ ...formData, accountId: e.target.value })} className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Linked GL Account</label>
+                  <select value={formData.accountId} onChange={(e) => setFormData({ ...formData, accountId: e.target.value })} className="h-10 border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
                     <option value="">Select GL Account</option>
                     
                       {glAccounts.map(acc => (
@@ -132,7 +132,7 @@ export default function BankAccountsPage() {
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-4">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', paddingTop: 'var(--space-4)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
                 <Button type="submit">Save Account</Button>
               </div>
@@ -141,28 +141,28 @@ export default function BankAccountsPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="frappe-grid-3">
         {bankAccounts.map(account => {
           const glAcc = glAccounts.find(g => g.id === account.accountId);
           return (
             <Card key={account.id} className="hover:border-primary/30 transition-colors">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                    <Landmark className="h-6 w-6 text-green-700 dark:text-green-400" />
+              <div style={{ padding: 'var(--space-6)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
+                  <div className="bg-green-100 dark:bg-green-900/30" style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-xl)' }}>
+                    <Landmark className="text-green-700 dark:text-green-400" style={{ height: '24px', width: '24px' }} />
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-muted-foreground">{account.currency}</p>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>{account.currency}</p>
                     <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${account.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                       {account.status}
                     </div>
                   </div>
                 </div>
-                <h3 className="font-bold text-xl">{account.bankName}</h3>
-                <p className="font-mono text-muted-foreground mt-1 tracking-widest text-sm">**** {account.accountNumber.slice(-4) || account.accountNumber}</p>
+                <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-xl)' }}>{account.bankName}</h3>
+                <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', fontSize: 'var(--text-sm)' }}>**** {account.accountNumber.slice(-4) || account.accountNumber}</p>
                 
-                <div className="mt-6 pt-4 border-t flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">GL: {glAcc ? glAcc.code : 'Unlinked'}</span>
+                <div style={{ paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--text-sm)' }}>
+                  <span style={{ color: 'var(--color-text-secondary)' }}>GL: {glAcc ? glAcc.code : 'Unlinked'}</span>
                   <Button variant="ghost" className="px-0 h-auto">View Ledger <ArrowRight className="ml-1 h-3 w-3" /></Button>
                 </div>
               </div>
@@ -171,10 +171,10 @@ export default function BankAccountsPage() {
         })}
         
         {bankAccounts.length === 0 && !showForm && (
-          <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
-            <Wallet className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
-            <h3 className="text-lg font-medium text-foreground">No bank accounts setup</h3>
-            <p className="text-sm">Add your corporate bank accounts to start managing treasury.</p>
+          <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)' }}>
+            <Wallet style={{ marginBottom: 'var(--space-3)' }} />
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-medium)' }}>No bank accounts setup</h3>
+            <p style={{ fontSize: 'var(--text-sm)' }}>Add your corporate bank accounts to start managing treasury.</p>
           </div>
         )}
       </div>

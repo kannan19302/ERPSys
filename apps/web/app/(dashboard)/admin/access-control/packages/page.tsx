@@ -72,7 +72,7 @@ export default function PackagesTab() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch access packages';
       setError(msg);
-      setPackages(MOCK_PACKAGES);
+      setPackages([]);
     } finally {
       setLoading(false);
     }

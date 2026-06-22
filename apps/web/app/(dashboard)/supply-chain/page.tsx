@@ -55,29 +55,8 @@ export default function SupplyChainPage() {
       const data = await res.json();
       setShipments(Array.isArray(data) ? data : (data?.data || []));
     } catch {
-      setError('Serving local mock fallback registry.');
-      setShipments([
-        {
-          id: 'shp-1',
-          shipmentNumber: 'SHP-2026-100',
-          type: 'OUTBOUND',
-          status: 'IN_TRANSIT',
-          carrierName: 'FedEx',
-          trackingNumber: 'FDX-99887766',
-          weight: 15.5,
-          estimatedDelivery: new Date(Date.now() + 86400000 * 2).toISOString() // in 2 days
-        },
-        {
-          id: 'shp-2',
-          shipmentNumber: 'SHP-2026-101',
-          type: 'INBOUND',
-          status: 'PENDING',
-          carrierName: 'UPS',
-          trackingNumber: null,
-          weight: 5.0,
-          estimatedDelivery: null
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setShipments([]);
     } finally {
       setLoading(false);
     }
@@ -119,24 +98,9 @@ export default function SupplyChainPage() {
         fetchData();
       }, 1500);
     } catch {
-      // Mock success
-      setModalSuccess(true);
-      const newMockShipment: ShipmentData = {
-        id: `shp-mock-${Date.now()}`,
-        shipmentNumber,
-        type,
-        status: 'PENDING',
-        carrierName: carrierName || 'Unassigned',
-        trackingNumber: trackingNumber || null,
-        weight: weight || null,
-        estimatedDelivery: null
-      };
-      setShipments(prev => [newMockShipment, ...prev]);
-
-      setTimeout(() => {
-        setIsShipmentModalOpen(false);
-        resetForm();
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }

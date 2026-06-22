@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
 import {
   Plus, X, FileText, Upload, Trash2, AlertCircle,
   Award, File, FileImage, FileCode, Filter
@@ -39,6 +39,8 @@ export default function DocumentsPage() {
   const [fileSize, setFileSize] = useState(0);
   const [mimeType, setMimeType] = useState('');
 
+  const toast = useToast();
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -47,19 +49,13 @@ export default function DocumentsPage() {
 
     try {
       const res = await fetch('/api/v1/crm/documents', { headers });
-      if (res.ok) {
-        const d = await res.json();
-        setDocuments(Array.isArray(d) ? d : (d?.data || []));
-      } else throw new Error();
-    } catch {
-      setError('Serving local mock fallback data.');
-      setDocuments([
-        { id: 'doc-1', name: 'Acme Corp Proposal Q2 2026.pdf', type: 'PROPOSAL', entityType: 'OPPORTUNITY', entityId: 'opp-1', fileUrl: '/files/acme-proposal.pdf', fileSize: 245760, mimeType: 'application/pdf', uploadedBy: { id: 'u-1', name: 'Sarah Johnson' }, createdAt: '2026-06-15T10:30:00Z' },
-        { id: 'doc-2', name: 'TechStart Service Agreement.docx', type: 'CONTRACT', entityType: 'CUSTOMER', entityId: 'cust-1', fileUrl: '/files/techstart-contract.docx', fileSize: 128000, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', uploadedBy: { id: 'u-2', name: 'Mike Chen' }, createdAt: '2026-06-12T14:20:00Z' },
-        { id: 'doc-3', name: 'Lead Import Spreadsheet.xlsx', type: 'ATTACHMENT', entityType: 'LEAD', entityId: 'lead-batch-1', fileUrl: '/files/lead-import.xlsx', fileSize: 512000, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', uploadedBy: { id: 'u-1', name: 'Sarah Johnson' }, createdAt: '2026-06-10T09:00:00Z' },
-        { id: 'doc-4', name: 'Meeting Notes - GlobalTech.txt', type: 'OTHER', entityType: 'CONTACT', entityId: 'contact-5', fileUrl: '/files/meeting-notes.txt', fileSize: 4200, mimeType: 'text/plain', uploadedBy: { id: 'u-3', name: 'Emma Wilson' }, createdAt: '2026-06-18T16:45:00Z' },
-        { id: 'doc-5', name: 'Quotation Attachment - Premium Plan.pdf', type: 'ATTACHMENT', entityType: 'QUOTATION', entityId: 'q-12', fileUrl: '/files/premium-quote.pdf', fileSize: 98304, mimeType: 'application/pdf', uploadedBy: { id: 'u-2', name: 'Mike Chen' }, createdAt: '2026-06-20T11:15:00Z' },
-      ]);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      const d = await res.json();
+      setDocuments(Array.isArray(d) ? d : (d?.data || []));
+    } catch (err) {
+      setError('Could not load documents. Please try again.');
+      toast.error('Could not load documents', err instanceof Error ? err.message : undefined);
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -79,28 +75,31 @@ export default function DocumentsPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
       setModalSuccess(true);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1500);
-    } catch {
-      setModalSuccess(true);
-      const mock: CrmDocument = { id: `doc-mock-${Date.now()}`, name: docName, type: docType, entityType, entityId, fileUrl, fileSize: Number(fileSize), mimeType: mimeType || null, uploadedBy: { id: 'current', name: 'You' }, createdAt: new Date().toISOString() };
-      setDocuments(prev => [mock, ...prev]);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); }, 1500);
+      toast.success('Document linked', `"${docName}" has been added.`);
+      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1200);
+    } catch (err) {
+      toast.error('Could not link document', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    const token = localStorage.getItem('token');
+    const prev = documents;
+    setDocuments(prev.filter(d => d.id !== id)); // optimistic
     try {
-      await fetch(`/api/v1/crm/documents/${id}`, {
+      const res = await fetch(`/api/v1/crm/documents/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token || ''}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
       });
-    } catch { /* proceed with local removal */ }
-    setDocuments(prev => prev.filter(d => d.id !== id));
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      toast.success('Document removed');
+    } catch (err) {
+      setDocuments(prev); // revert
+      toast.error('Could not delete document', err instanceof Error ? err.message : 'Please try again.');
+    }
   };
 
   const resetForm = () => { setDocName(''); setDocType('ATTACHMENT'); setEntityType('LEAD'); setEntityId(''); setFileUrl(''); setFileSize(0); setMimeType(''); setModalSuccess(false); };

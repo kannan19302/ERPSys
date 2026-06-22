@@ -68,11 +68,8 @@ export default function DeliveryNotesPage() {
         throw new Error();
       }
     } catch {
-      setError('Serving local mock fallback registry.');
-      setDeliveryNotes([
-        { id: 'dn-1', deliveryNumber: 'DN-2026-001', salesOrderNumber: 'SO-2026-001', status: 'IN_TRANSIT', createdAt: new Date().toISOString(), carrierName: 'FedEx Express', trackingNumber: '483920192039', warehouseId: 'wh-main', lineItemCount: 2 },
-        { id: 'dn-2', deliveryNumber: 'DN-2026-002', salesOrderNumber: 'SO-2026-003', status: 'DELIVERED', createdAt: new Date().toISOString(), carrierName: 'DHL Ground', trackingNumber: '920391029301', warehouseId: 'wh-east', lineItemCount: 1 }
-      ]);
+      setError('Could not load data. Please try again.');
+      setDeliveryNotes([]);
     } finally {
       setLoading(false);
     }
@@ -137,7 +134,7 @@ export default function DeliveryNotesPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

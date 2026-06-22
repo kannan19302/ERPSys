@@ -91,7 +91,7 @@ export default function RolesTab() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch roles';
       setError(msg);
-      setRoles(MOCK_ROLES);
+      setRoles([]);
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner, Badge } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Badge, useToast } from '@unerp/ui';
 import {
   TrendingUp, TrendingDown, DollarSign, Target, BarChart3,
   ArrowUp, ArrowDown, Users, Clock, Award
@@ -20,52 +20,30 @@ export default function ForecastingPage() {
   const [targets, setTargets] = useState<SalesTarget[]>([]);
   const [sortField, setSortField] = useState<keyof RepPerformance>('revenue');
   const [sortAsc, setSortAsc] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     const load = async () => {
       const token = localStorage.getItem('token');
       const h = { Authorization: `Bearer ${token || ''}` };
-      const fetches = [
-        fetch('/api/v1/crm/analytics/forecast', { headers: h }).then(r => r.ok ? r.json() : null),
-        fetch('/api/v1/crm/analytics/rep-performance', { headers: h }).then(r => r.ok ? r.json() : null),
-        fetch('/api/v1/crm/analytics/conversion-funnel', { headers: h }).then(r => r.ok ? r.json() : null),
-        fetch('/api/v1/crm/targets', { headers: h }).then(r => r.ok ? r.json() : null),
-      ];
       try {
-        const [fc, rp, fn, tg] = await Promise.all(fetches);
-        setForecast(fc || mockForecast);
-        setReps(Array.isArray(rp) ? rp : (rp?.data || mockReps));
-        setFunnel(Array.isArray(fn) ? fn : (fn?.data || mockFunnel));
-        setTargets(Array.isArray(tg) ? tg : (tg?.data || mockTargets));
-      } catch {
-        setForecast(mockForecast);
-        setReps(mockReps);
-        setFunnel(mockFunnel);
-        setTargets(mockTargets);
+        const [fc, rp, fn, tg] = await Promise.all([
+          fetch('/api/v1/crm/analytics/forecast', { headers: h }).then(r => r.ok ? r.json() : null),
+          fetch('/api/v1/crm/analytics/rep-performance', { headers: h }).then(r => r.ok ? r.json() : null),
+          fetch('/api/v1/crm/analytics/conversion-funnel', { headers: h }).then(r => r.ok ? r.json() : null),
+          fetch('/api/v1/crm/targets', { headers: h }).then(r => r.ok ? r.json() : null),
+        ]);
+        setForecast(fc || { bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
+        setReps(Array.isArray(rp) ? rp : (rp?.data || []));
+        setFunnel(Array.isArray(fn) ? fn : (fn?.data || []));
+        setTargets(Array.isArray(tg) ? tg : (tg?.data || []));
+      } catch (err) {
+        toast.error('Could not load forecasting data', err instanceof Error ? err.message : 'Please try again.');
+        setForecast({ bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
       } finally { setLoading(false); }
     };
     load();
-  }, []);
-
-  const mockForecast: Forecast = { bestCase: 1250000, commit: 890000, worstCase: 620000, pipelineDeals: 47 };
-  const mockReps: RepPerformance[] = [
-    { id: 'r1', name: 'Alice Johnson', dealsWon: 12, revenue: 340000, avgDealSize: 28333, avgCycleTimeDays: 34 },
-    { id: 'r2', name: 'Bob Martinez', dealsWon: 9, revenue: 275000, avgDealSize: 30556, avgCycleTimeDays: 41 },
-    { id: 'r3', name: 'Carol Nguyen', dealsWon: 15, revenue: 410000, avgDealSize: 27333, avgCycleTimeDays: 28 },
-    { id: 'r4', name: 'David Park', dealsWon: 7, revenue: 198000, avgDealSize: 28286, avgCycleTimeDays: 52 },
-    { id: 'r5', name: 'Eva Schmidt', dealsWon: 11, revenue: 305000, avgDealSize: 27727, avgCycleTimeDays: 37 },
-  ];
-  const mockFunnel: FunnelStage[] = [
-    { label: 'Total Leads', value: 520, percentage: 100 },
-    { label: 'Converted', value: 185, percentage: 35.6 },
-    { label: 'Opportunities', value: 92, percentage: 17.7 },
-    { label: 'Won', value: 41, percentage: 7.9 },
-  ];
-  const mockTargets: SalesTarget[] = [
-    { id: 't1', name: 'Q2 2026 Revenue', period: 'Q2 2026', target: 500000, achieved: 385000 },
-    { id: 't2', name: 'Q2 2026 Deals Closed', period: 'Q2 2026', target: 30, achieved: 22 },
-    { id: 't3', name: 'H1 2026 Pipeline', period: 'H1 2026', target: 2000000, achieved: 1450000 },
-  ];
+  }, [toast]);
 
   const fmtCurrency = (v: number) => `$${v >= 1000000 ? (v / 1000000).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'K' : v.toLocaleString()}`;
 

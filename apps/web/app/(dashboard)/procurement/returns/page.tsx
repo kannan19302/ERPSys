@@ -79,24 +79,10 @@ export default function PurchaseReturnsPage() {
       if (returnsRes.ok) setReturns(await returnsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (ordersRes.ok) setOrders(await ordersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
-      setError('Serving local mock fallback registry.');
+      setError('Could not load data. Please try again.');
       // Mock data
-      setReturns([
-        {
-          id: 'ret-1',
-          returnNumber: 'PR-2026-001',
-          status: 'COMPLETED',
-          returnDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          totalAmount: 1100,
-          vendorName: 'Global Electronics Corp',
-          poNumber: 'PO-773012',
-          lineItemCount: 1,
-        },
-      ]);
-      setOrders([
-        { id: 'po-1', poNumber: 'PO-773012', vendorName: 'Global Electronics Corp' },
-        { id: 'po-2', poNumber: 'PO-882103', vendorName: 'East-Coast Logistics Group' },
-      ]);
+      setReturns([]);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -135,9 +121,7 @@ export default function PurchaseReturnsPage() {
       }
     } catch {
       // Mock fallback line items
-      setLineItems([
-        { productId: 'prod-1', description: 'Restock Copper Wire Reel', quantity: 2, unitPrice: 500, taxRate: 10 },
-      ]);
+      setLineItems([]);
     } finally {
       setLoadingOrderItems(false);
     }
@@ -174,26 +158,9 @@ export default function PurchaseReturnsPage() {
         loadData();
       }, 1500);
     } catch {
-      // Offline fallback
-      setModalSuccess(true);
-      const chosenOrder = orders.find(o => o.id === purchaseOrderId);
-      const subtotal = lineItems.reduce((acc, l) => acc + l.quantity * l.unitPrice, 0);
-      const taxAmount = lineItems.reduce((acc, l) => acc + (l.quantity * l.unitPrice * l.taxRate) / 100, 0);
-      const mockNew: PurchaseReturn = {
-        id: `ret-mock-${Date.now()}`,
-        returnNumber,
-        status: 'COMPLETED',
-        returnDate: new Date().toISOString(),
-        totalAmount: subtotal + taxAmount,
-        vendorName: chosenOrder?.vendorName || 'Unknown Vendor',
-        poNumber: chosenOrder?.poNumber || 'PO-Unknown',
-        lineItemCount: lineItems.filter(item => item.quantity > 0).length,
-      };
-      setReturns(prev => [mockNew, ...prev]);
-      setTimeout(() => {
-        setIsModalOpen(false);
-        resetForm();
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }

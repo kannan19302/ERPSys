@@ -135,7 +135,7 @@ export default function HrPage() {
       ]);
     }
 
-    // Fetch Departments (mock fallback or real)
+    // Fetch Departments
     try {
       await fetch('/api/v1/admin/settings', {
         headers: { Authorization: `Bearer ${token || ''}` },
@@ -207,30 +207,9 @@ export default function HrPage() {
         fetchData();
       }, 1500);
     } catch {
-      // Local mock update
-      setModalSuccess(true);
-      const chosenDept = departments.find(d => d.id === departmentId);
-      const newMockEmp: EmployeeData = {
-        id: `emp-mock-${Date.now()}`,
-        employeeCode,
-        firstName,
-        lastName,
-        email,
-        phone: phone || null,
-        designation: designation || 'Associate',
-        employmentType,
-        status,
-        dateOfJoining: new Date().toLocaleDateString(),
-        departmentName: chosenDept ? chosenDept.name : 'Unassigned',
-        departmentId: departmentId || null
-      };
-
-      setEmployees(prev => [...prev, newMockEmp]);
-
-      setTimeout(() => {
-        setIsCreateModalOpen(false);
-        resetForm();
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -348,7 +327,7 @@ export default function HrPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

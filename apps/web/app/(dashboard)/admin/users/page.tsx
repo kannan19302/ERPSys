@@ -69,41 +69,8 @@ export default function AdminUsersPage() {
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : (data?.data || []));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Could not fetch user registry';
-      setError(message);
-      // Fallback local mock data for dev mode demo if api is not running
-      setUsers([
-        {
-          id: 'user-admin',
-          email: 'admin@uni-erp.com',
-          firstName: 'Super',
-          lastName: 'Admin',
-          status: 'ACTIVE',
-          lastLoginAt: new Date().toLocaleString(),
-          createdAt: new Date(Date.now() - 864000000).toLocaleDateString(),
-          roles: [{ id: 'role-super-admin', name: 'Super Admin' }],
-        },
-        {
-          id: 'user-jane',
-          email: 'jane.doe@company.com',
-          firstName: 'Jane',
-          lastName: 'Doe',
-          status: 'ACTIVE',
-          lastLoginAt: new Date(Date.now() - 3600000).toLocaleString(),
-          createdAt: new Date(Date.now() - 500000000).toLocaleDateString(),
-          roles: [{ id: 'role-finance', name: 'Finance Manager' }],
-        },
-        {
-          id: 'user-bob',
-          email: 'bob.smith@company.com',
-          firstName: 'Bob',
-          lastName: 'Smith',
-          status: 'INVITED',
-          lastLoginAt: null,
-          createdAt: new Date().toLocaleDateString(),
-          roles: [{ id: 'role-viewer', name: 'Viewer' }],
-        },
-      ]);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -155,30 +122,8 @@ export default function AdminUsersPage() {
         fetchUsers();
       }, 1500);
     } catch {
-      // Mock local success state for UI walk-through if backend is not running
-      setModalSuccess(true);
-      const newMockUser: UserData = {
-        id: `user-mock-${Date.now()}`,
-        email: createEmail,
-        firstName: createFirstName,
-        lastName: createLastName,
-        status: 'INVITED',
-        lastLoginAt: null,
-        createdAt: new Date().toLocaleDateString(),
-        roles: availableRoles
-          .filter((r) => createRoleIds.includes(r.id))
-          .map((r) => ({ id: r.id, name: r.name })),
-      };
-      setUsers((prev) => [...prev, newMockUser]);
-
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setCreateEmail('');
-        setCreateFirstName('');
-        setCreateLastName('');
-        setCreateRoleIds([]);
-        setModalSuccess(false);
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -230,7 +175,7 @@ export default function AdminUsersPage() {
           }}
         >
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock registry fallback)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

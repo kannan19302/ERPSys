@@ -120,7 +120,7 @@ export default function InventoryDashboard() {
 
     } catch (err) {
       console.error('Failed to load dashboard statistics from API, loading high-fidelity mock data fallback.', err);
-      setError('Serving fallback offline telemetry dashboard.');
+      setError('Could not load data. Please try again.');
       
       // Seed robust default mocks in case database tables are empty
       setStats({
@@ -140,44 +140,7 @@ export default function InventoryDashboard() {
         ]
       });
 
-      setStockLevels([
-        {
-          id: 's1',
-          productId: 'p1',
-          warehouseId: 'w1',
-          quantity: 45,
-          reorderPoint: 15,
-          product: { id: 'p1', name: 'Refined Vibranium Ingot', sku: 'SKU-VIB-001', category: 'Minerals', unit: 'KG' },
-          warehouse: { id: 'w1', name: 'Schenectady Central Depot' }
-        },
-        {
-          id: 's2',
-          productId: 'p2',
-          warehouseId: 'w1',
-          quantity: 12,
-          reorderPoint: 15,
-          product: { id: 'p2', name: 'Tactical Kevlar Micro-Weave', sku: 'SKU-KEV-404', category: 'Fabrics', unit: 'ROLL' },
-          warehouse: { id: 'w1', name: 'Schenectady Central Depot' }
-        },
-        {
-          id: 's3',
-          productId: 'p3',
-          warehouseId: 'w2',
-          quantity: 150,
-          reorderPoint: 50,
-          product: { id: 'p3', name: 'Nano-carbon Fibers', sku: 'SKU-NNC-902', category: 'Composites', unit: 'METERS' },
-          warehouse: { id: 'w2', name: 'Berlin Logistics Center' }
-        },
-        {
-          id: 's4',
-          productId: 'p4',
-          warehouseId: 'w3',
-          quantity: 95,
-          reorderPoint: 100,
-          product: { id: 'p4', name: 'Aerospace Grade Titanium', sku: 'SKU-TIT-551', category: 'Minerals', unit: 'KG' },
-          warehouse: { id: 'w3', name: 'Tokyo Fulfillment Hub' }
-        }
-      ]);
+      setStockLevels([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

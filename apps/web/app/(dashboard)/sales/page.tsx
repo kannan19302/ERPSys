@@ -56,17 +56,10 @@ export default function SalesDashboard() {
       if (orderRes.ok) setOrders(await orderRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (quoteRes.ok) setQuotes(await quoteRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
-      setError('Serving local mock fallback registry.');
+      setError('Could not load data. Please try again.');
       // Local fallback data
-      setOrders([
-        { id: 'so-1', orderNumber: 'SO-2026-001', status: 'CONFIRMED', orderDate: new Date().toISOString(), customerName: 'Acme Corp', totalAmount: 25000, currency: 'USD', salesChannel: 'B2B', paymentStatus: 'UNPAID' },
-        { id: 'so-2', orderNumber: 'SO-2026-002', status: 'CREDIT_HOLD', orderDate: new Date().toISOString(), customerName: 'Wayne Enterprises', totalAmount: 85000, currency: 'USD', salesChannel: 'B2B', paymentStatus: 'UNPAID' },
-        { id: 'so-3', orderNumber: 'SO-2026-003', status: 'DELIVERED', orderDate: new Date().toISOString(), customerName: 'John Doe (Direct)', totalAmount: 1200, currency: 'USD', salesChannel: 'D2C', paymentStatus: 'PAID' },
-        { id: 'so-4', orderNumber: 'SO-2026-004', status: 'CONFIRMED', orderDate: new Date().toISOString(), customerName: 'Retail Customer #12', totalAmount: 450, currency: 'USD', salesChannel: 'B2C', paymentStatus: 'PAID' }
-      ]);
-      setQuotes([
-        { id: 'qt-1', quotationNumber: 'QT-2026-001', status: 'SENT', totalAmount: 95000 }
-      ]);
+      setOrders([]);
+      setQuotes([]);
     } finally {
       setLoading(false);
     }
@@ -106,7 +99,7 @@ export default function SalesDashboard() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback dashboard)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

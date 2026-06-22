@@ -39,7 +39,7 @@ export default function BattlecardsPage() {
       const data = await res.json();
       setBattlecards(Array.isArray(data) ? data : data.data || MOCK_BATTLECARDS);
     } catch {
-      setBattlecards(MOCK_BATTLECARDS);
+      setBattlecards([]);
     } finally {
       setLoading(false);
     }

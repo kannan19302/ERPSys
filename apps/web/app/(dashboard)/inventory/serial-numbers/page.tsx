@@ -76,24 +76,10 @@ export default function SerialNumbersPage() {
         setSerialNumbers(snList);
       }
     } catch {
-      setError('Serving local mock fallback registry.');
-      setProducts([
-        { id: 'prod-1', name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' },
-        { id: 'prod-2', name: 'Tactical Kevlar Micro-Weave', sku: 'SKU-KEV-404' }
-      ]);
-      setWarehouses([
-        { id: 'wh-1', name: 'Schenectady Central Depot', code: 'WH-NY-01' },
-        { id: 'wh-2', name: 'Silicon Valley Logistics Hub', code: 'WH-CA-02' }
-      ]);
-      setSerialNumbers([
-        {
-          id: 'sn-1',
-          serialNo: 'SN-998811-A',
-          status: 'AVAILABLE',
-          warrantyExpiry: new Date(Date.now() + 86400000 * 365).toISOString(),
-          product: { name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' }
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setProducts([]);
+      setWarehouses([]);
+      setSerialNumbers([]);
     } finally {
       setLoading(false);
     }
@@ -127,22 +113,8 @@ export default function SerialNumbersPage() {
       setNotes('');
       loadData();
     } catch {
-      // Mock local update
-      const selectedProdObj = products.find(p => p.id === selectedProduct);
-      const newMock: SerialNumber = {
-        id: `sn-mock-${Date.now()}`,
-        serialNo: serialInput,
-        status: 'AVAILABLE',
-        warrantyExpiry: warrantyDate || undefined,
-        product: {
-          name: selectedProdObj?.name || 'Vibranium Ingot',
-          sku: selectedProdObj?.sku || 'SKU-VIB-001'
-        }
-      };
-      setSerialNumbers(prev => [newMock, ...prev]);
-      setSerialInput('');
-      setWarrantyDate('');
-      setNotes('');
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     }
   };
 

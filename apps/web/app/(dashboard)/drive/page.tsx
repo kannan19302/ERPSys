@@ -773,7 +773,7 @@ function DrivePageContent() {
               <h3 style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: 'var(--space-3)', letterSpacing: '0.05em' }}>
                 Folders
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
                 {folders.map(folder => (
                   <div
                     key={folder.id}

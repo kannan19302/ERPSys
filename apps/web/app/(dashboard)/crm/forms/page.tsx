@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
 import {
   Plus, X, FileText, Copy, CheckCircle, AlertCircle,
   Award, Trash2, Eye, Code, GripVertical
@@ -46,6 +46,8 @@ export default function WebFormsPage() {
   const [assignToId, setAssignToId] = useState('');
   const [campaignId, setCampaignId] = useState('');
 
+  const toast = useToast();
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -54,17 +56,13 @@ export default function WebFormsPage() {
 
     try {
       const res = await fetch('/api/v1/crm/forms', { headers });
-      if (res.ok) {
-        const d = await res.json();
-        setForms(Array.isArray(d) ? d : (d?.data || []));
-      } else throw new Error();
-    } catch {
-      setError('Serving local mock fallback data.');
-      setForms([
-        { id: 'wf-1', name: 'Contact Us Form', fields: [{ name: 'full_name', label: 'Full Name', type: 'TEXT', required: true }, { name: 'email', label: 'Email', type: 'EMAIL', required: true }, { name: 'phone', label: 'Phone', type: 'PHONE', required: false }, { name: 'message', label: 'Message', type: 'TEXTAREA', required: true }], redirectUrl: '/thank-you', notifyEmail: 'sales@company.com', assignToId: null, campaignId: null, isActive: true, _count: { submissions: 142 }, createdAt: new Date().toISOString() },
-        { id: 'wf-2', name: 'Request a Demo', fields: [{ name: 'name', label: 'Name', type: 'TEXT', required: true }, { name: 'work_email', label: 'Work Email', type: 'EMAIL', required: true }, { name: 'company_size', label: 'Company Size', type: 'SELECT', required: true }], redirectUrl: null, notifyEmail: 'demos@company.com', assignToId: 'u-1', campaignId: 'camp-1', isActive: true, _count: { submissions: 58 }, createdAt: new Date().toISOString() },
-        { id: 'wf-3', name: 'Newsletter Signup', fields: [{ name: 'email', label: 'Email Address', type: 'EMAIL', required: true }], redirectUrl: null, notifyEmail: null, assignToId: null, campaignId: null, isActive: false, _count: { submissions: 320 }, createdAt: new Date().toISOString() },
-      ]);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      const d = await res.json();
+      setForms(Array.isArray(d) ? d : (d?.data || []));
+    } catch (err) {
+      setError('Could not load web forms. Please try again.');
+      toast.error('Could not load forms', err instanceof Error ? err.message : undefined);
+      setForms([]);
     } finally {
       setLoading(false);
     }
@@ -91,14 +89,12 @@ export default function WebFormsPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error(`Save failed (${res.status})`);
       setModalSuccess(true);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1500);
-    } catch {
-      setModalSuccess(true);
-      const mock: WebForm = { id: `wf-mock-${Date.now()}`, name: formName, fields, redirectUrl: redirectUrl || null, notifyEmail: notifyEmail || null, assignToId: assignToId || null, campaignId: campaignId || null, isActive: true, _count: { submissions: 0 }, createdAt: new Date().toISOString() };
-      setForms(prev => [mock, ...prev]);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); }, 1500);
+      toast.success('Form created', `"${formName}" is ready to embed.`);
+      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1200);
+    } catch (err) {
+      toast.error('Could not create form', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setSubmitting(false);
     }

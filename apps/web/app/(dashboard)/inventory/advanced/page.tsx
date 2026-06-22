@@ -280,8 +280,8 @@ export default function AdvancedInventoryPage() {
             {/* Category Tab */}
             {activeTab === 'categories' && (
               <Card padding="none">
-                <div className="p-4 border-b flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
-                  <span className="font-semibold text-base">Classifications Hierarchy</span>
+                <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Classifications Hierarchy</span>
                   <Button variant="primary" onClick={() => { setModalType('category'); setIsModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Plus size={14} /> Add Category
                   </Button>
@@ -315,8 +315,8 @@ export default function AdvancedInventoryPage() {
             {activeTab === 'uoms' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <Card padding="none">
-                  <div className="p-4 border-b flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
-                    <span className="font-semibold text-base">Standard Measurement Codes</span>
+                  <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Standard Measurement Codes</span>
                     <Button variant="primary" onClick={() => { setModalType('uom'); setIsModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Plus size={14} /> Add UoM
                     </Button>
@@ -344,8 +344,8 @@ export default function AdvancedInventoryPage() {
                 </Card>
 
                 <Card padding="none">
-                  <div className="p-4 border-b flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
-                    <span className="font-semibold text-base">UoM Conversion Matrix</span>
+                  <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>UoM Conversion Matrix</span>
                     <Button variant="primary" onClick={() => { setModalType('conversion'); setIsModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Plus size={14} /> Add Conversion Factor
                     </Button>
@@ -380,8 +380,8 @@ export default function AdvancedInventoryPage() {
             {/* Reorder Rules Tab */}
             {activeTab === 'reorder' && (
               <Card padding="none">
-                <div className="p-4 border-b flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
-                  <span className="font-semibold text-base">Automatic Replenishment Limits</span>
+                <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Automatic Replenishment Limits</span>
                   <Button variant="primary" onClick={() => { setModalType('rule'); setIsModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Plus size={14} /> Add Rule
                   </Button>
@@ -416,8 +416,8 @@ export default function AdvancedInventoryPage() {
             {/* Kits Tab */}
             {activeTab === 'kits' && (
               <Card padding="none">
-                <div className="p-4 border-b flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
-                  <span className="font-semibold text-base">Production Assemblies & Kits</span>
+                <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Production Assemblies & Kits</span>
                   <Button variant="primary" onClick={() => { setModalType('kit'); setIsModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Plus size={14} /> Add Kit
                   </Button>
@@ -454,12 +454,12 @@ export default function AdvancedInventoryPage() {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
           <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
-            <div className="frappe-card-header flex items-center justify-between" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
-              <span className="font-semibold text-base">Add New config Record</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
+              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Add New config Record</span>
               <button onClick={() => setIsModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
             </div>
             <div className="frappe-card-body" style={{ padding: '20px' }}>
-              <form onSubmit={handleSave} className="flex flex-col gap-4">
+              <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 {modalType === 'category' && (
                   <>
                     <div className="frappe-form-group">
@@ -533,7 +533,7 @@ export default function AdvancedInventoryPage() {
                   </>
                 )}
 
-                <div className="flex justify-end gap-2 mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
                   <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                   <Button variant="primary" type="submit">Submit Rule</Button>
                 </div>

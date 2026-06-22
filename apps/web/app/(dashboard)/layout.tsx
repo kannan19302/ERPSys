@@ -1214,6 +1214,10 @@ export default function DashboardLayout({
   const [appsDropdownOpen, setAppsDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState('');
+  const [cmdSelectedIdx, setCmdSelectedIdx] = useState(0);
+  const cmdInputRef = React.useRef<HTMLInputElement>(null);
   const [installedApps, setInstalledApps] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [demoDataLoaded, setDemoDataLoaded] = useState(false);
@@ -1252,6 +1256,28 @@ export default function DashboardLayout({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdPaletteOpen(prev => !prev);
+        setCmdQuery('');
+        setCmdSelectedIdx(0);
+      }
+      if (e.key === 'Escape' && cmdPaletteOpen) {
+        setCmdPaletteOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [cmdPaletteOpen]);
+
+  useEffect(() => {
+    if (cmdPaletteOpen && cmdInputRef.current) {
+      cmdInputRef.current.focus();
+    }
+  }, [cmdPaletteOpen]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -1436,6 +1462,7 @@ export default function DashboardLayout({
         fontFamily: 'var(--font-sans)',
       }}
     >
+      <a href="#main-content" style={{ position: 'absolute', left: '-9999px', top: 'var(--space-2)', zIndex: 9999, padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: '#fff', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', textDecoration: 'none' }} onFocus={(e) => { e.currentTarget.style.left = 'var(--space-2)'; }} onBlur={(e) => { e.currentTarget.style.left = '-9999px'; }}>Skip to main content</a>
       {/* Sidebar Section */}
       {!hideSidebar && (
         <aside
@@ -1521,6 +1548,7 @@ export default function DashboardLayout({
 
           {/* Navigation Items */}
           <nav
+            aria-label="Module navigation"
             style={{
               flex: 1,
               padding: 'var(--space-4) var(--space-2)',
@@ -1793,8 +1821,9 @@ export default function DashboardLayout({
                 />
                 <input
                   type="text"
-                  placeholder="Search apps, actions..."
+                  placeholder="Search apps, actions... (Ctrl+K)"
                   value={searchQuery}
+                  onClick={() => { setCmdPaletteOpen(true); }}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setSearchOpen(e.target.value.length > 0);
@@ -1961,6 +1990,8 @@ export default function DashboardLayout({
 
         {/* Content View Workspace */}
         <main
+          id="main-content"
+          role="main"
           style={{
             flex: 1,
             padding: pathname.startsWith('/builder') ? '0' : 'var(--space-6) var(--space-8)',
@@ -2010,6 +2041,67 @@ export default function DashboardLayout({
           </linearGradient>
         </defs>
       </svg>
+
+      {/* Command Palette (Ctrl+K) */}
+      {cmdPaletteOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '15vh', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setCmdPaletteOpen(false)}
+        >
+          <div
+            style={{ width: '560px', maxHeight: '420px', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-xl, 0 20px 60px rgba(0,0,0,0.3))', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'modalSlideUp 0.15s ease-out' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-3)' }}>
+              <Search size={18} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
+              <input
+                ref={cmdInputRef}
+                type="text"
+                placeholder="Search apps, pages, actions..."
+                value={cmdQuery}
+                onChange={(e) => { setCmdQuery(e.target.value); setCmdSelectedIdx(0); }}
+                onKeyDown={(e) => {
+                  const results = GLOBAL_SEARCH_ITEMS.filter(item => item.name.toLowerCase().includes(cmdQuery.toLowerCase())).slice(0, 10);
+                  if (e.key === 'ArrowDown') { e.preventDefault(); setCmdSelectedIdx(i => Math.min(i + 1, results.length - 1)); }
+                  if (e.key === 'ArrowUp') { e.preventDefault(); setCmdSelectedIdx(i => Math.max(i - 1, 0)); }
+                  if (e.key === 'Enter' && results[cmdSelectedIdx]) { router.push(results[cmdSelectedIdx].href); setCmdPaletteOpen(false); setCmdQuery(''); }
+                }}
+                style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 'var(--text-base)', color: 'var(--color-text)' }}
+              />
+              <kbd style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}>ESC</kbd>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-2)' }}>
+              {(() => {
+                const results = GLOBAL_SEARCH_ITEMS.filter(item => !cmdQuery || item.name.toLowerCase().includes(cmdQuery.toLowerCase())).slice(0, 12);
+                if (results.length === 0) return <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>No results found</div>;
+                return results.map((item, idx) => (
+                  <button
+                    key={item.name + item.href}
+                    onClick={() => { router.push(item.href); setCmdPaletteOpen(false); setCmdQuery(''); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 'var(--space-3)', width: '100%', padding: 'var(--space-2.5) var(--space-3)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left',
+                      background: idx === cmdSelectedIdx ? 'var(--color-primary-light)' : 'transparent',
+                      color: 'var(--color-text)',
+                    }}
+                    onMouseEnter={() => setCmdSelectedIdx(idx)}
+                  >
+                    <item.icon size={16} style={{ color: item.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)', flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                    </div>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', flexShrink: 0 }}>{item.type}</span>
+                  </button>
+                ));
+              })()}
+            </div>
+            <div style={{ padding: 'var(--space-2) var(--space-4)', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)', fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+              <span><kbd style={{ padding: '1px 4px', border: '1px solid var(--color-border)', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>↑↓</kbd> navigate</span>
+              <span><kbd style={{ padding: '1px 4px', border: '1px solid var(--color-border)', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>↵</kbd> open</span>
+              <span><kbd style={{ padding: '1px 4px', border: '1px solid var(--color-border)', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>esc</kbd> close</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -53,13 +53,17 @@ vi.mock('@unerp/database', () => {
       purchaseOrder: { ...genericPrismaMock },
       customer: { ...genericPrismaMock },
       vendor: { ...genericPrismaMock },
+      currencyRevaluation: { ...genericPrismaMock },
+      eInvoice: { ...genericPrismaMock, upsert: vi.fn() },
+      financeAuditLog: { ...genericPrismaMock },
       organization: {
         findFirst: vi.fn().mockResolvedValue({ id: 'org-1' }),
       },
       $transaction: vi.fn(async (cb) => {
         return cb({
           exchangeRate: { ...genericPrismaMock },
-          account: { ...genericPrismaMock },
+          account: { ...genericPrismaMock, findUnique: vi.fn().mockResolvedValue({ id: 'acc-1', type: 'ASSET' }) },
+          financeAuditLog: { ...genericPrismaMock },
           costCenter: { ...genericPrismaMock },
           journal: { ...genericPrismaMock, findUnique: vi.fn().mockResolvedValue({ id: 'journal-id' }) },
           journalEntry: { ...genericPrismaMock },
@@ -426,6 +430,113 @@ describe('AdvancedFinanceService', () => {
       expect(result.type).toBe('AP');
       expect(result.totalItems).toBe(1);
       expect(result.bucketTotals['31-60']?.count).toBe(1);
+    });
+  });
+
+  describe('runCurrencyRevaluation', () => {
+    it('recognises an unrealized FX gain when the current rate exceeds the booking rate', async () => {
+      const { prisma } = await import('@unerp/database');
+      // findMany is shared across models in this harness: 1st call = AR invoices, 2nd = AP purchase orders (none).
+      // One open EUR invoice: 1000 EUR outstanding, booked at 1.10, current 1.25 -> +150 base gain
+      vi.mocked(prisma.invoice.findMany)
+        .mockResolvedValueOnce([
+          { id: 'inv-1', invoiceNumber: 'INV-1', currency: 'EUR', totalAmount: 1000 as never, paidAmount: 0 as never, exchangeRate: 1.1 as never } as never,
+        ])
+        .mockResolvedValueOnce([]);
+      // findFirst is a single shared mock across models in this harness: first call is the
+      // exchange-rate lookup (1.25), later calls are the FX adjustment-account lookups.
+      vi.mocked(prisma.exchangeRate.findFirst)
+        .mockResolvedValueOnce({ rate: 1.25 as never } as never)
+        .mockResolvedValue({ id: 'acc-1', type: 'ASSET' } as never);
+      vi.mocked(prisma.currencyRevaluation.create).mockResolvedValue({ id: 'reval-1' } as never);
+
+      const res = await service.runCurrencyRevaluation('t', 'org-1', new Date().toISOString(), 'USD');
+
+      expect(res.itemsRevalued).toBe(1);
+      expect(res.totalGain).toBeCloseTo(150, 2);
+      expect(res.totalLoss).toBe(0);
+      expect(res.netAdjustment).toBeCloseTo(150, 2);
+      expect(res.journalId).toBeDefined();
+    });
+
+    it('skips fully paid and base-currency balances and posts no journal', async () => {
+      const { prisma } = await import('@unerp/database');
+      vi.mocked(prisma.invoice.findMany).mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+      vi.mocked(prisma.currencyRevaluation.create).mockResolvedValue({ id: 'reval-2' } as never);
+
+      const res = await service.runCurrencyRevaluation('t', 'org-1', new Date().toISOString(), 'USD');
+
+      expect(res.itemsRevalued).toBe(0);
+      expect(res.netAdjustment).toBe(0);
+      expect(res.journalId).toBeNull();
+    });
+
+    it('recognises an unrealized FX loss on an open foreign-currency payable when the rate rises', async () => {
+      const { prisma } = await import('@unerp/database');
+      // No AR; one EUR PO: 1000 EUR owed, booked 1.10, current 1.25 -> owe more base -> 150 loss
+      vi.mocked(prisma.invoice.findMany)
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          { id: 'po-1', poNumber: 'PO-1', currency: 'EUR', totalAmount: 1000 as never, paidAmount: 0 as never, exchangeRate: 1.1 as never } as never,
+        ]);
+      vi.mocked(prisma.exchangeRate.findFirst)
+        .mockResolvedValueOnce({ rate: 1.25 as never } as never)
+        .mockResolvedValue({ id: 'acc-1', type: 'LIABILITY' } as never);
+      vi.mocked(prisma.currencyRevaluation.create).mockResolvedValue({ id: 'reval-3' } as never);
+
+      const res = await service.runCurrencyRevaluation('t', 'org-1', new Date().toISOString(), 'USD');
+
+      expect(res.itemsRevalued).toBe(1);
+      expect(res.totalLoss).toBeCloseTo(150, 2);
+      expect(res.totalGain).toBe(0);
+      expect(res.netAdjustment).toBeCloseTo(-150, 2);
+    });
+  });
+
+  describe('generateEInvoice', () => {
+    it('produces a UBL document for an issued invoice', async () => {
+      const { prisma } = await import('@unerp/database');
+      vi.mocked(prisma.invoice.findFirst).mockResolvedValueOnce({
+        id: 'inv-1', orgId: 'org-1', invoiceNumber: 'INV-9', status: 'SENT', currency: 'EUR',
+        issueDate: new Date(), dueDate: new Date(), subtotal: 1000 as never, discountAmount: 0 as never,
+        taxAmount: 180 as never, totalAmount: 1180 as never,
+        customer: { name: 'ACME GmbH', taxId: 'DE123' },
+        lineItems: [{ description: 'Widget', quantity: 2 as never, unitPrice: 500 as never, taxRate: 18 as never, taxAmount: 180 as never, totalAmount: 1180 as never }],
+      } as never);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1', name: 'Seller Inc', legalName: 'Seller Incorporated', taxId: 'GB999' } as never);
+      vi.mocked(prisma.eInvoice.upsert).mockResolvedValue({ id: 'einv-1', format: 'UBL', documentXml: '<Invoice/>' } as never);
+
+      const res = await service.generateEInvoice('t', 'org-1', 'inv-1', 'UBL');
+      expect(res).toBeDefined();
+      expect(vi.mocked(prisma.eInvoice.upsert)).toHaveBeenCalled();
+      const arg = vi.mocked(prisma.eInvoice.upsert).mock.calls[0]![0] as { create: { documentXml: string; format: string } };
+      expect(arg.create.format).toBe('UBL');
+      expect(arg.create.documentXml).toContain('<cbc:ID>INV-9</cbc:ID>');
+      expect(arg.create.documentXml).toContain('urn:oasis:names:specification:ubl:schema:xsd:Invoice-2');
+    });
+
+    it('computes a deterministic IRN and QR payload for the GST format', async () => {
+      const { prisma } = await import('@unerp/database');
+      vi.mocked(prisma.invoice.findFirst).mockResolvedValueOnce({
+        id: 'inv-2', orgId: 'org-1', invoiceNumber: 'INV-10', status: 'SENT', currency: 'INR',
+        issueDate: new Date('2026-05-10'), dueDate: new Date('2026-06-10'), subtotal: 1000 as never, discountAmount: 0 as never,
+        taxAmount: 180 as never, totalAmount: 1180 as never,
+        customer: { name: 'Buyer Pvt', taxId: '29ABCDE1234F1Z5' },
+        lineItems: [{ description: 'Service', quantity: 1 as never, unitPrice: 1000 as never, taxRate: 18 as never, taxAmount: 180 as never, totalAmount: 1180 as never }],
+      } as never);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1', name: 'Seller', legalName: 'Seller LLP', taxId: '27AAAAA0000A1Z5' } as never);
+      vi.mocked(prisma.eInvoice.upsert).mockImplementation(((args: { create: unknown }) => Promise.resolve({ id: 'einv-2', ...(args.create as object) })) as never);
+
+      const res = await service.generateEInvoice('t', 'org-1', 'inv-2', 'GST_IRN') as { irn: string; qrPayload: string };
+      expect(res.irn).toHaveLength(64); // sha-256 hex
+      expect(res.qrPayload).toContain('SellerGstin:27AAAAA0000A1Z5');
+      expect(res.qrPayload).toContain('DocNo:INV-10');
+    });
+
+    it('rejects e-invoicing a draft invoice', async () => {
+      const { prisma } = await import('@unerp/database');
+      vi.mocked(prisma.invoice.findFirst).mockResolvedValueOnce({ id: 'inv-3', orgId: 'org-1', status: 'DRAFT', lineItems: [], customer: {} } as never);
+      await expect(service.generateEInvoice('t', 'org-1', 'inv-3', 'UBL')).rejects.toThrow();
     });
   });
 });

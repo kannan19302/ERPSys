@@ -45,17 +45,8 @@ export default function LeadsPage() {
             const data = await res.json();
       setLeads(Array.isArray(data) ? data : (data?.data || []));
         } catch {
-            setError('Using demo data');
-            setLeads([
-                { id: '1', firstName: 'Tony', lastName: 'Stark', company: 'Stark Industries', email: 'tony@stark.com', phone: '+1-555-0101', status: 'NEW', score: 85, source: { name: 'Website' }, _count: { activities: 2, opportunities: 0 } },
-                { id: '2', firstName: 'Bruce', lastName: 'Wayne', company: 'Wayne Enterprises', email: 'bruce@wayne.com', phone: '+1-555-0102', status: 'CONTACTED', score: 72, source: { name: 'Referral' }, _count: { activities: 4, opportunities: 1 } },
-                { id: '3', firstName: 'Natasha', lastName: 'Romanoff', company: 'S.H.I.E.L.D.', email: 'natasha@shield.gov', phone: '+1-555-0103', status: 'QUALIFIED', score: 91, source: { name: 'LinkedIn' }, _count: { activities: 6, opportunities: 2 } },
-                { id: '4', firstName: 'Peter', lastName: 'Parker', company: 'Daily Bugle', email: 'peter@bugle.com', phone: '+1-555-0104', status: 'NEW', score: 45, source: { name: 'Website' }, _count: { activities: 1, opportunities: 0 } },
-                { id: '5', firstName: 'Stephen', lastName: 'Strange', company: 'Kamar-Taj', email: 'strange@sanctum.com', phone: '+1-555-0105', status: 'QUALIFIED', score: 88, source: { name: 'Conference' }, _count: { activities: 5, opportunities: 1 } },
-                { id: '6', firstName: 'Carol', lastName: 'Danvers', company: 'NASA', email: 'carol@nasa.gov', phone: '+1-555-0106', status: 'CONTACTED', score: 76, source: { name: 'Website' }, _count: { activities: 3, opportunities: 0 } },
-                { id: '7', firstName: 'Loki', lastName: 'Laufeyson', company: 'Asgard Trading', email: 'loki@asgard.com', phone: '+1-555-0107', status: 'DISQUALIFIED', score: 30, source: { name: 'Email' }, _count: { activities: 2, opportunities: 0 } },
-                { id: '8', firstName: 'Wanda', lastName: 'Maximoff', company: 'Sokovia Industries', email: 'wanda@sokovia.com', phone: '+1-555-0108', status: 'NEW', score: 65, source: { name: 'Referral' }, _count: { activities: 0, opportunities: 0 } },
-            ]);
+            setError('Could not load data. Please try again.');
+            setLeads([]);
         } finally {
             setLoading(false);
         }

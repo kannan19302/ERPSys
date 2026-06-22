@@ -58,19 +58,19 @@ export default function CrmAdvancedPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="frappe-grid-3">
                         {group.modules.map((mod) => (
-                            <Link key={mod.href} href={mod.href} className="no-underline">
-                                <Card padding="md" className="hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/30 h-full">
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-3 rounded-lg bg-primary/5 text-primary flex-shrink-0">{mod.icon}</div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <h3 className="text-sm font-semibold m-0 truncate">{mod.label}</h3>
+                            <Link key={mod.href} href={mod.href} style={{ textDecoration: 'none' }}>
+                                <Card padding="md" className="hover:shadow-md transition-all hover:border-primary/30" style={{ cursor: 'pointer', border: '1px solid transparent', height: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
+                                        <div style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', flexShrink: 0 }}>{mod.icon}</div>
+                                        <div style={{ flex: '1', minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+                                                <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mod.label}</h3>
                                             </div>
-                                            <p className="text-xs text-muted-foreground mt-1 m-0">{mod.desc}</p>
+                                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', margin: 0 }}>{mod.desc}</p>
                                         </div>
-                                        <ChevronRight size={16} className="text-muted-foreground flex-shrink-0 mt-1" />
+                                        <ChevronRight size={16} style={{ color: 'var(--color-text-secondary)', flexShrink: 0, marginTop: 'var(--space-1)' }} />
                                     </div>
                                 </Card>
                             </Link>

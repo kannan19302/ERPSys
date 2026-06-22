@@ -175,8 +175,8 @@ export default function CustomAppPage() {
   // ── Loading state ──
   if (mapping === undefined) {
     return (
-      <div className="frappe-card m-6 text-center">
-        <p className="text-muted-foreground p-8">Loading dynamic page...</p>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-8)' }}>Loading dynamic page...</p>
       </div>
     );
   }
@@ -184,12 +184,12 @@ export default function CustomAppPage() {
   // ── Not found ──
   if (mapping === null) {
     return (
-      <div className="frappe-card m-6 text-center p-6">
-        <h2 className="text-danger text-2xl font-bold">Page Not Found</h2>
-        <p className="text-muted-foreground mt-2">
+      <div style={{ textAlign: 'center', padding: 'var(--space-6)' }}>
+        <h2 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>Page Not Found</h2>
+        <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
           This custom page does not exist or was removed.
         </p>
-        <button onClick={() => router.back()} className="frappe-btn frappe-btn-secondary mt-4">
+        <button onClick={() => router.back()} style={{ marginTop: 'var(--space-4)' }}>
           Go Back
         </button>
       </div>
@@ -209,13 +209,13 @@ export default function CustomAppPage() {
   // ── Form view (create or edit) ──
   if (view === 'form') {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+      <div style={{ padding: 'var(--space-6)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
           <div>
-            <h1 className="text-2xl font-bold text-text">
+            <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>
               {editingRecord ? `Edit Record` : `New ${mapping.title}`}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
               {mapping.schemaRegistry?.description || `Custom form for ${mapping.module} module`}
             </p>
           </div>
@@ -235,14 +235,14 @@ export default function CustomAppPage() {
 
   // ── List view ──
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div style={{ padding: 'var(--space-6)' }}>
       {/* Header */}
-      <div className="builder-header mb-6">
+      <div style={{ marginBottom: 'var(--space-6)' }}>
         <div>
-          <h1 className="text-2xl font-bold text-text">
+          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>
             {mapping.title}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
             {mapping.schemaRegistry?.description || `Custom form for ${mapping.module} module`}
           </p>
         </div>
@@ -254,9 +254,9 @@ export default function CustomAppPage() {
 
       {/* Search + page size */}
       <div className="frappe-card">
-        <div className="p-4 border-b flex justify-between items-center gap-4 flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-[360px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: '1' }}>
+            <Search size={14} style={{ position: 'absolute', color: 'var(--color-text-tertiary)', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               className="frappe-input pl-8"
               placeholder="Search records..."
@@ -267,15 +267,14 @@ export default function CustomAppPage() {
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-muted-foreground flex"
-                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)' }}
+                style={{ position: 'absolute', cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', right: '8px', top: '50%', transform: 'translateY(-50%)' }}
               >
                 <X size={14} />
               </button>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Rows:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Rows:</span>
             <select
               className="frappe-input w-auto"
               value={pageSize}
@@ -290,12 +289,12 @@ export default function CustomAppPage() {
 
         {/* Table */}
         {loadingRecords ? (
-          <div className="p-8 text-center text-muted-foreground">
+          <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
             Loading records...
           </div>
         ) : records.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="text-muted-foreground mb-4">
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
               {search ? 'No records match your search.' : 'No records found.'}
             </p>
             <button className="frappe-btn frappe-btn-primary mx-auto" onClick={() => { setEditingRecord(null); setView('form'); }}>
@@ -305,54 +304,50 @@ export default function CustomAppPage() {
           </div>
         ) : (
           <div className="builder-table-wrapper">
-            <table className="w-full text-left text-sm">
+            <table style={{ width: '100%', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
               <thead>
-                <tr className="border-b">
-                  <th className="p-3 text-muted-foreground font-medium w-20">
+                <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>
                     ID
                   </th>
                   {listColumns.map((col: any) => (
                     <th
                       key={col.name}
                       onClick={() => handleSort(col.name)}
-                      className="p-3 text-muted-foreground font-medium cursor-pointer select-none whitespace-nowrap"
+                      style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)', cursor: 'pointer', whiteSpace: 'nowrap' }}
                     >
-                      <span className="inline-flex items-center gap-1">
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                         {col.label}
                         <ArrowUpDown
                           size={12}
-                          style={{
-                            opacity: sortBy === col.name ? 1 : 0.3,
-                            transform: sortBy === col.name && sortOrder === 'desc' ? 'scaleY(-1)' : 'none',
-                            transition: 'transform var(--duration-fast)',
-                          }}
+                          style={{ opacity: sortBy === col.name ? 1 : 0.3, transform: sortBy === col.name && sortOrder === 'desc' ? 'scaleY(-1)' : 'none', transition: 'transform var(--duration-fast)' }}
                         />
                       </span>
                     </th>
                   ))}
-                  <th className="p-3 text-muted-foreground font-medium text-right w-[120px]">
+                  <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>
                     Created
                   </th>
-                  <th className="p-3 w-[100px]"></th>
+                  <th style={{ padding: 'var(--space-3)' }}></th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((row: any) => (
-                  <tr key={row.id} className="border-b">
-                    <td className="p-3 font-mono text-xs text-muted-foreground">
+                  <tr key={row.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
                       {row.id.substring(0, 8)}
                     </td>
                     {listColumns.map((col: any) => (
-                      <td key={col.name} className="p-3">
+                      <td key={col.name} style={{ padding: 'var(--space-3)' }}>
                         {typeof row.data[col.name] === 'object'
                           ? JSON.stringify(row.data[col.name])
                           : String(row.data[col.name] ?? '-')}
                       </td>
                     ))}
-                    <td className="p-3 text-right text-muted-foreground whitespace-nowrap">
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
                       {new Date(row.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="p-3">
+                    <td style={{ padding: 'var(--space-3)' }}>
                       {deleteConfirmId === row.id ? (
                         <div className="delete-confirm-bar">
                           <span className="confirm-text">Delete?</span>
@@ -372,7 +367,7 @@ export default function CustomAppPage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex gap-1 justify-end">
+                        <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'flex-end' }}>
                           <button
                             className="frappe-btn frappe-btn-icon frappe-btn-secondary"
                             title="Edit record"
@@ -399,11 +394,11 @@ export default function CustomAppPage() {
 
         {/* Pagination */}
         {total > 0 && (
-          <div className="p-3 border-t flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">
+          <div style={{ padding: 'var(--space-3)', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--text-sm)' }}>
+            <span style={{ color: 'var(--color-text-secondary)' }}>
               {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
             </span>
-            <div className="flex gap-1">
+            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
               <button
                 className="frappe-btn frappe-btn-icon frappe-btn-secondary"
                 disabled={page <= 1}
@@ -488,10 +483,10 @@ function CustomLayoutRuntimeRenderer({ mapping, moduleName }: CustomLayoutRuntim
 
   if (layout.length === 0) {
     return (
-      <div className="p-6 max-w-7xl mx-auto text-center frappe-card">
+      <div style={{ padding: 'var(--space-6)', textAlign: 'center' }}>
         <div className="frappe-card-body py-10">
-          <h2 className="text-xl font-bold text-text mb-2">Empty Custom Page Layout</h2>
-          <p className="text-muted-foreground text-sm">
+          <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-2)' }}>Empty Custom Page Layout</h2>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
             No layout components have been configured for this page yet.
           </p>
         </div>
@@ -500,16 +495,16 @@ function CustomLayoutRuntimeRenderer({ mapping, moduleName }: CustomLayoutRuntim
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="grid grid-cols-12 gap-6">
+    <div style={{ padding: 'var(--space-6)' }}>
+      <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
         {layout.map((w: any) => {
           if (w.type === 'header') {
             return (
-              <div key={w.id} style={{ gridColumn: `span ${w.gridSpan || 12}` }} className="frappe-card p-6">
-                <div className="flex justify-between items-start flex-wrap gap-2">
+              <div key={w.id} style={{ gridColumn: `span ${w.gridSpan || 12}`, padding: 'var(--space-6)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
                   <div>
-                    <h2 className="text-2xl font-bold text-text" style={{ fontSize: '20px', fontWeight: 700 }}>{w.title}</h2>
-                    {w.config?.subtitle && <p className="text-muted-foreground mt-1" style={{ fontSize: '13px' }}>{w.config.subtitle}</p>}
+                    <h2 style={{ fontSize: '20px', fontWeight: 700 }}>{w.title}</h2>
+                    {w.config?.subtitle && <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', fontSize: '13px' }}>{w.config.subtitle}</p>}
                   </div>
                   {w.config?.badge && (
                     <span className="builder-pill active" style={{ display: 'inline-block', fontSize: '11px', padding: '2px 10px' }}>{w.config.badge}</span>
@@ -522,13 +517,13 @@ function CustomLayoutRuntimeRenderer({ mapping, moduleName }: CustomLayoutRuntim
           if (w.type === 'stats') {
             const items = w.config?.items || [];
             return (
-              <div key={w.id} style={{ gridColumn: `span ${w.gridSpan || 12}` }} className="frappe-card p-6">
-                <h3 className="text-xs font-semibold text-muted-foreground mb-4 uppercase tracking-wider">{w.title}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div key={w.id} style={{ gridColumn: `span ${w.gridSpan || 12}`, padding: 'var(--space-6)' }}>
+                <h3 style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>{w.title}</h3>
+                <div className="frappe-grid-3">
                   {items.map((item: any, i: number) => (
-                    <div key={i} className="p-4 border rounded-lg bg-card" style={{ borderLeft: `4px solid ${item.color || 'var(--color-primary)'}` }}>
-                      <div className="text-2xl font-extrabold text-text" style={{ color: item.color, fontSize: '24px', fontWeight: 800 }}>{item.value || '0'}</div>
-                      <div className="text-xs text-muted-foreground mt-1 font-medium">{item.label}</div>
+                    <div key={i} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', borderLeft: `4px solid ${item.color || 'var(--color-primary)'}` }}>
+                      <div style={{ fontSize: '24px', color: item.color, fontWeight: 800 }}>{item.value || '0'}</div>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', fontWeight: 'var(--weight-medium)' }}>{item.label}</div>
                     </div>
                   ))}
                 </div>
@@ -561,7 +556,7 @@ function CustomLayoutRuntimeRenderer({ mapping, moduleName }: CustomLayoutRuntim
               <div
                 key={w.id}
                 style={{ gridColumn: `span ${w.gridSpan || 12}`, borderLeft: `4px solid ${borderLeftColor}`, background: bg, color: color }}
-                className="p-4 rounded-lg border border-transparent font-medium text-sm flex items-center"
+                style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid transparent', fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center' }}
               >
                 <div>{text}</div>
               </div>
@@ -665,15 +660,15 @@ function RuntimeFormWidget({ widget }: { widget: any }) {
 
   if (!formId) {
     return (
-      <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card p-6 border-danger">
-        <p className="text-danger font-medium text-center">Form Widget: No form selected.</p>
+      <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)' }}>
+        <p style={{ fontWeight: 'var(--weight-medium)', textAlign: 'center' }}>Form Widget: No form selected.</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card p-6 text-center text-muted-foreground">
+      <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
         Loading form definition...
       </div>
     );
@@ -681,7 +676,7 @@ function RuntimeFormWidget({ widget }: { widget: any }) {
 
   if (!formSchema) {
     return (
-      <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card p-6 text-center text-muted-foreground">
+      <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
         Failed to load form definition.
       </div>
     );
@@ -689,7 +684,7 @@ function RuntimeFormWidget({ widget }: { widget: any }) {
 
   return (
     <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card">
-      <div className="frappe-card-header flex justify-between items-center">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>{widget.title || formSchema.name}</span>
         {submitted && (
           <button className="frappe-btn frappe-btn-secondary" onClick={() => setSubmitted(false)} style={{ padding: '2px 8px', fontSize: 'var(--text-xs)' }}>
@@ -699,9 +694,9 @@ function RuntimeFormWidget({ widget }: { widget: any }) {
       </div>
       <div className="frappe-card-body">
         {submitted ? (
-          <div className="text-center py-6">
-            <p className="text-success font-semibold text-lg">Thank You!</p>
-            <p className="text-muted-foreground mt-1">Your response has been submitted successfully.</p>
+          <div style={{ textAlign: 'center', paddingBlock: 'var(--space-6)' }}>
+            <p style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-lg)' }}>Thank You!</p>
+            <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Your response has been submitted successfully.</p>
           </div>
         ) : (
           <DynamicFormRenderer
@@ -766,15 +761,15 @@ function RuntimeTableWidget({ widget, schemas, moduleName }: { widget: any, sche
 
   if (!dataModelId && !dataModelSlug) {
     return (
-      <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card p-6 border-danger">
-        <p className="text-danger font-medium text-center">Table Widget: No data model selected.</p>
+      <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)' }}>
+        <p style={{ fontWeight: 'var(--weight-medium)', textAlign: 'center' }}>Table Widget: No data model selected.</p>
       </div>
     );
   }
 
   if (!matchingSchema) {
     return (
-      <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card p-6 text-center text-muted-foreground">
+      <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
         Finding data model schema...
       </div>
     );
@@ -786,11 +781,11 @@ function RuntimeTableWidget({ widget, schemas, moduleName }: { widget: any, sche
 
   return (
     <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card">
-      <div className="frappe-card-header flex justify-between items-center flex-wrap gap-2">
-        <span className="font-bold text-text">{widget.title || matchingSchema.name}</span>
-        <div className="relative max-w-[200px]">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+        <span style={{ fontWeight: 'var(--weight-bold)' }}>{widget.title || matchingSchema.name}</span>
+        <div style={{ position: 'relative' }}>
           <input
-            className="frappe-input text-xs"
+            style={{ fontSize: 'var(--text-xs)' }}
             placeholder="Search..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -800,33 +795,33 @@ function RuntimeTableWidget({ widget, schemas, moduleName }: { widget: any, sche
       </div>
       <div className="frappe-card-body p-0">
         {loading && records.length === 0 ? (
-          <div className="p-6 text-center text-muted-foreground">Loading records...</div>
+          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading records...</div>
         ) : records.length === 0 ? (
-          <div className="p-6 text-center text-muted-foreground">No records found.</div>
+          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>No records found.</div>
         ) : (
           <div className="builder-table-wrapper">
-            <table className="w-full text-left text-xs">
+            <table style={{ width: '100%', textAlign: 'left', fontSize: 'var(--text-xs)' }}>
               <thead>
-                <tr className="border-b" style={{ background: 'var(--color-bg-sunken)' }}>
-                  <th className="p-2 text-muted-foreground font-medium w-16">ID</th>
+                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                  <th style={{ padding: 'var(--space-2)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>ID</th>
                   {columns.map((col: any) => (
-                    <th key={col.name} className="p-2 text-muted-foreground font-medium">{col.label || col.name}</th>
+                    <th key={col.name} style={{ padding: 'var(--space-2)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>{col.label || col.name}</th>
                   ))}
-                  <th className="p-2 text-muted-foreground font-medium text-right">Created</th>
+                  <th style={{ padding: 'var(--space-2)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Created</th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((row: any) => (
-                  <tr key={row.id} className="border-b hover:bg-muted/10 transition-colors">
-                    <td className="p-2 font-mono text-muted-foreground">{row.id.substring(0, 6)}</td>
+                  <tr key={row.id} className="hover:bg-muted/10 transition-colors" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>{row.id.substring(0, 6)}</td>
                     {columns.map((col: any) => (
-                      <td key={col.name} className="p-2 text-text">
+                      <td key={col.name} style={{ padding: 'var(--space-2)' }}>
                         {typeof row.data[col.name] === 'object'
                           ? JSON.stringify(row.data[col.name])
                           : String(row.data[col.name] ?? '-')}
                       </td>
                     ))}
-                    <td className="p-2 text-right text-muted-foreground">
+                    <td style={{ padding: 'var(--space-2)', textAlign: 'right', color: 'var(--color-text-secondary)' }}>
                       {new Date(row.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -837,11 +832,11 @@ function RuntimeTableWidget({ widget, schemas, moduleName }: { widget: any, sche
         )}
 
         {totalPages > 1 && (
-          <div className="p-2 border-t flex justify-between items-center text-xs">
-            <span className="text-muted-foreground">
+          <div style={{ padding: 'var(--space-2)', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--text-xs)' }}>
+            <span style={{ color: 'var(--color-text-secondary)' }}>
               Page {page} of {totalPages}
             </span>
-            <div className="flex gap-1">
+            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
               <button
                 className="frappe-btn frappe-btn-icon frappe-btn-secondary"
                 disabled={page <= 1}
@@ -882,33 +877,31 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
   const maxVal = Math.max(...fallbackData.map(d => d.value));
 
   return (
-    <div style={{ gridColumn: `span ${widget.gridSpan || 12}` }} className="frappe-card p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-sm font-semibold text-text">{widget.title || 'Analytics Chart'}</h3>
-        <span className="text-xs text-muted-foreground capitalize font-medium">{chartType} View</span>
+    <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+        <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{widget.title || 'Analytics Chart'}</h3>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>{chartType} View</span>
       </div>
 
       {chartType === 'donut' ? (
-        <div className="flex justify-center items-center h-[180px] gap-6 flex-wrap">
-          <div className="relative w-[130px] h-[130px] rounded-full flex items-center justify-center" style={{
-            background: 'conic-gradient(var(--color-primary) 0% 40%, #10b981 40% 70%, #f59e0b 70% 90%, #8b5cf6 90% 100%)'
-          }}>
-            <div className="absolute w-[80px] h-[80px] rounded-full bg-card flex flex-col justify-center items-center" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
-              <span className="text-xl font-bold text-text">100%</span>
-              <span className="text-[10px] text-muted-foreground uppercase">Share</span>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'conic-gradient(var(--color-primary) 0% 40%, #10b981 40% 70%, #f59e0b 70% 90%, #8b5cf6 90% 100%)' }}>
+            <div style={{ position: 'absolute', borderRadius: '9999px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--color-bg-elevated)' }}>
+              <span style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>100%</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Share</span>
             </div>
           </div>
-          <div className="flex flex-col gap-1.5 text-xs text-text">
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--color-primary)' }} /> <span>Active (40%)</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{ background: '#10b981' }} /> <span>Completed (30%)</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{ background: '#f59e0b' }} /> <span>Pending (20%)</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full" style={{ background: '#8b5cf6' }} /> <span>Draft (10%)</span></div>
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: 'var(--text-xs)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', borderRadius: '9999px', background: 'var(--color-primary)' }}><div /> <span>Active (40%)</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', borderRadius: '9999px', background: '#10b981' }}><div /> <span>Completed (30%)</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', borderRadius: '9999px', background: '#f59e0b' }}><div /> <span>Pending (20%)</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', borderRadius: '9999px', background: '#8b5cf6' }}><div /> <span>Draft (10%)</span></div>
           </div>
         </div>
       ) : chartType === 'line' ? (
-        <div className="h-[180px] flex flex-col justify-between pt-2">
-          <div className="relative flex-1 flex items-end justify-between px-2">
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div style={{ position: 'relative', flex: '1', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingInline: 'var(--space-2)' }}>
+            <svg style={{ position: 'absolute', width: '100%', height: '100%' }} preserveAspectRatio="none">
               <polyline
                 fill="none"
                 stroke="var(--color-primary)"
@@ -924,12 +917,12 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
               />
             </svg>
             {fallbackData.map((d, i) => (
-              <div key={i} className="group relative flex flex-col items-center" style={{ zIndex: 1, width: '10%' }}>
-                <div className="absolute bottom-full mb-2 bg-text text-card text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md" style={{ backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
+              <div key={i} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, width: '10%' }}>
+                <div className="bottom-full bg-text text-card text-[10px] py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ position: 'absolute', marginBottom: 'var(--space-2)', paddingInline: 'var(--space-2)', borderRadius: 'var(--radius-sm)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow-md)', backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
                   {d.label}: {d.value}
                 </div>
                 <div
-                  className="w-2.5 h-2.5 rounded-full border-2 border-card bg-primary hover:scale-125 transition-transform cursor-pointer"
+                  className="w-2.5 h-2.5 border-2 border-card bg-primary hover:scale-125 transition-transform" style={{ borderRadius: '9999px', cursor: 'pointer' }}
                   style={{
                     position: 'absolute',
                     bottom: `${(d.value / maxVal) * 90}%`,
@@ -941,20 +934,20 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
               </div>
             ))}
           </div>
-          <div className="flex justify-between border-t pt-2 text-[10px] text-muted-foreground px-2">
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', paddingInline: 'var(--space-2)' }}>
             {fallbackData.map((d, i) => <span key={i}>{d.label}</span>)}
           </div>
         </div>
       ) : (
-        <div className="h-[180px] flex flex-col justify-between pt-2">
-          <div className="flex-1 flex items-end justify-between px-2 gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div style={{ flex: '1', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingInline: 'var(--space-2)', gap: 'var(--space-3)' }}>
             {fallbackData.map((d, i) => (
-              <div key={i} className="group flex-1 flex flex-col items-center h-full justify-end relative">
-                <div className="absolute bottom-full mb-1 bg-text text-card text-[10px] py-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md" style={{ backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
+              <div key={i} style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}>
+                <div className="bottom-full bg-text text-card text-[10px] py-1 px-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ position: 'absolute', marginBottom: 'var(--space-1)', borderRadius: 'var(--radius-sm)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow-md)', backgroundColor: 'var(--color-text)', color: 'var(--color-bg-elevated)' }}>
                   {d.value} units
                 </div>
                 <div
-                  className="w-full rounded-t hover:brightness-110 transition-all cursor-pointer"
+                  className="rounded-t hover:brightness-110 transition-all" style={{ width: '100%', cursor: 'pointer' }}
                   style={{
                     height: `${(d.value / maxVal) * 90}%`,
                     background: `linear-gradient(to top, ${d.color}cc, ${d.color})`,
@@ -964,8 +957,8 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
               </div>
             ))}
           </div>
-          <div className="flex justify-between border-t pt-2 text-[10px] text-muted-foreground px-2">
-            {fallbackData.map((d, i) => <span key={i} className="w-[10%] text-center">{d.label}</span>)}
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', paddingInline: 'var(--space-2)' }}>
+            {fallbackData.map((d, i) => <span key={i} style={{ textAlign: 'center' }}>{d.label}</span>)}
           </div>
         </div>
       )}

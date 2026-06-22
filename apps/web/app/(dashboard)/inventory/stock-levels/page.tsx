@@ -57,25 +57,8 @@ export default function StockLevelsPage() {
         reorderPoint: s.reorderPoint !== null ? Number(s.reorderPoint) : null
       })));
     } catch {
-      setError('Serving local mock fallback registry.');
-      setStockLevels([
-        {
-          id: 'stock-1',
-          productName: 'Refined Vibranium Alloy Ingot',
-          sku: 'SKU-VIB-001',
-          warehouseName: 'Schenectady Central Depot',
-          quantity: 45,
-          reorderPoint: 10
-        },
-        {
-          id: 'stock-2',
-          productName: 'Tactical Kevlar Micro-Weave',
-          sku: 'SKU-KEV-404',
-          warehouseName: 'Schenectady Central Depot',
-          quantity: 8,
-          reorderPoint: 15
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setStockLevels([]);
     } finally {
       setLoading(false);
     }

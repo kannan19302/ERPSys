@@ -104,18 +104,10 @@ export default function QuotationsPage() {
       if (customersRes.ok) setCustomers(await customersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       if (productsRes.ok) setProducts(await productsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
     } catch {
-      setError('Serving local mock fallback registry.');
-      setQuotes([
-        { id: 'qt-1', quotationNumber: 'QT-2026-001', status: 'SENT', validUntil: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), customerName: 'Acme Corp', subtotal: 90000, taxAmount: 5000, totalAmount: 95000, currency: 'USD', lineItemCount: 1 },
-        { id: 'qt-2', quotationNumber: 'QT-2026-002', status: 'DRAFT', validUntil: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), customerName: 'Oscorp Chemical Supply', subtotal: 2500, taxAmount: 250, totalAmount: 2750, currency: 'USD', lineItemCount: 1 }
-      ]);
-      setCustomers([
-        { id: 'c-1', name: 'Acme Corp' },
-        { id: 'c-2', name: 'Oscorp Chemical Supply' }
-      ]);
-      setProducts([
-        { id: 'p-1', name: 'Industrial Solar Panel', sku: 'ISP-001', price: 500 }
-      ]);
+      setError('Could not load data. Please try again.');
+      setQuotes([]);
+      setCustomers([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -198,24 +190,9 @@ export default function QuotationsPage() {
         loadData();
       }, 1500);
     } catch {
-      setModalSuccess(true);
-      const mockNew: Quotation = {
-        id: `qt-mock-${Date.now()}`,
-        quotationNumber,
-        status: 'DRAFT',
-        validUntil: new Date(validUntil).toISOString(),
-        customerName: customers.find(c => c.id === customerId)?.name || 'Unknown',
-        subtotal: lineItems.reduce((acc, l) => acc + l.quantity * l.unitPrice, 0),
-        taxAmount: lineItems.reduce((acc, l) => acc + (l.quantity * l.unitPrice * l.taxRate) / 100, 0),
-        totalAmount: lineItems.reduce((acc, l) => acc + (l.quantity * l.unitPrice * (1 + l.taxRate / 100)), 0),
-        currency: 'USD',
-        lineItemCount: lineItems.length
-      };
-      setQuotes(prev => [mockNew, ...prev]);
-      setTimeout(() => {
-        setIsModalOpen(false);
-        resetForm();
-      }, 1500);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }

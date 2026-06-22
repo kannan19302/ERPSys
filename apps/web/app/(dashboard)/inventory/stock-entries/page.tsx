@@ -139,40 +139,11 @@ export default function StockEntriesPage() {
         })));
       }
     } catch {
-      setError('Serving local mock fallback registry.');
-      setProducts([
-        { id: 'prod-1', name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001', costPrice: 8500, hasSerialTracking: false, hasBatchTracking: true },
-        { id: 'prod-2', name: 'Tactical Kevlar Micro-Weave', sku: 'SKU-KEV-404', costPrice: 450, hasSerialTracking: true, hasBatchTracking: false }
-      ]);
-      setWarehouses([
-        { id: 'wh-1', name: 'Schenectady Central Depot', code: 'WH-NY-01' },
-        { id: 'wh-2', name: 'Silicon Valley Logistics Hub', code: 'WH-CA-02' }
-      ]);
-      setAllBins([
-        { id: 'bin-1', code: 'A-01-01', name: 'Zone A Aisle 1', warehouseId: 'wh-1' },
-        { id: 'bin-2', code: 'B-02-04', name: 'Zone B Aisle 2', warehouseId: 'wh-2' }
-      ]);
-      setStockEntries([
-        {
-          id: 'ste-1',
-          entryNumber: 'STE-2026-00001',
-          purpose: 'MATERIAL_RECEIPT',
-          postingDate: new Date().toISOString(),
-          status: 'DRAFT',
-          remarks: 'Initial stock receipt',
-          totalValue: 382500,
-          items: [
-            {
-              id: 'item-1',
-              product: { name: 'Refined Vibranium Alloy Ingot', sku: 'SKU-VIB-001' },
-              qty: 45,
-              valuationRate: 8500,
-              amount: 382500,
-              batchNumber: 'BAT-VIB-02'
-            }
-          ]
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setProducts([]);
+      setWarehouses([]);
+      setAllBins([]);
+      setStockEntries([]);
     } finally {
       setLoading(false);
     }
@@ -225,33 +196,8 @@ export default function StockEntriesPage() {
       setEntryItems([{ productId: '', qty: 1, valuationRate: 0 }]);
       loadData();
     } catch {
-      // Local Mock fallbacks
-      const newMock: StockEntry = {
-        id: `ste-mock-${Date.now()}`,
-        entryNumber: `STE-MOCK-${Math.floor(1000 + Math.random() * 9000)}`,
-        purpose: entryPurpose,
-        postingDate: new Date().toISOString(),
-        status: 'DRAFT',
-        remarks: entryRemarks || 'Draft slip',
-        totalValue: formattedItems.reduce((acc, i) => acc + i.qty * i.valuationRate, 0),
-        items: formattedItems.map((fi, index) => {
-          const matchedProd = products.find(p => p.id === fi.productId);
-          return {
-            id: `item-mock-${index}`,
-            product: { name: matchedProd?.name || 'Unknown', sku: matchedProd?.sku || 'SKU' },
-            qty: fi.qty,
-            valuationRate: fi.valuationRate,
-            amount: fi.qty * fi.valuationRate,
-            batchNumber: fi.batchNumber,
-            serialNumber: fi.serialNo
-          };
-        })
-      };
-
-      setStockEntries(prev => [newMock, ...prev]);
-      setIsEntryModalOpen(false);
-      setEntryRemarks('');
-      setEntryItems([{ productId: '', qty: 1, valuationRate: 0 }]);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     }
   };
 
@@ -314,7 +260,7 @@ export default function StockEntriesPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

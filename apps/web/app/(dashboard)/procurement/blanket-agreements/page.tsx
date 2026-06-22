@@ -109,43 +109,10 @@ export default function BlanketAgreementsPage() {
         setProducts(Array.isArray(prodData) ? prodData : prodData?.data || []);
       }
     } catch {
-      setError('Serving local mock fallback agreements registry.');
-      setAgreements([
-        {
-          id: 'ba-1',
-          agreementNumber: 'BPA-2026-001',
-          title: 'Annual Steel Supplier Contract',
-          status: 'ACTIVE',
-          vendorId: 'v-1',
-          vendorName: 'Apex Metal Solutions',
-          startDate: new Date().toISOString(),
-          endDate: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
-          agreementLimit: 50000,
-          releasedAmount: 12500,
-          currency: 'USD',
-          notes: 'Pre-negotiated steel sheet contract. Release POs as needed.',
-          createdAt: new Date().toISOString(),
-          lineItems: [
-            {
-              id: 'bai-1',
-              productId: 'prod-1',
-              productName: 'Structural Steel I-Beam',
-              description: 'Heavy duty load bearing structural steel',
-              quantity: 500,
-              releasedQty: 100,
-              unitPrice: 100,
-              totalAmount: 50000
-            }
-          ]
-        }
-      ]);
-      setVendors([
-        { id: 'v-1', name: 'Apex Metal Solutions' },
-        { id: 'v-2', name: 'LexCorp Heavy Industries' }
-      ]);
-      setProducts([
-        { id: 'prod-1', name: 'Structural Steel I-Beam', sku: 'SKU-STEEL-001' }
-      ]);
+      setError('Could not load data. Please try again.');
+      setAgreements([]);
+      setVendors([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -236,34 +203,9 @@ export default function BlanketAgreementsPage() {
       setIsModalOpen(false);
       loadData();
     } catch {
-      // Mock fallback append
-      const newMock: BlanketAgreement = {
-        id: `ba-mock-${Date.now()}`,
-        agreementNumber,
-        title,
-        status: 'ACTIVE',
-        vendorId: selectedVendor,
-        vendorName: vendors.find(v => v.id === selectedVendor)?.name || 'General Supplier',
-        startDate: startDate ? new Date(startDate).toISOString() : new Date().toISOString(),
-        endDate: endDate ? new Date(endDate).toISOString() : new Date().toISOString(),
-        agreementLimit,
-        releasedAmount: 0,
-        currency,
-        notes: notes || null,
-        createdAt: new Date().toISOString(),
-        lineItems: items.map((item, idx) => ({
-          id: `bai-mock-${idx}-${Date.now()}`,
-          productId: item.productId || undefined,
-          productName: products.find(p => p.id === item.productId)?.name,
-          description: item.description,
-          quantity: item.quantity,
-          releasedQty: 0,
-          unitPrice: item.unitPrice,
-          totalAmount: item.quantity * item.unitPrice
-        }))
-      };
-      setAgreements([newMock, ...agreements]);
-      setIsModalOpen(false);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
+      setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
@@ -369,7 +311,7 @@ export default function BlanketAgreementsPage() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
           <AlertCircle size={16} />
-          <span>Note: {error} (Serving local mock fallback registry)</span>
+          <span>Note: {error}</span>
         </div>
       )}
 

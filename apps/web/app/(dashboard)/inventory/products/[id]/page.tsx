@@ -151,63 +151,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       }
     } catch (err: any) {
       console.error(err);
-      setError('Serving fallback mock registry details.');
-      
-      // Fallback Mock data for visual evaluation
-      const mockProduct: ProductDetail = {
-        id: productId,
-        sku: 'SKU-VIB-001',
-        name: 'Refined Vibranium Alloy Ingot',
-        description: 'High-density refined vibranium for energy absorption grids. Mined under special Wakandan treaties.',
-        type: 'STORABLE',
-        category: 'Minerals',
-        unit: 'KG',
-        costPrice: 8500,
-        sellPrice: 12000,
-        isActive: true,
-        productCategory: { name: 'Raw Minerals' },
-        variants: [
-          { id: 'v-1', sku: 'SKU-VIB-001-S', name: 'Vibranium Ingot - Small (1KG)', attributes: { Size: 'Small', Grade: 'Standard' }, costPrice: 8500, sellPrice: 12000, isActive: true },
-          { id: 'v-2', sku: 'SKU-VIB-001-L', name: 'Vibranium Ingot - Large (5KG)', attributes: { Size: 'Large', Grade: 'Standard' }, costPrice: 42000, sellPrice: 58000, isActive: true }
-        ],
-        inventoryItems: [
-          { quantity: 45, reservedQty: 5, valuationRate: 8500, warehouse: { id: 'wh-1', name: 'Schenectady Central Depot', code: 'WH-NY-01' } },
-          { quantity: 12, reservedQty: 0, valuationRate: 8500, warehouse: { id: 'wh-2', name: 'Silicon Valley Logistics Hub', code: 'WH-CA-02' } }
-        ],
-        _count: {
-          invoiceLines: 14,
-          purchaseOrderItems: 5,
-          salesOrderItems: 9
-        }
-      };
-      setProduct(mockProduct);
-      setEditName(mockProduct.name);
-      setEditDescription(mockProduct.description || '');
-      setEditCost(mockProduct.costPrice);
-      setEditSell(mockProduct.sellPrice);
-
-      setLedger([
-        {
-          id: 'ledger-1',
-          createdAt: new Date().toISOString(),
-          quantity: 45,
-          valuationRate: 8500,
-          balanceQty: 45,
-          voucherType: 'STOCK_ENTRY',
-          voucherNumber: 'STE-2026-00001',
-          warehouse: { name: 'Schenectady Central Depot' }
-        },
-        {
-          id: 'ledger-2',
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-          quantity: 12,
-          valuationRate: 8500,
-          balanceQty: 57,
-          voucherType: 'STOCK_ENTRY',
-          voucherNumber: 'STE-2026-00002',
-          warehouse: { name: 'Silicon Valley Logistics Hub' }
-        }
-      ]);
+      setError('Could not load data. Please try again.');
+      setProduct(null);
+      setLedger([]);
     } finally {
       setLoading(false);
     }
@@ -286,23 +232,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       setIsVariantModalOpen(false);
       loadProductData();
     } catch {
-      // Mock local variant add
-      if (product) {
-        const newVar = {
-          id: `var-${Date.now()}`,
-          sku: varSku,
-          name: varName,
-          attributes,
-          costPrice: varCost,
-          sellPrice: varSell,
-          isActive: true
-        };
-        setProduct({
-          ...product,
-          variants: [...(product.variants || []), newVar]
-        });
-      }
-      setIsVariantModalOpen(false);
+      // save failed — surface the error instead of fabricating a result
+      setError('Action could not be completed. Please try again.');
     } finally {
       setVarSubmitting(false);
     }

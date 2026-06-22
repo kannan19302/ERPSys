@@ -40,7 +40,7 @@ export default function DashboardsPage() {
       const data = await res.json();
       setDashboards(Array.isArray(data) ? data : data.data || MOCK_DASHBOARDS);
     } catch {
-      setDashboards(MOCK_DASHBOARDS);
+      setDashboards([]);
     } finally {
       setLoading(false);
     }

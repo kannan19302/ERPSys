@@ -90,43 +90,43 @@ export default function ARAutomationPage() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (loading) return <div style={{ padding: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin h-8 w-8" style={{ color: 'var(--color-primary)' }} /></div>;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">AR Automation & Dunning</h1>
-          <p className="text-muted-foreground mt-1">Automated customer reminders, late fees, and credit control.</p>
+          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}>AR Automation & Dunning</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Automated customer reminders, late fees, and credit control.</p>
         </div>
         <Button variant="outline" onClick={fetchData}>
-          <RefreshCw className="mr-2 h-4 w-4" />
+          <RefreshCw style={{ marginRight: 'var(--space-2)' }} />
           Refresh Data
         </Button>
       </div>
 
       {showLevelForm && (
         <Card className="border-primary/20">
-          <div className="p-6 pb-2">
-            <h3 className="text-xl font-semibold leading-none tracking-tight">Create Dunning Level</h3>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)' }}>Create Dunning Level</h3>
           </div>
-          <div className="p-6 pt-0">
-            <form onSubmit={handleCreateLevel} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Level Name</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required placeholder="First Notice" value={levelData.levelName} onChange={e => setLevelData({ ...levelData, levelName: e.target.value })} />
+          <div style={{ padding: 'var(--space-6)' }}>
+            <form onSubmit={handleCreateLevel} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div className="frappe-grid-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Level Name</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} required placeholder="First Notice" value={levelData.levelName} onChange={e => setLevelData({ ...levelData, levelName: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Days Overdue</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="number" required placeholder="15" value={levelData.daysOverdue} onChange={e => setLevelData({ ...levelData, daysOverdue: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Days Overdue</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="number" required placeholder="15" value={levelData.daysOverdue} onChange={e => setLevelData({ ...levelData, daysOverdue: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Fee Amount</label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" type="number" required placeholder="25.00" value={levelData.feeAmount} onChange={e => setLevelData({ ...levelData, feeAmount: e.target.value })} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>Fee Amount</label>
+                  <input style={{ display: 'flex', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', paddingInline: 'var(--space-3)', paddingBlock: 'var(--space-2)', fontSize: 'var(--text-sm)' }} type="number" required placeholder="25.00" value={levelData.feeAmount} onChange={e => setLevelData({ ...levelData, feeAmount: e.target.value })} />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="outline" onClick={() => setShowLevelForm(false)}>Cancel</Button>
                 <Button type="submit">Save Level</Button>
               </div>
@@ -135,96 +135,96 @@ export default function ARAutomationPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="frappe-grid-2">
         {/* Dunning Levels */}
-        <Card className="flex flex-col h-full border-primary/20 hover:border-primary/50 transition-colors">
-          <div className="p-6 border-b bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
-                <AlertTriangle className="h-6 w-6 text-amber-700 dark:text-amber-400" />
+        <Card className="border-primary/20 hover:border-primary/50 transition-colors" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <div className="bg-amber-100 dark:bg-amber-900/30" style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-xl)' }}>
+                <AlertTriangle className="text-amber-700 dark:text-amber-400" style={{ height: '24px', width: '24px' }} />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Dunning Levels</h3>
-                <p className="text-sm text-muted-foreground">Configured reminder escalations</p>
+                <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>Dunning Levels</h3>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Configured reminder escalations</p>
               </div>
             </div>
           </div>
-          <div className="p-0 flex-1 overflow-auto max-h-[400px]">
+          <div style={{ flex: '1', overflow: 'auto' }}>
             {levels.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
+              <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                 <p>No dunning levels configured.</p>
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <table style={{ width: '100%', fontSize: 'var(--text-sm)' }}>
                 <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3 font-medium">Level Name</th>
-                    <th className="p-3 font-medium text-right">Days Overdue</th>
-                    <th className="p-3 font-medium text-right">Fee</th>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Level Name</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Days Overdue</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Fee</th>
                   </tr>
                 </thead>
                 <tbody>
                   {levels.map((lvl) => (
-                    <tr key={lvl.id} className="border-b hover:bg-muted/30">
-                      <td className="p-3 font-medium">{lvl.levelName}</td>
-                      <td className="p-3 text-right text-muted-foreground">+{lvl.daysOverdue} days</td>
-                      <td className="p-3 text-right font-medium">${Number(lvl.feeAmount).toFixed(2)}</td>
+                    <tr key={lvl.id} className="hover:bg-muted/30" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>{lvl.levelName}</td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'right', color: 'var(--color-text-secondary)' }}>+{lvl.daysOverdue} days</td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 'var(--weight-medium)' }}>${Number(lvl.feeAmount).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
           </div>
-          <div className="p-4 border-t bg-muted/10">
-            <Button variant="outline" className="w-full" onClick={() => setShowLevelForm(true)}>Configure Levels</Button>
+          <div style={{ padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <Button variant="outline" style={{ width: '100%' }} onClick={() => setShowLevelForm(true)}>Configure Levels</Button>
           </div>
         </Card>
 
         {/* Dunning Runs */}
-        <Card className="flex flex-col h-full border-primary/20 hover:border-primary/50 transition-colors">
-          <div className="p-6 border-b bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
-                <MailWarning className="h-6 w-6 text-rose-700 dark:text-rose-400" />
+        <Card className="border-primary/20 hover:border-primary/50 transition-colors" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <div className="bg-rose-100 dark:bg-rose-900/30" style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-xl)' }}>
+                <MailWarning className="text-rose-700 dark:text-rose-400" style={{ height: '24px', width: '24px' }} />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Dunning Run History</h3>
-                <p className="text-sm text-muted-foreground">Past automated reminder batches</p>
+                <h3 style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>Dunning Run History</h3>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Past automated reminder batches</p>
               </div>
             </div>
           </div>
-          <div className="p-0 flex-1 overflow-auto max-h-[400px]">
+          <div style={{ flex: '1', overflow: 'auto' }}>
             {runs.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
+              <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                 <p>No dunning runs recorded.</p>
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <table style={{ width: '100%', fontSize: 'var(--text-sm)' }}>
                 <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3 font-medium">Date</th>
-                    <th className="p-3 font-medium">Status</th>
-                    <th className="p-3 font-medium text-right">Invoices Flagged</th>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Date</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)' }}>Status</th>
+                    <th style={{ padding: 'var(--space-3)', fontWeight: 'var(--weight-medium)', textAlign: 'right' }}>Invoices Flagged</th>
                   </tr>
                 </thead>
                 <tbody>
                   {runs.map((run) => (
-                    <tr key={run.id} className="border-b hover:bg-muted/30">
-                      <td className="p-3">{new Date(run.runDate).toLocaleString()}</td>
-                      <td className="p-3">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                    <tr key={run.id} className="hover:bg-muted/30" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-3)' }}>{new Date(run.runDate).toLocaleString()}</td>
+                      <td style={{ padding: 'var(--space-3)' }}>
+                        <span className="px-2.5 py-0.5 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)' }}>
                           {run.status}
                         </span>
                       </td>
-                      <td className="p-3 text-right font-medium">{run.totalInvoices}</td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 'var(--weight-medium)' }}>{run.totalInvoices}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
           </div>
-          <div className="p-4 border-t bg-muted/10">
-            <Button className="w-full" variant="danger" onClick={handleExecuteDunning}>Execute Manual Dunning Run <Play className="ml-2 h-4 w-4" /></Button>
+          <div style={{ padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <Button style={{ width: '100%' }} variant="danger" onClick={handleExecuteDunning}>Execute Manual Dunning Run <Play style={{ marginLeft: 'var(--space-2)' }} /></Button>
           </div>
         </Card>
       </div>

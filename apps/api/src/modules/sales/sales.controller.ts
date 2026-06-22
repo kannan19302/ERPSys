@@ -111,7 +111,37 @@ export class SalesController {
     );
   }
 
+  // ─── Quotation Detail ───────────────────────────────
+
+  @Get('quotations/:id')
+  @Permissions('sales.quotation.read')
+  async getQuotationById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.salesService.getQuotationById(req.user.tenantId, id);
+  }
+
+  @Patch('quotations/:id/status')
+  @Permissions('sales.quotation.update')
+  async updateQuotationStatus(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { status: string },
+  ) {
+    return this.salesService.updateQuotationStatus(req.user.tenantId, id, dto.status);
+  }
+
   // ─── Delivery Notes ────────────────────────────────
+
+  @Get('delivery-notes')
+  @Permissions('sales.delivery-note.read')
+  async getDeliveryNotes(@Req() req: AuthenticatedRequest, @Query('orderId') orderId?: string) {
+    return this.salesService.getDeliveryNotes(req.user.tenantId, orderId);
+  }
+
+  @Get('delivery-notes/:id')
+  @Permissions('sales.delivery-note.read')
+  async getDeliveryNoteById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.salesService.getDeliveryNoteById(req.user.tenantId, id);
+  }
 
   @Post('delivery-notes')
   @Permissions('sales.delivery-note.create')
@@ -119,12 +149,28 @@ export class SalesController {
     return this.salesService.createDeliveryNote(req.user.tenantId, dto, req.user.userId || 'system');
   }
 
-  // ─── Sales Returns ─────────────────────────────────
+  @Patch('delivery-notes/:id/ship')
+  @Permissions('sales.delivery-note.update')
+  async markDeliveryNoteShipped(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { trackingNumber?: string; carrier?: string },
+  ) {
+    return this.salesService.markDeliveryNoteShipped(req.user.tenantId, id, dto.trackingNumber, dto.carrier);
+  }
+
+  // ─── Sales Returns (RMA) ───────────────────────────
 
   @Get('returns')
   @Permissions('sales.return.read')
-  async getSalesReturns(@Req() req: AuthenticatedRequest) {
-    return this.salesService.getSalesReturns(req.user.tenantId);
+  async getSalesReturns(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.salesService.getSalesReturns(req.user.tenantId, status);
+  }
+
+  @Get('returns/:id')
+  @Permissions('sales.return.read')
+  async getSalesReturnById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.salesService.getSalesReturnById(req.user.tenantId, id);
   }
 
   @Post('returns')
@@ -132,5 +178,23 @@ export class SalesController {
   async createSalesReturn(@Req() req: AuthenticatedRequest, @Body() dto: CreateSalesReturnInput): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.salesService.createSalesReturn(req.user.tenantId, orgId, dto, req.user.userId || 'system');
+  }
+
+  @Patch('returns/:id/process')
+  @Permissions('sales.return.update')
+  async processReturn(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { action: 'APPROVE' | 'REJECT' | 'RECEIVE' | 'REFUND'; notes?: string },
+  ) {
+    return this.salesService.processReturn(req.user.tenantId, id, dto.action, dto.notes, req.user.userId || 'system');
+  }
+
+  // ─── Dashboard Stats ───────────────────────────────
+
+  @Get('stats')
+  @Permissions('sales.order.read')
+  async getSalesStats(@Req() req: AuthenticatedRequest) {
+    return this.salesService.getSalesStats(req.user.tenantId);
   }
 }
