@@ -1,0 +1,7 @@
+{
+  "slug": "charges",
+  "title": "Charges",
+  "type": "list",
+  "schema": "charge",
+  "module": "billing-claims"
+}

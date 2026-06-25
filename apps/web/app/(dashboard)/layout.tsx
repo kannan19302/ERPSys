@@ -518,15 +518,6 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       ]
     };
   }
-  if (pathname.startsWith('/healthcare')) {
-    return {
-      title: 'Healthcare',
-      icon: Activity,
-      items: [
-        { name: 'Patient EHR & Vitals', href: '/healthcare', icon: Activity }
-      ]
-    };
-  }
   if (pathname.startsWith('/education')) {
     return {
       title: 'Education',
@@ -1221,6 +1212,44 @@ export default function DashboardLayout({
   const [installedApps, setInstalledApps] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [demoDataLoaded, setDemoDataLoaded] = useState(false);
+  // Dynamic sidebar navigation for installed marketplace apps (/app/<slug>).
+  // Built from the app manifest (enabled modules -> grouped pages) so third-party
+  // industry apps get a native sidebar exactly like the core modules.
+  const [dynamicAppNav, setDynamicAppNav] = useState<{ slug: string; title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } | null>(null);
+
+  useEffect(() => {
+    if (!pathname.startsWith('/app/')) { setDynamicAppNav(null); return; }
+    const slug = pathname.split('/')[2];
+    if (!slug) { setDynamicAppNav(null); return; }
+    let mounted = true;
+    (async () => {
+      try {
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch(`/api/v1/admin/marketplace/installed/${slug}/modules`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) { if (mounted) setDynamicAppNav(null); return; }
+        const shell = await res.json();
+        const pageIcon = (t: string) => {
+          const k = (t || '').toUpperCase();
+          if (k === 'LIST') return ClipboardList;
+          if (k === 'FORM') return FileText;
+          if (k === 'DASHBOARD' || k === 'CUSTOM') return BarChart3;
+          return LayoutGrid;
+        };
+        const items: SidebarItem[] = [{ name: 'Overview', href: `/app/${slug}`, icon: Home }];
+        if (slug === 'healthcare') items.push({ name: 'Clinical Tools', href: `/app/${slug}/clinical`, icon: Activity });
+        for (const m of (shell.modules || []).filter((m: any) => m.enabled)) {
+          items.push({
+            name: m.name,
+            isHeader: true,
+            items: (m.pages || []).map((p: any) => ({ name: p.title, href: `/app/${slug}/${p.slug}`, icon: pageIcon(p.type) })),
+          });
+        }
+        items.push({ name: 'Manage Modules', isHeader: true, items: [{ name: 'Admin Console', href: `/app/${slug}?view=admin`, icon: Settings }] });
+        if (mounted) setDynamicAppNav({ slug, title: shell.app?.name || slug, icon: Activity, items });
+      } catch { if (mounted) setDynamicAppNav(null); }
+    })();
+    return () => { mounted = false; };
+  }, [pathname]);
 
   const userDropdownRef = React.useRef<HTMLDivElement>(null);
   const tenantDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -1316,16 +1345,23 @@ export default function DashboardLayout({
             const installedList: string[] = await res.json();
             setInstalledApps(installedList);
 
-            // Check client-side app installation guard for industry/premium paths
+            // Redirect to the App Store if the user navigates to a module they have
+            // uninstalled. Covers both bundle industry apps and gated core business
+            // modules; kernel apps and unmapped paths are never guarded. Some apps are
+            // served under a segment that differs from their app slug (Connect, Drive).
             const segments = pathname.split('/');
             const activeSegment = segments[1];
-            const industryApps = ['healthcare', 'education', 'real-estate', 'field-service'];
-
-            if (activeSegment && industryApps.includes(activeSegment)) {
-              if (!installedList.includes(activeSegment)) {
-                // Not installed! Redirect back to Apps landing
-                router.push('/apps');
-              }
+            const segmentToSlug: Record<string, string> = {
+              education: 'education', 'real-estate': 'real-estate', 'field-service': 'field-service',
+              finance: 'finance', hr: 'hr', crm: 'crm', inventory: 'inventory', procurement: 'procurement',
+              sales: 'sales', 'supply-chain': 'supply-chain', projects: 'projects', manufacturing: 'manufacturing',
+              analytics: 'analytics', drive: 'drive', storage: 'drive', connect: 'communication',
+              communication: 'communication', pos: 'pos',
+            };
+            const guardedSlug = activeSegment ? segmentToSlug[activeSegment] : undefined;
+            if (guardedSlug && !installedList.includes(guardedSlug)) {
+              // Not installed! Redirect back to Apps landing
+              router.push('/apps');
             }
           }
         } catch {
@@ -1368,7 +1404,9 @@ export default function DashboardLayout({
 
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
   const hideSidebar = isAppsLanding || pathname === '/profile' || pathname.startsWith('/profile/');
-  const appNav = getAppSpecificNavigation(pathname);
+  const appNav = (pathname.startsWith('/app/') && dynamicAppNav && dynamicAppNav.slug === pathname.split('/')[2])
+    ? dynamicAppNav
+    : getAppSpecificNavigation(pathname);
 
   // Dynamic Breadcrumb Computation
   const pathSegments = pathname.split('/').filter(Boolean);
@@ -1410,7 +1448,6 @@ export default function DashboardLayout({
     { id: 'drive', name: 'Drive', href: '/drive', icon: FolderOpen, installed: true },
     { id: 'communication', name: 'Connect', href: '/connect', icon: MessageSquare, installed: true },
     { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
-    { id: 'healthcare', name: 'Healthcare Module', href: '/healthcare', icon: Activity, installed: false },
     { id: 'education', name: 'Education Module', href: '/education', icon: GraduationCap, installed: false },
     { id: 'real-estate', name: 'Real Estate Module', href: '/real-estate', icon: Building2, installed: false },
     { id: 'field-service', name: 'Field Service Module', href: '/field-service', icon: Wrench, installed: false },
@@ -1430,7 +1467,10 @@ export default function DashboardLayout({
     },
   ];
 
-  const activeApps = allApplications.filter(app => app.installed || installedApps.includes(app.id));
+  // Kernel apps are always present (never uninstallable); every other app (core
+  // business module or industry app) shows only when it's installed for the tenant.
+  const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'admin', 'app-store', 'builder']);
+  const activeApps = allApplications.filter(app => KERNEL_APP_IDS.has(app.id) || installedApps.includes(app.id));
   const folderAppIds = switcherFolders.flatMap(f => f.appIds);
   const rootApps = activeApps.filter(app => !folderAppIds.includes(app.id));
   const visibleFolders = switcherFolders.filter(f => activeApps.filter(a => f.appIds.includes(a.id)).length > 0);

@@ -1,0 +1,6 @@
+{
+  "slug": "invoices",
+  "title": "Invoices",
+  "type": "list",
+  "schema": "invoice"
+}

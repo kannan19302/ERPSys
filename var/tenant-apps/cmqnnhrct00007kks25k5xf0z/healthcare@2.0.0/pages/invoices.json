@@ -1,0 +1,7 @@
+{
+  "slug": "invoices",
+  "title": "Invoices",
+  "type": "list",
+  "schema": "invoice",
+  "module": "payments-ar"
+}

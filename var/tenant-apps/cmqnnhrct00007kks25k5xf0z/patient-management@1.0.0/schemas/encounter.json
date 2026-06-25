@@ -1,0 +1,47 @@
+{
+  "slug": "encounter",
+  "name": "Encounter",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "encounter_date",
+      "label": "Encounter Date",
+      "type": "date",
+      "required": true
+    },
+    {
+      "name": "type",
+      "label": "Type",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Outpatient",
+        "Inpatient",
+        "Emergency"
+      ]
+    },
+    {
+      "name": "reason",
+      "label": "Reason",
+      "type": "textarea",
+      "required": false
+    },
+    {
+      "name": "diagnosis",
+      "label": "Diagnosis",
+      "type": "textarea",
+      "required": false
+    },
+    {
+      "name": "provider",
+      "label": "Provider",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

@@ -184,6 +184,7 @@ export default function AppsHubPage() {
   const [openFolder, setOpenFolder] = useState<string | null>(null);
   
   const [installedApps, setInstalledApps] = useState<Set<string>>(new Set());
+  const [marketplaceApps, setMarketplaceApps] = useState<AppDefinition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -191,12 +192,31 @@ export default function AppsHubPage() {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await fetch('/api/v1/saas/installed-apps', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setInstalledApps(new Set(data));
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        const [saasRes, mktRes] = await Promise.all([
+          fetch('/api/v1/saas/installed-apps', { headers }),
+          fetch('/api/v1/admin/marketplace/installed', { headers }),
+        ]);
+
+        if (saasRes.ok) setInstalledApps(new Set(await saasRes.json()));
+
+        if (mktRes.ok) {
+          const list: any[] = await mktRes.json();
+          // Installed industry/marketplace apps run at /app/<slug> (the in-app shell).
+          const dynamic: AppDefinition[] = list
+            .filter(a => a.source === 'MARKETPLACE' && a.appSlug)
+            .map(a => ({
+              id: `mkt:${a.appSlug}`,
+              name: a.appName || a.appSlug,
+              description: 'Installed industry app — open to manage its modules.',
+              href: `/app/${a.appSlug}`,
+              icon: Activity,
+              color: 'var(--color-danger)',
+              category: 'Industry',
+              installed: true,
+            }));
+          setMarketplaceApps(dynamic);
         }
       } catch (err) {
         console.error('Failed to load installed apps', err);
@@ -207,7 +227,14 @@ export default function AppsHubPage() {
     fetchInstalled();
   }, []);
 
-  const activeApps = applications.filter(app => app.installed || installedApps.has(app.id));
+  // Kernel apps are always shown on the Desk; every other app (core business module
+  // or industry app) appears only while installed for the tenant — so uninstalling
+  // one hides its icon here.
+  const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'admin', 'app-store', 'builder']);
+  const activeApps = [
+    ...applications.filter(app => (KERNEL_APP_IDS.has(app.id) || installedApps.has(app.id)) && app.category !== 'Industry'),
+    ...marketplaceApps,
+  ];
   const sortedActiveApps = [...activeApps].sort((a, b) => a.name.localeCompare(b.name));
 
   const openFolderObj = SUBFOLDERS.find(f => f.id === openFolder);

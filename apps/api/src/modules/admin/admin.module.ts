@@ -37,6 +37,10 @@ import { SubscriptionController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
 import { OrgHierarchyController } from './org-hierarchy.controller';
 import { OrgHierarchyService } from './org-hierarchy.service';
+import { BundleStoreService } from '../marketplace/bundle-store.service';
+import { AppProvisioningService } from '../marketplace/app-provisioning.service';
+import { VendorService } from '../marketplace/vendor.service';
+import { DeveloperController } from '../marketplace/developer.controller';
 
 @Module({
   controllers: [
@@ -59,8 +63,12 @@ import { OrgHierarchyService } from './org-hierarchy.service';
     DataQualityController,
     SubscriptionController,
     OrgHierarchyController,
+    DeveloperController,
   ],
   providers: [
+    BundleStoreService,
+    AppProvisioningService,
+    VendorService,
     AdminService,
     SuperAdminService,
     SecurityService,
@@ -101,6 +109,9 @@ import { OrgHierarchyService } from './org-hierarchy.service';
     DataQualityService,
     SubscriptionService,
     OrgHierarchyService,
+    BundleStoreService,
+    AppProvisioningService,
+    VendorService,
   ],
 })
 export class AdminModule {}

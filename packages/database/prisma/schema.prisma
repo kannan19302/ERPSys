@@ -31,16 +31,16 @@ model Tenant {
   demoDataLoaded Boolean   @default(false) @map("demo_data_loaded")
   demoLoadedAt   DateTime? @map("demo_loaded_at")
 
-  users            User[]
-  organizations    Organization[]
-  subscription     TenantSubscription?
-  installedApps    InstalledApp[]
-  demoDataRecords  DemoDataRecord[]
-  accessPackages   AccessPackage[]
-  ssoConfigs       SsoConfig[]
-  userSessions     UserSession[]
-  userGroups       UserGroup[]
-  ipRestrictions   IpRestriction[]
+  users           User[]
+  organizations   Organization[]
+  subscription    TenantSubscription?
+  installedApps   InstalledApp[]
+  demoDataRecords DemoDataRecord[]
+  accessPackages  AccessPackage[]
+  ssoConfigs      SsoConfig[]
+  userSessions    UserSession[]
+  userGroups      UserGroup[]
+  ipRestrictions  IpRestriction[]
 
   @@map("tenants")
 }
@@ -123,33 +123,33 @@ model Organization {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  tenant               Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  departments          Department[]
-  customers            Customer[]
-  vendors              Vendor[]
-  products             Product[]
-  warehouses           Warehouse[]
-  creditNotes          CreditNote[]
-  debitNotes           DebitNote[]
-  dunningLevels        DunningLevel[]
-  dunningRuns          DunningRun[]
-  paymentSchedules     PaymentSchedule[]
-  paymentRuns          PaymentRun[]
-  budgets              Budget[]
-  forecastScenarios    ForecastScenario[]
-  taxRules             TaxRule[]
-  withholdingTaxes     WithholdingTax[]
-  taxFilings           TaxFiling[]
-  outgoingTransfers    InterCompanyTransfer[] @relation("FromOrganization")
-  incomingTransfers    InterCompanyTransfer[] @relation("ToOrganization")
-  investmentPortfolios InvestmentPortfolio[]
-  treasuryTransactions TreasuryTransaction[]
-  rfqs                 RFQ[]
-  supplierQuotations   SupplierQuotation[]
-  campaigns            Campaign[]
-  salesReturns         SalesReturn[]
-  purchaseReturns      PurchaseReturn[]
-  purchaseRequisitions PurchaseRequisition[]
+  tenant                    Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  departments               Department[]
+  customers                 Customer[]
+  vendors                   Vendor[]
+  products                  Product[]
+  warehouses                Warehouse[]
+  creditNotes               CreditNote[]
+  debitNotes                DebitNote[]
+  dunningLevels             DunningLevel[]
+  dunningRuns               DunningRun[]
+  paymentSchedules          PaymentSchedule[]
+  paymentRuns               PaymentRun[]
+  budgets                   Budget[]
+  forecastScenarios         ForecastScenario[]
+  taxRules                  TaxRule[]
+  withholdingTaxes          WithholdingTax[]
+  taxFilings                TaxFiling[]
+  outgoingTransfers         InterCompanyTransfer[]     @relation("FromOrganization")
+  incomingTransfers         InterCompanyTransfer[]     @relation("ToOrganization")
+  investmentPortfolios      InvestmentPortfolio[]
+  treasuryTransactions      TreasuryTransaction[]
+  rfqs                      RFQ[]
+  supplierQuotations        SupplierQuotation[]
+  campaigns                 Campaign[]
+  salesReturns              SalesReturn[]
+  purchaseReturns           PurchaseReturn[]
+  purchaseRequisitions      PurchaseRequisition[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
 
   @@index([tenantId])
@@ -167,12 +167,12 @@ model Department {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organization   Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  parent         Department?    @relation("DeptHierarchy", fields: [parentId], references: [id])
-  children       Department[]   @relation("DeptHierarchy")
-  employees      Employee[]
-  journalEntries JournalEntry[]
-  positions      Position[]
+  organization         Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  parent               Department?           @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children             Department[]          @relation("DeptHierarchy")
+  employees            Employee[]
+  journalEntries       JournalEntry[]
+  positions            Position[]
   purchaseRequisitions PurchaseRequisition[]
 
   @@unique([tenantId, orgId, code])
@@ -272,13 +272,13 @@ model Vendor {
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
 
-  organization         Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  purchaseOrders       PurchaseOrder[]
-  debitNotes           DebitNote[]
-  paymentSchedules     PaymentSchedule[]
-  supplierQuotations   SupplierQuotation[]
-  purchaseReturns      PurchaseReturn[]
-  subcontractingOrders SubcontractingOrder[]
+  organization              Organization               @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  purchaseOrders            PurchaseOrder[]
+  debitNotes                DebitNote[]
+  paymentSchedules          PaymentSchedule[]
+  supplierQuotations        SupplierQuotation[]
+  purchaseReturns           PurchaseReturn[]
+  subcontractingOrders      SubcontractingOrder[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
 
   @@index([tenantId])
@@ -306,7 +306,7 @@ model Contact {
   updatedAt  DateTime  @updatedAt @map("updated_at")
   deletedAt  DateTime? @map("deleted_at")
 
-  customer   Customer?      @relation(fields: [customerId], references: [id])
+  customer   Customer?        @relation(fields: [customerId], references: [id])
   activities Activity[]
   tags       ContactTagLink[]
 
@@ -411,9 +411,9 @@ model Opportunity {
   weightedAmount Decimal?  @map("weighted_amount") @db.Decimal(15, 2)
   stageEnteredAt DateTime? @map("stage_entered_at")
 
-  customer   Customer?      @relation(fields: [customerId], references: [id])
-  lead       Lead?          @relation("LeadOpportunity", fields: [leadId], references: [id])
-  pipeline   SalesPipeline? @relation(fields: [pipelineId], references: [id])
+  customer   Customer?             @relation(fields: [customerId], references: [id])
+  lead       Lead?                 @relation("LeadOpportunity", fields: [leadId], references: [id])
+  pipeline   SalesPipeline?        @relation(fields: [pipelineId], references: [id])
   activities Activity[]
   lineItems  OpportunityLineItem[]
 
@@ -475,69 +475,69 @@ model EmailTemplate {
 // ════════════════════════════════════════════════
 
 model Product {
-  id               String    @id @default(cuid())
-  tenantId         String    @map("tenant_id")
-  orgId            String    @map("org_id")
-  categoryId       String?   @map("category_id")
-  sku              String
-  barcode          String?
-  name             String
-  description      String?
-  type             String    @default("GOODS") // GOODS, SERVICE, CONSUMABLE, RAW_MATERIAL, FINISHED_GOOD, SEMI_FINISHED, ASSET
-  category         String?
-  brand            String?
-  manufacturer     String?
-  unit             String    @default("EACH")
-  costPrice        Decimal   @map("cost_price") @db.Decimal(15, 2)
-  sellPrice        Decimal   @map("sell_price") @db.Decimal(15, 2)
-  taxCategory      String?   @map("tax_category")
-  isActive         Boolean   @default(true) @map("is_active")
-  hasSerialTracking Boolean  @default(false) @map("has_serial_tracking")
-  hasBatchTracking  Boolean  @default(false) @map("has_batch_tracking")
-  costingMethod    String    @default("AVERAGE") @map("costing_method")
-  minOrderQty      Decimal?  @map("min_order_qty") @db.Decimal(15, 3)
-  maxOrderQty      Decimal?  @map("max_order_qty") @db.Decimal(15, 3)
-  leadTimeDays     Int       @default(0) @map("lead_time_days")
-  weight           Decimal?  @db.Decimal(10, 3)
-  weightUnit       String    @default("KG") @map("weight_unit")
-  dimensions       Json?     @default("{}")
-  images           Json      @default("[]")
-  attributes       Json      @default("{}")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-  deletedAt        DateTime? @map("deleted_at")
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  categoryId        String?   @map("category_id")
+  sku               String
+  barcode           String?
+  name              String
+  description       String?
+  type              String    @default("GOODS") // GOODS, SERVICE, CONSUMABLE, RAW_MATERIAL, FINISHED_GOOD, SEMI_FINISHED, ASSET
+  category          String?
+  brand             String?
+  manufacturer      String?
+  unit              String    @default("EACH")
+  costPrice         Decimal   @map("cost_price") @db.Decimal(15, 2)
+  sellPrice         Decimal   @map("sell_price") @db.Decimal(15, 2)
+  taxCategory       String?   @map("tax_category")
+  isActive          Boolean   @default(true) @map("is_active")
+  hasSerialTracking Boolean   @default(false) @map("has_serial_tracking")
+  hasBatchTracking  Boolean   @default(false) @map("has_batch_tracking")
+  costingMethod     String    @default("AVERAGE") @map("costing_method")
+  minOrderQty       Decimal?  @map("min_order_qty") @db.Decimal(15, 3)
+  maxOrderQty       Decimal?  @map("max_order_qty") @db.Decimal(15, 3)
+  leadTimeDays      Int       @default(0) @map("lead_time_days")
+  weight            Decimal?  @db.Decimal(10, 3)
+  weightUnit        String    @default("KG") @map("weight_unit")
+  dimensions        Json?     @default("{}")
+  images            Json      @default("[]")
+  attributes        Json      @default("{}")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
-  organization           Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  productCategory        ProductCategory?        @relation("ProductCategory", fields: [categoryId], references: [id])
-  inventoryItems         InventoryItem[]
-  invoiceLines           InvoiceLineItem[]
-  purchaseOrderItems     PurchaseOrderItem[]
-  salesOrderItems        SalesOrderItem[]
-  serialNumbers          SerialNumber[]
-  batches                Batch[]
-  stockLedgerEntries     StockLedgerEntry[]
-  stockEntryItems        StockEntryItem[]
-  qualityInspections     QualityInspection[]
-  cycleCountItems        CycleCountItem[]
-  rfqItems               RFQItem[]
-  supplierQuotationItems SupplierQuotationItem[]
-  salesReturnItems       SalesReturnItem[]
-  purchaseReturnItems    PurchaseReturnItem[]
-  mrpPlannedItems        MRPPlannedItem[]
-  subcontractingOrders   SubcontractingOrder[]
-  ncrRecords             NonConformanceReport[]
-  opportunityLineItems   OpportunityLineItem[]
-  priceBookEntries       PriceBookEntry[]
-  variants               ProductVariant[]
-  inventoryItemBins      InventoryItemBin[]
-  reorderRules           ReorderRule[]
-  stockAlerts            StockAlert[]
-  inventoryValuations    InventoryValuation[]
-  productKit             ProductKit?
-  productKitItems        ProductKitItem[]
-  subcontractingMaterials SubcontractingMaterial[]
-  componentConsumptions   WorkOrderComponentConsumption[]
-  purchaseRequisitionItems PurchaseRequisitionItem[]
+  organization                  Organization                    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  productCategory               ProductCategory?                @relation("ProductCategory", fields: [categoryId], references: [id])
+  inventoryItems                InventoryItem[]
+  invoiceLines                  InvoiceLineItem[]
+  purchaseOrderItems            PurchaseOrderItem[]
+  salesOrderItems               SalesOrderItem[]
+  serialNumbers                 SerialNumber[]
+  batches                       Batch[]
+  stockLedgerEntries            StockLedgerEntry[]
+  stockEntryItems               StockEntryItem[]
+  qualityInspections            QualityInspection[]
+  cycleCountItems               CycleCountItem[]
+  rfqItems                      RFQItem[]
+  supplierQuotationItems        SupplierQuotationItem[]
+  salesReturnItems              SalesReturnItem[]
+  purchaseReturnItems           PurchaseReturnItem[]
+  mrpPlannedItems               MRPPlannedItem[]
+  subcontractingOrders          SubcontractingOrder[]
+  ncrRecords                    NonConformanceReport[]
+  opportunityLineItems          OpportunityLineItem[]
+  priceBookEntries              PriceBookEntry[]
+  variants                      ProductVariant[]
+  inventoryItemBins             InventoryItemBin[]
+  reorderRules                  ReorderRule[]
+  stockAlerts                   StockAlert[]
+  inventoryValuations           InventoryValuation[]
+  productKit                    ProductKit?
+  productKitItems               ProductKitItem[]
+  subcontractingMaterials       SubcontractingMaterial[]
+  componentConsumptions         WorkOrderComponentConsumption[]
+  purchaseRequisitionItems      PurchaseRequisitionItem[]
   blanketPurchaseAgreementItems BlanketPurchaseAgreementItem[]
 
   @@unique([tenantId, orgId, sku])
@@ -547,18 +547,18 @@ model Product {
 }
 
 model Warehouse {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orgId       String   @map("org_id")
-  name        String
-  code        String
-  address     Json?
-  type        String   @default("MAIN") // MAIN, TRANSIT, VIRTUAL, RETAIL, CONSIGNMENT
-  managerId   String?  @map("manager_id")
-  capacity    Decimal? @db.Decimal(15, 3)
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  orgId     String   @map("org_id")
+  name      String
+  code      String
+  address   Json?
+  type      String   @default("MAIN") // MAIN, TRANSIT, VIRTUAL, RETAIL, CONSIGNMENT
+  managerId String?  @map("manager_id")
+  capacity  Decimal? @db.Decimal(15, 3)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   organization       Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
   inventoryItems     InventoryItem[]
@@ -571,20 +571,20 @@ model Warehouse {
 }
 
 model InventoryItem {
-  id              String    @id @default(cuid())
-  tenantId        String    @map("tenant_id")
-  productId       String    @map("product_id")
-  warehouseId     String    @map("warehouse_id")
-  quantity        Decimal   @default(0) @db.Decimal(15, 3)
-  reservedQty     Decimal   @default(0) @map("reserved_qty") @db.Decimal(15, 3)
-  committedQty    Decimal   @default(0) @map("committed_qty") @db.Decimal(15, 3)
-  inTransitQty    Decimal   @default(0) @map("in_transit_qty") @db.Decimal(15, 3)
-  reorderPoint    Decimal?  @map("reorder_point") @db.Decimal(15, 3)
-  reorderQty      Decimal?  @map("reorder_qty") @db.Decimal(15, 3)
-  valuationRate   Decimal?  @map("valuation_rate") @db.Decimal(15, 4)
-  lastCountDate   DateTime? @map("last_count_date")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  productId     String    @map("product_id")
+  warehouseId   String    @map("warehouse_id")
+  quantity      Decimal   @default(0) @db.Decimal(15, 3)
+  reservedQty   Decimal   @default(0) @map("reserved_qty") @db.Decimal(15, 3)
+  committedQty  Decimal   @default(0) @map("committed_qty") @db.Decimal(15, 3)
+  inTransitQty  Decimal   @default(0) @map("in_transit_qty") @db.Decimal(15, 3)
+  reorderPoint  Decimal?  @map("reorder_point") @db.Decimal(15, 3)
+  reorderQty    Decimal?  @map("reorder_qty") @db.Decimal(15, 3)
+  valuationRate Decimal?  @map("valuation_rate") @db.Decimal(15, 4)
+  lastCountDate DateTime? @map("last_count_date")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   product   Product   @relation(fields: [productId], references: [id])
   warehouse Warehouse @relation(fields: [warehouseId], references: [id])
@@ -747,10 +747,10 @@ model PurchaseOrder {
   requisitionId       String? @map("requisition_id")
   blanketAgreementId  String? @map("blanket_agreement_id")
 
-  vendor            Vendor              @relation(fields: [vendorId], references: [id])
-  rfq               RFQ?                @relation(fields: [rfqId], references: [id])
-  supplierQuotation SupplierQuotation?  @relation(fields: [supplierQuotationId], references: [id])
-  requisition       PurchaseRequisition? @relation(fields: [requisitionId], references: [id], onDelete: SetNull)
+  vendor            Vendor                    @relation(fields: [vendorId], references: [id])
+  rfq               RFQ?                      @relation(fields: [rfqId], references: [id])
+  supplierQuotation SupplierQuotation?        @relation(fields: [supplierQuotationId], references: [id])
+  requisition       PurchaseRequisition?      @relation(fields: [requisitionId], references: [id], onDelete: SetNull)
   blanketAgreement  BlanketPurchaseAgreement? @relation(fields: [blanketAgreementId], references: [id], onDelete: SetNull)
   lineItems         PurchaseOrderItem[]
   receipts          PurchaseReceipt[]
@@ -942,11 +942,11 @@ model Quotation {
   updatedAt          DateTime  @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
 
-  customer    Customer            @relation(fields: [customerId], references: [id])
-  lineItems   QuotationItem[]
-  sections    QuotationSection[]
-  versions    QuotationVersion[]
-  signatures  QuotationSignature[]
+  customer   Customer             @relation(fields: [customerId], references: [id])
+  lineItems  QuotationItem[]
+  sections   QuotationSection[]
+  versions   QuotationVersion[]
+  signatures QuotationSignature[]
 
   @@unique([tenantId, orgId, quotationNumber])
   @@index([tenantId])
@@ -965,9 +965,9 @@ model QuotationItem {
   unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
   taxRate     Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
   taxAmount   Decimal @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  totalAmount Decimal  @map("total_amount") @db.Decimal(15, 2)
-  sortOrder   Int      @default(0) @map("sort_order")
-  sectionId   String?  @map("section_id")
+  totalAmount Decimal @map("total_amount") @db.Decimal(15, 2)
+  sortOrder   Int     @default(0) @map("sort_order")
+  sectionId   String? @map("section_id")
 
   quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
 
@@ -1267,21 +1267,21 @@ model Milestone {
 // ════════════════════════════════════════════════
 
 model BOM {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  productId    String   @map("product_id")
-  name         String
-  code         String
-  isActive     Boolean  @default(true) @map("is_active")
-  materialCost Decimal  @default(0) @map("material_cost") @db.Decimal(15, 3)
-  overheadCost Decimal  @default(0) @map("overhead_cost") @db.Decimal(15, 3)
-  standardCost Decimal  @default(0) @map("standard_cost") @db.Decimal(15, 3)
-  routingJson  Json     @default("[]") // Operations list
-  version      String   @default("1.0")
-  status       String   @default("APPROVED") // APPROVED, UNDER_REVIEW, ARCHIVED
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  productId     String   @map("product_id")
+  name          String
+  code          String
+  isActive      Boolean  @default(true) @map("is_active")
+  materialCost  Decimal  @default(0) @map("material_cost") @db.Decimal(15, 3)
+  overheadCost  Decimal  @default(0) @map("overhead_cost") @db.Decimal(15, 3)
+  standardCost  Decimal  @default(0) @map("standard_cost") @db.Decimal(15, 3)
+  routingJson   Json     @default("[]") // Operations list
+  version       String   @default("1.0")
+  status        String   @default("APPROVED") // APPROVED, UNDER_REVIEW, ARCHIVED
   previousBomId String?  @map("previous_bom_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   items                BOMItem[]
   workOrders           WorkOrder[]
@@ -1329,10 +1329,10 @@ model WorkOrder {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  bom                  BOM                             @relation(fields: [bomId], references: [id])
-  workstation          Workstation?                    @relation(fields: [workstationId], references: [id])
-  ncrRecords           NonConformanceReport[]
-  operations           WorkOrderOperation[]
+  bom                   BOM                             @relation(fields: [bomId], references: [id])
+  workstation           Workstation?                    @relation(fields: [workstationId], references: [id])
+  ncrRecords            NonConformanceReport[]
+  operations            WorkOrderOperation[]
   componentConsumptions WorkOrderComponentConsumption[]
 
   @@unique([tenantId, workOrderNumber])
@@ -1399,20 +1399,20 @@ model KPI {
 // ════════════════════════════════════════════════
 
 model Folder {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  orgId     String   @map("org_id")
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  orgId     String    @map("org_id")
   name      String
-  parentId  String?  @map("parent_id")
-  createdBy String?  @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  parentId  String?   @map("parent_id")
+  createdBy String?   @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
-  starred   Boolean  @default(false) @map("starred")
-  legalHold Boolean  @default(false) @map("legal_hold")
+  starred   Boolean   @default(false) @map("starred")
+  legalHold Boolean   @default(false) @map("legal_hold")
 
-  parent    Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id])
-  children  Folder[]   @relation("FolderHierarchy")
+  parent    Folder?       @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children  Folder[]      @relation("FolderHierarchy")
   documents Document[]
   shares    FolderShare[]
 
@@ -1462,16 +1462,16 @@ model DocumentVersion {
 }
 
 model FolderShare {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  folderId  String   @map("folder_id")
-  userId    String   @map("user_id")
-  role      String   @default("VIEWER") // VIEWER, EDITOR
-  password  String?  @map("password_hash")
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  folderId  String    @map("folder_id")
+  userId    String    @map("user_id")
+  role      String    @default("VIEWER") // VIEWER, EDITOR
+  password  String?   @map("password_hash")
   expiresAt DateTime? @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
-  folder    Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([userId])
@@ -1479,16 +1479,16 @@ model FolderShare {
 }
 
 model DocumentShare {
-  id         String   @id @default(cuid())
-  tenantId   String   @map("tenant_id")
-  documentId String   @map("document_id")
-  userId     String   @map("user_id")
-  role       String   @default("VIEWER") // VIEWER, EDITOR
-  password   String?  @map("password_hash")
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  documentId String    @map("document_id")
+  userId     String    @map("user_id")
+  role       String    @default("VIEWER") // VIEWER, EDITOR
+  password   String?   @map("password_hash")
   expiresAt  DateTime? @map("expires_at")
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([userId])
@@ -1553,20 +1553,20 @@ model Channel {
 }
 
 model Message {
-  id        String    @id @default(cuid())
-  tenantId  String    @map("tenant_id")
-  channelId String    @map("channel_id")
-  userId    String    @map("user_id")
-  content   String    @db.Text
-  kind      String    @default("USER") // USER, SYSTEM
-  parentId  String?   @map("parent_id")
-  pinned    Boolean   @default(false)
-  attachments Json    @default("[]")
-  meetingId String?   @map("meeting_id")
-  editedAt  DateTime? @map("edited_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  channelId   String    @map("channel_id")
+  userId      String    @map("user_id")
+  content     String    @db.Text
+  kind        String    @default("USER") // USER, SYSTEM
+  parentId    String?   @map("parent_id")
+  pinned      Boolean   @default(false)
+  attachments Json      @default("[]")
+  meetingId   String?   @map("meeting_id")
+  editedAt    DateTime? @map("edited_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   bookmarks MessageBookmark[]
 
@@ -1723,32 +1723,32 @@ model Notification {
 // ════════════════════════════════════════════════
 
 model POSTerminal {
-  id                  String   @id @default(cuid())
-  tenantId            String   @map("tenant_id")
-  orgId               String   @map("org_id")
-  name                String
-  code                String
-  warehouseId         String?  @map("warehouse_id")
-  status              String   @default("ACTIVE") // ACTIVE, INACTIVE, MAINTENANCE
-  receiptTemplate     String?  @map("receipt_template") @db.Text
-  layoutFormat        String?  @map("layout_format") // THERMAL_80MM, THERMAL_58MM, A4_INVOICE
-  diagnosticData      Json?    @map("diagnostic_data")
-  currency            String   @default("USD")
-  taxProfileId        String?  @map("tax_profile_id")
-  priceListId         String?  @map("price_list_id")
-  defaultCustomerId   String?  @map("default_customer_id")
-  allowDiscount       Boolean  @default(true) @map("allow_discount")
-  maxDiscountPercent  Decimal  @default(100) @map("max_discount_percent") @db.Decimal(5, 2)
-  enableTipping       Boolean  @default(false) @map("enable_tipping")
-  posProfile          Json     @default("{}") @map("pos_profile") // JSON config blob
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  orgId              String   @map("org_id")
+  name               String
+  code               String
+  warehouseId        String?  @map("warehouse_id")
+  status             String   @default("ACTIVE") // ACTIVE, INACTIVE, MAINTENANCE
+  receiptTemplate    String?  @map("receipt_template") @db.Text
+  layoutFormat       String?  @map("layout_format") // THERMAL_80MM, THERMAL_58MM, A4_INVOICE
+  diagnosticData     Json?    @map("diagnostic_data")
+  currency           String   @default("USD")
+  taxProfileId       String?  @map("tax_profile_id")
+  priceListId        String?  @map("price_list_id")
+  defaultCustomerId  String?  @map("default_customer_id")
+  allowDiscount      Boolean  @default(true) @map("allow_discount")
+  maxDiscountPercent Decimal  @default(100) @map("max_discount_percent") @db.Decimal(5, 2)
+  enableTipping      Boolean  @default(false) @map("enable_tipping")
+  posProfile         Json     @default("{}") @map("pos_profile") // JSON config blob
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  registers    POSRegister[]
-  quickKeys    POSQuickKey[]
-  taxProfile   POSTaxProfile? @relation(fields: [taxProfileId], references: [id])
-  priceList    POSPriceList?  @relation(fields: [priceListId], references: [id])
-  orders       POSOrder[]
+  registers  POSRegister[]
+  quickKeys  POSQuickKey[]
+  taxProfile POSTaxProfile? @relation(fields: [taxProfileId], references: [id])
+  priceList  POSPriceList?  @relation(fields: [priceListId], references: [id])
+  orders     POSOrder[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -1756,25 +1756,25 @@ model POSTerminal {
 }
 
 model POSRegister {
-  id                 String    @id @default(cuid())
-  tenantId           String    @map("tenant_id")
-  terminalId         String    @map("terminal_id")
-  openedById         String    @map("opened_by_id")
-  openedAt           DateTime  @default(now()) @map("opened_at")
-  closedAt           DateTime? @map("closed_at")
-  startingCash       Decimal   @map("starting_cash") @db.Decimal(15, 2)
-  endingCash         Decimal?  @map("ending_cash") @db.Decimal(15, 2)
-  actualCash         Decimal?  @map("actual_cash") @db.Decimal(15, 2)
-  closingDifference  Decimal?  @map("closing_difference") @db.Decimal(15, 2)
-  totalSales         Decimal   @default(0) @map("total_sales") @db.Decimal(15, 2)
-  totalReturns       Decimal   @default(0) @map("total_returns") @db.Decimal(15, 2)
-  totalTransactions  Int       @default(0) @map("total_transactions")
-  status             String    @default("OPEN") // OPEN, CLOSED
-  notes              String?
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  terminalId        String    @map("terminal_id")
+  openedById        String    @map("opened_by_id")
+  openedAt          DateTime  @default(now()) @map("opened_at")
+  closedAt          DateTime? @map("closed_at")
+  startingCash      Decimal   @map("starting_cash") @db.Decimal(15, 2)
+  endingCash        Decimal?  @map("ending_cash") @db.Decimal(15, 2)
+  actualCash        Decimal?  @map("actual_cash") @db.Decimal(15, 2)
+  closingDifference Decimal?  @map("closing_difference") @db.Decimal(15, 2)
+  totalSales        Decimal   @default(0) @map("total_sales") @db.Decimal(15, 2)
+  totalReturns      Decimal   @default(0) @map("total_returns") @db.Decimal(15, 2)
+  totalTransactions Int       @default(0) @map("total_transactions")
+  status            String    @default("OPEN") // OPEN, CLOSED
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  terminal    POSTerminal  @relation(fields: [terminalId], references: [id])
+  terminal    POSTerminal @relation(fields: [terminalId], references: [id])
   shifts      POSShift[]
   cashEntries CashEntry[]
   orders      POSOrder[]
@@ -1823,44 +1823,44 @@ model CashEntry {
 // ── POS Orders (Core Transaction) ──────────────────
 
 model POSOrder {
-  id              String    @id @default(cuid())
-  tenantId        String    @map("tenant_id")
-  orgId           String    @map("org_id")
-  orderNumber     String    @map("order_number")
-  type            String    @default("SALE") // SALE, RETURN, EXCHANGE
-  status          String    @default("COMPLETED") // DRAFT, COMPLETED, VOIDED, HELD, PARTIAL_RETURN
-  customerId      String?   @map("customer_id")
-  customerName    String?   @map("customer_name")
-  terminalId      String    @map("terminal_id")
-  registerId      String?   @map("register_id")
-  shiftId         String?   @map("shift_id")
-  cashierId       String    @map("cashier_id")
-  cashierName     String?   @map("cashier_name")
-  subtotal        Decimal   @default(0) @db.Decimal(15, 2)
-  discountType    String?   @map("discount_type") // PERCENTAGE, FIXED
-  discountValue   Decimal   @default(0) @map("discount_value") @db.Decimal(15, 2)
-  discountAmount  Decimal   @default(0) @map("discount_amount") @db.Decimal(15, 2)
-  taxAmount       Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  roundingAmount  Decimal   @default(0) @map("rounding_amount") @db.Decimal(15, 2)
-  grandTotal      Decimal   @default(0) @map("grand_total") @db.Decimal(15, 2)
-  paidAmount      Decimal   @default(0) @map("paid_amount") @db.Decimal(15, 2)
-  changeAmount    Decimal   @default(0) @map("change_amount") @db.Decimal(15, 2)
-  tipAmount       Decimal   @default(0) @map("tip_amount") @db.Decimal(15, 2)
-  loyaltyPointsEarned Int   @default(0) @map("loyalty_points_earned")
-  loyaltyPointsUsed   Int   @default(0) @map("loyalty_points_used")
-  couponCode      String?   @map("coupon_code")
-  notes           String?
-  receiptData     Json?     @map("receipt_data") // snapshot of receipt at time of sale
-  originalOrderId String?   @map("original_order_id") // for returns
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  orgId               String   @map("org_id")
+  orderNumber         String   @map("order_number")
+  type                String   @default("SALE") // SALE, RETURN, EXCHANGE
+  status              String   @default("COMPLETED") // DRAFT, COMPLETED, VOIDED, HELD, PARTIAL_RETURN
+  customerId          String?  @map("customer_id")
+  customerName        String?  @map("customer_name")
+  terminalId          String   @map("terminal_id")
+  registerId          String?  @map("register_id")
+  shiftId             String?  @map("shift_id")
+  cashierId           String   @map("cashier_id")
+  cashierName         String?  @map("cashier_name")
+  subtotal            Decimal  @default(0) @db.Decimal(15, 2)
+  discountType        String?  @map("discount_type") // PERCENTAGE, FIXED
+  discountValue       Decimal  @default(0) @map("discount_value") @db.Decimal(15, 2)
+  discountAmount      Decimal  @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  taxAmount           Decimal  @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  roundingAmount      Decimal  @default(0) @map("rounding_amount") @db.Decimal(15, 2)
+  grandTotal          Decimal  @default(0) @map("grand_total") @db.Decimal(15, 2)
+  paidAmount          Decimal  @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  changeAmount        Decimal  @default(0) @map("change_amount") @db.Decimal(15, 2)
+  tipAmount           Decimal  @default(0) @map("tip_amount") @db.Decimal(15, 2)
+  loyaltyPointsEarned Int      @default(0) @map("loyalty_points_earned")
+  loyaltyPointsUsed   Int      @default(0) @map("loyalty_points_used")
+  couponCode          String?  @map("coupon_code")
+  notes               String?
+  receiptData         Json?    @map("receipt_data") // snapshot of receipt at time of sale
+  originalOrderId     String?  @map("original_order_id") // for returns
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
-  terminal  POSTerminal    @relation(fields: [terminalId], references: [id])
-  register  POSRegister?   @relation(fields: [registerId], references: [id])
-  shift     POSShift?      @relation(fields: [shiftId], references: [id])
-  items     POSOrderItem[]
-  payments  POSPayment[]
-  returns   POSReturn[]
+  terminal POSTerminal    @relation(fields: [terminalId], references: [id])
+  register POSRegister?   @relation(fields: [registerId], references: [id])
+  shift    POSShift?      @relation(fields: [shiftId], references: [id])
+  items    POSOrderItem[]
+  payments POSPayment[]
+  returns  POSReturn[]
 
   @@unique([tenantId, orgId, orderNumber])
   @@index([tenantId])
@@ -1899,17 +1899,17 @@ model POSOrderItem {
 }
 
 model POSPayment {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orderId     String   @map("order_id")
-  method      String   // CASH, CARD, WALLET, GIFT_CARD, STORE_CREDIT, CHECK, CUSTOM
-  amount      Decimal  @db.Decimal(15, 2)
-  reference   String?  // transaction ID, auth code, etc.
-  cardLast4   String?  @map("card_last_4")
-  authCode    String?  @map("auth_code")
-  giftCardId  String?  @map("gift_card_id")
-  status      String   @default("COMPLETED") // COMPLETED, PENDING, FAILED, REFUNDED
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  orderId    String   @map("order_id")
+  method     String // CASH, CARD, WALLET, GIFT_CARD, STORE_CREDIT, CHECK, CUSTOM
+  amount     Decimal  @db.Decimal(15, 2)
+  reference  String? // transaction ID, auth code, etc.
+  cardLast4  String?  @map("card_last_4")
+  authCode   String?  @map("auth_code")
+  giftCardId String?  @map("gift_card_id")
+  status     String   @default("COMPLETED") // COMPLETED, PENDING, FAILED, REFUNDED
+  createdAt  DateTime @default(now()) @map("created_at")
 
   order    POSOrder     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   giftCard POSGiftCard? @relation(fields: [giftCardId], references: [id])
@@ -1922,25 +1922,25 @@ model POSPayment {
 // ── Discounts & Coupons ─────────────────────────────
 
 model POSDiscount {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  orgId        String    @map("org_id")
-  name         String
-  description  String?
-  type         String    // PERCENTAGE, FIXED, BOGO, BUNDLE
-  value        Decimal   @db.Decimal(15, 2)
-  appliesTo    String    @default("ORDER") @map("applies_to") // ORDER, ITEM, CATEGORY
-  categoryId   String?   @map("category_id")
-  productId    String?   @map("product_id")
-  minPurchase  Decimal?  @map("min_purchase") @db.Decimal(15, 2)
-  maxDiscount  Decimal?  @map("max_discount") @db.Decimal(15, 2)
-  validFrom    DateTime? @map("valid_from")
-  validTo      DateTime? @map("valid_to")
-  usageLimit   Int?      @map("usage_limit")
-  usageCount   Int       @default(0) @map("usage_count")
-  status       String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  description String?
+  type        String // PERCENTAGE, FIXED, BOGO, BUNDLE
+  value       Decimal   @db.Decimal(15, 2)
+  appliesTo   String    @default("ORDER") @map("applies_to") // ORDER, ITEM, CATEGORY
+  categoryId  String?   @map("category_id")
+  productId   String?   @map("product_id")
+  minPurchase Decimal?  @map("min_purchase") @db.Decimal(15, 2)
+  maxDiscount Decimal?  @map("max_discount") @db.Decimal(15, 2)
+  validFrom   DateTime? @map("valid_from")
+  validTo     DateTime? @map("valid_to")
+  usageLimit  Int?      @map("usage_limit")
+  usageCount  Int       @default(0) @map("usage_count")
+  status      String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   coupons POSCoupon[]
 
@@ -1989,13 +1989,13 @@ model POSTaxProfile {
 // ── Quick Keys ──────────────────────────────────────
 
 model POSQuickKey {
-  id          String  @id @default(cuid())
-  tenantId    String  @map("tenant_id")
-  terminalId  String  @map("terminal_id")
-  productId   String? @map("product_id")
-  label       String
-  color       String  @default("#6366f1")
-  position    Int     @default(0)
+  id            String  @id @default(cuid())
+  tenantId      String  @map("tenant_id")
+  terminalId    String  @map("terminal_id")
+  productId     String? @map("product_id")
+  label         String
+  color         String  @default("#6366f1")
+  position      Int     @default(0)
   categoryGroup String? @map("category_group")
 
   terminal POSTerminal @relation(fields: [terminalId], references: [id], onDelete: Cascade)
@@ -2007,48 +2007,48 @@ model POSQuickKey {
 // ── Loyalty Program ─────────────────────────────────
 
 model POSLoyaltyProgram {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  orgId         String   @map("org_id")
-  name          String
-  description   String?
-  pointsPerUnit Decimal  @default(1) @map("points_per_unit") @db.Decimal(10, 4) // points earned per $1
-  redeemRate    Decimal  @default(100) @map("redeem_rate") @db.Decimal(10, 4)  // points needed per $1
-  minRedeemPoints Int    @default(100) @map("min_redeem_points")
-  expiryDays    Int?     @map("expiry_days") // points expire after N days
-  tiers         Json     @default("[]") // [{name,minPoints,multiplier,benefits}]
-  status        String   @default("ACTIVE") // ACTIVE, INACTIVE
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  name            String
+  description     String?
+  pointsPerUnit   Decimal  @default(1) @map("points_per_unit") @db.Decimal(10, 4) // points earned per $1
+  redeemRate      Decimal  @default(100) @map("redeem_rate") @db.Decimal(10, 4) // points needed per $1
+  minRedeemPoints Int      @default(100) @map("min_redeem_points")
+  expiryDays      Int?     @map("expiry_days") // points expire after N days
+  tiers           Json     @default("[]") // [{name,minPoints,multiplier,benefits}]
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  customers     POSLoyaltyMember[]
-  transactions  POSLoyaltyTransaction[]
+  customers    POSLoyaltyMember[]
+  transactions POSLoyaltyTransaction[]
 
   @@index([tenantId])
   @@map("pos_loyalty_programs")
 }
 
 model POSLoyaltyMember {
-  id            String    @id @default(cuid())
-  tenantId      String    @map("tenant_id")
-  programId     String    @map("program_id")
-  customerId    String?   @map("customer_id")
-  name          String
-  email         String?
-  phone         String?
-  points        Int       @default(0)
-  lifetimePoints Int      @default(0) @map("lifetime_points")
-  lifetimeSpent Decimal   @default(0) @map("lifetime_spent") @db.Decimal(15, 2)
-  visitCount    Int       @default(0) @map("visit_count")
-  tier          String    @default("BRONZE") // BRONZE, SILVER, GOLD, PLATINUM
-  lastVisit     DateTime? @map("last_visit")
-  cardNumber    String?   @map("card_number")
-  status        String    @default("ACTIVE") // ACTIVE, INACTIVE, BLOCKED
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  programId      String    @map("program_id")
+  customerId     String?   @map("customer_id")
+  name           String
+  email          String?
+  phone          String?
+  points         Int       @default(0)
+  lifetimePoints Int       @default(0) @map("lifetime_points")
+  lifetimeSpent  Decimal   @default(0) @map("lifetime_spent") @db.Decimal(15, 2)
+  visitCount     Int       @default(0) @map("visit_count")
+  tier           String    @default("BRONZE") // BRONZE, SILVER, GOLD, PLATINUM
+  lastVisit      DateTime? @map("last_visit")
+  cardNumber     String?   @map("card_number")
+  status         String    @default("ACTIVE") // ACTIVE, INACTIVE, BLOCKED
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  program      POSLoyaltyProgram      @relation(fields: [programId], references: [id])
-  transactions POSLoyaltyTransaction[]
+  program            POSLoyaltyProgram       @relation(fields: [programId], references: [id])
+  transactions       POSLoyaltyTransaction[]
   storeCreditEntries POSStoreCredit[]
 
   @@unique([tenantId, programId, email])
@@ -2058,16 +2058,16 @@ model POSLoyaltyMember {
 }
 
 model POSLoyaltyTransaction {
-  id         String   @id @default(cuid())
-  tenantId   String   @map("tenant_id")
-  programId  String   @map("program_id")
-  memberId   String   @map("member_id")
-  orderId    String?  @map("order_id")
-  type       String   // EARN, REDEEM, ADJUST, EXPIRE, BONUS
-  points     Int      // positive = earn, negative = redeem/expire
-  balance    Int      // running balance after this transaction
-  notes      String?
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  programId String   @map("program_id")
+  memberId  String   @map("member_id")
+  orderId   String?  @map("order_id")
+  type      String // EARN, REDEEM, ADJUST, EXPIRE, BONUS
+  points    Int // positive = earn, negative = redeem/expire
+  balance   Int // running balance after this transaction
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
 
   program POSLoyaltyProgram @relation(fields: [programId], references: [id])
   member  POSLoyaltyMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
@@ -2107,7 +2107,7 @@ model POSGiftCardTransaction {
   tenantId   String   @map("tenant_id")
   giftCardId String   @map("gift_card_id")
   orderId    String?  @map("order_id")
-  type       String   // LOAD, REDEEM, REFUND, ADJUST
+  type       String // LOAD, REDEEM, REFUND, ADJUST
   amount     Decimal  @db.Decimal(15, 2)
   balance    Decimal  @db.Decimal(15, 2) // balance after transaction
   notes      String?
@@ -2123,16 +2123,16 @@ model POSGiftCardTransaction {
 // ── Store Credit ────────────────────────────────────
 
 model POSStoreCredit {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  memberId    String?  @map("member_id") // optional link to loyalty member
-  customerId  String?  @map("customer_id")
-  customerEmail String? @map("customer_email")
-  balance     Decimal  @default(0) @db.Decimal(15, 2)
-  currency    String   @default("USD")
-  reason      String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  memberId      String?  @map("member_id") // optional link to loyalty member
+  customerId    String?  @map("customer_id")
+  customerEmail String?  @map("customer_email")
+  balance       Decimal  @default(0) @db.Decimal(15, 2)
+  currency      String   @default("USD")
+  reason        String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   member POSLoyaltyMember? @relation(fields: [memberId], references: [id])
 
@@ -2171,17 +2171,17 @@ model POSReturn {
 }
 
 model POSReturnItem {
-  id          String  @id @default(cuid())
-  tenantId    String  @map("tenant_id")
-  returnId    String  @map("return_id")
-  orderItemId String  @map("order_item_id")
-  productId   String? @map("product_id")
-  productName String  @map("product_name")
-  qty         Decimal @db.Decimal(15, 3)
-  unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
+  id           String  @id @default(cuid())
+  tenantId     String  @map("tenant_id")
+  returnId     String  @map("return_id")
+  orderItemId  String  @map("order_item_id")
+  productId    String? @map("product_id")
+  productName  String  @map("product_name")
+  qty          Decimal @db.Decimal(15, 3)
+  unitPrice    Decimal @map("unit_price") @db.Decimal(15, 2)
   refundAmount Decimal @map("refund_amount") @db.Decimal(15, 2)
-  restock     Boolean @default(true)
-  reason      String?
+  restock      Boolean @default(true)
+  reason       String?
 
   return POSReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
 
@@ -2193,21 +2193,21 @@ model POSReturnItem {
 // ── Held (Parked) Orders ────────────────────────────
 
 model POSHeldOrder {
-  id          String    @id @default(cuid())
-  tenantId    String    @map("tenant_id")
-  orgId       String    @map("org_id")
-  terminalId  String    @map("terminal_id")
-  customerId  String?   @map("customer_id")
-  customerName String?  @map("customer_name")
-  cashierId   String    @map("cashier_id")
-  label       String?   // e.g., "Table 5" or "Customer: John"
-  items       Json      @default("[]") // cart snapshot
-  subtotal    Decimal   @default(0) @db.Decimal(15, 2)
-  notes       String?
-  status      String    @default("HELD") // HELD, RESUMED, EXPIRED
-  expiresAt   DateTime? @map("expires_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  orgId        String    @map("org_id")
+  terminalId   String    @map("terminal_id")
+  customerId   String?   @map("customer_id")
+  customerName String?   @map("customer_name")
+  cashierId    String    @map("cashier_id")
+  label        String? // e.g., "Table 5" or "Customer: John"
+  items        Json      @default("[]") // cart snapshot
+  subtotal     Decimal   @default(0) @db.Decimal(15, 2)
+  notes        String?
+  status       String    @default("HELD") // HELD, RESUMED, EXPIRED
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@index([tenantId, terminalId])
@@ -2217,18 +2217,18 @@ model POSHeldOrder {
 // ── Price Lists ─────────────────────────────────────
 
 model POSPriceList {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orgId       String   @map("org_id")
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
   name        String
   description String?
-  currency    String   @default("USD")
-  isDefault   Boolean  @default(false) @map("is_default")
+  currency    String    @default("USD")
+  isDefault   Boolean   @default(false) @map("is_default")
   validFrom   DateTime? @map("valid_from")
   validTo     DateTime? @map("valid_to")
-  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  status      String    @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   items     POSPriceListItem[]
   terminals POSTerminal[]
@@ -2260,7 +2260,7 @@ model POSPromotion {
   orgId       String    @map("org_id")
   name        String
   description String?
-  type        String    // PERCENTAGE, FIXED, BOGO, BUNDLE, TIERED, HAPPY_HOUR
+  type        String // PERCENTAGE, FIXED, BOGO, BUNDLE, TIERED, HAPPY_HOUR
   conditions  Json      @default("{}") // {minQty, minAmount, products, categories, dayOfWeek, timeRange}
   rewards     Json      @default("{}") // {discountPercent, discountAmount, freeProductId, freeQty}
   priority    Int       @default(10)
@@ -2330,15 +2330,15 @@ model POSLayaway {
 }
 
 model POSLayawayPayment {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  layawayId   String   @map("layaway_id")
-  amount      Decimal  @db.Decimal(15, 2)
-  method      String   // CASH, CARD, WALLET
-  reference   String?
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  createdBy   String?  @map("created_by")
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  layawayId String   @map("layaway_id")
+  amount    Decimal  @db.Decimal(15, 2)
+  method    String // CASH, CARD, WALLET
+  reference String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
 
   layaway POSLayaway @relation(fields: [layawayId], references: [id], onDelete: Cascade)
 
@@ -2350,7 +2350,6 @@ model POSLayawayPayment {
 // ════════════════════════════════════════════════
 // ADVANCED INVENTORY (Phase 5)
 // ════════════════════════════════════════════════
-
 
 model SerialNumber {
   id              String    @id @default(cuid())
@@ -2369,7 +2368,7 @@ model SerialNumber {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  product Product              @relation(fields: [productId], references: [id])
+  product Product               @relation(fields: [productId], references: [id])
   history SerialNumberHistory[]
 
   @@unique([tenantId, serialNo])
@@ -2383,7 +2382,7 @@ model SerialNumberHistory {
   id             String   @id @default(cuid())
   tenantId       String   @map("tenant_id")
   serialNumberId String   @map("serial_number_id")
-  action         String   // RECEIVED, SHIPPED, RETURNED, REPAIRED, SCRAPPED, TRANSFERRED
+  action         String // RECEIVED, SHIPPED, RETURNED, REPAIRED, SCRAPPED, TRANSFERRED
   fromStatus     String?  @map("from_status")
   toStatus       String   @map("to_status")
   reference      String?
@@ -2442,10 +2441,10 @@ model BinLocation {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  warehouse           Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouse           Warehouse          @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   inventoryBins       InventoryItemBin[]
-  stockEntryFromItems StockEntryItem[] @relation("FromBin")
-  stockEntryToItems   StockEntryItem[] @relation("ToBin")
+  stockEntryFromItems StockEntryItem[]   @relation("FromBin")
+  stockEntryToItems   StockEntryItem[]   @relation("ToBin")
 
   @@unique([tenantId, warehouseId, code])
   @@index([tenantId])
@@ -2520,7 +2519,6 @@ model CycleCountItem {
   @@index([productId])
   @@map("cycle_count_items")
 }
-
 
 // ════════════════════════════════════════════════
 // ADVANCED FINANCE (Phase 6)
@@ -4168,12 +4166,14 @@ model InstalledApp {
   status      String   @default("ACTIVE") // ACTIVE | DISABLED | PENDING
   config      Json     @default("{}")
 
-  // ─── Builder-app installs (null for static catalog apps) ───
-  source           String  @default("CATALOG") // CATALOG | BUILDER
+  // ─── Builder-app & marketplace-bundle installs (null for static catalog apps) ───
+  source           String  @default("CATALOG") // CATALOG | BUILDER | MARKETPLACE
   sourceModuleId   String? @map("source_module_id")
   releaseId        String? @map("release_id")
+  bundleId         String? @map("bundle_id") // AppBundle.id for MARKETPLACE installs
+  installPath      String? @map("install_path") // absolute path of extracted bundle dir (deleted on uninstall)
   installedVersion String? @map("installed_version")
-  provisioned      Json    @default("{}") // {pageRegistryIds:[], schemaRegistryIds:[]} for teardown on uninstall
+  provisioned      Json    @default("{}") // {pageRegistryIds:[], schemaRegistryIds:[], automationRuleIds:[]} for teardown on uninstall
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -4624,26 +4624,26 @@ model InterCompanyTransfer {
 // ════════════════════════════════════════════════
 
 model StockLedgerEntry {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  productId       String   @map("product_id")
-  warehouseId     String   @map("warehouse_id")
-  stockEntryId    String?  @map("stock_entry_id")
-  quantity        Decimal  @db.Decimal(15, 3)
-  valuationRate   Decimal  @default(0) @map("valuation_rate") @db.Decimal(15, 4)
-  voucherType     String   @map("voucher_type") // STOCK_ENTRY, PURCHASE_RECEIPT, DELIVERY_NOTE, SALES_RETURN, PURCHASE_RETURN, WORK_ORDER, CYCLE_COUNT
-  voucherId       String   @map("voucher_id")
-  voucherNumber   String   @default("") @map("voucher_number")
-  postingDate     DateTime @default(now()) @map("posting_date")
-  qtyIn           Decimal  @default(0) @map("qty_in") @db.Decimal(15, 3)
-  qtyOut          Decimal  @default(0) @map("qty_out") @db.Decimal(15, 3)
-  balanceQty      Decimal  @default(0) @map("balance_qty") @db.Decimal(15, 3)
-  incomingRate    Decimal  @default(0) @map("incoming_rate") @db.Decimal(15, 4)
-  stockValue      Decimal  @default(0) @map("stock_value") @db.Decimal(15, 2)
-  batchNumber     String?  @map("batch_number")
-  serialNumber    String?  @map("serial_number")
-  remarks         String?
-  createdAt       DateTime @default(now()) @map("created_at")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  productId     String   @map("product_id")
+  warehouseId   String   @map("warehouse_id")
+  stockEntryId  String?  @map("stock_entry_id")
+  quantity      Decimal  @db.Decimal(15, 3)
+  valuationRate Decimal  @default(0) @map("valuation_rate") @db.Decimal(15, 4)
+  voucherType   String   @map("voucher_type") // STOCK_ENTRY, PURCHASE_RECEIPT, DELIVERY_NOTE, SALES_RETURN, PURCHASE_RETURN, WORK_ORDER, CYCLE_COUNT
+  voucherId     String   @map("voucher_id")
+  voucherNumber String   @default("") @map("voucher_number")
+  postingDate   DateTime @default(now()) @map("posting_date")
+  qtyIn         Decimal  @default(0) @map("qty_in") @db.Decimal(15, 3)
+  qtyOut        Decimal  @default(0) @map("qty_out") @db.Decimal(15, 3)
+  balanceQty    Decimal  @default(0) @map("balance_qty") @db.Decimal(15, 3)
+  incomingRate  Decimal  @default(0) @map("incoming_rate") @db.Decimal(15, 4)
+  stockValue    Decimal  @default(0) @map("stock_value") @db.Decimal(15, 2)
+  batchNumber   String?  @map("batch_number")
+  serialNumber  String?  @map("serial_number")
+  remarks       String?
+  createdAt     DateTime @default(now()) @map("created_at")
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   warehouse  Warehouse   @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
@@ -4712,12 +4712,12 @@ model StockEntryItem {
   serialNumber    String?  @map("serial_number")
   sortOrder       Int      @default(0) @map("sort_order")
 
-  stockEntry StockEntry    @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
-  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  fromBin    BinLocation?  @relation("FromBin", fields: [fromBinId], references: [id])
-  toBin      BinLocation?  @relation("ToBin", fields: [toBinId], references: [id])
+  stockEntry StockEntry     @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  product    Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fromBin    BinLocation?   @relation("FromBin", fields: [fromBinId], references: [id])
+  toBin      BinLocation?   @relation("ToBin", fields: [toBinId], references: [id])
   uom        UnitOfMeasure? @relation(fields: [uomId], references: [id])
-  batch      Batch?        @relation(fields: [batchId], references: [id])
+  batch      Batch?         @relation(fields: [batchId], references: [id])
 
   @@index([tenantId])
   @@index([stockEntryId])
@@ -4726,30 +4726,30 @@ model StockEntryItem {
 }
 
 model QualityInspection {
-  id               String    @id @default(cuid())
-  tenantId         String    @map("tenant_id")
-  orgId            String    @map("org_id")
-  inspectionNumber String    @map("inspection_number")
-  referenceType    String    @map("reference_type") // PURCHASE_RECEIPT, STOCK_ENTRY, PRODUCTION
-  referenceId      String    @map("reference_id")
-  referenceDoc     String?   @map("reference_doc")
-  productId        String    @map("product_id")
-  warehouseId      String?   @map("warehouse_id")
-  status           String    @default("PENDING") // PENDING, PASS, FAIL, PARTIAL, CANCELLED
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  orgId            String   @map("org_id")
+  inspectionNumber String   @map("inspection_number")
+  referenceType    String   @map("reference_type") // PURCHASE_RECEIPT, STOCK_ENTRY, PRODUCTION
+  referenceId      String   @map("reference_id")
+  referenceDoc     String?  @map("reference_doc")
+  productId        String   @map("product_id")
+  warehouseId      String?  @map("warehouse_id")
+  status           String   @default("PENDING") // PENDING, PASS, FAIL, PARTIAL, CANCELLED
   disposition      String?
-  inspectedQty     Decimal   @map("inspected_qty") @db.Decimal(15, 3)
-  acceptedQty      Decimal   @default(0) @map("accepted_qty") @db.Decimal(15, 3)
-  passedQty        Decimal   @default(0) @map("passed_qty") @db.Decimal(15, 3)
-  rejectedQty      Decimal   @default(0) @map("rejected_qty") @db.Decimal(15, 3)
-  inspectedBy      String?   @map("inspected_by")
+  inspectedQty     Decimal  @map("inspected_qty") @db.Decimal(15, 3)
+  acceptedQty      Decimal  @default(0) @map("accepted_qty") @db.Decimal(15, 3)
+  passedQty        Decimal  @default(0) @map("passed_qty") @db.Decimal(15, 3)
+  rejectedQty      Decimal  @default(0) @map("rejected_qty") @db.Decimal(15, 3)
+  inspectedBy      String?  @map("inspected_by")
   inspector        String?
-  inspectedDate    DateTime  @default(now()) @map("inspected_date")
-  inspectionDate   DateTime  @default(now()) @map("inspection_date")
-  checklist        Json      @default("[]")
+  inspectedDate    DateTime @default(now()) @map("inspected_date")
+  inspectionDate   DateTime @default(now()) @map("inspection_date")
+  checklist        Json     @default("[]")
   remarks          String?
-  createdBy        String?   @map("created_by")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  createdBy        String?  @map("created_by")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   product     Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
   checkpoints QAInspectionCheckpoint[]
@@ -4778,7 +4778,6 @@ model QAInspectionCheckpoint {
   @@index([inspectionId])
   @@map("qa_inspection_checkpoints")
 }
-
 
 // ════════════════════════════════════════════════
 // ADVANCED CRM & SALES CAMPAIGNS
@@ -5082,7 +5081,7 @@ model WorkOrderOperation {
   completedAt     DateTime? @map("completed_at")
   operatorId      String?   @map("operator_id")
 
-  workOrder       WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([workOrderId])
@@ -5090,15 +5089,15 @@ model WorkOrderOperation {
 }
 
 model WorkstationShift {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  workstationId String   @map("workstation_id")
+  id            String @id @default(cuid())
+  tenantId      String @map("tenant_id")
+  workstationId String @map("workstation_id")
   name          String
-  startTime     String   @map("start_time") // e.g. "08:00"
-  endTime       String   @map("end_time") // e.g. "16:00"
-  daysOfWeek    Int[]    @map("days_of_week") // e.g. [1, 2, 3, 4, 5]
+  startTime     String @map("start_time") // e.g. "08:00"
+  endTime       String @map("end_time") // e.g. "16:00"
+  daysOfWeek    Int[]  @map("days_of_week") // e.g. [1, 2, 3, 4, 5]
 
-  workstation   Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+  workstation Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([workstationId])
@@ -5106,16 +5105,16 @@ model WorkstationShift {
 }
 
 model SubcontractingMaterial {
-  id                    String   @id @default(cuid())
-  tenantId              String   @map("tenant_id")
-  subcontractingOrderId String   @map("subcontracting_order_id")
-  productId             String   @map("product_id")
-  requiredQty           Decimal  @map("required_qty") @db.Decimal(15, 3)
-  issuedQty             Decimal  @default(0) @map("issued_qty") @db.Decimal(15, 3)
-  consumedQty           Decimal  @default(0) @map("consumed_qty") @db.Decimal(15, 3)
+  id                    String  @id @default(cuid())
+  tenantId              String  @map("tenant_id")
+  subcontractingOrderId String  @map("subcontracting_order_id")
+  productId             String  @map("product_id")
+  requiredQty           Decimal @map("required_qty") @db.Decimal(15, 3)
+  issuedQty             Decimal @default(0) @map("issued_qty") @db.Decimal(15, 3)
+  consumedQty           Decimal @default(0) @map("consumed_qty") @db.Decimal(15, 3)
 
-  subcontractingOrder   SubcontractingOrder @relation(fields: [subcontractingOrderId], references: [id], onDelete: Cascade)
-  product               Product             @relation(fields: [productId], references: [id])
+  subcontractingOrder SubcontractingOrder @relation(fields: [subcontractingOrderId], references: [id], onDelete: Cascade)
+  product             Product             @relation(fields: [productId], references: [id])
 
   @@index([tenantId])
   @@index([subcontractingOrderId])
@@ -5123,17 +5122,17 @@ model SubcontractingMaterial {
 }
 
 model EquipmentTool {
-  id                 String    @id @default(cuid())
-  tenantId           String    @map("tenant_id")
-  workstationId      String    @map("workstation_id")
-  name               String
-  code               String
-  maxCycles          Int       @map("max_cycles")
-  currentCycles      Int       @default(0) @map("current_cycles")
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id")
+  workstationId       String    @map("workstation_id")
+  name                String
+  code                String
+  maxCycles           Int       @map("max_cycles")
+  currentCycles       Int       @default(0) @map("current_cycles")
   lastCalibrationDate DateTime? @map("last_calibration_date")
-  status             String    @default("OK") // OK, NEEDS_CALIBRATION, OUT_OF_SERVICE
+  status              String    @default("OK") // OK, NEEDS_CALIBRATION, OUT_OF_SERVICE
 
-  workstation        Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+  workstation Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -5142,16 +5141,16 @@ model EquipmentTool {
 }
 
 model EngineeringChangeOrder {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  bomId            String   @map("bom_id")
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  bomId             String   @map("bom_id")
   changeDescription String   @map("change_description")
-  requestedBy      String   @map("requested_by")
-  approvedBy       String?  @map("approved_by")
-  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  createdAt        DateTime @default(now()) @map("created_at")
+  requestedBy       String   @map("requested_by")
+  approvedBy        String?  @map("approved_by")
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt         DateTime @default(now()) @map("created_at")
 
-  bom              BOM      @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  bom BOM @relation(fields: [bomId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([bomId])
@@ -5159,15 +5158,15 @@ model EngineeringChangeOrder {
 }
 
 model WorkOrderComponentConsumption {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  workOrderId      String   @map("work_order_id")
-  productId        String   @map("product_id")
-  lotNumber        String   @map("lot_number") // Lot of raw component consumed
-  quantityConsumed Decimal  @map("quantity_consumed") @db.Decimal(15, 3)
+  id               String  @id @default(cuid())
+  tenantId         String  @map("tenant_id")
+  workOrderId      String  @map("work_order_id")
+  productId        String  @map("product_id")
+  lotNumber        String  @map("lot_number") // Lot of raw component consumed
+  quantityConsumed Decimal @map("quantity_consumed") @db.Decimal(15, 3)
 
-  workOrder        WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
-  product          Product   @relation(fields: [productId], references: [id])
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
 
   @@index([tenantId])
   @@index([workOrderId])
@@ -5850,8 +5849,8 @@ model SalesTerritory {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  parent   SalesTerritory?  @relation("TerritoryHierarchy", fields: [parentId], references: [id])
-  children SalesTerritory[] @relation("TerritoryHierarchy")
+  parent   SalesTerritory?   @relation("TerritoryHierarchy", fields: [parentId], references: [id])
+  children SalesTerritory[]  @relation("TerritoryHierarchy")
   members  SalesTeamMember[]
 
   @@unique([tenantId, name])
@@ -6066,7 +6065,7 @@ model ApprovalRequest {
   completedAt DateTime? @map("completed_at")
   metadata    Json      @default("{}")
 
-  process ApprovalProcess @relation(fields: [processId], references: [id])
+  process ApprovalProcess  @relation(fields: [processId], references: [id])
   actions ApprovalAction[]
 
   @@index([tenantId])
@@ -6253,16 +6252,16 @@ model SalesPlaybook {
 }
 
 model PlaybookStage {
-  id             String @id @default(cuid())
-  tenantId       String @map("tenant_id")
-  playbookId     String @map("playbook_id")
-  stageName      String @map("stage_name")
+  id             String  @id @default(cuid())
+  tenantId       String  @map("tenant_id")
+  playbookId     String  @map("playbook_id")
+  stageName      String  @map("stage_name")
   guidanceNotes  String? @map("guidance_notes")
-  checklist      Json   @default("[]")
-  requiredFields Json   @default("[]") @map("required_fields")
-  talkingPoints  Json   @default("[]") @map("talking_points")
-  exitCriteria   Json   @default("[]") @map("exit_criteria")
-  sortOrder      Int    @default(0) @map("sort_order")
+  checklist      Json    @default("[]")
+  requiredFields Json    @default("[]") @map("required_fields")
+  talkingPoints  Json    @default("[]") @map("talking_points")
+  exitCriteria   Json    @default("[]") @map("exit_criteria")
+  sortOrder      Int     @default(0) @map("sort_order")
 
   playbook SalesPlaybook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
 
@@ -6358,18 +6357,18 @@ model CrmDashboardWidget {
 // ════════════════════════════════════════════════
 
 model ProductCategory {
-  id          String    @id @default(cuid())
-  tenantId    String    @map("tenant_id")
-  orgId       String    @map("org_id")
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
   name        String
   slug        String
   description String?
-  parentId    String?   @map("parent_id")
-  imageUrl    String?   @map("image_url")
-  sortOrder   Int       @default(0) @map("sort_order")
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  parentId    String?  @map("parent_id")
+  imageUrl    String?  @map("image_url")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   parent   ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children ProductCategory[] @relation("CategoryHierarchy")
@@ -6509,19 +6508,19 @@ model StockAlert {
 }
 
 model ProductKit {
-  id          String    @id @default(cuid())
-  tenantId    String    @map("tenant_id")
-  orgId       String    @map("org_id")
-  productId   String    @unique @map("product_id")
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
+  productId   String   @unique @map("product_id")
   name        String
   description String?
-  sellPrice   Decimal   @map("sell_price") @db.Decimal(15, 2)
-  discount    Decimal   @default(0) @db.Decimal(5, 2)
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  sellPrice   Decimal  @map("sell_price") @db.Decimal(15, 2)
+  discount    Decimal  @default(0) @db.Decimal(5, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  product    Product        @relation(fields: [productId], references: [id])
+  product    Product          @relation(fields: [productId], references: [id])
   components ProductKitItem[]
 
   @@index([tenantId])
@@ -6545,26 +6544,26 @@ model ProductKitItem {
 }
 
 model PurchaseRequisition {
-  id             String    @id @default(cuid())
-  tenantId       String    @map("tenant_id")
-  orgId          String    @map("org_id")
-  requisitionNumber String  @map("requisition_number")
-  title          String
-  description    String?
-  status         String    @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, CONVERTED
-  requestedById  String    @map("requested_by_id")
-  departmentId   String?   @map("department_id")
-  requiredDate   DateTime? @map("required_date")
-  estimatedCost  Decimal   @default(0) @map("estimated_cost") @db.Decimal(15, 2)
-  notes          String?
-  approvedBy     String?   @map("approved_by")
-  approvedAt     DateTime? @map("approved_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  requisitionNumber String    @map("requisition_number")
+  title             String
+  description       String?
+  status            String    @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, CONVERTED
+  requestedById     String    @map("requested_by_id")
+  departmentId      String?   @map("department_id")
+  requiredDate      DateTime? @map("required_date")
+  estimatedCost     Decimal   @default(0) @map("estimated_cost") @db.Decimal(15, 2)
+  notes             String?
+  approvedBy        String?   @map("approved_by")
+  approvedAt        DateTime? @map("approved_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
-  organization   Organization             @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  department     Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  organization   Organization              @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  department     Department?               @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   lineItems      PurchaseRequisitionItem[]
   purchaseOrders PurchaseOrder[]
 
@@ -6584,8 +6583,8 @@ model PurchaseRequisitionItem {
   totalAmount    Decimal @map("total_amount") @db.Decimal(15, 2)
   sortOrder      Int     @default(0) @map("sort_order")
 
-  requisition    PurchaseRequisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
-  product        Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
+  requisition PurchaseRequisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  product     Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([requisitionId])
@@ -6593,26 +6592,26 @@ model PurchaseRequisitionItem {
 }
 
 model BlanketPurchaseAgreement {
-  id             String    @id @default(cuid())
-  tenantId       String    @map("tenant_id")
-  orgId          String    @map("org_id")
-  vendorId       String    @map("vendor_id")
-  agreementNumber String   @map("agreement_number")
-  title          String
-  status         String    @default("ACTIVE") // ACTIVE, EXPIRED, TERMINATED
-  startDate      DateTime  @map("start_date")
-  endDate        DateTime  @map("end_date")
-  agreementLimit Decimal   @map("agreement_limit") @db.Decimal(15, 2)
-  releasedAmount Decimal   @default(0) @map("released_amount") @db.Decimal(15, 2)
-  currency       String    @default("USD")
-  notes          String?
-  createdBy      String?   @map("created_by")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  vendorId        String    @map("vendor_id")
+  agreementNumber String    @map("agreement_number")
+  title           String
+  status          String    @default("ACTIVE") // ACTIVE, EXPIRED, TERMINATED
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  agreementLimit  Decimal   @map("agreement_limit") @db.Decimal(15, 2)
+  releasedAmount  Decimal   @default(0) @map("released_amount") @db.Decimal(15, 2)
+  currency        String    @default("USD")
+  notes           String?
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
-  organization   Organization                  @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  vendor         Vendor                        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  organization   Organization                   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  vendor         Vendor                         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   lineItems      BlanketPurchaseAgreementItem[]
   purchaseOrders PurchaseOrder[]
 
@@ -6623,19 +6622,19 @@ model BlanketPurchaseAgreement {
 }
 
 model BlanketPurchaseAgreementItem {
-  id             String  @id @default(cuid())
-  tenantId       String  @map("tenant_id")
-  agreementId    String  @map("agreement_id")
-  productId      String? @map("product_id")
-  description    String
-  quantity       Decimal @db.Decimal(15, 3)
-  releasedQty    Decimal @default(0) @map("released_qty") @db.Decimal(15, 3)
-  unitPrice      Decimal @map("unit_price") @db.Decimal(15, 2)
-  totalAmount    Decimal @map("total_amount") @db.Decimal(15, 2)
-  sortOrder      Int     @default(0) @map("sort_order")
+  id          String  @id @default(cuid())
+  tenantId    String  @map("tenant_id")
+  agreementId String  @map("agreement_id")
+  productId   String? @map("product_id")
+  description String
+  quantity    Decimal @db.Decimal(15, 3)
+  releasedQty Decimal @default(0) @map("released_qty") @db.Decimal(15, 3)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
+  totalAmount Decimal @map("total_amount") @db.Decimal(15, 2)
+  sortOrder   Int     @default(0) @map("sort_order")
 
-  agreement      BlanketPurchaseAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
-  product        Product?                 @relation(fields: [productId], references: [id], onDelete: SetNull)
+  agreement BlanketPurchaseAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  product   Product?                 @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([agreementId])
@@ -6732,17 +6731,17 @@ model RoleAccessPackage {
 // ════════════════════════════════════════════════
 
 model SystemAnnouncement {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
   title     String
   message   String
-  type      String   @default("info")
-  priority  String   @default("normal")
-  isActive  Boolean  @default(true) @map("is_active")
+  type      String    @default("info")
+  priority  String    @default("normal")
+  isActive  Boolean   @default(true) @map("is_active")
   expiresAt DateTime? @map("expires_at")
-  createdBy String   @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String    @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId, isActive])
   @@map("system_announcements")
@@ -6753,19 +6752,19 @@ model SystemAnnouncement {
 // ════════════════════════════════════════════════
 
 model ScheduledReport {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  name        String
-  reportType  String   @map("report_type")
-  schedule    String
-  recipients  Json     @default("[]")
-  filters     Json     @default("{}")
-  format      String   @default("pdf")
-  isActive    Boolean  @default(true) @map("is_active")
-  lastRunAt   DateTime? @map("last_run_at")
-  createdBy   String   @map("created_by")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  name       String
+  reportType String    @map("report_type")
+  schedule   String
+  recipients Json      @default("[]")
+  filters    Json      @default("{}")
+  format     String    @default("pdf")
+  isActive   Boolean   @default(true) @map("is_active")
+  lastRunAt  DateTime? @map("last_run_at")
+  createdBy  String    @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@map("scheduled_reports")
@@ -6776,15 +6775,15 @@ model ScheduledReport {
 // ════════════════════════════════════════════════
 
 model DataRetentionPolicy {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  entityType   String   @map("entity_type")
-  retentionDays Int     @map("retention_days")
-  action       String   @default("archive")
-  isActive     Boolean  @default(true) @map("is_active")
-  lastRunAt    DateTime? @map("last_run_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  entityType    String    @map("entity_type")
+  retentionDays Int       @map("retention_days")
+  action        String    @default("archive")
+  isActive      Boolean   @default(true) @map("is_active")
+  lastRunAt     DateTime? @map("last_run_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@unique([tenantId, entityType])
   @@index([tenantId])
@@ -6792,16 +6791,16 @@ model DataRetentionPolicy {
 }
 
 model DataErasureRequest {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  requestedBy String   @map("requested_by")
-  subjectEmail String  @map("subject_email")
-  subjectName  String?  @map("subject_name")
-  status      String   @default("PENDING")
-  entityTypes Json     @default("[]") @map("entity_types")
-  erasedAt    DateTime? @map("erased_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  requestedBy  String    @map("requested_by")
+  subjectEmail String    @map("subject_email")
+  subjectName  String?   @map("subject_name")
+  status       String    @default("PENDING")
+  entityTypes  Json      @default("[]") @map("entity_types")
+  erasedAt     DateTime? @map("erased_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId, status])
   @@map("data_erasure_requests")
@@ -6963,36 +6962,41 @@ model ErrorLog {
 }
 
 model MarketplaceApp {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  name            String
-  description     String   @db.Text
-  longDescription String?  @map("long_description") @db.Text
-  category        String
-  icon            String?
-  publisher       String
-  publisherLogo   String?  @map("publisher_logo")
-  publisherWebsite String? @map("publisher_website")
-  version         String
-  pricing         String   @default("FREE") // FREE | PAID | FREEMIUM
-  price           Decimal? @db.Decimal(10, 2)
-  rating          Decimal  @default(0) @db.Decimal(3, 2)
-  reviewCount     Int      @default(0) @map("review_count")
-  installs        Int      @default(0)
-  features        Json     @default("[]")
-  screenshots     Json     @default("[]") // [{url, caption}]
-  tags            Json     @default("[]") // string[]
-  metadata        Json     @default("{}")
-  requiresApps    Json     @default("[]") @map("requires_apps") // slug[] of prerequisite apps
-  configSchema    Json     @default("{}") @map("config_schema") // JSON Schema for post-install config
-  supportUrl      String?  @map("support_url")
-  documentationUrl String? @map("documentation_url")
-  privacyPolicyUrl String? @map("privacy_policy_url")
-  featured        Boolean  @default(false)
-  verified        Boolean  @default(false)
-  status          String   @default("PUBLISHED") // PUBLISHED | DRAFT | ARCHIVED
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  description      String   @db.Text
+  longDescription  String?  @map("long_description") @db.Text
+  category         String
+  icon             String?
+  publisher        String
+  publisherLogo    String?  @map("publisher_logo")
+  publisherWebsite String?  @map("publisher_website")
+  version          String
+  pricing          String   @default("FREE") // FREE | PAID | FREEMIUM
+  price            Decimal? @db.Decimal(10, 2)
+  rating           Decimal  @default(0) @db.Decimal(3, 2)
+  reviewCount      Int      @default(0) @map("review_count")
+  installs         Int      @default(0)
+  features         Json     @default("[]")
+  screenshots      Json     @default("[]") // [{url, caption}]
+  tags             Json     @default("[]") // string[]
+  metadata         Json     @default("{}")
+  requiresApps     Json     @default("[]") @map("requires_apps") // slug[] of prerequisite apps
+  configSchema     Json     @default("{}") @map("config_schema") // JSON Schema for post-install config
+  supportUrl       String?  @map("support_url")
+  documentationUrl String?  @map("documentation_url")
+  privacyPolicyUrl String?  @map("privacy_policy_url")
+  featured         Boolean  @default(false)
+  verified         Boolean  @default(false)
+  status           String   @default("PUBLISHED") // PUBLISHED | DRAFT | ARCHIVED
+  // ─── Bundle/vendor linkage (listing is a projection of a published AppBundle) ───
+  isCore           Boolean  @default(false) @map("is_core") // in-house core module: non-uninstallable, no bundle
+  vendorId         String?  @map("vendor_id")
+  bundleId         String?  @map("bundle_id") // currently-published AppBundle.id powering this listing
+  packageId        String?  @map("package_id") // owning AppPackage.id
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   reviews         AppReview[]
   changelogs      AppChangelog[]
@@ -7001,22 +7005,97 @@ model MarketplaceApp {
 
   @@index([category])
   @@index([featured])
+  @@index([vendorId])
   @@map("marketplace_apps")
 }
 
+// ─── Third-party publishing: Vendor → AppPackage → AppBundle ───
+
+model AppVendor {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  contactEmail  String?  @map("contact_email")
+  websiteUrl    String?  @map("website_url")
+  logoUrl       String?  @map("logo_url")
+  description   String?  @db.Text
+  verified      Boolean  @default(false)
+  status        String   @default("ACTIVE") // ACTIVE | SUSPENDED
+  ownerUserId   String?  @map("owner_user_id")
+  ownerTenantId String?  @map("owner_tenant_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  packages AppPackage[]
+
+  @@map("app_vendors")
+}
+
+model AppPackage {
+  id               String   @id @default(cuid())
+  vendorId         String   @map("vendor_id")
+  slug             String   @unique
+  name             String
+  description      String?  @db.Text
+  longDescription  String?  @map("long_description") @db.Text
+  category         String
+  icon             String?
+  pricing          String   @default("FREE") // FREE | PAID | FREEMIUM
+  price            Decimal? @db.Decimal(10, 2)
+  tags             Json     @default("[]")
+  screenshots      Json     @default("[]")
+  status           String   @default("DRAFT") // DRAFT | IN_REVIEW | PUBLISHED | SUSPENDED
+  currentVersionId String?  @map("current_version_id") // AppBundle.id of the live version
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  vendor  AppVendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  bundles AppBundle[]
+
+  @@index([vendorId])
+  @@index([status])
+  @@map("app_packages")
+}
+
+model AppBundle {
+  id          String    @id @default(cuid())
+  packageId   String    @map("package_id")
+  version     String // semver
+  channel     String    @default("STABLE") // STABLE | BETA
+  manifest    Json      @default("{}") // full AppManifest (schemas, pages, automations, assets, configSchema)
+  blobKey     String    @map("blob_key") // key into BundleStore (the zipped bundle)
+  checksum    String?
+  sizeBytes   Int       @default(0) @map("size_bytes")
+  changelog   String?   @db.Text
+  status      String    @default("DRAFT") // DRAFT | IN_REVIEW | PUBLISHED | REJECTED | ROLLED_BACK
+  reviewNotes String?   @map("review_notes") @db.Text
+  reviewedBy  String?   @map("reviewed_by")
+  publishedBy String?   @map("published_by")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  package AppPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, version])
+  @@index([packageId])
+  @@index([status])
+  @@map("app_bundles")
+}
+
 model AppReview {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  userId          String   @map("user_id")
-  userName        String   @map("user_name")
-  appId           String   @map("app_id")
-  rating          Int      // 1-5
-  title           String?
-  body            String?  @db.Text
-  helpfulCount    Int      @default(0) @map("helpful_count")
-  verifiedPurchase Boolean @default(false) @map("verified_purchase")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  userId           String   @map("user_id")
+  userName         String   @map("user_name")
+  appId            String   @map("app_id")
+  rating           Int // 1-5
+  title            String?
+  body             String?  @db.Text
+  helpfulCount     Int      @default(0) @map("helpful_count")
+  verifiedPurchase Boolean  @default(false) @map("verified_purchase")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   app MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
 
@@ -7063,7 +7142,7 @@ model AppCollectionItem {
   appId        String @map("app_id")
   sortOrder    Int    @default(0) @map("sort_order")
 
-  collection AppCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collection AppCollection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   app        MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
 
   @@unique([collectionId, appId])
@@ -7085,29 +7164,29 @@ model AppFavorite {
 }
 
 model AppSubmission {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  submittedBy   String   @map("submitted_by")
-  submitterName String   @map("submitter_name")
-  name          String
-  slug          String
-  description   String   @db.Text
-  longDescription String? @map("long_description") @db.Text
-  category      String
-  icon          String?
-  version       String   @default("1.0.0")
-  pricing       String   @default("FREE")
-  price         Decimal? @db.Decimal(10, 2)
-  features      Json     @default("[]")
-  screenshots   Json     @default("[]")
-  tags          Json     @default("[]")
-  supportUrl    String?  @map("support_url")
-  status        String   @default("PENDING") // PENDING | APPROVED | REJECTED
-  reviewNotes   String?  @map("review_notes") @db.Text
-  reviewedBy    String?  @map("reviewed_by")
-  reviewedAt    DateTime? @map("reviewed_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  submittedBy     String    @map("submitted_by")
+  submitterName   String    @map("submitter_name")
+  name            String
+  slug            String
+  description     String    @db.Text
+  longDescription String?   @map("long_description") @db.Text
+  category        String
+  icon            String?
+  version         String    @default("1.0.0")
+  pricing         String    @default("FREE")
+  price           Decimal?  @db.Decimal(10, 2)
+  features        Json      @default("[]")
+  screenshots     Json      @default("[]")
+  tags            Json      @default("[]")
+  supportUrl      String?   @map("support_url")
+  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewNotes     String?   @map("review_notes") @db.Text
+  reviewedBy      String?   @map("reviewed_by")
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@index([status])
   @@index([tenantId])
@@ -7119,23 +7198,23 @@ model AppSubmission {
 // ════════════════════════════════════════════════
 
 model CustomFieldDefinition {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  entityType   String    @map("entity_type")
-  fieldName    String    @map("field_name")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  entityType   String   @map("entity_type")
+  fieldName    String   @map("field_name")
   label        String
-  fieldType    String    @map("field_type")
+  fieldType    String   @map("field_type")
   description  String?
-  isRequired   Boolean   @default(false) @map("is_required")
-  defaultValue String?   @map("default_value")
-  options      Json      @default("[]")
-  validation   Json      @default("{}")
-  sortOrder    Int       @default(0) @map("sort_order")
-  section      String    @default("Custom Fields")
-  isActive     Boolean   @default(true) @map("is_active")
-  createdBy    String    @map("created_by")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  isRequired   Boolean  @default(false) @map("is_required")
+  defaultValue String?  @map("default_value")
+  options      Json     @default("[]")
+  validation   Json     @default("{}")
+  sortOrder    Int      @default(0) @map("sort_order")
+  section      String   @default("Custom Fields")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdBy    String   @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   values CustomFieldValue[]
 
@@ -7328,6 +7407,3 @@ model BillingEvent {
   @@index([tenantId, createdAt])
   @@map("billing_events")
 }
-
-
-

@@ -1,0 +1,7 @@
+{
+  "slug": "audit",
+  "title": "Audit Log",
+  "type": "list",
+  "schema": "audit-log",
+  "module": "compliance-audit"
+}

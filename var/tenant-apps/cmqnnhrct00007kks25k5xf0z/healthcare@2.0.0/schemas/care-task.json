@@ -1,0 +1,40 @@
+{
+  "slug": "care-task",
+  "name": "Care Task",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "task",
+      "label": "Task",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "due_date",
+      "label": "Due Date",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "assignee",
+      "label": "Assignee",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Open",
+        "Done"
+      ]
+    }
+  ]
+}

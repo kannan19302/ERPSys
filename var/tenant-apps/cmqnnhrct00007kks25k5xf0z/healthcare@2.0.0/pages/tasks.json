@@ -1,0 +1,7 @@
+{
+  "slug": "tasks",
+  "title": "Care Tasks",
+  "type": "list",
+  "schema": "care-task",
+  "module": "care-management"
+}

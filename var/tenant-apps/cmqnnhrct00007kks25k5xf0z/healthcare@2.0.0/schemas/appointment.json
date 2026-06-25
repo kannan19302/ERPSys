@@ -1,0 +1,75 @@
+{
+  "slug": "appointment",
+  "name": "Appointment",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "provider",
+      "label": "Provider",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "start_time",
+      "label": "Start Time",
+      "type": "date",
+      "required": true
+    },
+    {
+      "name": "duration_min",
+      "label": "Duration Min",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "reason",
+      "label": "Reason",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Booked",
+        "Checked In",
+        "Completed",
+        "No Show",
+        "Cancelled"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "patient_mrn": "MRN1001",
+      "provider": "Dr. Patel",
+      "start_time": "2026-06-25",
+      "duration_min": 20,
+      "reason": "Annual physical",
+      "status": "Booked"
+    },
+    {
+      "patient_mrn": "MRN1002",
+      "provider": "Dr. Nguyen",
+      "start_time": "2026-06-25",
+      "duration_min": 30,
+      "reason": "Diabetes follow-up",
+      "status": "Checked In"
+    },
+    {
+      "patient_mrn": "MRN1003",
+      "provider": "Dr. Patel",
+      "start_time": "2026-06-25",
+      "duration_min": 15,
+      "reason": "Sick visit",
+      "status": "Booked"
+    }
+  ]
+}

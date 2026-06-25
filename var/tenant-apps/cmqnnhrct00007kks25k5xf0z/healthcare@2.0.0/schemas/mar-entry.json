@@ -1,0 +1,47 @@
+{
+  "slug": "mar-entry",
+  "name": "MAR Entry",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "drug",
+      "label": "Drug",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "dose",
+      "label": "Dose",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "administered_at",
+      "label": "Administered At",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "nurse",
+      "label": "Nurse",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Given",
+        "Held",
+        "Refused"
+      ]
+    }
+  ]
+}

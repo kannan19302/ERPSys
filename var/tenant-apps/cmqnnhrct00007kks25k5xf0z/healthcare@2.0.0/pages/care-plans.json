@@ -1,0 +1,7 @@
+{
+  "slug": "care-plans",
+  "title": "Care Plans",
+  "type": "list",
+  "schema": "care-plan",
+  "module": "care-management"
+}

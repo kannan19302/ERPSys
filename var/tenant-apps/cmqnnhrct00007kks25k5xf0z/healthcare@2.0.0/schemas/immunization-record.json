@@ -1,0 +1,58 @@
+{
+  "slug": "immunization-record",
+  "name": "Immunization Record",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "vaccine",
+      "label": "Vaccine",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "dose_number",
+      "label": "Dose Number",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "administered_date",
+      "label": "Administered Date",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "next_due",
+      "label": "Next Due",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Administered",
+        "Due",
+        "Overdue",
+        "Refused"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "patient_mrn": "MRN1003",
+      "vaccine": "Influenza",
+      "dose_number": 1,
+      "administered_date": "2025-10-01",
+      "next_due": "2026-10-01",
+      "status": "Administered"
+    }
+  ]
+}

@@ -7,7 +7,7 @@ import {
   Search, ArrowLeft, Download, Star, TrendingUp, Heart, ChevronRight,
   SlidersHorizontal, LayoutGrid, List, Loader2, Sparkles, Package,
   BarChart3, Cpu, Users, Settings, Zap, DollarSign, ShoppingBag,
-  Factory, Shield, ChevronLeft,
+  Factory, Shield, ChevronLeft, HeartPulse, Code2,
 } from 'lucide-react';
 
 interface MarketplaceApp {
@@ -47,6 +47,11 @@ interface AppCollection {
 
 const API_BASE = '/api/v1/admin/marketplace';
 
+// Kernel apps are locked (never uninstallable) so an admin surface is always available.
+// Every other app — gated core business modules and industry bundles — is install/uninstall-able.
+// Keep in sync with apps/api/src/common/module-tiers.ts.
+const KERNEL_SLUGS = new Set(['dashboard', 'admin', 'builder', 'api-keys', 'saas']);
+
 function authHeaders(): HeadersInit {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -61,6 +66,7 @@ const categoryMeta: Record<string, { icon: React.ReactNode; color: string }> = {
   'Manufacturing': { icon: <Factory size={20} />, color: '#f97316' },
   'Finance': { icon: <DollarSign size={20} />, color: '#10b981' },
   'Sales': { icon: <ShoppingBag size={20} />, color: '#3b82f6' },
+  'Healthcare': { icon: <HeartPulse size={20} />, color: '#ef4444' },
 };
 
 export default function AppStorePage() {
@@ -157,8 +163,11 @@ export default function AppStorePage() {
       if (res.ok) {
         setInstalledSlugs(prev => new Set([...prev, slug]));
         showToast('App installed successfully!');
+        loadInstalled(); // reflect any auto-installed prerequisites
       } else {
-        showToast('Failed to install app', 'error');
+        const err = await res.json().catch(() => null);
+        const msg = err?.message || 'Failed to install app';
+        showToast(Array.isArray(msg) ? msg.join(', ') : msg, 'error');
       }
     } catch {
       showToast('Failed to install app', 'error');
@@ -223,7 +232,8 @@ export default function AppStorePage() {
     const isInstalled = installedSlugs.has(app.slug);
     const isFav = favoriteSlugs.has(app.slug);
     const isBusy = installingSlug === app.slug;
-    const isSystem = app.metadata?.isSystem === true;
+    // Locked = kernel app (non-uninstallable). Gated business modules are now uninstallable.
+    const isSystem = KERNEL_SLUGS.has(app.slug);
 
     if (viewMode === 'list') {
       return (
@@ -254,8 +264,8 @@ export default function AppStorePage() {
               </button>
             )}
             {isSystem ? (
-              <button disabled style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: 'not-allowed' }}>
-                System App
+              <button disabled title="Core platform module — always installed" style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: 'not-allowed' }}>
+                Core · Locked
               </button>
             ) : isInstalled ? (
               <button onClick={() => handleUninstall(app.slug)} disabled={isBusy} style={{ padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: '12px', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer' }}>
@@ -318,8 +328,8 @@ export default function AppStorePage() {
 
         <div style={{ marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
           {isSystem ? (
-            <button disabled style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              System App
+            <button disabled title="Core platform module — always installed" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              Core · Locked
             </button>
           ) : isInstalled ? (
             <button onClick={() => handleUninstall(app.slug)} disabled={isBusy} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', cursor: isBusy ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}>
@@ -375,9 +385,12 @@ export default function AppStorePage() {
           <Link href="/apps/store/collections" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)', textDecoration: 'none', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
             <Sparkles size={14} /> Collections
           </Link>
+          <Link href="/apps/developer" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)', textDecoration: 'none', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
+            <Code2 size={14} /> Developer
+          </Link>
           {apps.length === 0 && (
             <button onClick={seedApps} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary)', color: '#fff', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: 'pointer' }}>
-              Seed Marketplace
+              Seed Core + Healthcare
             </button>
           )}
         </div>

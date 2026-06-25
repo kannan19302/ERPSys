@@ -1,0 +1,47 @@
+{
+  "slug": "ar-dashboard",
+  "title": "Accounts Receivable",
+  "type": "custom",
+  "layout": [
+    {
+      "id": "w29",
+      "type": "header",
+      "title": "Accounts Receivable",
+      "gridSpan": 12,
+      "config": {
+        "subtitle": "Outstanding balances"
+      }
+    },
+    {
+      "id": "w30",
+      "type": "kpi",
+      "title": "A/R",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "open_invoices",
+            "label": "Open Invoices",
+            "color": "#f59e0b"
+          },
+          {
+            "metric": "ar_total",
+            "label": "A/R Balance",
+            "color": "#10b981"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w31",
+      "type": "table",
+      "title": "Invoices",
+      "gridSpan": 12,
+      "config": {
+        "dataModelSlug": "invoice",
+        "maxRows": 6
+      }
+    }
+  ],
+  "module": "payments-ar"
+}

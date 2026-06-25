@@ -1,0 +1,7 @@
+{
+  "slug": "reports",
+  "title": "Reports",
+  "type": "list",
+  "schema": "imaging-report",
+  "module": "radiology-imaging"
+}

@@ -594,6 +594,10 @@ function CustomLayoutRuntimeRenderer({ mapping, moduleName }: CustomLayoutRuntim
             );
           }
 
+          if (w.type === 'kpi') {
+            return <RuntimeKpiWidget key={w.id} widget={w} moduleName={moduleName} />;
+          }
+
           return null;
         })}
       </div>
@@ -862,6 +866,45 @@ function RuntimeTableWidget({ widget, schemas, moduleName }: { widget: any, sche
 }
 
 // ── Chart Widget Runtime ──
+// ── KPI Widget Runtime (live computed metrics) ──
+function RuntimeKpiWidget({ widget, moduleName }: { widget: any, moduleName: string }) {
+  const items: any[] = widget.config?.items || [];
+  const [metrics, setMetrics] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch(`/api/v1/admin/marketplace/installed/${moduleName}/metrics`, { headers: { Authorization: `Bearer ${token}` } });
+        if (mounted && res.ok) {
+          const data = await res.json();
+          setMetrics(data.metrics || {});
+        }
+      } catch { /* ignore */ } finally { if (mounted) setLoading(false); }
+    })();
+    return () => { mounted = false; };
+  }, [moduleName]);
+
+  return (
+    <div style={{ gridColumn: `span ${widget.gridSpan || 12}`, padding: 'var(--space-6)' }}>
+      {widget.title && <h3 style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{widget.title}</h3>}
+      <div className="frappe-grid-3" style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(160px, 1fr))`, gap: 'var(--space-4)' }}>
+        {items.map((item: any, i: number) => {
+          const value = metrics[item.metric];
+          return (
+            <div key={i} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', borderLeft: `4px solid ${item.color || 'var(--color-primary)'}`, background: 'var(--color-bg-elevated)' }}>
+              <div style={{ fontSize: '26px', color: item.color || 'var(--color-text)', fontWeight: 800 }}>{loading ? '…' : (value ?? 0)}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', fontWeight: 'var(--weight-medium)' }}>{item.label}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, schemas: any[], moduleName: string }) {
   const { chartType = 'bar' } = widget.config || {};
   const fallbackData = [

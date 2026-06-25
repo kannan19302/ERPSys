@@ -1,0 +1,24 @@
+{
+  "slug": "care-team",
+  "name": "Care Team Member",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "member",
+      "label": "Member",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "role",
+      "label": "Role",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

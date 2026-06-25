@@ -1,0 +1,41 @@
+{
+  "slug": "prior-auth",
+  "name": "Prior Authorization",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "service",
+      "label": "Service",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "payer",
+      "label": "Payer",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Requested",
+        "Approved",
+        "Denied"
+      ]
+    },
+    {
+      "name": "auth_number",
+      "label": "Auth Number",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

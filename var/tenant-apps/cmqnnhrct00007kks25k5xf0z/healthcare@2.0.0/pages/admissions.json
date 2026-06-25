@@ -1,0 +1,7 @@
+{
+  "slug": "admissions",
+  "title": "Admissions",
+  "type": "list",
+  "schema": "admission",
+  "module": "inpatient-adt"
+}

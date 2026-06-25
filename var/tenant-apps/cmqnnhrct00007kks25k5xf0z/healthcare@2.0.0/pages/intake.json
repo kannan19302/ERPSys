@@ -1,0 +1,7 @@
+{
+  "slug": "intake",
+  "title": "Intake Forms",
+  "type": "list",
+  "schema": "intake-form",
+  "module": "patient-portal"
+}

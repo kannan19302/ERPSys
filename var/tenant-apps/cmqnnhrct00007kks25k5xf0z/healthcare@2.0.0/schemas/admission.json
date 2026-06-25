@@ -1,0 +1,50 @@
+{
+  "slug": "admission",
+  "name": "Admission",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "admit_date",
+      "label": "Admit Date",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "bed_no",
+      "label": "Bed No",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "attending",
+      "label": "Attending",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Admitted",
+        "Transferred",
+        "Discharged"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "patient_mrn": "MRN1004",
+      "admit_date": "2026-06-25",
+      "bed_no": "A-01",
+      "attending": "Dr. Singh",
+      "status": "Admitted"
+    }
+  ]
+}

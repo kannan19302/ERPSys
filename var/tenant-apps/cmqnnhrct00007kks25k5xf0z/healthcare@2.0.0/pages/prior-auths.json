@@ -1,0 +1,7 @@
+{
+  "slug": "prior-auths",
+  "title": "Prior Authorizations",
+  "type": "list",
+  "schema": "prior-auth",
+  "module": "eligibility"
+}

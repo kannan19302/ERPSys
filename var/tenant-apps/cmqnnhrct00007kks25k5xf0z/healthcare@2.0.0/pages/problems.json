@@ -1,0 +1,7 @@
+{
+  "slug": "problems",
+  "title": "Problem List",
+  "type": "list",
+  "schema": "problem",
+  "module": "patient-management"
+}

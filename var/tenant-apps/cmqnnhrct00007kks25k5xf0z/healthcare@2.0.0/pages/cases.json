@@ -1,0 +1,7 @@
+{
+  "slug": "cases",
+  "title": "OR Cases",
+  "type": "list",
+  "schema": "or-case",
+  "module": "surgery-or"
+}

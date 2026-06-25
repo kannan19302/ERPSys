@@ -1,0 +1,56 @@
+{
+  "slug": "payer",
+  "name": "Payer",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "plan_type",
+      "label": "Plan Type",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "payer_id",
+      "label": "Payer Id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "phone",
+      "label": "Phone",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "sampleData": [
+    {
+      "name": "BlueCross",
+      "plan_type": "PPO",
+      "payer_id": "BCBS01",
+      "phone": "800-111-2222"
+    },
+    {
+      "name": "Aetna",
+      "plan_type": "HMO",
+      "payer_id": "AETNA1",
+      "phone": "800-333-4444"
+    },
+    {
+      "name": "UnitedHealth",
+      "plan_type": "PPO",
+      "payer_id": "UHC001",
+      "phone": "800-555-6666"
+    },
+    {
+      "name": "Medicare",
+      "plan_type": "Government",
+      "payer_id": "MCARE0",
+      "phone": "800-633-4227"
+    }
+  ]
+}

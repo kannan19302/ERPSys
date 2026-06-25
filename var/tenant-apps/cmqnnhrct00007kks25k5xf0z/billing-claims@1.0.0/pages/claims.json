@@ -1,0 +1,6 @@
+{
+  "slug": "claims",
+  "title": "Claims Worklist",
+  "type": "list",
+  "schema": "claim"
+}

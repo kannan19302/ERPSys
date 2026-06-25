@@ -1,0 +1,132 @@
+{
+  "slug": "patient",
+  "name": "Patient",
+  "fields": [
+    {
+      "name": "mrn",
+      "label": "Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "first_name",
+      "label": "First Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "last_name",
+      "label": "Last Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "date_of_birth",
+      "label": "Date Of Birth",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "sex",
+      "label": "Sex",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Male",
+        "Female",
+        "Other"
+      ]
+    },
+    {
+      "name": "phone",
+      "label": "Phone",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "email",
+      "label": "Email",
+      "type": "email",
+      "required": false
+    },
+    {
+      "name": "blood_group",
+      "label": "Blood Group",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "primary_provider",
+      "label": "Primary Provider",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "insurance_payer",
+      "label": "Insurance Payer",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "risk_level",
+      "label": "Risk Level",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Low",
+        "Moderate",
+        "High"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "mrn": "MRN1001",
+      "first_name": "Alice",
+      "last_name": "Morgan",
+      "date_of_birth": "1984-03-12",
+      "sex": "Female",
+      "phone": "555-0101",
+      "blood_group": "O+",
+      "primary_provider": "Dr. Patel",
+      "insurance_payer": "BlueCross",
+      "risk_level": "Moderate"
+    },
+    {
+      "mrn": "MRN1002",
+      "first_name": "Brian",
+      "last_name": "Lee",
+      "date_of_birth": "1971-09-30",
+      "sex": "Male",
+      "phone": "555-0102",
+      "blood_group": "A-",
+      "primary_provider": "Dr. Nguyen",
+      "insurance_payer": "Aetna",
+      "risk_level": "High"
+    },
+    {
+      "mrn": "MRN1003",
+      "first_name": "Carla",
+      "last_name": "Diaz",
+      "date_of_birth": "1995-06-21",
+      "sex": "Female",
+      "phone": "555-0103",
+      "blood_group": "B+",
+      "primary_provider": "Dr. Patel",
+      "insurance_payer": "UnitedHealth",
+      "risk_level": "Low"
+    },
+    {
+      "mrn": "MRN1004",
+      "first_name": "David",
+      "last_name": "Okafor",
+      "date_of_birth": "1958-12-02",
+      "sex": "Male",
+      "phone": "555-0104",
+      "blood_group": "AB+",
+      "primary_provider": "Dr. Singh",
+      "insurance_payer": "Medicare",
+      "risk_level": "High"
+    }
+  ]
+}

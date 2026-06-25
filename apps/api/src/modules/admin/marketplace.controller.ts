@@ -90,6 +90,26 @@ export class MarketplaceController {
     return this.marketplaceService.updateAppConfig(req.user.tenantId, slug, body.config);
   }
 
+  // ─── Industry-app shell: modules + in-app admin console ───
+
+  @Get('installed/:slug/modules')
+  @Permissions('admin.platform.read')
+  async getInstalledAppModules(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
+    return this.marketplaceService.getInstalledAppModules(req.user.tenantId, slug);
+  }
+
+  @Get('installed/:slug/metrics')
+  @Permissions('admin.platform.read')
+  async getInstalledAppMetrics(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
+    return this.marketplaceService.getInstalledAppMetrics(req.user.tenantId, slug);
+  }
+
+  @Put('installed/:slug/modules/:moduleSlug')
+  @Permissions('admin.platform.update')
+  async setModuleEnabled(@Req() req: AuthenticatedRequest, @Param('slug') slug: string, @Param('moduleSlug') moduleSlug: string, @Body() body: { enabled: boolean }) {
+    return this.marketplaceService.setModuleEnabled(req.user.tenantId, slug, moduleSlug, body.enabled);
+  }
+
   // ─── Reviews ───
 
   @Get('apps/:slug/reviews')

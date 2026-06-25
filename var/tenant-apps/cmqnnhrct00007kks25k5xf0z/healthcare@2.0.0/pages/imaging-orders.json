@@ -1,0 +1,7 @@
+{
+  "slug": "imaging-orders",
+  "title": "Imaging Orders",
+  "type": "list",
+  "schema": "imaging-order",
+  "module": "radiology-imaging"
+}

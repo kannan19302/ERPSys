@@ -1,0 +1,7 @@
+{
+  "slug": "documents",
+  "title": "Clinical Documents",
+  "type": "list",
+  "schema": "clinical-document",
+  "module": "clinical-charting"
+}

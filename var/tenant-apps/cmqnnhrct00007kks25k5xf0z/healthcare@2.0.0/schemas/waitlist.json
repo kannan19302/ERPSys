@@ -1,0 +1,34 @@
+{
+  "slug": "waitlist",
+  "name": "Waitlist Entry",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "provider",
+      "label": "Provider",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "requested_after",
+      "label": "Requested After",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "priority",
+      "label": "Priority",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Normal",
+        "Urgent"
+      ]
+    }
+  ]
+}

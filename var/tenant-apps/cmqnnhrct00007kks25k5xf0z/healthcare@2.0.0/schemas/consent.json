@@ -1,0 +1,30 @@
+{
+  "slug": "consent",
+  "name": "Consent",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "consent_type",
+      "label": "Consent Type",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "granted",
+      "label": "Granted",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "date",
+      "label": "Date",
+      "type": "date",
+      "required": false
+    }
+  ]
+}

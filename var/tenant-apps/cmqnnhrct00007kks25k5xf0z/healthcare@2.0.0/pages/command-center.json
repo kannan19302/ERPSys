@@ -1,0 +1,107 @@
+{
+  "slug": "command-center",
+  "title": "Clinical Command Center",
+  "type": "custom",
+  "layout": [
+    {
+      "id": "w1",
+      "type": "header",
+      "title": "Clinical Command Center",
+      "gridSpan": 12,
+      "config": {
+        "subtitle": "Live operational overview across clinical and revenue cycle",
+        "badge": "LIVE"
+      }
+    },
+    {
+      "id": "w2",
+      "type": "kpi",
+      "title": "Today",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "count:patient",
+            "label": "Total Patients",
+            "color": "#3b82f6"
+          },
+          {
+            "metric": "todays_appointments",
+            "label": "Today's Appointments",
+            "color": "#14b8a6"
+          },
+          {
+            "metric": "active_inpatients",
+            "label": "Inpatients",
+            "color": "#8b5cf6"
+          },
+          {
+            "metric": "critical_labs",
+            "label": "Critical Labs",
+            "color": "#ef4444"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w3",
+      "type": "kpi",
+      "title": "Revenue Cycle",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "pending_claims",
+            "label": "Pending Claims",
+            "color": "#f59e0b"
+          },
+          {
+            "metric": "denied_claims",
+            "label": "Denied Claims",
+            "color": "#ef4444"
+          },
+          {
+            "metric": "open_invoices",
+            "label": "Open Invoices",
+            "color": "#3b82f6"
+          },
+          {
+            "metric": "ar_total",
+            "label": "A/R Balance",
+            "color": "#10b981"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w4",
+      "type": "alert",
+      "gridSpan": 12,
+      "config": {
+        "text": "Review denied claims and critical lab results promptly.",
+        "type": "warning"
+      }
+    },
+    {
+      "id": "w5",
+      "type": "table",
+      "title": "Recent Patients",
+      "gridSpan": 6,
+      "config": {
+        "dataModelSlug": "patient",
+        "maxRows": 6
+      }
+    },
+    {
+      "id": "w6",
+      "type": "table",
+      "title": "Appointments",
+      "gridSpan": 6,
+      "config": {
+        "dataModelSlug": "appointment",
+        "maxRows": 6
+      }
+    }
+  ],
+  "module": "overview"
+}

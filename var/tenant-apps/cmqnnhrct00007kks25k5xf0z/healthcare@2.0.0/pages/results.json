@@ -1,0 +1,7 @@
+{
+  "slug": "results",
+  "title": "Results Worklist",
+  "type": "list",
+  "schema": "lab-result",
+  "module": "lab-diagnostics"
+}

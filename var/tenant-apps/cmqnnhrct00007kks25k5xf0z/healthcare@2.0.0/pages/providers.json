@@ -1,0 +1,7 @@
+{
+  "slug": "providers",
+  "title": "Providers",
+  "type": "list",
+  "schema": "provider",
+  "module": "appointment-scheduling"
+}

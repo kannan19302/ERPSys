@@ -1,0 +1,7 @@
+{
+  "slug": "notes",
+  "title": "Nursing Notes",
+  "type": "list",
+  "schema": "nursing-note",
+  "module": "nursing"
+}

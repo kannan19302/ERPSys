@@ -1,0 +1,24 @@
+{
+  "slug": "vaccine",
+  "name": "Vaccine",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "cvx_code",
+      "label": "Cvx Code",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "series",
+      "label": "Series",
+      "type": "text",
+      "required": false
+    }
+  ]
+}

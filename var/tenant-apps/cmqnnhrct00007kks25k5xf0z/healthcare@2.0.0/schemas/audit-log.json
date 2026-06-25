@@ -1,0 +1,36 @@
+{
+  "slug": "audit-log",
+  "name": "Audit Log",
+  "fields": [
+    {
+      "name": "actor",
+      "label": "Actor",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "action",
+      "label": "Action",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "entity",
+      "label": "Entity",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "record_id",
+      "label": "Record Id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "at",
+      "label": "At",
+      "type": "date",
+      "required": false
+    }
+  ]
+}

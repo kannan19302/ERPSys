@@ -1,0 +1,69 @@
+{
+  "slug": "order",
+  "name": "Order",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "order_type",
+      "label": "Order Type",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Lab",
+        "Imaging",
+        "Medication",
+        "Referral"
+      ]
+    },
+    {
+      "name": "detail",
+      "label": "Detail",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "priority",
+      "label": "Priority",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Routine",
+        "Urgent",
+        "STAT"
+      ]
+    },
+    {
+      "name": "ordered_by",
+      "label": "Ordered By",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Draft",
+        "Active",
+        "Completed",
+        "Cancelled"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "patient_mrn": "MRN1002",
+      "order_type": "Lab",
+      "detail": "HbA1c",
+      "priority": "Routine",
+      "ordered_by": "Dr. Nguyen",
+      "status": "Active"
+    }
+  ]
+}

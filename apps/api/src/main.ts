@@ -36,6 +36,7 @@ import { Logger } from '@nestjs/common';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
+import { entitlementMiddleware } from './common/middleware/entitlement.middleware';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -53,6 +54,10 @@ async function bootstrap() {
 
   // Global prefix for all API routes
   app.setGlobalPrefix('api/v1');
+
+  // Module entitlements: 404 gated business-module routes that the tenant has
+  // uninstalled (kernel apps and unmapped routes pass through).
+  app.use(entitlementMiddleware);
 
   const port = process.env.API_PORT ?? 3001;
   await app.listen(port);

@@ -1,0 +1,7 @@
+{
+  "slug": "encounters",
+  "title": "Encounters",
+  "type": "list",
+  "schema": "encounter",
+  "module": "clinical-charting"
+}

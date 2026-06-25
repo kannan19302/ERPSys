@@ -1,0 +1,57 @@
+{
+  "slug": "problem",
+  "name": "Problem",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "icd10_code",
+      "label": "Icd10 Code",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "description",
+      "label": "Description",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "onset_date",
+      "label": "Onset Date",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Active",
+        "Resolved",
+        "Chronic"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "patient_mrn": "MRN1002",
+      "icd10_code": "E11.9",
+      "description": "Type 2 diabetes mellitus",
+      "onset_date": "2018-01-15",
+      "status": "Chronic"
+    },
+    {
+      "patient_mrn": "MRN1004",
+      "icd10_code": "I10",
+      "description": "Essential hypertension",
+      "onset_date": "2015-05-10",
+      "status": "Chronic"
+    }
+  ]
+}

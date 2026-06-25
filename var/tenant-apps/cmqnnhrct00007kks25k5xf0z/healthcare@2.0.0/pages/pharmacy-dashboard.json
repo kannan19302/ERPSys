@@ -1,0 +1,71 @@
+{
+  "slug": "pharmacy-dashboard",
+  "title": "Pharmacy Dashboard",
+  "type": "custom",
+  "layout": [
+    {
+      "id": "w10",
+      "type": "header",
+      "title": "Pharmacy",
+      "gridSpan": 12,
+      "config": {
+        "subtitle": "Formulary, dispensing and stock health"
+      }
+    },
+    {
+      "id": "w11",
+      "type": "kpi",
+      "title": "Stock",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "count:drug",
+            "label": "Formulary Items",
+            "color": "#8b5cf6"
+          },
+          {
+            "metric": "low_stock_drugs",
+            "label": "Low Stock",
+            "color": "#ef4444"
+          },
+          {
+            "metric": "count:prescription",
+            "label": "Prescriptions",
+            "color": "#3b82f6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w12",
+      "type": "alert",
+      "gridSpan": 12,
+      "config": {
+        "text": "Reorder drugs below their reorder level to avoid stockouts.",
+        "type": "warning"
+      }
+    },
+    {
+      "id": "w13",
+      "type": "table",
+      "title": "Formulary",
+      "gridSpan": 6,
+      "config": {
+        "dataModelSlug": "drug",
+        "maxRows": 6
+      }
+    },
+    {
+      "id": "w14",
+      "type": "table",
+      "title": "Stock Batches",
+      "gridSpan": 6,
+      "config": {
+        "dataModelSlug": "stock-batch",
+        "maxRows": 6
+      }
+    }
+  ],
+  "module": "eprescribing"
+}

@@ -1,0 +1,36 @@
+{
+  "slug": "payment",
+  "name": "Payment",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "amount",
+      "label": "Amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "method",
+      "label": "Method",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Card",
+        "Cash",
+        "Check",
+        "ERA"
+      ]
+    },
+    {
+      "name": "posted_date",
+      "label": "Posted Date",
+      "type": "date",
+      "required": false
+    }
+  ]
+}

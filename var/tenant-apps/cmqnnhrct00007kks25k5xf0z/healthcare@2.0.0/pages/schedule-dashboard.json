@@ -1,0 +1,52 @@
+{
+  "slug": "schedule-dashboard",
+  "title": "Front Desk",
+  "type": "custom",
+  "layout": [
+    {
+      "id": "w22",
+      "type": "header",
+      "title": "Front Desk",
+      "gridSpan": 12,
+      "config": {
+        "subtitle": "Today's schedule"
+      }
+    },
+    {
+      "id": "w23",
+      "type": "kpi",
+      "title": "Today",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "todays_appointments",
+            "label": "Today's Appointments",
+            "color": "#14b8a6"
+          },
+          {
+            "metric": "no_shows",
+            "label": "No Shows",
+            "color": "#ef4444"
+          },
+          {
+            "metric": "count:provider",
+            "label": "Providers",
+            "color": "#3b82f6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w24",
+      "type": "table",
+      "title": "Appointments",
+      "gridSpan": 12,
+      "config": {
+        "dataModelSlug": "appointment",
+        "maxRows": 6
+      }
+    }
+  ],
+  "module": "appointment-scheduling"
+}

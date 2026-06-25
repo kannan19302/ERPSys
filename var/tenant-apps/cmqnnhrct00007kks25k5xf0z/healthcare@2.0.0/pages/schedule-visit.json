@@ -1,0 +1,7 @@
+{
+  "slug": "schedule-visit",
+  "title": "Schedule Visit",
+  "type": "form",
+  "schema": "tele-visit",
+  "module": "telehealth"
+}

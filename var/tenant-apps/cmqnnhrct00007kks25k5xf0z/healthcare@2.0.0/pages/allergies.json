@@ -1,0 +1,7 @@
+{
+  "slug": "allergies",
+  "title": "Allergies",
+  "type": "list",
+  "schema": "allergy",
+  "module": "patient-management"
+}

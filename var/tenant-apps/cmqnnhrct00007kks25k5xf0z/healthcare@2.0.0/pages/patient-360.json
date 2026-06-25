@@ -1,0 +1,57 @@
+{
+  "slug": "patient-360",
+  "title": "Patient Overview",
+  "type": "custom",
+  "layout": [
+    {
+      "id": "w7",
+      "type": "header",
+      "title": "Patient Overview",
+      "gridSpan": 12,
+      "config": {
+        "subtitle": "Population snapshot"
+      }
+    },
+    {
+      "id": "w8",
+      "type": "kpi",
+      "title": "Population",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "count:patient",
+            "label": "Patients",
+            "color": "#3b82f6"
+          },
+          {
+            "metric": "count:problem",
+            "label": "Active Problems",
+            "color": "#f59e0b"
+          },
+          {
+            "metric": "count:allergy",
+            "label": "Allergies",
+            "color": "#ef4444"
+          },
+          {
+            "metric": "count:medication",
+            "label": "Medications",
+            "color": "#8b5cf6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w9",
+      "type": "table",
+      "title": "Patients",
+      "gridSpan": 12,
+      "config": {
+        "dataModelSlug": "patient",
+        "maxRows": 6
+      }
+    }
+  ],
+  "module": "patient-management"
+}

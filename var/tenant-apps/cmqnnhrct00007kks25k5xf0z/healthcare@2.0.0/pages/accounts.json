@@ -1,0 +1,7 @@
+{
+  "slug": "accounts",
+  "title": "Portal Accounts",
+  "type": "list",
+  "schema": "portal-account",
+  "module": "patient-portal"
+}

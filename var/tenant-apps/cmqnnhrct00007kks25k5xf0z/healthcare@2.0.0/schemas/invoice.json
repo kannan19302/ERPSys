@@ -1,0 +1,50 @@
+{
+  "slug": "invoice",
+  "name": "Invoice",
+  "fields": [
+    {
+      "name": "patient_mrn",
+      "label": "Patient Mrn",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "service_date",
+      "label": "Service Date",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "amount",
+      "label": "Amount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "required": false,
+      "options": [
+        "Open",
+        "Paid",
+        "Partially Paid",
+        "Written Off"
+      ]
+    }
+  ],
+  "sampleData": [
+    {
+      "patient_mrn": "MRN1004",
+      "service_date": "2026-06-25",
+      "amount": 120,
+      "status": "Open"
+    },
+    {
+      "patient_mrn": "MRN1002",
+      "service_date": "2026-06-25",
+      "amount": 180,
+      "status": "Partially Paid"
+    }
+  ]
+}

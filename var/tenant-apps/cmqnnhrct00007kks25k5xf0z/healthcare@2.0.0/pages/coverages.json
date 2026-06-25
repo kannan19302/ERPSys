@@ -1,0 +1,7 @@
+{
+  "slug": "coverages",
+  "title": "Coverage",
+  "type": "list",
+  "schema": "coverage",
+  "module": "eligibility"
+}

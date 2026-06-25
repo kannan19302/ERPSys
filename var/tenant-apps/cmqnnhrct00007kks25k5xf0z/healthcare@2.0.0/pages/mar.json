@@ -1,0 +1,7 @@
+{
+  "slug": "mar",
+  "title": "MAR",
+  "type": "list",
+  "schema": "mar-entry",
+  "module": "nursing"
+}

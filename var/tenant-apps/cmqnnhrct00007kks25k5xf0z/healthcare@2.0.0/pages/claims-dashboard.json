@@ -1,0 +1,61 @@
+{
+  "slug": "claims-dashboard",
+  "title": "Revenue Cycle",
+  "type": "custom",
+  "layout": [
+    {
+      "id": "w25",
+      "type": "header",
+      "title": "Revenue Cycle",
+      "gridSpan": 12,
+      "config": {
+        "subtitle": "Claims and denials"
+      }
+    },
+    {
+      "id": "w26",
+      "type": "kpi",
+      "title": "Claims",
+      "gridSpan": 12,
+      "config": {
+        "items": [
+          {
+            "metric": "count:claim",
+            "label": "Total Claims",
+            "color": "#3b82f6"
+          },
+          {
+            "metric": "pending_claims",
+            "label": "Pending",
+            "color": "#f59e0b"
+          },
+          {
+            "metric": "denied_claims",
+            "label": "Denied",
+            "color": "#ef4444"
+          }
+        ]
+      }
+    },
+    {
+      "id": "w27",
+      "type": "alert",
+      "gridSpan": 12,
+      "config": {
+        "text": "Work denied claims first — they directly impact net collections.",
+        "type": "danger"
+      }
+    },
+    {
+      "id": "w28",
+      "type": "table",
+      "title": "Claims",
+      "gridSpan": 12,
+      "config": {
+        "dataModelSlug": "claim",
+        "maxRows": 6
+      }
+    }
+  ],
+  "module": "billing-claims"
+}

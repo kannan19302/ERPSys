@@ -1,0 +1,3490 @@
+{
+  "name": "Healthcare",
+  "slug": "healthcare",
+  "version": "2.0.0",
+  "category": "Healthcare",
+  "vendor": "healthtech",
+  "runtime": "declarative",
+  "description": "Enterprise EHR/HIS/RCM suite — clinical charting, CPOE, e-Rx, labs, inpatient ADT, revenue cycle, patient engagement, analytics & interoperability. Manage modules from the in-app admin console.",
+  "longDescription": "A complete, modular Healthcare platform competitive with leading health-IT systems: electronic health records, clinical charting (SOAP), computerized order entry with decision support, e-prescribing with drug-interaction checks, lab & radiology, inpatient ADT and bed management, full revenue-cycle (charge capture, claim scrubbing, eligibility, denials, A/R), patient portal & telehealth, quality analytics, HIPAA audit, and FHIR interoperability. Enable only the modules you need.",
+  "icon": "🏥",
+  "pricing": "FREE",
+  "tags": [
+    "healthcare",
+    "ehr",
+    "emr",
+    "his",
+    "rcm",
+    "fhir",
+    "clinic",
+    "hospital",
+    "industry"
+  ],
+  "modules": [
+    {
+      "slug": "overview",
+      "name": "Command Center",
+      "description": "Executive clinical + revenue overview.",
+      "icon": "🏥",
+      "enabledByDefault": true,
+      "roles": []
+    },
+    {
+      "slug": "patient-management",
+      "name": "Patient Management",
+      "description": "Demographics, problems, allergies, meds, vitals, care team.",
+      "icon": "🩺",
+      "enabledByDefault": true,
+      "roles": [
+        "Physician",
+        "Nurse",
+        "Front Desk"
+      ]
+    },
+    {
+      "slug": "clinical-charting",
+      "name": "Clinical Charting",
+      "description": "Encounters, SOAP notes and clinical documents.",
+      "icon": "📝",
+      "enabledByDefault": true,
+      "roles": []
+    },
+    {
+      "slug": "cpoe-orders",
+      "name": "Orders (CPOE)",
+      "description": "Computerized order entry with decision support.",
+      "icon": "🧪",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "eprescribing",
+      "name": "e-Prescribing",
+      "description": "Prescriptions with drug-interaction checks; pharmacy formulary & stock.",
+      "icon": "💊",
+      "enabledByDefault": true,
+      "roles": [
+        "Physician",
+        "Pharmacist"
+      ]
+    },
+    {
+      "slug": "immunization",
+      "name": "Immunizations",
+      "description": "Vaccine registry, schedule forecast and reactions.",
+      "icon": "💉",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "care-management",
+      "name": "Care Management",
+      "description": "Care plans, goals, tasks and population registries.",
+      "icon": "🧑‍⚕️",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "lab-diagnostics",
+      "name": "Lab & Diagnostics",
+      "description": "Lab orders, results (LOINC) and critical-value alerts.",
+      "icon": "🔬",
+      "enabledByDefault": true,
+      "roles": []
+    },
+    {
+      "slug": "radiology-imaging",
+      "name": "Radiology & Imaging",
+      "description": "Imaging orders, modality worklist and reports.",
+      "icon": "🩻",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "inpatient-adt",
+      "name": "Inpatient (ADT)",
+      "description": "Admissions, transfers, discharges and bed management.",
+      "icon": "🛏️",
+      "enabledByDefault": false,
+      "roles": [
+        "Nurse",
+        "Bed Manager",
+        "Physician"
+      ]
+    },
+    {
+      "slug": "surgery-or",
+      "name": "Surgery / OR",
+      "description": "OR scheduling and case tracking.",
+      "icon": "🔪",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "nursing",
+      "name": "Nursing",
+      "description": "Assessments and medication administration (MAR).",
+      "icon": "🩹",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "appointment-scheduling",
+      "name": "Scheduling",
+      "description": "Multi-provider calendar, booking, waitlist and reminders.",
+      "icon": "📅",
+      "enabledByDefault": true,
+      "roles": [
+        "Front Desk",
+        "Nurse"
+      ]
+    },
+    {
+      "slug": "billing-claims",
+      "name": "Billing & Claims",
+      "description": "Charge capture, coding, claims worklist, scrubbing and denials.",
+      "icon": "🧾",
+      "enabledByDefault": true,
+      "roles": [
+        "Biller",
+        "Admin"
+      ]
+    },
+    {
+      "slug": "eligibility",
+      "name": "Eligibility & Auth",
+      "description": "Payer registry, eligibility (270/271) and prior authorization.",
+      "icon": "🪪",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "payments-ar",
+      "name": "Payments & A/R",
+      "description": "ERA/EOB posting, statements and AR aging.",
+      "icon": "💳",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "patient-portal",
+      "name": "Patient Portal",
+      "description": "Patient accounts, secure messages and intake forms.",
+      "icon": "🌐",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "telehealth",
+      "name": "Telehealth",
+      "description": "Virtual visits and waiting room.",
+      "icon": "📹",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "analytics-quality",
+      "name": "Analytics & Quality",
+      "description": "Quality measures and population registries.",
+      "icon": "📊",
+      "enabledByDefault": false,
+      "roles": []
+    },
+    {
+      "slug": "compliance-audit",
+      "name": "Compliance & Audit",
+      "description": "HIPAA audit log, consent and RBAC roles.",
+      "icon": "🛡️",
+      "enabledByDefault": false,
+      "roles": [
+        "Compliance Officer",
+        "Admin"
+      ]
+    },
+    {
+      "slug": "interoperability",
+      "name": "Interoperability",
+      "description": "FHIR read API, referrals and document exchange.",
+      "icon": "🔗",
+      "enabledByDefault": false,
+      "roles": []
+    }
+  ],
+  "automations": [
+    {
+      "name": "Low Stock Alert",
+      "trigger": {
+        "type": "record.created",
+        "entity": "stock-batch"
+      },
+      "actions": [
+        {
+          "type": "notify",
+          "config": {
+            "template": "low_stock"
+          }
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "name": "Immunization Due Reminder",
+      "trigger": {
+        "type": "schedule.daily"
+      },
+      "actions": [
+        {
+          "type": "notify",
+          "config": {
+            "template": "immunization_due"
+          }
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "name": "Appointment Reminder",
+      "trigger": {
+        "type": "schedule.daily"
+      },
+      "actions": [
+        {
+          "type": "notify",
+          "config": {
+            "template": "appointment_reminder"
+          }
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "name": "Claim Denial Follow-up",
+      "trigger": {
+        "type": "record.created",
+        "entity": "claim"
+      },
+      "actions": [
+        {
+          "type": "task",
+          "config": {
+            "template": "denial_followup"
+          }
+        }
+      ],
+      "enabled": true
+    }
+  ],
+  "schemas": [
+    {
+      "slug": "patient",
+      "name": "Patient",
+      "fields": [
+        {
+          "name": "mrn",
+          "label": "Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "first_name",
+          "label": "First Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "last_name",
+          "label": "Last Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "date_of_birth",
+          "label": "Date Of Birth",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "sex",
+          "label": "Sex",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Male",
+            "Female",
+            "Other"
+          ]
+        },
+        {
+          "name": "phone",
+          "label": "Phone",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "email",
+          "label": "Email",
+          "type": "email",
+          "required": false
+        },
+        {
+          "name": "blood_group",
+          "label": "Blood Group",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "primary_provider",
+          "label": "Primary Provider",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "insurance_payer",
+          "label": "Insurance Payer",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "risk_level",
+          "label": "Risk Level",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Low",
+            "Moderate",
+            "High"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "mrn": "MRN1001",
+          "first_name": "Alice",
+          "last_name": "Morgan",
+          "date_of_birth": "1984-03-12",
+          "sex": "Female",
+          "phone": "555-0101",
+          "blood_group": "O+",
+          "primary_provider": "Dr. Patel",
+          "insurance_payer": "BlueCross",
+          "risk_level": "Moderate"
+        },
+        {
+          "mrn": "MRN1002",
+          "first_name": "Brian",
+          "last_name": "Lee",
+          "date_of_birth": "1971-09-30",
+          "sex": "Male",
+          "phone": "555-0102",
+          "blood_group": "A-",
+          "primary_provider": "Dr. Nguyen",
+          "insurance_payer": "Aetna",
+          "risk_level": "High"
+        },
+        {
+          "mrn": "MRN1003",
+          "first_name": "Carla",
+          "last_name": "Diaz",
+          "date_of_birth": "1995-06-21",
+          "sex": "Female",
+          "phone": "555-0103",
+          "blood_group": "B+",
+          "primary_provider": "Dr. Patel",
+          "insurance_payer": "UnitedHealth",
+          "risk_level": "Low"
+        },
+        {
+          "mrn": "MRN1004",
+          "first_name": "David",
+          "last_name": "Okafor",
+          "date_of_birth": "1958-12-02",
+          "sex": "Male",
+          "phone": "555-0104",
+          "blood_group": "AB+",
+          "primary_provider": "Dr. Singh",
+          "insurance_payer": "Medicare",
+          "risk_level": "High"
+        }
+      ]
+    },
+    {
+      "slug": "problem",
+      "name": "Problem",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "icd10_code",
+          "label": "Icd10 Code",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "description",
+          "label": "Description",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "onset_date",
+          "label": "Onset Date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Active",
+            "Resolved",
+            "Chronic"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "icd10_code": "E11.9",
+          "description": "Type 2 diabetes mellitus",
+          "onset_date": "2018-01-15",
+          "status": "Chronic"
+        },
+        {
+          "patient_mrn": "MRN1004",
+          "icd10_code": "I10",
+          "description": "Essential hypertension",
+          "onset_date": "2015-05-10",
+          "status": "Chronic"
+        }
+      ]
+    },
+    {
+      "slug": "allergy",
+      "name": "Allergy",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "allergen",
+          "label": "Allergen",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "reaction",
+          "label": "Reaction",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "label": "Severity",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Mild",
+            "Moderate",
+            "Severe"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1001",
+          "allergen": "Penicillin",
+          "reaction": "Hives",
+          "severity": "Severe"
+        }
+      ]
+    },
+    {
+      "slug": "medication",
+      "name": "Medication",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "drug",
+          "label": "Drug",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "dose",
+          "label": "Dose",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "frequency",
+          "label": "Frequency",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Active",
+            "Stopped"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "drug": "Metformin",
+          "dose": "500mg",
+          "frequency": "BID",
+          "status": "Active"
+        }
+      ]
+    },
+    {
+      "slug": "vital",
+      "name": "Vital Sign",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "recorded_at",
+          "label": "Recorded At",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "systolic",
+          "label": "Systolic",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "diastolic",
+          "label": "Diastolic",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "heart_rate",
+          "label": "Heart Rate",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "temperature",
+          "label": "Temperature",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "spo2",
+          "label": "Spo2",
+          "type": "number",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1004",
+          "recorded_at": "2026-06-25",
+          "systolic": 158,
+          "diastolic": 96,
+          "heart_rate": 82,
+          "temperature": 98.6,
+          "spo2": 97
+        }
+      ]
+    },
+    {
+      "slug": "care-team",
+      "name": "Care Team Member",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "member",
+          "label": "Member",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "role",
+          "label": "Role",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "encounter",
+      "name": "Encounter",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "encounter_date",
+          "label": "Encounter Date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "type",
+          "label": "Type",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Outpatient",
+            "Inpatient",
+            "Emergency",
+            "Telehealth"
+          ]
+        },
+        {
+          "name": "chief_complaint",
+          "label": "Chief Complaint",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "subjective",
+          "label": "Subjective",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "objective",
+          "label": "Objective",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "assessment",
+          "label": "Assessment",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "plan",
+          "label": "Plan",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "provider",
+          "label": "Provider",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Open",
+            "Signed"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "encounter_date": "2026-06-25",
+          "type": "Outpatient",
+          "chief_complaint": "Follow-up diabetes",
+          "assessment": "A1c elevated",
+          "plan": "Increase Metformin",
+          "provider": "Dr. Nguyen",
+          "status": "Signed"
+        },
+        {
+          "patient_mrn": "MRN1004",
+          "encounter_date": "2026-06-25",
+          "type": "Outpatient",
+          "chief_complaint": "BP check",
+          "assessment": "Uncontrolled HTN",
+          "plan": "Add lisinopril",
+          "provider": "Dr. Singh",
+          "status": "Open"
+        }
+      ]
+    },
+    {
+      "slug": "clinical-document",
+      "name": "Clinical Document",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "title",
+          "label": "Title",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "doc_type",
+          "label": "Doc Type",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Progress Note",
+            "Discharge Summary",
+            "Consult",
+            "Referral"
+          ]
+        },
+        {
+          "name": "author",
+          "label": "Author",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "date",
+          "label": "Date",
+          "type": "date",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "order",
+      "name": "Order",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "order_type",
+          "label": "Order Type",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Lab",
+            "Imaging",
+            "Medication",
+            "Referral"
+          ]
+        },
+        {
+          "name": "detail",
+          "label": "Detail",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "label": "Priority",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Routine",
+            "Urgent",
+            "STAT"
+          ]
+        },
+        {
+          "name": "ordered_by",
+          "label": "Ordered By",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Draft",
+            "Active",
+            "Completed",
+            "Cancelled"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "order_type": "Lab",
+          "detail": "HbA1c",
+          "priority": "Routine",
+          "ordered_by": "Dr. Nguyen",
+          "status": "Active"
+        }
+      ]
+    },
+    {
+      "slug": "order-set",
+      "name": "Order Set",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "description",
+          "label": "Description",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "items",
+          "label": "Items",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "drug",
+      "name": "Drug",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "form",
+          "label": "Form",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "strength",
+          "label": "Strength",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "unit_price",
+          "label": "Unit Price",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "reorder_level",
+          "label": "Reorder Level",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "controlled",
+          "label": "Controlled",
+          "type": "boolean",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "name": "Metformin",
+          "form": "Tablet",
+          "strength": "500mg",
+          "unit_price": 0.1,
+          "reorder_level": 100,
+          "controlled": false
+        },
+        {
+          "name": "Lisinopril",
+          "form": "Tablet",
+          "strength": "10mg",
+          "unit_price": 0.12,
+          "reorder_level": 80,
+          "controlled": false
+        },
+        {
+          "name": "Warfarin",
+          "form": "Tablet",
+          "strength": "5mg",
+          "unit_price": 0.2,
+          "reorder_level": 60,
+          "controlled": false
+        },
+        {
+          "name": "Oxycodone",
+          "form": "Tablet",
+          "strength": "5mg",
+          "unit_price": 0.5,
+          "reorder_level": 40,
+          "controlled": true
+        }
+      ]
+    },
+    {
+      "slug": "prescription",
+      "name": "Prescription",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "drug",
+          "label": "Drug",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "dosage",
+          "label": "Dosage",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "frequency",
+          "label": "Frequency",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "quantity",
+          "label": "Quantity",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "prescriber",
+          "label": "Prescriber",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Pending",
+            "Sent",
+            "Dispensed",
+            "Cancelled"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "drug": "Metformin",
+          "dosage": "500mg",
+          "frequency": "BID",
+          "quantity": 60,
+          "prescriber": "Dr. Nguyen",
+          "status": "Dispensed"
+        }
+      ]
+    },
+    {
+      "slug": "stock-batch",
+      "name": "Stock Batch",
+      "fields": [
+        {
+          "name": "drug",
+          "label": "Drug",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "batch_no",
+          "label": "Batch No",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "quantity",
+          "label": "Quantity",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "expiry_date",
+          "label": "Expiry Date",
+          "type": "date",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "drug": "Metformin",
+          "batch_no": "B-100",
+          "quantity": 40,
+          "expiry_date": "2027-01-01"
+        },
+        {
+          "drug": "Lisinopril",
+          "batch_no": "B-200",
+          "quantity": 30,
+          "expiry_date": "2026-09-01"
+        },
+        {
+          "drug": "Warfarin",
+          "batch_no": "B-300",
+          "quantity": 20,
+          "expiry_date": "2026-06-01"
+        }
+      ]
+    },
+    {
+      "slug": "vaccine",
+      "name": "Vaccine",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "cvx_code",
+          "label": "Cvx Code",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "series",
+          "label": "Series",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "immunization-record",
+      "name": "Immunization Record",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "vaccine",
+          "label": "Vaccine",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "dose_number",
+          "label": "Dose Number",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "administered_date",
+          "label": "Administered Date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "next_due",
+          "label": "Next Due",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Administered",
+            "Due",
+            "Overdue",
+            "Refused"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1003",
+          "vaccine": "Influenza",
+          "dose_number": 1,
+          "administered_date": "2025-10-01",
+          "next_due": "2026-10-01",
+          "status": "Administered"
+        }
+      ]
+    },
+    {
+      "slug": "care-plan",
+      "name": "Care Plan",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "label": "Condition",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "goal",
+          "label": "Goal",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Active",
+            "Met",
+            "Discontinued"
+          ]
+        },
+        {
+          "name": "owner",
+          "label": "Owner",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "care-task",
+      "name": "Care Task",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "task",
+          "label": "Task",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "due_date",
+          "label": "Due Date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "label": "Assignee",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Open",
+            "Done"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "lab-order",
+      "name": "Lab Order",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "test_name",
+          "label": "Test Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "loinc_code",
+          "label": "Loinc Code",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "ordered_by",
+          "label": "Ordered By",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "ordered_at",
+          "label": "Ordered At",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "label": "Priority",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Routine",
+            "Urgent",
+            "STAT"
+          ]
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Ordered",
+            "Collected",
+            "Resulted"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "test_name": "HbA1c",
+          "loinc_code": "4548-4",
+          "ordered_by": "Dr. Nguyen",
+          "ordered_at": "2026-06-25",
+          "priority": "Routine",
+          "status": "Resulted"
+        }
+      ]
+    },
+    {
+      "slug": "lab-result",
+      "name": "Lab Result",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "test_name",
+          "label": "Test Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "value",
+          "label": "Value",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "unit",
+          "label": "Unit",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "reference_range",
+          "label": "Reference Range",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "flag",
+          "label": "Flag",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Normal",
+            "High",
+            "Low",
+            "Critical"
+          ]
+        },
+        {
+          "name": "resulted_at",
+          "label": "Resulted At",
+          "type": "date",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "test_name": "HbA1c",
+          "value": "9.1",
+          "unit": "%",
+          "reference_range": "4.0-5.6",
+          "flag": "High",
+          "resulted_at": "2026-06-25"
+        },
+        {
+          "patient_mrn": "MRN1004",
+          "test_name": "Potassium",
+          "value": "6.3",
+          "unit": "mmol/L",
+          "reference_range": "3.5-5.1",
+          "flag": "Critical",
+          "resulted_at": "2026-06-25"
+        }
+      ]
+    },
+    {
+      "slug": "imaging-order",
+      "name": "Imaging Order",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "modality",
+          "label": "Modality",
+          "type": "select",
+          "required": false,
+          "options": [
+            "X-Ray",
+            "CT",
+            "MRI",
+            "Ultrasound"
+          ]
+        },
+        {
+          "name": "body_part",
+          "label": "Body Part",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "ordered_by",
+          "label": "Ordered By",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Ordered",
+            "Scheduled",
+            "Performed",
+            "Reported"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "imaging-report",
+      "name": "Imaging Report",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "modality",
+          "label": "Modality",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "findings",
+          "label": "Findings",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "impression",
+          "label": "Impression",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "radiologist",
+          "label": "Radiologist",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "ward",
+      "name": "Ward",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "floor",
+          "label": "Floor",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "bed_count",
+          "label": "Bed Count",
+          "type": "number",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "name": "General Ward A",
+          "floor": "2",
+          "bed_count": 10
+        }
+      ]
+    },
+    {
+      "slug": "bed",
+      "name": "Bed",
+      "fields": [
+        {
+          "name": "bed_no",
+          "label": "Bed No",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "ward",
+          "label": "Ward",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Available",
+            "Occupied",
+            "Cleaning"
+          ]
+        },
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "bed_no": "A-01",
+          "ward": "General Ward A",
+          "status": "Occupied",
+          "patient_mrn": "MRN1004"
+        },
+        {
+          "bed_no": "A-02",
+          "ward": "General Ward A",
+          "status": "Available"
+        },
+        {
+          "bed_no": "A-03",
+          "ward": "General Ward A",
+          "status": "Cleaning"
+        }
+      ]
+    },
+    {
+      "slug": "admission",
+      "name": "Admission",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "admit_date",
+          "label": "Admit Date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "bed_no",
+          "label": "Bed No",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "attending",
+          "label": "Attending",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Admitted",
+            "Transferred",
+            "Discharged"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1004",
+          "admit_date": "2026-06-25",
+          "bed_no": "A-01",
+          "attending": "Dr. Singh",
+          "status": "Admitted"
+        }
+      ]
+    },
+    {
+      "slug": "or-case",
+      "name": "OR Case",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "procedure",
+          "label": "Procedure",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "surgeon",
+          "label": "Surgeon",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "or_room",
+          "label": "Or Room",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "scheduled_at",
+          "label": "Scheduled At",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Scheduled",
+            "In Progress",
+            "Recovery",
+            "Completed",
+            "Cancelled"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "nursing-note",
+      "name": "Nursing Note",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "shift",
+          "label": "Shift",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Day",
+            "Evening",
+            "Night"
+          ]
+        },
+        {
+          "name": "note",
+          "label": "Note",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "nurse",
+          "label": "Nurse",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "mar-entry",
+      "name": "MAR Entry",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "drug",
+          "label": "Drug",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "dose",
+          "label": "Dose",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "administered_at",
+          "label": "Administered At",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "nurse",
+          "label": "Nurse",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Given",
+            "Held",
+            "Refused"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "provider",
+      "name": "Provider",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "specialty",
+          "label": "Specialty",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "room",
+          "label": "Room",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "active",
+          "label": "Active",
+          "type": "boolean",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "name": "Dr. Patel",
+          "specialty": "Family Medicine",
+          "room": "101",
+          "active": true
+        },
+        {
+          "name": "Dr. Nguyen",
+          "specialty": "Endocrinology",
+          "room": "102",
+          "active": true
+        },
+        {
+          "name": "Dr. Singh",
+          "specialty": "Cardiology",
+          "room": "103",
+          "active": true
+        }
+      ]
+    },
+    {
+      "slug": "appointment",
+      "name": "Appointment",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "provider",
+          "label": "Provider",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "start_time",
+          "label": "Start Time",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "duration_min",
+          "label": "Duration Min",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "reason",
+          "label": "Reason",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Booked",
+            "Checked In",
+            "Completed",
+            "No Show",
+            "Cancelled"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1001",
+          "provider": "Dr. Patel",
+          "start_time": "2026-06-25",
+          "duration_min": 20,
+          "reason": "Annual physical",
+          "status": "Booked"
+        },
+        {
+          "patient_mrn": "MRN1002",
+          "provider": "Dr. Nguyen",
+          "start_time": "2026-06-25",
+          "duration_min": 30,
+          "reason": "Diabetes follow-up",
+          "status": "Checked In"
+        },
+        {
+          "patient_mrn": "MRN1003",
+          "provider": "Dr. Patel",
+          "start_time": "2026-06-25",
+          "duration_min": 15,
+          "reason": "Sick visit",
+          "status": "Booked"
+        }
+      ]
+    },
+    {
+      "slug": "waitlist",
+      "name": "Waitlist Entry",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "provider",
+          "label": "Provider",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "requested_after",
+          "label": "Requested After",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "label": "Priority",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Normal",
+            "Urgent"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "charge",
+      "name": "Charge",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "cpt_code",
+          "label": "Cpt Code",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "description",
+          "label": "Description",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "label": "Amount",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "date",
+          "label": "Date",
+          "type": "date",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "cpt_code": "99214",
+          "description": "Office visit, established",
+          "amount": 180,
+          "date": "2026-06-25"
+        }
+      ]
+    },
+    {
+      "slug": "claim",
+      "name": "Insurance Claim",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "payer",
+          "label": "Payer",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "icd10_code",
+          "label": "Icd10 Code",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "cpt_code",
+          "label": "Cpt Code",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "label": "Amount",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Draft",
+            "Submitted",
+            "Accepted",
+            "Denied",
+            "Paid"
+          ]
+        },
+        {
+          "name": "denial_reason",
+          "label": "Denial Reason",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "payer": "Aetna",
+          "icd10_code": "E11.9",
+          "cpt_code": "99214",
+          "amount": 180,
+          "status": "Submitted"
+        },
+        {
+          "patient_mrn": "MRN1004",
+          "payer": "Medicare",
+          "icd10_code": "I10",
+          "cpt_code": "99213",
+          "amount": 120,
+          "status": "Denied",
+          "denial_reason": "Missing modifier"
+        },
+        {
+          "patient_mrn": "MRN1001",
+          "payer": "BlueCross",
+          "icd10_code": "Z00.00",
+          "cpt_code": "99395",
+          "amount": 220,
+          "status": "Paid"
+        }
+      ]
+    },
+    {
+      "slug": "payer",
+      "name": "Payer",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "plan_type",
+          "label": "Plan Type",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "payer_id",
+          "label": "Payer Id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "phone",
+          "label": "Phone",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "name": "BlueCross",
+          "plan_type": "PPO",
+          "payer_id": "BCBS01",
+          "phone": "800-111-2222"
+        },
+        {
+          "name": "Aetna",
+          "plan_type": "HMO",
+          "payer_id": "AETNA1",
+          "phone": "800-333-4444"
+        },
+        {
+          "name": "UnitedHealth",
+          "plan_type": "PPO",
+          "payer_id": "UHC001",
+          "phone": "800-555-6666"
+        },
+        {
+          "name": "Medicare",
+          "plan_type": "Government",
+          "payer_id": "MCARE0",
+          "phone": "800-633-4227"
+        }
+      ]
+    },
+    {
+      "slug": "coverage",
+      "name": "Coverage",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "payer",
+          "label": "Payer",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "member_id",
+          "label": "Member Id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "group_no",
+          "label": "Group No",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "copay",
+          "label": "Copay",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "deductible",
+          "label": "Deductible",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "active",
+          "label": "Active",
+          "type": "boolean",
+          "required": false
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1002",
+          "payer": "Aetna",
+          "member_id": "AET-22",
+          "group_no": "G1",
+          "copay": 25,
+          "deductible": 1500,
+          "active": true
+        },
+        {
+          "patient_mrn": "MRN1004",
+          "payer": "Medicare",
+          "member_id": "MED-44",
+          "group_no": "A",
+          "copay": 0,
+          "deductible": 240,
+          "active": true
+        }
+      ]
+    },
+    {
+      "slug": "prior-auth",
+      "name": "Prior Authorization",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "service",
+          "label": "Service",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "payer",
+          "label": "Payer",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Requested",
+            "Approved",
+            "Denied"
+          ]
+        },
+        {
+          "name": "auth_number",
+          "label": "Auth Number",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "invoice",
+      "name": "Invoice",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "service_date",
+          "label": "Service Date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "label": "Amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Open",
+            "Paid",
+            "Partially Paid",
+            "Written Off"
+          ]
+        }
+      ],
+      "sampleData": [
+        {
+          "patient_mrn": "MRN1004",
+          "service_date": "2026-06-25",
+          "amount": 120,
+          "status": "Open"
+        },
+        {
+          "patient_mrn": "MRN1002",
+          "service_date": "2026-06-25",
+          "amount": 180,
+          "status": "Partially Paid"
+        }
+      ]
+    },
+    {
+      "slug": "payment",
+      "name": "Payment",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "label": "Amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "method",
+          "label": "Method",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Card",
+            "Cash",
+            "Check",
+            "ERA"
+          ]
+        },
+        {
+          "name": "posted_date",
+          "label": "Posted Date",
+          "type": "date",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "portal-account",
+      "name": "Portal Account",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "email",
+          "label": "Email",
+          "type": "email",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Invited",
+            "Active",
+            "Disabled"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "message",
+      "name": "Secure Message",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "body",
+          "label": "Body",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "direction",
+          "label": "Direction",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Inbound",
+            "Outbound"
+          ]
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Unread",
+            "Read",
+            "Replied"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "intake-form",
+      "name": "Intake Form",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "form_type",
+          "label": "Form Type",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "submitted_at",
+          "label": "Submitted At",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Pending",
+            "Completed"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "tele-visit",
+      "name": "Telehealth Visit",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "provider",
+          "label": "Provider",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "scheduled_at",
+          "label": "Scheduled At",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "join_url",
+          "label": "Join Url",
+          "type": "url",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Scheduled",
+            "Waiting",
+            "In Visit",
+            "Completed"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "audit-log",
+      "name": "Audit Log",
+      "fields": [
+        {
+          "name": "actor",
+          "label": "Actor",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "action",
+          "label": "Action",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "entity",
+          "label": "Entity",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "record_id",
+          "label": "Record Id",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "at",
+          "label": "At",
+          "type": "date",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "consent",
+      "name": "Consent",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "consent_type",
+          "label": "Consent Type",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "granted",
+          "label": "Granted",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "date",
+          "label": "Date",
+          "type": "date",
+          "required": false
+        }
+      ]
+    },
+    {
+      "slug": "referral",
+      "name": "Referral",
+      "fields": [
+        {
+          "name": "patient_mrn",
+          "label": "Patient Mrn",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "to_provider",
+          "label": "To Provider",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "specialty",
+          "label": "Specialty",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "reason",
+          "label": "Reason",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Sent",
+            "Scheduled",
+            "Completed"
+          ]
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "slug": "command-center",
+      "title": "Clinical Command Center",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w1",
+          "type": "header",
+          "title": "Clinical Command Center",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Live operational overview across clinical and revenue cycle",
+            "badge": "LIVE"
+          }
+        },
+        {
+          "id": "w2",
+          "type": "kpi",
+          "title": "Today",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "count:patient",
+                "label": "Total Patients",
+                "color": "#3b82f6"
+              },
+              {
+                "metric": "todays_appointments",
+                "label": "Today's Appointments",
+                "color": "#14b8a6"
+              },
+              {
+                "metric": "active_inpatients",
+                "label": "Inpatients",
+                "color": "#8b5cf6"
+              },
+              {
+                "metric": "critical_labs",
+                "label": "Critical Labs",
+                "color": "#ef4444"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w3",
+          "type": "kpi",
+          "title": "Revenue Cycle",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "pending_claims",
+                "label": "Pending Claims",
+                "color": "#f59e0b"
+              },
+              {
+                "metric": "denied_claims",
+                "label": "Denied Claims",
+                "color": "#ef4444"
+              },
+              {
+                "metric": "open_invoices",
+                "label": "Open Invoices",
+                "color": "#3b82f6"
+              },
+              {
+                "metric": "ar_total",
+                "label": "A/R Balance",
+                "color": "#10b981"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w4",
+          "type": "alert",
+          "gridSpan": 12,
+          "config": {
+            "text": "Review denied claims and critical lab results promptly.",
+            "type": "warning"
+          }
+        },
+        {
+          "id": "w5",
+          "type": "table",
+          "title": "Recent Patients",
+          "gridSpan": 6,
+          "config": {
+            "dataModelSlug": "patient",
+            "maxRows": 6
+          }
+        },
+        {
+          "id": "w6",
+          "type": "table",
+          "title": "Appointments",
+          "gridSpan": 6,
+          "config": {
+            "dataModelSlug": "appointment",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "overview"
+    },
+    {
+      "slug": "patients",
+      "title": "Patients",
+      "type": "list",
+      "schema": "patient",
+      "module": "patient-management"
+    },
+    {
+      "slug": "patient-record",
+      "title": "New Patient",
+      "type": "form",
+      "schema": "patient",
+      "module": "patient-management"
+    },
+    {
+      "slug": "problems",
+      "title": "Problem List",
+      "type": "list",
+      "schema": "problem",
+      "module": "patient-management"
+    },
+    {
+      "slug": "allergies",
+      "title": "Allergies",
+      "type": "list",
+      "schema": "allergy",
+      "module": "patient-management"
+    },
+    {
+      "slug": "medications",
+      "title": "Medications",
+      "type": "list",
+      "schema": "medication",
+      "module": "patient-management"
+    },
+    {
+      "slug": "vitals",
+      "title": "Vitals",
+      "type": "list",
+      "schema": "vital",
+      "module": "patient-management"
+    },
+    {
+      "slug": "patient-360",
+      "title": "Patient Overview",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w7",
+          "type": "header",
+          "title": "Patient Overview",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Population snapshot"
+          }
+        },
+        {
+          "id": "w8",
+          "type": "kpi",
+          "title": "Population",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "count:patient",
+                "label": "Patients",
+                "color": "#3b82f6"
+              },
+              {
+                "metric": "count:problem",
+                "label": "Active Problems",
+                "color": "#f59e0b"
+              },
+              {
+                "metric": "count:allergy",
+                "label": "Allergies",
+                "color": "#ef4444"
+              },
+              {
+                "metric": "count:medication",
+                "label": "Medications",
+                "color": "#8b5cf6"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w9",
+          "type": "table",
+          "title": "Patients",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "patient",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "patient-management"
+    },
+    {
+      "slug": "encounters",
+      "title": "Encounters",
+      "type": "list",
+      "schema": "encounter",
+      "module": "clinical-charting"
+    },
+    {
+      "slug": "new-encounter",
+      "title": "New Encounter (SOAP)",
+      "type": "form",
+      "schema": "encounter",
+      "module": "clinical-charting"
+    },
+    {
+      "slug": "documents",
+      "title": "Clinical Documents",
+      "type": "list",
+      "schema": "clinical-document",
+      "module": "clinical-charting"
+    },
+    {
+      "slug": "orders",
+      "title": "Orders",
+      "type": "list",
+      "schema": "order",
+      "module": "cpoe-orders"
+    },
+    {
+      "slug": "new-order",
+      "title": "New Order",
+      "type": "form",
+      "schema": "order",
+      "module": "cpoe-orders"
+    },
+    {
+      "slug": "order-sets",
+      "title": "Order Sets",
+      "type": "list",
+      "schema": "order-set",
+      "module": "cpoe-orders"
+    },
+    {
+      "slug": "formulary",
+      "title": "Formulary",
+      "type": "list",
+      "schema": "drug",
+      "module": "eprescribing"
+    },
+    {
+      "slug": "prescriptions",
+      "title": "Prescriptions",
+      "type": "list",
+      "schema": "prescription",
+      "module": "eprescribing"
+    },
+    {
+      "slug": "prescribe",
+      "title": "New Prescription",
+      "type": "form",
+      "schema": "prescription",
+      "module": "eprescribing"
+    },
+    {
+      "slug": "stock",
+      "title": "Stock Batches",
+      "type": "list",
+      "schema": "stock-batch",
+      "module": "eprescribing"
+    },
+    {
+      "slug": "pharmacy-dashboard",
+      "title": "Pharmacy Dashboard",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w10",
+          "type": "header",
+          "title": "Pharmacy",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Formulary, dispensing and stock health"
+          }
+        },
+        {
+          "id": "w11",
+          "type": "kpi",
+          "title": "Stock",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "count:drug",
+                "label": "Formulary Items",
+                "color": "#8b5cf6"
+              },
+              {
+                "metric": "low_stock_drugs",
+                "label": "Low Stock",
+                "color": "#ef4444"
+              },
+              {
+                "metric": "count:prescription",
+                "label": "Prescriptions",
+                "color": "#3b82f6"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w12",
+          "type": "alert",
+          "gridSpan": 12,
+          "config": {
+            "text": "Reorder drugs below their reorder level to avoid stockouts.",
+            "type": "warning"
+          }
+        },
+        {
+          "id": "w13",
+          "type": "table",
+          "title": "Formulary",
+          "gridSpan": 6,
+          "config": {
+            "dataModelSlug": "drug",
+            "maxRows": 6
+          }
+        },
+        {
+          "id": "w14",
+          "type": "table",
+          "title": "Stock Batches",
+          "gridSpan": 6,
+          "config": {
+            "dataModelSlug": "stock-batch",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "eprescribing"
+    },
+    {
+      "slug": "vaccines",
+      "title": "Vaccines",
+      "type": "list",
+      "schema": "vaccine",
+      "module": "immunization"
+    },
+    {
+      "slug": "immunizations",
+      "title": "Immunization Records",
+      "type": "list",
+      "schema": "immunization-record",
+      "module": "immunization"
+    },
+    {
+      "slug": "administer",
+      "title": "Record Immunization",
+      "type": "form",
+      "schema": "immunization-record",
+      "module": "immunization"
+    },
+    {
+      "slug": "care-plans",
+      "title": "Care Plans",
+      "type": "list",
+      "schema": "care-plan",
+      "module": "care-management"
+    },
+    {
+      "slug": "tasks",
+      "title": "Care Tasks",
+      "type": "list",
+      "schema": "care-task",
+      "module": "care-management"
+    },
+    {
+      "slug": "lab-orders",
+      "title": "Lab Orders",
+      "type": "list",
+      "schema": "lab-order",
+      "module": "lab-diagnostics"
+    },
+    {
+      "slug": "new-lab-order",
+      "title": "New Lab Order",
+      "type": "form",
+      "schema": "lab-order",
+      "module": "lab-diagnostics"
+    },
+    {
+      "slug": "results",
+      "title": "Results Worklist",
+      "type": "list",
+      "schema": "lab-result",
+      "module": "lab-diagnostics"
+    },
+    {
+      "slug": "lab-dashboard",
+      "title": "Lab Dashboard",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w15",
+          "type": "header",
+          "title": "Laboratory",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Orders and results"
+          }
+        },
+        {
+          "id": "w16",
+          "type": "kpi",
+          "title": "Results",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "count:lab-order",
+                "label": "Orders",
+                "color": "#3b82f6"
+              },
+              {
+                "metric": "critical_labs",
+                "label": "Critical",
+                "color": "#ef4444"
+              },
+              {
+                "metric": "abnormal_labs",
+                "label": "Abnormal",
+                "color": "#f59e0b"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w17",
+          "type": "alert",
+          "gridSpan": 12,
+          "config": {
+            "text": "Critical results require provider notification within 60 minutes.",
+            "type": "danger"
+          }
+        },
+        {
+          "id": "w18",
+          "type": "table",
+          "title": "Results",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "lab-result",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "lab-diagnostics"
+    },
+    {
+      "slug": "imaging-orders",
+      "title": "Imaging Orders",
+      "type": "list",
+      "schema": "imaging-order",
+      "module": "radiology-imaging"
+    },
+    {
+      "slug": "reports",
+      "title": "Reports",
+      "type": "list",
+      "schema": "imaging-report",
+      "module": "radiology-imaging"
+    },
+    {
+      "slug": "admissions",
+      "title": "Admissions",
+      "type": "list",
+      "schema": "admission",
+      "module": "inpatient-adt"
+    },
+    {
+      "slug": "admit",
+      "title": "Admit Patient",
+      "type": "form",
+      "schema": "admission",
+      "module": "inpatient-adt"
+    },
+    {
+      "slug": "beds",
+      "title": "Bed Board",
+      "type": "list",
+      "schema": "bed",
+      "module": "inpatient-adt"
+    },
+    {
+      "slug": "census-dashboard",
+      "title": "Bed Census",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w19",
+          "type": "header",
+          "title": "Inpatient Census",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Occupancy and admissions"
+          }
+        },
+        {
+          "id": "w20",
+          "type": "kpi",
+          "title": "Census",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "active_inpatients",
+                "label": "Occupied Beds",
+                "color": "#8b5cf6"
+              },
+              {
+                "metric": "bed_occupancy_pct",
+                "label": "Occupancy %",
+                "color": "#f59e0b"
+              },
+              {
+                "metric": "count:admission",
+                "label": "Admissions",
+                "color": "#3b82f6"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w21",
+          "type": "table",
+          "title": "Bed Board",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "bed",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "inpatient-adt"
+    },
+    {
+      "slug": "cases",
+      "title": "OR Cases",
+      "type": "list",
+      "schema": "or-case",
+      "module": "surgery-or"
+    },
+    {
+      "slug": "schedule-case",
+      "title": "Schedule Case",
+      "type": "form",
+      "schema": "or-case",
+      "module": "surgery-or"
+    },
+    {
+      "slug": "notes",
+      "title": "Nursing Notes",
+      "type": "list",
+      "schema": "nursing-note",
+      "module": "nursing"
+    },
+    {
+      "slug": "mar",
+      "title": "MAR",
+      "type": "list",
+      "schema": "mar-entry",
+      "module": "nursing"
+    },
+    {
+      "slug": "calendar",
+      "title": "Appointments",
+      "type": "list",
+      "schema": "appointment",
+      "module": "appointment-scheduling"
+    },
+    {
+      "slug": "book",
+      "title": "Book Appointment",
+      "type": "form",
+      "schema": "appointment",
+      "module": "appointment-scheduling"
+    },
+    {
+      "slug": "providers",
+      "title": "Providers",
+      "type": "list",
+      "schema": "provider",
+      "module": "appointment-scheduling"
+    },
+    {
+      "slug": "waitlist",
+      "title": "Waitlist",
+      "type": "list",
+      "schema": "waitlist",
+      "module": "appointment-scheduling"
+    },
+    {
+      "slug": "schedule-dashboard",
+      "title": "Front Desk",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w22",
+          "type": "header",
+          "title": "Front Desk",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Today's schedule"
+          }
+        },
+        {
+          "id": "w23",
+          "type": "kpi",
+          "title": "Today",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "todays_appointments",
+                "label": "Today's Appointments",
+                "color": "#14b8a6"
+              },
+              {
+                "metric": "no_shows",
+                "label": "No Shows",
+                "color": "#ef4444"
+              },
+              {
+                "metric": "count:provider",
+                "label": "Providers",
+                "color": "#3b82f6"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w24",
+          "type": "table",
+          "title": "Appointments",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "appointment",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "appointment-scheduling"
+    },
+    {
+      "slug": "charges",
+      "title": "Charges",
+      "type": "list",
+      "schema": "charge",
+      "module": "billing-claims"
+    },
+    {
+      "slug": "claims",
+      "title": "Claims Worklist",
+      "type": "list",
+      "schema": "claim",
+      "module": "billing-claims"
+    },
+    {
+      "slug": "new-claim",
+      "title": "New Claim",
+      "type": "form",
+      "schema": "claim",
+      "module": "billing-claims"
+    },
+    {
+      "slug": "claims-dashboard",
+      "title": "Revenue Cycle",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w25",
+          "type": "header",
+          "title": "Revenue Cycle",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Claims and denials"
+          }
+        },
+        {
+          "id": "w26",
+          "type": "kpi",
+          "title": "Claims",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "count:claim",
+                "label": "Total Claims",
+                "color": "#3b82f6"
+              },
+              {
+                "metric": "pending_claims",
+                "label": "Pending",
+                "color": "#f59e0b"
+              },
+              {
+                "metric": "denied_claims",
+                "label": "Denied",
+                "color": "#ef4444"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w27",
+          "type": "alert",
+          "gridSpan": 12,
+          "config": {
+            "text": "Work denied claims first — they directly impact net collections.",
+            "type": "danger"
+          }
+        },
+        {
+          "id": "w28",
+          "type": "table",
+          "title": "Claims",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "claim",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "billing-claims"
+    },
+    {
+      "slug": "payers",
+      "title": "Payers",
+      "type": "list",
+      "schema": "payer",
+      "module": "eligibility"
+    },
+    {
+      "slug": "coverages",
+      "title": "Coverage",
+      "type": "list",
+      "schema": "coverage",
+      "module": "eligibility"
+    },
+    {
+      "slug": "prior-auths",
+      "title": "Prior Authorizations",
+      "type": "list",
+      "schema": "prior-auth",
+      "module": "eligibility"
+    },
+    {
+      "slug": "invoices",
+      "title": "Invoices",
+      "type": "list",
+      "schema": "invoice",
+      "module": "payments-ar"
+    },
+    {
+      "slug": "payments",
+      "title": "Payments",
+      "type": "list",
+      "schema": "payment",
+      "module": "payments-ar"
+    },
+    {
+      "slug": "ar-dashboard",
+      "title": "Accounts Receivable",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w29",
+          "type": "header",
+          "title": "Accounts Receivable",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "Outstanding balances"
+          }
+        },
+        {
+          "id": "w30",
+          "type": "kpi",
+          "title": "A/R",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "open_invoices",
+                "label": "Open Invoices",
+                "color": "#f59e0b"
+              },
+              {
+                "metric": "ar_total",
+                "label": "A/R Balance",
+                "color": "#10b981"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w31",
+          "type": "table",
+          "title": "Invoices",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "invoice",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "payments-ar"
+    },
+    {
+      "slug": "accounts",
+      "title": "Portal Accounts",
+      "type": "list",
+      "schema": "portal-account",
+      "module": "patient-portal"
+    },
+    {
+      "slug": "messages",
+      "title": "Secure Messages",
+      "type": "list",
+      "schema": "message",
+      "module": "patient-portal"
+    },
+    {
+      "slug": "intake",
+      "title": "Intake Forms",
+      "type": "list",
+      "schema": "intake-form",
+      "module": "patient-portal"
+    },
+    {
+      "slug": "visits",
+      "title": "Telehealth Visits",
+      "type": "list",
+      "schema": "tele-visit",
+      "module": "telehealth"
+    },
+    {
+      "slug": "schedule-visit",
+      "title": "Schedule Visit",
+      "type": "form",
+      "schema": "tele-visit",
+      "module": "telehealth"
+    },
+    {
+      "slug": "quality-dashboard",
+      "title": "Quality & Analytics",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w32",
+          "type": "header",
+          "title": "Quality & Population Health",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "HEDIS / MIPS-style measures computed from records"
+          }
+        },
+        {
+          "id": "w33",
+          "type": "kpi",
+          "title": "Volumes",
+          "gridSpan": 12,
+          "config": {
+            "items": [
+              {
+                "metric": "count:patient",
+                "label": "Patients",
+                "color": "#3b82f6"
+              },
+              {
+                "metric": "count:encounter",
+                "label": "Encounters",
+                "color": "#14b8a6"
+              },
+              {
+                "metric": "count:claim",
+                "label": "Claims",
+                "color": "#8b5cf6"
+              },
+              {
+                "metric": "abnormal_labs",
+                "label": "Abnormal Labs",
+                "color": "#f59e0b"
+              }
+            ]
+          }
+        },
+        {
+          "id": "w34",
+          "type": "alert",
+          "gridSpan": 12,
+          "config": {
+            "text": "Open the Quality Measures API (/api/v1/healthcare/quality/measures) for computed care-gap rates.",
+            "type": "info"
+          }
+        }
+      ],
+      "module": "analytics-quality"
+    },
+    {
+      "slug": "audit",
+      "title": "Audit Log",
+      "type": "list",
+      "schema": "audit-log",
+      "module": "compliance-audit"
+    },
+    {
+      "slug": "consents",
+      "title": "Consents",
+      "type": "list",
+      "schema": "consent",
+      "module": "compliance-audit"
+    },
+    {
+      "slug": "referrals",
+      "title": "Referrals",
+      "type": "list",
+      "schema": "referral",
+      "module": "interoperability"
+    },
+    {
+      "slug": "interop",
+      "title": "Interoperability",
+      "type": "custom",
+      "layout": [
+        {
+          "id": "w35",
+          "type": "header",
+          "title": "Interoperability",
+          "gridSpan": 12,
+          "config": {
+            "subtitle": "FHIR R4 read API + referral exchange"
+          }
+        },
+        {
+          "id": "w36",
+          "type": "alert",
+          "gridSpan": 12,
+          "config": {
+            "text": "FHIR endpoints: /api/v1/healthcare/fhir/Patient and /fhir/Observation (read-only projections).",
+            "type": "info"
+          }
+        },
+        {
+          "id": "w37",
+          "type": "table",
+          "title": "Referrals",
+          "gridSpan": 12,
+          "config": {
+            "dataModelSlug": "referral",
+            "maxRows": 6
+          }
+        }
+      ],
+      "module": "interoperability"
+    }
+  ],
+  "assets": []
+}

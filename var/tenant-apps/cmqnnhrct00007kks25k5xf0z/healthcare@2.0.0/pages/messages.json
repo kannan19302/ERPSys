@@ -1,0 +1,7 @@
+{
+  "slug": "messages",
+  "title": "Secure Messages",
+  "type": "list",
+  "schema": "message",
+  "module": "patient-portal"
+}

@@ -1,0 +1,7 @@
+{
+  "slug": "new-claim",
+  "title": "New Claim",
+  "type": "form",
+  "schema": "claim",
+  "module": "billing-claims"
+}
