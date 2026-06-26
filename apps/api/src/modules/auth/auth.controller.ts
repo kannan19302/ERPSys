@@ -1,9 +1,18 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Post, Get, Patch, Body, UseGuards, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@unerp/shared';
+
+const AUTH_COOKIE = 'auth_token';
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  path: '/',
+  maxAge: 24 * 60 * 60 * 1000, // 1 day, matches JWT expiry
+};
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -30,14 +39,26 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() body: Record<string, unknown>,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const validationPipe = new ZodValidationPipe(loginSchema);
     const loginData = validationPipe.transform(body, { type: 'body', metatype: Object }) as LoginInput;
-    
-    return this.authService.login({
+
+    const result = await this.authService.login({
       ...loginData,
       tenantSlug: body.tenantSlug as string | undefined,
     });
+
+    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+
+    return result;
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie(AUTH_COOKIE, { path: '/' });
+    return { message: 'Logged out' };
   }
 
   @Get('me')

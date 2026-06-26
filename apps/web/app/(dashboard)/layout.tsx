@@ -1322,18 +1322,17 @@ export default function DashboardLayout({
         return;
       }
 
-      // Verify token with backend
-      if (storedToken !== 'mock-token-xyz') {
-        fetch('/api/v1/auth/me', {
-          headers: { 'Authorization': `Bearer ${storedToken}` }
-        }).then(res => {
-          if (res.status === 401) {
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            router.push('/login');
-          }
-        }).catch(() => { });
-      }
+      // Verify token with backend (cookie carries auth; Bearer sent for compat)
+      fetch('/api/v1/auth/me', {
+        headers: { 'Authorization': `Bearer ${storedToken}` },
+        credentials: 'include',
+      }).then(res => {
+        if (res.status === 401) {
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          router.push('/login');
+        }
+      }).catch(() => { });
 
       // Fetch installed apps for the switcher
       const fetchInstalledApps = async () => {
@@ -1391,7 +1390,10 @@ export default function DashboardLayout({
     document.documentElement.setAttribute('data-theme', nextTheme);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch { /* best-effort */ }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     router.push('/login');

@@ -32,28 +32,51 @@ function loadEnv() {
 loadEnv();
 
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
+import * as Sentry from '@sentry/node';
 import { AppModule } from './app.module';
+import { AppLogger } from './common/services/logger.service';
 import { entitlementMiddleware } from './common/middleware/entitlement.middleware';
+import { csrfMiddleware } from './common/middleware/csrf.middleware';
+import { requestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+import { metricsMiddleware } from './common/middleware/metrics.middleware';
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  });
+}
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const logger = new AppLogger();
+  logger.setContext('Bootstrap');
+
+  const app = await NestFactory.create(AppModule, { logger });
 
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
+  // Observability — before all other middleware
+  app.use(requestLoggerMiddleware);
+  app.use(metricsMiddleware);
+
   // Security
   app.use(helmet());
+  app.use(cookieParser());
   app.enableCors({
     origin: process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
     credentials: true,
   });
 
-  // Global prefix for all API routes
-  app.setGlobalPrefix('api/v1');
+  // CSRF protection for state-changing requests
+  app.use(csrfMiddleware);
+
+  // Global prefix for all API routes (metrics endpoint is excluded — registered without prefix)
+  app.setGlobalPrefix('api/v1', { exclude: ['metrics'] });
 
   // Module entitlements: 404 gated business-module routes that the tenant has
   // uninstalled (kernel apps and unmapped routes pass through).
@@ -62,7 +85,7 @@ async function bootstrap() {
   const port = process.env.API_PORT ?? 3001;
   await app.listen(port);
 
-  logger.log(`🚀 UniERP API running on http://localhost:${port}/api/v1`);
+  logger.log(`UniERP API running on http://localhost:${port}/api/v1`);
 }
 
 bootstrap();

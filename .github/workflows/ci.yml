@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @unerp/database exec prisma generate
+      - run: pnpm lint
+      - run: pnpm --filter @unerp/database build
+      - run: pnpm --filter @unerp/auth build
+      - run: pnpm --filter @unerp/shared build
+      - run: pnpm --filter @unerp/api build
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      NEXTAUTH_SECRET: ci-test-secret-do-not-use-in-production-abcdef1234567890
+      PII_ENCRYPTION_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @unerp/database exec prisma generate
+      - run: pnpm test
+
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    env:
+      NEXTAUTH_SECRET: ci-test-secret-do-not-use-in-production-abcdef1234567890
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @unerp/database exec prisma generate
+      - run: pnpm --filter @unerp/web build
+
+  migrate-check:
+    name: Migration Drift Check
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: unerp
+          POSTGRES_PASSWORD: unerp_password
+          POSTGRES_DB: unerp_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U unerp"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql://unerp:unerp_password@localhost:5432/unerp_ci?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @unerp/database exec prisma migrate deploy
+      - run: pnpm --filter @unerp/database exec prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --exit-code
+        working-directory: packages/database

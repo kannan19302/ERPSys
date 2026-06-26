@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthController } from './health.controller';
+import { MetricsController } from './metrics.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { FinanceModule } from './modules/finance/finance.module';
@@ -34,6 +35,7 @@ import { DevopsModule } from './modules/devops/devops.module';
 import { SaasModule } from './modules/saas/saas.module';
 import { BuilderModule } from './modules/builder/builder.module';
 import { CommonModule } from './common/common.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -133,8 +135,11 @@ import { CommonModule } from './common/common.module';
 
     // Builder Studio
     BuilderModule,
+
+    // AI Layer
+    AiModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, MetricsController],
   providers: [],
 })
 export class AppModule {}

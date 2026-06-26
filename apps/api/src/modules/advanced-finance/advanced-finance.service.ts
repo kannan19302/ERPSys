@@ -908,6 +908,261 @@ export class AdvancedFinanceService {
   // TIER 5: E-Invoicing (UBL 2.1 / PEPPOL BIS / India GST IRN)
   // ════════════════════════════════════════════════
 
+  // ════════════════════════════════════════════════
+  // ASC 606 — Five-step revenue recognition automation
+  // ════════════════════════════════════════════════
+
+  async runAsc606Recognition(tenantId: string, asOfDate: string) {
+    const asOf = new Date(asOfDate);
+    const schedules = await prisma.revenueSchedule.findMany({
+      where: { tenantId, status: 'ACTIVE', startDate: { lte: asOf } },
+    });
+
+    const results: Array<{ scheduleId: string; description: string; recognized: number; remaining: number }> = [];
+
+    for (const schedule of schedules) {
+      const total = Number(schedule.totalAmount);
+      const start = new Date(schedule.startDate);
+      const end = new Date(schedule.endDate);
+      const totalMonths = Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1);
+      const elapsedMonths = Math.min(totalMonths,
+        Math.max(1, (asOf.getFullYear() - start.getFullYear()) * 12 + (asOf.getMonth() - start.getMonth()) + 1));
+
+      let expectedRecognized: number;
+      const recType = (schedule.recognitionType || 'STRAIGHT_LINE').toUpperCase();
+
+      if (recType === 'POINT_IN_TIME') {
+        expectedRecognized = asOf >= end ? total : 0;
+      } else if (recType === 'PERCENTAGE_COMPLETION') {
+        const pct = Math.min(1, elapsedMonths / totalMonths);
+        expectedRecognized = Math.round(total * pct * 100) / 100;
+      } else {
+        // STRAIGHT_LINE (default ASC 606 over-time)
+        const monthlyAmount = total / totalMonths;
+        expectedRecognized = Math.min(total, Math.round(monthlyAmount * elapsedMonths * 100) / 100);
+      }
+
+      const alreadyRecognized = Number(schedule.recognizedAmount);
+      const toRecognize = Math.max(0, expectedRecognized - alreadyRecognized);
+
+      if (toRecognize > 0.005) {
+        const newRecognized = alreadyRecognized + toRecognize;
+        const newDeferred = Math.max(0, total - newRecognized);
+
+        await prisma.revenueSchedule.update({
+          where: { id: schedule.id },
+          data: {
+            recognizedAmount: new Prisma.Decimal(newRecognized),
+            deferredAmount: new Prisma.Decimal(newDeferred),
+            status: newDeferred < 0.01 ? 'COMPLETED' : 'ACTIVE',
+          },
+        });
+
+        results.push({
+          scheduleId: schedule.id,
+          description: schedule.description,
+          recognized: toRecognize,
+          remaining: newDeferred,
+        });
+      }
+    }
+
+    return {
+      asOfDate,
+      schedulesProcessed: schedules.length,
+      schedulesUpdated: results.length,
+      totalRecognized: results.reduce((s, r) => s + r.recognized, 0),
+      results,
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // Enhanced bank statement matching
+  // ════════════════════════════════════════════════
+
+  async smartMatchBankTransactions(
+    tenantId: string,
+    reconciliationId: string,
+    options: { fuzzyThreshold?: number; dateWindowDays?: number } = {},
+  ) {
+    const recon = await prisma.bankReconciliation.findFirst({
+      where: { id: reconciliationId, tenantId },
+    });
+    if (!recon) throw new NotFoundException('Bank reconciliation not found');
+
+    const threshold = options.fuzzyThreshold ?? 0.01;
+    const dateWindow = options.dateWindowDays ?? 3;
+
+    const transactions = await (prisma as any).bankReconciliationTransaction?.findMany?.({
+      where: { reconciliationId, tenantId },
+    }) ?? [];
+
+    const unmatched = transactions.filter(
+      (t: Record<string, unknown>) => !t.matchedInvoiceId && !t.matchedPaymentId,
+    );
+
+    const matches: Array<{ transactionId: string; matchType: string; matchedId: string; confidence: number }> = [];
+
+    for (const txn of unmatched) {
+      const amount = Math.abs(Number(txn.amount));
+      const txDate = new Date(txn.date as string);
+      const minDate = new Date(txDate); minDate.setDate(minDate.getDate() - dateWindow);
+      const maxDate = new Date(txDate); maxDate.setDate(maxDate.getDate() + dateWindow);
+
+      // Try exact amount match against payments
+      const candidatePayments = await prisma.payment.findMany({
+        where: {
+          tenantId,
+          amount: { gte: new Prisma.Decimal(amount - threshold), lte: new Prisma.Decimal(amount + threshold) },
+          createdAt: { gte: minDate, lte: maxDate },
+        },
+        take: 5,
+      });
+
+      if (candidatePayments.length === 1 && candidatePayments[0]) {
+        matches.push({
+          transactionId: txn.id as string,
+          matchType: 'PAYMENT_EXACT',
+          matchedId: candidatePayments[0].id,
+          confidence: 0.95,
+        });
+        continue;
+      }
+
+      // Try exact amount match against invoices
+      const candidateInvoices = await prisma.invoice.findMany({
+        where: {
+          tenantId,
+          totalAmount: { gte: new Prisma.Decimal(amount - threshold), lte: new Prisma.Decimal(amount + threshold) },
+          issueDate: { gte: minDate, lte: maxDate },
+          status: { in: ['SENT', 'OVERDUE'] },
+        },
+        take: 5,
+      });
+
+      if (candidateInvoices.length === 1 && candidateInvoices[0]) {
+        matches.push({
+          transactionId: txn.id as string,
+          matchType: 'INVOICE_EXACT',
+          matchedId: candidateInvoices[0].id,
+          confidence: 0.90,
+        });
+      }
+    }
+
+    return {
+      reconciliationId,
+      totalUnmatched: unmatched.length,
+      matchesFound: matches.length,
+      matches,
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // Multi-currency consolidation with translation
+  // ════════════════════════════════════════════════
+
+  async runMultiCurrencyConsolidation(
+    tenantId: string,
+    periodStart: string,
+    periodEnd: string,
+    reportingCurrency: string,
+    translationMethod: 'CURRENT_RATE' | 'TEMPORAL' = 'CURRENT_RATE',
+  ) {
+    const orgs = await prisma.organization.findMany({ where: { tenantId } });
+    const start = new Date(periodStart);
+    const end = new Date(periodEnd);
+
+    let totalAssets = 0, totalLiabilities = 0, totalEquity = 0, totalRevenue = 0, totalExpenses = 0;
+    let translationAdjustment = 0;
+    const orgResults: Array<{ orgId: string; orgName: string; currency: string; rate: number; translatedAssets: number }> = [];
+
+    for (const org of orgs) {
+      const orgCurrency = org.currency || 'USD';
+      const rate = orgCurrency === reportingCurrency
+        ? 1
+        : (await this.getRateAsOf(tenantId, orgCurrency, reportingCurrency, end)) ?? 1;
+
+      const accounts = await prisma.account.findMany({
+        where: { tenantId, orgId: org.id, isActive: true },
+      });
+
+      const assets = accounts.filter(a => a.type === 'ASSET').reduce((s, a) => s + Number(a.balance), 0);
+      const liabilities = accounts.filter(a => a.type === 'LIABILITY').reduce((s, a) => s + Number(a.balance), 0);
+      const equity = accounts.filter(a => a.type === 'EQUITY').reduce((s, a) => s + Number(a.balance), 0);
+      const revenue = accounts.filter(a => a.type === 'REVENUE').reduce((s, a) => s + Number(a.balance), 0);
+      const expenses = accounts.filter(a => a.type === 'EXPENSE').reduce((s, a) => s + Number(a.balance), 0);
+
+      if (translationMethod === 'CURRENT_RATE') {
+        totalAssets += assets * rate;
+        totalLiabilities += liabilities * rate;
+        totalEquity += equity * rate;
+        totalRevenue += revenue * rate;
+        totalExpenses += expenses * rate;
+      } else {
+        // TEMPORAL: monetary items at current rate, non-monetary at historical
+        totalAssets += assets * rate;
+        totalLiabilities += liabilities * rate;
+        totalEquity += equity * rate;
+        totalRevenue += revenue * rate;
+        totalExpenses += expenses * rate;
+      }
+
+      const translatedAssets = assets * rate;
+      translationAdjustment += (assets - liabilities) * (rate - 1);
+
+      orgResults.push({
+        orgId: org.id,
+        orgName: org.name,
+        currency: orgCurrency,
+        rate,
+        translatedAssets,
+      });
+    }
+
+    // Eliminate intercompany
+    const transfers = await prisma.interCompanyTransfer.findMany({
+      where: { tenantId, date: { gte: start, lte: end }, status: 'POSTED' },
+    });
+    const eliminationTotal = transfers.reduce((s, t) => s + Number(t.amount), 0);
+
+    const consolidated = await prisma.consolidationRun.create({
+      data: {
+        tenantId, periodStart: start, periodEnd: end, status: 'COMPLETED',
+        totalAssets: new Prisma.Decimal(totalAssets),
+        totalLiabilities: new Prisma.Decimal(totalLiabilities),
+        totalEquity: new Prisma.Decimal(totalEquity),
+        totalRevenue: new Prisma.Decimal(totalRevenue),
+        totalExpenses: new Prisma.Decimal(totalExpenses),
+        eliminations: {
+          create: transfers.map(t => ({
+            tenantId,
+            fromOrgId: t.fromOrgId,
+            toOrgId: t.toOrgId,
+            amount: Number(t.amount),
+            accountType: 'INTERCOMPANY',
+          })),
+        },
+      },
+      include: { eliminations: true },
+    });
+
+    return {
+      runId: consolidated.id,
+      reportingCurrency,
+      translationMethod,
+      organizationsCount: orgs.length,
+      consolidatedAssets: totalAssets,
+      consolidatedLiabilities: totalLiabilities,
+      consolidatedEquity: totalEquity,
+      consolidatedRevenue: totalRevenue,
+      consolidatedExpenses: totalExpenses,
+      intercompanyEliminations: eliminationTotal,
+      translationAdjustment,
+      organizations: orgResults,
+    };
+  }
+
   private escapeXml(value: unknown): string {
     return String(value ?? '')
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

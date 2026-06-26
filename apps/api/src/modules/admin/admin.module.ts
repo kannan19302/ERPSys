@@ -40,6 +40,7 @@ import { OrgHierarchyService } from './org-hierarchy.service';
 import { BundleStoreService } from '../marketplace/bundle-store.service';
 import { AppProvisioningService } from '../marketplace/app-provisioning.service';
 import { VendorService } from '../marketplace/vendor.service';
+import { StorefrontService } from '../marketplace/storefront.service';
 import { DeveloperController } from '../marketplace/developer.controller';
 
 @Module({
@@ -69,6 +70,7 @@ import { DeveloperController } from '../marketplace/developer.controller';
     BundleStoreService,
     AppProvisioningService,
     VendorService,
+    StorefrontService,
     AdminService,
     SuperAdminService,
     SecurityService,
@@ -112,6 +114,7 @@ import { DeveloperController } from '../marketplace/developer.controller';
     BundleStoreService,
     AppProvisioningService,
     VendorService,
+    StorefrontService,
   ],
 })
 export class AdminModule {}

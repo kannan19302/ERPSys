@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@unerp/ui';
 import { Shield, Lock, Mail, ChevronRight, AlertCircle, Building } from 'lucide-react';
+import { apiPost, apiGet, ApiRequestError } from '../../../src/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,23 +16,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      if (token !== 'mock-token-xyz') {
-        fetch('/api/v1/auth/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }).then(res => {
-          if (res.ok) {
-            router.push('/apps');
-          } else {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-          }
-        }).catch(() => {});
-      } else {
-        router.push('/apps');
-      }
-    }
+    apiGet('/auth/me')
+      .then(() => router.push('/apps'))
+      .catch(() => {
+        // Not authenticated — stay on login
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      });
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,46 +36,23 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const res = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          tenantSlug: tenantSlug || undefined,
-        }),
+      const data = await apiPost<{ token: string; user: Record<string, unknown> }>('/auth/login', {
+        email,
+        password,
+        tenantSlug: tenantSlug || undefined,
       });
 
-      const text = await res.text();
-      let data: Record<string, unknown>;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error('API server is unavailable. Please ensure the backend is running.');
-      }
-
-      if (!res.ok) {
-        throw new Error((data.message as string) || 'Invalid credentials');
-      }
-
+      // Store token + user for backward-compat with pages still using localStorage
+      // The httpOnly cookie is the real auth mechanism now (set by server)
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+
       router.push('/apps');
     } catch (err: unknown) {
-      if (email === 'admin@uni-erp.com' && password === 'AdminPass123!') {
-        localStorage.setItem('token', 'mock-token-xyz');
-        localStorage.setItem('user', JSON.stringify({
-          id: 'user-admin',
-          firstName: 'Super',
-          lastName: 'Admin',
-          email: 'admin@uni-erp.com',
-          roles: ['Super Admin'],
-        }));
-        router.push('/apps');
+      if (err instanceof ApiRequestError) {
+        setError(err.message);
       } else {
-        const message = err instanceof Error ? err.message : 'Connection to authentication service failed.';
-        setError(message);
+        setError('Connection to authentication service failed. Please ensure the backend is running.');
       }
     } finally {
       setLoading(false);
@@ -94,7 +62,7 @@ export default function LoginPage() {
   return (
     <div className="auth-layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-sunken)' }}>
       <div style={{ maxWidth: '440px', width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', padding: 'var(--space-4)' }}>
-        
+
         {/* Brand Header */}
         <div style={{ textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: 'var(--radius-xl)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', marginBottom: 'var(--space-4)' }}>

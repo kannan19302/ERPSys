@@ -6,7 +6,15 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET ?? 'your-super-secret-key-change-in-production';
+function getJwtSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET environment variable is required — never run with a default secret.');
+  }
+  return secret;
+}
+
+const JWT_SECRET: string = getJwtSecret();
 
 /**
  * Hashes a plaintext password using bcrypt.

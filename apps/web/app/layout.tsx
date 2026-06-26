@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import '@unerp/ui/styles';
 import { ToastProvider } from '@unerp/ui';
 import { CommandPalette } from '@/components/CommandPalette';
+import { QueryProvider } from '@/lib/query-provider';
 
 export const metadata: Metadata = {
   title: {
@@ -21,10 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <body>
-        <ToastProvider>
-          <CommandPalette />
-          {children}
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <CommandPalette />
+            {children}
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );
