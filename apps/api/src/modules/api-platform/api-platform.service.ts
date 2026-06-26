@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { generateApiKey } from '../../common/auth/api-key.util';
 
 @Injectable()
 export class ApiPlatformService {
@@ -11,22 +12,23 @@ export class ApiPlatformService {
   }
 
   async createApiKey(tenantId: string, dto: { name: string; rateLimit?: number; apiScopes?: string[]; ipWhitelist?: string[] }) {
-    const randomString = Math.random().toString(36).substring(2, 18);
-    const mockKey = `ue_live_${randomString}`;
-    const hashedKey = Buffer.from(mockKey).toString('hex');
+    const { raw, hashedKey, prefix } = generateApiKey();
 
-    return prisma.apiKey.create({
+    const created = await prisma.apiKey.create({
       data: {
         tenantId,
         name: dto.name,
         hashedKey,
-        prefix: 'ue_live_',
+        prefix,
         rateLimit: dto.rateLimit || 120,
         apiScopes: dto.apiScopes ? dto.apiScopes.join(',') : 'read:all',
         ipWhitelist: dto.ipWhitelist ? dto.ipWhitelist.join(',') : null,
         status: 'ACTIVE',
       },
     });
+
+    // The raw key is returned exactly once; only its hash is stored.
+    return { ...created, key: raw };
   }
 
   async revokeApiKey(tenantId: string, id: string) {

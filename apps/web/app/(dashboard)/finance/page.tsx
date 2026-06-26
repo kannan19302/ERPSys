@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, PageHeader, StatusBadge, Button, Spinner } from '@unerp/ui';
+import { useInvoices, useCustomers } from '../../../src/lib/hooks/useModuleData';
+import { apiPost } from '../../../src/lib/api';
 import {
   FileText,
   Search,
@@ -45,10 +47,10 @@ interface CustomerData {
 }
 
 export default function FinancePage() {
-  const [invoices, setInvoices] = useState<InvoiceData[]>([]);
-  const [customers, setCustomers] = useState<CustomerData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: invoices = [], isLoading: loadingInvoices, error: invoiceError, refetch: refetchInvoices } = useInvoices();
+  const { data: customers = [] } = useCustomers();
+  const loading = loadingInvoices;
+  const error = invoiceError ? 'Could not connect to API server.' : null;
   const [searchQuery, setSearchQuery] = useState('');
   
   // Invoice Creation Modal State
@@ -73,55 +75,7 @@ export default function FinancePage() {
   const [modalSuccess, setModalSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch Invoices and Customers
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem('token');
-    
-    // Fetch Invoices
-    try {
-      const res = await fetch('/api/v1/finance/invoices', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (!res.ok) throw new Error('Could not fetch invoices');
-      const data = await res.json();
-      setInvoices(Array.isArray(data) ? data : (data.data || []));
-    } catch {
-      setError('Could not connect to API server.');
-      // Local mock data
-      setInvoices([]);
-    }
-
-    // Fetch Customers
-    try {
-      const res = await fetch('/api/v1/crm/customers', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCustomers(Array.isArray(data) ? data : (data.data || []));
-      } else {
-        setCustomers([
-          { id: 'stark-123', name: 'Stark Industries' },
-          { id: 'wayne-456', name: 'Wayne Enterprises' },
-          { id: 'oscorp-789', name: 'Oscorp Technologies' }
-        ]);
-      }
-    } catch {
-      setCustomers([
-        { id: 'stark-123', name: 'Stark Industries' },
-        { id: 'wayne-456', name: 'Wayne Enterprises' },
-        { id: 'oscorp-789', name: 'Oscorp Technologies' }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const fetchData = () => refetchInvoices();
 
   const handleAddLineItem = () => {
     setLineItems([...lineItems, { description: '', quantity: 1, unitPrice: 0, taxRate: 0 }]);
@@ -160,17 +114,7 @@ export default function FinancePage() {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/finance/invoices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Invoice creation failed');
+      await apiPost('/finance/invoices', payload);
       
       setModalSuccess(true);
       setTimeout(() => {
@@ -216,17 +160,7 @@ export default function FinancePage() {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/finance/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Payment recording failed');
+      await apiPost('/finance/payments', payload);
       
       setModalSuccess(true);
       setTimeout(() => {

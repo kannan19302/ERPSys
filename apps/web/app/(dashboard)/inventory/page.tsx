@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
+import { useStockLevels } from '../../../src/lib/hooks/useModuleData';
+import { useApiQuery } from '../../../src/lib/hooks/useApi';
 import {
   Package,
   Warehouse,
@@ -64,96 +66,31 @@ interface StockLevelData {
 }
 
 export default function InventoryDashboard() {
-  const [stats, setStats] = useState<StatData>({
-    totalProducts: 0,
-    activeProducts: 0,
-    totalWarehouses: 0,
-    lowStockItems: 0,
-  });
-  const [valuation, setValuation] = useState<ValuationData>({
-    totalValue: 0,
-    products: [],
-  });
-  const [stockLevels, setStockLevels] = useState<StockLevelData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: statsData, isLoading: loadingStats } = useApiQuery<StatData>(
+    ['inventory', 'products', 'stats'], '/inventory/products/stats'
+  );
+  const { data: valuationData, isLoading: loadingVal } = useApiQuery<ValuationData>(
+    ['inventory', 'valuations'], '/inventory/valuations'
+  );
+  const { data: stockLevelsRaw = [], isLoading: loadingStock, refetch: refetchStock } = useStockLevels();
+
+  const stockLevels: StockLevelData[] = stockLevelsRaw as any[];
+  const loading = loadingStats || loadingVal || loadingStock;
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
-  const fetchDashboardData = async () => {
-    setError(null);
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token || ''}` };
-
-    try {
-      // 1. Fetch general inventory stats
-      const statsRes = await fetch('/api/v1/inventory/products/stats', { headers });
-      let statsData: StatData = { totalProducts: 0, activeProducts: 0, totalWarehouses: 0, lowStockItems: 0 };
-      if (statsRes.ok) {
-        statsData = await statsRes.json();
-      }
-
-      // 2. Fetch stock valuation
-      const valRes = await fetch('/api/v1/inventory/valuations', { headers });
-      let valData: ValuationData = { totalValue: 0, products: [] };
-      if (valRes.ok) {
-        valData = await valRes.json();
-      }
-
-      // 3. Fetch detailed stock levels
-      const stockRes = await fetch('/api/v1/inventory/stock-levels', { headers });
-      let stockList: StockLevelData[] = [];
-      if (stockRes.ok) {
-        const json = await stockRes.json();
-        stockList = Array.isArray(json) ? json : (json?.data || []);
-      }
-
-      // Process and store stats
-      setStats({
-        totalProducts: statsData.totalProducts || new Set(stockList.map(s => s.productId)).size || 3,
-        activeProducts: statsData.activeProducts || statsData.totalProducts || 3,
-        totalWarehouses: statsData.totalWarehouses || new Set(stockList.map(s => s.warehouseId)).size || 2,
-        lowStockItems: statsData.lowStockItems || stockList.filter(s => s.reorderPoint !== null && Number(s.quantity) <= Number(s.reorderPoint)).length || 0
-      });
-
-      setValuation(valData);
-      setStockLevels(stockList);
-
-    } catch (err) {
-      console.error('Failed to load dashboard statistics from API, loading high-fidelity mock data fallback.', err);
-      setError('Could not load data. Please try again.');
-      
-      // Seed robust default mocks in case database tables are empty
-      setStats({
-        totalProducts: 12,
-        activeProducts: 10,
-        totalWarehouses: 3,
-        lowStockItems: 2,
-      });
-
-      setValuation({
-        totalValue: 545000,
-        products: [
-          { productId: 'p1', sku: 'SKU-VIB-001', name: 'Refined Vibranium Ingot', quantity: 45, unit: 'KG', costingMethod: 'AVERAGE', unitCost: 8500, value: 382500 },
-          { productId: 'p2', sku: 'SKU-KEV-404', name: 'Tactical Kevlar Micro-Weave', quantity: 12, unit: 'ROLL', costingMethod: 'FIFO', unitCost: 450, value: 5400 },
-          { productId: 'p3', sku: 'SKU-NNC-902', name: 'Nano-carbon Fibers', quantity: 150, unit: 'METERS', costingMethod: 'AVERAGE', unitCost: 414, value: 62100 },
-          { productId: 'p4', sku: 'SKU-TIT-551', name: 'Aerospace Grade Titanium', quantity: 95, unit: 'KG', costingMethod: 'FIFO', unitCost: 1000, value: 95000 },
-        ]
-      });
-
-      setStockLevels([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const stats: StatData = {
+    totalProducts: statsData?.totalProducts || new Set(stockLevels.map(s => s.productId)).size || 3,
+    activeProducts: statsData?.activeProducts || statsData?.totalProducts || 3,
+    totalWarehouses: statsData?.totalWarehouses || new Set(stockLevels.map(s => s.warehouseId)).size || 2,
+    lowStockItems: statsData?.lowStockItems || stockLevels.filter(s => s.reorderPoint !== null && Number(s.quantity) <= Number(s.reorderPoint)).length || 0,
   };
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const valuation: ValuationData = valuationData || { totalValue: 0, products: [] };
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchDashboardData();
+    refetchStock().finally(() => setRefreshing(false));
   };
 
   // Group Stock by Category

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { HealthController } from './health.controller';
 import { MetricsController } from './metrics.controller';
 import { AuthModule } from './modules/auth/auth.module';
@@ -35,12 +37,16 @@ import { DevopsModule } from './modules/devops/devops.module';
 import { SaasModule } from './modules/saas/saas.module';
 import { BuilderModule } from './modules/builder/builder.module';
 import { CommonModule } from './common/common.module';
+import { QueueModule } from './common/queues/queue.module';
 import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
     // Global shared services (change history, etc.)
     CommonModule,
+
+    // Async job processing (email, export, payroll, data-import)
+    QueueModule,
 
     // Event-driven communication between modules
     EventEmitterModule.forRoot({
@@ -140,7 +146,10 @@ import { AiModule } from './modules/ai/ai.module';
     AiModule,
   ],
   controllers: [HealthController, MetricsController],
-  providers: [],
+  providers: [
+    // Always-on compliance audit log for every mutating request.
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+  ],
 })
 export class AppModule {}
 

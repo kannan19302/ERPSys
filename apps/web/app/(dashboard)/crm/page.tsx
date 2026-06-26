@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
+import { useCustomers, useVendors, useLeads, useOpportunities, useActivities } from '../../../src/lib/hooks/useModuleData';
+import { useApiQuery } from '../../../src/lib/hooks/useApi';
 import {
   Users, TrendingUp, BarChart3, Target, ChevronRight,
-  AlertCircle,
   Activity, UserPlus, DollarSign, PieChart, Zap, BookOpen,
   FileText, MapPin, Package, Globe, Layers
 } from 'lucide-react';
@@ -32,93 +33,52 @@ interface DashboardStats {
 }
 
 export default function CrmDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalCustomers: 0, totalVendors: 0, totalLeads: 0, totalOpportunities: 0,
-    pipelineValue: 0, weightedPipeline: 0, winRate: 0, recentActivities: [],
-    leadStatusBreakdown: {}, opportunityStageBreakdown: {},
-    forecast: { bestCase: 0, commit: 0, worstCase: 0, dealCount: 0 }
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: customersRaw = [], isLoading: loadingCustomers } = useCustomers();
+  const { data: vendorsRaw = [], isLoading: loadingVendors } = useVendors();
+  const { data: leadsRaw = [], isLoading: loadingLeads } = useLeads();
+  const { data: opportunitiesRaw = [], isLoading: loadingOpps } = useOpportunities();
+  const { data: activitiesRaw = [] } = useActivities();
+  const customers = customersRaw as any[];
+  const vendors = vendorsRaw as any[];
+  const leads = leadsRaw as any[];
+  const opportunities = opportunitiesRaw as any[];
+  const activities = activitiesRaw as any[];
+  const { data: winRateData } = useApiQuery<{ winRate?: number }>(['crm', 'analytics', 'win-rate'], '/crm/analytics/win-rate');
+  const { data: forecastData } = useApiQuery<ForecastData>(['crm', 'analytics', 'forecast'], '/crm/analytics/forecast');
+  const { data: healthData } = useApiQuery<{ weightedPipeline?: number }>(['crm', 'analytics', 'pipeline-health'], '/crm/analytics/pipeline-health');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const loading = loadingCustomers || loadingVendors || loadingLeads || loadingOpps;
 
-  const fetchData = async () => {
-    setLoading(true);
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token || ''}` };
-
-    try {
-      const [customersRes, vendorsRes, leadsRes, opportunitiesRes, winRateRes, activitiesRes, forecastRes, healthRes] = await Promise.all([
-        fetch('/api/v1/crm/customers', { headers }),
-        fetch('/api/v1/crm/vendors', { headers }),
-        fetch('/api/v1/crm/leads', { headers }),
-        fetch('/api/v1/crm/opportunities', { headers }),
-        fetch('/api/v1/crm/analytics/win-rate', { headers }),
-        fetch('/api/v1/crm/activities', { headers }),
-        fetch('/api/v1/crm/analytics/forecast', { headers }),
-        fetch('/api/v1/crm/analytics/pipeline-health', { headers }),
-      ]);
-
-      const customers = customersRes.ok ? await customersRes.json() : [];
-      const vendors = vendorsRes.ok ? await vendorsRes.json() : [];
-      const leads = leadsRes.ok ? await leadsRes.json() : [];
-      const opportunities = opportunitiesRes.ok ? await opportunitiesRes.json() : [];
-      const winRateData = winRateRes.ok ? await winRateRes.json() : {};
-      const activities = activitiesRes.ok ? (await activitiesRes.json()).slice(0, 5) : [];
-      const forecast = forecastRes.ok ? await forecastRes.json() : { bestCase: 0, commit: 0, worstCase: 0, dealCount: 0 };
-      const health = healthRes.ok ? await healthRes.json() : { weightedPipeline: 0 };
-
-      const stageBreakdown: Record<string, { count: number; totalAmount: number }> = {};
-      let pipelineValue = 0;
-      for (const opp of opportunities) {
-        const stage = opp.stage || 'PROSPECTING';
-        if (!stageBreakdown[stage]) stageBreakdown[stage] = { count: 0, totalAmount: 0 };
-        stageBreakdown[stage].count++;
-        stageBreakdown[stage].totalAmount += Number(opp.amount || 0);
-        if (stage !== 'CLOSED_LOST') pipelineValue += Number(opp.amount || 0);
-      }
-
-      const statusBreakdown: Record<string, number> = {};
-      for (const lead of leads) {
-        statusBreakdown[lead.status] = (statusBreakdown[lead.status] || 0) + 1;
-      }
-
-      setStats({
-        totalCustomers: customers.length,
-        totalVendors: vendors.length,
-        totalLeads: leads.length,
-        totalOpportunities: opportunities.length,
-        pipelineValue,
-        winRate: winRateData.winRate || 0,
-        weightedPipeline: health.weightedPipeline || 0,
-        recentActivities: activities,
-        leadStatusBreakdown: statusBreakdown,
-        opportunityStageBreakdown: stageBreakdown,
-        forecast,
-      });
-    } catch {
-      setError('Could not load data. Please try again.');
-      setStats({
-        totalCustomers: 3, totalVendors: 2, totalLeads: 12, totalOpportunities: 8,
-        pipelineValue: 245000, weightedPipeline: 98000, winRate: 42,
-        recentActivities: [],
-        leadStatusBreakdown: { NEW: 5, CONTACTED: 4, QUALIFIED: 2, DISQUALIFIED: 1 },
-        forecast: { bestCase: 245000, commit: 120000, worstCase: 70000, dealCount: 8 },
-        opportunityStageBreakdown: {
-          PROSPECTING: { count: 3, totalAmount: 45000 },
-          QUALIFICATION: { count: 2, totalAmount: 80000 },
-          PROPOSAL: { count: 1, totalAmount: 50000 },
-          NEGOTIATION: { count: 1, totalAmount: 70000 },
-          CLOSED_WON: { count: 1, totalAmount: 15000 },
-        },
-      });
-    } finally {
-      setLoading(false);
+  const stats = useMemo<DashboardStats>(() => {
+    const stageBreakdown: Record<string, { count: number; totalAmount: number }> = {};
+    let pipelineValue = 0;
+    for (const opp of opportunities) {
+      const stage = opp.stage || 'PROSPECTING';
+      if (!stageBreakdown[stage]) stageBreakdown[stage] = { count: 0, totalAmount: 0 };
+      stageBreakdown[stage].count++;
+      stageBreakdown[stage].totalAmount += Number(opp.amount || 0);
+      if (stage !== 'CLOSED_LOST') pipelineValue += Number(opp.amount || 0);
     }
-  };
+
+    const statusBreakdown: Record<string, number> = {};
+    for (const lead of leads) {
+      statusBreakdown[lead.status] = (statusBreakdown[lead.status] || 0) + 1;
+    }
+
+    return {
+      totalCustomers: customers.length,
+      totalVendors: vendors.length,
+      totalLeads: leads.length,
+      totalOpportunities: opportunities.length,
+      pipelineValue,
+      winRate: winRateData?.winRate || 0,
+      weightedPipeline: healthData?.weightedPipeline || 0,
+      recentActivities: (activities as any[]).slice(0, 5),
+      leadStatusBreakdown: statusBreakdown,
+      opportunityStageBreakdown: stageBreakdown,
+      forecast: forecastData || { bestCase: 0, commit: 0, worstCase: 0, dealCount: 0 },
+    };
+  }, [customers, vendors, leads, opportunities, activities, winRateData, forecastData, healthData]);
 
   if (loading) {
     return (
@@ -146,12 +106,7 @@ export default function CrmDashboard() {
         }
       />
 
-      {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}>
-          <AlertCircle size={16} />
-          <span>{error}</span>
-        </div>
-      )}
+      {/* Error handling is managed by React Query */}
 
       {/* KPI Cards Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>

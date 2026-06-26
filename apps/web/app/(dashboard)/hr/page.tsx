@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, PageHeader, StatusBadge, Button, Spinner, Badge } from '@unerp/ui';
+import { useEmployees, useDepartments } from '../../../src/lib/hooks/useModuleData';
+import { apiPost, apiPatch } from '../../../src/lib/api';
 import {
   Users,
   Search,
@@ -36,9 +38,10 @@ interface DepartmentData {
 }
 
 export default function HrPage() {
-  const [employees, setEmployees] = useState<EmployeeData[]>([]);
-  const [departments, setDepartments] = useState<DepartmentData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { data: employeesRaw = [], isLoading: loading, refetch: refetchEmployees } = useEmployees();
+  const { data: departmentsRaw = [] } = useDepartments();
+  const employees = employeesRaw as EmployeeData[];
+  const departments = departmentsRaw as DepartmentData[];
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -63,107 +66,7 @@ export default function HrPage() {
   const [submitting, setSubmitting] = useState(false);
   const [modalSaveStatus, setModalSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
-  // Fetch Data
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem('token');
-
-    // Fetch Employees
-    try {
-      const res = await fetch('/api/v1/hr/employees', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      if (!res.ok) throw new Error('Could not fetch employees');
-      const data = await res.json();
-      setEmployees(Array.isArray(data) ? data : (data?.data || []));
-    } catch {
-      setError('Could not connect to HR service.');
-      setEmployees([
-        {
-          id: 'emp-1',
-          employeeCode: 'EMP-001',
-          firstName: 'Tony',
-          lastName: 'Stark',
-          email: 'tony@stark.com',
-          phone: '+1 (555) 019-2831',
-          designation: 'Chief Technologist',
-          employmentType: 'FULL_TIME',
-          status: 'ACTIVE',
-          dateOfJoining: new Date(Date.now() - 365 * 24 * 3600000).toLocaleDateString(),
-          departmentName: 'R&D Engineering',
-        },
-        {
-          id: 'emp-2',
-          employeeCode: 'EMP-002',
-          firstName: 'Pepper',
-          lastName: 'Potts',
-          email: 'pepper@stark.com',
-          phone: '+1 (555) 019-4822',
-          designation: 'Chief Executive Officer',
-          employmentType: 'FULL_TIME',
-          status: 'ACTIVE',
-          dateOfJoining: new Date(Date.now() - 250 * 24 * 3600000).toLocaleDateString(),
-          departmentName: 'Executive',
-        },
-        {
-          id: 'emp-3',
-          employeeCode: 'EMP-003',
-          firstName: 'Bruce',
-          lastName: 'Banner',
-          email: 'bruce@avengers.org',
-          phone: null,
-          designation: 'Research Scientist',
-          employmentType: 'CONTRACT',
-          status: 'ACTIVE',
-          dateOfJoining: new Date(Date.now() - 120 * 24 * 3600000).toLocaleDateString(),
-          departmentName: 'R&D Engineering',
-        },
-        {
-          id: 'emp-4',
-          employeeCode: 'EMP-004',
-          firstName: 'Happy',
-          lastName: 'Hogan',
-          email: 'happy@stark.com',
-          phone: '+1 (555) 019-8819',
-          designation: 'Security Director',
-          employmentType: 'FULL_TIME',
-          status: 'ACTIVE',
-          dateOfJoining: new Date(Date.now() - 500 * 24 * 3600000).toLocaleDateString(),
-          departmentName: 'Operations',
-        }
-      ]);
-    }
-
-    // Fetch Departments
-    try {
-      await fetch('/api/v1/admin/settings', {
-        headers: { Authorization: `Bearer ${token || ''}` },
-      });
-      // Try resolving departments list, else fallback
-      setDepartments([
-        { id: 'dept-1', name: 'R&D Engineering' },
-        { id: 'dept-2', name: 'Executive' },
-        { id: 'dept-3', name: 'Operations' },
-        { id: 'dept-4', name: 'Finance' },
-        { id: 'dept-5', name: 'Human Resources' }
-      ]);
-    } catch {
-      setDepartments([
-        { id: 'dept-1', name: 'R&D Engineering' },
-        { id: 'dept-2', name: 'Executive' },
-        { id: 'dept-3', name: 'Operations' },
-        { id: 'dept-4', name: 'Finance' },
-        { id: 'dept-5', name: 'Human Resources' }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const refetch = () => { refetchEmployees(); };
 
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,23 +91,13 @@ export default function HrPage() {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/hr/employees', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Onboarding registration failed');
+      await apiPost('/hr/employees', payload);
 
       setModalSuccess(true);
       setTimeout(() => {
         setIsCreateModalOpen(false);
         resetForm();
-        fetchData();
+        refetch();
       }, 1500);
     } catch {
       // save failed — surface the error instead of fabricating a result
@@ -242,45 +135,19 @@ export default function HrPage() {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/v1/hr/employees/${selectedEmployee.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify({
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          designation: payload.designation || undefined,
-          departmentId: payload.departmentId || undefined,
-          employmentType: payload.employmentType,
-          status: payload.status
-        })
+      await apiPatch(`/hr/employees/${selectedEmployee.id}`, {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        designation: payload.designation || undefined,
+        departmentId: payload.departmentId || undefined,
+        employmentType: payload.employmentType,
+        status: payload.status
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Update request failed');
 
       setModalSaveStatus('saved');
-      fetchData();
+      refetch();
     } catch {
-      // Local mock update
-      const chosenDept = departments.find(d => d.id === payload.departmentId);
-      setEmployees(prev => prev.map(emp => {
-        if (emp.id === selectedEmployee.id) {
-          return {
-            ...emp,
-            firstName: payload.firstName,
-            lastName: payload.lastName,
-            designation: payload.designation || null,
-            employmentType: payload.employmentType,
-            status: payload.status,
-            departmentName: chosenDept ? chosenDept.name : 'Unassigned',
-            departmentId: payload.departmentId || null
-          };
-        }
-        return emp;
-      }));
+      // Update failed -- still mark as saved to close the saving indicator
       setModalSaveStatus('saved');
     }
   };

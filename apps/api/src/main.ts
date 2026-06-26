@@ -1,3 +1,5 @@
+// Tracing must initialise before any instrumented library is imported.
+import './tracing';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -39,6 +41,7 @@ import { json, urlencoded } from 'express';
 import * as Sentry from '@sentry/node';
 import { AppModule } from './app.module';
 import { AppLogger } from './common/services/logger.service';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { entitlementMiddleware } from './common/middleware/entitlement.middleware';
 import { csrfMiddleware } from './common/middleware/csrf.middleware';
 import { requestLoggerMiddleware } from './common/middleware/request-logger.middleware';
@@ -75,6 +78,9 @@ async function bootstrap() {
 
   // CSRF protection for state-changing requests
   app.use(csrfMiddleware);
+
+  // Consistent error envelope for every thrown error
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Global prefix for all API routes (metrics and swagger excluded)
   app.setGlobalPrefix('api/v1', { exclude: ['metrics', 'swagger', 'swagger-json'] });
