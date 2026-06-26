@@ -41,6 +41,7 @@ import { BundleStoreService } from '../marketplace/bundle-store.service';
 import { AppProvisioningService } from '../marketplace/app-provisioning.service';
 import { VendorService } from '../marketplace/vendor.service';
 import { StorefrontService } from '../marketplace/storefront.service';
+import { StorefrontController } from '../marketplace/storefront.controller';
 import { DeveloperController } from '../marketplace/developer.controller';
 
 @Module({
@@ -65,6 +66,7 @@ import { DeveloperController } from '../marketplace/developer.controller';
     SubscriptionController,
     OrgHierarchyController,
     DeveloperController,
+    StorefrontController,
   ],
   providers: [
     BundleStoreService,

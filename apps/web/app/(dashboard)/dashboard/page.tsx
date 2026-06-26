@@ -21,6 +21,7 @@ import {
   Database
 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useApiQuery } from '../../../src/lib/hooks/useApi';
 import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -136,56 +137,79 @@ function DashboardContent() {
     }
   }, [activeTab, customDashboard]);
 
+  // Live data: invoice totals, employee count, stock alerts
+  const { data: invoiceData } = useApiQuery<{ total: number; data: any[] }>(
+    ['dashboard', 'invoices'],
+    '/finance/invoices?limit=1',
+    { staleTime: 60_000 },
+  );
+  const { data: employeeData } = useApiQuery<{ total: number }>(
+    ['dashboard', 'employees'],
+    '/hr/employees?limit=1',
+    { staleTime: 60_000 },
+  );
+  const { data: activityData } = useApiQuery<any[]>(
+    ['dashboard', 'activity'],
+    '/admin/activity-feed?limit=5',
+    { staleTime: 30_000 },
+  );
+
+  const invoiceCount = invoiceData?.total ?? 0;
+  const employeeCount = employeeData?.total ?? 0;
+
   const metrics: MetricCardProps[] = [
     {
       title: 'Total Revenue',
-      value: '$124,560.00',
-      change: '+12.3%',
+      value: globalStats?.metrics?.totalRevenue
+        ? `$${Number(globalStats.metrics.totalRevenue).toLocaleString()}`
+        : (invoiceCount > 0 ? `${invoiceCount} invoices` : '$0'),
+      change: globalStats?.metrics?.revenueChange || '--',
       trend: 'up',
       description: 'vs last month',
       icon: TrendingUp,
     },
     {
       title: 'Active Employees',
-      value: '24',
-      change: '+4.5%',
+      value: String(globalStats?.metrics?.activeEmployees ?? employeeCount),
+      change: '--',
       trend: 'up',
-      description: 'vs last month',
+      description: 'current headcount',
       icon: Users,
     },
     {
       title: 'Pending Invoices',
-      value: '18',
-      change: '-2.1%',
+      value: String(globalStats?.metrics?.pendingInvoices ?? invoiceCount),
+      change: '--',
       trend: 'down',
-      description: 'vs last week',
+      description: 'awaiting payment',
       icon: Clock,
     },
     {
       title: 'Stock Alerts',
-      value: '3',
-      change: '+2 new',
+      value: String(globalStats?.metrics?.stockAlerts ?? 0),
+      change: '--',
       trend: 'up',
       description: 'items low stock',
       icon: AlertCircle,
     },
   ];
 
-  const recentLogs = [
-    { id: '1', action: 'User login', user: 'admin@uni-erp.com', time: '10 minutes ago', status: 'SUCCESS' },
-    { id: '2', action: 'Created Invoice #INV-004', user: 'Jane Doe', time: '1 hour ago', status: 'SUCCESS' },
-    { id: '3', action: 'Role updated: Finance Manager', user: 'Super Admin', time: '4 hours ago', status: 'SUCCESS' },
-    { id: '4', action: 'Invited user sales@company.com', user: 'admin@uni-erp.com', time: '1 day ago', status: 'WARNING' },
-  ];
+  const recentLogs = (activityData || []).slice(0, 5).map((log: any, idx: number) => ({
+    id: log.id || String(idx),
+    action: log.action || log.description || 'Activity',
+    user: log.userName || log.userId || 'System',
+    time: log.createdAt ? new Date(log.createdAt).toLocaleString() : 'Recent',
+    status: log.status || 'SUCCESS',
+  }));
 
   const globalMetrics = globalStats?.metrics || {
     totalRevenue: 0,
-    activeEmployees: 0,
+    activeEmployees: employeeCount,
     totalCustomApps: 0,
     totalCustomRecords: 0,
-    pendingInvoices: 0,
+    pendingInvoices: invoiceCount,
     stockAlerts: 0,
-    totalLeads: 0
+    totalLeads: 0,
   };
 
   return (

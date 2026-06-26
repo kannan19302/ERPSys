@@ -32,6 +32,7 @@ function loadEnv() {
 loadEnv();
 
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
@@ -75,8 +76,19 @@ async function bootstrap() {
   // CSRF protection for state-changing requests
   app.use(csrfMiddleware);
 
-  // Global prefix for all API routes (metrics endpoint is excluded — registered without prefix)
-  app.setGlobalPrefix('api/v1', { exclude: ['metrics'] });
+  // Global prefix for all API routes (metrics and swagger excluded)
+  app.setGlobalPrefix('api/v1', { exclude: ['metrics', 'swagger', 'swagger-json'] });
+
+  // OpenAPI documentation
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('UniERP API')
+    .setDescription('Universal Enterprise Resource Planning — REST API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addCookieAuth('auth_token')
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('swagger', app, document, { swaggerOptions: { persistAuthorization: true } });
 
   // Module entitlements: 404 gated business-module routes that the tenant has
   // uninstalled (kernel apps and unmapped routes pass through).
@@ -86,6 +98,7 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`UniERP API running on http://localhost:${port}/api/v1`);
+  logger.log(`Swagger docs at http://localhost:${port}/swagger`);
 }
 
 bootstrap();

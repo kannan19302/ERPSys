@@ -3,7 +3,7 @@ import { prisma } from '@unerp/database';
 
 type Environment = 'DRAFT' | 'STAGING' | 'PRODUCTION';
 
-interface EnvironmentConfig {
+export interface EnvironmentConfig {
   environment: Environment;
   releaseId: string | null;
   version: string | null;

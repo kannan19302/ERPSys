@@ -4,9 +4,10 @@ import { HealthcareService } from './healthcare.service';
 import { HealthcareSmartController } from './healthcare-smart.controller';
 import { HealthcareSmartService } from './healthcare-smart.service';
 import { ClinicalService } from './clinical.service';
+import { ClinicalController } from './clinical.controller';
 
 @Module({
-  controllers: [HealthcareController, HealthcareSmartController],
+  controllers: [HealthcareController, HealthcareSmartController, ClinicalController],
   providers: [HealthcareService, HealthcareSmartService, ClinicalService],
   exports: [HealthcareService, HealthcareSmartService, ClinicalService],
 })

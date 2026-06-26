@@ -4,9 +4,10 @@ import { ReportingService } from './reporting.service';
 import { ScheduledReportsController } from './scheduled-reports.controller';
 import { ScheduledReportsService } from './scheduled-reports.service';
 import { ReportingEngineService } from './reporting-engine.service';
+import { ReportingEngineController } from './reporting-engine.controller';
 
 @Module({
-  controllers: [ReportingController, ScheduledReportsController],
+  controllers: [ReportingController, ScheduledReportsController, ReportingEngineController],
   providers: [ReportingService, ScheduledReportsService, ReportingEngineService],
   exports: [ReportingService, ScheduledReportsService, ReportingEngineService],
 })

@@ -3,9 +3,10 @@ import { ProcurementController } from './procurement.controller';
 import { ProcurementPublicController } from './procurement.public.controller';
 import { ProcurementService } from './procurement.service';
 import { ContractsService } from './contracts.service';
+import { ContractsController } from './contracts.controller';
 
 @Module({
-  controllers: [ProcurementController, ProcurementPublicController],
+  controllers: [ProcurementController, ProcurementPublicController, ContractsController],
   providers: [ProcurementService, ContractsService],
   exports: [ProcurementService, ContractsService],
 })

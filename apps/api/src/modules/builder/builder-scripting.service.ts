@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import vm from 'vm';
 
-interface ScriptResult {
+export interface ScriptResult {
   success: boolean;
   output: unknown;
   logs: string[];

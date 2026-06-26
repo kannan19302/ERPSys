@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 
-interface PricingResult {
+export interface PricingResult {
   productId: string;
   basePrice: number;
   discountPct: number;

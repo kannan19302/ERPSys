@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 
-interface SemanticField {
+export interface SemanticField {
   name: string;
   label: string;
   type: 'string' | 'number' | 'date' | 'boolean';
   aggregatable: boolean;
 }
 
-interface SemanticEntity {
+export interface SemanticEntity {
   name: string;
   label: string;
   table: string;
