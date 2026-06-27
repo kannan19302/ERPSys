@@ -47,14 +47,7 @@ jobs:
       - run: pnpm --filter @unerp/database build
       - run: pnpm --filter @unerp/shared build
       - run: pnpm --filter @unerp/auth build
-      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test:coverage
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-coverage
-          path: apps/api/coverage
-          if-no-files-found: ignore
+      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api exec vitest run --pool=forks --poolOptions.forks.maxForks=2
 
   e2e:
     name: E2E (Playwright)
@@ -101,9 +94,9 @@ jobs:
       - run: pnpm --filter @unerp/database exec prisma generate
       - run: pnpm --filter @unerp/database exec prisma migrate deploy
       - run: pnpm --filter @unerp/database build && pnpm --filter @unerp/shared build && pnpm --filter @unerp/auth build && pnpm --filter @unerp/api build
-      - run: pnpm --filter @unerp/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @unerp/web exec npx playwright install --with-deps chromium
       - name: Run e2e
-        run: pnpm --filter @unerp/web test:e2e
+        run: pnpm --filter @unerp/web exec npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -262,5 +255,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @unerp/database exec prisma migrate deploy
-      - run: pnpm --filter @unerp/database exec prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --exit-code
+      - run: pnpm --filter @unerp/database exec prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url "$DATABASE_URL" --exit-code
         working-directory: packages/database
