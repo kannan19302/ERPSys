@@ -1,0 +1,15 @@
+# CODEOWNERS — UniERP
+# Only kannan19302 can approve changes to CI/CD, environments, policies, and security config.
+
+# Global fallback — all PRs require review
+* @kannan19302
+
+# Critical infrastructure — MUST be approved by kannan19302
+.github/ @kannan19302
+.ai/ @kannan19302
+packages/database/prisma/migrations/ @kannan19302
+deploy/ @kannan19302
+docker/ @kannan19302
+scripts/ @kannan19302
+AGENTS.md @kannan19302
+RUNBOOK.md @kannan19302
