@@ -64,7 +64,7 @@ export default function ExchangeRatesPage() {
         </div>
       ),
     },
-    { key: 'rate', header: 'Rate', render: (row) => <span style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-sm)' }}>{row.rate.toFixed(6)}</span> },
+    { key: 'rate', header: 'Rate', render: (row) => <span style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-sm)' }}>{Number(row.rate).toFixed(6)}</span> },
     { key: 'effectiveDate', header: 'Effective Date', render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{row.effectiveDate}</span> },
     { key: 'source', header: 'Source', render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{row.source || 'Manual'}</span> },
   ];
