@@ -47,7 +47,7 @@ jobs:
       - run: pnpm --filter @unerp/database build
       - run: pnpm --filter @unerp/shared build
       - run: pnpm --filter @unerp/auth build
-      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api exec vitest run --no-coverage --pool=threads --minThreads=1 --maxThreads=1
+      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api exec vitest run --no-coverage
 
   e2e:
     name: E2E (Playwright)

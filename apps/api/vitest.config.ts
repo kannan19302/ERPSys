@@ -2,6 +2,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    pool: 'threads',
+    poolOptions: {
+      threads: { maxThreads: process.env.CI ? 1 : undefined },
+    },
     coverage: {
       provider: 'v8',
       // `json` emits coverage/coverage-final.json, which the scorecard
