@@ -3,6 +3,26 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-06-27] ERP-Wide Dashboard & Visual Overhaul (Phase 2-10)
+
+### Added
+- **Shared Visualization Infrastructure (`@unerp/ui`)**:
+  - `ChartTypePicker`: Dynamic chart visualization selector dropdown.
+  - `ViewSwitcher`: Icon toggle button group (List, Chart, Kanban, Grid).
+  - `DrillDownModal`: Granular BI datatable with query filters and CSV export.
+  - `DashboardKPICard`: Enhanced key performance indicator card with sparklines and progress.
+  - `DashboardChart`: Composed Recharts wrapper supporting dynamic series rendering.
+  - `KanbanBoard`: HTML5 drag-and-drop workflow card tracker.
+- **Login & Registration Redesign**:
+  - Rebuilt `/login` and `/register` pages with responsive split-screen branding panels, feature carousels, password strength indicators, and MFA/Social options.
+- **Enhanced Application Dashboards**:
+  - Upgraded dashboards with live Recharts components, KPIs, view switchers, and Kanban support across: Finance, HR, CRM, Inventory, Sales, Procurement, Manufacturing, Supply Chain, Projects, Education, Real Estate, Field Service, POS Terminal, SaaS Portal, and BI Analytics.
+  - Implemented 100% interactive KPI card coverage by binding missing `drillDown` and `onClick` parameters on every dashboard card (e.g. Warehouses, Total Stock Value, CRM Qualified status, Active Vendors list, Manufacturing scrap quantities, EVM metrics details, etc.).
+- **Relative Routing & Type Safety**:
+  - Replaced all hardcoded absolute references to `http://localhost:3001` backend endpoints with relative paths, preventing CORS and cross-origin deployment bugs.
+  - Resolved strict mode TypeScript compilation issues in packages and applications.
+  - Added `onClick` prop handler to `DashboardKPICard` component in `@unerp/ui` to support dynamic parent-handled drilldowns.
+
 ---
 
 ## [2026-06-21] App Store System Applications Integration

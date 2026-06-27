@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Store, 
   ShoppingCart, 
@@ -10,8 +10,11 @@ import {
   CreditCard, 
   Search, 
   CircleDollarSign,
-  Coffee
+  Coffee,
+  BarChart3,
+  List
 } from 'lucide-react';
+import { Card, PageHeader, Button, Spinner, DashboardKPICard, DashboardChart, ViewSwitcher, type ViewMode } from '@unerp/ui';
 
 interface POSTerminal {
   id: string;
@@ -57,6 +60,16 @@ export default function POSPage() {
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
+
+  // POS view toggling: 'checkout' vs 'analytics'
+  const [posViewMode, setPosViewMode] = useState<'checkout' | 'analytics'>('checkout');
+
+  // Completed transactions tracking (simulated for charts)
+  const [salesHistory, setSalesHistory] = useState<Array<{ id: string; total: number; itemsCount: number; date: string }>>([
+    { id: '1', total: 45.90, itemsCount: 3, date: '10:00 AM' },
+    { id: '2', total: 120.50, itemsCount: 5, date: '10:30 AM' },
+    { id: '3', total: 15.00, itemsCount: 1, date: '11:15 AM' },
+  ]);
 
   const loadData = async () => {
     try {
@@ -207,9 +220,36 @@ export default function POSPage() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    alert(`Checkout complete! Total Paid: $${getTotal().toFixed(2)}`);
+    const finalTotal = getTotal();
+    const finalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+    
+    // Add to history
+    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setSalesHistory(prev => [...prev, { id: Date.now().toString(), total: finalTotal, itemsCount: finalCount, date: nowStr }]);
+    
+    alert(`Checkout complete! Total Paid: $${finalTotal.toFixed(2)}`);
     setCart([]);
   };
+
+  // Computations
+  const totalSalesRevenue = useMemo(() => salesHistory.reduce((sum, s) => sum + s.total, 0), [salesHistory]);
+  const totalItemsSold = useMemo(() => salesHistory.reduce((sum, s) => sum + s.itemsCount, 0), [salesHistory]);
+  const drawerBalance = startingCash + totalSalesRevenue;
+
+  // Chart data
+  const hourlySalesData = useMemo(() => {
+    return salesHistory.map(s => ({
+      name: s.date,
+      value: s.total
+    }));
+  }, [salesHistory]);
+
+  const productDistributionData = useMemo(() => {
+    return products.slice(0, 5).map(p => ({
+      name: p.name.substring(0, 12),
+      value: parseFloat(p.sellPrice)
+    }));
+  }, [products]);
 
   const filteredProducts = products.filter(p => 
     p.sku.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -219,17 +259,11 @@ export default function POSPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', height: 'calc(100vh - 120px)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Store style={{ color: 'var(--color-primary)' }} />
-            Point of Sale Terminal
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-            Run retail counter checkout, handle registers, open cash sessions, and log staff shifts.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Point of Sale Terminal"
+        description="Run retail counter checkout, handle registers, open cash sessions, and log staff shifts."
+        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'POS' }]}
+      />
 
       {/* Check Register Status */}
       {!activeRegister ? (
@@ -256,6 +290,7 @@ export default function POSPage() {
                     border: '1px solid var(--color-border)', background: 'var(--color-bg)',
                     color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)'
                   }}
+                  className="frappe-input"
                 >
                   {terminals.map(t => (
                     <option key={t.id} value={t.id}>{t.name} ({t.code})</option>
@@ -274,6 +309,7 @@ export default function POSPage() {
                     border: '1px solid var(--color-border)', background: 'var(--color-bg)',
                     color: 'var(--color-text)', marginTop: 'var(--space-1.5)', fontSize: 'var(--text-sm)'
                   }}
+                  className="frappe-input"
                 />
               </div>
             </div>
@@ -285,6 +321,7 @@ export default function POSPage() {
                 padding: 'var(--space-2.5)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)'
               }}
+              className="frappe-btn frappe-btn-primary"
             >
               Open Register
             </button>
@@ -297,20 +334,50 @@ export default function POSPage() {
           {/* Products Column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', overflow: 'hidden' }}>
             <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
-                <input 
-                  type="text" 
-                  placeholder="Scan barcode or type product name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+              
+              {/* POS Switcher */}
+              <div style={{ display: 'flex', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', padding: '2px' }}>
+                <button 
+                  onClick={() => setPosViewMode('checkout')}
                   style={{
-                    width: '100%', padding: 'var(--space-2) var(--space-2) var(--space-2) var(--space-9)',
-                    borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)',
-                    background: 'var(--color-bg-elevated)', color: 'var(--color-text)', fontSize: 'var(--text-sm)'
+                    display: 'flex', alignItems: 'center', gap: '4px', border: 'none',
+                    background: posViewMode === 'checkout' ? 'var(--color-bg-elevated)' : 'transparent',
+                    color: posViewMode === 'checkout' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                    padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold'
                   }}
-                />
+                >
+                  <List size={14} /> Checkout
+                </button>
+                <button 
+                  onClick={() => setPosViewMode('analytics')}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '4px', border: 'none',
+                    background: posViewMode === 'analytics' ? 'var(--color-bg-elevated)' : 'transparent',
+                    color: posViewMode === 'analytics' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                    padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold'
+                  }}
+                >
+                  <BarChart3 size={14} /> View Analytics
+                </button>
               </div>
+
+              {posViewMode === 'checkout' && (
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
+                  <input 
+                    type="text" 
+                    placeholder="Scan barcode or type product name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%', padding: 'var(--space-2) var(--space-2) var(--space-2) var(--space-9)',
+                      borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)',
+                      background: 'var(--color-bg-elevated)', color: 'var(--color-text)', fontSize: 'var(--text-sm)'
+                    }}
+                    className="frappe-input"
+                  />
+                </div>
+              )}
               
               {/* Shift tracker action */}
               {!shiftOpen ? (
@@ -318,7 +385,7 @@ export default function POSPage() {
                   background: 'var(--color-primary)', border: 'none', color: 'var(--color-bg-elevated)',
                   padding: '0 var(--space-4)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                   fontSize: 'var(--text-xs)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)'
-                }}>
+                }} className="frappe-btn frappe-btn-primary">
                   <Coffee size={14} /> Start Shift
                 </button>
               ) : (
@@ -326,7 +393,7 @@ export default function POSPage() {
                   background: 'var(--color-warning)', border: 'none', color: 'var(--color-bg-elevated)',
                   padding: '0 var(--space-4)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                   fontSize: 'var(--text-xs)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)'
-                }}>
+                }} className="frappe-btn">
                   <Coffee size={14} /> End Shift
                 </button>
               )}
@@ -335,39 +402,105 @@ export default function POSPage() {
                 background: 'var(--color-danger)', border: 'none', color: 'var(--color-bg-elevated)',
                 padding: '0 var(--space-4)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 fontSize: 'var(--text-xs)', fontWeight: 'bold'
-              }}>
+              }} className="frappe-btn">
                 Close Drawer
               </button>
             </div>
 
-            {/* Grid list of products */}
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 'var(--space-4)', overflowY: 'auto', paddingRight: 'var(--space-2)' }}>
-              {filteredProducts.map(p => (
-                <div 
-                  key={p.id}
-                  onClick={() => addToCart(p)}
-                  style={{
-                    background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex',
-                    flexDirection: 'column', justifyItems: 'space-between', cursor: 'pointer',
-                    transition: 'border-color var(--duration-fast)', gap: 'var(--space-3)'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
-                >
-                  <div>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>{p.sku}</span>
-                    <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 'var(--space-1) 0 0 0' }}>{p.name}</h3>
+            {posViewMode === 'checkout' ? (
+              /* Grid list of products */
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 'var(--space-4)', overflowY: 'auto', paddingRight: 'var(--space-2)' }}>
+                {filteredProducts.map(p => (
+                  <div 
+                    key={p.id}
+                    onClick={() => addToCart(p)}
+                    style={{
+                      background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex',
+                      flexDirection: 'column', justifyItems: 'space-between', cursor: 'pointer',
+                      transition: 'border-color var(--duration-fast)', gap: 'var(--space-3)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
+                  >
+                    <div>
+                      <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>{p.sku}</span>
+                      <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 'var(--space-1) 0 0 0' }}>{p.name}</h3>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                      <span style={{ fontSize: 'var(--text-md)', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                        ${parseFloat(p.sellPrice).toFixed(2)}
+                      </span>
+                      <Plus size={16} style={{ color: 'var(--color-text-secondary)' }} />
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                    <span style={{ fontSize: 'var(--text-md)', fontWeight: 'bold', color: 'var(--color-primary)' }}>
-                      ${parseFloat(p.sellPrice).toFixed(2)}
-                    </span>
-                    <Plus size={16} style={{ color: 'var(--color-text-secondary)' }} />
-                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Analytics View */
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', overflowY: 'auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)' }}>
+                  <DashboardKPICard title="Session Sales" value={`$${totalSalesRevenue.toFixed(2)}`} icon={<CircleDollarSign size={18} />} color="var(--color-success)"
+                    drillDown={{
+                      modalTitle: 'Shift Completed Sales',
+                      columns: [
+                        { key: 'id', label: 'Sale ID' },
+                        { key: 'date', label: 'Time' },
+                        { key: 'itemsCount', label: 'Items Sold' },
+                        { key: 'total', label: 'Sale Amount', render: (v) => `$${Number(v).toFixed(2)}` }
+                      ],
+                      rows: salesHistory.map(s => ({ ...s }))
+                    }}
+                  />
+                  <DashboardKPICard title="Drawer Cash Balance" value={`$${drawerBalance.toFixed(2)}`} icon={<CreditCard size={18} />} color="var(--color-primary)"
+                    drillDown={{
+                      modalTitle: 'Drawer Cash Reconciliation',
+                      columns: [
+                        { key: 'label', label: 'Type' },
+                        { key: 'amount', label: 'Amount', render: (v) => `$${Number(v).toFixed(2)}` }
+                      ],
+                      rows: [
+                        { label: 'Starting Cash Float', amount: startingCash },
+                        { label: 'Session Sales Cash', amount: totalSalesRevenue },
+                        { label: 'Total Current Cash', amount: drawerBalance }
+                      ]
+                    }}
+                  />
+                  <DashboardKPICard title="Total Items Sold" value={String(totalItemsSold)} icon={<ShoppingCart size={18} />} color="var(--color-info-text)"
+                    drillDown={{
+                      modalTitle: 'Sold Items Metrics',
+                      columns: [
+                        { key: 'id', label: 'Sale ID' },
+                        { key: 'date', label: 'Time' },
+                        { key: 'itemsCount', label: 'Items Count' }
+                      ],
+                      rows: salesHistory.map(s => ({ ...s }))
+                    }}
+                  />
                 </div>
-              ))}
-            </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                  <DashboardChart
+                    title="Checkout Transactions timeline"
+                    subtitle="Hourly sales recorded in active shift"
+                    data={hourlySalesData}
+                    config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Sale Total', color: 'var(--color-primary)' }] }}
+                    defaultChartType="line"
+                    allowedChartTypes={['line', 'bar']}
+                    height={220}
+                  />
+                  <DashboardChart
+                    title="Top Product Value"
+                    subtitle="Product prices breakdown catalog"
+                    data={productDistributionData}
+                    config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Price', color: '#10b981' }] }}
+                    defaultChartType="bar"
+                    allowedChartTypes={['bar', 'donut']}
+                    height={220}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Cart Column */}

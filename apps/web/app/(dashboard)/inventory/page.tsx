@@ -1,557 +1,343 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
-import { useStockLevels } from '../../../src/lib/hooks/useModuleData';
-import { useApiQuery } from '../../../src/lib/hooks/useApi';
+import React, { useState, useMemo } from 'react';
+import { PageHeader, Button, Spinner, StatusBadge, DashboardKPICard, DashboardChart, ViewSwitcher, type ViewMode } from '@unerp/ui';
+import { useProducts, useWarehouses, useStockLevels, useStockEntries } from '../../../src/lib/hooks/useModuleData';
+import { apiPost } from '../../../src/lib/api';
 import {
-  Package,
-  Warehouse,
-  ShieldAlert,
-  DollarSign,
-  ArrowRight,
-  Plus,
-  RefreshCw,
-  FileText,
-  History,
-  TrendingUp,
-  ClipboardCheck,
-  ShieldCheck,
-  Layers,
-  Activity,
-  AlertTriangle
+  Package, Warehouse, AlertTriangle, TrendingDown, Search,
+  AlertCircle, CheckCircle, X
 } from 'lucide-react';
-import Link from 'next/link';
 
-interface StatData {
-  totalProducts: number;
-  activeProducts: number;
-  totalWarehouses: number;
-  lowStockItems: number;
-}
+export default function InventoryPage() {
+  const { data: productsData, isLoading: loadingProducts, refetch: refetchProducts } = useProducts();
+  const { data: warehousesRaw = [], isLoading: loadingWarehouses, refetch: refetchWarehouses } = useWarehouses();
+  const { data: stockLevelsRaw, isLoading: loadingStock, refetch: refetchStock } = useStockLevels();
+  const { data: stockEntriesRaw = [], isLoading: loadingEntries } = useStockEntries();
+  const loading = loadingProducts || loadingWarehouses || loadingStock || loadingEntries;
 
-interface ValuationItem {
-  productId: string;
-  sku: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  costingMethod: string;
-  unitCost: number;
-  value: number;
-}
+  const products = Array.isArray(productsData) ? productsData : (productsData as Record<string, unknown>)?.data ? (productsData as Record<string, unknown>).data as Record<string, unknown>[] : [];
+  const warehouses = Array.isArray(warehousesRaw) ? warehousesRaw : (warehousesRaw as Record<string, unknown>)?.data ? (warehousesRaw as Record<string, unknown>).data as Record<string, unknown>[] : [];
+  const stockLevels = Array.isArray(stockLevelsRaw) ? stockLevelsRaw : (stockLevelsRaw as Record<string, unknown>)?.data ? (stockLevelsRaw as Record<string, unknown>).data as Record<string, unknown>[] : [];
+  const stockEntries = Array.isArray(stockEntriesRaw) ? stockEntriesRaw : [];
 
-interface ValuationData {
-  totalValue: number;
-  products: ValuationItem[];
-}
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeView, setActiveView] = useState<ViewMode>('chart');
+  const [activeTab, setActiveTab] = useState<'products' | 'warehouses' | 'stock-levels'>('products');
 
-interface StockLevelData {
-  id: string;
-  productId: string;
-  warehouseId: string;
-  quantity: number;
-  reorderPoint: number | null;
-  product: {
-    id: string;
-    name: string;
-    sku: string;
-    category: string | null;
-    unit: string;
-  };
-  warehouse: {
-    id: string;
-    name: string;
-  };
-}
+  // Create Product Modal
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [productName, setProductName] = useState('');
+  const [sku, setSku] = useState('');
+  const [sellPrice, setSellPrice] = useState<number>(0);
+  const [category, setCategory] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [modalSuccess, setModalSuccess] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
-export default function InventoryDashboard() {
-  const { data: statsData, isLoading: loadingStats } = useApiQuery<StatData>(
-    ['inventory', 'products', 'stats'], '/inventory/products/stats'
-  );
-  const { data: valuationData, isLoading: loadingVal } = useApiQuery<ValuationData>(
-    ['inventory', 'valuations'], '/inventory/valuations'
-  );
-  const { data: stockLevelsRaw = [], isLoading: loadingStock, refetch: refetchStock } = useStockLevels();
+  // ── KPI values ──
+  const totalProducts = products.length;
+  const totalWarehouses = warehouses.length;
+  const lowStockCount = stockLevels.filter((sl: Record<string, unknown>) => Number(sl.currentQty || 0) <= Number(sl.reorderPoint || 0)).length;
+  const totalStockValue = stockLevels.reduce((sum: number, sl: Record<string, unknown>) => {
+    const qty = Number(sl.currentQty || 0);
+    const cost = Number(sl.valuationRate || sl.costPrice || 0);
+    return sum + (qty * cost);
+  }, 0);
 
-  const stockLevels: StockLevelData[] = stockLevelsRaw as any[];
-  const loading = loadingStats || loadingVal || loadingStock;
-  const [refreshing, setRefreshing] = useState(false);
-  const [error] = useState<string | null>(null);
-
-  const stats: StatData = {
-    totalProducts: statsData?.totalProducts || new Set(stockLevels.map(s => s.productId)).size || 3,
-    activeProducts: statsData?.activeProducts || statsData?.totalProducts || 3,
-    totalWarehouses: statsData?.totalWarehouses || new Set(stockLevels.map(s => s.warehouseId)).size || 2,
-    lowStockItems: statsData?.lowStockItems || stockLevels.filter(s => s.reorderPoint !== null && Number(s.quantity) <= Number(s.reorderPoint)).length || 0,
-  };
-
-  const valuation: ValuationData = valuationData || { totalValue: 0, products: [] };
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    refetchStock().finally(() => setRefreshing(false));
-  };
-
-  // Group Stock by Category
-  const getCategoryData = () => {
-    const categoriesMap: Record<string, { value: number; quantity: number }> = {};
-    
-    // Check if we have products category mapping from stockLevels
-    stockLevels.forEach((level) => {
-      const categoryName = level.product?.category || 'General';
-      const prodValuation = valuation.products.find(p => p.productId === level.productId);
-      const val = prodValuation ? (prodValuation.unitCost * level.quantity) : (level.quantity * 100); // fallback
-
-      if (!categoriesMap[categoryName]) {
-        categoriesMap[categoryName] = { value: 0, quantity: 0 };
-      }
-      categoriesMap[categoryName].value += val;
-      categoriesMap[categoryName].quantity += level.quantity;
+  // ── Chart data ──
+  const stockByWarehouseData = useMemo(() => {
+    const whMap: Record<string, number> = {};
+    stockLevels.forEach((sl: Record<string, unknown>) => {
+      const whName = String((sl.warehouse as Record<string, unknown>)?.name || sl.warehouseId || 'Unknown');
+      whMap[whName] = (whMap[whName] || 0) + Number(sl.currentQty || 0);
     });
+    return Object.entries(whMap).map(([name, quantity]) => ({ name, quantity }));
+  }, [stockLevels]);
 
-    // Handle empty state fallback
-    if (Object.keys(categoriesMap).length === 0) {
-      return [
-        { label: 'Minerals', value: 382500, percent: 70, color: 'var(--color-primary)' },
-        { label: 'Fabrics', value: 5400, percent: 1, color: 'var(--color-success)' },
-        { label: 'Composites', value: 62100, percent: 11, color: 'var(--color-warning)' },
-        { label: 'General', value: 95000, percent: 18, color: 'var(--color-info)' },
-      ];
-    }
+  const lowStockData = useMemo(() => {
+    return stockLevels
+      .filter((sl: Record<string, unknown>) => Number(sl.currentQty || 0) <= Number(sl.reorderPoint || 0))
+      .slice(0, 8)
+      .map((sl: Record<string, unknown>) => ({
+        name: String((sl.product as Record<string, unknown>)?.name || sl.productId || 'Unknown').substring(0, 15),
+        current: Number(sl.currentQty || 0),
+        reorderPoint: Number(sl.reorderPoint || 0),
+      }));
+  }, [stockLevels]);
 
-    const totalVal = Object.values(categoriesMap).reduce((sum, item) => sum + item.value, 0);
-    const colors = [
-      'var(--color-primary)',
-      'var(--color-success)',
-      'var(--color-warning)',
-      'var(--color-info)',
-      'var(--color-danger)',
-      'var(--color-text-secondary)'
-    ];
-
-    return Object.entries(categoriesMap).map(([label, data], index) => ({
-      label,
-      value: data.value,
-      percent: totalVal > 0 ? Math.round((data.value / totalVal) * 100) : 0,
-      color: colors[index % colors.length]
-    })).sort((a, b) => b.value - a.value);
-  };
-
-  // Group Stock by Warehouse
-  const getWarehouseData = () => {
-    const warehouseMap: Record<string, number> = {};
-    stockLevels.forEach((level) => {
-      const whName = level.warehouse?.name || 'Default';
-      warehouseMap[whName] = (warehouseMap[whName] || 0) + level.quantity;
+  const entryTypeData = useMemo(() => {
+    const typeCounts: Record<string, number> = {};
+    stockEntries.forEach((e: Record<string, unknown>) => {
+      const type = String(e.type || 'Unknown');
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
     });
+    return Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
+  }, [stockEntries]);
 
-    if (Object.keys(warehouseMap).length === 0) {
-      return [
-        { name: 'Schenectady Central Depot', qty: 57 },
-        { name: 'Berlin Logistics Center', qty: 150 },
-        { name: 'Tokyo Fulfillment Hub', qty: 95 },
-      ];
+  // ── Handlers ──
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productName || !sku) { setModalError('Please fill all required fields'); return; }
+    setSubmitting(true); setModalError(null);
+    try {
+      await apiPost('/inventory/products', { name: productName, sku, sellPrice, category: category || undefined });
+      setModalSuccess(true);
+      setTimeout(() => { setIsCreateModalOpen(false); setProductName(''); setSku(''); setSellPrice(0); setCategory(''); setModalSuccess(false); refetchProducts(); }, 1500);
+    } catch { setModalError('Failed to create product.'); }
+    setSubmitting(false);
+  };
+
+  const refetchAll = () => { refetchProducts(); refetchWarehouses(); refetchStock(); };
+
+  const getFilteredData = () => {
+    const q = searchQuery.toLowerCase();
+    switch (activeTab) {
+      case 'products': return products.filter((p: Record<string, unknown>) => String(p.name || '').toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q));
+      case 'warehouses': return warehouses.filter((w: Record<string, unknown>) => String(w.name || '').toLowerCase().includes(q));
+      case 'stock-levels': return stockLevels.filter((sl: Record<string, unknown>) => String((sl.product as Record<string, unknown>)?.name || '').toLowerCase().includes(q) || String((sl.warehouse as Record<string, unknown>)?.name || '').toLowerCase().includes(q));
+      default: return [];
     }
-
-    return Object.entries(warehouseMap).map(([name, qty]) => ({
-      name,
-      qty
-    })).sort((a, b) => b.qty - a.qty);
   };
+  const filteredData = getFilteredData();
 
-  // Low stock levels to display
-  const getLowStockAlerts = () => {
-    return stockLevels.filter(s => s.reorderPoint !== null && s.quantity <= s.reorderPoint);
-  };
-
-  const categoryData = getCategoryData();
-  const warehouseData = getWarehouseData();
-  const lowStockAlerts = getLowStockAlerts();
-  const maxWarehouseStock = Math.max(...warehouseData.map(w => w.qty), 1);
-
-  // SVG Donut Calculations
-  let accumulatedPercent = 0;
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', minHeight: '60vh', justifyContent: 'center', alignItems: 'center' }}>
-        <Spinner size="lg" />
-        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Compiling real-time inventory ledger...</span>
-      </div>
-    );
-  }
+  const TABS = [
+    { key: 'products' as const, label: 'Products', count: products.length },
+    { key: 'warehouses' as const, label: 'Warehouses', count: warehouses.length },
+    { key: 'stock-levels' as const, label: 'Stock Levels', count: stockLevels.length },
+  ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="Inventory Dashboard"
-        description="Monitor current warehouse assets, stock value distributions, and low stock warnings."
+        title="Inventory & Warehouse"
+        description="Manage products, warehouses, stock levels, and movement entries."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory' }]}
         actions={
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}
-            >
-              <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
-              Refresh
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <ViewSwitcher activeView={activeView} onViewChange={setActiveView} availableViews={['list', 'chart']} />
+            <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Package size={16} /> Add Product
             </Button>
-            <Link href="/inventory/stock-entries">
-              <Button variant="primary" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1.5)' }}>
-                <Plus size={13} />
-                New Stock Entry
-              </Button>
-            </Link>
           </div>
         }
       />
 
-      {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
-          <AlertTriangle size={16} />
-          <span>Note: {error}</span>
+      {/* KPI Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+        <DashboardKPICard title="Total Products" value={String(totalProducts)} icon={<Package size={18} />} color="#4f46e5" loading={loading}
+          drillDown={{
+            modalTitle: 'All Products', columns: [
+              { key: 'name', label: 'Product' }, { key: 'sku', label: 'SKU' },
+              { key: 'sellPrice', label: 'Price', render: (v) => `$${Number(v).toFixed(2)}` },
+            ],
+            rows: products.map((p: Record<string, unknown>) => ({ name: p.name, sku: p.sku, sellPrice: p.sellPrice })),
+          }}
+        />
+        <DashboardKPICard title="Warehouses" value={String(totalWarehouses)} icon={<Warehouse size={18} />} color="#22c55e" loading={loading}
+          drillDown={{
+            modalTitle: 'All Warehouses', columns: [
+              { key: 'name', label: 'Warehouse' }, { key: 'code', label: 'Code' },
+            ],
+            rows: warehouses.map((w: Record<string, unknown>) => ({ name: w.name, code: w.code })),
+          }}
+        />
+        <DashboardKPICard title="Low Stock Items" value={String(lowStockCount)} icon={<AlertTriangle size={18} />} color="#ef4444" loading={loading}
+          drillDown={{
+            modalTitle: 'Low Stock Items', columns: [
+              { key: 'product', label: 'Product' }, { key: 'warehouse', label: 'Warehouse' },
+              { key: 'current', label: 'Current Qty' }, { key: 'reorder', label: 'Reorder Point' },
+            ],
+            rows: stockLevels.filter((sl: Record<string, unknown>) => Number(sl.currentQty || 0) <= Number(sl.reorderPoint || 0))
+              .map((sl: Record<string, unknown>) => ({
+                product: (sl.product as Record<string, unknown>)?.name || sl.productId, warehouse: (sl.warehouse as Record<string, unknown>)?.name || sl.warehouseId,
+                current: sl.currentQty, reorder: sl.reorderPoint,
+              })),
+          }}
+        />
+        <DashboardKPICard title="Total Stock Value" value={`$${totalStockValue.toLocaleString()}`} icon={<TrendingDown size={18} />} color="#8b5cf6" loading={loading}
+          drillDown={{
+            modalTitle: 'Stock Valuations', columns: [
+              { key: 'product', label: 'Product' }, { key: 'warehouse', label: 'Warehouse' },
+              { key: 'qty', label: 'Current Qty' },
+              { key: 'rate', label: 'Valuation Rate', render: (v) => `$${Number(v).toFixed(2)}` },
+              { key: 'value', label: 'Total Value', render: (v) => `$${Number(v).toLocaleString()}` },
+            ],
+            rows: stockLevels.map((sl: Record<string, unknown>) => {
+              const qty = Number(sl.currentQty || 0);
+              const rate = Number(sl.valuationRate || sl.costPrice || 0);
+              return {
+                product: (sl.product as Record<string, unknown>)?.name || sl.productId,
+                warehouse: (sl.warehouse as Record<string, unknown>)?.name || sl.warehouseId,
+                qty,
+                rate,
+                value: qty * rate,
+              };
+            }),
+          }}
+        />
+      </div>
+
+      {/* Chart View */}
+      {activeView === 'chart' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--space-4)' }}>
+          <DashboardChart
+            title="Stock by Warehouse"
+            subtitle="Total quantity across warehouses"
+            data={stockByWarehouseData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'quantity', name: 'Quantity', color: '#4f46e5' }] }}
+            defaultChartType="bar"
+            allowedChartTypes={['bar', 'pie', 'donut']}
+            height={280}
+            loading={loading}
+          />
+          <DashboardChart
+            title="Low Stock Alerts"
+            subtitle="Items at or below reorder point"
+            data={lowStockData}
+            config={{
+              xAxisKey: 'name',
+              series: [
+                { dataKey: 'current', name: 'Current Qty', color: '#ef4444' },
+                { dataKey: 'reorderPoint', name: 'Reorder Point', color: '#f59e0b' },
+              ]
+            }}
+            defaultChartType="bar"
+            allowedChartTypes={['bar', 'composed', 'line']}
+            height={280}
+            loading={loading}
+          />
+          <DashboardChart
+            title="Stock Entry Types"
+            subtitle="Breakdown of movement types"
+            data={entryTypeData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Entries' }], valueKey: 'value', nameKey: 'name' }}
+            defaultChartType="donut"
+            allowedChartTypes={['donut', 'pie', 'bar']}
+            height={280}
+            loading={loading}
+          />
         </div>
       )}
 
-      {/* KPI Cards Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-        {/* KPI Card 1: Valuation */}
-        <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', border: '1px solid var(--color-border)' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-md)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <DollarSign size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inventory Value</div>
-            <h3 style={{ margin: '2px 0 0', fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>
-              ${valuation.totalValue.toLocaleString(undefined, { minimumFractionDigits: 0 })}
-            </h3>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Weighted Average Basis</span>
-          </div>
-        </Card>
-
-        {/* KPI Card 2: Alerts */}
-        <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', border: '1px solid var(--color-border)' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: 'var(--radius-md)',
-            background: stats.lowStockItems > 0 ? 'var(--color-danger-light)' : 'var(--color-success-light)',
-            color: stats.lowStockItems > 0 ? 'var(--color-danger-text)' : 'var(--color-success)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <ShieldAlert size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Low Stock Alerts</div>
-            <h3 style={{ margin: '2px 0 0', fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>
-              {stats.lowStockItems} Items
-            </h3>
-            <span style={{ fontSize: '10px', color: stats.lowStockItems > 0 ? 'var(--color-danger-text)' : 'var(--color-text-tertiary)', fontWeight: stats.lowStockItems > 0 ? 'bold' : 'normal' }}>
-              {stats.lowStockItems > 0 ? 'Requires Replenishment' : 'All Stock Level Adequate'}
-            </span>
-          </div>
-        </Card>
-
-        {/* KPI Card 3: Products */}
-        <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', border: '1px solid var(--color-border)' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-md)', background: 'var(--color-info-light)', color: 'var(--color-info)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Package size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Active Products</div>
-            <h3 style={{ margin: '2px 0 0', fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>
-              {stats.activeProducts} / {stats.totalProducts}
-            </h3>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Cataloged SKUs in Registry</span>
-          </div>
-        </Card>
-
-        {/* KPI Card 4: Warehouses */}
-        <Card padding="md" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', border: '1px solid var(--color-border)' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-md)', background: 'var(--color-warning-light)', color: 'var(--color-warning-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Warehouse size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Locations Monitored</div>
-            <h3 style={{ margin: '2px 0 0', fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>
-              {stats.totalWarehouses} Warehouses
-            </h3>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Active Fulfillment Depots</span>
-          </div>
-        </Card>
-      </div>
-
-      {/* Visual Analytics & Charts Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 'var(--space-6)' }}>
-        
-        {/* Left Column: Donut Chart - Stock Value by Category */}
-        <Card padding="lg" style={{ border: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-            <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)' }}>Stock Valuation by Category</h4>
-            <Badge variant="default">Total: ${valuation.totalValue.toLocaleString()}</Badge>
+      {/* List View */}
+      {activeView === 'list' && (
+        <>
+          <div style={{ display: 'flex', gap: 'var(--space-1)', borderBottom: '1px solid var(--color-border)' }}>
+            {TABS.map(tab => (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+                style={{ padding: 'var(--space-2-5) var(--space-4)', border: 'none', borderBottom: `2px solid ${activeTab === tab.key ? 'var(--color-primary)' : 'transparent'}`, background: 'none', color: activeTab === tab.key ? 'var(--color-primary)' : 'var(--color-text-secondary)', fontWeight: activeTab === tab.key ? 'var(--weight-semibold)' : 'normal', fontSize: 'var(--text-sm)', cursor: 'pointer' }}>
+                {tab.label} ({tab.count})
+              </button>
+            ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: 'var(--space-6)', alignItems: 'center' }}>
-            {/* SVG Donut */}
-            <div style={{ position: 'relative', width: '120px', height: '120px' }}>
-              <svg viewBox="0 0 100 100" width="100%" height="100%">
-                <circle cx="50" cy="50" r="35" fill="transparent" stroke="var(--color-border)" strokeWidth="12" style={{ opacity: 0.2 }} />
-                {categoryData.map((item, idx) => {
-                  const percent = item.percent / 100;
-                  const strokeLength = percent * 219.91;
-                  const rotation = accumulatedPercent * 360 - 90;
-                  accumulatedPercent += percent;
+          <div className="frappe-card" style={{ padding: 'var(--space-3) var(--space-4)' }}>
+            <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
+              <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+              <input type="text" className="frappe-input" placeholder={`Search ${activeTab}...`} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-9)' }} />
+            </div>
+          </div>
 
-                  return (
-                    <circle
-                      key={idx}
-                      cx="50"
-                      cy="50"
-                      r="35"
-                      fill="transparent"
-                      stroke={item.color}
-                      strokeWidth="12"
-                      strokeDasharray={`${strokeLength} 219.91`}
-                      strokeDashoffset="0"
-                      transform={`rotate(${rotation} 50 50)`}
-                      style={{ transition: 'stroke-dasharray 0.5s ease-out, transform 0.5s' }}
-                    />
-                  );
-                })}
-              </svg>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)', display: 'block', textTransform: 'uppercase' }}>Value</span>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Share %</span>
+          <div className="frappe-card" style={{ padding: 0, overflowX: 'auto' }}>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>
+            ) : filteredData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
+                <Package size={48} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-4)' }} />
+                <h4 style={{ margin: 0 }}>No {activeTab} found</h4>
               </div>
-            </div>
-
-            {/* Legend */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              {categoryData.slice(0, 5).map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
-                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                    <span style={{ fontWeight: 'var(--weight-medium)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
-                  </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <span style={{ fontWeight: 'var(--weight-semibold)' }}>{item.percent}%</span>
-                    <span style={{ color: 'var(--color-text-secondary)', marginLeft: 'var(--space-2)' }}>
-                      (${item.value.toLocaleString(undefined, { maximumFractionDigits: 0 })})
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        {/* Right Column: Horizontal Bar Chart - Stock Levels by Warehouse */}
-        <Card padding="lg" style={{ border: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-5)' }}>
-            <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)' }}>Stock Distribution by Warehouse</h4>
-            <Badge variant="info">Quantity</Badge>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            {warehouseData.map((wh, idx) => {
-              const percentage = Math.round((wh.qty / maxWarehouseStock) * 100);
-              return (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                    <span style={{ fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{wh.name}</span>
-                    <span style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>{wh.qty.toLocaleString()} units</span>
-                  </div>
-                  <div style={{ height: '8px', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-full)', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
-                    <div style={{
-                      width: `${percentage}%`,
-                      height: '100%',
-                      background: 'linear-gradient(90deg, var(--color-primary), #c084fc)',
-                      borderRadius: 'var(--radius-full)',
-                      transition: 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-                    }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </div>
-
-      {/* Low Stock Replenishment List & Operations Quick Actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)', alignItems: 'flex-start' }}>
-        
-        {/* Left Side: Low Stock Replenishment Alerts */}
-        <Card padding="lg" style={{ border: '1px solid var(--color-border)', minHeight: '320px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-            <div>
-              <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)' }}>Replenishment Watchlist</h4>
-              <p style={{ margin: 'var(--space-0.5) 0 0', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Items with quantities falling below minimum safety reorder thresholds.</p>
-            </div>
-            <Badge variant={lowStockAlerts.length > 0 ? 'danger' : 'success'}>
-              {lowStockAlerts.length} Warnings
-            </Badge>
-          </div>
-
-          {lowStockAlerts.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '220px', gap: 'var(--space-2)' }}>
-              <ShieldCheck size={40} style={{ color: 'var(--color-success)' }} />
-              <h5 style={{ margin: 0, fontWeight: 'var(--weight-semibold)' }}>Stock Levels Healthy</h5>
-              <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>No items require immediate purchase orders or inventory transfer runs.</p>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-xs)', textAlign: 'left' }}>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                    <th style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>SKU Code</th>
-                    <th style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Item Name</th>
-                    <th style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>Warehouse</th>
-                    <th style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)', textAlign: 'right' }}>On Hand</th>
-                    <th style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)', textAlign: 'right' }}>Threshold</th>
-                    <th style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)', textAlign: 'center' }}>Urgency</th>
+                    {activeTab === 'products' && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>SKU</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Price</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th></>
+                    )}
+                    {activeTab === 'warehouses' && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Code</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Location</th></>
+                    )}
+                    {activeTab === 'stock-levels' && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Product</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Warehouse</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Qty</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Reorder Point</th></>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
-                  {lowStockAlerts.map((item, idx) => {
-                    const isCritical = Number(item.quantity) === 0;
-                    return (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: 'var(--space-2.5) var(--space-3)', fontFamily: 'monospace', fontWeight: 'bold' }}>{item.product?.sku}</td>
-                        <td style={{ padding: 'var(--space-2.5) var(--space-3)', fontWeight: 'var(--weight-medium)' }}>{item.product?.name}</td>
-                        <td style={{ padding: 'var(--space-2.5) var(--space-3)', color: 'var(--color-text-secondary)' }}>{item.warehouse?.name}</td>
-                        <td style={{ padding: 'var(--space-2.5) var(--space-3)', textAlign: 'right', fontWeight: 'bold' }}>
-                          <span style={{ color: 'var(--color-danger-text)' }}>{item.quantity} {item.product?.unit || 'PCS'}</span>
-                        </td>
-                        <td style={{ padding: 'var(--space-2.5) var(--space-3)', textAlign: 'right', color: 'var(--color-text-secondary)' }}>{item.reorderPoint}</td>
-                        <td style={{ padding: 'var(--space-2.5) var(--space-3)', textAlign: 'center' }}>
-                          <Badge variant={isCritical ? 'danger' : 'warning'}>
-                            {isCritical ? 'CRITICAL' : 'REORDER'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {filteredData.map((item: Record<string, unknown>, i: number) => (
+                    <tr key={String(item.id || i)} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      {activeTab === 'products' && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String(item.name || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{String(item.sku || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>${Number(item.sellPrice || 0).toFixed(2)}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}><StatusBadge status={String(item.status || 'ACTIVE')} /></td>
+                        </>
+                      )}
+                      {activeTab === 'warehouses' && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String(item.name || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{String(item.code || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{String(item.location || '—')}</td>
+                        </>
+                      )}
+                      {activeTab === 'stock-levels' && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String((item.product as Record<string, unknown>)?.name || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{String((item.warehouse as Record<string, unknown>)?.name || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{String(item.currentQty || 0)}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', color: Number(item.currentQty || 0) <= Number(item.reorderPoint || 0) ? 'var(--color-danger)' : 'var(--color-text-secondary)' }}>{String(item.reorderPoint || 0)}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Create Product Modal */}
+      {isCreateModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300 }}>
+          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '440px', boxShadow: 'var(--shadow-xl)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>Add Product</h3>
+              <button onClick={() => { setIsCreateModalOpen(false); setModalSuccess(false); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}><X size={18} /></button>
             </div>
-          )}
-        </Card>
-
-        {/* Right Side: Quick Operations Hub */}
-        <Card padding="lg" style={{ border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div>
-            <h4 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)' }}>Quick Actions</h4>
-            <p style={{ margin: 'var(--space-0.5) 0 0', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Direct access to warehouse modules.</p>
+            <form onSubmit={handleCreateProduct} style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              {modalSuccess ? (
+                <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
+                  <CheckCircle size={40} style={{ color: 'var(--color-success)' }} />
+                  <p style={{ fontWeight: 'var(--weight-semibold)', margin: 'var(--space-2) 0 0' }}>Product Created!</p>
+                </div>
+              ) : (
+                <>
+                  {modalError && <div style={{ padding: 'var(--space-2)', background: 'var(--color-danger-light)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-xs)', color: 'var(--color-danger-text)' }}>{modalError}</div>}
+                  <div className="frappe-form-group"><label className="frappe-label">Product Name *</label><input type="text" required className="frappe-input" value={productName} onChange={(e) => setProductName(e.target.value)} /></div>
+                  <div className="frappe-grid-2" style={{ gap: 'var(--space-3)' }}>
+                    <div className="frappe-form-group"><label className="frappe-label">SKU *</label><input type="text" required className="frappe-input" value={sku} onChange={(e) => setSku(e.target.value)} /></div>
+                    <div className="frappe-form-group"><label className="frappe-label">Sell Price</label><input type="number" step="0.01" className="frappe-input" value={sellPrice} onChange={(e) => setSellPrice(parseFloat(e.target.value) || 0)} /></div>
+                  </div>
+                  <div className="frappe-form-group"><label className="frappe-label">Category</label><input type="text" className="frappe-input" value={category} onChange={(e) => setCategory(e.target.value)} /></div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                    <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                    <Button variant="primary" type="submit" disabled={submitting}>{submitting ? <Spinner size="sm" /> : 'Create'}</Button>
+                  </div>
+                </>
+              )}
+            </form>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-2)' }}>
-            <Link href="/inventory/products" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--space-3) var(--space-4)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast)'
-              }} className="hover:bg-accent hover:border-primary">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <Package size={16} style={{ color: 'var(--color-primary)' }} />
-                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>Products Catalog</span>
-                </div>
-                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-              </div>
-            </Link>
-
-            <Link href="/inventory/stock-entries" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--space-3) var(--space-4)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast)'
-              }} className="hover:bg-accent hover:border-primary">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <FileText size={16} style={{ color: 'var(--color-success)' }} />
-                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>Material Transactions</span>
-                </div>
-                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-              </div>
-            </Link>
-
-            <Link href="/inventory/stock-ledger" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--space-3) var(--space-4)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast)'
-              }} className="hover:bg-accent hover:border-primary">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <History size={16} style={{ color: 'var(--color-info)' }} />
-                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>Stock Ledger History</span>
-                </div>
-                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-              </div>
-            </Link>
-
-            <Link href="/inventory/cycle-counts" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--space-3) var(--space-4)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast)'
-              }} className="hover:bg-accent hover:border-primary">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <ClipboardCheck size={16} style={{ color: 'var(--color-warning)' }} />
-                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>Cycle Count Audits</span>
-                </div>
-                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-              </div>
-            </Link>
-
-            <Link href="/inventory/bin-locations" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--space-3) var(--space-4)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-bg)',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast)'
-              }} className="hover:bg-accent hover:border-primary">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <Layers size={16} style={{ color: 'var(--color-text-secondary)' }} />
-                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>Bin Configurations</span>
-                </div>
-                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-              </div>
-            </Link>
-          </div>
-        </Card>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

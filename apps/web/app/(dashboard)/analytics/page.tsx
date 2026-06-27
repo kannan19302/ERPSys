@@ -11,7 +11,9 @@ import {
   Sparkles,
   Target,
   X,
+  Plus
 } from 'lucide-react';
+import { Card, PageHeader, Button, Spinner, DashboardKPICard, DashboardChart, DrillDownModal } from '@unerp/ui';
 
 interface KPI {
   id: string;
@@ -43,7 +45,7 @@ interface Drilldown {
   rows: Record<string, string | number | boolean>[];
 }
 
-const API = 'http://localhost:3001/api/v1/analytics';
+const API = '/api/v1/analytics';
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -122,105 +124,64 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'var(--color-text-secondary)' }}>
-        <RefreshCw className="animate-spin" size={32} />
+        <Spinner size="lg" />
         <span style={{ marginLeft: 'var(--space-2)' }}>Loading Executive Dashboard...</span>
       </div>
     );
   }
 
+  // Monthly Sales trend mock/derived data for the main chart
+  const monthlySalesChartData = [
+    { name: 'Jan', Sales: 45000 },
+    { name: 'Feb', Sales: 60000 },
+    { name: 'Mar', Sales: 52000 },
+    { name: 'Apr', Sales: 78000 },
+    { name: 'May', Sales: 88000 },
+    { name: 'Jun', Sales: 92000 },
+    { name: 'Jul', Sales: 70000 },
+    { name: 'Aug', Sales: 85000 },
+    { name: 'Sep', Sales: 95000 },
+    { name: 'Oct', Sales: 110000 },
+    { name: 'Nov', Sales: 120000 },
+    { name: 'Dec', Sales: 130000 }
+  ];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Sparkles style={{ color: 'var(--color-primary)' }} />
-            Business Intelligence Dashboard
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-            Monitor KPIs against goals, drill into source records, and export live data sets.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-            background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
-            color: 'var(--color-text)', padding: 'var(--space-2) var(--space-4)',
-            borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--weight-semibold)'
-          }}>
-            <Calendar size={16} /> Date Range
-          </button>
-          <button onClick={() => exportDataset('invoices')} disabled={exporting} style={{
-            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-            background: 'var(--color-primary)', border: 'none',
-            color: '#ffffff', padding: 'var(--space-2) var(--space-4)',
-            borderRadius: 'var(--radius-md)', cursor: exporting ? 'wait' : 'pointer', fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--weight-semibold)'
-          }}>
-            <Download size={16} /> {exporting ? 'Exporting…' : 'Export CSV'}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Business Intelligence Dashboard"
+        description="Monitor KPIs against goals, drill into source records, and export live data sets."
+        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'BI Analytics' }]}
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button variant="outline" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Calendar size={16} /> Date Range
+            </Button>
+            <Button onClick={() => exportDataset('invoices')} disabled={exporting} variant="primary" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Download size={16} /> {exporting ? 'Exporting…' : 'Export CSV'}
+            </Button>
+          </div>
+        }
+      />
 
       {/* KPI Grid with goal tracking */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
         {kpis.map((kpi: KPI) => {
           const up = (kpi.changePct ?? 0) >= 0;
-          const progress = kpi.progressPct ?? 0;
           return (
-            <div key={kpi.id} onClick={() => openDrilldown(kpi)} style={{
-              background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column',
-              gap: 'var(--space-2)', position: 'relative', overflow: 'hidden', cursor: 'pointer',
-              transition: 'border-color var(--duration-fast)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
-            >
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>
-                {kpi.name}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' }}>
-                <span style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)' }}>
-                  {kpi.value}
-                </span>
-                <span style={{ fontSize: 'var(--text-xs)', color: up ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                  {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {up ? '+' : ''}{kpi.changePct ?? 0}%
-                </span>
-              </div>
-
-              {/* Goal progress bar */}
-              {kpi.target !== undefined && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'var(--space-1)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Target size={10} /> Goal: {kpi.targetValue}</span>
-                    <span style={{ fontWeight: 'var(--weight-semibold)', color: progress >= 100 ? 'var(--color-success)' : 'var(--color-text)' }}>{progress}%</span>
-                  </div>
-                  <div style={{ height: '6px', background: 'var(--color-bg)', borderRadius: '999px', overflow: 'hidden' }}>
-                    <div style={{
-                      width: `${progress}%`, height: '100%',
-                      background: progress >= 100 ? 'var(--color-success)' : 'var(--color-primary)',
-                      borderRadius: '999px', transition: 'width var(--duration-base)'
-                    }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Sparkline */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', height: '32px', gap: '3px', marginTop: 'var(--space-1)' }}>
-                {Array.isArray(kpi.trend) && kpi.trend.map((val: number, i: number, arr: number[]) => {
-                  const max = Math.max(...arr);
-                  const pct = max > 0 ? (val / max) * 100 : 10;
-                  return (
-                    <div key={i} style={{
-                      flex: 1, height: `${pct}%`, background: 'var(--color-primary-light)',
-                      borderRadius: '2px', borderTop: '2px solid var(--color-primary)'
-                    }} />
-                  );
-                })}
-              </div>
-            </div>
+            <DashboardKPICard
+              key={kpi.id}
+              title={kpi.name}
+              value={kpi.value}
+              icon={up ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+              color={up ? 'var(--color-success)' : 'var(--color-danger)'}
+              progress={kpi.progressPct}
+              progressLabel={`Goal: ${kpi.targetValue}`}
+              changeLabel={`${up ? '+' : ''}${kpi.changePct ?? 0}% from last month`}
+              sparkline={kpi.trend}
+              onClick={() => openDrilldown(kpi)}
+            />
           );
         })}
       </div>
@@ -246,34 +207,16 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* CSS Chart View */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{
-              height: '300px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-              padding: 'var(--space-4) var(--space-2)', borderLeft: '2px solid var(--color-border)',
-              borderBottom: '2px solid var(--color-border)', position: 'relative', marginTop: 'var(--space-4)'
-            }}>
-              <div style={{ position: 'absolute', left: 0, right: 0, top: '25%', borderTop: '1px dashed var(--color-border)' }} />
-              <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed var(--color-border)' }} />
-              <div style={{ position: 'absolute', left: 0, right: 0, top: '75%', borderTop: '1px dashed var(--color-border)' }} />
-
-              {[45, 60, 52, 78, 88, 92, 70, 85, 95, 110, 120, 130].map((val, idx) => (
-                <div key={idx} style={{
-                  width: '6%', height: `${(val / 130) * 100}%`,
-                  background: 'linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-light) 100%)',
-                  borderTopLeftRadius: 'var(--radius-sm)', borderTopRightRadius: 'var(--radius-sm)',
-                  display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center',
-                  position: 'relative', zIndex: 1
-                }} />
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: 'var(--space-4)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
-              {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((lbl, idx) => (
-                <span key={idx} style={{ width: '6%', textAlign: 'center' }}>{lbl}</span>
-              ))}
-            </div>
-          </div>
+          {/* Upgraded Recharts DashboardChart */}
+          <DashboardChart
+            title="Monthly Sales Distribution"
+            subtitle="Executive dashboard monthly sales revenue trends"
+            data={monthlySalesChartData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'Sales', name: 'Monthly Sales ($)', color: 'var(--color-primary)' }] }}
+            defaultChartType="area"
+            allowedChartTypes={['area', 'bar', 'line']}
+            height={300}
+          />
         </div>
 
         {/* Side Panel: Reports + export shortcuts */}
@@ -327,64 +270,13 @@ export default function AnalyticsPage() {
 
       {/* Drill-down modal */}
       {drilldown && (
-        <div onClick={() => setDrilldown(null)} style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-4)'
-        }}>
-          <div onClick={(e) => e.stopPropagation()} style={{
-            background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)', width: 'min(800px, 100%)',
-            maxHeight: '80vh', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <Target size={18} style={{ color: 'var(--color-primary)' }} />
-                {drilldown.kpi.name} — Source Records
-              </h2>
-              <button onClick={() => setDrilldown(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
-                <X size={20} />
-              </button>
-            </div>
-
-            {drilldown.loading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', padding: 'var(--space-6)', justifyContent: 'center' }}>
-                <RefreshCw className="animate-spin" size={20} /> Loading records…
-              </div>
-            )}
-
-            {!drilldown.loading && drilldown.data && (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-                  <thead>
-                    <tr>
-                      {drilldown.data.columns.map(c => (
-                        <th key={c} style={{ textAlign: 'left', padding: 'var(--space-2)', borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-secondary)', textTransform: 'capitalize', fontWeight: 'var(--weight-semibold)' }}>{c}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drilldown.data.rows.map((row, i) => (
-                      <tr key={i}>
-                        {drilldown.data!.columns.map(c => (
-                          <td key={c} style={{ padding: 'var(--space-2)', borderBottom: '1px solid var(--color-border)' }}>{String(row[c])}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {drilldown.data.rows.length === 0 && (
-                  <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-4)' }}>No records found.</p>
-                )}
-              </div>
-            )}
-
-            {!drilldown.loading && !drilldown.data && (
-              <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-4)' }}>
-                No drill-down available for this KPI.
-              </p>
-            )}
-          </div>
-        </div>
+        <DrillDownModal
+          isOpen={!!drilldown}
+          onClose={() => setDrilldown(null)}
+          title={`${drilldown.kpi.name} — Source Records`}
+          columns={drilldown.data?.columns.map(c => ({ key: c, label: c })) || []}
+          rows={drilldown.data?.rows || []}
+        />
       )}
     </div>
   );

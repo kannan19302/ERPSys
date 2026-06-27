@@ -66,7 +66,7 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Tab & sub-feature states
-  const [activeTab, setActiveTab] = useState<'tasks' | 'evm' | 'risks' | 'changes'>('tasks');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'tasks' | 'evm' | 'risks' | 'changes'>('dashboard');
   const [criticalPathIds, setCriticalPathIds] = useState<string[]>([]);
   const [projectHealth, setProjectHealth] = useState<string>('HEALTHY');
   const [evmMetrics, setEvmMetrics] = useState<EVMMetrics | null>(null);
@@ -129,7 +129,7 @@ export default function ProjectsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/projects', {
+      const res = await fetch('/api/v1/projects', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to fetch projects');
@@ -148,7 +148,7 @@ export default function ProjectsPage() {
   const fetchProjectDetails = async (projectId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${projectId}`, {
+      const res = await fetch(`/api/v1/projects/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -178,7 +178,7 @@ export default function ProjectsPage() {
   const fetchEVMData = async (projectId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${projectId}/evm`, {
+      const res = await fetch(`/api/v1/projects/${projectId}/evm`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -190,7 +190,7 @@ export default function ProjectsPage() {
   const fetchRisksData = async (projectId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${projectId}/risks`, {
+      const res = await fetch(`/api/v1/projects/${projectId}/risks`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -202,7 +202,7 @@ export default function ProjectsPage() {
   const fetchChangesData = async (projectId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${projectId}/change-requests`, {
+      const res = await fetch(`/api/v1/projects/${projectId}/change-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -215,7 +215,7 @@ export default function ProjectsPage() {
     if (!selectedProject) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${selectedProject.id}/critical-path`, {
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/critical-path`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -236,7 +236,7 @@ export default function ProjectsPage() {
     try {
       const token = localStorage.getItem('token');
       const baseline = JSON.stringify(selectedProject.tasks?.map(t => ({ taskId: t.id, dueDate: t.dueDate })));
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${selectedProject.id}/baseline`, {
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/baseline`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ export default function ProjectsPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/projects', {
+      const res = await fetch('/api/v1/projects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -290,7 +290,7 @@ export default function ProjectsPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${selectedProject.id}/tasks`, {
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -313,7 +313,7 @@ export default function ProjectsPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const empRes = await fetch('http://localhost:3001/api/v1/hr/employees', {
+      const empRes = await fetch('/api/v1/hr/employees', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const employees = await empRes.json();
@@ -321,7 +321,7 @@ export default function ProjectsPage() {
 
       if (!employeeId) throw new Error('No employee record found to log time against.');
 
-      const res = await fetch(`http://localhost:3001/api/v1/projects/tasks/${selectedTaskId}/timesheets`, {
+      const res = await fetch(`/api/v1/projects/tasks/${selectedTaskId}/timesheets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ export default function ProjectsPage() {
     if (!selectedProject) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${selectedProject.id}/risks`, {
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/risks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -375,7 +375,7 @@ export default function ProjectsPage() {
     if (!selectedProject) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${selectedProject.id}/change-requests`, {
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/change-requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -403,7 +403,7 @@ export default function ProjectsPage() {
     if (!selectedProject) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/change-requests/${changeRequestId}/approve`, {
+      const res = await fetch(`/api/v1/projects/change-requests/${changeRequestId}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -423,7 +423,7 @@ export default function ProjectsPage() {
     if (!selectedProject) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/projects/${selectedProject.id}/invoice`, {
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/invoice`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -603,11 +603,100 @@ export default function ProjectsPage() {
 
             {/* TAB SELECTOR */}
             <div style={{ display: 'flex', gap: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', paddingBottom: '2px' }}>
+              <button onClick={() => setActiveTab('dashboard')} style={{ background: 'none', border: 'none', color: activeTab === 'dashboard' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'dashboard' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Dashboard</button>
               <button onClick={() => setActiveTab('tasks')} style={{ background: 'none', border: 'none', color: activeTab === 'tasks' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'tasks' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Tasks Checklist</button>
               <button onClick={() => setActiveTab('evm')} style={{ background: 'none', border: 'none', color: activeTab === 'evm' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'evm' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>EVM & Billing</button>
               <button onClick={() => setActiveTab('risks')} style={{ background: 'none', border: 'none', color: activeTab === 'risks' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'risks' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Risk Register</button>
               <button onClick={() => setActiveTab('changes')} style={{ background: 'none', border: 'none', color: activeTab === 'changes' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'changes' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Change Control</button>
             </div>
+
+            {/* TAB 0: DASHBOARD */}
+            {activeTab === 'dashboard' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.3s ease-out' }}>
+                {/* Selected Project Sub-KPIs */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+                  <DashboardKPICard
+                    title="Task Completion"
+                    value={`${selectedProject.tasks ? selectedProject.tasks.filter(t => t.status === 'DONE').length : 0} / ${selectedProject.tasks ? selectedProject.tasks.length : 0}`}
+                    icon={<Activity size={18} />}
+                    color="var(--color-primary)"
+                    progress={selectedProject.tasks && selectedProject.tasks.length > 0 ? Math.round((selectedProject.tasks.filter(t => t.status === 'DONE').length / selectedProject.tasks.length) * 100) : 0}
+                    progressLabel="Completion Rate"
+                    drillDown={{
+                      modalTitle: 'Project Tasks',
+                      columns: [
+                        { key: 'name', label: 'Task Name' },
+                        { key: 'priority', label: 'Priority' },
+                        { key: 'status', label: 'Status' }
+                      ],
+                      rows: selectedProject.tasks ? selectedProject.tasks.map(t => ({ ...t })) : []
+                    }}
+                  />
+                  <DashboardKPICard
+                    title="EVM CPI (Cost Performance)"
+                    value={evmMetrics?.cpi ? Number(evmMetrics.cpi).toFixed(2) : '1.00'}
+                    icon={<DollarSign size={18} />}
+                    color={(evmMetrics?.cpi && Number(evmMetrics.cpi) < 1) ? 'var(--color-danger)' : 'var(--color-success)'}
+                    changeLabel="Values >= 1 are on budget"
+                  />
+                  <DashboardKPICard
+                    title="EVM SPI (Schedule Performance)"
+                    value={evmMetrics?.spi ? Number(evmMetrics.spi).toFixed(2) : '1.00'}
+                    icon={<Clock size={18} />}
+                    color={(evmMetrics?.spi && Number(evmMetrics.spi) < 1) ? 'var(--color-danger)' : 'var(--color-success)'}
+                    changeLabel="Values >= 1 are on schedule"
+                  />
+                  <DashboardKPICard
+                    title="Open Risks"
+                    value={String(risks.filter(r => r.status !== 'MITIGATED').length)}
+                    icon={<ShieldAlert size={18} />}
+                    color={risks.length > 0 ? 'var(--color-danger)' : 'var(--color-success)'}
+                    drillDown={{
+                      modalTitle: 'Project Risks',
+                      columns: [
+                        { key: 'title', label: 'Risk Description' },
+                        { key: 'probability', label: 'Probability' },
+                        { key: 'impact', label: 'Impact' },
+                        { key: 'status', label: 'Status' }
+                      ],
+                      rows: risks.map(r => ({ ...r }))
+                    }}
+                  />
+                </div>
+
+                {/* Charts */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--space-4)' }}>
+                  <DashboardChart
+                    title="EVM Metrics Overview"
+                    subtitle="Earned Value Management budget metrics"
+                    data={[
+                      { name: 'Planned Value', value: evmMetrics?.plannedValue || 0 },
+                      { name: 'Earned Value', value: evmMetrics?.earnedValue || 0 },
+                      { name: 'Actual Cost', value: evmMetrics?.actualCost || 0 },
+                    ]}
+                    config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Value', color: 'var(--color-primary)' }] }}
+                    defaultChartType="bar"
+                    allowedChartTypes={['bar', 'donut', 'pie']}
+                    height={280}
+                  />
+                  <DashboardChart
+                    title="Project Task Priorities"
+                    subtitle="Tasks grouped by urgency levels"
+                    data={(() => {
+                      const counts: Record<string, number> = {};
+                      selectedProject.tasks?.forEach(t => {
+                        counts[t.priority] = (counts[t.priority] || 0) + 1;
+                      });
+                      return Object.entries(counts).map(([name, value]) => ({ name, value }));
+                    })()}
+                    config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Tasks' }], valueKey: 'value', nameKey: 'name' }}
+                    defaultChartType="donut"
+                    allowedChartTypes={['donut', 'pie', 'bar']}
+                    height={280}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* TAB 1: TASKS CHECKLIST */}
             {activeTab === 'tasks' && (

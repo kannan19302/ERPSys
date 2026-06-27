@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Hammer, Play, CheckCircle2, Wrench, Truck, Plus, Calendar, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Card, PageHeader, Button, Spinner, DashboardKPICard, DashboardChart, ViewSwitcher } from '@unerp/ui';
 
 interface BOM {
   id: string;
@@ -96,7 +97,7 @@ interface ProductModel {
 }
 
 export default function ManufacturingDashboard() {
-  const [activeTab, setActiveTab] = useState<'work-orders' | 'capacity' | 'cmms' | 'subcontracting' | 'equipment'>('work-orders');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'work-orders' | 'capacity' | 'cmms' | 'subcontracting' | 'equipment'>('dashboard');
   const [boms, setBoms] = useState<BOM[]>([]);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loadBalancing, setLoadBalancing] = useState<LoadBalance[]>([]);
@@ -162,45 +163,62 @@ export default function ManufacturingDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
 
-      if (activeTab === 'work-orders') {
+      if (activeTab === 'dashboard') {
+        const [bomsRes, ordersRes, wsRes, loadRes, cmmsRes, subRes, toolsRes] = await Promise.all([
+          fetch('/api/v1/manufacturing/boms', { headers }),
+          fetch('/api/v1/manufacturing/work-orders', { headers }),
+          fetch('/api/v1/manufacturing/workstations', { headers }),
+          fetch('/api/v1/manufacturing/workstations/load-balancing', { headers }),
+          fetch('/api/v1/manufacturing/maintenance', { headers }),
+          fetch('/api/v1/manufacturing/subcontracting', { headers }),
+          fetch('/api/v1/manufacturing/tools', { headers }),
+        ]);
+
+        if (bomsRes.ok) setBoms(await bomsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (ordersRes.ok) setWorkOrders(await ordersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (wsRes.ok) setWorkstations(await wsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (loadRes.ok) setLoadBalancing(await loadRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (cmmsRes.ok) setMaintenance(await cmmsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (subRes.ok) setSubcontracting(await subRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+        if (toolsRes.ok) setTools(await toolsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+      } else if (activeTab === 'work-orders') {
         const [bomsRes, ordersRes, wsRes] = await Promise.all([
-          fetch('http://localhost:3001/api/v1/manufacturing/boms', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/manufacturing/work-orders', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/manufacturing/workstations', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/v1/manufacturing/boms', { headers }),
+          fetch('/api/v1/manufacturing/work-orders', { headers }),
+          fetch('/api/v1/manufacturing/workstations', { headers }),
         ]);
         if (bomsRes.ok) setBoms(await bomsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (ordersRes.ok) setWorkOrders(await ordersRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (wsRes.ok) setWorkstations(await wsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       } else if (activeTab === 'capacity') {
         const [loadRes, shiftsRes, wsRes] = await Promise.all([
-          fetch('http://localhost:3001/api/v1/manufacturing/workstations/load-balancing', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/manufacturing/shifts', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/manufacturing/workstations', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/v1/manufacturing/workstations/load-balancing', { headers }),
+          fetch('/api/v1/manufacturing/shifts', { headers }),
+          fetch('/api/v1/manufacturing/workstations', { headers }),
         ]);
         if (loadRes.ok) setLoadBalancing(await loadRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (shiftsRes.ok) setShifts(await shiftsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (wsRes.ok) setWorkstations(await wsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       } else if (activeTab === 'cmms') {
         const [cmmsRes, wsRes] = await Promise.all([
-          fetch('http://localhost:3001/api/v1/manufacturing/maintenance', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/manufacturing/workstations', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/v1/manufacturing/maintenance', { headers }),
+          fetch('/api/v1/manufacturing/workstations', { headers }),
         ]);
         if (cmmsRes.ok) setMaintenance(await cmmsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (wsRes.ok) setWorkstations(await wsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       } else if (activeTab === 'subcontracting') {
         const [subRes, vendorRes, productRes] = await Promise.all([
-          fetch('http://localhost:3001/api/v1/manufacturing/subcontracting', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/crm/vendors', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:3001/api/v1/inventory/products', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/v1/manufacturing/subcontracting', { headers }),
+          fetch('/api/v1/crm/vendors', { headers }),
+          fetch('/api/v1/inventory/products', { headers }),
         ]);
         if (subRes.ok) setSubcontracting(await subRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (vendorRes.ok) setVendors(await vendorRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
         if (productRes.ok) setProducts(await productRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
       } else if (activeTab === 'equipment') {
-        const res = await fetch('http://localhost:3001/api/v1/manufacturing/tools', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch('/api/v1/manufacturing/tools', { headers });
         if (res.ok) setTools(await res.json());
       }
     } catch {
@@ -214,7 +232,7 @@ export default function ManufacturingDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/manufacturing/work-orders', {
+      const res = await fetch('/api/v1/manufacturing/work-orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,7 +257,7 @@ export default function ManufacturingDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/manufacturing/maintenance', {
+      const res = await fetch('/api/v1/manufacturing/maintenance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +279,7 @@ export default function ManufacturingDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/manufacturing/subcontracting', {
+      const res = await fetch('/api/v1/manufacturing/subcontracting', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -294,7 +312,7 @@ export default function ManufacturingDashboard() {
     if (!issueSubOrder) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/v1/manufacturing/subcontracting/${issueSubOrder.id}/issue`, {
+      const res = await fetch(`/api/v1/manufacturing/subcontracting/${issueSubOrder.id}/issue`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -323,7 +341,7 @@ export default function ManufacturingDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/v1/manufacturing/shifts', {
+      const res = await fetch('/api/v1/manufacturing/shifts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -344,24 +362,76 @@ export default function ManufacturingDashboard() {
     }
   };
 
+  // Computed values
+  const averageOee = useMemo(() => {
+    const validScores = workOrders.filter(w => w.oeeScore !== null && w.oeeScore !== undefined).map(w => Number(w.oeeScore));
+    if (validScores.length === 0) return 85; // default OEE target
+    return Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length);
+  }, [workOrders]);
+
+  const totalScrap = useMemo(() => {
+    return workOrders.reduce((sum, w) => sum + (Number(w.scrapQuantity) || 0), 0);
+  }, [workOrders]);
+
+  const totalCostVariance = useMemo(() => {
+    return workOrders.reduce((sum, w) => sum + (Number(w.costVariance) || 0), 0);
+  }, [workOrders]);
+
+  const activeMaintenanceCount = useMemo(() => {
+    return maintenance.filter(m => m.status !== 'RESOLVED').length;
+  }, [maintenance]);
+
+  // Chart data
+  const oeeTrendData = useMemo(() => {
+    return workOrders
+      .filter(w => w.oeeScore !== null && w.oeeScore !== undefined)
+      .slice(0, 10)
+      .map(w => ({
+        name: w.workOrderNumber,
+        OEE: Number(w.oeeScore),
+      }));
+  }, [workOrders]);
+
+  const capacityLoadChartData = useMemo(() => {
+    return loadBalancing.map(lb => ({
+      name: lb.workstation,
+      Allocated: Math.round(lb.allocatedHours),
+      Capacity: Math.round(lb.capacityHours),
+      Utilization: Math.round(lb.utilizationRate),
+    }));
+  }, [loadBalancing]);
+
+  const costComparisonData = useMemo(() => {
+    return workOrders
+      .filter(w => w.standardCost && w.actualCost)
+      .slice(0, 8)
+      .map(w => ({
+        name: w.workOrderNumber,
+        Standard: Number(w.standardCost),
+        Actual: Number(w.actualCost),
+      }));
+  }, [workOrders]);
+
+  const workOrderStatusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    workOrders.forEach(w => {
+      counts[w.status] = (counts[w.status] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [workOrders]);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Hammer size={28} style={{ color: 'var(--color-primary)' }} />
-            Manufacturing Operations
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>
-            Dispatch production runs, evaluate shifts capacity, execute maintenance, track tooling metrics, and subcontracting flows.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Manufacturing Operations"
+        description="Dispatch production runs, evaluate shifts capacity, execute maintenance, track tooling metrics, and subcontracting flows."
+        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Manufacturing' }]}
+      />
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', paddingBottom: '2px' }}>
-        {['work-orders', 'capacity', 'cmms', 'subcontracting', 'equipment'].map((tab) => (
+        {['dashboard', 'work-orders', 'capacity', 'cmms', 'subcontracting', 'equipment'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -384,9 +454,134 @@ export default function ManufacturingDashboard() {
 
       {/* Tab Contents */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>Loading details...</div>
+        <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>
       ) : (
         <div>
+          {/* TAB 0: DASHBOARD */}
+          {activeTab === 'dashboard' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+              {/* KPI metrics row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+                <DashboardKPICard
+                  title="Average Machine OEE"
+                  value={`${averageOee}%`}
+                  icon={<ShieldCheck size={18} />}
+                  color="var(--color-success)"
+                  progress={averageOee}
+                  progressLabel="Target: 85%"
+                  drillDown={{
+                    modalTitle: 'Work Order OEE Scores',
+                    columns: [
+                      { key: 'workOrderNumber', label: 'Work Order' },
+                      { key: 'workstation', label: 'Workstation', render: (v: any) => v?.name || '—' },
+                      { key: 'oeeScore', label: 'OEE Score', render: (v: any) => v ? `${Number(v)}%` : '—' }
+                    ],
+                    rows: workOrders.filter(w => w.oeeScore !== null && w.oeeScore !== undefined).map(w => ({ ...w }))
+                  }}
+                />
+                <DashboardKPICard
+                  title="Active Work Orders"
+                  value={String(workOrders.filter(w => w.status === 'IN_PROGRESS').length)}
+                  icon={<Play size={18} />}
+                  color="var(--color-primary)"
+                  drillDown={{
+                    modalTitle: 'Active Work Orders',
+                    columns: [
+                      { key: 'workOrderNumber', label: 'Work Order' },
+                      { key: 'bom', label: 'BOM', render: (v: any) => v?.name || '—' },
+                      { key: 'quantity', label: 'Qty' },
+                      { key: 'status', label: 'Status' }
+                    ],
+                    rows: workOrders.filter(w => w.status === 'IN_PROGRESS').map(w => ({ ...w }))
+                  }}
+                />
+                <DashboardKPICard
+                  title="Production Scrap Qty"
+                  value={String(totalScrap)}
+                  icon={<AlertTriangle size={18} />}
+                  color="var(--color-danger)"
+                  drillDown={{
+                    modalTitle: 'Scrapped Quantities',
+                    columns: [
+                      { key: 'workOrderNumber', label: 'Work Order' },
+                      { key: 'lotNumber', label: 'Lot Number' },
+                      { key: 'scrapQuantity', label: 'Scrap Qty' }
+                    ],
+                    rows: workOrders.filter(w => Number(w.scrapQuantity || 0) > 0).map(w => ({ ...w }))
+                  }}
+                />
+                <DashboardKPICard
+                  title="Cost Variance"
+                  value={`$${totalCostVariance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                  icon={<TrendingUp size={18} />}
+                  color={totalCostVariance > 0 ? 'var(--color-danger)' : 'var(--color-success)'}
+                  drillDown={{
+                    modalTitle: 'Production Cost Variance',
+                    columns: [
+                      { key: 'workOrderNumber', label: 'Work Order' },
+                      { key: 'standardCost', label: 'Standard Cost', render: (v: any) => `$${Number(v).toLocaleString()}` },
+                      { key: 'actualCost', label: 'Actual Cost', render: (v: any) => `$${Number(v).toLocaleString()}` },
+                      { key: 'costVariance', label: 'Variance', render: (v: any) => `$${Number(v).toLocaleString()}` }
+                    ],
+                    rows: workOrders.filter(w => w.costVariance !== null && w.costVariance !== undefined).map(w => ({ ...w }))
+                  }}
+                />
+              </div>
+
+              {/* Dashboard Charts */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--space-4)' }}>
+                <DashboardChart
+                  title="Finite Workstation Capacity"
+                  subtitle="Allocated vs Total hours capacity"
+                  data={capacityLoadChartData}
+                  config={{
+                    xAxisKey: 'name',
+                    series: [
+                      { dataKey: 'Allocated', name: 'Allocated Hours', color: 'var(--color-primary)' },
+                      { dataKey: 'Capacity', name: 'Capacity Hours', color: 'var(--color-border)' },
+                    ]
+                  }}
+                  defaultChartType="bar"
+                  allowedChartTypes={['bar', 'stacked-bar', 'line']}
+                  height={280}
+                />
+                <DashboardChart
+                  title="OEE Score Trend"
+                  subtitle="Overall Equipment Effectiveness across orders"
+                  data={oeeTrendData}
+                  config={{ xAxisKey: 'name', series: [{ dataKey: 'OEE', name: 'OEE %', color: '#22c55e' }] }}
+                  defaultChartType="line"
+                  allowedChartTypes={['line', 'area', 'bar']}
+                  height={280}
+                />
+                <DashboardChart
+                  title="Cost Variance Analysis"
+                  subtitle="Standard vs Actual production costs"
+                  data={costComparisonData}
+                  config={{
+                    xAxisKey: 'name',
+                    series: [
+                      { dataKey: 'Standard', name: 'Standard Cost', color: 'var(--color-info-text)' },
+                      { dataKey: 'Actual', name: 'Actual Cost', color: 'var(--color-warning)' },
+                    ]
+                  }}
+                  defaultChartType="bar"
+                  allowedChartTypes={['bar', 'composed', 'line']}
+                  height={280}
+                />
+                <DashboardChart
+                  title="Work Order Status Breakout"
+                  subtitle="Total work orders grouped by stage"
+                  data={workOrderStatusData}
+                  config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Orders' }], valueKey: 'value', nameKey: 'name' }}
+                  defaultChartType="donut"
+                  allowedChartTypes={['donut', 'pie', 'bar']}
+                  height={280}
+                />
+              </div>
+            </div>
+          )}
+
           {/* TAB 1: WORK ORDERS */}
           {activeTab === 'work-orders' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>

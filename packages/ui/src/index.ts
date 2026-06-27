@@ -36,5 +36,13 @@ export { Stepper, FormSection, AutosaveIndicator, type StepperProps, type Steppe
 // Sprint 6 — Dashboards & data visualization
 export { KPICard, MiniBarChart, MiniDonutChart, Sparkline, type KPICardProps, type MiniBarChartProps, type MiniDonutChartProps, type SparklineProps, type BarChartData, type DonutSegment } from './components/charts';
 
+// Sprint 7 — Advanced Dashboard Infrastructure
+export { DashboardChart, type DashboardChartProps, type DashboardChartConfig, type ChartSeries } from './components/dashboard-chart';
+export { DashboardKPICard, type DashboardKPICardProps } from './components/dashboard-kpi-card';
+export { ViewSwitcher, type ViewSwitcherProps, type ViewMode } from './components/view-switcher';
+export { ChartTypePicker, type ChartTypePickerProps, type ChartType, type ChartTypeOption } from './components/chart-type-picker';
+export { KanbanBoard, type KanbanBoardProps, type KanbanColumn, type KanbanItem } from './components/kanban-board';
+export { DrillDownModal, type DrillDownModalProps, type DrillDownColumn } from './components/drill-down-modal';
+
 // Website Builder Blocks
 export * from './blocks';

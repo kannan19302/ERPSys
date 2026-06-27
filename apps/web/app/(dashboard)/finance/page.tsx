@@ -1,18 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, PageHeader, StatusBadge, Button, Spinner } from '@unerp/ui';
+import React, { useState, useMemo } from 'react';
+import { PageHeader, StatusBadge, Button, Spinner, DashboardKPICard, DashboardChart, ViewSwitcher, type ViewMode } from '@unerp/ui';
 import { useInvoices, useCustomers } from '../../../src/lib/hooks/useModuleData';
 import { apiPost } from '../../../src/lib/api';
 import {
   FileText,
   Search,
-  
-  
   DollarSign,
   Calendar,
   AlertCircle,
-  
   Trash2,
   CheckCircle,
   X,
@@ -52,7 +49,8 @@ export default function FinancePage() {
   const loading = loadingInvoices;
   const error = invoiceError ? 'Could not connect to API server.' : null;
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [activeView, setActiveView] = useState<ViewMode>('chart');
+
   // Invoice Creation Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -62,7 +60,7 @@ export default function FinancePage() {
   const [lineItems, setLineItems] = useState<Array<{ description: string; quantity: number; unitPrice: number; taxRate: number }>>([
     { description: 'Consulting Services', quantity: 1, unitPrice: 1000, taxRate: 15 }
   ]);
-  
+
   // Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceData | null>(null);
@@ -77,6 +75,48 @@ export default function FinancePage() {
 
   const fetchData = () => refetchInvoices();
 
+  // ── Computed stats ──
+  const safeInvoices = Array.isArray(invoices) ? invoices as InvoiceData[] : [];
+
+  const totalOutstanding = safeInvoices.reduce((acc, inv) => acc + (inv.status !== 'PAID' ? (inv.totalAmount - inv.paidAmount) : 0), 0);
+  const totalReceived = safeInvoices.reduce((acc, inv) => acc + inv.paidAmount, 0);
+  const draftCount = safeInvoices.filter(inv => inv.status === 'DRAFT').length;
+  const overdueCount = safeInvoices.filter(inv => inv.status === 'OVERDUE').length;
+
+  // ── Chart data computed from real invoices ──
+  const statusChartData = useMemo(() => {
+    const statusCounts: Record<string, number> = {};
+    safeInvoices.forEach(inv => {
+      statusCounts[inv.status] = (statusCounts[inv.status] || 0) + 1;
+    });
+    return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+  }, [safeInvoices]);
+
+  const monthlyRevenueData = useMemo(() => {
+    const months: Record<string, number> = {};
+    safeInvoices.forEach(inv => {
+      const month = inv.issueDate ? inv.issueDate.substring(0, 7) : 'Unknown';
+      months[month] = (months[month] || 0) + inv.totalAmount;
+    });
+    return Object.entries(months)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, revenue]) => ({ name, revenue: Math.round(revenue) }));
+  }, [safeInvoices]);
+
+  const paymentCollectionData = useMemo(() => {
+    const months: Record<string, { paid: number; outstanding: number }> = {};
+    safeInvoices.forEach(inv => {
+      const month = inv.issueDate ? inv.issueDate.substring(0, 7) : 'Unknown';
+      if (!months[month]) months[month] = { paid: 0, outstanding: 0 };
+      months[month].paid += inv.paidAmount;
+      months[month].outstanding += (inv.totalAmount - inv.paidAmount);
+    });
+    return Object.entries(months)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, vals]) => ({ name, paid: Math.round(vals.paid), outstanding: Math.round(vals.outstanding) }));
+  }, [safeInvoices]);
+
+  // ── Handlers ──
   const handleAddLineItem = () => {
     setLineItems([...lineItems, { description: '', quantity: 1, unitPrice: 0, taxRate: 0 }]);
   };
@@ -88,10 +128,7 @@ export default function FinancePage() {
 
   const handleLineItemChange = (index: number, field: string, val: string | number) => {
     const nextLines = [...lineItems];
-    nextLines[index] = {
-      ...nextLines[index]!,
-      [field]: val
-    };
+    nextLines[index] = { ...nextLines[index]!, [field]: val };
     setLineItems(nextLines);
   };
 
@@ -105,31 +142,18 @@ export default function FinancePage() {
     setSubmitting(true);
     setModalError(null);
 
-    const payload = {
-      invoiceNumber,
-      customerId,
-      dueDate,
-      notes,
-      lineItems
-    };
-
     try {
-      await apiPost('/finance/invoices', payload);
-      
+      await apiPost('/finance/invoices', { invoiceNumber, customerId, dueDate, notes, lineItems });
       setModalSuccess(true);
       setTimeout(() => {
         setIsCreateModalOpen(false);
-        setInvoiceNumber('');
-        setCustomerId('');
-        setDueDate('');
-        setNotes('');
+        setInvoiceNumber(''); setCustomerId(''); setDueDate(''); setNotes('');
         setLineItems([{ description: 'Consulting Services', quantity: 1, unitPrice: 1000, taxRate: 15 }]);
         setModalSuccess(false);
         fetchData();
       }, 1500);
     } catch {
-      // save failed — surface the error instead of fabricating a result
-      setError('Action could not be completed. Please try again.');
+      setModalError('Action could not be completed. Please try again.');
       setSubmitting(false);
     } finally {
       setSubmitting(false);
@@ -151,17 +175,14 @@ export default function FinancePage() {
     setSubmitting(true);
     setModalError(null);
 
-    const payload = {
-      invoiceId: selectedInvoice.id,
-      amount: Number(paymentAmount),
-      method: paymentMethod,
-      reference: paymentRef,
-      notes: paymentNotes
-    };
-
     try {
-      await apiPost('/finance/payments', payload);
-      
+      await apiPost('/finance/payments', {
+        invoiceId: selectedInvoice.id,
+        amount: Number(paymentAmount),
+        method: paymentMethod,
+        reference: paymentRef,
+        notes: paymentNotes
+      });
       setModalSuccess(true);
       setTimeout(() => {
         setIsPaymentModalOpen(false);
@@ -170,15 +191,14 @@ export default function FinancePage() {
         fetchData();
       }, 1500);
     } catch {
-      // save failed — surface the error instead of fabricating a result
-      setError('Action could not be completed. Please try again.');
+      setModalError('Action could not be completed. Please try again.');
       setSubmitting(false);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredInvoices = (Array.isArray(invoices) ? invoices : []).filter(inv => {
+  const filteredInvoices = safeInvoices.filter(inv => {
     const query = searchQuery.toLowerCase();
     return (
       inv.invoiceNumber.toLowerCase().includes(query) ||
@@ -194,9 +214,12 @@ export default function FinancePage() {
         description="Oversee corporate billings, issue customer invoices, monitor payment collection, and track transaction logs."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Finance' }]}
         actions={
-          <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            Create Invoice
-          </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <ViewSwitcher activeView={activeView} onViewChange={setActiveView} availableViews={['list', 'chart']} />
+            <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              Create Invoice
+            </Button>
+          </div>
         }
       />
 
@@ -207,119 +230,199 @@ export default function FinancePage() {
         </div>
       )}
 
-      {/* Stats Quick Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total Outstanding</span>
-            <div style={{ background: 'var(--color-warning-light)', color: 'var(--color-warning-text)', padding: '4px', borderRadius: '4px' }}>
-              <DollarSign size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            ${(Array.isArray(invoices) ? invoices : []).reduce((acc, inv) => acc + (inv.status !== 'PAID' ? (inv.totalAmount - inv.paidAmount) : 0), 0).toLocaleString()}
-          </h4>
-        </Card>
-
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Total Received</span>
-            <div style={{ background: 'var(--color-success-light)', color: 'var(--color-success)', padding: '4px', borderRadius: '4px' }}>
-              <CheckCircle size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            ${(Array.isArray(invoices) ? invoices : []).reduce((acc, inv) => acc + inv.paidAmount, 0).toLocaleString()}
-          </h4>
-        </Card>
-
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-medium)' }}>Billing Drafts</span>
-            <div style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px', borderRadius: '4px' }}>
-              <FileText size={14} />
-            </div>
-          </div>
-          <h4 style={{ fontSize: 'var(--text-xl)', margin: 'var(--space-2) 0 0' }}>
-            {(Array.isArray(invoices) ? invoices : []).filter(inv => inv.status === 'DRAFT').length}
-          </h4>
-        </Card>
+      {/* KPI Cards with drill-down */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+        <DashboardKPICard
+          title="Total Outstanding"
+          value={`$${totalOutstanding.toLocaleString()}`}
+          icon={<DollarSign size={18} />}
+          color="#f59e0b"
+          loading={loading}
+          drillDown={{
+            modalTitle: 'Outstanding Invoices',
+            columns: [
+              { key: 'invoiceNumber', label: 'Invoice No.' },
+              { key: 'customerName', label: 'Customer' },
+              { key: 'totalAmount', label: 'Total', render: (v) => `$${Number(v).toLocaleString()}` },
+              { key: 'paidAmount', label: 'Paid', render: (v) => `$${Number(v).toLocaleString()}` },
+              { key: 'status', label: 'Status' },
+            ],
+            rows: safeInvoices.filter(i => i.status !== 'PAID').map(i => ({ ...i })),
+          }}
+        />
+        <DashboardKPICard
+          title="Total Received"
+          value={`$${totalReceived.toLocaleString()}`}
+          icon={<CheckCircle size={18} />}
+          color="#22c55e"
+          loading={loading}
+          drillDown={{
+            modalTitle: 'Paid Invoices',
+            columns: [
+              { key: 'invoiceNumber', label: 'Invoice No.' },
+              { key: 'customerName', label: 'Customer' },
+              { key: 'paidAmount', label: 'Amount Paid', render: (v) => `$${Number(v).toLocaleString()}` },
+              { key: 'status', label: 'Status' },
+            ],
+            rows: safeInvoices.filter(i => i.paidAmount > 0).map(i => ({ ...i })),
+          }}
+        />
+        <DashboardKPICard
+          title="Billing Drafts"
+          value={String(draftCount)}
+          icon={<FileText size={18} />}
+          color="#4f46e5"
+          loading={loading}
+          drillDown={{
+            modalTitle: 'Draft Invoices',
+            columns: [
+              { key: 'invoiceNumber', label: 'Invoice No.' },
+              { key: 'customerName', label: 'Customer' },
+              { key: 'totalAmount', label: 'Total', render: (v) => `$${Number(v).toLocaleString()}` },
+            ],
+            rows: safeInvoices.filter(i => i.status === 'DRAFT').map(i => ({ ...i })),
+          }}
+        />
+        <DashboardKPICard
+          title="Overdue"
+          value={String(overdueCount)}
+          icon={<AlertCircle size={18} />}
+          color="#ef4444"
+          loading={loading}
+          drillDown={{
+            modalTitle: 'Overdue Invoices',
+            columns: [
+              { key: 'invoiceNumber', label: 'Invoice No.' },
+              { key: 'customerName', label: 'Customer' },
+              { key: 'dueDate', label: 'Due Date' },
+              { key: 'totalAmount', label: 'Total', render: (v) => `$${Number(v).toLocaleString()}` },
+            ],
+            rows: safeInvoices.filter(i => i.status === 'OVERDUE').map(i => ({ ...i })),
+          }}
+        />
       </div>
 
-      {/* and Search Panel */}
-      <Card padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
-          <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
-          <input
-            type="text"
-            className="frappe-input"
-            placeholder="Search by invoice number or client..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: 'var(--space-9)' }}
+      {/* Charts Section — only in Chart view */}
+      {activeView === 'chart' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--space-4)' }}>
+          <DashboardChart
+            title="Revenue by Period"
+            subtitle="Invoice totals grouped by issue month"
+            data={monthlyRevenueData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'revenue', name: 'Revenue' }] }}
+            defaultChartType="bar"
+            allowedChartTypes={['bar', 'line', 'area']}
+            height={280}
+            loading={loading}
+          />
+          <DashboardChart
+            title="Invoice Status Distribution"
+            subtitle="Breakdown of all invoice statuses"
+            data={statusChartData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Count' }], valueKey: 'value', nameKey: 'name' }}
+            defaultChartType="donut"
+            allowedChartTypes={['pie', 'donut', 'bar']}
+            height={280}
+            loading={loading}
+          />
+          <DashboardChart
+            title="Payment Collection Trend"
+            subtitle="Paid vs outstanding amounts by month"
+            data={paymentCollectionData}
+            config={{
+              xAxisKey: 'name',
+              series: [
+                { dataKey: 'paid', name: 'Paid', color: '#22c55e' },
+                { dataKey: 'outstanding', name: 'Outstanding', color: '#f59e0b' },
+              ]
+            }}
+            defaultChartType="area"
+            allowedChartTypes={['area', 'stacked-bar', 'line', 'composed']}
+            height={280}
+            loading={loading}
           />
         </div>
-      </Card>
+      )}
 
-      {/* Invoices List Table */}
-      <Card padding="none" style={{ overflowX: 'auto' }}>
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-            <Spinner size="lg" />
+      {/* List View — Search + Table */}
+      {activeView === 'list' && (
+        <>
+          {/* Search Panel */}
+          <div className="frappe-card" style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
+              <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+              <input
+                type="text"
+                className="frappe-input"
+                placeholder="Search by invoice number or client..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ paddingLeft: 'var(--space-9)' }}
+              />
+            </div>
           </div>
-        ) : filteredInvoices.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
-            <FileText size={48} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-4)' }} />
-            <h4 style={{ margin: 0, fontWeight: 'var(--weight-semibold)' }}>No Invoices Issued</h4>
-            <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-              Create an invoice to bill your corporate customers.
-            </p>
+
+          {/* Invoices Table */}
+          <div className="frappe-card" style={{ padding: 0, overflowX: 'auto' }}>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
+                <Spinner size="lg" />
+              </div>
+            ) : filteredInvoices.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
+                <FileText size={48} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-4)' }} />
+                <h4 style={{ margin: 0, fontWeight: 'var(--weight-semibold)' }}>No Invoices Issued</h4>
+                <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                  Create an invoice to bill your corporate customers.
+                </p>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Invoice No.</th>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Customer</th>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Due Date</th>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Total Amount</th>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Paid</th>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
+                    <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredInvoices.map((inv) => (
+                    <tr key={inv.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{inv.invoiceNumber}</td>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{inv.customerName}</td>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Calendar size={12} /> {inv.dueDate}
+                        </div>
+                      </td>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                        ${inv.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>
+                        ${inv.paidAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                        <StatusBadge status={inv.status} />
+                      </td>
+                      <td style={{ padding: 'var(--space-4) var(--space-5)', textAlign: 'right' }}>
+                        {inv.status !== 'PAID' && (
+                          <Button variant="outline" size="sm" onClick={() => handleOpenPaymentModal(inv)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <CreditCard size={12} /> Pay
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Invoice No.</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Customer</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Due Date</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Total Amount</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Paid</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
-                <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredInvoices.map((inv) => (
-                <tr key={inv.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{inv.invoiceNumber}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{inv.customerName}</td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Calendar size={12} /> {inv.dueDate}
-                    </div>
-                  </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                    ${inv.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>
-                    ${inv.paidAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                    <StatusBadge status={inv.status} />
-                  </td>
-                  <td style={{ padding: 'var(--space-4) var(--space-5)', textAlign: 'right' }}>
-                    {inv.status !== 'PAID' && (
-                      <Button variant="outline" size="sm" onClick={() => handleOpenPaymentModal(inv)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <CreditCard size={12} /> Pay
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Card>
+        </>
+      )}
 
       {/* Invoice Creation Modal Overlay */}
       {isCreateModalOpen && (
@@ -353,25 +456,13 @@ export default function FinancePage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                     <div className="frappe-form-group">
                       <label className="frappe-label">Invoice Number *</label>
-                      <input
-                        type="text"
-                        required
-                        className="frappe-input"
-                        placeholder="INV-2026-004"
-                        value={invoiceNumber}
-                        onChange={(e) => setInvoiceNumber(e.target.value)}
-                      />
+                      <input type="text" required className="frappe-input" placeholder="INV-2026-004" value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
                     </div>
                     <div className="frappe-form-group">
                       <label className="frappe-label">Customer Account *</label>
-                      <select
-                        required
-                        className="frappe-input"
-                        value={customerId}
-                        onChange={(e) => setCustomerId(e.target.value)}
-                      >
+                      <select required className="frappe-input" value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
                         <option value="">-- Choose Customer --</option>
-                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        {(customers as CustomerData[]).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
                   </div>
@@ -379,23 +470,11 @@ export default function FinancePage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                     <div className="frappe-form-group">
                       <label className="frappe-label">Due Date *</label>
-                      <input
-                        type="date"
-                        required
-                        className="frappe-input"
-                        value={dueDate}
-                        onChange={(e) => setDueDate(e.target.value)}
-                      />
+                      <input type="date" required className="frappe-input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                     </div>
                     <div className="frappe-form-group">
                       <label className="frappe-label">Notes (Invoice Footer)</label>
-                      <input
-                        type="text"
-                        className="frappe-input"
-                        placeholder="Thank you for your business!"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                      />
+                      <input type="text" className="frappe-input" placeholder="Thank you for your business!" value={notes} onChange={(e) => setNotes(e.target.value)} />
                     </div>
                   </div>
 
@@ -411,46 +490,11 @@ export default function FinancePage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2.5)' }}>
                       {lineItems.map((item, idx) => (
                         <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.2fr 1fr 0.3fr', gap: 'var(--space-2)', alignItems: 'center' }}>
-                          <input
-                            type="text"
-                            required
-                            className="frappe-input"
-                            placeholder="Description"
-                            value={item.description}
-                            onChange={(e) => handleLineItemChange(idx, 'description', e.target.value)}
-                          />
-                          <input
-                            type="number"
-                            required
-                            min="1"
-                            className="frappe-input"
-                            placeholder="Qty"
-                            value={item.quantity}
-                            onChange={(e) => handleLineItemChange(idx, 'quantity', parseInt(e.target.value) || 0)}
-                          />
-                          <input
-                            type="number"
-                            required
-                            min="0.01"
-                            step="0.01"
-                            className="frappe-input"
-                            placeholder="Price"
-                            value={item.unitPrice}
-                            onChange={(e) => handleLineItemChange(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          />
-                          <input
-                            type="number"
-                            required
-                            className="frappe-input"
-                            placeholder="Tax %"
-                            value={item.taxRate}
-                            onChange={(e) => handleLineItemChange(idx, 'taxRate', parseFloat(e.target.value) || 0)}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveLineItem(idx)}
-                            style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', display: 'flex', justifyContent: 'center' }}
-                          >
+                          <input type="text" required className="frappe-input" placeholder="Description" value={item.description} onChange={(e) => handleLineItemChange(idx, 'description', e.target.value)} />
+                          <input type="number" required min="1" className="frappe-input" placeholder="Qty" value={item.quantity} onChange={(e) => handleLineItemChange(idx, 'quantity', parseInt(e.target.value) || 0)} />
+                          <input type="number" required min="0.01" step="0.01" className="frappe-input" placeholder="Price" value={item.unitPrice} onChange={(e) => handleLineItemChange(idx, 'unitPrice', parseFloat(e.target.value) || 0)} />
+                          <input type="number" required className="frappe-input" placeholder="Tax %" value={item.taxRate} onChange={(e) => handleLineItemChange(idx, 'taxRate', parseFloat(e.target.value) || 0)} />
+                          <button type="button" onClick={() => handleRemoveLineItem(idx)} style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', display: 'flex', justifyContent: 'center' }}>
                             <Trash2 size={15} />
                           </button>
                         </div>
@@ -459,9 +503,7 @@ export default function FinancePage() {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
-                    <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>
-                      Cancel
-                    </Button>
+                    <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
                     <Button variant="primary" type="submit" disabled={submitting}>
                       {submitting ? <Spinner size="sm" /> : 'Record Draft Invoice'}
                     </Button>
@@ -489,9 +531,7 @@ export default function FinancePage() {
                 <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
                   <CheckCircle size={40} style={{ color: 'var(--color-success)', marginBottom: 'var(--space-3)' }} />
                   <p style={{ fontWeight: 'var(--weight-semibold)', margin: '0 0 var(--space-1)' }}>Payment Logged</p>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
-                    The transaction was recorded and status updated.
-                  </p>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>The transaction was recorded and status updated.</p>
                 </div>
               ) : (
                 <>
@@ -514,25 +554,12 @@ export default function FinancePage() {
 
                   <div className="frappe-form-group">
                     <label className="frappe-label">Payment Amount ($) *</label>
-                    <input
-                      type="number"
-                      required
-                      min="0.01"
-                      step="0.01"
-                      className="frappe-input"
-                      max={selectedInvoice.totalAmount - selectedInvoice.paidAmount}
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
-                    />
+                    <input type="number" required min="0.01" step="0.01" className="frappe-input" max={selectedInvoice.totalAmount - selectedInvoice.paidAmount} value={paymentAmount} onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)} />
                   </div>
 
                   <div className="frappe-form-group">
                     <label className="frappe-label">Payment Method</label>
-                    <select
-                      className="frappe-input"
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                    >
+                    <select className="frappe-input" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                       <option value="BANK_TRANSFER">Bank Wire Transfer</option>
                       <option value="CREDIT_CARD">Credit Card</option>
                       <option value="CASH">Cash Payment</option>
@@ -542,30 +569,16 @@ export default function FinancePage() {
 
                   <div className="frappe-form-group">
                     <label className="frappe-label">Reference ID / Tx Hash</label>
-                    <input
-                      type="text"
-                      className="frappe-input"
-                      placeholder="TXN-1294801"
-                      value={paymentRef}
-                      onChange={(e) => setPaymentRef(e.target.value)}
-                    />
+                    <input type="text" className="frappe-input" placeholder="TXN-1294801" value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} />
                   </div>
 
                   <div className="frappe-form-group">
                     <label className="frappe-label">Notes</label>
-                    <input
-                      type="text"
-                      className="frappe-input"
-                      placeholder="Processed by banking clearance desk"
-                      value={paymentNotes}
-                      onChange={(e) => setPaymentNotes(e.target.value)}
-                    />
+                    <input type="text" className="frappe-input" placeholder="Processed by banking clearance desk" value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} />
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
-                    <Button variant="outline" type="button" onClick={() => setIsPaymentModalOpen(false)}>
-                      Cancel
-                    </Button>
+                    <Button variant="outline" type="button" onClick={() => setIsPaymentModalOpen(false)}>Cancel</Button>
                     <Button variant="primary" type="submit" disabled={submitting}>
                       {submitting ? <Spinner size="sm" /> : 'Log Transaction'}
                     </Button>

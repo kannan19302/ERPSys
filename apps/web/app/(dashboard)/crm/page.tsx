@@ -1,310 +1,437 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import Link from 'next/link';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
-import { useCustomers, useVendors, useLeads, useOpportunities, useActivities } from '../../../src/lib/hooks/useModuleData';
-import { useApiQuery } from '../../../src/lib/hooks/useApi';
+import React, { useState, useMemo } from 'react';
+import { PageHeader, Button, Spinner, StatusBadge, DashboardKPICard, DashboardChart, ViewSwitcher, KanbanBoard, type ViewMode, type KanbanColumn, type KanbanItem } from '@unerp/ui';
+import { useCustomers, useVendors, useContacts, useLeads, useOpportunities } from '../../../src/lib/hooks/useModuleData';
+import { apiPost, apiPatch } from '../../../src/lib/api';
 import {
-  Users, TrendingUp, BarChart3, Target, ChevronRight,
-  Activity, UserPlus, DollarSign, PieChart, Zap, BookOpen,
-  FileText, MapPin, Package, Globe, Layers
+  Users, UserPlus, Target, Handshake, Search,
+  AlertCircle, CheckCircle, X, TrendingUp
 } from 'lucide-react';
 
-interface ForecastData {
-  bestCase: number;
-  commit: number;
-  worstCase: number;
-  dealCount: number;
+interface LeadItem extends KanbanItem {
+  name: string;
+  company: string;
+  status: string;
+  email: string;
+  source?: string;
 }
 
-interface DashboardStats {
-  totalCustomers: number;
-  totalVendors: number;
-  totalLeads: number;
-  totalOpportunities: number;
-  pipelineValue: number;
-  weightedPipeline: number;
-  winRate: number;
-  recentActivities: Array<{ id: string; type: string; subject: string; createdAt: string }>;
-  leadStatusBreakdown: Record<string, number>;
-  opportunityStageBreakdown: Record<string, { count: number; totalAmount: number }>;
-  forecast: ForecastData;
-}
+export default function CrmPage() {
+  const { data: customers = [], isLoading: loadingCustomers } = useCustomers();
+  const { data: vendors = [], isLoading: loadingVendors } = useVendors();
+  const { data: contacts = [], isLoading: loadingContacts } = useContacts();
+  const { data: leads = [], isLoading: loadingLeads, refetch: refetchLeads } = useLeads();
+  const { data: opportunities = [], isLoading: loadingOpps } = useOpportunities();
+  const loading = loadingCustomers || loadingVendors || loadingContacts || loadingLeads || loadingOpps;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeView, setActiveView] = useState<ViewMode>('chart');
+  const [activeTab, setActiveTab] = useState<'customers' | 'vendors' | 'contacts' | 'leads' | 'opportunities'>('leads');
 
-export default function CrmDashboard() {
-  const { data: customersRaw = [], isLoading: loadingCustomers } = useCustomers();
-  const { data: vendorsRaw = [], isLoading: loadingVendors } = useVendors();
-  const { data: leadsRaw = [], isLoading: loadingLeads } = useLeads();
-  const { data: opportunitiesRaw = [], isLoading: loadingOpps } = useOpportunities();
-  const { data: activitiesRaw = [] } = useActivities();
-  const customers = customersRaw as any[];
-  const vendors = vendorsRaw as any[];
-  const leads = leadsRaw as any[];
-  const opportunities = opportunitiesRaw as any[];
-  const activities = activitiesRaw as any[];
-  const { data: winRateData } = useApiQuery<{ winRate?: number }>(['crm', 'analytics', 'win-rate'], '/crm/analytics/win-rate');
-  const { data: forecastData } = useApiQuery<ForecastData>(['crm', 'analytics', 'forecast'], '/crm/analytics/forecast');
-  const { data: healthData } = useApiQuery<{ weightedPipeline?: number }>(['crm', 'analytics', 'pipeline-health'], '/crm/analytics/pipeline-health');
+  // Create Lead Modal
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [leadFirstName, setLeadFirstName] = useState('');
+  const [leadLastName, setLeadLastName] = useState('');
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadCompany, setLeadCompany] = useState('');
+  const [leadSource, setLeadSource] = useState('WEBSITE');
+  const [submitting, setSubmitting] = useState(false);
+  const [modalSuccess, setModalSuccess] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
-  const loading = loadingCustomers || loadingVendors || loadingLeads || loadingOpps;
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+  const safeVendors = Array.isArray(vendors) ? vendors : [];
+  const safeContacts = Array.isArray(contacts) ? contacts : [];
+  const safeLeads = Array.isArray(leads) ? leads : [];
+  const safeOpps = Array.isArray(opportunities) ? opportunities : [];
 
-  const stats = useMemo<DashboardStats>(() => {
-    const stageBreakdown: Record<string, { count: number; totalAmount: number }> = {};
-    let pipelineValue = 0;
-    for (const opp of opportunities) {
-      const stage = opp.stage || 'PROSPECTING';
-      if (!stageBreakdown[stage]) stageBreakdown[stage] = { count: 0, totalAmount: 0 };
-      stageBreakdown[stage].count++;
-      stageBreakdown[stage].totalAmount += Number(opp.amount || 0);
-      if (stage !== 'CLOSED_LOST') pipelineValue += Number(opp.amount || 0);
+  // ── KPI metrics ──
+  const qualifiedLeads = safeLeads.filter((l: Record<string, unknown>) => l.status === 'QUALIFIED' || l.status === 'CONVERTED').length;
+  const activeOpps = safeOpps.filter((o: Record<string, unknown>) => o.stage !== 'CLOSED_WON' && o.stage !== 'CLOSED_LOST').length;
+  const totalPipelineValue = safeOpps.reduce((s: number, o: Record<string, unknown>) => s + (Number(o.estimatedValue) || 0), 0);
+
+  // ── Chart data ──
+  const leadStatusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    safeLeads.forEach((l: Record<string, unknown>) => {
+      const st = String(l.status || 'Unknown');
+      counts[st] = (counts[st] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [safeLeads]);
+
+  const pipelineStageData = useMemo(() => {
+    const stages: Record<string, number> = {};
+    safeOpps.forEach((o: Record<string, unknown>) => {
+      const st = String(o.stage || 'Unknown').replace('_', ' ');
+      stages[st] = (stages[st] || 0) + 1;
+    });
+    return Object.entries(stages).map(([name, value]) => ({ name, value }));
+  }, [safeOpps]);
+
+  const revenueByOppData = useMemo(() => {
+    return safeOpps
+      .filter((o: Record<string, unknown>) => o.estimatedValue)
+      .slice(0, 10)
+      .map((o: Record<string, unknown>) => ({
+        name: String(o.title || 'Untitled').substring(0, 20),
+        value: Number(o.estimatedValue) || 0,
+      }));
+  }, [safeOpps]);
+
+  // ── Kanban data (leads by status) ──
+  const LEAD_STATUS_COLUMNS: KanbanColumn[] = [
+    { key: 'NEW', title: 'New', color: '#6366f1' },
+    { key: 'CONTACTED', title: 'Contacted', color: '#f59e0b' },
+    { key: 'QUALIFIED', title: 'Qualified', color: '#22c55e' },
+    { key: 'CONVERTED', title: 'Converted', color: '#4f46e5' },
+    { key: 'LOST', title: 'Lost', color: '#ef4444' },
+  ];
+
+  const kanbanLeads: LeadItem[] = useMemo(() => {
+    return safeLeads.map((l: Record<string, unknown>) => ({
+      id: String(l.id),
+      columnKey: String(l.status || 'NEW'),
+      name: `${l.firstName || ''} ${l.lastName || ''}`.trim(),
+      company: String(l.company || '—'),
+      status: String(l.status || 'NEW'),
+      email: String(l.email || ''),
+      source: String(l.source || ''),
+    }));
+  }, [safeLeads]);
+
+  const handleKanbanMove = async (itemId: string, _from: string, toColumn: string) => {
+    try {
+      await apiPatch(`/crm/leads/${itemId}`, { status: toColumn });
+      refetchLeads();
+    } catch {
+      // Silently fail - user will see item snap back
+    }
+  };
+
+  // ── Handlers ──
+  const handleCreateLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadFirstName || !leadLastName || !leadEmail) {
+      setModalError('Please fill in all required fields');
+      return;
     }
 
-    const statusBreakdown: Record<string, number> = {};
-    for (const lead of leads) {
-      statusBreakdown[lead.status] = (statusBreakdown[lead.status] || 0) + 1;
+    setSubmitting(true);
+    setModalError(null);
+
+    try {
+      await apiPost('/crm/leads', {
+        firstName: leadFirstName,
+        lastName: leadLastName,
+        email: leadEmail,
+        company: leadCompany || undefined,
+        source: leadSource,
+      });
+      setModalSuccess(true);
+      setTimeout(() => {
+        setIsCreateModalOpen(false);
+        setLeadFirstName(''); setLeadLastName(''); setLeadEmail(''); setLeadCompany('');
+        setModalSuccess(false);
+        refetchLeads();
+      }, 1500);
+    } catch {
+      setModalError('Failed to create lead. Please try again.');
+      setSubmitting(false);
+    } finally {
+      setSubmitting(false);
     }
+  };
 
-    return {
-      totalCustomers: customers.length,
-      totalVendors: vendors.length,
-      totalLeads: leads.length,
-      totalOpportunities: opportunities.length,
-      pipelineValue,
-      winRate: winRateData?.winRate || 0,
-      weightedPipeline: healthData?.weightedPipeline || 0,
-      recentActivities: (activities as any[]).slice(0, 5),
-      leadStatusBreakdown: statusBreakdown,
-      opportunityStageBreakdown: stageBreakdown,
-      forecast: forecastData || { bestCase: 0, commit: 0, worstCase: 0, dealCount: 0 },
-    };
-  }, [customers, vendors, leads, opportunities, activities, winRateData, forecastData, healthData]);
+  // ── Filter logic ──
+  const getFilteredData = () => {
+    const q = searchQuery.toLowerCase();
+    switch (activeTab) {
+      case 'customers': return safeCustomers.filter((c: Record<string, unknown>) => String(c.name || '').toLowerCase().includes(q) || String(c.email || '').toLowerCase().includes(q));
+      case 'vendors': return safeVendors.filter((v: Record<string, unknown>) => String(v.name || '').toLowerCase().includes(q) || String(v.email || '').toLowerCase().includes(q));
+      case 'contacts': return safeContacts.filter((c: Record<string, unknown>) => `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase().includes(q) || String(c.email || '').toLowerCase().includes(q));
+      case 'leads': return safeLeads.filter((l: Record<string, unknown>) => `${l.firstName || ''} ${l.lastName || ''}`.toLowerCase().includes(q) || String(l.email || '').toLowerCase().includes(q) || String(l.status || '').toLowerCase().includes(q));
+      case 'opportunities': return safeOpps.filter((o: Record<string, unknown>) => String(o.title || '').toLowerCase().includes(q) || String(o.stage || '').toLowerCase().includes(q));
+      default: return [];
+    }
+  };
+  const filteredData = getFilteredData();
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  const TABS = [
+    { key: 'leads' as const, label: 'Leads', count: safeLeads.length },
+    { key: 'opportunities' as const, label: 'Opportunities', count: safeOpps.length },
+    { key: 'customers' as const, label: 'Customers', count: safeCustomers.length },
+    { key: 'vendors' as const, label: 'Vendors', count: safeVendors.length },
+    { key: 'contacts' as const, label: 'Contacts', count: safeContacts.length },
+  ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
       <PageHeader
-        title="CRM & Sales Dashboard"
-        description="Overview of customers, leads, opportunities, and sales performance"
+        title="Customer Relationship Management"
+        description="Oversee and manage all customer, vendor, and lead relationships."
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM' }]}
         actions={
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <Link href="/crm/leads">
-              <Button variant="primary" size="sm">View Leads</Button>
-            </Link>
-            <Link href="/crm/opportunities">
-              <Button variant="outline" size="sm">View Pipeline</Button>
-            </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <ViewSwitcher activeView={activeView} onViewChange={setActiveView} availableViews={['list', 'chart', 'kanban']} />
+            <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <UserPlus size={16} /> New Lead
+            </Button>
           </div>
         }
       />
 
-      {/* Error handling is managed by React Query */}
-
-      {/* KPI Cards Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Customers</span>
-            <Users size={18} style={{ color: 'var(--color-primary)' }} />
-          </div>
-          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>{stats.totalCustomers}</h3>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Leads</span>
-            <UserPlus size={18} style={{ color: 'var(--color-warning)' }} />
-          </div>
-          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>{stats.totalLeads}</h3>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Opportunities</span>
-            <Target size={18} style={{ color: 'var(--color-success)' }} />
-          </div>
-          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>{stats.totalOpportunities}</h3>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Pipeline Value</span>
-            <DollarSign size={18} style={{ color: 'var(--color-primary)' }} />
-          </div>
-          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>${stats.pipelineValue.toLocaleString()}</h3>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Weighted Pipeline</span>
-            <TrendingUp size={18} style={{ color: 'var(--color-info)' }} />
-          </div>
-          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>${stats.weightedPipeline.toLocaleString()}</h3>
-        </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Win Rate</span>
-            <BarChart3 size={18} style={{ color: 'var(--color-success)' }} />
-          </div>
-          <h3 style={{ fontSize: 'var(--text-2xl)', margin: 'var(--space-2) 0' }}>{stats.winRate}%</h3>
-        </Card>
+      {/* KPI Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+        <DashboardKPICard title="Total Leads" value={String(safeLeads.length)} icon={<Users size={18} />} color="#4f46e5" loading={loading}
+          drillDown={{
+            modalTitle: 'All Leads',
+            columns: [
+              { key: 'name', label: 'Name' }, { key: 'email', label: 'Email' },
+              { key: 'company', label: 'Company' }, { key: 'status', label: 'Status' },
+            ],
+            rows: safeLeads.map((l: Record<string, unknown>) => ({ name: `${l.firstName || ''} ${l.lastName || ''}`, email: String(l.email || ''), company: String(l.company || '—'), status: String(l.status || '') })),
+          }}
+        />
+        <DashboardKPICard title="Qualified" value={String(qualifiedLeads)} icon={<Target size={18} />} color="#22c55e" loading={loading}
+          drillDown={{
+            modalTitle: 'Qualified Leads',
+            columns: [
+              { key: 'name', label: 'Name' }, { key: 'email', label: 'Email' },
+              { key: 'company', label: 'Company' },
+            ],
+            rows: safeLeads.filter((l: Record<string, unknown>) => l.status === 'QUALIFIED' || l.status === 'QUALIFIED_OPPORTUNITY').map((l: Record<string, unknown>) => ({ name: `${l.firstName || ''} ${l.lastName || ''}`, email: String(l.email || ''), company: String(l.company || '—') })),
+          }}
+        />
+        <DashboardKPICard title="Active Opportunities" value={String(activeOpps)} icon={<Handshake size={18} />} color="#f59e0b" loading={loading}
+          drillDown={{
+            modalTitle: 'Active Opportunities',
+            columns: [
+              { key: 'title', label: 'Title' }, { key: 'stage', label: 'Stage' },
+              { key: 'estimatedValue', label: 'Value', render: (v) => `$${Number(v).toLocaleString()}` },
+            ],
+            rows: safeOpps.filter((o: Record<string, unknown>) => o.stage !== 'CLOSED_WON' && o.stage !== 'CLOSED_LOST').map((o: Record<string, unknown>) => ({ title: o.title, stage: o.stage, estimatedValue: o.estimatedValue })),
+          }}
+        />
+        <DashboardKPICard title="Pipeline Value" value={`$${totalPipelineValue.toLocaleString()}`} icon={<TrendingUp size={18} />} color="#8b5cf6" loading={loading}
+          drillDown={{
+            modalTitle: 'Sales Pipeline Valuation',
+            columns: [
+              { key: 'title', label: 'Opportunity' },
+              { key: 'stage', label: 'Stage' },
+              { key: 'value', label: 'Estimated Value', render: (v) => `$${Number(v).toLocaleString()}` },
+            ],
+            rows: safeOpps.map((o: Record<string, unknown>) => ({ title: o.title, stage: o.stage, value: o.estimatedValue })),
+          }}
+        />
       </div>
 
-      {/* Forecast Cards */}
-      <Card padding="md">
-        <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>Revenue Forecast</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--space-4)' }}>
-          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-success)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Best Case</span>
-            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0', color: 'var(--color-success)' }}>${stats.forecast.bestCase.toLocaleString()}</p>
-          </div>
-          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-primary)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Commit (70%+)</span>
-            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0', color: 'var(--color-primary)' }}>${stats.forecast.commit.toLocaleString()}</p>
-          </div>
-          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-warning)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Worst Case (90%+)</span>
-            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0', color: 'var(--color-warning)' }}>${stats.forecast.worstCase.toLocaleString()}</p>
-          </div>
-          <div style={{ padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)', borderLeft: '4px solid var(--color-text-muted)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Open Deals</span>
-            <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 'var(--space-1) 0 0' }}>{stats.forecast.dealCount}</p>
-          </div>
+      {/* Chart View */}
+      {activeView === 'chart' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--space-4)' }}>
+          <DashboardChart
+            title="Lead Status Distribution"
+            subtitle="Leads grouped by current status"
+            data={leadStatusData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Leads' }], valueKey: 'value', nameKey: 'name' }}
+            defaultChartType="donut"
+            allowedChartTypes={['donut', 'pie', 'bar']}
+            height={280}
+            loading={loading}
+          />
+          <DashboardChart
+            title="Pipeline Funnel"
+            subtitle="Opportunities by pipeline stage"
+            data={pipelineStageData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Count' }], valueKey: 'value', nameKey: 'name' }}
+            defaultChartType="funnel"
+            allowedChartTypes={['funnel', 'bar', 'pie']}
+            height={280}
+            loading={loading}
+          />
+          <DashboardChart
+            title="Revenue Forecast"
+            subtitle="Estimated value by opportunity (top 10)"
+            data={revenueByOppData}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Estimated Value', color: '#8b5cf6' }] }}
+            defaultChartType="bar"
+            allowedChartTypes={['bar', 'line', 'area']}
+            height={280}
+            loading={loading}
+          />
         </div>
-      </Card>
+      )}
 
-      {/* Two-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
-        {/* Lead Status Breakdown */}
-        <Card padding="md">
-          <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>Lead Status Breakdown</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {Object.entries(stats.leadStatusBreakdown).map(([status, count]) => (
-              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)' }}>
-                <StatusBadge status={status} />
-                <span style={{ fontWeight: 'var(--weight-bold)' }}>{count}</span>
-              </div>
+      {/* Kanban View */}
+      {activeView === 'kanban' && (
+        <KanbanBoard<LeadItem>
+          columns={LEAD_STATUS_COLUMNS}
+          items={kanbanLeads}
+          onCardMove={handleKanbanMove}
+          renderCard={(item) => (
+            <div>
+              <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', marginBottom: '4px' }}>{item.name}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>{item.company}</div>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{item.email}</div>
+              {item.source && <div style={{ fontSize: '9px', color: 'var(--color-primary)', marginTop: '4px', fontWeight: 500 }}>Source: {item.source}</div>}
+            </div>
+          )}
+        />
+      )}
+
+      {/* List View */}
+      {activeView === 'list' && (
+        <>
+          {/* Tab Switcher */}
+          <div style={{ display: 'flex', gap: 'var(--space-1)', borderBottom: '1px solid var(--color-border)', paddingBottom: '0' }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: 'var(--space-2-5) var(--space-4)',
+                  border: 'none',
+                  borderBottom: `2px solid ${activeTab === tab.key ? 'var(--color-primary)' : 'transparent'}`,
+                  background: 'none',
+                  color: activeTab === tab.key ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                  fontWeight: activeTab === tab.key ? 'var(--weight-semibold)' : 'normal',
+                  fontSize: 'var(--text-sm)',
+                  cursor: 'pointer',
+                  transition: 'all var(--duration-fast)',
+                }}
+              >
+                {tab.label} ({tab.count})
+              </button>
             ))}
-            {Object.keys(stats.leadStatusBreakdown).length === 0 && (
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', textAlign: 'center' }}>No leads data yet</p>
+          </div>
+
+          {/* Search */}
+          <div className="frappe-card" style={{ padding: 'var(--space-3) var(--space-4)' }}>
+            <div style={{ position: 'relative', maxWidth: '360px', width: '100%' }}>
+              <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+              <input type="text" className="frappe-input" placeholder={`Search ${activeTab}...`} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-9)' }} />
+            </div>
+          </div>
+
+          {/* Data Table */}
+          <div className="frappe-card" style={{ padding: 0, overflowX: 'auto' }}>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>
+            ) : filteredData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
+                <Users size={48} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-4)' }} />
+                <h4 style={{ margin: 0, fontWeight: 'var(--weight-semibold)' }}>No {activeTab} found</h4>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
+                    {activeTab === 'leads' && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Email</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Company</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th></>
+                    )}
+                    {activeTab === 'opportunities' && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Title</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Stage</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Value</th></>
+                    )}
+                    {(activeTab === 'customers' || activeTab === 'vendors') && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Email</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Phone</th></>
+                    )}
+                    {activeTab === 'contacts' && (
+                      <><th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Email</th>
+                      <th style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Title</th></>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredData.map((item: Record<string, unknown>, i: number) => (
+                    <tr key={String(item.id || i)} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      {activeTab === 'leads' && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String(item.firstName || '')} {String(item.lastName || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{String(item.email || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{String(item.company || '—')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}><StatusBadge status={String(item.status || '')} /></td>
+                        </>
+                      )}
+                      {activeTab === 'opportunities' && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String(item.title || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}><StatusBadge status={String(item.stage || '')} /></td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>${Number(item.estimatedValue || 0).toLocaleString()}</td>
+                        </>
+                      )}
+                      {(activeTab === 'customers' || activeTab === 'vendors') && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String(item.name || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{String(item.email || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{String(item.phone || '—')}</td>
+                        </>
+                      )}
+                      {activeTab === 'contacts' && (
+                        <>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-medium)' }}>{String(item.firstName || '')} {String(item.lastName || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>{String(item.email || '')}</td>
+                          <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{String(item.title || '—')}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
-        </Card>
+        </>
+      )}
 
-        {/* Pipeline Funnel */}
-        <Card padding="md">
-          <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>Pipeline Stages</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {Object.entries(stats.opportunityStageBreakdown).map(([stage, data]) => (
-              <div key={stage} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <StatusBadge status={stage} />
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{data.count}</span>
+      {/* Create Lead Modal */}
+      {isCreateModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 'var(--space-4)' }}>
+          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '480px', boxShadow: 'var(--shadow-xl)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>New Lead</h3>
+              <button onClick={() => { setIsCreateModalOpen(false); setModalSuccess(false); setModalError(null); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}><X size={18} /></button>
+            </div>
+            <form onSubmit={handleCreateLead} style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              {modalSuccess ? (
+                <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
+                  <CheckCircle size={40} style={{ color: 'var(--color-success)', marginBottom: 'var(--space-3)' }} />
+                  <p style={{ fontWeight: 'var(--weight-semibold)', margin: 0 }}>Lead Created!</p>
                 </div>
-                <span style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-sm)' }}>${data.totalAmount.toLocaleString()}</span>
-              </div>
-            ))}
-            {Object.keys(stats.opportunityStageBreakdown).length === 0 && (
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', textAlign: 'center' }}>No opportunities yet</p>
-            )}
+              ) : (
+                <>
+                  {modalError && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', background: 'var(--color-danger-light)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-md)', color: 'var(--color-danger-text)', fontSize: 'var(--text-xs)' }}>
+                      <AlertCircle size={15} /><span>{modalError}</span>
+                    </div>
+                  )}
+                  <div className="frappe-grid-2" style={{ gap: 'var(--space-3)' }}>
+                    <div className="frappe-form-group"><label className="frappe-label">First Name *</label><input type="text" required className="frappe-input" value={leadFirstName} onChange={(e) => setLeadFirstName(e.target.value)} /></div>
+                    <div className="frappe-form-group"><label className="frappe-label">Last Name *</label><input type="text" required className="frappe-input" value={leadLastName} onChange={(e) => setLeadLastName(e.target.value)} /></div>
+                  </div>
+                  <div className="frappe-form-group"><label className="frappe-label">Email *</label><input type="email" required className="frappe-input" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} /></div>
+                  <div className="frappe-form-group"><label className="frappe-label">Company</label><input type="text" className="frappe-input" value={leadCompany} onChange={(e) => setLeadCompany(e.target.value)} /></div>
+                  <div className="frappe-form-group"><label className="frappe-label">Lead Source</label>
+                    <select className="frappe-input" value={leadSource} onChange={(e) => setLeadSource(e.target.value)}>
+                      <option value="WEBSITE">Website</option><option value="REFERRAL">Referral</option><option value="SOCIAL_MEDIA">Social Media</option><option value="COLD_CALL">Cold Call</option><option value="EVENT">Event</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                    <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                    <Button variant="primary" type="submit" disabled={submitting}>{submitting ? <Spinner size="sm" /> : 'Create Lead'}</Button>
+                  </div>
+                </>
+              )}
+            </form>
           </div>
-        </Card>
-      </div>
-
-      {/* Quick Links */}
-      <Card padding="md">
-        <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>Quick Actions</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--space-3)' }}>
-          <Link href="/crm/customers" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <Users size={16} style={{ color: 'var(--color-primary)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Customers</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/leads" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <TrendingUp size={16} style={{ color: 'var(--color-warning)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Leads</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/opportunities" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <BarChart3 size={16} style={{ color: 'var(--color-success)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Opportunities</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/contacts" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <Users size={16} style={{ color: 'var(--color-secondary)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Contacts</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/activities" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <Activity size={16} style={{ color: 'var(--color-info)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Activities</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/reports" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <PieChart size={16} style={{ color: 'var(--color-danger)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Reports</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/products" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <Package size={16} style={{ color: 'var(--color-primary)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Products</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/forecasting" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <TrendingUp size={16} style={{ color: 'var(--color-success)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Forecasting</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/workflows" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <Zap size={16} style={{ color: 'var(--color-warning)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Workflows</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/territories" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <MapPin size={16} style={{ color: 'var(--color-info)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Territories</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/forms" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <Globe size={16} style={{ color: 'var(--color-secondary)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Web Forms</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
-          <Link href="/crm/documents" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-              <FileText size={16} style={{ color: 'var(--color-text-muted)' }} />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>Documents</span>
-              <ChevronRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)' }} />
-            </div>
-          </Link>
         </div>
-      </Card>
+      )}
     </div>
   );
 }
