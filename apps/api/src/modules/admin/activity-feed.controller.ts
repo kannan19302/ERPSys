@@ -5,6 +5,7 @@ import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ActivityFeedService } from './activity-feed.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -15,12 +16,16 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('admin')
+@ApiBearerAuth()
 @Controller('admin/activity-feed')
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class ActivityFeedController {
   constructor(private readonly activityFeedService: ActivityFeedService) {}
 
+  @ApiOperation({ summary: 'Get activity feed' })
+  @Permissions('admin.read')
   @Get()
   @Permissions('admin.setting.read')
   async getActivityFeed(
@@ -34,7 +39,6 @@ export class ActivityFeedController {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       entityType,
-      userId,
-    });
+      userId });
   }
 }

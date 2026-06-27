@@ -1,13 +1,15 @@
 import {
-  Controller, Get, Post, Body, Param, Query,
-  UseGuards, UseInterceptors, Req,
-} from '@nestjs/common';
+  Controller, Get, Post, Param, Query,
+  UseGuards, UseInterceptors, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { ImportExportService } from './import-export.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
 import { Permissions } from '../../common/decorators/permissions.decorator';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
+import { z } from 'zod';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -20,23 +22,29 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('admin')
+@ApiBearerAuth()
 @Controller('admin/imports')
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class ImportExportController {
   constructor(private readonly importExportService: ImportExportService) {}
 
+  @ApiOperation({ summary: 'List import history' })
+  @Permissions('admin.read')
   @Get()
   @Permissions('admin.setting.read')
   async listImportHistory(@Req() req: AuthenticatedRequest) {
     return this.importExportService.getImportHistory(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Validate import' })
+  @Permissions('admin.create')
   @Post('validate')
   @Permissions('admin.setting.read')
   async validateImport(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { targetModel: string; rows: Record<string, unknown>[] },
+    @ZodBody(z.any()) body: { targetModel: string; rows: Record<string, unknown>[] },
   ): Promise<unknown> {
     return this.importExportService.validateImport(
       req.user.tenantId,
@@ -45,11 +53,13 @@ export class ImportExportController {
     );
   }
 
+  @ApiOperation({ summary: 'Execute import' })
+  @Permissions('admin.create')
   @Post('execute')
   @Permissions('admin.setting.read')
   async executeImport(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { targetModel: string; orgId: string; rows: Record<string, unknown>[] },
+    @ZodBody(z.any()) body: { targetModel: string; orgId: string; rows: Record<string, unknown>[] },
   ) {
     return this.importExportService.executeImport(
       req.user.tenantId,
@@ -59,6 +69,8 @@ export class ImportExportController {
     );
   }
 
+  @ApiOperation({ summary: 'Export data' })
+  @Permissions('admin.read')
   @Get('/exports/:entityType')
   @Permissions('admin.setting.read')
   async exportData(

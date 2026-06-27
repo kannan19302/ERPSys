@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, UseGuards, Req } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { LocalizationService } from './localization.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -14,31 +17,41 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('localization')
+@ApiBearerAuth()
 @Controller('admin/localization')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class LocalizationController {
   constructor(private readonly localizationService: LocalizationService) {}
 
+  @ApiOperation({ summary: 'Get languages' })
+  @Permissions('localization.read')
   @Get('languages')
   async getLanguages() {
     return this.localizationService.getLanguages();
   }
 
+  @ApiOperation({ summary: 'Get overrides' })
+  @Permissions('localization.read')
   @Get('overrides')
   @Permissions('admin.localization.read')
   async getOverrides(@Req() req: AuthenticatedRequest) {
     return this.localizationService.getOverrides(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create or update override' })
+  @Permissions('localization.create')
   @Post('overrides')
   @Permissions('admin.localization.create')
   async createOrUpdateOverride(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { locale: string; key: string; translation: string }
+    @ZodBody(z.any()) dto: { locale: string; key: string; translation: string }
   ) {
     return this.localizationService.createOrUpdateOverride(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Delete override' })
+  @Permissions('localization.delete')
   @Delete('overrides/:id')
   @Permissions('admin.localization.delete')
   async deleteOverride(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

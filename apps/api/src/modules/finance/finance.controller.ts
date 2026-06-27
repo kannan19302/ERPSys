@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { FinanceService } from './finance.service';
 import { CreateInvoiceInput, UpdateInvoiceInput, CreatePaymentInput, BulkActionInput } from '@unerp/shared';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -16,6 +19,8 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('finance')
+@ApiBearerAuth()
 @Controller('finance')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class FinanceController {
@@ -23,6 +28,8 @@ export class FinanceController {
 
   // ─── Invoice Endpoints ──────────────────────────────
 
+  @ApiOperation({ summary: 'Get invoices' })
+  @Permissions('finance.read')
   @Get('invoices')
   @Permissions('finance.invoice.read')
   async getInvoices(
@@ -40,67 +47,86 @@ export class FinanceController {
       sort,
       search,
       status,
-      customerId,
-    });
+      customerId });
   }
 
+  @ApiOperation({ summary: 'Get invoice stats' })
+  @Permissions('finance.read')
   @Get('invoices/stats')
   @Permissions('finance.invoice.read')
   async getInvoiceStats(@Req() req: AuthenticatedRequest) {
     return this.financeService.getInvoiceStats(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Get invoice by id' })
+  @Permissions('finance.read')
   @Get('invoices/:id')
   @Permissions('finance.invoice.read')
   async getInvoiceById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.financeService.getInvoiceById(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Create invoice' })
+  @Permissions('finance.create')
   @Post('invoices')
   @Permissions('finance.invoice.create')
-  async createInvoice(@Req() req: AuthenticatedRequest, @Body() dto: CreateInvoiceInput) {
+  async createInvoice(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateInvoiceInput) {
     const orgId = req.user.orgId || 'org-system-default';
     return this.financeService.createInvoice(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 
+  @ApiOperation({ summary: 'Update invoice' })
+  @Permissions('finance.update')
   @Patch('invoices/:id')
   @Permissions('finance.invoice.update')
-  async updateInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: UpdateInvoiceInput) {
+  async updateInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateInvoiceInput) {
     return this.financeService.updateInvoice(req.user.tenantId, id, dto);
   }
 
+  @ApiOperation({ summary: 'Delete invoice' })
+  @Permissions('finance.delete')
   @Delete('invoices/:id')
   @Permissions('finance.invoice.delete')
   async deleteInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.financeService.deleteInvoice(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Send invoice' })
+  @Permissions('finance.create')
   @Post('invoices/:id/send')
   @Permissions('finance.invoice.update')
   async sendInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.financeService.sendInvoice(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Void invoice' })
+  @Permissions('finance.create')
   @Post('invoices/:id/void')
   @Permissions('finance.invoice.update')
   async voidInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.financeService.voidInvoice(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Bulk action' })
+  @Permissions('finance.create')
   @Post('invoices/bulk')
   @Permissions('finance.invoice.update')
-  async bulkAction(@Req() req: AuthenticatedRequest, @Body() dto: BulkActionInput) {
+  async bulkAction(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: BulkActionInput) {
     return this.financeService.bulkAction(req.user.tenantId, dto.action, dto.ids, dto.data);
   }
 
   // ─── Payment Endpoints ──────────────────────────────
 
+  @ApiOperation({ summary: 'Create payment' })
+  @Permissions('finance.create')
   @Post('payments')
   @Permissions('finance.payment.create')
-  async createPayment(@Req() req: AuthenticatedRequest, @Body() dto: CreatePaymentInput) {
+  async createPayment(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePaymentInput) {
     return this.financeService.createPayment(req.user.tenantId, dto, req.user.userId || 'system');
   }
 
+  @ApiOperation({ summary: 'Get payments' })
+  @Permissions('finance.read')
   @Get('invoices/:id/payments')
   @Permissions('finance.payment.read')
   async getPayments(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

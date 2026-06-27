@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Delete, Body, Param, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
 import { PlatformService } from './platform.service';
 import { Permissions } from '../../common/decorators/permissions.decorator';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -15,18 +18,24 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('admin')
+@ApiBearerAuth()
 @Controller('admin/platform')
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class PlatformController {
   constructor(private readonly platformService: PlatformService) {}
 
+  @ApiOperation({ summary: 'Get modules' })
+  @Permissions('admin.read')
   @Get('modules')
   @Permissions('admin.platform.read')
   async getModules(@Req() req: AuthenticatedRequest) {
     return this.platformService.getModules(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Toggle module' })
+  @Permissions('admin.create')
   @Post('modules/:name/toggle')
   @Permissions('admin.platform.update')
   async toggleModule(
@@ -37,12 +46,16 @@ export class PlatformController {
     return this.platformService.toggleModule(req.user.tenantId, name, enabled);
   }
 
+  @ApiOperation({ summary: 'Get feature flags' })
+  @Permissions('admin.read')
   @Get('feature-flags')
   @Permissions('admin.platform.read')
   async getFeatureFlags(@Req() req: AuthenticatedRequest) {
     return this.platformService.getFeatureFlags(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Save feature flag' })
+  @Permissions('admin.create')
   @Post('feature-flags/:key/toggle')
   @Permissions('admin.platform.update')
   async saveFeatureFlag(
@@ -53,12 +66,16 @@ export class PlatformController {
     return this.platformService.saveFeatureFlag(req.user.tenantId, key, enabled);
   }
 
+  @ApiOperation({ summary: 'Get custom domains' })
+  @Permissions('admin.read')
   @Get('domains')
   @Permissions('admin.platform.read')
   async getCustomDomains(@Req() req: AuthenticatedRequest) {
     return this.platformService.getCustomDomains(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Add custom domain' })
+  @Permissions('admin.create')
   @Post('domains')
   @Permissions('admin.platform.update')
   async addCustomDomain(
@@ -68,12 +85,16 @@ export class PlatformController {
     return this.platformService.addCustomDomain(req.user.tenantId, domain);
   }
 
+  @ApiOperation({ summary: 'Get environments' })
+  @Permissions('admin.read')
   @Get('environments')
   @Permissions('admin.platform.read')
   async getEnvironments(@Req() req: AuthenticatedRequest) {
     return this.platformService.getEnvironments(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Sync environment' })
+  @Permissions('admin.create')
   @Post('environments/:type/sync')
   @Permissions('admin.platform.update')
   async syncEnvironment(
@@ -83,66 +104,84 @@ export class PlatformController {
     return this.platformService.syncEnvironment(req.user.tenantId, type);
   }
 
+  @ApiOperation({ summary: 'Get maintenance mode' })
+  @Permissions('admin.read')
   @Get('maintenance')
   @Permissions('admin.platform.read')
   async getMaintenanceMode(@Req() req: AuthenticatedRequest) {
     return this.platformService.getMaintenanceMode(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Save maintenance mode' })
+  @Permissions('admin.create')
   @Post('maintenance')
   @Permissions('admin.platform.update')
   async saveMaintenanceMode(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { enabled: boolean; message: string },
+    @ZodBody(z.any()) body: { enabled: boolean; message: string },
   ) {
     return this.platformService.saveMaintenanceMode(req.user.tenantId, body);
   }
 
+  @ApiOperation({ summary: 'Get smtp config' })
+  @Permissions('admin.read')
   @Get('smtp')
   @Permissions('admin.platform.read')
   async getSmtpConfig(@Req() req: AuthenticatedRequest) {
     return this.platformService.getSmtpConfig(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Save smtp config' })
+  @Permissions('admin.create')
   @Post('smtp')
   @Permissions('admin.platform.update')
   async saveSmtpConfig(
     @Req() req: AuthenticatedRequest,
-    @Body() body: any,
+    @ZodBody(z.any()) body: any,
   ) {
     return this.platformService.saveSmtpConfig(req.user.tenantId, body);
   }
 
+  @ApiOperation({ summary: 'Get login customizer' })
+  @Permissions('admin.read')
   @Get('login-customizer')
   @Permissions('admin.platform.read')
   async getLoginCustomizer(@Req() req: AuthenticatedRequest) {
     return this.platformService.getLoginCustomizer(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Save login customizer' })
+  @Permissions('admin.create')
   @Post('login-customizer')
   @Permissions('admin.platform.update')
   async saveLoginCustomizer(
     @Req() req: AuthenticatedRequest,
-    @Body() body: any,
+    @ZodBody(z.any()) body: any,
   ) {
     return this.platformService.saveLoginCustomizer(req.user.tenantId, body);
   }
 
+  @ApiOperation({ summary: 'Get email templates' })
+  @Permissions('admin.read')
   @Get('email-templates')
   @Permissions('admin.platform.read')
   async getEmailTemplates(@Req() req: AuthenticatedRequest) {
     return this.platformService.getEmailTemplates(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Save email template' })
+  @Permissions('admin.create')
   @Post('email-templates')
   @Permissions('admin.platform.update')
   async saveEmailTemplate(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { id?: string; name: string; category: string; subject: string; body: string; isActive?: boolean },
+    @ZodBody(z.any()) body: { id?: string; name: string; category: string; subject: string; body: string; isActive?: boolean },
   ) {
     return this.platformService.saveEmailTemplate(req.user.tenantId, body);
   }
 
+  @ApiOperation({ summary: 'Delete email template' })
+  @Permissions('admin.delete')
   @Delete('email-templates/:id')
   @Permissions('admin.platform.update')
   async deleteEmailTemplate(
@@ -152,30 +191,40 @@ export class PlatformController {
     return this.platformService.deleteEmailTemplate(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Get usage analytics' })
+  @Permissions('admin.read')
   @Get('usage-analytics')
   @Permissions('admin.platform.read')
   async getUsageAnalytics(@Req() req: AuthenticatedRequest) {
     return this.platformService.getUsageAnalytics(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Get white label settings' })
+  @Permissions('admin.read')
   @Get('white-label')
   @Permissions('admin.platform.read')
   async getWhiteLabelSettings(@Req() req: AuthenticatedRequest) {
     return this.platformService.getWhiteLabelSettings(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Save white label settings' })
+  @Permissions('admin.create')
   @Post('white-label')
   @Permissions('admin.platform.update')
-  async saveWhiteLabelSettings(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async saveWhiteLabelSettings(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: any) {
     return this.platformService.saveWhiteLabelSettings(req.user.tenantId, body);
   }
 
+  @ApiOperation({ summary: 'Get system updates' })
+  @Permissions('admin.read')
   @Get('updates')
   @Permissions('admin.platform.read')
   async getSystemUpdates(@Req() req: AuthenticatedRequest) {
     return this.platformService.getSystemUpdates(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Check for updates' })
+  @Permissions('admin.create')
   @Post('check-updates')
   @Permissions('admin.platform.update')
   async checkForUpdates(@Req() req: AuthenticatedRequest) {

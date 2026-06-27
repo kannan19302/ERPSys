@@ -3,6 +3,7 @@ import { prisma } from '@unerp/database';
 import { createWebFormSubmissionSchema, type CreateWebFormSubmissionInput, webCheckoutSchema, type WebCheckoutInput } from '@unerp/shared';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { WebCollectionsService } from './web-collections.service';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 /**
  * Public (unauthenticated) endpoints consumed by the live customer-facing
@@ -10,6 +11,7 @@ import { WebCollectionsService } from './web-collections.service';
  * Tenant is resolved by slug (defaults to "system" to match the public page
  * renderer at apps/web/app/[slug]/page.tsx).
  */
+@ApiTags('builder')
 @Controller('public/web')
 export class WebPublicController {
   constructor(private readonly collections: WebCollectionsService) {}
@@ -21,12 +23,14 @@ export class WebPublicController {
     return tenant.id;
   }
 
+  @ApiOperation({ summary: 'Get collection items' })
   @Get('collections/:slug')
   async getCollectionItems(@Param('slug') slug: string, @Query('tenant') tenant?: string) {
     const tenantId = await this.resolveTenantId(tenant);
     return this.collections.getPublicItems(tenantId, slug);
   }
 
+  @ApiOperation({ summary: 'Get collection item' })
   @Get('collections/:slug/:itemSlug')
   async getCollectionItem(
     @Param('slug') slug: string,
@@ -37,6 +41,7 @@ export class WebPublicController {
     return this.collections.getPublicItem(tenantId, slug, itemSlug);
   }
 
+  @ApiOperation({ summary: 'Submit form' })
   @Post('forms/submit')
   async submitForm(
     @Body(new ZodValidationPipe(createWebFormSubmissionSchema)) dto: CreateWebFormSubmissionInput,
@@ -47,6 +52,7 @@ export class WebPublicController {
     return { success: true, message: 'Thanks! Your submission was received.' };
   }
 
+  @ApiOperation({ summary: 'Checkout' })
   @Post('checkout')
   async checkout(
     @Body(new ZodValidationPipe(webCheckoutSchema)) dto: WebCheckoutInput,

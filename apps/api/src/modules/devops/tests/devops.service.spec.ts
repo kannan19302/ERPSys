@@ -1,11 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DevopsService } from '../devops.service';
+
+vi.mock('@unerp/database', () => ({
+  prisma: {
+    $queryRaw: vi.fn().mockResolvedValue([{ count: 5 }]),
+    setting: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    auditLog: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+  },
+}));
 
 describe('DevopsService', () => {
   let service: DevopsService;
 
   beforeEach(() => {
     service = new DevopsService();
+    vi.clearAllMocks();
   });
 
   it('should return system metrics', async () => {
@@ -18,6 +31,11 @@ describe('DevopsService', () => {
     expect(metrics.memory.heapUsed).toBeGreaterThan(0);
     expect(typeof metrics.dbConnections).toBe('number');
     expect(typeof metrics.latencyMs).toBe('number');
+  });
+
+  it('should return recent errors', async () => {
+    const errors = await service.getRecentErrors('t1');
+    expect(errors).toEqual([]);
   });
 
   it('should return integration links', async () => {

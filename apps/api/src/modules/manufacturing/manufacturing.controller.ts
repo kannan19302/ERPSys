@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, UseGuards, Req } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ManufacturingService } from './manufacturing.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -15,6 +18,8 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('manufacturing')
+@ApiBearerAuth()
 @Controller('manufacturing')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class ManufacturingController {
@@ -24,17 +29,21 @@ export class ManufacturingController {
   // BOM ENDPOINTS
   // ==========================================
 
+  @ApiOperation({ summary: 'Get b o ms' })
+  @Permissions('manufacturing.read')
   @Get('boms')
   @Permissions('manufacturing.bom.read')
   async getBOMs(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getBOMs(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create b o m' })
+  @Permissions('manufacturing.create')
   @Post('boms')
   @Permissions('manufacturing.bom.create')
   async createBOM(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: {
+    @ZodBody(z.any()) dto: {
       productId: string;
       name: string;
       code: string;
@@ -52,22 +61,28 @@ export class ManufacturingController {
   // WORKSTATIONS & LOAD BALANCING
   // ==========================================
 
+  @ApiOperation({ summary: 'Get workstations' })
+  @Permissions('manufacturing.read')
   @Get('workstations')
   @Permissions('manufacturing.work-order.read')
   async getWorkstations(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getWorkstations(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create workstation' })
+  @Permissions('manufacturing.create')
   @Post('workstations')
   @Permissions('manufacturing.work-order.create')
   async createWorkstation(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { name: string; code: string; capacityHours: number; hourlyOverheadRate: number }
+    @ZodBody(z.any()) dto: { name: string; code: string; capacityHours: number; hourlyOverheadRate: number }
   ): Promise<unknown> {
     const orgId = req.user.orgId || 'default-org-id';
     return this.manufacturingService.createWorkstation(req.user.tenantId, orgId, dto);
   }
 
+  @ApiOperation({ summary: 'Get workstation load balancing' })
+  @Permissions('manufacturing.read')
   @Get('workstations/load-balancing')
   @Permissions('manufacturing.work-order.read')
   async getWorkstationLoadBalancing(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -78,43 +93,53 @@ export class ManufacturingController {
   // WORK ORDER ENDPOINTS
   // ==========================================
 
+  @ApiOperation({ summary: 'Get work orders' })
+  @Permissions('manufacturing.read')
   @Get('work-orders')
   @Permissions('manufacturing.work-order.read')
   async getWorkOrders(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getWorkOrders(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create work order' })
+  @Permissions('manufacturing.create')
   @Post('work-orders')
   @Permissions('manufacturing.work-order.create')
   async createWorkOrder(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { bomId: string; workOrderNumber: string; quantity: number; startDate?: string; workstationId?: string }
+    @ZodBody(z.any()) dto: { bomId: string; workOrderNumber: string; quantity: number; startDate?: string; workstationId?: string }
   ): Promise<unknown> {
     return this.manufacturingService.createWorkOrder(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Start work order' })
+  @Permissions('manufacturing.create')
   @Post('work-orders/:id/start')
   @Permissions('manufacturing.work-order.update')
   async startWorkOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.manufacturingService.startWorkOrder(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Update work order status' })
+  @Permissions('manufacturing.update')
   @Patch('work-orders/:id/status')
   @Permissions('manufacturing.work-order.update')
   async updateWorkOrderStatus(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { status: string }
+    @ZodBody(z.any()) dto: { status: string }
   ): Promise<unknown> {
     return this.manufacturingService.updateWorkOrderStatus(req.user.tenantId, id, dto.status);
   }
 
+  @ApiOperation({ summary: 'Log scrap and oee' })
+  @Permissions('manufacturing.update')
   @Patch('work-orders/:id/oee')
   @Permissions('manufacturing.work-order.update')
   async logScrapAndOee(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { oeeScore: number; scrapQuantity: number; lotNumber?: string }
+    @ZodBody(z.any()) dto: { oeeScore: number; scrapQuantity: number; lotNumber?: string }
   ): Promise<unknown> {
     return this.manufacturingService.logScrapAndOee(req.user.tenantId, id, dto);
   }
@@ -123,18 +148,24 @@ export class ManufacturingController {
   // MRP RUNS & PLANNED ITEMS
   // ==========================================
 
+  @ApiOperation({ summary: 'Get m r p runs' })
+  @Permissions('manufacturing.read')
   @Get('mrp/runs')
   @Permissions('manufacturing.work-order.read')
   async getMRPRuns(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getMRPRuns(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Run m r p' })
+  @Permissions('manufacturing.create')
   @Post('mrp/run')
   @Permissions('manufacturing.work-order.create')
   async runMRP(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.runMRP(req.user.tenantId, req.user.email);
   }
 
+  @ApiOperation({ summary: 'Process m r p planned item' })
+  @Permissions('manufacturing.create')
   @Post('mrp/planned-items/:id/process')
   @Permissions('manufacturing.work-order.create')
   async processMRPPlannedItem(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -145,26 +176,32 @@ export class ManufacturingController {
   // QUALITY CONTROL & NCR
   // ==========================================
 
+  @ApiOperation({ summary: 'Get quality plans' })
+  @Permissions('manufacturing.read')
   @Get('quality/plans')
   @Permissions('manufacturing.bom.read')
   async getQualityPlans(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getQualityPlans(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create quality plan' })
+  @Permissions('manufacturing.create')
   @Post('quality/plans')
   @Permissions('manufacturing.bom.create')
   async createQualityPlan(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { productId: string; name: string; code: string; checks: string }
+    @ZodBody(z.any()) dto: { productId: string; name: string; code: string; checks: string }
   ): Promise<unknown> {
     return this.manufacturingService.createQualityPlan(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Log inspection' })
+  @Permissions('manufacturing.create')
   @Post('quality/inspections')
   @Permissions('manufacturing.work-order.update')
   async logInspection(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: {
+    @ZodBody(z.any()) dto: {
       inspectionNumber: string;
       referenceType: string;
       referenceId: string;
@@ -180,17 +217,21 @@ export class ManufacturingController {
     return this.manufacturingService.logInspection(req.user.tenantId, orgId, dto);
   }
 
+  @ApiOperation({ summary: 'Get n c rs' })
+  @Permissions('manufacturing.read')
   @Get('quality/ncr')
   @Permissions('manufacturing.work-order.read')
   async getNCRs(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getNCRs(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create n c r' })
+  @Permissions('manufacturing.create')
   @Post('quality/ncr')
   @Permissions('manufacturing.work-order.create')
   async createNCR(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: {
+    @ZodBody(z.any()) dto: {
       workOrderId?: string;
       productId: string;
       title: string;
@@ -202,12 +243,14 @@ export class ManufacturingController {
     return this.manufacturingService.createNCR(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Resolve n c r' })
+  @Permissions('manufacturing.update')
   @Patch('quality/ncr/:id')
   @Permissions('manufacturing.work-order.update')
   async resolveNCR(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { disposition: string; status: string; resolvedBy?: string }
+    @ZodBody(z.any()) dto: { disposition: string; status: string; resolvedBy?: string }
   ): Promise<unknown> {
     return this.manufacturingService.resolveNCR(req.user.tenantId, id, dto);
   }
@@ -216,32 +259,40 @@ export class ManufacturingController {
   // MACHINE DOWNTIME & CMMS MAINTENANCE
   // ==========================================
 
+  @ApiOperation({ summary: 'Get maintenance requests' })
+  @Permissions('manufacturing.read')
   @Get('maintenance')
   @Permissions('manufacturing.work-order.read')
   async getMaintenanceRequests(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getMaintenanceRequests(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create maintenance request' })
+  @Permissions('manufacturing.create')
   @Post('maintenance')
   @Permissions('manufacturing.work-order.create')
   async createMaintenanceRequest(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { workstationId: string; type: string; priority: string; title: string; description?: string }
+    @ZodBody(z.any()) dto: { workstationId: string; type: string; priority: string; title: string; description?: string }
   ): Promise<unknown> {
     return this.manufacturingService.createMaintenanceRequest(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Get downtime logs' })
+  @Permissions('manufacturing.read')
   @Get('downtime')
   @Permissions('manufacturing.work-order.read')
   async getDowntimeLogs(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getDowntimeLogs(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Log downtime' })
+  @Permissions('manufacturing.create')
   @Post('downtime')
   @Permissions('manufacturing.work-order.create')
   async logDowntime(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { workstationId: string; downtimeCode: string; startTime: string; endTime?: string; notes?: string }
+    @ZodBody(z.any()) dto: { workstationId: string; downtimeCode: string; startTime: string; endTime?: string; notes?: string }
   ): Promise<unknown> {
     return this.manufacturingService.logDowntime(req.user.tenantId, dto);
   }
@@ -250,27 +301,33 @@ export class ManufacturingController {
   // SUBCONTRACTING
   // ==========================================
 
+  @ApiOperation({ summary: 'Get subcontracting orders' })
+  @Permissions('manufacturing.read')
   @Get('subcontracting')
   @Permissions('manufacturing.bom.read')
   async getSubcontractingOrders(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getSubcontractingOrders(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create subcontracting order' })
+  @Permissions('manufacturing.create')
   @Post('subcontracting')
   @Permissions('manufacturing.bom.create')
   async createSubcontractingOrder(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { vendorId: string; productId: string; quantity: number; unitCost: number; deliveryDate?: string }
+    @ZodBody(z.any()) dto: { vendorId: string; productId: string; quantity: number; unitCost: number; deliveryDate?: string }
   ): Promise<unknown> {
     return this.manufacturingService.createSubcontractingOrder(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Update subcontracting status' })
+  @Permissions('manufacturing.update')
   @Patch('subcontracting/:id')
   @Permissions('manufacturing.bom.update')
   async updateSubcontractingStatus(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { status: string }
+    @ZodBody(z.any()) dto: { status: string }
   ): Promise<unknown> {
     return this.manufacturingService.updateSubcontractingStatus(req.user.tenantId, id, dto.status);
   }
@@ -279,18 +336,24 @@ export class ManufacturingController {
   // ADVANCED GAPS ENDPOINTS
   // ==========================================
 
+  @ApiOperation({ summary: 'Get b o m tree' })
+  @Permissions('manufacturing.read')
   @Get('boms/:id/tree')
   @Permissions('manufacturing.bom.read')
   async getBOMTree(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.manufacturingService.getBOMTree(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Get work order operations' })
+  @Permissions('manufacturing.read')
   @Get('work-orders/:id/operations')
   @Permissions('manufacturing.work-order.read')
   async getWorkOrderOperations(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.manufacturingService.getWorkOrderOperations(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Start operation step' })
+  @Permissions('manufacturing.create')
   @Post('work-orders/:id/operations/:opId/start')
   @Permissions('manufacturing.work-order.update')
   async startOperationStep(
@@ -301,95 +364,119 @@ export class ManufacturingController {
     return this.manufacturingService.startOperationStep(req.user.tenantId, id, opId, req.user.email);
   }
 
+  @ApiOperation({ summary: 'Complete operation step' })
+  @Permissions('manufacturing.create')
   @Post('work-orders/:id/operations/:opId/complete')
   @Permissions('manufacturing.work-order.update')
   async completeOperationStep(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Param('opId') opId: string,
-    @Body() dto: { scrapQuantity?: number; lotNumberConsumed?: string; componentProductId?: string }
+    @ZodBody(z.any()) dto: { scrapQuantity?: number; lotNumberConsumed?: string; componentProductId?: string }
   ): Promise<unknown> {
     return this.manufacturingService.completeOperationStep(req.user.tenantId, id, opId, dto);
   }
 
+  @ApiOperation({ summary: 'Get equipment tools' })
+  @Permissions('manufacturing.read')
   @Get('tools')
   @Permissions('manufacturing.work-order.read')
   async getEquipmentTools(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getEquipmentTools(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Get workstation shifts' })
+  @Permissions('manufacturing.read')
   @Get('shifts')
   @Permissions('manufacturing.work-order.read')
   async getWorkstationShifts(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getWorkstationShifts(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create workstation shift' })
+  @Permissions('manufacturing.create')
   @Post('shifts')
   @Permissions('manufacturing.work-order.create')
   async createWorkstationShift(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { workstationId: string; name: string; startTime: string; endTime: string; daysOfWeek: number[] }
+    @ZodBody(z.any()) dto: { workstationId: string; name: string; startTime: string; endTime: string; daysOfWeek: number[] }
   ): Promise<unknown> {
     return this.manufacturingService.createWorkstationShift(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Get subcontracting materials' })
+  @Permissions('manufacturing.read')
   @Get('subcontracting/:id/materials')
   @Permissions('manufacturing.bom.read')
   async getSubcontractingMaterials(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.manufacturingService.getSubcontractingMaterials(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Issue subcontracting materials' })
+  @Permissions('manufacturing.create')
   @Post('subcontracting/:id/issue')
   @Permissions('manufacturing.bom.update')
   async issueSubcontractingMaterials(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { materials: Array<{ productId: string; quantity: number; warehouseId: string }> }
+    @ZodBody(z.any()) dto: { materials: Array<{ productId: string; quantity: number; warehouseId: string }> }
   ): Promise<unknown> {
     return this.manufacturingService.issueSubcontractingMaterials(req.user.tenantId, id, dto.materials);
   }
 
+  @ApiOperation({ summary: 'Reconcile subcontracting materials' })
+  @Permissions('manufacturing.create')
   @Post('subcontracting/:id/reconcile')
   @Permissions('manufacturing.bom.update')
   async reconcileSubcontractingMaterials(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { materials: Array<{ productId: string; quantity: number }> }
+    @ZodBody(z.any()) dto: { materials: Array<{ productId: string; quantity: number }> }
   ): Promise<unknown> {
     return this.manufacturingService.reconcileSubcontractingMaterials(req.user.tenantId, id, dto.materials);
   }
 
+  @ApiOperation({ summary: 'Get e c os' })
+  @Permissions('manufacturing.read')
   @Get('ecos')
   @Permissions('manufacturing.bom.read')
   async getECOs(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getECOs(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Submit e c o' })
+  @Permissions('manufacturing.create')
   @Post('ecos')
   @Permissions('manufacturing.bom.create')
   async submitECO(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { bomId: string; changeDescription: string; requestedBy: string }
+    @ZodBody(z.any()) dto: { bomId: string; changeDescription: string; requestedBy: string }
   ): Promise<unknown> {
     return this.manufacturingService.submitECO(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Resolve e c o' })
+  @Permissions('manufacturing.create')
   @Post('ecos/:id/resolve')
   @Permissions('manufacturing.bom.update')
   async resolveECO(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { status: string }
+    @ZodBody(z.any()) dto: { status: string }
   ): Promise<unknown> {
     return this.manufacturingService.resolveECO(req.user.tenantId, id, dto.status, req.user.email);
   }
 
+  @ApiOperation({ summary: 'Get detailed o e e analytics' })
+  @Permissions('manufacturing.read')
   @Get('diagnostics/oee')
   @Permissions('manufacturing.work-order.read')
   async getDetailedOEEAnalytics(@Req() req: AuthenticatedRequest): Promise<unknown> {
     return this.manufacturingService.getDetailedOEEAnalytics(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Get lot genealogy' })
+  @Permissions('manufacturing.read')
   @Get('diagnostics/genealogy/:lotNumber')
   @Permissions('manufacturing.work-order.read')
   async getLotGenealogy(@Req() req: AuthenticatedRequest, @Param('lotNumber') lotNumber: string): Promise<unknown> {

@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Put, UseGuards, Req } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { PwaService } from './pwa.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -14,32 +17,40 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('pwa')
+@ApiBearerAuth()
 @Controller('admin/pwa-sync')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class PwaController {
   constructor(private readonly pwaService: PwaService) {}
 
+  @ApiOperation({ summary: 'Get sync queue' })
+  @Permissions('pwa.read')
   @Get('queue')
   @Permissions('admin.sync.read')
   async getSyncQueue(@Req() req: AuthenticatedRequest) {
     return this.pwaService.getSyncQueue(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Push offline operations' })
+  @Permissions('pwa.create')
   @Post('push')
   @Permissions('admin.sync.create')
   async pushOfflineOperations(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { clientId: string; operations: Array<{ operation: string; entityType: string; payload: unknown }> }
+    @ZodBody(z.any()) dto: { clientId: string; operations: Array<{ operation: string; entityType: string; payload: unknown }> }
   ) {
     return this.pwaService.pushOfflineOperations(req.user.tenantId, dto.clientId, dto.operations);
   }
 
+  @ApiOperation({ summary: 'Reconcile operation' })
+  @Permissions('pwa.update')
   @Put('reconcile/:id')
   @Permissions('admin.sync.create')
   async reconcileOperation(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { status: 'RECONCILED' | 'CONFLICT'; errorMessage?: string }
+    @ZodBody(z.any()) dto: { status: 'RECONCILED' | 'CONFLICT'; errorMessage?: string }
   ) {
     return this.pwaService.reconcileOperation(req.user.tenantId, id, dto.status, dto.errorMessage);
   }

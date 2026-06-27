@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ScheduledReportsService } from './scheduled-reports.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -15,23 +18,29 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('reporting')
+@ApiBearerAuth()
 @Controller('reporting/scheduled')
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class ScheduledReportsController {
   constructor(private readonly scheduledReportsService: ScheduledReportsService) {}
 
+  @ApiOperation({ summary: 'Get scheduled reports' })
+  @Permissions('reporting.read')
   @Get()
   @Permissions('finance.report.read')
   async getScheduledReports(@Req() req: AuthenticatedRequest) {
     return this.scheduledReportsService.getScheduledReports(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Create scheduled report' })
+  @Permissions('reporting.create')
   @Post()
   @Permissions('finance.report.read')
   async createScheduledReport(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: {
+    @ZodBody(z.any()) dto: {
       name: string;
       reportType: string;
       schedule: string;
@@ -43,12 +52,14 @@ export class ScheduledReportsController {
     return this.scheduledReportsService.createScheduledReport(req.user.tenantId, req.user.userId, dto);
   }
 
+  @ApiOperation({ summary: 'Update scheduled report' })
+  @Permissions('reporting.update')
   @Patch(':id')
   @Permissions('finance.report.read')
   async updateScheduledReport(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: {
+    @ZodBody(z.any()) dto: {
       name?: string;
       reportType?: string;
       schedule?: string;
@@ -61,6 +72,8 @@ export class ScheduledReportsController {
     return this.scheduledReportsService.updateScheduledReport(req.user.tenantId, id, dto);
   }
 
+  @ApiOperation({ summary: 'Delete scheduled report' })
+  @Permissions('reporting.delete')
   @Delete(':id')
   @Permissions('finance.report.read')
   async deleteScheduledReport(
@@ -70,6 +83,8 @@ export class ScheduledReportsController {
     return this.scheduledReportsService.deleteScheduledReport(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Run scheduled report' })
+  @Permissions('reporting.create')
   @Post(':id/run')
   @Permissions('finance.report.read')
   async runScheduledReport(

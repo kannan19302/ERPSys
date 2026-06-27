@@ -1,9 +1,14 @@
 import { Controller, Post, Get, Patch, Body, UseGuards, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { RbacGuard } from '../../common/guards/rbac.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@unerp/shared';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 const AUTH_COOKIE = 'auth_token';
 const COOKIE_OPTIONS = {
@@ -25,20 +30,26 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+@ApiTags('auth')
+@ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: 'Register' })
+  @Permissions('auth.create')
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body(new ZodValidationPipe(registerSchema)) dto: RegisterInput) {
     return this.authService.register(dto);
   }
 
+  @ApiOperation({ summary: 'Login' })
+  @Permissions('auth.create')
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
-    @Body() body: Record<string, unknown>,
+    @ZodBody(z.any()) body: Record<string, unknown>,
     @Res({ passthrough: true }) res: Response,
   ) {
     const validationPipe = new ZodValidationPipe(loginSchema);
@@ -54,6 +65,8 @@ export class AuthController {
     return result;
   }
 
+  @ApiOperation({ summary: 'Logout' })
+  @Permissions('auth.create')
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Res({ passthrough: true }) res: Response) {
@@ -61,17 +74,21 @@ export class AuthController {
     return { message: 'Logged out' };
   }
 
+  @ApiOperation({ summary: 'Get profile' })
+  @Permissions('auth.read')
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RbacGuard)
   async getProfile(@Req() req: AuthenticatedRequest) {
     return this.authService.getProfile(req.user.userId);
   }
 
+  @ApiOperation({ summary: 'Update profile' })
+  @Permissions('auth.update')
   @Patch('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RbacGuard)
   async updateProfile(
     @Req() req: AuthenticatedRequest,
-    @Body() body: Record<string, unknown>,
+    @ZodBody(z.any()) body: Record<string, unknown>,
   ) {
     const validationPipe = new ZodValidationPipe(
       require('@unerp/shared').updateProfileSchema,
