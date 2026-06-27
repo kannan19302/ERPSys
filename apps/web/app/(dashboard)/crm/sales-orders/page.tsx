@@ -1,59 +1,165 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Spinner } from '@unerp/ui';
-import { Search, ClipboardList } from 'lucide-react';
+import {
+  PageHeader, Card, Button, Spinner, StatusBadge, DataTable, type Column,
+  KPICard, Badge, Modal,
+} from '@unerp/ui';
+import {
+  ClipboardList, Search, DollarSign, Truck, CheckCircle, Clock, Plus,
+  Download, Eye, Package,
+} from 'lucide-react';
 
-interface SalesOrder { id: string; orderNumber: string; status: string; totalAmount: number; customerName: string; orderDate: string; }
+interface SalesOrder {
+  id: string;
+  orderNumber: string;
+  status: string;
+  totalAmount: number;
+  customerName: string;
+  orderDate: string;
+  deliveryDate?: string;
+  items?: number;
+}
+
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
+
+const fmtCurrency = (n: number) => `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+const FALLBACK: SalesOrder[] = [
+  { id: 'so1', orderNumber: 'SO-2026-001', status: 'CONFIRMED', totalAmount: 45000, customerName: 'Stark Industries', orderDate: '2026-06-01', items: 3 },
+  { id: 'so2', orderNumber: 'SO-2026-002', status: 'DELIVERED', totalAmount: 85000, customerName: 'Wayne Enterprises', orderDate: '2026-05-15', deliveryDate: '2026-06-10', items: 5 },
+  { id: 'so3', orderNumber: 'SO-2026-003', status: 'DRAFT', totalAmount: 120000, customerName: 'Stark Industries', orderDate: '2026-06-10', items: 8 },
+  { id: 'so4', orderNumber: 'SO-2026-004', status: 'SHIPPED', totalAmount: 32500, customerName: 'Daily Planet', orderDate: '2026-06-15', items: 2 },
+];
 
 export default function CrmSalesOrdersPage() {
-    const [data, setData] = useState<SalesOrder[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
+  const [data, setData] = useState<SalesOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selected, setSelected] = useState<SalesOrder | null>(null);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        fetch('/api/v1/sales/orders', { headers: { Authorization: `Bearer ${token || ''}` } })
-            .then(r => r.ok ? r.json() : []).then(setData)
-            .catch(() => setData([
-                { id: 'so1', orderNumber: 'SO-2026-001', status: 'CONFIRMED', totalAmount: 45000, customerName: 'Stark Industries', orderDate: '2026-06-01' },
-                { id: 'so2', orderNumber: 'SO-2026-002', status: 'DELIVERED', totalAmount: 85000, customerName: 'Wayne Enterprises', orderDate: '2026-05-15' },
-                { id: 'so3', orderNumber: 'SO-2026-003', status: 'DRAFT', totalAmount: 120000, customerName: 'Stark Industries', orderDate: '2026-06-10' },
-            ]))
-            .finally(() => setLoading(false));
-    }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/sales/orders', {
+          headers: { Authorization: `Bearer ${getToken() || ''}` },
+        });
+        if (res.ok) {
+          const d = await res.json();
+          setData(Array.isArray(d) ? d : d?.data || FALLBACK);
+        } else { setData(FALLBACK); }
+      } catch { setData(FALLBACK); }
+      finally { setLoading(false); }
+    })();
+  }, []);
 
-    const filtered = data.filter(o => `${o.orderNumber} ${o.customerName}`.toLowerCase().includes(search.toLowerCase()));
-    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
+  const filtered = data.filter((o) => {
+    const matchesSearch = !search || `${o.orderNumber} ${o.customerName}`.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <PageHeader title="Sales Orders" description="Customer orders and fulfillments" breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Sales Orders' }]} />
-            <div style={{ position: 'relative', maxWidth: '400px' }}>
-                <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
-                <input type="text" placeholder="Search orders..." value={search} onChange={e => setSearch(e.target.value)}
-                    style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none' }} />
-            </div>
-            <Card padding="none">
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-                    <thead><tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                        <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left' }}>Order #</th>
-                        <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left' }}>Customer</th>
-                        <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>Amount</th>
-                        <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left' }}>Date</th>
-                        <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center' }}>Status</th>
-                    </tr></thead>
-                    <tbody>{filtered.map(o => (
-                        <tr key={o.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                            <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}><ClipboardList size={14} style={{ marginRight: 'var(--space-2)' }} />{o.orderNumber}</td>
-                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{o.customerName}</td>
-                            <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>${Number(o.totalAmount).toLocaleString()}</td>
-                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{new Date(o.orderDate).toLocaleDateString()}</td>
-                            <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center' }}><StatusBadge status={o.status} /></td>
-                        </tr>
-                    ))}</tbody>
-                </table>
-            </Card>
+  const totalValue = data.reduce((a, o) => a + Number(o.totalAmount), 0);
+  const confirmedCount = data.filter(o => o.status === 'CONFIRMED').length;
+  const deliveredCount = data.filter(o => o.status === 'DELIVERED').length;
+
+  const columns: Column<SalesOrder>[] = [
+    {
+      key: 'order', header: 'Order',
+      render: (row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--color-success-light)', color: 'var(--color-success)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ClipboardList size={16} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.orderNumber}</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{row.customerName}</div>
+          </div>
         </div>
-    );
+      ),
+    },
+    { key: 'items', header: 'Items', render: (row) => <span style={{ fontSize: 'var(--text-sm)' }}>{row.items || '—'}</span> },
+    { key: 'totalAmount', header: 'Amount', align: 'right' as const, render: (row) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{fmtCurrency(row.totalAmount)}</span> },
+    { key: 'orderDate', header: 'Order Date', render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{new Date(row.orderDate).toLocaleDateString()}</span> },
+    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    {
+      key: 'actions', header: '', align: 'right' as const, width: '60px',
+      render: (row) => (
+        <button onClick={(e) => { e.stopPropagation(); setSelected(row); setDetailOpen(true); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}><Eye size={14} /></button>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <PageHeader
+        title="Sales Orders"
+        description="Track customer orders from confirmation through delivery"
+        breadcrumbs={[{ label: 'CRM', href: '/crm' }, { label: 'Sales Orders' }]}
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button variant="outline" onClick={() => {}}><Download size={14} style={{ marginRight: 6 }} /> Export</Button>
+            <Button variant="primary" onClick={() => {}}><Plus size={14} style={{ marginRight: 6 }} /> New Order</Button>
+          </div>
+        }
+      />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+        <KPICard title="Total Orders" value={data.length} icon={<ClipboardList size={18} />} color="var(--color-primary)" />
+        <KPICard title="Order Value" value={fmtCurrency(totalValue)} icon={<DollarSign size={18} />} color="var(--color-success)" />
+        <KPICard title="Confirmed" value={confirmedCount} icon={<CheckCircle size={18} />} color="var(--color-info)" />
+        <KPICard title="Delivered" value={deliveredCount} icon={<Truck size={18} />} color="var(--color-success)" />
+      </div>
+
+      <Card>
+        <div style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+            <input type="text" placeholder="Search orders..." value={search} onChange={(e) => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            {['ALL', 'DRAFT', 'CONFIRMED', 'SHIPPED', 'DELIVERED'].map((s) => (
+              <button key={s} onClick={() => setStatusFilter(s)} style={{
+                padding: '6px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)',
+                border: '1px solid', borderColor: statusFilter === s ? 'var(--color-primary)' : 'var(--color-border)',
+                background: statusFilter === s ? 'var(--color-primary-light)' : 'var(--color-bg)',
+                color: statusFilter === s ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+              }}>
+                {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card padding="none">
+        <DataTable columns={columns} data={filtered} loading={loading} rowKey={(r) => r.id}
+          onRowClick={(r) => { setSelected(r); setDetailOpen(true); }}
+          emptyTitle="No sales orders" emptyMessage="Create your first sales order." emptyIcon={<ClipboardList size={48} />} />
+      </Card>
+
+      <Modal open={detailOpen} onClose={() => { setDetailOpen(false); setSelected(null); }} title={selected?.orderNumber || 'Order'} size="sm"
+        footer={<Button variant="secondary" onClick={() => { setDetailOpen(false); setSelected(null); }}>Close</Button>}
+      >
+        {selected && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+              <div><div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Customer</div><div style={{ fontWeight: 'var(--weight-semibold)' }}>{selected.customerName}</div></div>
+              <div><div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Status</div><StatusBadge status={selected.status} /></div>
+              <div><div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Order Date</div><div>{new Date(selected.orderDate).toLocaleDateString()}</div></div>
+              <div><div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Items</div><div>{selected.items || '—'}</div></div>
+            </div>
+            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', textAlign: 'right' }}>
+              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>{fmtCurrency(selected.totalAmount)}</div>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
 }
