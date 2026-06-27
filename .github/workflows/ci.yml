@@ -233,8 +233,6 @@ jobs:
   migrate-check:
     name: Migration Drift Check
     runs-on: ubuntu-latest
-    # Non-blocking until schema drift is resolved with a catch-up migration.
-    continue-on-error: true
     services:
       postgres:
         image: postgres:16

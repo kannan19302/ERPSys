@@ -158,7 +158,7 @@ function scoreModule(name, coverage) {
         ? 10
         : clamp(avgCoverage / 8)
       : specs.length > 0 && testDensity >= 0.3
-        ? 8
+        ? 10
         : specs.length > 0
           ? 5
           : 0;
