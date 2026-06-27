@@ -21,6 +21,6 @@ export const WithActions: Story = {
   args: {
     title: 'Products',
     description: 'Manage your product catalog',
-    actions: '<button>Add Product</button>' as any,
+    actions: '<button>Add Product</button>' as unknown as string,
   },
 };

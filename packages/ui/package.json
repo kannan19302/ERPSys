@@ -37,14 +37,14 @@
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/addon-links": "^10.4.6",
+    "@storybook/addon-links": "^8.6.14",
     "@storybook/blocks": "^8.6.14",
-    "@storybook/react": "^10.4.6",
-    "@storybook/react-vite": "^10.4.6",
+    "@storybook/react": "^8.6.14",
+    "@storybook/react-vite": "^8.6.14",
     "@types/react": "^19.0.0",
     "@unerp/config": "workspace:*",
     "rimraf": "^6.0.0",
-    "storybook": "^10.4.6",
+    "storybook": "^8.6.14",
     "typescript": "^5.7.0"
   }
 }

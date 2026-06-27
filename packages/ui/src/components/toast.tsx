@@ -118,7 +118,7 @@ export const ToastProvider: FC<{ children: ReactNode }> = ({ children }) => {
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);
   if (ctx) return ctx;
-  const noop = (o: ToastOptions) => { if (typeof console !== 'undefined') console.warn('[toast] no ToastProvider mounted:', o.title); return ''; };
+  const noop = (_o: ToastOptions) => '';
   return {
     toast: noop,
     success: (title, description) => noop({ title, description }),

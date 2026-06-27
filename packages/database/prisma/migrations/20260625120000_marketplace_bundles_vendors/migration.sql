@@ -2,16 +2,58 @@
 -- bundle-backed installs (per-tenant extracted dirs) and core/vendor listing linkage.
 -- Written idempotently so it is safe on the drifted dev database.
 
+-- ── marketplace_apps: create table if not exists, then add new columns ──
+CREATE TABLE IF NOT EXISTS "marketplace_apps" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "long_description" TEXT,
+    "category" TEXT NOT NULL,
+    "icon" TEXT,
+    "publisher" TEXT NOT NULL DEFAULT '',
+    "publisher_logo" TEXT,
+    "publisher_website" TEXT,
+    "version" TEXT NOT NULL DEFAULT '1.0.0',
+    "pricing" TEXT NOT NULL DEFAULT 'FREE',
+    "price" DECIMAL(10,2),
+    "rating" DECIMAL(3,2) NOT NULL DEFAULT 0,
+    "review_count" INTEGER NOT NULL DEFAULT 0,
+    "installs" INTEGER NOT NULL DEFAULT 0,
+    "features" JSONB NOT NULL DEFAULT '[]',
+    "screenshots" JSONB NOT NULL DEFAULT '[]',
+    "tags" JSONB NOT NULL DEFAULT '[]',
+    "metadata" JSONB NOT NULL DEFAULT '{}',
+    "requires_apps" JSONB NOT NULL DEFAULT '[]',
+    "config_schema" JSONB NOT NULL DEFAULT '{}',
+    "support_url" TEXT,
+    "documentation_url" TEXT,
+    "privacy_policy_url" TEXT,
+    "featured" BOOLEAN NOT NULL DEFAULT false,
+    "verified" BOOLEAN NOT NULL DEFAULT false,
+    "status" TEXT NOT NULL DEFAULT 'PUBLISHED',
+    "is_core" BOOLEAN NOT NULL DEFAULT false,
+    "vendor_id" TEXT,
+    "bundle_id" TEXT,
+    "package_id" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "marketplace_apps_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "marketplace_apps_slug_key" ON "marketplace_apps"("slug");
+CREATE INDEX IF NOT EXISTS "marketplace_apps_category_idx" ON "marketplace_apps"("category");
+CREATE INDEX IF NOT EXISTS "marketplace_apps_featured_idx" ON "marketplace_apps"("featured");
+CREATE INDEX IF NOT EXISTS "marketplace_apps_vendor_id_idx" ON "marketplace_apps"("vendor_id");
+
 -- ── installed_apps: track bundle + on-disk install path for real-time teardown ──
 ALTER TABLE "installed_apps" ADD COLUMN IF NOT EXISTS "bundle_id" TEXT;
 ALTER TABLE "installed_apps" ADD COLUMN IF NOT EXISTS "install_path" TEXT;
 
--- ── marketplace_apps: listing is now a projection of a published bundle ──
+-- ── Columns that may already exist on dev (idempotent) ──
 ALTER TABLE "marketplace_apps" ADD COLUMN IF NOT EXISTS "is_core" BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE "marketplace_apps" ADD COLUMN IF NOT EXISTS "vendor_id" TEXT;
 ALTER TABLE "marketplace_apps" ADD COLUMN IF NOT EXISTS "bundle_id" TEXT;
 ALTER TABLE "marketplace_apps" ADD COLUMN IF NOT EXISTS "package_id" TEXT;
-CREATE INDEX IF NOT EXISTS "marketplace_apps_vendor_id_idx" ON "marketplace_apps"("vendor_id");
 
 -- ── app_vendors ──
 CREATE TABLE IF NOT EXISTS "app_vendors" (

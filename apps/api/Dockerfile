@@ -13,8 +13,8 @@ RUN pnpm install --frozen-lockfile
 # Generate Prisma client + build the API and its workspace deps.
 RUN pnpm --filter @unerp/database exec prisma generate \
  && pnpm --filter @unerp/database build \
- && pnpm --filter @unerp/auth build \
  && pnpm --filter @unerp/shared build \
+ && pnpm --filter @unerp/auth build \
  && pnpm --filter @unerp/api build
 
 FROM node:22-alpine AS runner

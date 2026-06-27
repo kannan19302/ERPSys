@@ -25,8 +25,8 @@ jobs:
       - run: pnpm --filter @unerp/database exec prisma generate
       - run: pnpm lint
       - run: pnpm --filter @unerp/database build
-      - run: pnpm --filter @unerp/auth build
       - run: pnpm --filter @unerp/shared build
+      - run: pnpm --filter @unerp/auth build
       - run: pnpm --filter @unerp/api build
 
   test:
@@ -44,6 +44,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @unerp/database exec prisma generate
+      - run: pnpm --filter @unerp/database build
+      - run: pnpm --filter @unerp/shared build
+      - run: pnpm --filter @unerp/auth build
       - run: pnpm --filter @unerp/api test:coverage
       - name: Upload coverage
         if: always()
@@ -97,7 +100,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @unerp/database exec prisma generate
       - run: pnpm --filter @unerp/database exec prisma migrate deploy
-      - run: pnpm --filter @unerp/database build && pnpm --filter @unerp/auth build && pnpm --filter @unerp/shared build && pnpm --filter @unerp/api build
+      - run: pnpm --filter @unerp/database build && pnpm --filter @unerp/shared build && pnpm --filter @unerp/auth build && pnpm --filter @unerp/api build
       - run: pnpm --filter @unerp/web exec playwright install --with-deps chromium
       - name: Run e2e
         run: pnpm --filter @unerp/web test:e2e
@@ -196,6 +199,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @unerp/database exec prisma generate
+      - run: pnpm --filter @unerp/database build
+      - run: pnpm --filter @unerp/shared build
+      - run: pnpm --filter @unerp/auth build
       - run: pnpm --filter @unerp/web build
 
   build-storybook:
