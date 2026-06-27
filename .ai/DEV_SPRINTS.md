@@ -1,194 +1,301 @@
 # UniERP Development Sprints
 
-> **Strategy**: Complete each module FULLY (features + fixes + UI + tests) before moving to next.
-> **Last updated**: 2026-06-27
+> **Strategy**: Complete each module FULLY (features + fixes + UI + nav) before moving to next.  
+> **Tracking**: This file is the single source of truth. Updated after each sprint.  
+> **Last updated**: 2026-06-27  
 
 ---
 
-## Sprint 1: Admin Module (Wave 1, App #1) — COMPLETED
-**Status**: DONE | **Commits**: `2989079`
-**Dates**: 2026-06-27
+## COMPLETED SPRINTS
 
-### Deliverables
-- [x] Admin Dashboard overhaul — KPI cards, activity feed, system health sidebar, sparklines, donut chart
-- [x] User Management — DataTable, Modal invite, Drawer details, ConfirmDialog suspend
-- [x] Access Control (3 pages) — Roles with permission progress bars, Permission Matrix with tooltips, Access Packages with DataTable
-- [x] Security Hub — KPI overview, linked sub-page cards, alert DataTable
-- [x] SSO Config — Tabs OIDC/SAML, TextField/FormField
-- [x] MFA Settings — Status banner, toggle options, method selector
-- [x] Audit Trail — DataTable with severity badges, search + filter, Pagination
-- [x] General Settings — SettingsSection cards, Tabs, autosave badges
-- [x] Workflows — KPI cards, DataTable workflows/approvals, sub-page grid
-- [x] System Health — Status banner, Sparkline charts, service status cards
-- [x] Data Import — Stepper wizard, drag-drop upload, column mapping, validation
-- [x] API Keys — DataTable, Modal create, scope checkboxes, ConfirmDialog
-- [x] Module Manager — Toggle switches, icon grid, search filter
+### Sprint 1: Admin Module — DONE
+18 pages overhauled with design system. Commit `2989079`.
 
-### Metrics
-- 18 pages overhauled
-- -842 net lines (cleaner code using design system)
+### Sprint 2: Finance Module — DONE
+14→25 pages. 11 Coming Soon features built. Backend CRUD added for recurring invoices. Commits `2989079`, `eaeac95`, `0d6d264`.
+
+### Sprint 3: HR Module — DONE (pre-existing)
+25 pages, 90+ endpoints, 27 models. Verified complete.
+
+### Sprint 4: CRM Module — DONE
+33 pages, 4 stubs enhanced (Quotations, Sales Orders, Vendors, Email Templates). Commit `ebc9afc`.
+
+### Sprint 5-10: Inventory, Sales, Procurement, Manufacturing, Projects, POS — DONE (pre-existing)
+All verified complete with full pages, sidebars, and API integration.
 
 ---
 
-## Sprint 2: Finance Module (Wave 1, App #2) — COMPLETED
-**Status**: DONE | **Commits**: `2989079`, `eaeac95`, `0d6d264`
-**Dates**: 2026-06-27
-
-### Deliverables
-
-#### UI Overhaul (3 pages)
-- [x] Finance Dashboard — DataTable invoices, Modal create/payment, status filters, advanced links grid
-- [x] Chart of Accounts — Tree view with KPI summary, type filters, expand/collapse
-- [x] Advanced Finance hub — Fix duplicate CSS property, remove Coming Soon badges
-
-#### New Feature Implementation (11 pages)
-- [x] Recurring Invoices — Schedule management, frequency config, generate button + backend CRUD
-- [x] Revenue Recognition — Deferred revenue schedules, progress tracking
-- [x] Bank Reconciliation — Statement import, auto-match, match/unmatch UI
-- [x] Expense Management — Employee expense reports, approval workflow
-- [x] Cash Position — Real-time bank balance aggregation, daily cash flow chart
-- [x] Cash Flow Forecast — 6-month rolling projections, inflow/outflow breakdown, warning alerts
-- [x] Finance Audit Trail — Entity-level change tracking with diff view
-- [x] Account Reconciliation — GL vs sub-ledger matching, variance detection
-- [x] Multi-Currency / Exchange Rates — Rate management with API integration
-- [x] Financial Ratios — 10 key ratios with benchmarks and trend charts
-- [x] Consolidation — Multi-entity P&L, quarterly trend, entity overview
-
-#### Sidebar Navigation
-- [x] Add all 11 new pages to sidebar
-- [x] Remove all "Coming Soon" badges
-- [x] Zero 404 links
-
-#### Bug Fixes
-- [x] Fix exchange-rates runtime error (rate string → Number conversion)
-
-### Metrics
-- 25 total Finance pages (was 14)
-- 0 Coming Soon stubs remaining (was 11)
-- 0 404 risks
+## PENDING SPRINTS
 
 ---
 
-## Sprint 3: HR Module (Wave 1, App #3) — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
+### Sprint 11: Supply Chain Module
+**Status**: PENDING  
+**Current state**: 1 page | 1 controller | 7 services | Shipment model  
+**Backend ready**: Shipment CRUD, demand forecast, logistics tracking, route optimization  
 
-### Audit Result
-HR module was already fully complete:
-- 25 pages, all functional with real API integration
-- 90+ backend endpoints across hr + advanced-hr controllers
-- 27 Prisma models covering full employee lifecycle
-- All pages use @unerp/ui design system components
-- All sidebar links active, zero 404s, zero stubs
-- No "Coming Soon" badges
+#### Pages to Build
+| Page | Route | Description | Backend Endpoint |
+|------|-------|-------------|-----------------|
+| Dashboard | `/supply-chain` | KPI cards (shipments, on-time rate, costs), charts, quick actions | GET /supply-chain/shipments |
+| Shipment List | `/supply-chain/shipments` | DataTable with status filters, search, tracking links | GET /supply-chain/shipments |
+| Shipment Detail | `/supply-chain/shipments/[id]` | Timeline tracker, status updates, carrier info, documents | GET /supply-chain/shipments/:id |
+| Create Shipment | Modal on list page | Origin/destination, carrier, items, weight, dates | POST /supply-chain/shipments |
+| Carrier Management | `/supply-chain/carriers` | Carrier directory, rate cards, performance metrics | New endpoint needed |
+| Demand Forecast | `/supply-chain/demand-forecast` | Charts showing projected demand by product/period | GET /supply-chain/demand-forecast |
+| Route Optimization | `/supply-chain/routes` | Route map visualization, cost comparison | Uses route-optimization.service |
+| Shipment Tracking | `/supply-chain/tracking` | Real-time tracking with map, ETA, status history | Uses logistics-tracking.service |
+| Analytics | `/supply-chain/analytics` | On-time delivery %, cost per shipment, carrier performance | Aggregate from shipments |
 
-### Key Features Verified
-- Employee directory with search/filtering and KPI drill-down
-- Recruitment pipeline, onboarding/offboarding checklists
-- Payroll with salary registry, tax brackets, payroll runs
-- Leave management with policy configuration
-- Performance (goals, appraisals, 360° feedback, succession)
-- Attendance, shifts, training, benefits, skills matrix
-- HR helpdesk, engagement surveys, compliance tracking
-
----
-
-## Sprint 4: CRM Module (Wave 2, App #4) — COMPLETED
-**Status**: DONE | **Commits**: 2026-06-27
-**Dates**: 2026-06-27
-
-### Audit Result
-CRM was already mostly complete (33 pages, 100+ endpoints). Enhanced 4 stub pages:
-
-### Deliverables
-- [x] Quotations: full DataTable, KPI cards, status filters, create Modal with line items, detail view
-- [x] Sales Orders: DataTable, KPI cards, status filters, detail Modal
-- [x] Vendors: DataTable, KPI cards, Modal create with proper FormField/Select
-- [x] Email Templates: DataTable, preview Modal, create Modal with variable reference, category badges
-
-### Metrics
-- 33 total CRM pages (4 enhanced from stubs)
-- 100+ backend endpoints (all wired)
-- Zero 404s, zero type errors
+#### Sidebar Navigation to Add
+```
+Supply Chain Operations
+├── Dashboard
+├── Shipments (list + create)
+├── Shipment Tracking
+├── Carrier Management
+├── Route Optimization
+├── Demand Forecast
+└── Analytics
+```
 
 ---
 
-## Sprint 5: Inventory Module (Wave 2, App #5) — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
+### Sprint 12: Education Module
+**Status**: PENDING  
+**Current state**: 1 page | 2 controllers | 5 services | Student, Course, Fee, Book models  
+**Backend ready**: Students CRUD, Courses CRUD, Timetables, Fee Structures, Fee Payments, Book Register, Book Checkout/Return  
 
-### Audit Result
-14 pages, all functional (147-658 lines each), no stubs, no Coming Soon.
-Full sidebar with Material Transactions, Quality & Control, Storage & Audit sections.
-KPI cards, charts, product detail pages, stock entries, cycle counts, QA inspections.
+#### Pages to Build
+| Page | Route | Description | Backend Endpoint |
+|------|-------|-------------|-----------------|
+| Dashboard | `/education` | KPI cards (students, courses, fees collected), enrollment charts | Aggregate |
+| Student Registry | `/education/students` | DataTable with search, enrollment status filters, detail drawer | GET /education/students |
+| Student Detail | `/education/students/[id]` | Profile, enrolled courses, fee history, attendance | GET /education/students/:id |
+| Course Catalog | `/education/courses` | Course cards/list, credits, status, enrollment count | GET /education/courses |
+| Course Detail | `/education/courses/[id]` | Syllabus, enrolled students, schedule, materials | GET /education/courses/:id |
+| Timetable | `/education/timetable` | Weekly grid view, drag-to-schedule, room allocation | GET /education/timetables |
+| Fee Management | `/education/fees` | Fee structures, student fee ledger, payment processing | GET /education/fee-structures |
+| Fee Payment | `/education/fees/pay` | Payment form, receipt generation, outstanding balance | POST /education/student-fees/:id/pay |
+| Library | `/education/library` | Book register, checkout/return, availability tracking | GET /education/books |
+| Attendance | `/education/attendance` | Daily attendance marking, reports by class/student | New endpoint needed |
+| Grade Book | `/education/grades` | Spreadsheet-style grade entry per course/student | New endpoint needed |
+| Reports | `/education/reports` | Enrollment trends, fee collection, academic performance | Aggregate |
 
----
-
-## Sprint 6: Sales Module — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
-5 pages, full sidebar, KPI cards. Quotations, Sales Orders, Delivery Notes, Returns.
-
----
-
-## Sprint 7: Procurement Module — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
-11 pages, KPI cards, List/Chart/Kanban views. Requisitions, POs, GRN, RFQs, Supplier Bids.
-
----
-
-## Sprint 8: Manufacturing Module — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
-7 pages. BOM, work orders, production plans, routings, quality.
-
-## Sprint 9: Projects Module — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
-5 pages. Projects, tasks, timesheets, Gantt, budgets.
-
-## Sprint 10: POS Module — COMPLETED (already built)
-**Status**: DONE (pre-existing) | **Verified**: 2026-06-27
-10 pages. Terminals, registers, shifts, sales, cash management.
-
----
-
-## Sprint 11: Supply Chain Module — NEEDS WORK
-**Status**: IN PROGRESS
-1 page only. Needs: shipment tracking, carrier management, demand forecast, route optimization.
-
-## Sprint 12-18: Verticals & Platform (Wave 4) — NEEDS WORK
-**Status**: PLANNED — These modules have 0-2 pages each and need full implementation.
-
-- Sprint 12: Education (1 page) — Student dashboard, course catalog, timetable, grade book, LMS
-- Sprint 13: Healthcare (0 pages) — Patient timeline, appointments, clinical forms, prescriptions
-- Sprint 14: Real Estate (1 page) — Property gallery, lease timeline, construction tracker
-- Sprint 15: Field Service — Dispatch board, technician calendar, mobile work orders
-- Sprint 16: Connect — Chat UI, channels, video calls, notifications
-- Sprint 17: Analytics — Dashboard builder, report designer, scheduled reports
-- Sprint 18: Builder/Marketplace — Form builder, template gallery, app publishing
+#### Sidebar Navigation to Add
+```
+Education
+├── Dashboard
+├── Academic
+│   ├── Student Registry
+│   ├── Course Catalog
+│   ├── Timetable
+│   ├── Grade Book
+│   └── Attendance
+├── Administration
+│   ├── Fee Management
+│   ├── Fee Payments
+│   └── Library
+└── Reports & Analytics
+```
 
 ---
 
-## Architecture Notes
+### Sprint 13: Healthcare Module
+**Status**: PENDING  
+**Current state**: 0 pages (NO FRONTEND) | 3 controllers | 7 services | Patient, Appointment, Prescription models  
+**Backend ready**: Patients CRUD, Practitioners, Appointments, Prescriptions, Clinical workflows, SMART-on-FHIR  
 
-### UI Pattern Checklist (apply to every module)
-1. **List views** — DataTable with column toggling, bulk actions, saved views
-2. **Detail views** — Tabbed layout, activity timeline, related records sidebar
-3. **Create/Edit** — Multi-step wizard for complex entities, inline validation, autosave
-4. **Dashboards** — KPI cards with drill-down, configurable charts, date range picker
-5. **Empty states** — Illustrated empty states with quick-action CTAs
-6. **Modals** — Use `Modal` from @unerp/ui, not hand-rolled overlays
-7. **Forms** — Use `TextField`/`FormField`/`Select` from @unerp/ui
-8. **Navigation** — Use `Tabs` for sub-page navigation, `Pagination` for lists
+#### Pages to Build (FULL MODULE FROM SCRATCH)
+| Page | Route | Description | Backend Endpoint |
+|------|-------|-------------|-----------------|
+| Dashboard | `/healthcare` | KPI cards (patients, appointments today, prescriptions), charts | Aggregate |
+| Patient Registry | `/healthcare/patients` | DataTable with search, status filters, age demographics | GET /healthcare/patients |
+| Patient Detail | `/healthcare/patients/[id]` | Medical timeline, vitals, allergies, encounters, prescriptions | GET /healthcare/patients/:id |
+| New Patient | Modal on registry | Demographics, contact, insurance, medical history | POST /healthcare/patients |
+| Appointments | `/healthcare/appointments` | Calendar view + list view, scheduling, status tracking | GET /healthcare/appointments |
+| Book Appointment | Modal on appointments | Patient select, practitioner, date/time, reason | POST /healthcare/appointments |
+| Practitioners | `/healthcare/practitioners` | Doctor/nurse directory, specializations, availability | GET /healthcare/practitioners |
+| Prescriptions | `/healthcare/prescriptions` | DataTable, create new Rx, medication lookup | GET/POST /healthcare/prescriptions |
+| Clinical Notes | `/healthcare/clinical` | Encounter documentation, SOAP notes, diagnosis codes | Uses clinical.controller |
+| Lab Results | `/healthcare/lab-results` | Test results viewer, trends, reference ranges | New endpoint needed |
+| Vitals Dashboard | `/healthcare/vitals` | Patient vitals charts (BP, HR, temp, SpO2 trends) | From patient.vitalsHistory |
+| FHIR Integration | `/healthcare/fhir` | SMART app launcher, FHIR resource browser | Uses healthcare-smart.controller |
+| Reports | `/healthcare/reports` | Patient demographics, appointment utilization, Rx analytics | Aggregate |
 
-### Design System Components Available
-- `DataTable`, `Modal`, `ConfirmDialog`, `Drawer`
-- `TextField`, `FormField`, `Input`, `Textarea`, `Select`
-- `Tabs`, `Pagination`, `Stepper`, `ViewSwitcher`
-- `KPICard`, `DashboardKPICard`, `DashboardChart`
-- `Sparkline`, `MiniBarChart`, `MiniDonutChart`
-- `Badge`, `StatusBadge`, `EmptyState`
-- `Card`, `PageHeader`, `Spinner`, `Skeleton`
-- `KanbanBoard`, `DrillDownModal`, `ChartTypePicker`
+#### Sidebar Navigation to Create
+```
+Healthcare
+├── Dashboard
+├── Patient Care
+│   ├── Patient Registry
+│   ├── Appointments
+│   ├── Clinical Notes
+│   ├── Prescriptions
+│   └── Lab Results
+├── Staff
+│   ├── Practitioners
+│   └── Schedules
+├── Integration
+│   ├── FHIR / SMART
+│   └── Vitals Dashboard
+└── Reports
+```
 
-### Services Stack
-- **Infra**: Postgres (5432), Redis (6379), MinIO (9000) via Docker
-- **API**: NestJS on port 3001
-- **Web**: Next.js 15 on port 3000
-- **Launch config**: `.claude/launch.json` (infra, api, web)
+#### Directory to Create
+- `apps/web/app/(dashboard)/healthcare/` (new directory)
+- Add healthcare section to layout.tsx sidebar
+
+---
+
+### Sprint 14: Real Estate Module
+**Status**: PENDING  
+**Current state**: 1 page | 2 controllers | 5 services | Property, Lease, Maintenance, Commission models  
+**Backend ready**: Properties CRUD, Leases CRUD, Maintenance CRUD, Agent Commissions, Lease Accounting  
+
+#### Pages to Build
+| Page | Route | Description | Backend Endpoint |
+|------|-------|-------------|-----------------|
+| Dashboard | `/real-estate` | KPI cards (properties, active leases, occupancy rate), portfolio value | Aggregate |
+| Properties | `/real-estate/properties` | Property cards/list with gallery, type filters, status | GET /real-estate/properties |
+| Property Detail | `/real-estate/properties/[id]` | Photos, floor plans, lease history, maintenance log | GET /real-estate/properties/:id |
+| Leases | `/real-estate/leases` | Active leases DataTable, rent schedule, renewal tracking | GET /real-estate/leases |
+| Lease Detail | `/real-estate/leases/[id]` | Terms, payment history, documents, renewal dates | GET /real-estate/leases/:id |
+| Maintenance | `/real-estate/maintenance` | Work orders, vendor assignment, cost tracking | GET /real-estate/maintenances |
+| Agent Commissions | `/real-estate/commissions` | Commission rules, calculations, payout history | GET /real-estate/agent-commissions |
+| Tenant Portal | `/real-estate/tenants` | Tenant directory, contact info, lease status | Derived from leases |
+| Reports | `/real-estate/reports` | Occupancy rates, rent collection, maintenance costs | Aggregate |
+
+#### Sidebar Navigation to Add
+```
+Real Estate
+├── Dashboard
+├── Portfolio
+│   ├── Properties
+│   ├── Leases
+│   └── Tenant Directory
+├── Operations
+│   ├── Maintenance
+│   └── Agent Commissions
+└── Reports
+```
+
+---
+
+### Sprint 15: Field Service Module
+**Status**: PENDING  
+**Current state**: 1 page | 2 controllers | 7 services | ServiceTicket, Dispatch models  
+**Backend ready**: Tickets CRUD, Dispatches CRUD, Checklists, Preventative Maintenance scheduling  
+
+#### Pages to Build
+| Page | Route | Description | Backend Endpoint |
+|------|-------|-------------|-----------------|
+| Dashboard | `/field-service` | KPI cards (open tickets, dispatches today, completion rate), map | Aggregate |
+| Service Tickets | `/field-service/tickets` | DataTable with priority/status filters, SLA tracking | GET /field-service/tickets |
+| Ticket Detail | `/field-service/tickets/[id]` | Timeline, assignment, parts used, customer signoff | GET /field-service/tickets/:id |
+| Dispatch Board | `/field-service/dispatch` | Map + list view, technician assignment, drag-to-schedule | GET /field-service/dispatches |
+| Technicians | `/field-service/technicians` | Technician directory, skills, availability, workload | Derived from dispatches |
+| Checklists | `/field-service/checklists` | Template checklists for job types, completion tracking | GET /field-service/checklists |
+| Preventive Maintenance | `/field-service/preventive` | Scheduled maintenance calendar, auto-create tickets | GET /field-service/preventive-maintenances |
+| Customer Portal | `/field-service/customers` | Service history per customer, SLA compliance | Derived from tickets |
+| Reports | `/field-service/reports` | First-time fix rate, avg response time, technician utilization | Aggregate |
+
+#### Sidebar Navigation to Add
+```
+Field Service
+├── Dashboard
+├── Service Management
+│   ├── Service Tickets
+│   ├── Dispatch Board
+│   ├── Checklists
+│   └── Preventive Maintenance
+├── Team
+│   ├── Technicians
+│   └── Customer Directory
+└── Reports
+```
+
+---
+
+### Sprint 16: Communication (Connect) Module
+**Status**: PENDING  
+**Current state**: 2 pages (1 stub, 1 advanced) | 1 controller | 3 services | 30+ endpoints  
+**Backend ready**: Workspaces, Channels, DMs, Groups, Messages, Reactions, Pins, Bookmarks, Presence, Meetings, Events, Notifications  
+
+#### Pages to Build
+| Page | Route | Description | Backend Endpoint |
+|------|-------|-------------|-----------------|
+| Dashboard | `/communication` | Unread counts, recent conversations, meeting schedule | GET /communication/workspace |
+| Spaces & Channels | `/communication/spaces` | Channel directory, create space/channel, join/leave | GET /communication/directory |
+| Chat View | `/communication/chat/[id]` | Message thread, reactions, pins, file attachments | GET /communication/messages |
+| Direct Messages | `/communication/dm` | DM list, create new DM, message composer | POST /communication/dm |
+| Meetings | `/communication/meetings` | Meeting scheduler, active meetings, join/end | GET/POST /communication/meetings |
+| Calendar | `/communication/calendar` | Event calendar view, create events, RSVP | GET/POST /communication/events |
+| Notifications | `/communication/notifications` | Notification preferences, digest settings | GET /communication/notifications |
+| Presence | Widget on all pages | Online/away/DND status indicator | GET/SET /communication/presence |
+
+#### Sidebar Navigation to Add
+```
+Connect
+├── Dashboard
+├── Messaging
+│   ├── Spaces & Channels
+│   ├── Direct Messages
+│   └── Chat
+├── Collaboration
+│   ├── Meetings
+│   └── Calendar
+└── Settings
+    └── Notifications
+```
+
+---
+
+### Sprint 17: Analytics Module (Enhancement)
+**Status**: PENDING (minor)  
+**Current state**: 7 pages, 7-item sidebar, comprehensive — mostly done  
+**Needs**: Polish existing pages, verify no runtime errors, add any missing data connectors  
+
+#### Tasks
+- [ ] Verify all 7 pages render without errors
+- [ ] Check data loading from API
+- [ ] Fix any type errors or runtime issues
+- [ ] Add saved report management if missing
+- [ ] Enhance dashboard builder with more widget types
+
+---
+
+## EXECUTION ORDER
+
+| Priority | Sprint | Module | Effort | Reason |
+|----------|--------|--------|--------|--------|
+| 1 | 11 | Supply Chain | Medium | 1 page → 9 pages, backend ready |
+| 2 | 12 | Education | Large | 1 page → 12 pages, backend ready |
+| 3 | 13 | Healthcare | XL | 0 pages → 13 pages, backend ready, new directory |
+| 4 | 14 | Real Estate | Medium | 1 page → 9 pages, backend ready |
+| 5 | 15 | Field Service | Medium | 1 page → 9 pages, backend ready |
+| 6 | 16 | Communication | Large | 2 pages → 8 pages, 30+ endpoints to wire |
+| 7 | 17 | Analytics | Small | Polish only, 7 pages already built |
+
+**Total remaining**: ~69 new pages across 7 modules
+
+---
+
+## ARCHITECTURE REFERENCE
+
+### Design System Components
+`DataTable`, `Modal`, `ConfirmDialog`, `Drawer`, `TextField`, `FormField`, `Input`, `Textarea`, `Select`, `Tabs`, `Pagination`, `Stepper`, `ViewSwitcher`, `KPICard`, `DashboardKPICard`, `DashboardChart`, `Sparkline`, `MiniBarChart`, `MiniDonutChart`, `Badge`, `StatusBadge`, `EmptyState`, `Card`, `PageHeader`, `Spinner`, `Skeleton`, `KanbanBoard`, `DrillDownModal`, `ChartTypePicker`
+
+### UI Pattern Checklist (per module)
+1. **Dashboard** — KPI cards with drill-down, charts, quick action links
+2. **List views** — DataTable, search, status filters, bulk actions
+3. **Detail views** — Tabbed layout, timeline, related records
+4. **Create/Edit** — Modal with FormField/TextField/Select, validation
+5. **Empty states** — Illustrated with CTA button
+6. **Sidebar** — Organized by category with headers and icons
+
+### Services
+- **Infra**: Postgres :5432, Redis :6379, MinIO :9000 (Docker)
+- **API**: NestJS :3001
+- **Web**: Next.js 15 :3000
+- **Launch**: `.claude/launch.json`
