@@ -4,7 +4,10 @@ export default defineConfig({
   test: {
     pool: 'threads',
     poolOptions: {
-      threads: { maxThreads: process.env.CI ? 1 : undefined },
+      threads: {
+        minThreads: process.env.CI ? 1 : undefined,
+        maxThreads: process.env.CI ? 1 : undefined,
+      },
     },
     coverage: {
       provider: 'v8',
