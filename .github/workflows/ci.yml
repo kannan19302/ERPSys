@@ -107,6 +107,8 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    # Non-blocking: requires code scanning enabled in repo settings.
+    continue-on-error: true
     permissions:
       security-events: write
       actions: read
