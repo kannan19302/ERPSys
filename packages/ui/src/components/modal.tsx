@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback, type FC, type ReactNode } from 'react';
+import { useEffect, useRef, useCallback, type FC, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './button';
 

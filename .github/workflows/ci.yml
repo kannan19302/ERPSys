@@ -47,7 +47,7 @@ jobs:
       - run: pnpm --filter @unerp/database build
       - run: pnpm --filter @unerp/shared build
       - run: pnpm --filter @unerp/auth build
-      - run: pnpm --filter @unerp/api test:coverage
+      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test:coverage
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
@@ -190,6 +190,7 @@ jobs:
     env:
       NEXTAUTH_SECRET: ci-test-secret-do-not-use-in-production-abcdef1234567890
       NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      PII_ENCRYPTION_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

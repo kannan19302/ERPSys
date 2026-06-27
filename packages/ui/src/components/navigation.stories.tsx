@@ -8,10 +8,12 @@ export const TabsExample: StoryObj = {
   render: () => (
     <Tabs
       tabs={[
-        { id: 'overview', label: 'Overview', content: <p>Overview content</p> },
-        { id: 'details', label: 'Details', content: <p>Detail content</p> },
-        { id: 'history', label: 'History', content: <p>History content</p> },
+        { key: 'overview', label: 'Overview' },
+        { key: 'details', label: 'Details' },
+        { key: 'history', label: 'History' },
       ]}
+      value="overview"
+      onChange={() => {}}
     />
   ),
 };
@@ -25,5 +27,5 @@ export const TooltipExample: StoryObj = {
 };
 
 export const PaginationExample: StoryObj = {
-  render: () => <Pagination currentPage={3} totalPages={10} onPageChange={() => {}} />,
+  render: () => <Pagination page={3} pageCount={10} onChange={() => {}} />,
 };

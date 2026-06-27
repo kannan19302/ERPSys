@@ -30,7 +30,7 @@ export const Confirmation: StoryObj = {
           onClose={() => setOpen(false)}
           onConfirm={() => { setOpen(false); alert('Deleted!'); }}
           title="Delete Invoice?"
-          description="This action cannot be undone."
+          message="This action cannot be undone."
         />
       </>
     );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, type FC, type ReactNode } from 'react';
+import { useEffect, useState, type FC, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 // ── Tabs ──────────────────────────────────────────────

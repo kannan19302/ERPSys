@@ -3,6 +3,8 @@ import { PublicPageRenderer } from '@/components/builder/PublicPageRenderer';
 import { prisma } from '@unerp/database';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PublicSlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   

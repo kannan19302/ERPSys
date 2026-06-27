@@ -7,9 +7,9 @@ export default { title: 'Components/Charts' } as Meta;
 export const KPI: StoryObj = {
   render: () => (
     <div style={{ display: 'flex', gap: '16px' }}>
-      <KPICard title="Revenue" value="$124,560" change="+12.3%" trend="up" icon={DollarSign} />
-      <KPICard title="Users" value="2,450" change="+8.1%" trend="up" icon={Users} />
-      <KPICard title="Growth" value="18.5%" change="-2.3%" trend="down" icon={TrendingUp} />
+      <KPICard title="Revenue" value="$124,560" change={12.3} changeLabel="vs last month" icon={<DollarSign size={20} />} />
+      <KPICard title="Users" value="2,450" change={8.1} changeLabel="vs last month" icon={<Users size={20} />} />
+      <KPICard title="Growth" value="18.5%" change={-2.3} changeLabel="vs last month" icon={<TrendingUp size={20} />} />
     </div>
   ),
 };

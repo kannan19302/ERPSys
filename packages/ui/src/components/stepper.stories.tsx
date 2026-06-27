@@ -7,11 +7,11 @@ export const StepperDefault: StoryObj = {
   render: () => (
     <Stepper
       steps={[
-        { id: '1', label: 'Basic Info', status: 'completed' },
-        { id: '2', label: 'Line Items', status: 'current' },
-        { id: '3', label: 'Review', status: 'upcoming' },
+        { label: 'Basic Info' },
+        { label: 'Line Items' },
+        { label: 'Review' },
       ]}
-      currentStep="2"
+      activeStep={1}
     />
   ),
 };

@@ -3,6 +3,8 @@ import { AuthRedirect } from './AuthRedirect';
 import { PublicPageRenderer } from '@/components/builder/PublicPageRenderer';
 import { prisma } from '@unerp/database';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const systemTenant = await prisma.tenant.findUnique({ where: { slug: 'system' } });
   
