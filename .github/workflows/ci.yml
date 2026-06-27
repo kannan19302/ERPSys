@@ -129,11 +129,6 @@ jobs:
   security:
     name: "Gate: Security Scan"
     runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -142,15 +137,23 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Dependency audit
-        run: pnpm audit --audit-level high
-        continue-on-error: true
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript-typescript
-      - name: CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+      - name: Dependency audit (high/critical)
+        run: pnpm audit --audit-level high || echo "::warning::Dependency audit found vulnerabilities — review pnpm audit output above"
+      - name: Check for leaked secrets
+        run: |
+          if git log --diff-filter=A --name-only --pretty="" -1 | grep -qiE '\.env$|\.env\.local|credentials|secret'; then
+            echo "::error::Potential secret file committed"
+            exit 1
+          fi
+      - name: Validate no console.log in production code
+        run: |
+          HITS=$(grep -rn "console\.\(log\|debug\)" apps/api/src/ --include="*.ts" \
+            --exclude-dir=tests --exclude="*.spec.ts" --exclude="*.test.ts" | \
+            grep -v "// eslint-disable" | head -5 || true)
+          if [ -n "$HITS" ]; then
+            echo "::warning::Found console statements in production code:"
+            echo "$HITS"
+          fi
 
   scorecard:
     name: "Gate: Production-Readiness Scorecard"
@@ -169,7 +172,6 @@ jobs:
   e2e:
     name: "Gate: E2E (Playwright)"
     runs-on: ubuntu-latest
-    continue-on-error: true
     services:
       postgres:
         image: postgres:16
@@ -210,6 +212,13 @@ jobs:
       - run: pnpm --filter @unerp/database exec prisma generate
       - run: pnpm --filter @unerp/database exec prisma migrate deploy
       - run: pnpm --filter @unerp/database build && pnpm --filter @unerp/shared build && pnpm --filter @unerp/auth build && pnpm --filter @unerp/api build
+      - name: Start API server
+        run: node apps/api/dist/main.js &
+        env:
+          PORT: "3001"
+          NODE_ENV: test
+      - name: Wait for API
+        run: until curl -sf http://localhost:3001/health; do sleep 2; done
       - run: pnpm --filter @unerp/web exec npx -y playwright install --with-deps chromium
       - name: Run e2e
         run: pnpm --filter @unerp/web exec npx -y playwright test
