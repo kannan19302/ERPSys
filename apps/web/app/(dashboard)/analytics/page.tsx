@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
               progress={kpi.progressPct}
               progressLabel={`Goal: ${kpi.targetValue}`}
               changeLabel={`${up ? '+' : ''}${kpi.changePct ?? 0}% from last month`}
-              sparkline={kpi.trend}
+              trend={kpi.trend}
               onClick={() => openDrilldown(kpi)}
             />
           );

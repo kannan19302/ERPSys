@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Hammer, Play, CheckCircle2, Wrench, Truck, Plus, Calendar, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Hammer, Play, CheckCircle2, Wrench, Truck, Plus, Calendar, AlertTriangle, ShieldCheck, TrendingUp } from 'lucide-react';
 import { Card, PageHeader, Button, Spinner, DashboardKPICard, DashboardChart, ViewSwitcher } from '@unerp/ui';
 
 interface BOM {

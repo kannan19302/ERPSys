@@ -79,6 +79,8 @@ import {
   Receipt,
   Eye,
   Scale,
+  Calendar,
+  Video,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -369,7 +371,25 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Supply Chain',
       icon: Truck,
       items: [
-        { name: 'Supply Chain Operations', href: '/supply-chain', icon: Truck }
+        { name: 'Dashboard', href: '/supply-chain', icon: Home },
+        {
+          name: 'Operations',
+          isHeader: true,
+          items: [
+            { name: 'Shipments', href: '/supply-chain/shipments', icon: Package },
+            { name: 'Shipment Tracking', href: '/supply-chain/tracking', icon: MapPin },
+            { name: 'Carrier Management', href: '/supply-chain/carriers', icon: Truck },
+            { name: 'Route Optimization', href: '/supply-chain/routes', icon: MapPin },
+          ]
+        },
+        {
+          name: 'Planning & Analytics',
+          isHeader: true,
+          items: [
+            { name: 'Demand Forecast', href: '/supply-chain/demand-forecast', icon: TrendingUp },
+            { name: 'Analytics', href: '/supply-chain/analytics', icon: BarChart3 },
+          ]
+        },
       ]
     };
   }
@@ -538,7 +558,70 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Education',
       icon: GraduationCap,
       items: [
-        { name: 'Student Registry', href: '/education', icon: GraduationCap }
+        { name: 'Dashboard', href: '/education', icon: Home },
+        {
+          name: 'Academic',
+          isHeader: true,
+          items: [
+            { name: 'Student Registry', href: '/education/students', icon: Users },
+            { name: 'Course Catalog', href: '/education/courses', icon: BookOpen },
+            { name: 'Timetable', href: '/education/timetable', icon: Calendar },
+            { name: 'Grade Book', href: '/education/grades', icon: Award },
+            { name: 'Attendance', href: '/education/attendance', icon: ClipboardCheck },
+          ]
+        },
+        {
+          name: 'Administration',
+          isHeader: true,
+          items: [
+            { name: 'Fee Management', href: '/education/fees', icon: DollarSign },
+            { name: 'Fee Payments', href: '/education/fees/pay', icon: CreditCard },
+            { name: 'Library', href: '/education/library', icon: BookOpen },
+          ]
+        },
+        {
+          name: 'Reporting',
+          isHeader: true,
+          items: [
+            { name: 'Reports & Analytics', href: '/education/reports', icon: BarChart3 },
+          ]
+        },
+      ]
+    };
+  }
+  if (pathname.startsWith('/healthcare')) {
+    return {
+      title: 'Healthcare',
+      icon: Activity,
+      items: [
+        { name: 'Dashboard', href: '/healthcare', icon: Home },
+        {
+          name: 'Patient Care',
+          isHeader: true,
+          items: [
+            { name: 'Patient Registry', href: '/healthcare/patients', icon: Users },
+            { name: 'Appointments', href: '/healthcare/appointments', icon: Calendar },
+            { name: 'Clinical Notes', href: '/healthcare/clinical', icon: ClipboardList },
+            { name: 'Prescriptions', href: '/healthcare/prescriptions', icon: FileText },
+            { name: 'Lab Results', href: '/healthcare/lab-results', icon: Activity },
+          ]
+        },
+        {
+          name: 'Staff & Integration',
+          isHeader: true,
+          items: [
+            { name: 'Practitioners', href: '/healthcare/practitioners', icon: Users },
+            { name: 'Vitals Dashboard', href: '/healthcare/vitals', icon: Activity },
+            { name: 'FHIR / SMART', href: '/healthcare/fhir', icon: Globe },
+          ]
+        },
+        {
+          name: 'Reporting',
+          isHeader: true,
+          items: [
+            { name: 'Reports', href: '/healthcare/reports', icon: BarChart3 },
+          ]
+        },
       ]
     };
   }
@@ -547,7 +630,31 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Real Estate',
       icon: Building2,
       items: [
-        { name: 'Property Registry', href: '/real-estate', icon: Building2 }
+        { name: 'Dashboard', href: '/real-estate', icon: Home },
+        {
+          name: 'Portfolio',
+          isHeader: true,
+          items: [
+            { name: 'Properties', href: '/real-estate/properties', icon: Building2 },
+            { name: 'Leases', href: '/real-estate/leases', icon: FileText },
+            { name: 'Tenant Directory', href: '/real-estate/tenants', icon: Users },
+          ]
+        },
+        {
+          name: 'Operations',
+          isHeader: true,
+          items: [
+            { name: 'Maintenance', href: '/real-estate/maintenance', icon: Wrench },
+            { name: 'Agent Commissions', href: '/real-estate/commissions', icon: DollarSign },
+          ]
+        },
+        {
+          name: 'Reporting',
+          isHeader: true,
+          items: [
+            { name: 'Reports', href: '/real-estate/reports', icon: BarChart3 },
+          ]
+        },
       ]
     };
   }
@@ -556,7 +663,65 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
       title: 'Field Service',
       icon: Wrench,
       items: [
-        { name: 'Dispatch Board', href: '/field-service', icon: Wrench }
+        { name: 'Dashboard', href: '/field-service', icon: Home },
+        {
+          name: 'Service Management',
+          isHeader: true,
+          items: [
+            { name: 'Service Tickets', href: '/field-service/tickets', icon: ClipboardList },
+            { name: 'Dispatch Board', href: '/field-service/dispatch', icon: MapPin },
+            { name: 'Checklists', href: '/field-service/checklists', icon: ClipboardCheck },
+            { name: 'Preventive Maintenance', href: '/field-service/preventive', icon: Wrench },
+          ]
+        },
+        {
+          name: 'Team',
+          isHeader: true,
+          items: [
+            { name: 'Technicians', href: '/field-service/technicians', icon: Users },
+            { name: 'Customer Directory', href: '/field-service/customers', icon: Users },
+          ]
+        },
+        {
+          name: 'Reporting',
+          isHeader: true,
+          items: [
+            { name: 'Reports', href: '/field-service/reports', icon: BarChart3 },
+          ]
+        },
+      ]
+    };
+  }
+  if (pathname.startsWith('/communication') || pathname.startsWith('/connect')) {
+    return {
+      title: 'Connect',
+      icon: MessageSquare,
+      items: [
+        { name: 'Dashboard', href: '/communication', icon: Home },
+        {
+          name: 'Messaging',
+          isHeader: true,
+          items: [
+            { name: 'Spaces & Channels', href: '/communication/spaces', icon: Users },
+            { name: 'Direct Messages', href: '/communication/dm', icon: MessageSquare },
+            { name: 'Chat Client', href: '/connect', icon: MessageSquare },
+          ]
+        },
+        {
+          name: 'Collaboration',
+          isHeader: true,
+          items: [
+            { name: 'Meetings', href: '/communication/meetings', icon: Video },
+            { name: 'Calendar', href: '/communication/calendar', icon: Calendar },
+          ]
+        },
+        {
+          name: 'Settings',
+          isHeader: true,
+          items: [
+            { name: 'Notifications', href: '/communication/notifications', icon: Bell },
+          ]
+        },
       ]
     };
   }

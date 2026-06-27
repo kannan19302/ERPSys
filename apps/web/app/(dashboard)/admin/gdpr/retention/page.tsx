@@ -96,7 +96,7 @@ export default function GdprRetentionPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ fontSize: 'var(--text-base, 16px)', fontWeight: 600, color: 'var(--text-primary, #111)' }}>Retention Configurator</h3>
           <button
-            onClick={() => setEditEntity(editEntity ? '' : ENTITY_TYPES[0])}
+            onClick={() => setEditEntity(editEntity ? '' : ENTITY_TYPES[0] || '')}
             style={{
               padding: '6px 14px', borderRadius: 'var(--radius-md, 8px)',
               background: 'var(--color-primary, #6366f1)', color: '#fff', border: 'none', cursor: 'pointer',

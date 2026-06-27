@@ -565,7 +565,7 @@ export default function AppDetailPage() {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                         <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{review.userName}</span>
-                        {review.verifiedPurchase && <Badge variant="success" style={{ fontSize: '9px' }}>Verified</Badge>}
+                        {review.verifiedPurchase && <span style={{ fontSize: '9px' }}><Badge variant="success">Verified</Badge></span>}
                       </div>
                       {renderStars(review.rating, 12)}
                     </div>

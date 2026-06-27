@@ -254,9 +254,11 @@ export default function AppStorePage() {
             {renderStars(app.rating)}
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{Number(app.rating).toFixed(1)}</span>
           </div>
-          <Badge variant={app.pricing === 'FREE' ? 'success' : app.pricing === 'FREEMIUM' ? 'info' : 'warning'} style={{ flexShrink: 0 }}>
-            {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
-          </Badge>
+          <span style={{ flexShrink: 0 }}>
+            <Badge variant={app.pricing === 'FREE' ? 'success' : app.pricing === 'FREEMIUM' ? 'info' : 'warning'}>
+              {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
+            </Badge>
+          </span>
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
             {!isSystem && (
               <button onClick={(e) => { e.preventDefault(); toggleFavorite(app.slug); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: isFav ? '#ef4444' : 'var(--color-text-tertiary)' }}>
@@ -320,9 +322,11 @@ export default function AppStorePage() {
             <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 3 }}>
               <Download size={10} /> {app.installs.toLocaleString()}
             </span>
-            <Badge variant={app.pricing === 'FREE' ? 'success' : app.pricing === 'FREEMIUM' ? 'info' : 'warning'} style={{ fontSize: '10px' }}>
-              {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
-            </Badge>
+            <span style={{ fontSize: '10px' }}>
+              <Badge variant={app.pricing === 'FREE' ? 'success' : app.pricing === 'FREEMIUM' ? 'info' : 'warning'}>
+                {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
+              </Badge>
+            </span>
           </div>
         </Link>
 
@@ -470,7 +474,7 @@ export default function AppStorePage() {
           <h2 style={{ margin: '0 0 var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-bold)' }}>Browse by Category</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-3)' }}>
             {allCategories.map(cat => {
-              const meta = categoryMeta[cat];
+              const meta = categoryMeta[cat] || { icon: '📦', color: '#6366f1', description: '' };
               const stat = categoryStats.find(s => s.category === cat);
               return (
                 <button key={cat} onClick={() => { setActiveCategory(cat); setPage(1); }}

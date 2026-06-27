@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Clock, Calendar, DollarSign, Activity, ShieldAlert, AlertCircle, Plus, FileText } from 'lucide-react';
+import { Card, PageHeader, Button, Spinner, DashboardKPICard, DashboardChart, Modal, TextField, FormField, Select } from '@unerp/ui';
 
 interface Project {
   id: string;

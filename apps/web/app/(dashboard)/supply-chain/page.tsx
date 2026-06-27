@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge, DashboardKPICard, DashboardChart, ViewSwitcher, type ViewMode } from '@unerp/ui';
 import {
-  Truck,
-  AlertCircle,
-  CheckCircle,
-  X,
-  Package,
-  Clock
+  PageHeader, Card, Button, Spinner, Badge, StatusBadge, DataTable, type Column,
+  Modal, TextField, FormField, Select, KPICard, DashboardChart, ViewSwitcher, type ViewMode,
+} from '@unerp/ui';
+import {
+  Truck, Plus, Search, Package, Clock, CheckCircle, AlertTriangle,
+  MapPin, BarChart3, TrendingUp, ArrowRight, DollarSign,
 } from 'lucide-react';
+import Link from 'next/link';
 
-interface ShipmentData {
+interface Shipment {
   id: string;
   shipmentNumber: string;
   type: string;
@@ -20,365 +20,217 @@ interface ShipmentData {
   trackingNumber: string | null;
   weight: number | null;
   estimatedDelivery: string | null;
+  actualDelivery: string | null;
+  shippingCost: number;
+  originAddress: any;
+  destAddress: any;
+  createdAt?: string;
 }
 
-export default function SupplyChainPage() {
-  const [activeTab, setActiveTab] = useState<'shipments' | 'tracking'>('shipments');
-  const [shipments, setShipments] = useState<ShipmentData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
+
+const fmtCurrency = (n: number) => `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+export default function SupplyChainDashboard() {
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [activeView, setActiveView] = useState<ViewMode>('chart');
-
-  // Form Modals
-  const [isShipmentModalOpen, setIsShipmentModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [modalSuccess, setModalSuccess] = useState(false);
-
-  // Form State
-  const [shipmentNumber, setShipmentNumber] = useState('');
-  const [type, setType] = useState('OUTBOUND');
-  const [carrierName, setCarrierName] = useState('');
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [weight, setWeight] = useState<number>(0);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState({
+    shipmentNumber: '', type: 'OUTBOUND', carrierName: '', trackingNumber: '', weight: 0,
+  });
+  const [creating, setCreating] = useState(false);
 
   const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem('token');
-
     try {
       const res = await fetch('/api/v1/supply-chain/shipments', {
-        headers: { Authorization: `Bearer ${token || ''}` },
+        headers: { Authorization: `Bearer ${getToken() || ''}` },
       });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setShipments(Array.isArray(data) ? data : (data?.data || []));
-    } catch {
-      setError('Could not load data. Please try again.');
-      setShipments([]);
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) {
+        const data = await res.json();
+        setShipments(Array.isArray(data) ? data : data?.data || []);
+      }
+    } catch { /* empty */ }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const handleCreateShipment = async (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-
+    if (!form.shipmentNumber) return;
+    setCreating(true);
     try {
-      const token = localStorage.getItem('token');
-      const payload = {
-        shipmentNumber,
-        type,
-        carrierName: carrierName || undefined,
-        trackingNumber: trackingNumber || undefined,
-        weight: weight || undefined
-      };
-      
-      const res = await fetch('/api/v1/supply-chain/shipments', {
+      await fetch('/api/v1/supply-chain/shipments', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || ''}`
-        },
-        body: JSON.stringify(payload)
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
+        body: JSON.stringify({ ...form, weight: Number(form.weight) }),
       });
-      
-      if (!res.ok) throw new Error();
-      
-      setModalSuccess(true);
-      setTimeout(() => {
-        setIsShipmentModalOpen(false);
-        resetForm();
-        fetchData();
-      }, 1500);
-    } catch {
-      setError('Action could not be completed. Please try again.');
-      setSubmitting(false);
-    } finally {
-      setSubmitting(false);
-    }
+      setCreateOpen(false);
+      setForm({ shipmentNumber: '', type: 'OUTBOUND', carrierName: '', trackingNumber: '', weight: 0 });
+      fetchData();
+    } catch { /* handled */ }
+    finally { setCreating(false); }
   };
 
-  const resetForm = () => {
-    setShipmentNumber('');
-    setType('OUTBOUND');
-    setCarrierName('');
-    setTrackingNumber('');
-    setWeight(0);
-    setModalSuccess(false);
-  };
+  const filtered = shipments.filter(s => {
+    const matchesSearch = !search || s.shipmentNumber.toLowerCase().includes(search.toLowerCase()) || (s.carrierName || '').toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-  // Computations for stats
-  const totalShipments = shipments.length;
-  const inTransitCount = useMemo(() => shipments.filter(s => s.status === 'IN_TRANSIT').length, [shipments]);
-  const pendingCount = useMemo(() => shipments.filter(s => s.status === 'PENDING' || s.status === 'DRAFT').length, [shipments]);
-  const deliveredCount = useMemo(() => shipments.filter(s => s.status === 'DELIVERED').length, [shipments]);
+  const totalCost = shipments.reduce((a, s) => a + Number(s.shippingCost || 0), 0);
+  const inTransit = shipments.filter(s => s.status === 'IN_TRANSIT').length;
+  const delivered = shipments.filter(s => s.status === 'DELIVERED').length;
 
-  // Compute chart data
-  const statusDistributionData = useMemo(() => {
+  const statusChart = useMemo(() => {
     const counts: Record<string, number> = {};
-    shipments.forEach(s => {
-      counts[s.status] = (counts[s.status] || 0) + 1;
-    });
+    shipments.forEach(s => { counts[s.status] = (counts[s.status] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name: name.replace('_', ' '), value }));
+  }, [shipments]);
+
+  const typeChart = useMemo(() => {
+    const counts: Record<string, number> = {};
+    shipments.forEach(s => { counts[s.type] = (counts[s.type] || 0) + 1; });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [shipments]);
 
-  const carrierDistributionData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    shipments.forEach(s => {
-      const name = s.carrierName || 'TBD';
-      counts[name] = (counts[name] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [shipments]);
+  const columns: Column<Shipment>[] = [
+    {
+      key: 'shipment', header: 'Shipment',
+      render: (row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Truck size={16} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.shipmentNumber}</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{row.carrierName || 'No carrier'}</div>
+          </div>
+        </div>
+      ),
+    },
+    { key: 'type', header: 'Type', render: (row) => <Badge variant={row.type === 'OUTBOUND' ? 'info' : row.type === 'INBOUND' ? 'success' : 'warning'}>{row.type}</Badge> },
+    { key: 'trackingNumber', header: 'Tracking #', render: (row) => <code style={{ fontSize: '11px' }}>{row.trackingNumber || '—'}</code> },
+    { key: 'weight', header: 'Weight', render: (row) => <span style={{ fontSize: 'var(--text-sm)' }}>{row.weight ? `${row.weight} kg` : '—'}</span> },
+    { key: 'estimatedDelivery', header: 'ETA', render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{row.estimatedDelivery ? new Date(row.estimatedDelivery).toLocaleDateString() : '—'}</span> },
+    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+  ];
 
-  const typeDistributionData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    shipments.forEach(s => {
-      counts[s.type] = (counts[s.type] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [shipments]);
-
-  const filteredShipments = shipments.filter(s => s.shipmentNumber.toLowerCase().includes(searchQuery.toLowerCase()) || (s.carrierName && s.carrierName.toLowerCase().includes(searchQuery.toLowerCase())));
+  const quickLinks = [
+    { title: 'Shipments', href: '/supply-chain/shipments', icon: Package, desc: 'All shipments' },
+    { title: 'Live Tracking', href: '/supply-chain/tracking', icon: MapPin, desc: 'Real-time tracking' },
+    { title: 'Carriers', href: '/supply-chain/carriers', icon: Truck, desc: 'Carrier management' },
+    { title: 'Demand Forecast', href: '/supply-chain/demand-forecast', icon: TrendingUp, desc: 'Demand planning' },
+    { title: 'Route Optimization', href: '/supply-chain/routes', icon: MapPin, desc: 'Optimize routes' },
+    { title: 'Analytics', href: '/supply-chain/analytics', icon: BarChart3, desc: 'Performance metrics' },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
-      <PageHeader
-        title="Supply Chain & Logistics"
-        description="Monitor inbound and outbound shipments, carrier tracking, and logistics routes."
-        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Supply Chain' }]}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <PageHeader title="Supply Chain Operations" description="Manage shipments, carriers, logistics, and demand planning"
+        breadcrumbs={[{ label: 'Apps', href: '/apps' }, { label: 'Supply Chain' }]}
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
             <ViewSwitcher activeView={activeView} onViewChange={setActiveView} availableViews={['list', 'chart']} />
-            <Button variant="primary" onClick={() => setIsShipmentModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              New Shipment
-            </Button>
+            <Button variant="primary" onClick={() => setCreateOpen(true)}><Plus size={14} style={{ marginRight: 6 }} /> New Shipment</Button>
           </div>
         }
       />
 
-      {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
-          <AlertCircle size={16} />
-          <span>Note: {error}</span>
-        </div>
-      )}
-
-      {/* KPI Stats with Drill-Down */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-        <DashboardKPICard
-          title="Total Shipments"
-          value={String(totalShipments)}
-          icon={<Package size={18} />}
-          color="var(--color-primary)"
-          loading={loading}
-          drillDown={{
-            modalTitle: 'All Shipments',
-            columns: [
-              { key: 'shipmentNumber', label: 'Shipment No.' },
-              { key: 'type', label: 'Type' },
-              { key: 'carrierName', label: 'Carrier' },
-              { key: 'status', label: 'Status' }
-            ],
-            rows: shipments.map(s => ({ ...s }))
-          }}
-        />
-        <DashboardKPICard
-          title="In Transit"
-          value={String(inTransitCount)}
-          icon={<Truck size={18} />}
-          color="var(--color-warning)"
-          loading={loading}
-          drillDown={{
-            modalTitle: 'Shipments In Transit',
-            columns: [
-              { key: 'shipmentNumber', label: 'Shipment No.' },
-              { key: 'carrierName', label: 'Carrier' },
-              { key: 'trackingNumber', label: 'Tracking' },
-              { key: 'status', label: 'Status' }
-            ],
-            rows: shipments.filter(s => s.status === 'IN_TRANSIT').map(s => ({ ...s }))
-          }}
-        />
-        <DashboardKPICard
-          title="Pending Dispatch"
-          value={String(pendingCount)}
-          icon={<Clock size={18} />}
-          color="var(--color-info-text)"
-          loading={loading}
-          drillDown={{
-            modalTitle: 'Pending Shipments',
-            columns: [
-              { key: 'shipmentNumber', label: 'Shipment No.' },
-              { key: 'type', label: 'Type' },
-              { key: 'status', label: 'Status' }
-            ],
-            rows: shipments.filter(s => s.status === 'PENDING' || s.status === 'DRAFT').map(s => ({ ...s }))
-          }}
-        />
-        <DashboardKPICard
-          title="Delivered"
-          value={String(deliveredCount)}
-          icon={<CheckCircle size={18} />}
-          color="var(--color-success)"
-          loading={loading}
-          drillDown={{
-            modalTitle: 'Delivered Shipments',
-            columns: [
-              { key: 'shipmentNumber', label: 'Shipment No.' },
-              { key: 'carrierName', label: 'Carrier' },
-              { key: 'estimatedDelivery', label: 'Delivery Date' }
-            ],
-            rows: shipments.filter(s => s.status === 'DELIVERED').map(s => ({ ...s }))
-          }}
-        />
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+        <KPICard title="Total Shipments" value={shipments.length} icon={<Package size={18} />} color="var(--color-primary)" />
+        <KPICard title="In Transit" value={inTransit} icon={<Truck size={18} />} color="var(--color-warning)" />
+        <KPICard title="Delivered" value={delivered} icon={<CheckCircle size={18} />} color="var(--color-success)" />
+        <KPICard title="Shipping Cost" value={fmtCurrency(totalCost)} icon={<DollarSign size={18} />} color="var(--color-info)" />
       </div>
 
-      {/* Chart View */}
+      {/* Charts */}
       {activeView === 'chart' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--space-4)' }}>
-          <DashboardChart
-            title="Shipment Status Distribution"
-            subtitle="Breakdown of all active and past shipments"
-            data={statusDistributionData}
-            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Shipments' }], valueKey: 'value', nameKey: 'name' }}
-            defaultChartType="donut"
-            allowedChartTypes={['donut', 'pie', 'bar']}
-            height={280}
-            loading={loading}
-          />
-          <DashboardChart
-            title="Carrier Utilization"
-            subtitle="Number of shipments handled by carrier"
-            data={carrierDistributionData}
-            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Shipments', color: '#3b82f6' }] }}
-            defaultChartType="bar"
-            allowedChartTypes={['bar', 'donut', 'pie']}
-            height={280}
-            loading={loading}
-          />
-          <DashboardChart
-            title="Shipment Types Share"
-            subtitle="Inbound vs Outbound vs Transfers"
-            data={typeDistributionData}
-            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Shipments' }], valueKey: 'value', nameKey: 'name' }}
-            defaultChartType="pie"
-            allowedChartTypes={['pie', 'donut', 'bar']}
-            height={280}
-            loading={loading}
-          />
+          <DashboardChart title="Shipment Status" data={statusChart}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Count' }], valueKey: 'value', nameKey: 'name' }}
+            defaultChartType="donut" allowedChartTypes={['donut', 'pie', 'bar']} height={280} loading={loading} />
+          <DashboardChart title="By Type" data={typeChart}
+            config={{ xAxisKey: 'name', series: [{ dataKey: 'value', name: 'Count' }] }}
+            defaultChartType="bar" allowedChartTypes={['bar', 'pie']} height={280} loading={loading} />
         </div>
       )}
 
-      {/* Standard List/Tracking Views */}
+      {/* List View */}
       {activeView === 'list' && (
         <>
-          {/* Tabs Menu Panel */}
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-1)' }}>
-            <button
-              onClick={() => { setActiveTab('shipments'); setSearchQuery(''); }}
-              style={{
-                padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-                borderBottom: activeTab === 'shipments' ? '2px solid var(--color-primary)' : '2px solid transparent',
-                color: activeTab === 'shipments' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                fontWeight: activeTab === 'shipments' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-                cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-              }}
-            >
-              All Shipments ({shipments.length})
-            </button>
-            <button
-              onClick={() => { setActiveTab('tracking'); setSearchQuery(''); }}
-              style={{
-                padding: 'var(--space-3) var(--space-5)', background: 'none', border: 'none',
-                borderBottom: activeTab === 'tracking' ? '2px solid var(--color-primary)' : '2px solid transparent',
-                color: activeTab === 'tracking' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                fontWeight: activeTab === 'tracking' ? 'var(--weight-semibold)' : 'var(--weight-medium)',
-                cursor: 'pointer', fontSize: 'var(--text-sm)', transition: 'all 0.15s ease'
-              }}
-            >
-              Active Tracking
-            </button>
-          </div>
-
-          <Card padding="none" style={{ overflowX: 'auto' }}>
-            {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-                <Spinner size="lg" />
+          <Card>
+            <div style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
+                <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                <input type="text" placeholder="Search shipments..." value={search} onChange={(e) => setSearch(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }} />
               </div>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                    <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Shipment Number</th>
-                    <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Type</th>
-                    <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Carrier</th>
-                    <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Tracking</th>
-                    <th style={{ padding: 'var(--space-4) var(--space-5)', color: 'var(--color-text-secondary)' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredShipments.filter(s => activeTab === 'shipments' || s.status === 'IN_TRANSIT').map(s => (
-                    <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                      <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-bold)' }}>{s.shipmentNumber}</td>
-                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{s.type}</td>
-                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{s.carrierName || 'TBD'}</td>
-                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{s.trackingNumber || '-'}</td>
-                      <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                        <Badge variant={s.status === 'DELIVERED' ? 'success' : s.status === 'IN_TRANSIT' ? 'warning' : 'default'}>{s.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                {['ALL', 'PENDING', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED'].map(s => (
+                  <button key={s} onClick={() => setStatusFilter(s)} style={{
+                    padding: '6px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)',
+                    border: '1px solid', borderColor: statusFilter === s ? 'var(--color-primary)' : 'var(--color-border)',
+                    background: statusFilter === s ? 'var(--color-primary-light)' : 'var(--color-bg)',
+                    color: statusFilter === s ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                  }}>{s === 'ALL' ? 'All' : s.replace('_', ' ')}</button>
+                ))}
+              </div>
+            </div>
+          </Card>
+          <Card padding="none">
+            <DataTable columns={columns} data={filtered} loading={loading} rowKey={r => r.id}
+              emptyTitle="No shipments" emptyMessage="Create your first shipment to start tracking." emptyIcon={<Truck size={48} />} />
           </Card>
         </>
       )}
 
-      {/* Shipment Modal */}
-      {isShipmentModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 'var(--space-4)' }}>
-          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '480px', boxShadow: 'var(--shadow-xl)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ margin: 0 }}>Create Shipment</h3>
-              <button onClick={() => setIsShipmentModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
-            </div>
-            <form onSubmit={handleCreateShipment} style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              {modalSuccess ? (
-                <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
-                  <CheckCircle size={40} style={{ color: 'var(--color-success)', margin: '0 auto var(--space-3)' }} />
-                  <p>Shipment Scheduled successfully.</p>
+      {/* Quick Links */}
+      <div>
+        <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>Operations</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--space-3)' }}>
+          {quickLinks.map(link => (
+            <Link href={link.href} key={link.title} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', cursor: 'pointer', transition: 'all var(--duration-fast) var(--ease-default)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; }}>
+                <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <link.icon size={16} />
                 </div>
-              ) : (
-                <>
-                  <input type="text" placeholder="Shipment Number (e.g., SHP-001)" value={shipmentNumber} onChange={e => setShipmentNumber(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} className="frappe-input" />
-                  <select value={type} onChange={e => setType(e.target.value)} required style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} className="frappe-input">
-                    <option value="OUTBOUND">Outbound</option>
-                    <option value="INBOUND">Inbound</option>
-                    <option value="TRANSFER">Warehouse Transfer</option>
-                  </select>
-                  <input type="text" placeholder="Carrier Name (e.g., FedEx)" value={carrierName} onChange={e => setCarrierName(e.target.value)} style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} className="frappe-input" />
-                  <input type="text" placeholder="Tracking Number" value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} className="frappe-input" />
-                  <input type="number" placeholder="Weight (kg)" value={weight} onChange={e => setWeight(Number(e.target.value))} style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }} className="frappe-input" />
-                  
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-                    <Button variant="outline" type="button" onClick={() => setIsShipmentModalOpen(false)}>Cancel</Button>
-                    <Button variant="primary" type="submit" disabled={submitting}>{submitting ? <Spinner size="sm" /> : 'Create Shipment'}</Button>
-                  </div>
-                </>
-              )}
-            </form>
-          </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{link.title}</div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{link.desc}</div>
+                </div>
+                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
+              </div>
+            </Link>
+          ))}
         </div>
-      )}
+      </div>
+
+      {/* Create Shipment Modal */}
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create Shipment" size="md"
+        footer={<><Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button><Button variant="primary" onClick={handleCreate as any} disabled={creating}>{creating ? 'Creating...' : 'Create Shipment'}</Button></>}>
+        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+            <TextField label="Shipment Number" required placeholder="SHP-2026-001" value={form.shipmentNumber} onChange={e => setForm({ ...form, shipmentNumber: e.target.value })} />
+            <FormField label="Type" required><Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+              <option value="OUTBOUND">Outbound</option><option value="INBOUND">Inbound</option><option value="TRANSFER">Transfer</option>
+            </Select></FormField>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+            <TextField label="Carrier Name" placeholder="FedEx" value={form.carrierName} onChange={e => setForm({ ...form, carrierName: e.target.value })} />
+            <TextField label="Tracking Number" placeholder="1Z999..." value={form.trackingNumber} onChange={e => setForm({ ...form, trackingNumber: e.target.value })} />
+          </div>
+          <TextField label="Weight (kg)" type="number" min={0} step={0.1} value={form.weight || ''} onChange={e => setForm({ ...form, weight: parseFloat(e.target.value) || 0 })} />
+        </form>
+      </Modal>
     </div>
   );
 }

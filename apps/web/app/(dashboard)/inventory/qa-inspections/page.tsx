@@ -295,7 +295,7 @@ export default function QaInspectionsPage() {
       {isCreateModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
           <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' ,  padding: '12px 16px', display: 'flex', justifyContent: 'space-between'  }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
               <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Create Inspection Checkpoints Record</span>
               <button onClick={() => setIsCreateModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
             </div>
@@ -329,20 +329,20 @@ export default function QaInspectionsPage() {
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' ,  display: 'flex', justifyContent: 'space-between'  }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
                     <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-xs)' }}>QA Inspection Criteria checklist</span>
                     <Button variant="outline" type="button" onClick={() => setQaCheckpoints([...qaCheckpoints, { parameter: '', criteria: '', sortOrder: qaCheckpoints.length }])} style={{ padding: '4px 8px', fontSize: '11px' }}>Add Row</Button>
                   </div>
                   {qaCheckpoints.map((cp, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' ,  display: 'flex', gap: '8px', alignItems: 'center'  }}>
-                      <input type="text" style={{ flex: '1' ,  flex: 1  }} placeholder="Param (e.g. Dimensions)" value={cp.parameter} onChange={e => {
+                    <div key={idx} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                      <input type="text" style={{ flex: 1 }} placeholder="Param (e.g. Dimensions)" value={cp.parameter} onChange={e => {
                         const updated = [...qaCheckpoints];
                         if (updated[idx]) {
                           updated[idx].parameter = e.target.value;
                           setQaCheckpoints(updated);
                         }
                       }} required />
-                      <input type="text" style={{ flex: '1' ,  flex: 1  }} placeholder="Criteria (e.g. +/- 0.5mm)" value={cp.criteria} onChange={e => {
+                      <input type="text" style={{ flex: 1 }} placeholder="Criteria (e.g. +/- 0.5mm)" value={cp.criteria} onChange={e => {
                         const updated = [...qaCheckpoints];
                         if (updated[idx]) {
                           updated[idx].criteria = e.target.value;
@@ -353,7 +353,7 @@ export default function QaInspectionsPage() {
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' ,  display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px'  }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
                   <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
                   <Button variant="primary" type="submit">Log Checklist</Button>
                 </div>
@@ -367,7 +367,7 @@ export default function QaInspectionsPage() {
       {activeInspection && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
           <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' ,  padding: '12px 16px', display: 'flex', justifyContent: 'space-between'  }}>
+            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>Perform Quality Check: {activeInspection.inspectionNumber}</span>
               <button onClick={() => setActiveInspection(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
             </div>
@@ -382,7 +382,7 @@ export default function QaInspectionsPage() {
                   <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-xs)', marginBottom: 'var(--space-2)', display: 'block' }}>Checkpoint Verification</span>
                   {activeInspection.checkpoints.map((cp) => (
                     <div key={cp.id} style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '8px', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' ,  display: 'flex', justifyContent: 'space-between'  }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span><strong>{cp.parameter}:</strong> {cp.criteria}</span>
                         <select className="frappe-input" style={{ width: '90px', padding: '2px 4px' }} value={checkpointResults[cp.id]?.result} onChange={e => {
                           setCheckpointResults({
@@ -395,14 +395,14 @@ export default function QaInspectionsPage() {
                           <option value="NA">N/A</option>
                         </select>
                       </div>
-                      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-2)' ,  display: 'flex', gap: '8px'  }}>
-                        <input type="text" style={{ fontSize: 'var(--text-xs)' ,  flex: 1  }} placeholder="Observed Value" value={checkpointResults[cp.id]?.observedValue} onChange={e => {
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input type="text" style={{ fontSize: 'var(--text-xs)', flex: 1 }} placeholder="Observed Value" value={checkpointResults[cp.id]?.observedValue} onChange={e => {
                           setCheckpointResults({
                             ...checkpointResults,
                             [cp.id]: { ...checkpointResults[cp.id]!, observedValue: e.target.value }
                           });
                         }} />
-                        <input type="text" style={{ fontSize: 'var(--text-xs)' ,  flex: 1  }} placeholder="Remarks/Deviation" value={checkpointResults[cp.id]?.remarks} onChange={e => {
+                        <input type="text" style={{ fontSize: 'var(--text-xs)', flex: 1 }} placeholder="Remarks/Deviation" value={checkpointResults[cp.id]?.remarks} onChange={e => {
                           setCheckpointResults({
                             ...checkpointResults,
                             [cp.id]: { ...checkpointResults[cp.id]!, remarks: e.target.value }
@@ -437,7 +437,7 @@ export default function QaInspectionsPage() {
                   <input type="text" className="frappe-input" value={submitDisposition} onChange={e => setSubmitDisposition(e.target.value)} placeholder="e.g. Scrapped, Restocked, Quarantine" />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' ,  display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px'  }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
                   <Button variant="outline" type="button" onClick={() => setActiveInspection(null)}>Cancel</Button>
                   <Button variant="primary" type="submit">Submit Verdict</Button>
                 </div>

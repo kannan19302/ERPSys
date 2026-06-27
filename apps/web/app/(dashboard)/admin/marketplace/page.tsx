@@ -296,8 +296,8 @@ export default function AdminMarketplacePage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    {app.featured && <Badge variant="warning" style={{ fontSize: '9px' }}>Featured</Badge>}
-                    {installedSlugs.has(app.slug) && <Badge variant="success" style={{ fontSize: '9px' }}>Installed</Badge>}
+                    {app.featured && <span style={{ fontSize: '9px' }}><Badge variant="warning">Featured</Badge></span>}
+                    {installedSlugs.has(app.slug) && <span style={{ fontSize: '9px' }}><Badge variant="success">Installed</Badge></span>}
                   </div>
                 </div>
                 <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{app.description}</p>
@@ -359,7 +359,7 @@ export default function AdminMarketplacePage() {
                   <div>
                     <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       {sub.name}
-                      <Badge variant={sub.status === 'PENDING' ? 'warning' : sub.status === 'APPROVED' ? 'success' : 'error'}>{sub.status}</Badge>
+                      <Badge variant={sub.status === 'PENDING' ? 'warning' : sub.status === 'APPROVED' ? 'success' : 'danger'}>{sub.status}</Badge>
                     </h3>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: 2 }}>
                       by {sub.submitterName} · {sub.category} · {sub.pricing === 'FREE' ? 'Free' : `$${sub.price}/mo`}
@@ -441,7 +441,7 @@ export default function AdminMarketplacePage() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <span style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-sm)' }}>{col.name}</span>
-                      {col.featured && <Badge variant="warning" style={{ fontSize: '9px' }}>Featured</Badge>}
+                      {col.featured && <span style={{ fontSize: '9px' }}><Badge variant="warning">Featured</Badge></span>}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
                       {col.items.length} apps · /{col.slug}

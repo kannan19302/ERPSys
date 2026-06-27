@@ -88,7 +88,7 @@ export default function GdprErasurePage() {
     padding: 'var(--space-5, 20px)',
   };
 
-  const statusColors: Record<string, { bg: string; color: string }> = {
+  const statusColors = {
     PENDING: { bg: 'var(--bg-warning-subtle, #fffbeb)', color: 'var(--color-warning, #f59e0b)' },
     COMPLETED: { bg: 'var(--bg-success-subtle, #f0fdf4)', color: 'var(--color-success, #22c55e)' },
     REJECTED: { bg: 'var(--bg-danger-subtle, #fef2f2)', color: 'var(--color-danger, #ef4444)' },
@@ -161,7 +161,7 @@ export default function GdprErasurePage() {
           </thead>
           <tbody>
             {requests.map(r => {
-              const sc = statusColors[r.status] || statusColors.PENDING;
+              const sc = (statusColors as Record<string, { bg: string; color: string }>)[r.status] || statusColors.PENDING;
               return (
                 <tr key={r.id} style={{ borderBottom: '1px solid var(--border-default, #e5e7eb)' }}>
                   <td style={{ padding: '10px 12px' }}>

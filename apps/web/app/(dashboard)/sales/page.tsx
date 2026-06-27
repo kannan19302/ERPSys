@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'react';
+import Link from 'next/link';
 import { Card, PageHeader, Spinner, DashboardKPICard, DashboardChart, ViewSwitcher, KanbanBoard, type ViewMode, type KanbanColumn, type KanbanItem } from '@unerp/ui';
 import {
   ClipboardList,

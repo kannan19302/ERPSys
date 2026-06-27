@@ -374,8 +374,10 @@ function DashboardContent() {
                             {d.count} records
                           </div>
                           <div
-                            className="rounded-t hover:brightness-110 transition-all" style={{ width: '100%', cursor: 'pointer' }}
+                            className="rounded-t hover:brightness-110 transition-all"
                             style={{
+                              width: '100%',
+                              cursor: 'pointer',
                               height: `${Math.max(4, (d.count / maxVal) * 90)}%`,
                               background: 'linear-gradient(to top, var(--color-primary-light), var(--color-primary))',
                               boxShadow: '0 2px 4px rgba(0,0,0,0.05)',

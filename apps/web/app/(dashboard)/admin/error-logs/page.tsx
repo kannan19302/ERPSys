@@ -55,7 +55,9 @@ export default function ErrorLogsPage() {
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   useEffect(() => {
-    if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
   }, [toast]);
 
   const resolveLog = async (id: string) => {

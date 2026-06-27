@@ -152,7 +152,7 @@ export default function TenantsPage() {
                     <Badge>{tenant.plan}</Badge>
                   </td>
                   <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <StatusBadge status={statusVariant(tenant.status)}>{tenant.status}</StatusBadge>
+                    <StatusBadge status={tenant.status} />
                   </td>
                   <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)' }}>
                     {tenant.userCount}

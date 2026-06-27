@@ -62,7 +62,10 @@ export default function NotificationPreferencesPage() {
   const toggle = (catIdx: number, channel: string) => {
     setPrefs((prev) => {
       const next = [...prev];
-      next[catIdx] = { ...next[catIdx], [channel]: !(next[catIdx] as any)[channel] };
+      const row = next[catIdx];
+      if (row) {
+        next[catIdx] = { ...row, [channel]: !(row as any)[channel] };
+      }
       return next;
     });
     setSaved(false);

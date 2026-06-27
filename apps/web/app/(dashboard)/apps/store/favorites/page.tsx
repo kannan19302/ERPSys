@@ -70,7 +70,9 @@ export default function FavoritesPage() {
   };
 
   useEffect(() => {
-    if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
   }, [toast]);
 
   if (loading) {
@@ -130,9 +132,11 @@ export default function FavoritesPage() {
                       {[1,2,3,4,5].map(s => <Star key={s} size={10} style={{ color: s <= Math.floor(Number(app.rating)) ? '#f59e0b' : 'var(--color-border)' }} fill={s <= Math.floor(Number(app.rating)) ? '#f59e0b' : 'none'} />)}
                     </div>
                     <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>{Number(app.rating).toFixed(1)}</span>
-                    <Badge variant={app.pricing === 'FREE' ? 'success' : 'warning'} style={{ fontSize: '9px', marginLeft: 'auto' }}>
-                      {app.pricing === 'FREE' ? 'Free' : `$${app.price}/mo`}
-                    </Badge>
+                    <span style={{ fontSize: '9px', marginLeft: 'auto' }}>
+                      <Badge variant={app.pricing === 'FREE' ? 'success' : 'warning'}>
+                        {app.pricing === 'FREE' ? 'Free' : `$${app.price}/mo`}
+                      </Badge>
+                    </span>
                   </div>
                 </Link>
                 <div>

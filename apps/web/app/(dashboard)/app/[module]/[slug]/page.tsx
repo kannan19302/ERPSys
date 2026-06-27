@@ -555,8 +555,19 @@ function CustomLayoutRuntimeRenderer({ mapping, moduleName }: CustomLayoutRuntim
             return (
               <div
                 key={w.id}
-                style={{ gridColumn: `span ${w.gridSpan || 12}`, borderLeft: `4px solid ${borderLeftColor}`, background: bg, color: color }}
-                style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid transparent', fontWeight: 'var(--weight-medium)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center' }}
+                style={{
+                  gridColumn: `span ${w.gridSpan || 12}`,
+                  borderLeft: `4px solid ${borderLeftColor}`,
+                  background: bg,
+                  color: color,
+                  padding: 'var(--space-4)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid transparent',
+                  fontWeight: 'var(--weight-medium)',
+                  fontSize: 'var(--text-sm)',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
               >
                 <div>{text}</div>
               </div>
@@ -789,11 +800,10 @@ function RuntimeTableWidget({ widget, schemas, moduleName }: { widget: any, sche
         <span style={{ fontWeight: 'var(--weight-bold)' }}>{widget.title || matchingSchema.name}</span>
         <div style={{ position: 'relative' }}>
           <input
-            style={{ fontSize: 'var(--text-xs)' }}
+            style={{ fontSize: 'var(--text-xs)', padding: '4px 8px' }}
             placeholder="Search..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            style={{ padding: '4px 8px' }}
           />
         </div>
       </div>
@@ -965,8 +975,10 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
                   {d.label}: {d.value}
                 </div>
                 <div
-                  className="w-2.5 h-2.5 border-2 border-card bg-primary hover:scale-125 transition-transform" style={{ borderRadius: '9999px', cursor: 'pointer' }}
+                  className="w-2.5 h-2.5 border-2 border-card bg-primary hover:scale-125 transition-transform"
                   style={{
+                    borderRadius: '9999px',
+                    cursor: 'pointer',
                     position: 'absolute',
                     bottom: `${(d.value / maxVal) * 90}%`,
                     transform: 'translateY(50%)',
@@ -990,8 +1002,10 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
                   {d.value} units
                 </div>
                 <div
-                  className="rounded-t hover:brightness-110 transition-all" style={{ width: '100%', cursor: 'pointer' }}
+                  className="rounded-t hover:brightness-110 transition-all"
                   style={{
+                    width: '100%',
+                    cursor: 'pointer',
                     height: `${(d.value / maxVal) * 90}%`,
                     background: `linear-gradient(to top, ${d.color}cc, ${d.color})`,
                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
