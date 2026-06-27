@@ -2,13 +2,16 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    pool: 'threads',
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        minThreads: process.env.CI ? 1 : undefined,
-        maxThreads: process.env.CI ? 1 : undefined,
+      forks: {
+        minForks: 1,
+        maxForks: process.env.CI ? 1 : 2,
       },
     },
+    exclude: process.env.CI
+      ? ['**/node_modules/**', '**/dist/**', '**/*.coverage.spec.ts']
+      : ['**/node_modules/**', '**/dist/**'],
     coverage: {
       provider: 'v8',
       // `json` emits coverage/coverage-final.json, which the scorecard

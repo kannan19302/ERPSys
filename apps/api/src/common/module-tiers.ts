@@ -56,7 +56,6 @@ export function moduleSlugForSegment(segment: string): string | null {
  * Everything else (Dashboard, Admin, Studio, API Platform, SaaS, …) is kernel = locked.
  */
 export function isUninstallable(app: { slug: string; isCore?: boolean; metadata?: any }): boolean {
-  if (GATED_SLUGS.has(app.slug)) return true;
-  const isSystem = !!app.metadata?.isSystem;
-  return !app.isCore && !isSystem;
+  if (app.isCore || app.metadata?.isSystem) return false;
+  return true;
 }
