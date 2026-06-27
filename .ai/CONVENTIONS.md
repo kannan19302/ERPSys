@@ -364,3 +364,15 @@ Always use the design system tokens defined in `packages/ui/src/tokens/design-to
 - **Never hardcode hex colors** (e.g., `color: #ffffff`). Use `color: var(--color-bg-elevated)`.
 - **Never hardcode pixel padding** (e.g., `padding: 16px`). Use `padding: var(--space-4)`.
 - Keep button hover states clean and subtle: `background: transparent` transitioning to `var(--color-bg-hover)` is preferred over hard boxed borders.
+
+---
+
+## 9. Script & Temporary File Cleanup
+
+> AI agents and developers MUST NOT leave one-off scripts in the repository.
+
+### Rules
+- **No throwaway scripts committed.** Fix scripts, patch scripts, debug helpers, and scratch files must be deleted before the task is marked complete.
+- **`scripts/` is for persistent tooling only** (e.g., `scorecard.mjs`, `dev-start.ps1`). One-off migration fixers, bulk-rename scripts, or ad-hoc patchers do not belong there.
+- **No placeholder test files.** Do not commit empty or trivial test stubs (e.g., `expect(true).toBe(true)`).
+- Before completing any task, verify no stray `.js`/`.ts`/`.mjs` files were left at the repo root or in `scripts/`.
