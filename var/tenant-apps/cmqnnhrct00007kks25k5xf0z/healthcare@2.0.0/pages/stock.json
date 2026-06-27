@@ -1,7 +1,0 @@
-{
-  "slug": "stock",
-  "title": "Stock Batches",
-  "type": "list",
-  "schema": "stock-batch",
-  "module": "eprescribing"
-}

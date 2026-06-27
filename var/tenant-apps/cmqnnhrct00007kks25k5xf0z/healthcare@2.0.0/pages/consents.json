@@ -1,7 +1,0 @@
-{
-  "slug": "consents",
-  "title": "Consents",
-  "type": "list",
-  "schema": "consent",
-  "module": "compliance-audit"
-}

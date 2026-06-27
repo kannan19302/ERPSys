@@ -1,7 +1,0 @@
-{
-  "slug": "order-sets",
-  "title": "Order Sets",
-  "type": "list",
-  "schema": "order-set",
-  "module": "cpoe-orders"
-}

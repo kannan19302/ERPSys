@@ -1,7 +1,0 @@
-{
-  "slug": "formulary",
-  "title": "Formulary",
-  "type": "list",
-  "schema": "drug",
-  "module": "eprescribing"
-}

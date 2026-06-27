@@ -1,7 +1,0 @@
-{
-  "slug": "patients",
-  "title": "Patients",
-  "type": "list",
-  "schema": "patient",
-  "module": "patient-management"
-}

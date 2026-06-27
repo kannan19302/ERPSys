@@ -1,7 +1,0 @@
-{
-  "slug": "visits",
-  "title": "Telehealth Visits",
-  "type": "list",
-  "schema": "tele-visit",
-  "module": "telehealth"
-}

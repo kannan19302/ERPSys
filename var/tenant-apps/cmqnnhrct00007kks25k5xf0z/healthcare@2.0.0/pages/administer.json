@@ -1,7 +1,0 @@
-{
-  "slug": "administer",
-  "title": "Record Immunization",
-  "type": "form",
-  "schema": "immunization-record",
-  "module": "immunization"
-}

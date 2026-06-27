@@ -1,7 +1,0 @@
-{
-  "slug": "immunizations",
-  "title": "Immunization Records",
-  "type": "list",
-  "schema": "immunization-record",
-  "module": "immunization"
-}

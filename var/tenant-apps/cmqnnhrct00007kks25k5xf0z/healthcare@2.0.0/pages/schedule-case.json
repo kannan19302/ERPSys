@@ -1,7 +1,0 @@
-{
-  "slug": "schedule-case",
-  "title": "Schedule Case",
-  "type": "form",
-  "schema": "or-case",
-  "module": "surgery-or"
-}

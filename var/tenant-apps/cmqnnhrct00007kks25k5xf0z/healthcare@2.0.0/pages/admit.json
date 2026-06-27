@@ -1,7 +1,0 @@
-{
-  "slug": "admit",
-  "title": "Admit Patient",
-  "type": "form",
-  "schema": "admission",
-  "module": "inpatient-adt"
-}

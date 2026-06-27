@@ -1,7 +1,0 @@
-{
-  "slug": "waitlist",
-  "title": "Waitlist",
-  "type": "list",
-  "schema": "waitlist",
-  "module": "appointment-scheduling"
-}

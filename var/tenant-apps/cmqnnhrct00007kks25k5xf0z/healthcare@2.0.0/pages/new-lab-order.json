@@ -1,7 +1,0 @@
-{
-  "slug": "new-lab-order",
-  "title": "New Lab Order",
-  "type": "form",
-  "schema": "lab-order",
-  "module": "lab-diagnostics"
-}

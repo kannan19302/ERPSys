@@ -1,7 +1,0 @@
-{
-  "slug": "patient-record",
-  "title": "New Patient",
-  "type": "form",
-  "schema": "patient",
-  "module": "patient-management"
-}

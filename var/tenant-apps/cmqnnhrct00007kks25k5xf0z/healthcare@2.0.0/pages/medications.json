@@ -1,7 +1,0 @@
-{
-  "slug": "medications",
-  "title": "Medications",
-  "type": "list",
-  "schema": "medication",
-  "module": "patient-management"
-}

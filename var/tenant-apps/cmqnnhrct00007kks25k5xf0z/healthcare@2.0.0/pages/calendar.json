@@ -1,7 +1,0 @@
-{
-  "slug": "calendar",
-  "title": "Appointments",
-  "type": "list",
-  "schema": "appointment",
-  "module": "appointment-scheduling"
-}

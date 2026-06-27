@@ -1,7 +1,0 @@
-{
-  "slug": "orders",
-  "title": "Orders",
-  "type": "list",
-  "schema": "order",
-  "module": "cpoe-orders"
-}

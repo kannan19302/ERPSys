@@ -1,7 +1,0 @@
-{
-  "slug": "vaccines",
-  "title": "Vaccines",
-  "type": "list",
-  "schema": "vaccine",
-  "module": "immunization"
-}

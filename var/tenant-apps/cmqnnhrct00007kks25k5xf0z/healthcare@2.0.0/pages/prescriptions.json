@@ -1,7 +1,0 @@
-{
-  "slug": "prescriptions",
-  "title": "Prescriptions",
-  "type": "list",
-  "schema": "prescription",
-  "module": "eprescribing"
-}

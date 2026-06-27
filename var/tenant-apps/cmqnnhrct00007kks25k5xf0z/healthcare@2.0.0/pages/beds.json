@@ -1,7 +1,0 @@
-{
-  "slug": "beds",
-  "title": "Bed Board",
-  "type": "list",
-  "schema": "bed",
-  "module": "inpatient-adt"
-}

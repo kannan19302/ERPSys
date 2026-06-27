@@ -1,7 +1,0 @@
-{
-  "slug": "prescribe",
-  "title": "New Prescription",
-  "type": "form",
-  "schema": "prescription",
-  "module": "eprescribing"
-}

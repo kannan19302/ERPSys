@@ -1,7 +1,0 @@
-{
-  "slug": "lab-orders",
-  "title": "Lab Orders",
-  "type": "list",
-  "schema": "lab-order",
-  "module": "lab-diagnostics"
-}

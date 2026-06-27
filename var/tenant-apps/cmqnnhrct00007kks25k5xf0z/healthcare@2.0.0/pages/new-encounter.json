@@ -1,7 +1,0 @@
-{
-  "slug": "new-encounter",
-  "title": "New Encounter (SOAP)",
-  "type": "form",
-  "schema": "encounter",
-  "module": "clinical-charting"
-}

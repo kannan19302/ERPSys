@@ -1,7 +1,0 @@
-{
-  "slug": "new-order",
-  "title": "New Order",
-  "type": "form",
-  "schema": "order",
-  "module": "cpoe-orders"
-}

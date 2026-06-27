@@ -1,7 +1,0 @@
-{
-  "slug": "payments",
-  "title": "Payments",
-  "type": "list",
-  "schema": "payment",
-  "module": "payments-ar"
-}

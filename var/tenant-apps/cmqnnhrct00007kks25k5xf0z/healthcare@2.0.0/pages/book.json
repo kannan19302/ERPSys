@@ -1,7 +1,0 @@
-{
-  "slug": "book",
-  "title": "Book Appointment",
-  "type": "form",
-  "schema": "appointment",
-  "module": "appointment-scheduling"
-}

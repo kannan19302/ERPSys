@@ -1,7 +1,0 @@
-{
-  "slug": "referrals",
-  "title": "Referrals",
-  "type": "list",
-  "schema": "referral",
-  "module": "interoperability"
-}

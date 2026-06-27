@@ -1,7 +1,0 @@
-{
-  "slug": "payers",
-  "title": "Payers",
-  "type": "list",
-  "schema": "payer",
-  "module": "eligibility"
-}
