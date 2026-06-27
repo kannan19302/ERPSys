@@ -91,7 +91,7 @@ export default function SystemHealthPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
         title="System Health"
-        subtitle="Real-time system monitoring with auto-refresh every 30 seconds"
+        description="Real-time system monitoring with auto-refresh every 30 seconds"
       />
 
       {error && (

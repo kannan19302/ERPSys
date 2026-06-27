@@ -1,14 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, StatusBadge, Badge } from '@unerp/ui';
 import {
-  Key,
-  Trash2,
-  Copy,
-  CheckCircle,
-  X,
-} from 'lucide-react';
+  PageHeader, Card, Button, Badge, DataTable, type Column,
+  Modal, TextField, FormField, Select, Spinner, ConfirmDialog,
+} from '@unerp/ui';
+import { Key, Plus, Trash2, Copy, CheckCircle, Clock, Shield } from 'lucide-react';
 
 interface ApiKeyData {
   id: string;
@@ -20,170 +17,236 @@ interface ApiKeyData {
   createdAt: string;
 }
 
+const SCOPES = [
+  { value: 'projects.project.read', label: 'View Projects' },
+  { value: 'projects.project.create', label: 'Create Projects' },
+  { value: 'pos.terminal.read', label: 'View POS Counters' },
+  { value: 'analytics.report.read', label: 'Run Reports' },
+  { value: 'admin.setting.read', label: 'View Settings' },
+];
+
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
+
 export default function ApiKeysPage() {
-  const [apiKeys, setApiKeys] = useState<ApiKeyData[]>([]);
-  const [showCreateKey, setShowCreateKey] = useState(false);
-  const [newKeyName, setNewKeyName] = useState('');
-  const [newKeyRateLimit, setNewKeyRateLimit] = useState(120);
-  const [selectedScopes, setSelectedScopes] = useState<string[]>(['projects.project.read']);
+  const [keys, setKeys] = useState<ApiKeyData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ApiKeyData | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const availableScopes = [
-    { value: 'projects.project.read', label: 'View Projects (projects.project.read)' },
-    { value: 'projects.project.create', label: 'Create Projects (projects.project.create)' },
-    { value: 'pos.terminal.read', label: 'View POS Counters (pos.terminal.read)' },
-    { value: 'analytics.report.read', label: 'Run Reports (analytics.report.read)' },
-    { value: 'admin.setting.read', label: 'View Settings (admin.setting.read)' }
-  ];
+  // Create form
+  const [newName, setNewName] = useState('');
+  const [newRate, setNewRate] = useState(120);
+  const [newScopes, setNewScopes] = useState<string[]>(['projects.project.read']);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    // Load mock data
-    setApiKeys([
-      { id: 'key-1', name: 'Read-only API Key', prefix: 'ue_live_', rateLimit: 120, status: 'ACTIVE', scopes: ['projects.project.read', 'analytics.report.read'], createdAt: new Date().toLocaleDateString() },
-      { id: 'key-2', name: 'CI/CD Pipeline Key', prefix: 'ue_test_', rateLimit: 60, status: 'ACTIVE', scopes: ['projects.project.create', 'admin.setting.read'], createdAt: new Date(Date.now() - 86400000).toLocaleDateString() },
-    ]);
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/admin/api-keys', {
+          headers: { Authorization: `Bearer ${getToken() || ''}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setKeys(Array.isArray(data) ? data : data?.data || []);
+        }
+      } catch { /* use empty */ }
+      finally { setLoading(false); }
+    })();
   }, []);
 
-  const handleCreateKey = () => {
-    if (!newKeyName) return;
-    const newKey: ApiKeyData = {
-      id: `key-${Date.now()}`,
-      name: newKeyName,
-      prefix: 'ue_live_',
-      rateLimit: newKeyRateLimit,
-      status: 'ACTIVE',
-      scopes: selectedScopes,
-      createdAt: new Date().toLocaleDateString(),
-    };
-    setApiKeys((prev) => [newKey, ...prev]);
-    setNewKeyName('');
-    setSelectedScopes(['projects.project.read']);
-    setShowCreateKey(false);
+  const handleCreate = async () => {
+    if (!newName.trim()) return;
+    setCreating(true);
+    try {
+      const res = await fetch('/api/v1/admin/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
+        body: JSON.stringify({ name: newName, rateLimit: newRate, scopes: newScopes }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setKeys((prev) => [...prev, data]);
+      }
+    } catch { /* handled */ }
+    finally {
+      setCreating(false);
+      setCreateOpen(false);
+      setNewName('');
+    }
   };
 
-  const handleCopy = (id: string) => {
-    navigator.clipboard.writeText(`ue_live_${id.substring(0, 24)}`);
-    setCopiedId(id);
+  const handleCopy = (prefix: string) => {
+    navigator.clipboard.writeText(prefix);
+    setCopiedId(prefix);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleRevoke = (id: string) => {
-    setApiKeys((prev) => prev.map((k) => (k.id === id ? { ...k, status: 'REVOKED' } : k)));
-  };
+  const columns: Column<ApiKeyData>[] = [
+    {
+      key: 'name', header: 'API Key',
+      render: (row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 'var(--radius-md)',
+            background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <Key size={16} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <code style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>{row.prefix}...</code>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleCopy(row.prefix); }}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, color: 'var(--color-text-tertiary)' }}
+                title="Copy key prefix"
+              >
+                {copiedId === row.prefix ? <CheckCircle size={12} style={{ color: 'var(--color-success)' }} /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'scopes', header: 'Scopes',
+      render: (row) => (
+        <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
+          {row.scopes.slice(0, 2).map((s) => <Badge key={s} variant="info">{s.split('.').pop()}</Badge>)}
+          {row.scopes.length > 2 && <Badge variant="default">+{row.scopes.length - 2}</Badge>}
+        </div>
+      ),
+    },
+    {
+      key: 'rateLimit', header: 'Rate Limit',
+      render: (row) => <span style={{ fontSize: 'var(--text-sm)' }}>{row.rateLimit}/min</span>,
+    },
+    {
+      key: 'status', header: 'Status',
+      render: (row) => (
+        <Badge variant={row.status === 'ACTIVE' ? 'success' : 'danger'}>
+          {row.status}
+        </Badge>
+      ),
+    },
+    {
+      key: 'createdAt', header: 'Created',
+      render: (row) => (
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+          {new Date(row.createdAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      key: 'actions', header: '', align: 'right' as const, width: '60px',
+      render: (row) => (
+        <button
+          onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }}
+          title="Revoke"
+          style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}
+        >
+          <Trash2 size={14} />
+        </button>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
         title="API Keys"
-        description="Manage API keys, generate credentials, and define whitelist scopes for external services."
-        breadcrumbs={[{ label: 'Administration' }, { label: 'API Keys' }]}
+        description="Create and manage API keys for external integrations"
+        breadcrumbs={[
+          { label: 'Administration', href: '/admin' },
+          { label: 'API Keys' },
+        ]}
         actions={
-          <Button variant="primary" onClick={() => setShowCreateKey(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            Generate API Key
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+            <Plus size={14} style={{ marginRight: 6 }} /> Create API Key
           </Button>
         }
       />
 
-      <Card padding="none" style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-              <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
-              <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Key Prefix</th>
-              <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Rate Limit</th>
-              <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Allowed Scopes</th>
-              <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
-              <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {apiKeys.map((k) => (
-              <tr key={k.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-medium)' }}>{k.name}</td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                  <code style={{ background: 'var(--color-bg-sunken)', padding: '2px 6px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--text-xs)' }}>
-                    {k.prefix}••••••••
-                  </code>
-                </td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)', color: 'var(--color-text-secondary)' }}>{k.rateLimit}/min</td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    {k.scopes?.map(s => (
-                      <Badge key={s} variant="info">{s}</Badge>
-                    )) || <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px' }}>None</span>}
-                  </div>
-                </td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)' }}><StatusBadge status={k.status} /></td>
-                <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                    <button onClick={() => handleCopy(k.id)} title="Copy Key" style={{ border: 'none', background: 'none', cursor: 'pointer', color: copiedId === k.id ? 'var(--color-success)' : 'var(--color-text-secondary)', padding: '4px' }}>
-                      {copiedId === k.id ? <CheckCircle size={15} /> : <Copy size={15} />}
-                    </button>
-                    {k.status === 'ACTIVE' && (
-                      <button onClick={() => handleRevoke(k.id)} title="Revoke" style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: '4px' }}>
-                        <Trash2 size={15} />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <Card padding="none">
+        <DataTable
+          columns={columns}
+          data={keys}
+          loading={loading}
+          rowKey={(row) => row.id}
+          emptyTitle="No API keys"
+          emptyMessage="Create your first API key to enable external integrations."
+          emptyIcon={<Key size={48} />}
+        />
       </Card>
 
-      {/* Create Key Modal */}
-      {showCreateKey && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300 }}>
-          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '420px', boxShadow: 'var(--shadow-xl)', animation: 'scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
-              <h3 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)' }}>Generate New API Key</h3>
-              <button onClick={() => setShowCreateKey(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}><X size={18} /></button>
+      {/* Create Modal */}
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create API Key"
+        description="Generate a new API key with specific scopes and rate limits"
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleCreate} disabled={creating || !newName.trim()}>
+              {creating ? <><Spinner size="sm" /> Creating...</> : 'Create Key'}
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <TextField label="Key Name" placeholder="e.g. Production Integration" required value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <FormField label="Rate Limit (requests/minute)">
+            <Select value={newRate} onChange={(e) => setNewRate(Number(e.target.value))}>
+              <option value={60}>60/min</option>
+              <option value={120}>120/min</option>
+              <option value={300}>300/min</option>
+              <option value={600}>600/min</option>
+              <option value={1000}>1000/min</option>
+            </Select>
+          </FormField>
+          <FormField label="Scopes" required>
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',
+              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-3)', background: 'var(--color-bg)', maxHeight: 200, overflowY: 'auto',
+            }}>
+              {SCOPES.map((scope) => (
+                <label key={scope.value} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={newScopes.includes(scope.value)}
+                    onChange={(e) => {
+                      setNewScopes(e.target.checked
+                        ? [...newScopes, scope.value]
+                        : newScopes.filter((s) => s !== scope.value));
+                    }}
+                    style={{ accentColor: 'var(--color-primary)' }}
+                  />
+                  <span style={{ fontWeight: 'var(--weight-medium)' }}>{scope.label}</span>
+                  <code style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{scope.value}</code>
+                </label>
+              ))}
             </div>
-            <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Key Name</label>
-                <input type="text" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} placeholder="e.g. Production Read-Only" style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none', color: 'var(--color-text)' }} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Rate Limit (req/min)</label>
-                <input type="number" value={newKeyRateLimit} onChange={(e) => setNewKeyRateLimit(Number(e.target.value))} style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none', color: 'var(--color-text)' }} />
-              </div>
-              
-              {/* Scopes Checklist */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Whitelisted Scopes (RBAC)</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxHeight: '120px', overflowY: 'auto', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}>
-                  {availableScopes.map(sc => {
-                    const checked = selectedScopes.includes(sc.value);
-                    return (
-                      <label key={sc.value} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={checked} 
-                          onChange={() => {
-                            if (checked) {
-                              setSelectedScopes(selectedScopes.filter(s => s !== sc.value));
-                            } else {
-                              setSelectedScopes([...selectedScopes, sc.value]);
-                            }
-                          }}
-                        />
-                        {sc.label}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
-                <Button variant="outline" onClick={() => setShowCreateKey(false)}>Cancel</Button>
-                <Button variant="primary" onClick={handleCreateKey}>Generate Key</Button>
-              </div>
-            </div>
-          </div>
+          </FormField>
         </div>
-      )}
+      </Modal>
+
+      {/* Delete Confirm */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { setKeys(keys.filter(k => k.id !== deleteTarget?.id)); setDeleteTarget(null); }}
+        title="Revoke API Key"
+        message={deleteTarget ? <span>Revoke <strong>{deleteTarget.name}</strong>? This cannot be undone and will immediately break any integrations using this key.</span> : undefined}
+        confirmLabel="Revoke Key"
+        variant="danger"
+      />
     </div>
   );
 }

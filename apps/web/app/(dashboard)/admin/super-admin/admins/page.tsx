@@ -79,7 +79,7 @@ export default function AdminUsersListPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
         title="Admin Users"
-        subtitle="All administrator and super-admin users across tenants"
+        description="All administrator and super-admin users across tenants"
       />
 
       {error && (

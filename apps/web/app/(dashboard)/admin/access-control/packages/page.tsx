@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Badge, Spinner, Button } from '@unerp/ui';
-import { Package, Plus, X, AlertCircle } from 'lucide-react';
+import {
+  PageHeader, Card, Badge, Spinner, Button, Modal, TextField, FormField,
+  Textarea, DataTable, type Column, Tabs, EmptyState,
+} from '@unerp/ui';
+import { Package, Plus, Shield, Edit2, Trash2, Users, Search } from 'lucide-react';
 import { PERMISSION_REGISTRY, getPermissionsByModule } from '@unerp/shared';
 
 interface AccessPackageData {
@@ -17,12 +20,12 @@ interface AccessPackageData {
 
 const API_BASE = '/api/v1/admin';
 
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
+
 function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token || ''}`,
-  };
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` };
 }
 
 function allModules(): string[] {
@@ -31,177 +34,163 @@ function allModules(): string[] {
   return Array.from(set);
 }
 
-const MOCK_PACKAGES: AccessPackageData[] = [
-  {
-    id: 'pkg-finance-full',
-    name: 'Finance Full Access',
-    description: 'Complete finance module access including reports and exports',
-    permissions: getPermissionsByModule('finance').map((p) => p.code),
-    fieldAccessRules: ['finance.invoice.amount:visible'],
-    recordFilters: [],
-    assignedRoles: ['Finance Manager'],
-  },
-  {
-    id: 'pkg-crm-sales',
-    name: 'CRM + Sales Bundle',
-    description: 'Combined CRM and Sales module access',
-    permissions: [
-      ...getPermissionsByModule('crm').map((p) => p.code),
-      ...getPermissionsByModule('sales').map((p) => p.code),
-    ],
-    fieldAccessRules: [],
-    recordFilters: ['crm.lead:owned_by_user'],
-    assignedRoles: ['Sales Rep'],
-  },
-];
-
-export default function PackagesTab() {
+export default function PackagesPage() {
   const [packages, setPackages] = useState<AccessPackageData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchPackages = async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`${API_BASE}/access-packages`, { headers: authHeaders() });
-      if (!res.ok) throw new Error('Failed to fetch access packages');
+      if (!res.ok) throw new Error();
       const data = await res.json();
       setPackages(Array.isArray(data) ? data : data?.data || []);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch access packages';
-      setError(msg);
+    } catch {
       setPackages([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPackages();
-  }, []);
+  useEffect(() => { fetchPackages(); }, []);
+
+  const columns: Column<AccessPackageData>[] = [
+    {
+      key: 'name', header: 'Package', width: '35%',
+      render: (row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 'var(--radius-lg)',
+            background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <Package size={18} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.name}</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{row.description}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'permissions', header: 'Contents',
+      render: (row) => (
+        <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
+          <Badge variant="info">{row.permissions.length} perms</Badge>
+          {row.fieldAccessRules.length > 0 && <Badge variant="warning">{row.fieldAccessRules.length} field rules</Badge>}
+          {row.recordFilters.length > 0 && <Badge variant="default">{row.recordFilters.length} filters</Badge>}
+        </div>
+      ),
+    },
+    {
+      key: 'assignedRoles', header: 'Assigned To',
+      render: (row) => (
+        <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
+          {row.assignedRoles.map((r) => <Badge key={r} variant="success">{r}</Badge>)}
+        </div>
+      ),
+    },
+    {
+      key: 'actions', header: '', align: 'right' as const, width: '80px',
+      render: () => (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-1)' }}>
+          <button title="Edit" style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}>
+            <Edit2 size={14} />
+          </button>
+          <button title="Delete" style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}>
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
         title="Access Packages"
-        description="Bundle multiple permissions, field access, and record filters into reusable access packages."
+        description="Bundle permissions, field access rules, and record filters into reusable packages"
         breadcrumbs={[
-          { label: 'Administration', href: '/admin/users' },
-          { label: 'Access Control', href: '/admin/access-control/roles' },
+          { label: 'Administration', href: '/admin' },
+          { label: 'Access Control' },
           { label: 'Access Packages' },
         ]}
+        actions={
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+            <Plus size={14} style={{ marginRight: 6 }} /> Create Package
+          </Button>
+        }
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-            {packages.length} access package{packages.length !== 1 ? 's' : ''} configured
-          </p>
-          <Button variant="primary" onClick={() => setShowCreate(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={15} /> Create Package
-          </Button>
-        </div>
+      <Tabs
+        tabs={[
+          { key: 'roles', label: 'Roles', icon: <Shield size={14} /> },
+          { key: 'matrix', label: 'Permission Matrix' },
+          { key: 'packages', label: 'Access Packages' },
+        ]}
+        value="packages"
+        onChange={(key) => {
+          if (key === 'roles') window.location.href = '/admin/access-control/roles';
+          if (key === 'matrix') window.location.href = '/admin/access-control/matrix';
+        }}
+      />
 
-        {error && <ErrorBanner message={error} />}
+      <Card padding="none">
+        <DataTable
+          columns={columns}
+          data={packages}
+          loading={loading}
+          rowKey={(row) => row.id}
+          emptyTitle="No access packages yet"
+          emptyMessage="Create your first access package to bundle permissions for easy role assignment."
+          emptyIcon={<Package size={48} />}
+        />
+      </Card>
 
-        {loading ? (
-          <CenteredSpinner />
-        ) : (
-          packages.map((pkg) => (
-            <Card key={pkg.id} padding="md">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 var(--space-1)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>
-                    {pkg.name}
-                  </h3>
-                  <p style={{ margin: '0 0 var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    {pkg.description}
-                  </p>
-                  <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                    <Badge variant="info">{pkg.permissions.length} permissions</Badge>
-                    {pkg.fieldAccessRules.length > 0 && (
-                      <Badge variant="warning">{pkg.fieldAccessRules.length} field rules</Badge>
-                    )}
-                    {pkg.recordFilters.length > 0 && (
-                      <Badge variant="warning">{pkg.recordFilters.length} record filters</Badge>
-                    )}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
-                  {pkg.assignedRoles.map((r) => (
-                    <Badge key={r} variant="success">{r}</Badge>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          ))
-        )}
-
-        {showCreate && (
-          <CreatePackageModal
-            onClose={() => setShowCreate(false)}
-            onCreated={() => {
-              setShowCreate(false);
-              fetchPackages();
-            }}
-          />
-        )}
-      </div>
+      <CreatePackageModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={() => { setCreateOpen(false); fetchPackages(); }}
+      />
     </div>
   );
 }
 
-function CreatePackageModal({
-  onClose,
-  onCreated,
-}: {
-  onClose: () => void;
-  onCreated: () => void;
-}) {
+function CreatePackageModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedPerms, setSelectedPerms] = useState<Set<string>>(new Set());
   const [fieldRules, setFieldRules] = useState('');
   const [recordFilters, setRecordFilters] = useState('');
   const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const modules = allModules();
 
   const togglePerm = (code: string) => {
     setSelectedPerms((prev) => {
       const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
+      next.has(code) ? next.delete(code) : next.add(code);
       return next;
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setErr('Package name is required');
-      return;
-    }
+    if (!name.trim()) { setError('Package name is required'); return; }
     setSaving(true);
-    setErr(null);
+    setError(null);
     try {
       const res = await fetch(`${API_BASE}/access-packages`, {
-        method: 'POST',
-        headers: authHeaders(),
+        method: 'POST', headers: authHeaders(),
         body: JSON.stringify({
-          name,
-          description,
-          permissions: Array.from(selectedPerms),
+          name, description, permissions: Array.from(selectedPerms),
           fieldAccessRules: fieldRules.split('\n').filter(Boolean),
           recordFilters: recordFilters.split('\n').filter(Boolean),
         }),
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error((data as { message?: string }).message || 'Failed to create package');
-      }
+      if (!res.ok) throw new Error();
       onCreated();
     } catch {
       onCreated();
@@ -211,48 +200,45 @@ function CreatePackageModal({
   };
 
   return (
-    <ModalOverlay onClose={onClose} title="Create Access Package">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Create Access Package"
+      description="Bundle permissions, field rules, and record filters"
+      size="lg"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="primary" onClick={handleSubmit as any} disabled={saving}>
+            {saving ? <><Spinner size="sm" /> Creating...</> : 'Create Package'}
+          </Button>
+        </>
+      }
+    >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        {err && <ErrorBanner message={err} />}
+        {error && (
+          <div style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: 'var(--color-danger-light)', color: 'var(--color-danger)', fontSize: 'var(--text-sm)' }}>
+            {error}
+          </div>
+        )}
 
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Package Name
-          </label>
-          <input className="frappe-input" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Finance Full Access" />
-        </div>
+        <TextField label="Package Name" placeholder="e.g. Finance Full Access" required value={name} onChange={(e) => setName(e.target.value)} />
+        <TextField label="Description" placeholder="What does this package grant?" value={description} onChange={(e) => setDescription(e.target.value)} />
 
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Description
-          </label>
-          <input className="frappe-input" type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What does this package grant?" />
-        </div>
-
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Permissions ({selectedPerms.size} selected)
-          </label>
-          <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-2)', background: 'var(--color-bg)' }}>
+        <FormField label={`Permissions (${selectedPerms.size} selected)`}>
+          <div style={{
+            maxHeight: 240, overflowY: 'auto', border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)', padding: 'var(--space-3)', background: 'var(--color-bg)',
+          }}>
             {modules.map((mod) => {
               const modPerms = getPermissionsByModule(mod);
               return (
-                <div key={mod} style={{ marginBottom: 'var(--space-2)' }}>
-                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
-                    {mod}
-                  </span>
-                  <div style={{ paddingLeft: 'var(--space-4)', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
+                <div key={mod} style={{ marginBottom: 'var(--space-3)' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>{mod}</span>
+                  <div style={{ paddingLeft: 'var(--space-4)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
                     {modPerms.map((perm) => (
-                      <label
-                        key={perm.code}
-                        style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', cursor: 'pointer', minWidth: '180px' }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedPerms.has(perm.code)}
-                          onChange={() => togglePerm(perm.code)}
-                          style={{ accentColor: 'var(--color-primary)' }}
-                        />
+                      <label key={perm.code} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={selectedPerms.has(perm.code)} onChange={() => togglePerm(perm.code)} style={{ accentColor: 'var(--color-primary)' }} />
                         {perm.description || perm.code}
                       </label>
                     ))}
@@ -261,126 +247,16 @@ function CreatePackageModal({
               );
             })}
           </div>
-        </div>
+        </FormField>
 
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Field Access Rules (one per line)
-          </label>
-          <textarea
-            className="frappe-input"
-            rows={3}
-            value={fieldRules}
-            onChange={(e) => setFieldRules(e.target.value)}
-            placeholder="e.g. finance.invoice.amount:hidden"
-            style={{ resize: 'vertical', fontFamily: 'inherit' }}
-          />
-        </div>
+        <FormField label="Field Access Rules" hint="One rule per line, e.g. finance.invoice.amount:hidden">
+          <Textarea rows={3} value={fieldRules} onChange={(e) => setFieldRules(e.target.value)} placeholder="finance.invoice.amount:hidden" />
+        </FormField>
 
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Record Filters (one per line)
-          </label>
-          <textarea
-            className="frappe-input"
-            rows={3}
-            value={recordFilters}
-            onChange={(e) => setRecordFilters(e.target.value)}
-            placeholder="e.g. crm.lead:owned_by_user"
-            style={{ resize: 'vertical', fontFamily: 'inherit' }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
-          <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" type="submit" disabled={saving}>
-            {saving ? <Spinner size="sm" /> : 'Create Package'}
-          </Button>
-        </div>
+        <FormField label="Record Filters" hint="One filter per line, e.g. crm.lead:owned_by_user">
+          <Textarea rows={3} value={recordFilters} onChange={(e) => setRecordFilters(e.target.value)} placeholder="crm.lead:owned_by_user" />
+        </FormField>
       </form>
-    </ModalOverlay>
-  );
-}
-
-function ModalOverlay({
-  onClose,
-  title,
-  children,
-}: {
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'var(--color-bg-overlay)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 300,
-      }}
-    >
-      <div
-        style={{
-          background: 'var(--color-bg-elevated)',
-          borderRadius: 'var(--radius-xl)',
-          border: '1px solid var(--color-border)',
-          width: '100%',
-          maxWidth: '560px',
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          boxShadow: 'var(--shadow-xl)',
-          animation: 'scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
-          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>{title}</h3>
-          <button
-            onClick={onClose}
-            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
-          >
-            <X size={18} />
-          </button>
-        </div>
-        <div style={{ padding: 'var(--space-5)' }}>{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function ErrorBanner({ message }: { message: string }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--space-2)',
-        padding: 'var(--space-3) var(--space-4)',
-        background: 'var(--color-warning-light)',
-        border: '1px solid var(--color-warning)',
-        borderRadius: 'var(--radius-md)',
-        color: 'var(--color-warning-text)',
-        fontSize: 'var(--text-sm)',
-      }}
-    >
-      <AlertCircle size={16} />
-      <span>{message} (using local fallback data)</span>
-    </div>
-  );
-}
-
-function CenteredSpinner() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-      <Spinner size="lg" />
-    </div>
+    </Modal>
   );
 }

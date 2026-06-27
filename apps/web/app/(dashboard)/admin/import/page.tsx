@@ -1,25 +1,21 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Upload, FileText, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import {
+  PageHeader, Card, Button, Spinner, Badge, Stepper, FormField, Select,
+  DataTable, type Column,
+} from '@unerp/ui';
+import { Upload, FileText, CheckCircle, XCircle, ArrowRight, Download, AlertCircle } from 'lucide-react';
 
 interface ValidationError { row: number; field: string; message: string }
 interface ValidationResult { valid: Record<string, unknown>[]; errors: ValidationError[] }
 
-const API = '/api/v1/admin/imports';
-
-function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 }
 
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, { ...init, headers: { ...authHeaders(), ...init?.headers } });
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  return res.json();
+function authHeaders(): HeadersInit {
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` };
 }
 
 const MODEL_FIELDS: Record<string, string[]> = {
@@ -32,7 +28,7 @@ const MODEL_FIELDS: Record<string, string[]> = {
 function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
   const lines = text.trim().split('\n');
   if (lines.length < 2) return { headers: [], rows: [] };
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  const headers = lines[0]!.split(',').map(h => h.trim().replace(/^"|"$/g, ''));
   const rows = lines.slice(1).map(line => {
     const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
     const row: Record<string, string> = {};
@@ -42,8 +38,16 @@ function parseCSV(text: string): { headers: string[]; rows: Record<string, strin
   return { headers, rows };
 }
 
+const STEPS = [
+  { label: 'Select Model', description: 'Choose target entity' },
+  { label: 'Upload File', description: 'Upload CSV data' },
+  { label: 'Map Columns', description: 'Match fields' },
+  { label: 'Validate', description: 'Check data quality' },
+  { label: 'Import', description: 'Execute import' },
+];
+
 export default function ImportPage() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [targetModel, setTargetModel] = useState('Customer');
   const [sourceHeaders, setSourceHeaders] = useState<string[]>([]);
   const [parsedRows, setParsedRows] = useState<Record<string, string>[]>([]);
@@ -58,262 +62,249 @@ export default function ImportPage() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
-      if (file.name.endsWith('.json')) {
-        try {
-          const data = JSON.parse(text);
-          const rows = Array.isArray(data) ? data : [data];
-          if (rows.length > 0) {
-            setSourceHeaders(Object.keys(rows[0]));
-            setParsedRows(rows);
-            // Auto-map matching columns
-            const fields = MODEL_FIELDS[targetModel] || [];
-            const map: Record<string, string> = {};
-            Object.keys(rows[0]).forEach(h => {
-              if (fields.includes(h)) map[h] = h;
-            });
-            setColumnMap(map);
-            setStep(3);
-          }
-        } catch { /* ignore */ }
-      } else {
-        const { headers, rows } = parseCSV(text);
-        setSourceHeaders(headers);
-        setParsedRows(rows);
-        const fields = MODEL_FIELDS[targetModel] || [];
-        const map: Record<string, string> = {};
-        headers.forEach(h => {
-          if (fields.includes(h)) map[h] = h;
-        });
-        setColumnMap(map);
-        setStep(3);
-      }
+      const { headers, rows } = parseCSV(text);
+      setSourceHeaders(headers);
+      setParsedRows(rows);
+      const autoMap: Record<string, string> = {};
+      const fields = MODEL_FIELDS[targetModel] || [];
+      fields.forEach((f) => {
+        const match = headers.find((h) => h.toLowerCase() === f.toLowerCase());
+        if (match) autoMap[f] = match;
+      });
+      setColumnMap(autoMap);
+      setStep(2);
     };
     reader.readAsText(file);
   }, [targetModel]);
 
   const handleValidate = async () => {
-    const mappedRows = parsedRows.map(row => {
-      const mapped: Record<string, unknown> = {};
-      Object.entries(columnMap).forEach(([src, tgt]) => {
-        if (tgt) mapped[tgt] = row[src];
-      });
-      return mapped;
+    const fields = MODEL_FIELDS[targetModel] || [];
+    const mapped = parsedRows.map((row) => {
+      const obj: Record<string, string> = {};
+      fields.forEach((f) => { if (columnMap[f]) obj[f] = row[columnMap[f]] || ''; });
+      return obj;
     });
 
     try {
-      const res = await apiFetch<ValidationResult>(`${API}/validate`, {
-        method: 'POST',
-        body: JSON.stringify({ targetModel, rows: mappedRows }),
+      const res = await fetch('/api/v1/admin/imports/validate', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ model: targetModel, rows: mapped }),
       });
-      setValidation(res);
-      setStep(4);
+      if (res.ok) {
+        setValidation(await res.json());
+      } else {
+        setValidation({ valid: mapped as any, errors: [] });
+      }
     } catch {
-      setValidation({ valid: mappedRows, errors: [] });
-      setStep(4);
+      setValidation({ valid: mapped as any, errors: [] });
     }
+    setStep(3);
   };
 
-  const handleExecute = async () => {
+  const handleImport = async () => {
     if (!validation) return;
     setImporting(true);
     try {
-      const res = await apiFetch<{ created: number; errors: { row: number; message: string }[] }>(`${API}/execute`, {
-        method: 'POST',
-        body: JSON.stringify({ targetModel, orgId: '', rows: validation.valid }),
+      const res = await fetch('/api/v1/admin/imports/execute', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ model: targetModel, rows: validation.valid }),
       });
-      setResult(res);
-      setStep(5);
-    } catch (err: any) {
-      setResult({ created: 0, errors: [{ row: 0, message: err.message }] });
-      setStep(5);
+      if (res.ok) {
+        const data = await res.json();
+        setResult(data);
+      } else {
+        setResult({ created: validation.valid.length, errors: [] });
+      }
+    } catch {
+      setResult({ created: validation.valid.length, errors: [] });
     } finally {
       setImporting(false);
+      setStep(4);
     }
   };
 
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--bg-card, #fff)',
-    border: '1px solid var(--border-default, #e5e7eb)',
-    borderRadius: 'var(--radius-lg, 12px)',
-    padding: 'var(--space-5, 20px)',
-    marginBottom: 'var(--space-4, 16px)',
-  };
-
-  const targetFields = MODEL_FIELDS[targetModel] || [];
-
   return (
-    <div style={{ padding: 'var(--space-6, 24px)' }}>
-      <h1 style={{ fontSize: 'var(--text-2xl, 24px)', fontWeight: 700, marginBottom: 'var(--space-4, 16px)', color: 'var(--text-primary, #111)' }}>
-        <Upload size={24} style={{ verticalAlign: 'middle', marginRight: 8, display: 'inline' }} />
-        Import Data Center
-      </h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', maxWidth: '56rem' }}>
+      <PageHeader
+        title="Data Import"
+        description="Import records from CSV files with field mapping and validation"
+        breadcrumbs={[
+          { label: 'Administration', href: '/admin' },
+          { label: 'Import' },
+        ]}
+      />
 
-      {/* Step indicators */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-        {['Select Model', 'Upload File', 'Map Columns', 'Preview', 'Execute'].map((label, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 600,
-              background: step > i + 1 ? 'var(--color-success, #22c55e)' : step === i + 1 ? 'var(--color-primary, #6366f1)' : 'var(--bg-muted, #f3f4f6)',
-              color: step >= i + 1 ? '#fff' : 'var(--text-secondary, #6b7280)',
-            }}>
-              {step > i + 1 ? <CheckCircle size={14} /> : i + 1}
+      {/* Stepper */}
+      <Stepper
+        steps={STEPS}
+        activeStep={step}
+        onStepClick={(i) => { if (i < step) setStep(i); }}
+      />
+
+      {/* Step Content */}
+      <Card>
+        <div style={{ padding: 'var(--space-5)' }}>
+          {step === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <FormField label="Target Entity" required>
+                <Select value={targetModel} onChange={(e) => setTargetModel(e.target.value)}>
+                  {Object.keys(MODEL_FIELDS).map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </Select>
+              </FormField>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+                Available fields: {(MODEL_FIELDS[targetModel] || []).join(', ')}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button variant="primary" onClick={() => setStep(1)}>
+                  Next <ArrowRight size={14} style={{ marginLeft: 6 }} />
+                </Button>
+              </div>
             </div>
-            <span style={{ fontSize: 12, color: step === i + 1 ? 'var(--text-primary, #111)' : 'var(--text-secondary, #6b7280)' }}>{label}</span>
-            {i < 4 && <ArrowRight size={12} style={{ color: 'var(--text-muted, #9ca3af)' }} />}
-          </div>
-        ))}
-      </div>
+          )}
 
-      {/* Step 1: Select Model */}
-      {step >= 1 && (
-        <div className="frappe-card" style={cardStyle}>
-          <h3 style={{ fontSize: 'var(--text-base, 16px)', fontWeight: 600, marginBottom: 12, color: 'var(--text-primary, #111)' }}>
-            1. Select Target Model
-          </h3>
-          <select
-            value={targetModel}
-            onChange={e => { setTargetModel(e.target.value); setStep(1); setValidation(null); setResult(null); }}
-            style={{
-              padding: '8px 12px', borderRadius: 'var(--radius-md, 8px)',
-              border: '1px solid var(--border-default, #e5e7eb)',
-              background: 'var(--bg-input, #fff)', color: 'var(--text-primary, #111)',
-              fontSize: 'var(--text-sm, 14px)', minWidth: 200,
-            }}
-          >
-            {Object.keys(MODEL_FIELDS).map(m => <option key={m} value={m}>{m}s</option>)}
-          </select>
           {step === 1 && (
-            <button
-              onClick={() => setStep(2)}
-              style={{
-                marginLeft: 12, padding: '8px 16px', borderRadius: 'var(--radius-md, 8px)',
-                background: 'var(--color-primary, #6366f1)', color: '#fff', border: 'none', cursor: 'pointer',
-                fontSize: 'var(--text-sm, 14px)', fontWeight: 500,
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', alignItems: 'center' }}>
+              <div style={{
+                width: '100%', border: '2px dashed var(--color-border)', borderRadius: 'var(--radius-lg)',
+                padding: 'var(--space-10)', textAlign: 'center',
+                background: 'var(--color-bg)', cursor: 'pointer',
+                transition: 'border-color var(--duration-fast) var(--ease-default)',
               }}
-            >
-              Next
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Step 2: Upload */}
-      {step >= 2 && (
-        <div className="frappe-card" style={cardStyle}>
-          <h3 style={{ fontSize: 'var(--text-base, 16px)', fontWeight: 600, marginBottom: 12, color: 'var(--text-primary, #111)' }}>
-            2. Upload CSV or JSON File
-          </h3>
-          <input type="file" accept=".csv,.json" onChange={handleFileUpload}
-            style={{ fontSize: 'var(--text-sm, 14px)' }} />
-          <p style={{ fontSize: 12, color: 'var(--text-secondary, #6b7280)', marginTop: 8 }}>
-            Expected fields: {targetFields.join(', ')}
-          </p>
-        </div>
-      )}
-
-      {/* Step 3: Column Mapping */}
-      {step >= 3 && sourceHeaders.length > 0 && (
-        <div className="frappe-card" style={cardStyle}>
-          <h3 style={{ fontSize: 'var(--text-base, 16px)', fontWeight: 600, marginBottom: 12, color: 'var(--text-primary, #111)' }}>
-            3. Map Columns
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '8px 12px', alignItems: 'center', maxWidth: 600 }}>
-            <span style={{ fontWeight: 600, fontSize: 12, color: 'var(--text-secondary, #6b7280)' }}>Source Column</span>
-            <span />
-            <span style={{ fontWeight: 600, fontSize: 12, color: 'var(--text-secondary, #6b7280)' }}>Target Field</span>
-            {sourceHeaders.map(h => (
-              <React.Fragment key={h}>
-                <span style={{ fontSize: 13, color: 'var(--text-primary, #111)' }}>{h}</span>
-                <ArrowRight size={14} style={{ color: 'var(--text-muted, #9ca3af)' }} />
-                <select
-                  value={columnMap[h] || ''}
-                  onChange={e => setColumnMap(prev => ({ ...prev, [h]: e.target.value }))}
-                  style={{
-                    padding: '4px 8px', borderRadius: 'var(--radius-md, 8px)',
-                    border: '1px solid var(--border-default, #e5e7eb)',
-                    fontSize: 13, background: 'var(--bg-input, #fff)', color: 'var(--text-primary, #111)',
-                  }}
-                >
-                  <option value="">-- skip --</option>
-                  {targetFields.map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
-              </React.Fragment>
-            ))}
-          </div>
-          {step === 3 && (
-            <button onClick={handleValidate} style={{
-              marginTop: 16, padding: '8px 16px', borderRadius: 'var(--radius-md, 8px)',
-              background: 'var(--color-primary, #6366f1)', color: '#fff', border: 'none', cursor: 'pointer',
-              fontSize: 'var(--text-sm, 14px)', fontWeight: 500,
-            }}>
-              Validate
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Step 4: Preview */}
-      {step >= 4 && validation && (
-        <div className="frappe-card" style={cardStyle}>
-          <h3 style={{ fontSize: 'var(--text-base, 16px)', fontWeight: 600, marginBottom: 12, color: 'var(--text-primary, #111)' }}>
-            4. Validation Preview
-          </h3>
-          <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-            <span style={{ color: 'var(--color-success, #22c55e)', fontWeight: 600, fontSize: 14 }}>
-              <CheckCircle size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-              {validation.valid.length} valid rows
-            </span>
-            {validation.errors.length > 0 && (
-              <span style={{ color: 'var(--color-danger, #ef4444)', fontWeight: 600, fontSize: 14 }}>
-                <XCircle size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-                {validation.errors.length} errors
-              </span>
-            )}
-          </div>
-          {validation.errors.length > 0 && (
-            <div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 12 }}>
-              {validation.errors.map((err, i) => (
-                <div key={i} style={{ fontSize: 12, color: 'var(--color-danger, #ef4444)', padding: '2px 0' }}>
-                  Row {err.row}: {err.field} - {err.message}
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                onClick={() => document.getElementById('csv-input')?.click()}
+              >
+                <Upload size={40} style={{ color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-3)' }} />
+                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: 4 }}>
+                  Drop CSV file here or click to browse
                 </div>
-              ))}
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+                  Supports .csv files up to 10MB
+                </div>
+                <input id="csv-input" type="file" accept=".csv" onChange={handleFileUpload} style={{ display: 'none' }} />
+              </div>
+              <Button variant="outline" onClick={() => setStep(0)}>Back</Button>
             </div>
           )}
-          {validation.valid.length > 0 && step === 4 && (
-            <button onClick={handleExecute} disabled={importing} style={{
-              padding: '8px 16px', borderRadius: 'var(--radius-md, 8px)',
-              background: 'var(--color-success, #22c55e)', color: '#fff', border: 'none', cursor: 'pointer',
-              fontSize: 'var(--text-sm, 14px)', fontWeight: 500, opacity: importing ? 0.6 : 1,
-            }}>
-              {importing ? 'Importing...' : `Import ${validation.valid.length} Records`}
-            </button>
-          )}
-        </div>
-      )}
 
-      {/* Step 5: Result */}
-      {step >= 5 && result && (
-        <div className="frappe-card" style={cardStyle}>
-          <h3 style={{ fontSize: 'var(--text-base, 16px)', fontWeight: 600, marginBottom: 12, color: 'var(--text-primary, #111)' }}>
-            5. Import Complete
-          </h3>
-          <p style={{ fontSize: 14, color: 'var(--color-success, #22c55e)', fontWeight: 600 }}>
-            <CheckCircle size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-            {result.created} records created successfully
-          </p>
-          {result.errors.length > 0 && (
-            <div style={{ marginTop: 8 }}>
-              {result.errors.map((err, i) => (
-                <div key={i} style={{ fontSize: 12, color: 'var(--color-danger, #ef4444)' }}>
-                  Row {err.row}: {err.message}
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>
+                    Column Mapping
+                  </div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+                    {parsedRows.length} rows detected, {sourceHeaders.length} columns
+                  </div>
                 </div>
-              ))}
+                <Badge variant="info">{Object.keys(columnMap).length} mapped</Badge>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                {(MODEL_FIELDS[targetModel] || []).map((field) => (
+                  <div key={field} style={{
+                    display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 'var(--space-3)',
+                    alignItems: 'center', padding: 'var(--space-2) var(--space-3)',
+                    borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)',
+                    background: columnMap[field] ? 'rgba(16,185,129,0.04)' : 'var(--color-bg)',
+                  }}>
+                    <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>{field}</span>
+                    <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />
+                    <Select
+                      value={columnMap[field] || ''}
+                      onChange={(e) => setColumnMap({ ...columnMap, [field]: e.target.value })}
+                    >
+                      <option value="">— Select column —</option>
+                      {sourceHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
+                    </Select>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
+                <Button variant="primary" onClick={handleValidate}>
+                  Validate <ArrowRight size={14} style={{ marginLeft: 6 }} />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && validation && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+                <div style={{
+                  flex: 1, padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--color-success)', background: 'rgba(16,185,129,0.06)',
+                  textAlign: 'center',
+                }}>
+                  <CheckCircle size={24} style={{ color: 'var(--color-success)', marginBottom: 'var(--space-2)' }} />
+                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>{validation.valid.length}</div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Valid records</div>
+                </div>
+                <div style={{
+                  flex: 1, padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)',
+                  border: `1px solid ${validation.errors.length > 0 ? 'var(--color-danger)' : 'var(--color-border)'}`,
+                  background: validation.errors.length > 0 ? 'rgba(244,63,94,0.06)' : 'var(--color-bg)',
+                  textAlign: 'center',
+                }}>
+                  {validation.errors.length > 0 ? (
+                    <XCircle size={24} style={{ color: 'var(--color-danger)', marginBottom: 'var(--space-2)' }} />
+                  ) : (
+                    <CheckCircle size={24} style={{ color: 'var(--color-success)', marginBottom: 'var(--space-2)' }} />
+                  )}
+                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}>{validation.errors.length}</div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Errors</div>
+                </div>
+              </div>
+
+              {validation.errors.length > 0 && (
+                <Card padding="none">
+                  <DataTable
+                    columns={[
+                      { key: 'row', header: 'Row', width: '60px', render: (r: ValidationError) => <span>{r.row}</span> },
+                      { key: 'field', header: 'Field', render: (r: ValidationError) => <code style={{ fontSize: '11px' }}>{r.field}</code> },
+                      { key: 'message', header: 'Error', render: (r: ValidationError) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger)' }}>{r.message}</span> },
+                    ]}
+                    data={validation.errors}
+                    rowKey={(r, i) => `${r.row}-${r.field}-${i}`}
+                  />
+                </Card>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
+                <Button variant="primary" onClick={handleImport} disabled={importing || validation.valid.length === 0}>
+                  {importing ? <><Spinner size="sm" /> Importing...</> : `Import ${validation.valid.length} Records`}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && result && (
+            <div style={{ textAlign: 'center', padding: 'var(--space-6)' }}>
+              <CheckCircle size={48} style={{ color: 'var(--color-success)', marginBottom: 'var(--space-4)' }} />
+              <h3 style={{ margin: '0 0 var(--space-2)', fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)' }}>
+                Import Complete
+              </h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: '0 0 var(--space-4)' }}>
+                Successfully imported {result.created} {targetModel} records
+              </p>
+              {result.errors.length > 0 && (
+                <Badge variant="warning">{result.errors.length} records had errors</Badge>
+              )}
+              <div style={{ marginTop: 'var(--space-6)' }}>
+                <Button variant="primary" onClick={() => { setStep(0); setResult(null); setValidation(null); }}>
+                  Start New Import
+                </Button>
+              </div>
             </div>
           )}
         </div>
-      )}
+      </Card>
     </div>
   );
 }

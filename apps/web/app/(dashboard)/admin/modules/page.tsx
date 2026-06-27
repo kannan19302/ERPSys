@@ -1,148 +1,160 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, RefreshCw, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
+import {
+  PageHeader, Card, Badge, Spinner, Button,
+} from '@unerp/ui';
+import {
+  Settings, RefreshCw, CheckCircle, Package, Search,
+  DollarSign, Users, ShoppingCart, Warehouse, Factory,
+  TruckIcon, BarChart3, Briefcase, Store, MessageSquare,
+} from 'lucide-react';
 
 interface ErpModule {
   name: string;
   label: string;
   description: string;
   isActive: boolean;
+  category?: string;
+}
+
+const MODULE_ICONS: Record<string, React.ReactNode> = {
+  finance: <DollarSign size={20} />,
+  hr: <Users size={20} />,
+  crm: <Briefcase size={20} />,
+  inventory: <Warehouse size={20} />,
+  sales: <ShoppingCart size={20} />,
+  procurement: <Package size={20} />,
+  manufacturing: <Factory size={20} />,
+  'supply-chain': <TruckIcon size={20} />,
+  analytics: <BarChart3 size={20} />,
+  pos: <Store size={20} />,
+  projects: <Settings size={20} />,
+  communication: <MessageSquare size={20} />,
+};
+
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 }
 
 export default function ModuleManagerPage() {
   const [modules, setModules] = useState<ErpModule[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  const getHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    };
-  };
-
-  const fetchModules = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/v1/admin/platform/modules', { headers: getHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        setModules(data);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetchModules();
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/admin/platform/modules', {
+          headers: { Authorization: `Bearer ${getToken() || ''}` },
+        });
+        if (res.ok) setModules(await res.json());
+      } catch { /* use empty */ }
+      finally { setLoading(false); }
+    })();
   }, []);
 
-  const handleToggleModule = async (name: string, currentStatus: boolean) => {
-    setToggling(name);
-    setFeedback(null);
+  const handleToggle = async (mod: ErpModule) => {
+    setToggling(mod.name);
     try {
-      const res = await fetch(`/api/v1/admin/platform/modules/${name}/toggle`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({ enabled: !currentStatus }),
+      await fetch(`/api/v1/admin/platform/modules/${mod.name}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
+        body: JSON.stringify({ isActive: !mod.isActive }),
       });
-      if (res.ok) {
-        setModules(modules.map(m => m.name === name ? { ...m, isActive: !currentStatus } : m));
-        setFeedback(`Module "${name}" status updated successfully.`);
-        setTimeout(() => setFeedback(null), 3000);
-      }
-    } catch (e) {
-      console.error(e);
-      setFeedback('Failed to update module state.');
-    } finally {
-      setToggling(null);
-    }
+      setModules((prev) => prev.map((m) => m.name === mod.name ? { ...m, isActive: !m.isActive } : m));
+    } catch { /* handled */ }
+    finally { setToggling(null); }
   };
+
+  const filtered = modules.filter((m) =>
+    !search || m.label.toLowerCase().includes(search.toLowerCase()) || m.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const activeCount = modules.filter(m => m.isActive).length;
+
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Settings style={{ color: 'var(--color-primary)' }} />
-            ERP Module Registry
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-            Enable or disable major business capability modules. Disabling a module hides it from navigation switchers.
-          </p>
+      <PageHeader
+        title="Module Manager"
+        description="Enable or disable ERP modules for your organization"
+        breadcrumbs={[
+          { label: 'Administration', href: '/admin' },
+          { label: 'Modules' },
+        ]}
+      />
+
+      {/* Summary */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+        <Badge variant="success">{activeCount} active</Badge>
+        <Badge variant="default">{modules.length - activeCount} inactive</Badge>
+        <div style={{ flex: 1 }} />
+        <div style={{ position: 'relative', maxWidth: 280 }}>
+          <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+          <input
+            type="text" placeholder="Search modules..."
+            value={search} onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)',
+              color: 'var(--color-text)', outline: 'none',
+            }}
+          />
         </div>
-        <button onClick={fetchModules} disabled={loading} style={{
-          background: 'transparent', border: '1px solid var(--color-border)',
-          padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)',
-          cursor: 'pointer', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
-        }}>
-          <RefreshCw size={12} className={loading ? 'spin' : ''} />
-          Refresh Registry
-        </button>
       </div>
 
-      {feedback && (
-        <div style={{
-          padding: 'var(--space-3)', borderRadius: 'var(--radius-md)',
-          background: 'rgba(var(--color-success-rgb), 0.1)', border: '1px solid var(--color-success)',
-          color: 'var(--color-success)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
-        }}>
-          <CheckCircle size={16} />
-          {feedback}
-        </div>
-      )}
-
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-8)' }}>
-          <RefreshCw size={24} className="spin" style={{ color: 'var(--color-text-secondary)' }} />
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 'var(--space-4)' }}>
-          {modules.map(m => (
-            <div key={m.name} style={{
-              background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex',
-              flexDirection: 'column', justifyContent: 'space-between', gap: 'var(--space-4)'
-            }}>
-              <div>
-                <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>{m.label}</h3>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', lineHeight: '1.4' }}>{m.description}</p>
+      {/* Module Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+        {filtered.map((mod) => (
+          <Card key={mod.name}>
+            <div style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 'var(--radius-lg)',
+                background: mod.isActive ? 'var(--color-primary-light)' : 'var(--color-bg-sunken)',
+                color: mod.isActive ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                transition: 'all var(--duration-fast) var(--ease-default)',
+              }}>
+                {MODULE_ICONS[mod.name] || <Package size={20} />}
               </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)' }}>
-                <span style={{
-                  fontSize: '11px', padding: '2px 8px', borderRadius: 'var(--radius-sm)', fontWeight: 'var(--weight-semibold)',
-                  background: m.isActive ? 'rgba(var(--color-success-rgb), 0.1)' : 'rgba(var(--color-text-secondary-rgb), 0.1)',
-                  color: m.isActive ? 'var(--color-success)' : 'var(--color-text-secondary)'
-                }}>{m.isActive ? 'Enabled' : 'Disabled'}</span>
-                
-                <button
-                  onClick={() => handleToggleModule(m.name, m.isActive)}
-                  disabled={toggling !== null}
-                  style={{
-                    background: 'transparent', border: 'none', cursor: toggling !== null ? 'wait' : 'pointer',
-                    color: m.isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)'
-                  }}
-                >
-                  {toggling === m.name ? (
-                    <RefreshCw size={24} className="spin" />
-                  ) : m.isActive ? (
-                    <ToggleRight size={28} />
-                  ) : (
-                    <ToggleLeft size={28} />
-                  )}
-                </button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>{mod.label}</span>
+                  <Badge variant={mod.isActive ? 'success' : 'default'}>
+                    {mod.isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {mod.description}
+                </div>
               </div>
+              <button
+                onClick={() => handleToggle(mod)}
+                disabled={toggling === mod.name}
+                style={{
+                  width: 44, height: 24, borderRadius: 'var(--radius-full)',
+                  border: 'none', cursor: 'pointer', position: 'relative',
+                  background: mod.isActive ? 'var(--color-primary)' : 'var(--color-bg-sunken)',
+                  transition: 'background var(--duration-fast) var(--ease-default)',
+                }}
+              >
+                <div style={{
+                  width: 18, height: 18, borderRadius: 'var(--radius-full)',
+                  background: '#fff', boxShadow: 'var(--shadow-sm)',
+                  position: 'absolute', top: 3,
+                  left: mod.isActive ? 23 : 3,
+                  transition: 'left var(--duration-fast) var(--ease-default)',
+                }} />
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

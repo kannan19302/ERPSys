@@ -105,7 +105,7 @@ export default function SuperAdminDashboardPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
         title="Super Admin Dashboard"
-        subtitle="System overview and health monitoring"
+        description="System overview and health monitoring"
       />
 
       {error && (

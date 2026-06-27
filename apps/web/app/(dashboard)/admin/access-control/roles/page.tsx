@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Badge, Spinner, Button } from '@unerp/ui';
-import { Shield, Plus, ChevronDown, ChevronRight, X, AlertCircle } from 'lucide-react';
+import {
+  PageHeader, Card, Badge, Spinner, Button, Modal, TextField, FormField,
+  DataTable, type Column, Tabs,
+} from '@unerp/ui';
+import { Shield, Plus, ChevronDown, ChevronRight, Search, Edit2, Trash2, Copy, Users } from 'lucide-react';
 import { PERMISSION_REGISTRY, getPermissionsByModule } from '@unerp/shared';
 
 interface RoleData {
@@ -11,16 +14,17 @@ interface RoleData {
   description: string;
   isSystem: boolean;
   permissions: string[];
+  userCount?: number;
 }
 
 const API_BASE = '/api/v1/admin';
 
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
+
 function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token || ''}`,
-  };
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` };
 }
 
 function allModules(): string[] {
@@ -29,252 +33,231 @@ function allModules(): string[] {
   return Array.from(set);
 }
 
-const MOCK_ROLES: RoleData[] = [
-  {
-    id: 'role-super-admin',
-    name: 'Super Admin',
-    description: 'Full system access with all permissions',
-    isSystem: true,
-    permissions: PERMISSION_REGISTRY.map((p) => p.code),
-  },
-  {
-    id: 'role-admin',
-    name: 'Admin',
-    description: 'User and role management',
-    isSystem: true,
-    permissions: getPermissionsByModule('admin').map((p) => p.code),
-  },
-  {
-    id: 'role-finance',
-    name: 'Finance Manager',
-    description: 'Full access to finance module',
-    isSystem: false,
-    permissions: [
-      ...getPermissionsByModule('finance').map((p) => p.code),
-      'page.finance.access',
-    ],
-  },
-  {
-    id: 'role-hr',
-    name: 'HR Manager',
-    description: 'Full access to HR module',
-    isSystem: false,
-    permissions: [
-      ...getPermissionsByModule('hr').map((p) => p.code),
-      'page.hr.access',
-    ],
-  },
-  {
-    id: 'role-viewer',
-    name: 'Viewer',
-    description: 'Read-only access across modules',
-    isSystem: true,
-    permissions: PERMISSION_REGISTRY.filter((p) => p.action === 'read' || p.action === 'access').map((p) => p.code),
-  },
-];
-
-export default function RolesTab() {
+export default function RolesPage() {
   const [roles, setRoles] = useState<RoleData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchRoles = async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`${API_BASE}/roles`, { headers: authHeaders() });
-      if (!res.ok) throw new Error('Failed to fetch roles');
+      if (!res.ok) throw new Error();
       const data = await res.json();
       setRoles(Array.isArray(data) ? data : data?.data || []);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch roles';
-      setError(msg);
+    } catch {
       setRoles([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchRoles();
-  }, []);
+  useEffect(() => { fetchRoles(); }, []);
+
+  const filteredRoles = roles.filter((r) =>
+    !searchQuery || r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
-        title="User Roles"
-        description="Configure role authorizations and assign permission sets to user profiles."
+        title="Roles & Permissions"
+        description="Define roles with granular module-level permissions for your organization"
         breadcrumbs={[
-          { label: 'Administration', href: '/admin/users' },
-          { label: 'Access Control', href: '/admin/access-control/roles' },
-          { label: 'User Roles' },
+          { label: 'Administration', href: '/admin' },
+          { label: 'Access Control' },
+          { label: 'Roles' },
         ]}
+        actions={
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+            <Plus size={14} style={{ marginRight: 6 }} /> Create Role
+          </Button>
+        }
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-            {roles.length} role{roles.length !== 1 ? 's' : ''} configured
-          </p>
-          <Button variant="primary" onClick={() => setShowCreate(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={15} /> Create Role
-          </Button>
+      {/* Navigation Tabs */}
+      <Tabs
+        tabs={[
+          { key: 'roles', label: 'Roles', icon: <Shield size={14} /> },
+          { key: 'matrix', label: 'Permission Matrix' },
+          { key: 'packages', label: 'Access Packages' },
+        ]}
+        value="roles"
+        onChange={(key) => {
+          if (key === 'matrix') window.location.href = '/admin/access-control/matrix';
+          if (key === 'packages') window.location.href = '/admin/access-control/packages';
+        }}
+      />
+
+      {/* Search */}
+      <Card>
+        <div style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+            <input
+              type="text" placeholder="Search roles..."
+              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)',
+                color: 'var(--color-text)', outline: 'none',
+              }}
+            />
+          </div>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-tertiary)' }}>
+            {filteredRoles.length} role{filteredRoles.length !== 1 ? 's' : ''}
+          </span>
         </div>
+      </Card>
 
-        {error && <ErrorBanner message={error} />}
-
-        {loading ? (
-          <CenteredSpinner />
-        ) : (
-          roles.map((role) => (
+      {/* Roles List */}
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          {filteredRoles.map((role) => (
             <RoleCard
               key={role.id}
               role={role}
               expanded={expandedId === role.id}
               onToggle={() => setExpandedId(expandedId === role.id ? null : role.id)}
             />
-          ))
-        )}
+          ))}
+        </div>
+      )}
 
-        {showCreate && (
-          <CreateRoleModal
-            onClose={() => setShowCreate(false)}
-            onCreated={() => {
-              setShowCreate(false);
-              fetchRoles();
-            }}
-          />
-        )}
-      </div>
+      {/* Create Role Modal */}
+      <CreateRoleModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={() => { setCreateOpen(false); fetchRoles(); }}
+      />
     </div>
   );
 }
 
-function RoleCard({
-  role,
-  expanded,
-  onToggle,
-}: {
-  role: RoleData;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function RoleCard({ role, expanded, onToggle }: { role: RoleData; expanded: boolean; onToggle: () => void }) {
   const modules = allModules();
+  const permCount = role.permissions.length;
 
   return (
     <Card padding="none" style={{ overflow: 'hidden' }}>
-      <button
+      <div
         onClick={onToggle}
         style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: 'var(--space-4) var(--space-5)',
-          border: 'none',
-          background: 'none',
-          cursor: 'pointer',
-          textAlign: 'left',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: 'var(--space-4) var(--space-5)', cursor: 'pointer',
+          transition: 'background var(--duration-fast) var(--ease-default)',
         }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          {expanded ? <ChevronDown size={16} style={{ color: 'var(--color-text-secondary)' }} /> : <ChevronRight size={16} style={{ color: 'var(--color-text-secondary)' }} />}
+          <div style={{
+            width: 36, height: 36, borderRadius: 'var(--radius-lg)',
+            background: role.isSystem ? 'var(--color-warning-light)' : 'var(--color-primary-light)',
+            color: role.isSystem ? 'var(--color-warning)' : 'var(--color-primary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Shield size={18} />
+          </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
-                {role.name}
-              </span>
+              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{role.name}</span>
               {role.isSystem && <Badge variant="warning">System</Badge>}
             </div>
-            <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
               {role.description}
             </p>
           </div>
         </div>
-        <Badge variant="info">{role.permissions.length} permissions</Badge>
-      </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <Badge variant="info">{permCount} permissions</Badge>
+          {expanded ? <ChevronDown size={16} style={{ color: 'var(--color-text-tertiary)' }} /> : <ChevronRight size={16} style={{ color: 'var(--color-text-tertiary)' }} />}
+        </div>
+      </div>
 
       {expanded && (
-        <div
-          style={{
-            borderTop: '1px solid var(--color-border)',
-            padding: 'var(--space-4) var(--space-5)',
-            background: 'var(--color-bg-sunken)',
-          }}
-        >
-          {modules.map((mod) => {
-            const modPerms = getPermissionsByModule(mod);
-            if (modPerms.length === 0) return null;
-            return (
-              <div key={mod} style={{ marginBottom: 'var(--space-4)' }}>
-                <h4
-                  style={{
-                    margin: '0 0 var(--space-2)',
-                    fontSize: 'var(--text-xs)',
-                    fontWeight: 'var(--weight-semibold)',
-                    color: 'var(--color-text-secondary)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  {mod}
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--space-1)' }}>
-                  {modPerms.map((perm) => {
-                    const has = role.permissions.includes(perm.code);
-                    return (
-                      <label
-                        key={perm.code}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 'var(--space-2)',
-                          fontSize: 'var(--text-xs)',
-                          color: has ? 'var(--color-text)' : 'var(--color-text-tertiary)',
-                          cursor: 'default',
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={has}
-                          readOnly
-                          style={{ accentColor: 'var(--color-primary)' }}
-                        />
-                        {perm.description || perm.code}
-                      </label>
-                    );
-                  })}
-                </div>
+        <div style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-5)', background: 'var(--color-bg-sunken)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>
+              MODULE PERMISSIONS
+            </span>
+            {!role.isSystem && (
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <Button variant="outline" onClick={() => {}}>
+                  <Edit2 size={12} style={{ marginRight: 4 }} /> Edit
+                </Button>
+                <Button variant="outline" onClick={() => {}}>
+                  <Copy size={12} style={{ marginRight: 4 }} /> Duplicate
+                </Button>
               </div>
-            );
-          })}
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+            {modules.map((mod) => {
+              const modPerms = getPermissionsByModule(mod);
+              if (modPerms.length === 0) return null;
+              const grantedCount = modPerms.filter((p) => role.permissions.includes(p.code)).length;
+              const percentage = Math.round((grantedCount / modPerms.length) * 100);
+              return (
+                <div key={mod} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)', background: 'var(--color-bg-elevated)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                      {mod}
+                    </span>
+                    <span style={{ fontSize: '10px', color: percentage === 100 ? 'var(--color-success)' : percentage > 0 ? 'var(--color-warning)' : 'var(--color-text-tertiary)' }}>
+                      {grantedCount}/{modPerms.length}
+                    </span>
+                  </div>
+                  <div style={{ height: 4, borderRadius: 'var(--radius-full)', background: 'var(--color-bg-sunken)', overflow: 'hidden', marginBottom: 'var(--space-2)' }}>
+                    <div style={{
+                      height: '100%', width: `${percentage}%`, borderRadius: 'var(--radius-full)',
+                      background: percentage === 100 ? 'var(--color-success)' : percentage > 0 ? 'var(--color-warning)' : 'transparent',
+                      transition: 'width var(--duration-normal) var(--ease-default)',
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {modPerms.map((perm) => {
+                      const has = role.permissions.includes(perm.code);
+                      return (
+                        <label key={perm.code} style={{
+                          display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                          fontSize: '11px', color: has ? 'var(--color-text)' : 'var(--color-text-tertiary)',
+                        }}>
+                          <input type="checkbox" checked={has} readOnly style={{ accentColor: 'var(--color-primary)', width: 13, height: 13 }} />
+                          {perm.description || perm.code}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </Card>
   );
 }
 
-function CreateRoleModal({
-  onClose,
-  onCreated,
-}: {
-  onClose: () => void;
-  onCreated: () => void;
-}) {
+function CreateRoleModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedPerms, setSelectedPerms] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const modules = allModules();
 
   const togglePerm = (code: string) => {
     setSelectedPerms((prev) => {
       const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
+      next.has(code) ? next.delete(code) : next.add(code);
       return next;
     });
   };
@@ -284,31 +267,20 @@ function CreateRoleModal({
     const allSelected = modPerms.every((p) => selectedPerms.has(p.code));
     setSelectedPerms((prev) => {
       const next = new Set(prev);
-      modPerms.forEach((p) => {
-        if (allSelected) next.delete(p.code);
-        else next.add(p.code);
-      });
+      modPerms.forEach((p) => { allSelected ? next.delete(p.code) : next.add(p.code); });
       return next;
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setErr('Role name is required');
-      return;
-    }
+    if (!name.trim()) { setError('Role name is required'); return; }
     setSaving(true);
-    setErr(null);
+    setError(null);
     try {
       const res = await fetch(`${API_BASE}/roles`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({
-          name,
-          description,
-          permissions: Array.from(selectedPerms),
-        }),
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ name, description, permissions: Array.from(selectedPerms) }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -323,184 +295,72 @@ function CreateRoleModal({
   };
 
   return (
-    <ModalOverlay onClose={onClose} title="Create Role">
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        {err && <ErrorBanner message={err} />}
-
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Role Name
-          </label>
-          <input
-            className="frappe-input"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Sales Manager"
-          />
-        </div>
-
-        <div className="frappe-form-group">
-          <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>
-            Description
-          </label>
-          <input
-            className="frappe-input"
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Short description of this role"
-          />
-        </div>
-
-        <div style={{ maxHeight: '320px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)', background: 'var(--color-bg)' }}>
-          {modules.map((mod) => {
-            const modPerms = getPermissionsByModule(mod);
-            const selectedCount = modPerms.filter((p) => selectedPerms.has(p.code)).length;
-            return (
-              <div key={mod} style={{ marginBottom: 'var(--space-3)' }}>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-2)',
-                    fontWeight: 'var(--weight-semibold)',
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--color-text)',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    marginBottom: 'var(--space-1)',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCount === modPerms.length}
-                    ref={(el) => {
-                      if (el) el.indeterminate = selectedCount > 0 && selectedCount < modPerms.length;
-                    }}
-                    onChange={() => toggleModule(mod)}
-                    style={{ accentColor: 'var(--color-primary)' }}
-                  />
-                  {mod} ({selectedCount}/{modPerms.length})
-                </label>
-                <div style={{ paddingLeft: 'var(--space-5)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-1)' }}>
-                  {modPerms.map((perm) => (
-                    <label
-                      key={perm.code}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-2)',
-                        fontSize: 'var(--text-xs)',
-                        cursor: 'pointer',
-                        color: 'var(--color-text-secondary)',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedPerms.has(perm.code)}
-                        onChange={() => togglePerm(perm.code)}
-                        style={{ accentColor: 'var(--color-primary)' }}
-                      />
-                      {perm.description || perm.code}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
-          <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" type="submit" disabled={saving}>
-            {saving ? <Spinner size="sm" /> : 'Create Role'}
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Create Role"
+      description="Define a new role with specific permissions for each module"
+      size="lg"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="primary" onClick={handleSubmit as any} disabled={saving}>
+            {saving ? <><Spinner size="sm" /> Creating...</> : 'Create Role'}
           </Button>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        {error && (
+          <div style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: 'var(--color-danger-light)', color: 'var(--color-danger)', fontSize: 'var(--text-sm)' }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+          <TextField label="Role Name" placeholder="e.g. Sales Manager" required value={name} onChange={(e) => setName(e.target.value)} />
+          <TextField label="Description" placeholder="Brief description" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
+
+        <FormField label={`Permissions (${selectedPerms.size} selected)`} required>
+          <div style={{
+            maxHeight: 360, overflowY: 'auto', border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)', background: 'var(--color-bg)',
+          }}>
+            {modules.map((mod) => {
+              const modPerms = getPermissionsByModule(mod);
+              const selectedCount = modPerms.filter((p) => selectedPerms.has(p.code)).length;
+              return (
+                <div key={mod} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <label style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    padding: 'var(--space-3) var(--space-4)', cursor: 'pointer',
+                    background: 'var(--color-bg-sunken)',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedCount === modPerms.length && modPerms.length > 0}
+                      ref={(el) => { if (el) el.indeterminate = selectedCount > 0 && selectedCount < modPerms.length; }}
+                      onChange={() => toggleModule(mod)}
+                      style={{ accentColor: 'var(--color-primary)', width: 15, height: 15 }}
+                    />
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', flex: 1 }}>{mod}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{selectedCount}/{modPerms.length}</span>
+                  </label>
+                  <div style={{ padding: 'var(--space-2) var(--space-4) var(--space-2) var(--space-8)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
+                    {modPerms.map((perm) => (
+                      <label key={perm.code} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '2px 0' }}>
+                        <input type="checkbox" checked={selectedPerms.has(perm.code)} onChange={() => togglePerm(perm.code)} style={{ accentColor: 'var(--color-primary)' }} />
+                        {perm.description || perm.code}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </FormField>
       </form>
-    </ModalOverlay>
-  );
-}
-
-function ModalOverlay({
-  onClose,
-  title,
-  children,
-}: {
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'var(--color-bg-overlay)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 300,
-      }}
-    >
-      <div
-        style={{
-          background: 'var(--color-bg-elevated)',
-          borderRadius: 'var(--radius-xl)',
-          border: '1px solid var(--color-border)',
-          width: '100%',
-          maxWidth: '560px',
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          boxShadow: 'var(--shadow-xl)',
-          animation: 'scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
-          <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', margin: 0 }}>{title}</h3>
-          <button
-            onClick={onClose}
-            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
-          >
-            <X size={18} />
-          </button>
-        </div>
-        <div style={{ padding: 'var(--space-5)' }}>{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function ErrorBanner({ message }: { message: string }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--space-2)',
-        padding: 'var(--space-3) var(--space-4)',
-        background: 'var(--color-warning-light)',
-        border: '1px solid var(--color-warning)',
-        borderRadius: 'var(--radius-md)',
-        color: 'var(--color-warning-text)',
-        fontSize: 'var(--text-sm)',
-      }}
-    >
-      <AlertCircle size={16} />
-      <span>{message} (using local fallback data)</span>
-    </div>
-  );
-}
-
-function CenteredSpinner() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-      <Spinner size="lg" />
-    </div>
+    </Modal>
   );
 }

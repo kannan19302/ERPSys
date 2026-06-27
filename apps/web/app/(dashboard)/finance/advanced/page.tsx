@@ -90,7 +90,7 @@ export default function AdvancedFinancePage() {
           <div className="frappe-grid-3">
             {group.modules.map((mod) => (
               <Link key={mod.href} href={mod.href} style={{ textDecoration: 'none' }}>
-                <Card padding="md" className="hover:shadow-md transition-all hover:border-primary/30" style={{ cursor: 'pointer', border: '1px solid var(--color-border)', border: '1px solid transparent', height: '100%' }}>
+                <Card padding="md" className="hover:shadow-md transition-all hover:border-primary/30" style={{ cursor: 'pointer', border: '1px solid var(--color-border)', height: '100%' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
                     <div style={{ padding: 'var(--space-3)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', flexShrink: 0 }}>
                       {mod.icon}

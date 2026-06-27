@@ -80,7 +80,7 @@ export default function TenantsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
         title="Tenants"
-        subtitle="Manage all tenant organizations"
+        description="Manage all tenant organizations"
       />
 
       {error && (

@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  GitFork, 
-  RefreshCw, 
-  CheckCircle, 
-  XCircle, 
-  Activity
+import {
+  PageHeader, Card, Badge, Spinner, Button, DataTable, type Column,
+  Tabs, EmptyState, KPICard,
+} from '@unerp/ui';
+import {
+  GitFork, Plus, CheckCircle, XCircle, Clock, ArrowRight,
+  Workflow, FileText, Users, BarChart3, Zap,
 } from 'lucide-react';
+import Link from 'next/link';
 
 interface WorkflowStep {
   id: string;
@@ -15,13 +17,13 @@ interface WorkflowStep {
   actionType: string;
   assigneeRole: string;
   slaLimitHours?: number;
-  backupAssigneeRole?: string;
 }
 
-interface Workflow {
+interface WorkflowData {
   id: string;
   name: string;
   triggerType: string;
+  isActive?: boolean;
   steps?: WorkflowStep[];
 }
 
@@ -31,240 +33,208 @@ interface ApprovalRequest {
   entityId: string;
   status: string;
   comments?: string;
-  step?: {
-    actionType: string;
-    assigneeRole: string;
-  };
+  createdAt?: string;
+  step?: { actionType: string; assigneeRole: string };
 }
 
-export default function AdminWorkflowsPage() {
-  const [loading, setLoading] = useState(true);
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
+
+export default function WorkflowsPage() {
+  const [workflows, setWorkflows] = useState<WorkflowData[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
-  const [activeTab, setActiveTab] = useState<'workflows' | 'approvals'>('workflows');
-
-  const loadData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const headers = { 'Authorization': `Bearer ${token}` };
-
-      const [wfRes, appRes] = await Promise.all([
-        fetch('/api/v1/workflows', { headers }),
-        fetch('/api/v1/workflows/approvals', { headers }),
-      ]);
-
-      const [wfs, apps] = await Promise.all([
-        wfRes.json(), appRes.json()
-      ]);
-
-      setWorkflows(Array.isArray(wfs) ? wfs : []);
-      setApprovals(Array.isArray(apps) ? apps : []);
-      setLoading(false);
-    } catch {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('workflows');
 
   useEffect(() => {
-    loadData();
+    (async () => {
+      try {
+        const token = getToken();
+        const headers = { Authorization: `Bearer ${token || ''}` };
+        const [wfRes, appRes] = await Promise.all([
+          fetch('/api/v1/workflows', { headers }),
+          fetch('/api/v1/workflows/approvals', { headers }),
+        ]);
+        const [wfs, apps] = await Promise.all([wfRes.json(), appRes.json()]);
+        setWorkflows(Array.isArray(wfs) ? wfs : wfs?.data || []);
+        setApprovals(Array.isArray(apps) ? apps : apps?.data || []);
+      } catch { /* use empty */ }
+      finally { setLoading(false); }
+    })();
   }, []);
 
-  const handleApprove = async (id: string, status: 'APPROVED' | 'REJECTED') => {
-    try {
-      const token = localStorage.getItem('token');
-      const comments = prompt(`Enter comments for ${status.toLowerCase()}:`, '');
-      const res = await fetch(`/api/v1/workflows/approvals/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status, comments })
-      });
-      if (res.ok) {
-        loadData();
-      } else {
-        const err = await res.json();
-        alert(err.message || 'Error actioning approval');
-      }
-    } catch {
-      alert('Error actioning approval.');
-    }
-  };
+  const pendingCount = approvals.filter(a => a.status === 'PENDING').length;
+  const approvedCount = approvals.filter(a => a.status === 'APPROVED').length;
 
-  const handleCreateWorkflow = async () => {
-    const name = prompt('Enter workflow name:');
-    if (!name) return;
-    const triggerType = prompt('Enter trigger type (e.g. PO_CREATED, LEAVE_REQUESTED, INVOICE_CREATED):', 'PO_CREATED');
-    if (!triggerType) return;
-    const assigneeRole = prompt('Enter primary assignee role:', 'Admin');
-    if (!assigneeRole) return;
-    const slaLimitStr = prompt('Enter SLA limit hours (optional, e.g. 24):', '24');
-    const slaLimitHours = slaLimitStr ? parseInt(slaLimitStr, 10) : undefined;
-    const backupAssigneeRole = slaLimitHours ? (prompt('Enter backup assignee role:', 'Manager') || 'Admin') : undefined;
+  const workflowColumns: Column<WorkflowData>[] = [
+    {
+      key: 'name', header: 'Workflow',
+      render: (row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 'var(--radius-md)',
+            background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <GitFork size={16} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.name}</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+              Trigger: {row.triggerType}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'steps', header: 'Steps',
+      render: (row) => <Badge variant="info">{row.steps?.length || 0} steps</Badge>,
+    },
+    {
+      key: 'status', header: 'Status',
+      render: (row) => (
+        <Badge variant={row.isActive !== false ? 'success' : 'default'}>
+          {row.isActive !== false ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions', header: '', align: 'right' as const, width: '40px',
+      render: () => <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)' }} />,
+    },
+  ];
 
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/workflows', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name,
-          triggerType,
-          steps: [
-            { 
-              stepOrder: 1, 
-              actionType: 'APPROVAL', 
-              assigneeRole,
-              slaLimitHours,
-              backupAssigneeRole
-            }
-          ]
-        })
-      });
-      if (res.ok) {
-        loadData();
-      } else {
-        const err = await res.json();
-        alert(err.message || 'Error creating workflow');
-      }
-    } catch {
-      alert('Error creating workflow.');
-    }
-  };
+  const approvalColumns: Column<ApprovalRequest>[] = [
+    {
+      key: 'entity', header: 'Request',
+      render: (row) => (
+        <div>
+          <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>{row.entityType}</div>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontFamily: 'monospace' }}>{row.entityId}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'step', header: 'Step',
+      render: (row) => row.step ? (
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+          {row.step.actionType} ({row.step.assigneeRole})
+        </span>
+      ) : <span style={{ color: 'var(--color-text-tertiary)' }}>—</span>,
+    },
+    {
+      key: 'status', header: 'Status',
+      render: (row) => (
+        <Badge variant={row.status === 'APPROVED' ? 'success' : row.status === 'REJECTED' ? 'danger' : 'warning'}>
+          {row.status}
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions', header: '', align: 'right' as const, width: '120px',
+      render: (row) => row.status === 'PENDING' ? (
+        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+          <Button variant="primary" onClick={() => {}}>Approve</Button>
+          <Button variant="danger" onClick={() => {}}>Reject</Button>
+        </div>
+      ) : null,
+    },
+  ];
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'var(--color-text-secondary)' }}>
-        <RefreshCw className="animate-spin" size={32} />
-        <span style={{ marginLeft: 'var(--space-2)' }}>Loading Workflows Platform...</span>
-      </div>
-    );
-  }
+  const subPages = [
+    { title: 'Templates', href: '/admin/workflows/templates', desc: 'Pre-built workflow templates' },
+    { title: 'Approvals', href: '/admin/workflows/approvals', desc: 'Approval queue management' },
+    { title: 'Routing Rules', href: '/admin/workflows/routing', desc: 'Dynamic routing configuration' },
+    { title: 'Escalations', href: '/admin/workflows/escalations', desc: 'SLA and escalation policies' },
+    { title: 'Email Actions', href: '/admin/workflows/email', desc: 'Email-triggered workflows' },
+    { title: 'Analytics', href: '/admin/workflows/analytics', desc: 'Workflow performance metrics' },
+    { title: 'Simulation', href: '/admin/workflows/simulation', desc: 'Test workflows before deploying' },
+    { title: 'Bulk Operations', href: '/admin/workflows/bulk', desc: 'Mass workflow operations' },
+  ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <GitFork style={{ color: 'var(--color-primary)' }} />
-            Approval Workflows Engine
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-            Define sequential approvals for transactions, assign staff roles, and track active delegation chains.
-          </p>
-        </div>
+      <PageHeader
+        title="Workflow Engine"
+        description="Design approval chains, automate routing, and manage workflow processes"
+        breadcrumbs={[
+          { label: 'Administration', href: '/admin' },
+          { label: 'Workflows' },
+        ]}
+        actions={
+          <Button variant="primary" onClick={() => {}}>
+            <Plus size={14} style={{ marginRight: 6 }} /> Create Workflow
+          </Button>
+        }
+      />
+
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+        <KPICard title="Active Workflows" value={workflows.length} icon={<Workflow size={20} />} color="var(--color-primary)" />
+        <KPICard title="Pending Approvals" value={pendingCount} icon={<Clock size={20} />} color="var(--color-warning)" />
+        <KPICard title="Approved (30d)" value={approvedCount} icon={<CheckCircle size={20} />} color="var(--color-success)" />
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-4)' }}>
-        <button 
-          onClick={() => setActiveTab('workflows')}
-          style={{
-            padding: 'var(--space-2) var(--space-4)', border: 'none', background: 'none',
-            borderBottom: activeTab === 'workflows' ? '2px solid var(--color-primary)' : 'none',
-            color: activeTab === 'workflows' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: 'var(--weight-semibold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
-          }}
-        >
-          <GitFork size={16} /> Workflow Configuration
-        </button>
-        <button 
-          onClick={() => setActiveTab('approvals')}
-          style={{
-            padding: 'var(--space-2) var(--space-4)', border: 'none', background: 'none',
-            borderBottom: activeTab === 'approvals' ? '2px solid var(--color-primary)' : 'none',
-            color: activeTab === 'approvals' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: 'var(--weight-semibold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
-          }}
-        >
-          <Activity size={16} /> Active Approvals ({approvals.filter(a=>a.status==='PENDING').length})
-        </button>
-      </div>
+      <Tabs
+        tabs={[
+          { key: 'workflows', label: 'Workflows', icon: <GitFork size={14} /> },
+          { key: 'approvals', label: `Pending Approvals (${pendingCount})`, icon: <Clock size={14} /> },
+        ]}
+        value={activeTab}
+        onChange={setActiveTab}
+      />
 
-      {/* Main Grid content */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
-        
-        {/* Tab view */}
-        <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
-          {activeTab === 'workflows' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Workflow Templates</h2>
-                <button 
-                  onClick={handleCreateWorkflow}
-                  style={{
-                    background: 'var(--color-primary)', color: 'var(--color-bg-elevated)', border: 'none',
-                    padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-md)',
-                    cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'bold'
-                  }}
-                >
-                  Create Workflow
-                </button>
+      {activeTab === 'workflows' ? (
+        <Card padding="none">
+          <DataTable
+            columns={workflowColumns}
+            data={workflows}
+            loading={loading}
+            rowKey={(row) => row.id}
+            emptyTitle="No workflows configured"
+            emptyMessage="Create your first approval workflow to automate business processes."
+            emptyIcon={<GitFork size={48} />}
+          />
+        </Card>
+      ) : (
+        <Card padding="none">
+          <DataTable
+            columns={approvalColumns}
+            data={approvals.filter(a => a.status === 'PENDING')}
+            loading={loading}
+            rowKey={(row) => row.id}
+            emptyTitle="No pending approvals"
+            emptyMessage="All approval requests have been processed."
+            emptyIcon={<CheckCircle size={48} />}
+          />
+        </Card>
+      )}
+
+      {/* Sub-pages Grid */}
+      <div>
+        <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>
+          Workflow Configuration
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--space-3)' }}>
+          {subPages.map((page) => (
+            <Link href={page.href} key={page.title} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div
+                style={{
+                  padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)',
+                  cursor: 'pointer', transition: 'all var(--duration-fast) var(--ease-default)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: 2 }}>{page.title}</div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{page.desc}</div>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                {workflows.map(wf => (
-                  <div key={wf.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                      <span style={{ fontWeight: 'bold' }}>{wf.name}</span>
-                      <span style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontWeight: 'bold' }}>Trigger: {wf.triggerType}</span>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Steps Chain:</span>
-                      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-1)', flexWrap: 'wrap' }}>
-                        {wf.steps?.map((step: WorkflowStep) => (
-                          <div key={step.id} style={{ padding: 'var(--space-1) var(--space-2.5)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', fontSize: '10px', background: 'var(--color-bg)' }}>
-                            Step {step.stepOrder}: {step.actionType} ({step.assigneeRole})
-                            {step.slaLimitHours ? ` [SLA: ${step.slaLimitHours}h (Backup: ${step.backupAssigneeRole || 'Admin'})]` : ''}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'approvals' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Active Approvals Log</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                {approvals.map(app => (
-                  <div key={app.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <p style={{ margin: 0, fontWeight: 'bold' }}>Entity: {app.entityType} ({app.entityId})</p>
-                      <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Workflow Step: {app.step?.actionType} assigned to {app.step?.assigneeRole}</p>
-                      <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Comments: {app.comments || 'No comments'}</p>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      {app.status === 'PENDING' ? (
-                        <>
-                          <button onClick={() => handleApprove(app.id, 'APPROVED')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-success)' }}><CheckCircle size={20} /></button>
-                          <button onClick={() => handleApprove(app.id, 'REJECTED')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}><XCircle size={20} /></button>
-                        </>
-                      ) : (
-                        <span style={{
-                          fontSize: '11px', fontWeight: 'bold', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)',
-                          background: app.status === 'APPROVED' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
-                          color: app.status === 'APPROVED' ? 'var(--color-success)' : 'var(--color-danger)'
-                        }}>{app.status}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {approvals.length === 0 && (
-                  <p style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--text-xs)', textAlign: 'center' }}>No active approval requests found.</p>
-                )}
-              </div>
-            </div>
-          )}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, RefreshCw, ChevronLeft, ChevronRight, History } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  PageHeader, Card, Badge, Spinner, DataTable, type Column, Pagination, Select,
+} from '@unerp/ui';
+import { Search, RefreshCw, History, Download, Filter } from 'lucide-react';
 
 interface AuditLog {
   id: string;
@@ -21,168 +24,206 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-const API_BASE = '/api/v1/admin/security';
+function getToken() {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+}
 
 function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` };
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers: { ...authHeaders(), ...init?.headers } });
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  return res.json();
+function getSeverity(log: AuditLog): string {
+  if (log.changes?.severity) return log.changes.severity;
+  if (['LOGIN_FAILED', 'UNAUTHORIZED'].includes(log.action)) return 'CRITICAL';
+  if (['DELETE', 'PERMISSION_CHANGE'].includes(log.action)) return 'WARNING';
+  return 'INFO';
 }
+
+function getDetails(log: AuditLog): string {
+  if (log.changes?.details) return log.changes.details;
+  return `${log.action} on ${log.entityType} ${log.entityId}`;
+}
+
+const severityVariant: Record<string, string> = {
+  INFO: 'info', WARNING: 'warning', CRITICAL: 'danger',
+};
 
 export default function AuditTrailPage() {
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [auditMeta, setAuditMeta] = useState<PaginationMeta>({ page: 1, limit: 20, total: 0, totalPages: 1 });
-  const [auditSearch, setAuditSearch] = useState('');
-  const [auditFilter, setAuditFilter] = useState('ALL');
-  const [auditLoading, setAuditLoading] = useState(false);
-  const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [meta, setMeta] = useState<PaginationMeta>({ page: 1, limit: 20, total: 0, totalPages: 1 });
+  const [search, setSearch] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('ALL');
+  const [loading, setLoading] = useState(true);
 
-  const fetchAuditLogs = useCallback(async (page = 1) => {
-    setAuditLoading(true);
+  const fetchLogs = useCallback(async (page = 1) => {
+    setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.set('page', String(page));
-      params.set('limit', '20');
-      if (auditSearch) params.set('search', auditSearch);
-      if (auditFilter !== 'ALL') params.set('severity', auditFilter);
+      const params = new URLSearchParams({ page: String(page), limit: '20' });
+      if (search) params.set('search', search);
+      if (severityFilter !== 'ALL') params.set('severity', severityFilter);
 
-      const res = await apiFetch<{ data: AuditLog[]; meta: PaginationMeta }>(`/audit-logs?${params}`);
-      setAuditLogs(res.data);
-      setAuditMeta(res.meta);
-    } catch (e) {
-      console.error('Error fetching audit logs', e);
+      const res = await fetch(`/api/v1/admin/security/audit-logs?${params}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setLogs(data.data || []);
+      if (data.meta) setMeta(data.meta);
+    } catch {
+      setLogs([]);
     } finally {
-      setAuditLoading(false);
+      setLoading(false);
     }
-  }, [auditSearch, auditFilter]);
+  }, [search, severityFilter]);
+
+  useEffect(() => { fetchLogs(1); }, [fetchLogs]);
 
   useEffect(() => {
-    fetchAuditLogs(1);
-  }, []);
-
-  useEffect(() => {
-    refreshTimerRef.current = setInterval(() => { fetchAuditLogs(auditMeta.page); }, 30000);
-    return () => {
-      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
-    };
-  }, [fetchAuditLogs, auditMeta.page]);
-
-  useEffect(() => {
-    const t = setTimeout(() => { fetchAuditLogs(1); }, 400);
+    const t = setTimeout(() => fetchLogs(1), 400);
     return () => clearTimeout(t);
-  }, [auditSearch, auditFilter, fetchAuditLogs]);
+  }, [search, severityFilter, fetchLogs]);
 
-  const getSeverity = (log: AuditLog): string => {
-    if (log.changes?.severity) return log.changes.severity;
-    if (['LOGIN_FAILED', 'UNAUTHORIZED'].includes(log.action)) return 'CRITICAL';
-    if (['DELETE', 'PERMISSION_CHANGE'].includes(log.action)) return 'WARNING';
-    return 'INFO';
-  };
-
-  const getDetails = (log: AuditLog): string => {
-    if (log.changes?.details) return log.changes.details;
-    return `${log.action} on ${log.entityType} ${log.entityId}`;
-  };
-
-  const severityStyles = (s: string) => {
-    const map: Record<string, { color: string; background: string }> = {
-      INFO: { color: 'var(--color-primary)', background: 'var(--color-primary-light)' },
-      WARNING: { color: 'var(--color-warning)', background: 'var(--color-warning-light)' },
-      CRITICAL: { color: 'var(--color-error)', background: 'var(--color-error-light)' },
-    };
-    return map[s] || { color: 'var(--color-text)', background: 'var(--color-bg)' };
-  };
+  const columns: Column<AuditLog>[] = [
+    {
+      key: 'severity', header: 'Severity', width: '100px',
+      render: (row) => {
+        const sev = getSeverity(row);
+        return <Badge variant={severityVariant[sev] as any}>{sev}</Badge>;
+      },
+    },
+    {
+      key: 'timestamp', header: 'Timestamp', width: '160px',
+      render: (row) => (
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+          {new Date(row.createdAt).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      key: 'userId', header: 'User',
+      render: (row) => (
+        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>{row.userId}</span>
+      ),
+    },
+    {
+      key: 'action', header: 'Action',
+      render: (row) => (
+        <code style={{
+          fontSize: '11px', padding: '2px 8px', borderRadius: 'var(--radius-sm)',
+          background: 'var(--color-bg-sunken)', color: 'var(--color-text)',
+        }}>
+          {row.action}
+        </code>
+      ),
+    },
+    {
+      key: 'entityType', header: 'Entity',
+      render: (row) => (
+        <div>
+          <div style={{ fontSize: 'var(--text-sm)' }}>{row.entityType}</div>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontFamily: 'monospace' }}>{row.entityId}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'ipAddress', header: 'IP Address',
+      render: (row) => (
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+          {row.ipAddress || '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'details', header: 'Details',
+      render: (row) => (
+        <span style={{
+          fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)',
+          maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block',
+        }}>
+          {getDetails(row)}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <History style={{ color: 'var(--color-primary)' }} />
-          Audit Trail Viewer
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-          Inspect record mutations, security exceptions, permission updates, and login attempts across the workspace.
-        </p>
-      </div>
+      <PageHeader
+        title="Audit Trail"
+        description="Track all system mutations, security events, and user actions"
+        breadcrumbs={[
+          { label: 'Administration', href: '/admin' },
+          { label: 'Audit Trail' },
+        ]}
+        actions={
+          <button
+            onClick={() => {}}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+              background: 'var(--color-bg-elevated)', cursor: 'pointer',
+              fontSize: 'var(--text-sm)', color: 'var(--color-text)',
+            }}
+          >
+            <Download size={14} /> Export
+          </button>
+        }
+      />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0 var(--space-3)' }}>
-            <Search size={16} style={{ color: 'var(--color-text-tertiary)' }} />
-            <input value={auditSearch} onChange={e => setAuditSearch(e.target.value)} placeholder="Search by user, action, entity, or details..." style={{ flex: 1, border: 'none', background: 'transparent', padding: 'var(--space-2.5) 0', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }} />
+      {/* Filters */}
+      <Card>
+        <div style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 280, position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+            <input
+              type="text" placeholder="Search by user, action, entity, or details..."
+              value={search} onChange={(e) => setSearch(e.target.value)}
+              style={{
+                width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)',
+                color: 'var(--color-text)', outline: 'none',
+              }}
+            />
           </div>
-          <select value={auditFilter} onChange={e => setAuditFilter(e.target.value)} style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)' }}>
+          <Select
+            value={severityFilter}
+            onChange={(e) => setSeverityFilter(e.target.value)}
+            style={{ width: 160 }}
+          >
             <option value="ALL">All Severities</option>
             <option value="INFO">Info</option>
             <option value="WARNING">Warning</option>
             <option value="CRITICAL">Critical</option>
-          </select>
-          <button onClick={() => fetchAuditLogs(auditMeta.page)} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-2)', cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} title="Refresh">
-            <RefreshCw size={16} style={auditLoading ? { animation: 'spin 1s linear infinite' } : {}} />
+          </Select>
+          <button
+            onClick={() => fetchLogs(meta.page)}
+            title="Refresh"
+            style={{
+              display: 'flex', alignItems: 'center', padding: 8,
+              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+              background: 'var(--color-bg)', cursor: 'pointer', color: 'var(--color-text-secondary)',
+            }}
+          >
+            <RefreshCw size={16} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
           </button>
         </div>
+      </Card>
 
-        <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--color-border)', background: 'var(--color-bg)' }}>
-                {['Severity', 'Timestamp', 'User', 'Action', 'EntityType', 'EntityID', 'IP Address', 'Details'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: 'var(--space-3) var(--space-4)', fontSize: '11px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 'var(--weight-bold)' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {auditLogs.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No audit logs found.</td></tr>
-              )}
-              {auditLogs.map(l => {
-                const sev = getSeverity(l);
-                return (
-                  <tr key={l.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                      <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 'var(--weight-bold)', ...severityStyles(sev) }}>{sev}</span>
-                    </td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
-                      {new Date(l.createdAt).toLocaleString()}
-                    </td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{l.userId}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                      <code style={{ fontSize: '11px', background: 'var(--color-bg)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>{l.action}</code>
-                    </td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{l.entityType}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontFamily: 'monospace', fontSize: '11px' }}>{l.entityId}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>{l.ipAddress || '—'}</td>
-                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '12px', color: 'var(--color-text-secondary)', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getDetails(l)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {/* Table */}
+      <Card padding="none">
+        <DataTable
+          columns={columns}
+          data={logs}
+          loading={loading}
+          rowKey={(row) => row.id}
+          emptyTitle="No audit logs found"
+          emptyMessage="Adjust your search or filters to find specific events."
+          emptyIcon={<History size={48} />}
+        />
+      </Card>
 
-        {/* Pagination */}
-        {auditMeta.totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-            <span>Showing page {auditMeta.page} of {auditMeta.totalPages} ({auditMeta.total} total)</span>
-            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <button disabled={auditMeta.page <= 1} onClick={() => fetchAuditLogs(auditMeta.page - 1)} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-1) var(--space-2)', cursor: auditMeta.page <= 1 ? 'default' : 'pointer', opacity: auditMeta.page <= 1 ? 0.4 : 1, display: 'flex', alignItems: 'center', color: 'var(--color-text)' }}>
-                <ChevronLeft size={14} /> Prev
-              </button>
-              <button disabled={auditMeta.page >= auditMeta.totalPages} onClick={() => fetchAuditLogs(auditMeta.page + 1)} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-1) var(--space-2)', cursor: auditMeta.page >= auditMeta.totalPages ? 'default' : 'pointer', opacity: auditMeta.page >= auditMeta.totalPages ? 0.4 : 1, display: 'flex', alignItems: 'center', color: 'var(--color-text)' }}>
-                Next <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Pagination */}
+      {meta.totalPages > 1 && (
+        <Pagination page={meta.page} pageCount={meta.totalPages} onChange={(p) => fetchLogs(p)} />
+      )}
     </div>
   );
 }
