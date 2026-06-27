@@ -31,6 +31,10 @@ export interface ProvisionResult {
 export class AppProvisioningService {
   async provision(tenantId: string, manifest: AppManifest, sourceLabel: string): Promise<ProvisionResult> {
     const moduleSlug = manifest.slug.toLowerCase();
+    // When the bundle extends an existing app, its pages live under that app's
+    // module and are grouped as submodule sections rather than a new shell.
+    const targetApp = manifest.targetApp?.toLowerCase();
+    const pageModule = targetApp || moduleSlug;
     const schemaRegistryIds: string[] = [];
     const pageRegistryIds: string[] = [];
     const automationRuleIds: string[] = [];
@@ -73,14 +77,36 @@ export class AppProvisioningService {
       const type = (p.type || 'form');
       const pageLayout = type === 'custom' ? (p.layout || []) : { fields, settings };
 
+      // For an app extension, tag each page with its submodule group so the
+      // host app's sidebar can render it under a labelled section.
+      const submodule = targetApp ? (p.module || moduleSlug) : undefined;
+
       const page = await prisma.pageRegistry.upsert({
-        where: { tenantId_module_slug: { tenantId, module: moduleSlug, slug: p.slug } },
-        update: { schemaId: backingSchemaId, title: p.title, type: type.toUpperCase(), layout: pageLayout as any, status: 'PUBLISHED' },
-        create: { tenantId, schemaId: backingSchemaId, module: moduleSlug, slug: p.slug, title: p.title, type: type.toUpperCase(), layout: pageLayout as any, status: 'PUBLISHED' },
+        where: { tenantId_module_slug: { tenantId, module: pageModule, slug: p.slug } },
+        update: { schemaId: backingSchemaId, title: p.title, type: type.toUpperCase(), layout: pageLayout as any, status: 'PUBLISHED', submodule },
+        create: { tenantId, schemaId: backingSchemaId, module: pageModule, slug: p.slug, title: p.title, type: type.toUpperCase(), layout: pageLayout as any, status: 'PUBLISHED', submodule },
       });
       pageRegistryIds.push(page.id);
       const mod = p.module ? moduleMap[p.module] : undefined;
       if (mod) mod.pages.push({ slug: p.slug, title: p.title, type: type.toUpperCase() });
+    }
+
+    // Record submodule labels on the host app's nav overlay so the extension's
+    // sections show friendly names in the sidebar.
+    if (targetApp && (manifest.modules || []).length) {
+      const overlay = await prisma.appNavOverlay.findUnique({ where: { tenantId_moduleId: { tenantId, moduleId: targetApp } } });
+      const config: any = (overlay?.config as any) || {};
+      config.submodules = Array.isArray(config.submodules) ? config.submodules : [];
+      for (const m of manifest.modules || []) {
+        if (!config.submodules.find((s: any) => s.slug === m.slug)) {
+          config.submodules.push({ slug: m.slug, name: m.name, icon: m.icon, order: config.submodules.length });
+        }
+      }
+      await prisma.appNavOverlay.upsert({
+        where: { tenantId_moduleId: { tenantId, moduleId: targetApp } },
+        update: { config: config as any },
+        create: { tenantId, moduleId: targetApp, config: config as any },
+      });
     }
 
     for (const a of manifest.automations || []) {
@@ -104,7 +130,7 @@ export class AppProvisioningService {
       schemaRegistryIds,
       pageRegistryIds,
       automationRuleIds,
-      entry: firstPage ? `/app/${moduleSlug}/${firstPage.slug}` : null,
+      entry: firstPage ? `/app/${pageModule}/${firstPage.slug}` : null,
       moduleMap,
     };
   }

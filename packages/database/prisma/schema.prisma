@@ -5593,6 +5593,9 @@ model PageRegistry {
   history   Json[]   @default([]) // Array of previous layouts for rollback
   status    String   @default("DRAFT") // DRAFT, PUBLISHED
   isCustom  Boolean  @default(true) @map("is_custom")
+  submodule String? // named submodule group within a core app (App Studio extension)
+  navIcon   String?  @map("nav_icon") // optional lucide icon name for the sidebar entry
+  sortOrder Int      @default(0) @map("sort_order") // ordering within its submodule section
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -5618,6 +5621,25 @@ model CustomRecord {
   @@index([tenantId, schemaId])
   @@index([tenantId, createdAt])
   @@map("custom_records")
+}
+
+// Per-tenant, non-destructive customization of an existing app's sidebar nav.
+// Absence of a row ⇒ stock navigation (reset = delete the row). `config` holds:
+//   { order: string[], hidden: string[], renames: Record<string,string>,
+//     submodules: { slug, name, icon?, order? }[] }
+// Submodule pages themselves live in PageRegistry (tagged via `submodule`).
+model AppNavOverlay {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  moduleId  String   @map("module_id") // core app slug, e.g. "finance"
+  config    Json     @default("{}")
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, moduleId])
+  @@index([tenantId])
+  @@map("app_nav_overlays")
 }
 
 // ════════════════════════════════════════════════

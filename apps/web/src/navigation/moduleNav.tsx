@@ -837,6 +837,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'App Studio Overview', href: '/builder/erp', icon: Cpu },
+            { name: 'Customize an App', href: '/builder/erp/customize', icon: Settings },
             { name: 'Form Builder', href: '/builder/erp/forms', icon: FileCode2 },
             { name: 'Workflow Builder', href: '/builder/erp/workflows', icon: Workflow },
             { name: 'Dashboard Builder', href: '/builder/erp/dashboards', icon: BarChart3 },

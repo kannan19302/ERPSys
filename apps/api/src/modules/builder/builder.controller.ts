@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -1302,5 +1302,67 @@ export class BuilderController {
   @Permissions('builder.web.delete')
   async deleteOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.webCollections.deleteOrder(req.user.tenantId, id);
+  }
+
+  // ════════════════════════════════════════════════
+  // App Studio — customize existing apps (nav overlay + submodules)
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'Get nav overlay + submodules for a module' })
+  @Permissions('builder.read')
+  @Get('nav-overlay/:moduleId')
+  async getNavOverlay(@Req() req: AuthenticatedRequest, @Param('moduleId') moduleId: string) {
+    return this.builderService.getNavOverlay(req.user.tenantId, moduleId);
+  }
+
+  @ApiOperation({ summary: 'Save nav overlay (reorder / hide / rename)' })
+  @Permissions('builder.update')
+  @Put('nav-overlay/:moduleId')
+  async saveNavOverlay(
+    @Req() req: AuthenticatedRequest,
+    @Param('moduleId') moduleId: string,
+    @ZodBody(z.object({ config: z.any() })) body: { config: unknown },
+  ) {
+    return this.builderService.saveNavOverlay(req.user.tenantId, moduleId, body.config, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Reset nav overlay to default' })
+  @Permissions('builder.update')
+  @Delete('nav-overlay/:moduleId')
+  async resetNavOverlay(@Req() req: AuthenticatedRequest, @Param('moduleId') moduleId: string) {
+    return this.builderService.resetNavOverlay(req.user.tenantId, moduleId);
+  }
+
+  @ApiOperation({ summary: 'Add a submodule to an existing app' })
+  @Permissions('builder.create')
+  @Post('nav-overlay/:moduleId/submodules')
+  async createSubmodule(
+    @Req() req: AuthenticatedRequest,
+    @Param('moduleId') moduleId: string,
+    @ZodBody(
+      z.object({
+        name: z.string().min(1),
+        slug: z.string().min(1),
+        icon: z.string().optional(),
+        schema: z.object({ fields: z.array(z.any()).optional() }).optional(),
+        pages: z
+          .array(z.object({ slug: z.string(), title: z.string(), type: z.string().optional(), navIcon: z.string().optional() }))
+          .optional(),
+      }),
+    )
+    body: { name: string; slug: string; icon?: string; schema?: { fields?: unknown[] }; pages?: { slug: string; title: string; type?: string; navIcon?: string }[] },
+  ) {
+    return this.builderService.createSubmodule(req.user.tenantId, moduleId, body as any, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Delete a submodule from an app' })
+  @Permissions('builder.delete')
+  @Delete('nav-overlay/:moduleId/submodules/:slug')
+  async deleteSubmodule(
+    @Req() req: AuthenticatedRequest,
+    @Param('moduleId') moduleId: string,
+    @Param('slug') slug: string,
+  ) {
+    return this.builderService.deleteSubmodule(req.user.tenantId, moduleId, slug);
   }
 }

@@ -2604,4 +2604,145 @@ export class BuilderService {
       }
     });
   }
+
+  // ════════════════════════════════════════════════
+  // App Studio — safe customization of existing core apps.
+  // Nav overlays (reorder/hide/rename) + additive submodules. Fully
+  // non-destructive and reversible: stock nav has no overlay row, and a
+  // submodule is just a tagged group of PageRegistry pages.
+  // ════════════════════════════════════════════════
+
+  /** Read a module's nav overlay config + its provisioned submodule sections. */
+  async getNavOverlay(tenantId: string, moduleId: string) {
+    const mod = moduleId.toLowerCase();
+    const [overlay, pages] = await Promise.all([
+      prisma.appNavOverlay.findUnique({ where: { tenantId_moduleId: { tenantId, moduleId: mod } } }),
+      prisma.pageRegistry.findMany({
+        where: { tenantId, module: mod, submodule: { not: null }, status: 'PUBLISHED' },
+        orderBy: [{ submodule: 'asc' }, { sortOrder: 'asc' }],
+        select: { id: true, slug: true, title: true, navIcon: true, submodule: true, sortOrder: true },
+      }),
+    ]);
+
+    const groups = new Map<string, { slug: string; pages: typeof pages }>();
+    for (const p of pages) {
+      const key = p.submodule as string;
+      if (!groups.has(key)) groups.set(key, { slug: key, pages: [] });
+      groups.get(key)!.pages.push(p);
+    }
+
+    const config = ((overlay?.config as any) || {}) as Record<string, any>;
+    const meta: Record<string, { name?: string; icon?: string; order?: number }> = (config.submodules || []).reduce(
+      (acc: Record<string, any>, s: any) => { acc[s.slug] = s; return acc; }, {},
+    );
+
+    const submodules = [...groups.values()]
+      .map((g) => ({
+        slug: g.slug,
+        name: meta[g.slug]?.name || g.slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        icon: meta[g.slug]?.icon || null,
+        order: meta[g.slug]?.order ?? 0,
+        pages: g.pages.map((p) => ({ slug: p.slug, title: p.title, navIcon: p.navIcon, sortOrder: p.sortOrder })),
+      }))
+      .sort((a, b) => a.order - b.order);
+
+    return { moduleId: mod, config, submodules };
+  }
+
+  /** Upsert a module's nav overlay (reorder / hide / rename / submodule meta). */
+  async saveNavOverlay(tenantId: string, moduleId: string, config: any, userId?: string) {
+    const mod = moduleId.toLowerCase();
+    return prisma.appNavOverlay.upsert({
+      where: { tenantId_moduleId: { tenantId, moduleId: mod } },
+      update: { config: (config ?? {}) as any, updatedBy: userId },
+      create: { tenantId, moduleId: mod, config: (config ?? {}) as any, updatedBy: userId },
+    });
+  }
+
+  /** Reset a module's nav arrangement to stock (submodule pages are preserved). */
+  async resetNavOverlay(tenantId: string, moduleId: string) {
+    const mod = moduleId.toLowerCase();
+    await prisma.appNavOverlay.deleteMany({ where: { tenantId, moduleId: mod } });
+    return { ok: true };
+  }
+
+  /**
+   * Add a new submodule (additive) to an existing app. Optionally provisions a
+   * backing SchemaRegistry plus one or more PageRegistry pages tagged to the
+   * target module + submodule, so they render at /app/{module}/{slug} and
+   * surface in that app's sidebar via the runtime nav merge.
+   */
+  async createSubmodule(
+    tenantId: string,
+    moduleId: string,
+    input: {
+      name: string;
+      slug: string;
+      icon?: string;
+      schema?: { fields?: any[] };
+      pages?: { slug: string; title: string; type?: string; navIcon?: string }[];
+    },
+    userId?: string,
+  ) {
+    const mod = moduleId.toLowerCase();
+    const subSlug = input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+    let schemaId: string | undefined;
+    if (input.schema) {
+      const schemaSlug = `${mod}_${subSlug}`.replace(/[^a-z0-9_-]/g, '_');
+      const schema = await prisma.schemaRegistry.upsert({
+        where: { tenantId_slug: { tenantId, slug: schemaSlug } },
+        update: { name: input.name, module: mod, fields: (input.schema.fields || []) as any, status: 'ACTIVE' },
+        create: { tenantId, module: mod, name: input.name, slug: schemaSlug, fields: (input.schema.fields || []) as any, status: 'ACTIVE' },
+      });
+      schemaId = schema.id;
+    }
+
+    const pageDefs = input.pages?.length
+      ? input.pages
+      : [{ slug: subSlug, title: input.name, type: schemaId ? 'LIST' : 'CUSTOM' }];
+
+    const createdPages = [];
+    let order = 0;
+    for (const pd of pageDefs) {
+      const pageSlug = pd.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const page = await prisma.pageRegistry.upsert({
+        where: { tenantId_module_slug: { tenantId, module: mod, slug: pageSlug } },
+        update: { title: pd.title, type: (pd.type || 'LIST').toUpperCase(), submodule: subSlug, schemaId, navIcon: pd.navIcon, sortOrder: order, status: 'PUBLISHED', isCustom: true },
+        create: { tenantId, module: mod, slug: pageSlug, title: pd.title, type: (pd.type || 'LIST').toUpperCase(), submodule: subSlug, schemaId, navIcon: pd.navIcon, sortOrder: order, status: 'PUBLISHED', isCustom: true },
+      });
+      createdPages.push(page);
+      order++;
+    }
+
+    // Persist submodule label/icon on the overlay so the sidebar shows a nice name.
+    const overlay = await prisma.appNavOverlay.findUnique({ where: { tenantId_moduleId: { tenantId, moduleId: mod } } });
+    const config: any = (overlay?.config as any) || {};
+    config.submodules = Array.isArray(config.submodules) ? config.submodules : [];
+    const existing = config.submodules.find((s: any) => s.slug === subSlug);
+    if (existing) { existing.name = input.name; existing.icon = input.icon; }
+    else config.submodules.push({ slug: subSlug, name: input.name, icon: input.icon, order: config.submodules.length });
+    await this.saveNavOverlay(tenantId, mod, config, userId);
+
+    return {
+      moduleId: mod,
+      submodule: subSlug,
+      schemaId,
+      pages: createdPages.map((p) => ({ id: p.id, slug: p.slug, title: p.title })),
+    };
+  }
+
+  /** Remove a submodule's pages + overlay meta. Backing schema/records are kept. */
+  async deleteSubmodule(tenantId: string, moduleId: string, submoduleSlug: string) {
+    const mod = moduleId.toLowerCase();
+    const sub = submoduleSlug.toLowerCase();
+    await prisma.pageRegistry.deleteMany({ where: { tenantId, module: mod, submodule: sub } });
+    const overlay = await prisma.appNavOverlay.findUnique({ where: { tenantId_moduleId: { tenantId, moduleId: mod } } });
+    if (overlay) {
+      const config: any = (overlay.config as any) || {};
+      config.submodules = (config.submodules || []).filter((s: any) => s.slug !== sub);
+      await this.saveNavOverlay(tenantId, mod, config);
+    }
+    return { ok: true };
+  }
 }

@@ -93,6 +93,13 @@ export function apiPatch<T = unknown>(path: string, body?: unknown): Promise<T> 
   });
 }
 
+export function apiPut<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return api<T>(path, {
+    method: 'PUT',
+    body: body != null ? JSON.stringify(body) : undefined,
+  });
+}
+
 export function apiDelete<T = unknown>(path: string): Promise<T> {
   return api<T>(path, { method: 'DELETE' });
 }

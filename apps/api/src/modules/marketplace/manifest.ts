@@ -72,6 +72,12 @@ export interface AppManifest {
   category: string;
   vendor: string; // vendor slug
   runtime: 'declarative'; // future: 'sandboxed-js'
+  /**
+   * When set, this bundle *extends* an existing app instead of creating a new
+   * /app/<slug> shell: its pages are provisioned under the target app's module
+   * and grouped as submodule sections in that app's sidebar (App Studio).
+   */
+  targetApp?: string;
   description?: string;
   longDescription?: string;
   icon?: string;
@@ -107,6 +113,9 @@ export function validateManifest(manifest: any): AppManifest {
   if (!SEMVER.test(manifest.version)) throw new Error(`Invalid version "${manifest.version}" (expected semver like 1.0.0)`);
   if (manifest.runtime && manifest.runtime !== 'declarative') {
     throw new Error(`Unsupported runtime "${manifest.runtime}" (only "declarative" is supported)`);
+  }
+  if (manifest.targetApp && !SLUG.test(manifest.targetApp)) {
+    throw new Error(`Invalid targetApp slug "${manifest.targetApp}" (use lowercase letters, numbers, hyphens)`);
   }
 
   // Flatten any modules into combined schemas/pages, tagging each page with its
