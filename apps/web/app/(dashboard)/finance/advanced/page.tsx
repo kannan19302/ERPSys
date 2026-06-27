@@ -22,8 +22,8 @@ const groups = [
       { href: '/finance/advanced/journal-entries', label: 'Journal Entries', icon: <FileSliders size={18} />, desc: 'Record, approve, and post journal entries to the general ledger' },
       { href: '/finance/advanced/financial-periods', label: 'Financial Periods', icon: <Activity size={18} />, desc: 'Period close checklist, validation checks, and opening/closing balances' },
       { href: '/finance/advanced/fixed-assets', label: 'Fixed Assets', icon: <Building2 size={18} />, desc: 'Asset register, depreciation runs, and disposal management' },
-      { href: '/finance/advanced/recurring', label: 'Recurring Invoices', icon: <RefreshCw size={18} />, desc: 'Auto-generate recurring invoices based on schedules', badge: 'Coming Soon' },
-      { href: '/finance/advanced/revenue-schedules', label: 'Revenue Recognition', icon: <TrendingUp size={18} />, desc: 'Deferred revenue and recognition schedules', badge: 'Coming Soon' },
+      { href: '/finance/advanced/recurring', label: 'Recurring Invoices', icon: <RefreshCw size={18} />, desc: 'Auto-generate recurring invoices based on schedules' },
+      { href: '/finance/advanced/revenue-schedules', label: 'Revenue Recognition', icon: <TrendingUp size={18} />, desc: 'Deferred revenue and recognition schedules' },
     ]
   },
   {
@@ -35,10 +35,10 @@ const groups = [
       { href: '/finance/advanced/ap-automation', label: 'AP Automation', icon: <ShoppingCart size={18} />, desc: 'Accounts payable workflow, invoice matching, and payment runs' },
       { href: '/finance/advanced/ar-automation', label: 'AR Automation', icon: <ClipboardList size={18} />, desc: 'Accounts receivable, dunning, credit notes, and collection tracking' },
       { href: '/finance/advanced/treasury', label: 'Treasury & Investments', icon: <BarChart3 size={18} />, desc: 'Treasury operations, investment tracking, and liquidity management' },
-      { href: '/finance/advanced/reconciliations', label: 'Bank Reconciliation', icon: <GitCompare size={18} />, desc: 'Statement import, auto-matching, and reconciliation reports', badge: 'Coming Soon' },
-      { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, approvals, and reimbursements', badge: 'Coming Soon' },
-      { href: '/finance/advanced/cash-position', label: 'Cash Position', icon: <DollarSign size={18} />, desc: 'Real-time cash position and projected cash flow', badge: 'Coming Soon' },
-      { href: '/finance/advanced/cash-flow-forecast', label: 'Cash Flow Forecast', icon: <Activity size={18} />, desc: '3-month rolling cash flow forecast', badge: 'Coming Soon' },
+      { href: '/finance/advanced/reconciliations', label: 'Bank Reconciliation', icon: <GitCompare size={18} />, desc: 'Statement import, auto-matching, and reconciliation reports' },
+      { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, approvals, and reimbursements' },
+      { href: '/finance/advanced/cash-position', label: 'Cash Position', icon: <DollarSign size={18} />, desc: 'Real-time cash position and projected cash flow' },
+      { href: '/finance/advanced/cash-flow-forecast', label: 'Cash Flow Forecast', icon: <Activity size={18} />, desc: '3-month rolling cash flow forecast' },
     ]
   },
   {
@@ -48,8 +48,8 @@ const groups = [
     modules: [
       { href: '/finance/advanced/tax-engine', label: 'Tax Engine', icon: <Calculator size={18} />, desc: 'Tax rules, components, and auto-computation engine' },
       { href: '/finance/advanced/tax-filing', label: 'Tax Filing', icon: <FileText size={18} />, desc: 'Auto-compute VAT/GST returns from transactions' },
-      { href: '/finance/advanced/audit-logs', label: 'Finance Audit Trail', icon: <Eye size={18} />, desc: 'Track changes to financial records and compliance logs', badge: 'Coming Soon' },
-      { href: '/finance/advanced/account-reconciliation', label: 'Account Reconciliation', icon: <GitCompare size={18} />, desc: 'Sub-ledger to GL matching and account validation', badge: 'Coming Soon' },
+      { href: '/finance/advanced/audit-logs', label: 'Finance Audit Trail', icon: <Eye size={18} />, desc: 'Track changes to financial records and compliance logs' },
+      { href: '/finance/advanced/account-reconciliation', label: 'Account Reconciliation', icon: <GitCompare size={18} />, desc: 'Sub-ledger to GL matching and account validation' },
     ]
   },
   {
@@ -59,9 +59,9 @@ const groups = [
     modules: [
       { href: '/finance/advanced/budgeting', label: 'Budgeting & Planning', icon: <FileText size={18} />, desc: 'Compare budgets with actuals, variance analysis' },
       { href: '/finance/advanced/reports', label: 'Financial Reports', icon: <FolderOpen size={18} />, desc: 'P&L, Balance Sheet, Cash Flow, Trial Balance' },
-      { href: '/finance/advanced/exchange-rates', label: 'Multi-Currency', icon: <DollarSign size={18} />, desc: 'Exchange rates, currency conversion, revaluation', badge: 'Coming Soon' },
-      { href: '/finance/advanced/financial-ratios', label: 'Financial Ratios', icon: <Scale size={18} />, desc: 'Current ratio, ROI, debt-to-equity analysis', badge: 'Coming Soon' },
-      { href: '/finance/advanced/consolidation', label: 'Consolidation', icon: <PieChart size={18} />, desc: 'Multi-entity consolidated financial statements', badge: 'Coming Soon' },
+      { href: '/finance/advanced/exchange-rates', label: 'Multi-Currency', icon: <DollarSign size={18} />, desc: 'Exchange rates, currency conversion, revaluation' },
+      { href: '/finance/advanced/financial-ratios', label: 'Financial Ratios', icon: <Scale size={18} />, desc: 'Current ratio, ROI, debt-to-equity analysis' },
+      { href: '/finance/advanced/consolidation', label: 'Consolidation', icon: <PieChart size={18} />, desc: 'Multi-entity consolidated financial statements' },
     ]
   }
 ];
@@ -98,7 +98,6 @@ export default function AdvancedFinancePage() {
                     <div style={{ flex: '1', minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
                         <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mod.label}</h3>
-                        {mod.badge && <StatusBadge status={mod.badge === 'Coming Soon' ? 'INFO' : mod.badge} />}
                       </div>
                       <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', margin: 0 }}>{mod.desc}</p>
                     </div>

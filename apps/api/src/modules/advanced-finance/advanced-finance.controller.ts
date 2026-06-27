@@ -262,6 +262,20 @@ export class AdvancedFinanceController {
   }
 
   // ── TIER 2: Recurring Invoices ──
+  @ApiOperation({ summary: 'List recurring invoice schedules' })
+  @Permissions('advanced_finance.read')
+  @Get('recurring-schedules')
+  async getRecurringSchedules(@Req() req: AuthenticatedRequest) {
+    return this.financeService.getRecurringSchedules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create recurring invoice schedule' })
+  @Permissions('advanced_finance.create')
+  @Post('recurring-schedules')
+  async createRecurringSchedule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { entryTemplate: any; frequency: string; nextRunDate: string }) {
+    return this.financeService.createRecurringSchedule(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
+
   @ApiOperation({ summary: 'Generate recurring invoices' })
   @Permissions('advanced_finance.create')
   @Post('recurring/generate')

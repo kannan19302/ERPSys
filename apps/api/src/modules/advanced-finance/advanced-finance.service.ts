@@ -401,6 +401,16 @@ export class AdvancedFinanceService {
   // TIER 2: Recurring Invoice Generation
   // ════════════════════════════════════════════════
 
+  async getRecurringSchedules(tenantId: string) {
+    return prisma.recurringJournal.findMany({ where: { tenantId }, orderBy: { createdAt: 'desc' } });
+  }
+
+  async createRecurringSchedule(tenantId: string, orgId: string, dto: { entryTemplate: any; frequency: string; nextRunDate: string }) {
+    return prisma.recurringJournal.create({
+      data: { tenantId, orgId, entryTemplate: dto.entryTemplate, frequency: dto.frequency, nextRunDate: new Date(dto.nextRunDate), status: 'ACTIVE' },
+    });
+  }
+
   async generateRecurringInvoices(tenantId: string) {
     const recurringJournals = await prisma.recurringJournal.findMany({ where: { tenantId, status: 'ACTIVE', nextRunDate: { lte: new Date() } } });
     const results: Array<{ id: string; status: string }> = [];

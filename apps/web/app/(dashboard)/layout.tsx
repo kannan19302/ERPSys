@@ -75,6 +75,10 @@ import {
   Box,
   Shield,
   Download,
+  RefreshCw,
+  Receipt,
+  Eye,
+  Scale,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -108,6 +112,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
             { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders },
             { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity },
             { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2 },
+            { name: 'Recurring Invoices', href: '/finance/advanced/recurring', icon: RefreshCw },
+            { name: 'Revenue Recognition', href: '/finance/advanced/revenue-schedules', icon: TrendingUp },
           ]
         },
         {
@@ -115,9 +121,13 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           isHeader: true,
           items: [
             { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet },
+            { name: 'Bank Reconciliation', href: '/finance/advanced/reconciliations', icon: GitFork },
             { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart },
             { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList },
             { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3 },
+            { name: 'Expense Management', href: '/finance/advanced/expense-reports', icon: Receipt },
+            { name: 'Cash Position', href: '/finance/advanced/cash-position', icon: DollarSign },
+            { name: 'Cash Flow Forecast', href: '/finance/advanced/cash-flow-forecast', icon: Activity },
           ]
         },
         {
@@ -126,6 +136,8 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           items: [
             { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork },
             { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert },
+            { name: 'Finance Audit Trail', href: '/finance/advanced/audit-logs', icon: Eye },
+            { name: 'Account Reconciliation', href: '/finance/advanced/account-reconciliation', icon: GitFork },
           ]
         },
         {
@@ -134,6 +146,9 @@ const getAppSpecificNavigation = (pathname: string): { title: string; icon: Reac
           items: [
             { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart },
             { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen },
+            { name: 'Exchange Rates', href: '/finance/advanced/exchange-rates', icon: DollarSign },
+            { name: 'Financial Ratios', href: '/finance/advanced/financial-ratios', icon: Scale },
+            { name: 'Consolidation', href: '/finance/advanced/consolidation', icon: Building2 },
           ]
         },
       ]
