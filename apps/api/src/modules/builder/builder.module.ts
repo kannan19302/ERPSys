@@ -3,13 +3,17 @@ import { BuilderController } from './builder.controller';
 import { BuilderService } from './builder.service';
 import { WebCollectionsService } from './web-collections.service';
 import { WebPublicController } from './web-public.controller';
+import { WebStudioController } from './web-studio.controller';
+import { WebStudioService } from './web-studio.service';
 import { BuilderGovernanceService } from './builder-governance.service';
 import { BuilderScriptingService } from './builder-scripting.service';
 import { GovernanceController } from './governance.controller';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
-  controllers: [BuilderController, WebPublicController, GovernanceController],
-  providers: [BuilderService, WebCollectionsService, BuilderGovernanceService, BuilderScriptingService],
-  exports: [BuilderService, WebCollectionsService, BuilderGovernanceService, BuilderScriptingService],
+  imports: [AiModule],
+  controllers: [BuilderController, WebPublicController, WebStudioController, GovernanceController],
+  providers: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService],
+  exports: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService],
 })
 export class BuilderModule {}

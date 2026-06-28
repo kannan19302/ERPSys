@@ -850,8 +850,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           name: 'Web Studio',
           isHeader: true,
           items: [
+            { name: 'Sites', href: '/builder/web/sites', icon: Globe },
             { name: 'CMS Collections', href: '/builder/web/collections', icon: Database },
-            { name: 'Pages', href: '/builder/web/pages', icon: Globe },
+            { name: 'Pages (legacy)', href: '/builder/web/pages', icon: FileText },
             { name: 'Blog Posts', href: '/builder/web/blog', icon: FileText },
             { name: 'Asset Manager', href: '/builder/web/assets', icon: Image },
             { name: 'Templates', href: '/builder/web/templates', icon: Code2 },

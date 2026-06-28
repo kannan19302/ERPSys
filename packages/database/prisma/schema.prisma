@@ -5476,6 +5476,7 @@ model WebSettings {
 model WebCollection {
   id          String   @id @default(cuid())
   tenantId    String   @map("tenant_id")
+  siteId      String?  @map("site_id") // owning site (multi-site); null = legacy/default
   name        String // e.g. "Products", "Projects", "Team"
   slug        String // URL-safe, used in public API + dynamic routes
   singular    String? // e.g. "Product" (for UI labels)
@@ -5523,6 +5524,7 @@ model WebCollectionItem {
 model WebFormSubmission {
   id        String   @id @default(cuid())
   tenantId  String   @map("tenant_id")
+  siteId    String?  @map("site_id") // owning site (multi-site)
   formName  String   @map("form_name") // logical form identifier, e.g. "contact", "newsletter"
   pageSlug  String?  @map("page_slug") // which page it came from
   data      Json     @default("{}") // submitted field values
@@ -5539,6 +5541,7 @@ model WebFormSubmission {
 model WebOrder {
   id          String   @id @default(cuid())
   tenantId    String   @map("tenant_id")
+  siteId      String?  @map("site_id") // owning site (multi-site)
   orderNumber String   @map("order_number")
   status      String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED
   customer    Json     @default("{}") // { name, email, phone, address }
@@ -5553,6 +5556,90 @@ model WebOrder {
   @@unique([tenantId, orderNumber])
   @@index([tenantId, status])
   @@map("web_orders")
+}
+
+// ════════════════════════════════════════════════
+// WEB STUDIO — MULTI-SITE WEBSITE BUILDER
+// A tenant can build one or more sites, each served at its own custom
+// domain(s) from "/". Pages/blog/docs/collections/forms/store/chatbot are
+// scoped to a site.
+// ════════════════════════════════════════════════
+
+model WebSite {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  slug      String // unique per tenant; the migrated legacy site is "default"
+  status    String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  theme     Json     @default("{}") // colors, fonts, css tokens
+  settings  Json     @default("{}") // nav, footer, favicon, analytics, etc.
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  domains  WebDomain[]
+  pages    WebSitePage[]
+  chatbots WebChatbot[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("web_sites")
+}
+
+// Custom domain / subdomain mapping → site. The middleware resolves the
+// request Host against this table to serve the right site at "/".
+model WebDomain {
+  id        String   @id @default(cuid())
+  siteId    String   @map("site_id")
+  host      String   @unique // e.g. "acme.com" or "acme.unerp.app"
+  verified  Boolean  @default(false)
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  site WebSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+  @@map("web_domains")
+}
+
+model WebSitePage {
+  id        String   @id @default(cuid())
+  siteId    String   @map("site_id")
+  tenantId  String   @map("tenant_id")
+  path      String // "/" for home, "/about", "/blog/hello-world"
+  title     String
+  type      String   @default("PAGE") // PAGE | BLOG | DOCS | LANDING
+  blocks    Json     @default("[]") // block tree rendered by PublicPageRenderer
+  seo       Json     @default("{}") // { metaTitle, metaDesc, ogImage, keywords }
+  status    String   @default("DRAFT") // DRAFT | PUBLISHED
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  site WebSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, path])
+  @@index([siteId, status])
+  @@index([tenantId])
+  @@map("web_site_pages")
+}
+
+// Site AI chatbot — grounded in the site's collections/pages, answered via Claude.
+model WebChatbot {
+  id        String   @id @default(cuid())
+  siteId    String   @map("site_id")
+  tenantId  String   @map("tenant_id")
+  name      String   @default("Assistant")
+  enabled   Boolean  @default(true)
+  config    Json     @default("{}") // { greeting, model, accent, persona }
+  knowledge Json     @default("{}") // { collections: string[], usePages: boolean, custom: string }
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  site WebSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+  @@map("web_chatbots")
 }
 
 // ════════════════════════════════════════════════

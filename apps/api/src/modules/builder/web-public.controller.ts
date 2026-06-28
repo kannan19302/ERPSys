@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Headers, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { createWebFormSubmissionSchema, type CreateWebFormSubmissionInput, webCheckoutSchema, type WebCheckoutInput } from '@unerp/shared';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { WebCollectionsService } from './web-collections.service';
+import { WebStudioService } from './web-studio.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 /**
@@ -14,13 +15,43 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @ApiTags('builder')
 @Controller('public/web')
 export class WebPublicController {
-  constructor(private readonly collections: WebCollectionsService) {}
+  constructor(
+    private readonly collections: WebCollectionsService,
+    private readonly studio: WebStudioService,
+  ) {}
 
   private async resolveTenantId(tenantSlug?: string): Promise<string> {
     const slug = tenantSlug || 'system';
     const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true } });
     if (!tenant) throw new NotFoundException('Site not found');
     return tenant.id;
+  }
+
+  // ── Multi-site serving (resolved by request Host) ──
+
+  @ApiOperation({ summary: 'Resolve site + nav by host' })
+  @Get('site')
+  async getSiteByHost(@Headers('host') host?: string, @Query('host') hostQuery?: string) {
+    return this.studio.getPublicSiteByHost(hostQuery || host);
+  }
+
+  @ApiOperation({ summary: 'Get a published site page by path' })
+  @Get('page')
+  async getSitePage(@Query('path') path: string, @Headers('host') host?: string, @Query('host') hostQuery?: string) {
+    const site = await this.studio.resolveSiteByHost(hostQuery || host);
+    if (!site) throw new NotFoundException('Site not found for host');
+    const page = await this.studio.getPublicPage(site.id, path || '/');
+    return { site: { id: site.id, name: site.name, theme: site.theme, settings: site.settings }, page };
+  }
+
+  @ApiOperation({ summary: 'Chat with the site assistant' })
+  @Post('chat')
+  async chat(
+    @Body() body: { message: string; history?: { role: 'user' | 'assistant'; content: string }[] },
+    @Headers('host') host?: string,
+    @Query('host') hostQuery?: string,
+  ) {
+    return this.studio.answerChat(hostQuery || host, body?.message || '', body?.history || []);
   }
 
   @ApiOperation({ summary: 'Get collection items' })
