@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
-import { DemoBanner } from '@unerp/ui';
+import { DemoBanner, Spinner } from '@unerp/ui';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Award, Coffee, CalendarDays, DollarSign, Clock, Monitor, FileText, UserPlus, UserMinus, Target, Star, TrendingUp, HelpCircle, CheckSquare, Trash2, Percent } from 'lucide-react';
@@ -314,6 +314,14 @@ export default function DashboardLayout({
   const [installedApps, setInstalledApps] = useState<string[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [demoDataLoaded, setDemoDataLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      return !(token && user);
+    }
+    return true;
+  });
   // Dynamic sidebar navigation for installed marketplace apps (/app/<slug>).
   // Built from the app manifest (enabled modules -> grouped pages) so third-party
   // industry apps get a native sidebar exactly like the core modules.
@@ -417,6 +425,7 @@ export default function DashboardLayout({
     if (storedUser && storedToken) {
       try {
         setUser(JSON.parse(storedUser));
+        setIsLoading(false);
       } catch {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
@@ -559,6 +568,14 @@ export default function DashboardLayout({
       icon: app.icon
     }))
   ].sort((a, b) => a.name.localeCompare(b.name));
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)' }}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div

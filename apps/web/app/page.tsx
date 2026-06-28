@@ -1,36 +1,42 @@
-import React from 'react';
-import { AuthRedirect } from './AuthRedirect';
-import { PublicPageRenderer } from '@/components/builder/PublicPageRenderer';
-import { prisma } from '@unerp/database';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { apiGet } from '../src/lib/api';
+import LandingPage from './LandingPage';
+import { Spinner } from '@unerp/ui';
 
-export default async function HomePage() {
-  const systemTenant = await prisma.tenant.findUnique({ where: { slug: 'system' } });
-  
-  let page = null;
-  let settings = null;
+export default function HomePage() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
-  if (systemTenant) {
-    page = await prisma.webPage.findFirst({
-      where: { tenantId: systemTenant.id, slug: 'home' }
-    });
-    settings = await prisma.webSettings.findFirst({
-      where: { tenantId: systemTenant.id }
-    });
-
-    if (settings && settings.activeTemplateId) {
-      const tmpl = await prisma.webTemplate.findUnique({ where: { id: settings.activeTemplateId } });
-      if (tmpl && tmpl.designTokens && (!settings.themeTokens || Object.keys(settings.themeTokens).length === 0)) {
-        settings.themeTokens = typeof tmpl.designTokens === 'string' ? JSON.parse(tmpl.designTokens) : tmpl.designTokens;
-      }
+  useEffect(() => {
+    setMounted(true);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (token) {
+      apiGet('/auth/me')
+        .then(() => {
+          router.push('/apps');
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setChecking(false);
+        });
+    } else {
+      setChecking(false);
     }
+  }, [router]);
+
+  if (!mounted || checking) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)' }}>
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  return (
-    <>
-      <AuthRedirect />
-      <PublicPageRenderer page={page} settings={settings} />
-    </>
-  );
+  return <LandingPage />;
 }
+
