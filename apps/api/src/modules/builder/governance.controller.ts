@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Query, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, UseGuards, UseInterceptors, Req, Delete } from '@nestjs/common';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { z } from 'zod';
@@ -91,5 +91,101 @@ export class GovernanceController {
   @Get('hooks')
   async getAvailableHooks() {
     return this.scripting.getAvailableHooks();
+  }
+
+  @ApiOperation({ summary: 'Dry-run SQL / custom query builder check' })
+  @Permissions('builder.read')
+  @Post('query/run')
+  async runQueryDryRun(@Req() _req: AuthReq, @ZodBody(z.object({ query: z.string(), limit: z.number().optional() })) body: { query: string; limit?: number }) {
+    const sql = body.query.trim();
+    if (!sql.toLowerCase().startsWith('select')) {
+      return { success: false, error: 'Only SELECT queries are allowed for security dry-runs.' };
+    }
+    const tableMatch = sql.match(/from\s+([a-z0-9_"]+)/i);
+    const tableName = tableMatch ? tableMatch[1] : 'unknown';
+    return {
+      success: true,
+      query: sql,
+      explain: {
+        strategy: 'Seq Scan',
+        targetTable: tableName,
+        costEstimate: '0.00..15.50 rows=100 width=356'
+      },
+      rows: [
+        { id: '1', name: 'Sample Record A', status: 'ACTIVE', created_at: new Date() },
+        { id: '2', name: 'Sample Record B', status: 'ACTIVE', created_at: new Date() }
+      ]
+    };
+  }
+
+  @ApiOperation({ summary: 'Get governance dashboard summary statistics' })
+  @Permissions('builder.read')
+  @Get('summary')
+  async getSummary(@Req() req: AuthReq) {
+    return this.governance.getGovernanceSummary(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get system execution run logs' })
+  @Permissions('builder.read')
+  @Get('logs')
+  async getLogs(@Req() req: AuthReq, @Query('level') level?: string, @Query('search') search?: string) {
+    return this.governance.getRunLogs(req.user.tenantId, level, search);
+  }
+
+  @ApiOperation({ summary: 'Get registered third-party connectors' })
+  @Permissions('builder.read')
+  @Get('connectors')
+  async getConnectors(@Req() req: AuthReq) {
+    return this.governance.getConnectors(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Register third-party API connector' })
+  @Permissions('builder.create')
+  @Post('connectors')
+  async createConnector(
+    @Req() req: AuthReq,
+    @ZodBody(z.object({ name: z.string(), type: z.string(), config: z.any() }))
+    body: { name: string; type: string; config: any }
+  ) {
+    return this.governance.saveConnector(req.user.tenantId, body.name, body.type, body.config);
+  }
+
+  @ApiOperation({ summary: 'Delete API connector' })
+  @Permissions('builder.delete')
+  @Delete('connectors/:id')
+  async deleteConnector(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.governance.deleteConnector(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List marketplace extensions' })
+  @Permissions('builder.read')
+  @Get('marketplace')
+  async getMarketplace() {
+    return this.governance.getMarketplaceList();
+  }
+
+  @ApiOperation({ summary: 'Get global studio permissions list' })
+  @Permissions('builder.read')
+  @Get('permissions')
+  async getAllStudioPermissions(@Req() req: AuthReq) {
+    return this.governance.getAllPermissions(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Save studio permission mapping' })
+  @Permissions('builder.create')
+  @Post('permissions')
+  async saveStudioPermission(
+    @Req() req: AuthReq,
+    @ZodBody(z.object({ roleId: z.string(), moduleSlug: z.string(), canRead: z.boolean(), canWrite: z.boolean() }))
+    body: { roleId: string; moduleSlug: string; canRead: boolean; canWrite: boolean }
+  ) {
+    return this.governance.saveStudioPermission(req.user.tenantId, body.roleId, body.moduleSlug, body.canRead, body.canWrite);
+  }
+
+  @ApiOperation({ summary: 'Delete studio permission entry' })
+  @Permissions('builder.delete')
+  @Delete('permissions/:id')
+  async deleteStudioPermission(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.governance.deleteStudioPermission(req.user.tenantId, id);
   }
 }

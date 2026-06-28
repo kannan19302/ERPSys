@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader, DataTable, ConfirmDialog } from '@unerp/ui';
 import {
   FileCode2,
   PlusCircle,
@@ -33,6 +34,7 @@ export function ERPFormsPageContent() {
   const [loadingForms, setLoadingForms] = useState(true);
   const [stats, setStats] = useState({ total: 0, published: 0, draft: 0, totalSubmissions: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -179,23 +181,21 @@ export function ERPFormsPageContent() {
   };
 
   // Delete Form
-  const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this form?')) {
-      try {
-        const token = localStorage.getItem('token') || '';
-        const res = await fetch(`/api/v1/builder/forms/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          loadForms();
-          loadStats();
-        } else {
-          alert('Failed to delete form');
-        }
-      } catch (err) {
-        alert('Error deleting form');
+  const executeDelete = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const res = await fetch(`/api/v1/builder/forms/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        loadForms();
+        loadStats();
+      } else {
+        alert('Failed to delete form');
       }
+    } catch (err) {
+      alert('Error deleting form');
     }
   };
 
@@ -209,28 +209,21 @@ export function ERPFormsPageContent() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div className="builder-header">
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <FileCode2 size={20} style={{ color: 'var(--color-primary)' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Form Builder
-            </h1>
+      <PageHeader
+        title="Form Builder"
+        description="Create, manage, and publish custom DocType forms across all ERP modules"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+              ← App Studio
+            </button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => setIsModalOpen(true)}>
+              <PlusCircle size={15} />
+              <span>New Form</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Create, manage, and publish custom DocType forms across all ERP modules
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/page?tab=erp')}>
-            ← App Studio
-          </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => setIsModalOpen(true)}>
-            <PlusCircle size={15} />
-            <span>New Form</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="builder-stats-grid">
@@ -286,135 +279,81 @@ export function ERPFormsPageContent() {
       </div>
 
       {/* Forms Table */}
-      <div className="frappe-card" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-              {[
-                { label: 'Form Name', key: 'name' },
-                { label: 'Module', key: 'module' },
-                { label: 'Fields', key: 'fields' },
-                { label: 'Submissions', key: 'submissions' },
-                { label: 'Last Edited', key: 'lastEdited' },
-                { label: 'Status', key: 'status' },
-                { label: 'Actions', key: 'actions' },
-              ].map(col => (
-                <th
-                  key={col.key}
-                  onClick={() => col.key !== 'actions' && col.key !== 'module' && col.key !== 'status' && setSortBy(col.key as typeof sortBy)}
-                  style={{
-                    padding: 'var(--space-3) var(--space-4)', textAlign: 'left',
-                    fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)',
-                    color: 'var(--color-text-tertiary)', textTransform: 'uppercase',
-                    letterSpacing: '0.05em', cursor: col.key !== 'actions' ? 'pointer' : 'default',
-                    background: 'var(--color-bg-elevated)', whiteSpace: 'nowrap',
-                  }}
-                >
-                  {col.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loadingForms ? (
-              Array.from({ length: 5 }).map((_, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <div className="animate-pulse" style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                      <div className="animate-pulse" style={{ width: '120px', height: '16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                    </div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div className="animate-pulse" style={{ width: '60px', height: '18px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div className="animate-pulse" style={{ width: '30px', height: '16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div className="animate-pulse" style={{ width: '40px', height: '16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div className="animate-pulse" style={{ width: '80px', height: '14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div className="animate-pulse" style={{ width: '70px', height: '18px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                      <div className="animate-pulse" style={{ width: '28px', height: '24px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-hover)' }}></div>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : sortedForms.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                  No forms found
-                </td>
-              </tr>
-            ) : (
-              sortedForms.map((form, idx) => (
-                <tr
-                  key={form.id}
-                  style={{
-                    borderBottom: idx < sortedForms.length - 1 ? '1px solid var(--color-border)' : 'none',
-                    transition: 'background var(--duration-fast)',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <div style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <FileCode2 size={13} style={{ color: 'var(--color-primary)' }} />
-                      </div>
-                      <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{form.name}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <span style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-hover)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
-                      {form.module}
-                    </span>
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{form.fields}</td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>{form.submissions.toLocaleString()}</td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{form.lastEdited}</td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    {(() => {
-                      const isPublished = form.status === 'PUBLISHED' || form.status === 'Published';
-                      return (
-                        <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: isPublished ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: isPublished ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                          {isPublished ? 'Published' : 'Draft'}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                  <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Edit Form" onClick={() => router.push(`/builder/erp/forms/${form.id}`)}>
-                        <Edit3 size={13} />
-                      </button>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Duplicate" onClick={() => handleDuplicate(form)}>
-                        <Copy size={13} />
-                      </button>
-                      <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} title="Delete" onClick={() => handleDelete(form.id)}>
-                        <Trash2 size={13} />
-                      </button>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Preview" onClick={() => router.push(`/builder/erp/forms/${form.id}?preview=true`)}>
-                        <Eye size={13} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<any>
+        columns={[
+          {
+            key: 'name',
+            header: 'Form Name',
+            render: (row: any) => (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <FileCode2 size={13} style={{ color: 'var(--color-primary)' }} />
+                </div>
+                <span style={{ fontWeight: 'var(--weight-medium)' }}>{row.name}</span>
+              </div>
+            ),
+          },
+          {
+            key: 'module',
+            header: 'Module',
+            render: (row: any) => (
+              <span style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-hover)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                {row.module}
+              </span>
+            ),
+          },
+          { key: 'fields', header: 'Fields' },
+          {
+            key: 'submissions',
+            header: 'Submissions',
+            render: (row: any) => <span style={{ fontWeight: 'var(--weight-medium)' }}>{row.submissions.toLocaleString()}</span>,
+          },
+          {
+            key: 'lastEdited',
+            header: 'Last Edited',
+            render: (row: any) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{row.lastEdited}</span>,
+          },
+          {
+            key: 'status',
+            header: 'Status',
+            render: (row: any) => {
+              const isPublished = row.status === 'PUBLISHED' || row.status === 'Published';
+              return (
+                <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: isPublished ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: isPublished ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                  {isPublished ? 'Published' : 'Draft'}
+                </span>
+              );
+            },
+          },
+          {
+            key: 'actions',
+            header: 'Actions',
+            width: '140px',
+            render: (row: any) => (
+              <div style={{ display: 'flex', gap: 'var(--space-1)' }} onClick={(e) => e.stopPropagation()}>
+                <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Edit Form" onClick={() => router.push(`/builder/erp/forms/${row.id}`)}>
+                  <Edit3 size={13} />
+                </button>
+                <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Duplicate" onClick={() => handleDuplicate(row)}>
+                  <Copy size={13} />
+                </button>
+                <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} title="Delete" onClick={() => setDeleteTarget(row.id)}>
+                  <Trash2 size={13} />
+                </button>
+                <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }} title="Preview" onClick={() => router.push(`/builder/erp/forms/${row.id}?preview=true`)}>
+                  <Eye size={13} />
+                </button>
+              </div>
+            ),
+          },
+        ]}
+        data={sortedForms}
+        loading={loadingForms}
+        rowKey={(row: any) => row.id}
+        onRowClick={(row: any) => router.push(`/builder/erp/forms/${row.id}`)}
+        emptyTitle="No forms found"
+        emptyMessage="Create your first form to get started."
+      />
       <GenericBuilderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -438,6 +377,15 @@ export function ERPFormsPageContent() {
             ]
           }
         ]}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDelete(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Form"
+        message="Are you sure you want to delete this form? All submissions will also be lost."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

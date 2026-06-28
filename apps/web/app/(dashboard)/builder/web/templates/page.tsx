@@ -4,6 +4,7 @@ import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { Code2, PlusCircle, Edit3, Trash2, Eye, Copy } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -38,30 +39,27 @@ function WebTemplatesPageContent() {
     }
   };
 
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
   const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this template?')) {
-      await deleteItem(id);
-    }
+    await deleteItem(id);
   };
 
   const router = useRouter();
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Code2 size={20} style={{ color: '#d97706' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>Templates</h1>
+      <PageHeader
+        title="Templates"
+        description="Manage PDF document templates, email templates, and page layouts"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+              <PlusCircle size={15} /><span>New Template</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Manage PDF document templates, email templates, and page layouts</p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Builder</button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
-            <PlusCircle size={15} /><span>New Template</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
         {/* Create New */}
@@ -106,7 +104,7 @@ function WebTemplatesPageContent() {
               <button onClick={() => { setEditingItem(template); setIsModalOpen(true); }} className="frappe-btn frappe-btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1.5)' }}><Edit3 size={12} /><span>Edit</span></button>
               <button onClick={() => { /* Preview */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Eye size={12} /></button>
               <button onClick={() => { setEditingItem({...template, id: undefined, name: template.name + ' (Copy)'}); setIsModalOpen(true); }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Copy size={12} /></button>
-              <button onClick={() => handleDelete(template.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={12} /></button>
+              <button onClick={() => setDeleteTarget(template.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={12} /></button>
             </div>
           </div>
           );
@@ -126,6 +124,15 @@ function WebTemplatesPageContent() {
           { name: 'cssContent', label: 'CSS Content', type: 'textarea' }
         ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { handleDelete(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Template"
+        message="Are you sure you want to delete this template? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

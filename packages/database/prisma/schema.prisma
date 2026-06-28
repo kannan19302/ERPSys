@@ -7516,3 +7516,147 @@ model BillingEvent {
   @@index([tenantId, createdAt])
   @@map("billing_events")
 }
+
+// ════════════════════════════════════════════════
+// STUDIO — CUSTOM WORKFLOWS, SCRIPTS, DIAGNOSTICS & MANAGEMENT (Phase 11-20 Additions)
+// ════════════════════════════════════════════════
+
+model CustomWorkflow {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  targetModel String   @map("target_model")
+  steps       Json     @default("[]")
+  rules       Json     @default("[]")
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("custom_workflows")
+}
+
+model CustomDashboard {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  widgets     Json     @default("[]")
+  styleConfig Json     @default("{}") @map("style_config")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("custom_dashboards")
+}
+
+model LogicScript {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  triggerType String   @map("trigger_type")
+  script      String   @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("logic_scripts")
+}
+
+model EnvVariable {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  envName   String   @map("env_name")
+  key       String
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, envName, key])
+  @@map("env_variables")
+}
+
+model RunLog {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  level      String
+  message    String
+  stackTrace String?  @map("stack_trace") @db.Text
+  payload    Json?
+  timestamp  DateTime @default(now())
+
+  @@index([tenantId, level])
+  @@map("run_logs")
+}
+
+model StudioPermission {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  roleId     String   @map("role_id")
+  moduleSlug String   @map("module_slug")
+  canRead    Boolean  @default(false) @map("can_read")
+  canWrite   Boolean  @default(false) @map("can_write")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, roleId, moduleSlug])
+  @@map("studio_permissions")
+}
+
+model ThirdPartyConnector {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  type      String
+  config    Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("third_party_connectors")
+}
+
+model CustomWidget {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  tag       String   @unique
+  source    String
+  manifest  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("custom_widgets")
+}
+
+model GitConfig {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  repoUrl     String    @map("repo_url")
+  branch      String    @default("main")
+  accessToken String?   @map("access_token")
+  status      String    @default("DISCONNECTED")
+  lastSync    DateTime? @map("last_sync")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId])
+  @@map("builder_git_configs")
+}
+
+model NativeBuild {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  version     String
+  platform    String
+  status      String
+  downloadUrl String?  @map("download_url")
+  logSummary  String?  @map("log_summary")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("builder_native_builds")
+}
+

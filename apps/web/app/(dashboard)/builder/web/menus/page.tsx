@@ -4,6 +4,7 @@ import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   Navigation,
   PlusCircle,
@@ -34,10 +35,10 @@ export default function WebMenusPage() {
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this menu?')) {
-      await deleteItem(id);
-    }
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+  const executeDeleteMenu = async (id: any) => {
+    await deleteItem(id);
   };
 
   const router = useRouter();
@@ -47,28 +48,21 @@ export default function WebMenusPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Navigation size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Navigation Menu Builder
-            </h1>
+      <PageHeader
+        title="Navigation Menu Builder"
+        description="Build multi-level navigation menus, mega menus, and mobile hamburger configurations"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>
+              ← Web Studio
+            </button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+              <PlusCircle size={15} />
+              <span>New Menu</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Build multi-level navigation menus, mega menus, and mobile hamburger configurations
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>
-            ← Web Builder
-          </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
-            <PlusCircle size={15} />
-            <span>New Menu</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Tabs */}
       <div style={{ borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-1)' }}>
@@ -142,7 +136,7 @@ export default function WebMenusPage() {
                   <Edit3 size={12} /><span>Edit</span>
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); /* Preview */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Eye size={12} /></button>
-                <button onClick={(e) => { e.stopPropagation(); handleDelete(menu.id); }} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={12} /></button>
+                <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(menu.id); }} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={12} /></button>
               </div>
             </div>
             );
@@ -293,6 +287,15 @@ export default function WebMenusPage() {
           { name: 'status', label: 'Status (ACTIVE/DRAFT)', type: 'text' }
         ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeleteMenu(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Menu"
+        message="Are you sure you want to delete this menu? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

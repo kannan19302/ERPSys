@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { PageHeader } from '@unerp/ui';
 import { Settings, Save, Palette, MonitorSmartphone, Code, Globe, Eye } from 'lucide-react';
 
 export default function WebSettingsPage() {
@@ -106,25 +107,16 @@ export default function WebSettingsPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', height: '100%' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Settings size={20} style={{ color: '#059669' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Site Settings & Themes
-            </h1>
-          </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Manage global design tokens, templates, and custom CSS for your public website.
-          </p>
-        </div>
-        <div>
+      <PageHeader
+        title="Site Settings & Themes"
+        description="Manage global design tokens, templates, and custom CSS for your public website."
+        actions={
           <button className="frappe-btn frappe-btn-primary" onClick={handleSave} disabled={isSaving}>
             <Save size={15} />
             <span>{isSaving ? 'Saving...' : 'Save Settings'}</span>
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div style={{ display: 'flex', gap: 'var(--space-6)', flexGrow: 1 }}>
         {/* Navigation */}

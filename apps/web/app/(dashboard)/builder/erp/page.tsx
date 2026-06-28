@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   Plus,
   Search,
@@ -23,7 +24,16 @@ import {
   Eye,
   Settings as SettingsIcon,
 } from 'lucide-react';
-
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
 interface AppModule {
   id: string;
   name: string;
@@ -304,8 +314,10 @@ function ERPBuilderPageContent() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'draft' | 'published' | 'archived'>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (searchParams?.get('new') === '1') setShowCreateModal(true);
   }, [searchParams]);
 
@@ -334,8 +346,9 @@ function ERPBuilderPageContent() {
     return true;
   });
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this app?')) return;
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const executeDeleteApp = async (id: string) => {
     const token = localStorage.getItem('token');
     await fetch(`/api/v1/builder/modules/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token || ''}` } });
     fetchApps();
@@ -354,17 +367,15 @@ function ERPBuilderPageContent() {
   return (
     <div style={{ padding: 'var(--space-6) var(--space-8)', maxWidth: 1400, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--color-text)', margin: 0 }}>My Custom Apps</h1>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 4 }}>Build, test, and publish custom ERP applications</p>
-        </div>
-        <button onClick={() => setShowCreateModal(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-lg)', border: 'none', background: 'var(--color-primary)', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-sm)', transition: 'all 0.15s ease' }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')} onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-          <Plus size={18} /> New Custom App
-        </button>
-      </div>
+      <PageHeader
+        title="My Custom Apps"
+        description="Build, test, and publish custom ERP applications"
+        actions={
+          <button className="frappe-btn frappe-btn-primary" onClick={() => setShowCreateModal(true)}>
+            <Plus size={18} /> New Custom App
+          </button>
+        }
+      />
 
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
@@ -385,6 +396,39 @@ function ERPBuilderPageContent() {
           </div>
         ))}
       </div>
+
+      {/* Chart */}
+      {mounted && (
+        <div className="frappe-card" style={{ padding: 'var(--space-5)', marginBottom: 'var(--space-6)' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-4)', color: 'var(--color-text)' }}>App Compilation & Testing History</h3>
+          <div style={{ width: '100%', height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={[
+                { month: 'Jan', builds: 15, avgScore: 78 },
+                { month: 'Feb', builds: 22, avgScore: 82 },
+                { month: 'Mar', builds: 18, avgScore: 80 },
+                { month: 'Apr', builds: 30, avgScore: 88 },
+                { month: 'May', builds: 25, avgScore: 85 },
+                { month: 'Jun', builds: 35, avgScore: 92 },
+              ]} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorBuildsErp" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" stroke="var(--color-text-secondary)" style={{ fontSize: 11 }} />
+                <YAxis stroke="var(--color-text-secondary)" style={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Area type="monotone" dataKey="builds" name="App Version Builds" stroke="#3b82f6" fillOpacity={1} fill="url(#colorBuildsErp)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-5)' }}>
@@ -429,12 +473,22 @@ function ERPBuilderPageContent() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-5)' }}>
           {filteredApps.map(app => (
-            <AppCard key={app.id} app={app} onDelete={() => handleDelete(app.id)} onClick={() => router.push(`/builder/erp/apps/${app.id}`)} />
+            <AppCard key={app.id} app={app} onDelete={() => setDeleteTarget(app.id)} onClick={() => router.push(`/builder/erp/apps/${app.id}`)} />
           ))}
         </div>
       )}
 
       <CreateAppModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={id => { setShowCreateModal(false); router.push(`/builder/erp/apps/${id}`); }} />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeleteApp(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete App"
+        message="Are you sure you want to delete this app? All associated modules, pages and definitions will be deleted."
+        confirmLabel="Delete"
+        variant="danger"
+      />
 
       <style>{`
         @keyframes pulse {

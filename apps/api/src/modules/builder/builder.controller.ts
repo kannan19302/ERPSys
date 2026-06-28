@@ -78,6 +78,7 @@ import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { BuilderService } from './builder.service';
 import { WebCollectionsService } from './web-collections.service';
+import { BuilderAiService } from './builder-ai.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
@@ -98,6 +99,7 @@ export class BuilderController {
   constructor(
     private readonly builderService: BuilderService,
     private readonly webCollections: WebCollectionsService,
+    private readonly builderAiService: BuilderAiService,
   ) {}
 
   // ─── Stats ──────────────────────────────────────
@@ -322,6 +324,54 @@ export class BuilderController {
     return this.builderService.getModuleById(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Generate module via AI' })
+  @Permissions('builder.create')
+  @Post('modules/generate')
+  @Permissions('builder.module.create')
+  async generateModule(@Req() req: AuthenticatedRequest, @Body() body: { prompt: string }) {
+    const layout = await this.builderAiService.generateAppModule(req.user.tenantId, body.prompt);
+    // Create actual builder module in DB
+    const mod = await this.builderService.createModule(req.user.tenantId, {
+      name: layout.name,
+      slug: layout.slug,
+      description: layout.description,
+      icon: layout.icon,
+      color: layout.color,
+      scope: 'ORGANIZATION',
+    });
+
+    // Seed generated pages
+    if (layout.pages) {
+      for (const page of layout.pages) {
+        await this.builderService.addPageToModule(req.user.tenantId, mod.id, {
+          name: page.name,
+          slug: page.slug,
+          type: page.type,
+        });
+      }
+    }
+
+    // Seed generated data models
+    if (layout.dataModels) {
+      for (const dm of layout.dataModels) {
+        await this.builderService.addDataModelToModule(req.user.tenantId, mod.id, {
+          name: dm.name,
+          fields: dm.fields,
+        });
+      }
+    }
+
+    return mod;
+  }
+
+  @ApiOperation({ summary: 'Suggest fields inside components via AI' })
+  @Permissions('builder.update')
+  @Post('components/:id/generate')
+  @Permissions('builder.module.update')
+  async suggestFields(@Req() req: AuthenticatedRequest, @Param('id') _id: string, @Body() body: { prompt: string }) {
+    return this.builderAiService.suggestCopilotFields(req.user.tenantId, body.prompt);
+  }
+
   @ApiOperation({ summary: 'Create module' })
   @Permissions('builder.create')
   @Post('modules')
@@ -489,6 +539,18 @@ export class BuilderController {
   @Permissions('builder.module.read')
   async getModuleReleases(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.builderService.getModuleReleases(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Compare release snapshot' })
+  @Permissions('builder.read')
+  @Get('modules/:id/releases/:releaseId/diff')
+  @Permissions('builder.module.read')
+  async compareReleaseSnapshot(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('releaseId') releaseId: string
+  ) {
+    return this.builderService.compareReleaseSnapshot(req.user.tenantId, id, releaseId);
   }
 
   @ApiOperation({ summary: 'Rollback module' })
@@ -1365,4 +1427,97 @@ export class BuilderController {
   ) {
     return this.builderService.deleteSubmodule(req.user.tenantId, moduleId, slug);
   }
+
+  // ════════════════════════════════════════════════
+  // STUDIO ENHANCEMENTS — Phase 11-20 Endpoints (Widgets, Git, Native Builds)
+  // ════════════════════════════════════════════════
+
+  // --- Custom Widgets ---
+  @ApiOperation({ summary: 'Get widgets' })
+  @Permissions('builder.read')
+  @Get('widgets')
+  async getWidgets(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getWidgets(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create or update widget' })
+  @Permissions('builder.create')
+  @Post('widgets')
+  async createWidget(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ name: z.string(), tag: z.string(), source: z.string(), manifest: z.any().optional() }))
+    body: { name: string; tag: string; source: string; manifest?: any },
+  ) {
+    return this.builderService.createWidget(req.user.tenantId, body.name, body.tag, body.source, body.manifest);
+  }
+
+  @ApiOperation({ summary: 'Delete widget' })
+  @Permissions('builder.delete')
+  @Delete('widgets/:id')
+  async deleteWidget(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.deleteWidget(req.user.tenantId, id);
+  }
+
+  // --- Git Control ---
+  @ApiOperation({ summary: 'Get git config' })
+  @Permissions('builder.read')
+  @Get('git/config')
+  async getGitConfig(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getGitConfig(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Save git config' })
+  @Permissions('builder.create')
+  @Post('git/config')
+  async saveGitConfig(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ repoUrl: z.string(), branch: z.string(), accessToken: z.string().optional() }))
+    body: { repoUrl: string; branch: string; accessToken?: string },
+  ) {
+    return this.builderService.saveGitConfig(req.user.tenantId, body.repoUrl, body.branch, body.accessToken);
+  }
+
+  @ApiOperation({ summary: 'Get git diff' })
+  @Permissions('builder.read')
+  @Get('git/diff')
+  async getGitDiff(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getGitDiff(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Commit git changes' })
+  @Permissions('builder.create')
+  @Post('git/commit')
+  async executeGitCommit(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ message: z.string() })) body: { message: string },
+  ) {
+    return this.builderService.executeGitCommit(req.user.tenantId, body.message);
+  }
+
+  // --- Native Builds ---
+  @ApiOperation({ summary: 'Get native builds' })
+  @Permissions('builder.read')
+  @Get('native-builds')
+  async getNativeBuilds(@Req() req: AuthenticatedRequest) {
+    return this.builderService.getNativeBuilds(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Trigger native build' })
+  @Permissions('builder.create')
+  @Post('native-builds/trigger')
+  async triggerNativeBuild(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ version: z.string(), platform: z.string() }))
+    body: { version: string; platform: string },
+  ) {
+    return this.builderService.triggerNativeBuild(req.user.tenantId, body.version, body.platform);
+  }
+
+  @ApiOperation({ summary: 'Get native build logs' })
+  @Permissions('builder.read')
+  @Get('native-builds/:id/logs')
+  async getNativeBuildLogs(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.builderService.getNativeBuildLogs(req.user.tenantId, id);
+  }
 }
+

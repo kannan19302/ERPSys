@@ -4,6 +4,7 @@ import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { FileText, PlusCircle, Search, Edit3, Trash2, Eye, Clock } from 'lucide-react';
 
 
@@ -29,10 +30,10 @@ export default function WebBlogPage() {
     }
   };
 
-  const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      await deleteItem(id);
-    }
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+  const executeDeletePost = async (id: any) => {
+    await deleteItem(id);
   };
 
   const router = useRouter();
@@ -43,20 +44,18 @@ export default function WebBlogPage() {
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <FileText size={20} style={{ color: 'var(--color-primary)' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>Blog Posts</h1>
+      <PageHeader
+        title="Blog Posts"
+        description="Write, edit, and publish blog content to your public website"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+              <PlusCircle size={15} /><span>New Post</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Write, edit, and publish blog content to your public website</p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Builder</button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
-<PlusCircle size={15} /><span>New Post</span></button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)' }}>
@@ -125,7 +124,7 @@ export default function WebBlogPage() {
                   <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                     <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }}><Edit3 size={12} /></button>
                     <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }}><Eye size={12} /></button>
-                    <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => handleDelete(post.id)}><Trash2 size={12} /></button>
+                    <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => setDeleteTarget(post.id)}><Trash2 size={12} /></button>
                   </div>
                 </td>
               </tr>
@@ -141,6 +140,15 @@ export default function WebBlogPage() {
         title={editingItem ? "Edit Item" : "Create New"}
         fields={[ { name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'author', label: 'Author', type: 'text' } ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeletePost(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Blog Post"
+        message="Are you sure you want to delete this blog post?"
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

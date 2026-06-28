@@ -10,9 +10,10 @@ import '@xyflow/react/dist/style.css';
 
 import {
   ArrowLeft, Save, Play, Settings, Bell, Mail, Split, CheckSquare,
-  Clock, Link2, BoxSelect, Trash2, X,
+  Clock, Link2, BoxSelect, Trash2, X, Sparkles,
 } from 'lucide-react';
 import { useToast } from '@/components/builder/ToastProvider';
+import { AiCopilotSidebar } from '@/components/builder/AiCopilotSidebar';
 
 const initialNodes: Node[] = [
   { id: '1', type: 'input', position: { x: 250, y: 50 }, data: { label: 'Trigger: Manual' } },
@@ -73,6 +74,7 @@ function WorkflowEditorInner({ workflowId, onBack, onSaved, embedded = false, de
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [showCopilot, setShowCopilot] = useState(false);
 
   useEffect(() => { setCurrentId(workflowId); }, [workflowId]);
 
@@ -220,6 +222,9 @@ function WorkflowEditorInner({ workflowId, onBack, onSaved, embedded = false, de
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => setShowCopilot(!showCopilot)} style={{ padding: '8px 16px', borderRadius: '6px', background: showCopilot ? 'rgba(59, 130, 246, 0.1)' : 'white', color: showCopilot ? '#2563eb' : '#0f172a', border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 500 }}>
+            <Sparkles size={14} /> AI Copilot
+          </button>
           <button onClick={() => { fetchExecutions(); setIsHistoryModalOpen(true); }} style={{ padding: '8px 16px', borderRadius: '6px', background: 'white', border: '1px solid #cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 500 }}>
             <Clock size={14} /> History
           </button>
@@ -258,6 +263,22 @@ function WorkflowEditorInner({ workflowId, onBack, onSaved, embedded = false, de
             <Background color="#cbd5e1" gap={16} />
           </ReactFlow>
         </div>
+
+        {showCopilot && (
+          <AiCopilotSidebar
+            type="workflow"
+            componentId={currentId}
+            onSuggestSteps={(steps) => {
+              const newNodes = steps.map((s, idx) => ({
+                id: `node_ai_${Date.now()}_${idx}`,
+                type: 'custom',
+                position: { x: 250, y: 150 + idx * 120 },
+                data: { label: s.label || 'Approval Step', nodeType: 'approval', config: { assignRole: s.assigneeRole || 'Manager' } }
+              }));
+              setNodes([...nodes, ...newNodes]);
+            }}
+          />
+        )}
 
         <div style={{ width: '300px', background: 'white', borderLeft: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
           <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>

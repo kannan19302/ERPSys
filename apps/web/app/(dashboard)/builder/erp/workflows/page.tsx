@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   GitFork,
   PlusCircle,
@@ -33,6 +34,7 @@ export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchWorkflows = async () => {
     setLoading(true);
@@ -56,8 +58,7 @@ export default function WorkflowsPage() {
     return () => window.removeEventListener('unerp_page_registry_updated', fetchWorkflows);
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this workflow?')) return;
+  const executeDelete = async (id: string) => {
     try {
       const token = localStorage.getItem('token') || '';
       await fetch(`/api/v1/builder/workflows/${id}`, {
@@ -102,28 +103,21 @@ export default function WorkflowsPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div className="builder-header">
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <GitFork size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Workflow Builder
-            </h1>
+      <PageHeader
+        title="Workflow Builder"
+        description="Design approval chains, automation flows, and business process workflows"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+              ← App Studio
+            </button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => router.push('/builder/erp/workflows/new')}>
+              <PlusCircle size={15} />
+              <span>New Workflow</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Design approval chains, automation flows, and business process workflows
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← App Studio
-          </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => router.push('/builder/erp/workflows/new')}>
-            <PlusCircle size={15} />
-            <span>New Workflow</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="builder-stats-grid">
@@ -210,7 +204,7 @@ export default function WorkflowsPage() {
                 <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }} onClick={() => router.push(`/builder/erp/workflows/${wf.id}?preview=true`)}>
                   <Eye size={13} />
                 </button>
-                <button className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => handleDelete(wf.id)}>
+                <button className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => setDeleteTarget(wf.id)}>
                   <Trash2 size={13} />
                 </button>
               </div>
@@ -218,6 +212,15 @@ export default function WorkflowsPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDelete(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Workflow"
+        message="Are you sure you want to delete this workflow? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

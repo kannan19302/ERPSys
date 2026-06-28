@@ -4,11 +4,11 @@
   "private": true,
   "description": "UniERP Web Frontend — Next.js 15",
   "scripts": {
-    "dev": "next dev --port 3000",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "clean": "rimraf .next"

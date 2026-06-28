@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { Inbox, Trash2, Mail, MailOpen, Archive, AlertOctagon, Search } from 'lucide-react';
 
 const api = (path: string, opts: RequestInit = {}) => {
@@ -23,6 +24,7 @@ export default function WebSubmissionsPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchSubs = useCallback(async () => {
     setLoading(true);
@@ -40,8 +42,7 @@ export default function WebSubmissionsPage() {
     fetchSubs();
     if (selected?.id === id) setSelected({ ...selected, status });
   };
-  const del = async (id: string) => {
-    if (!confirm('Delete this submission?')) return;
+  const executeDeleteSub = async (id: string) => {
     await api(`web-form-submissions/${id}`, { method: 'DELETE' });
     if (selected?.id === id) setSelected(null);
     fetchSubs();
@@ -53,17 +54,16 @@ export default function WebSubmissionsPage() {
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 4 }}>
-            <Inbox size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>Form Submissions</h1>
+      <PageHeader
+        title="Form Submissions"
+        description="Leads, contacts and newsletter sign-ups captured from your public website"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
             {newCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-full)', background: '#3b82f6', color: '#fff' }}>{newCount} new</span>}
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Leads, contacts and newsletter sign-ups captured from your public website</p>
-        </div>
-        <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
-      </div>
+        }
+      />
 
       <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
         <div className="frappe-card" style={{ flex: selected ? '0 0 55%' : 1, overflow: 'hidden' }}>
@@ -121,11 +121,20 @@ export default function WebSubmissionsPage() {
               {(['READ', 'ARCHIVED', 'SPAM'] as const).map((s) => (
                 <button key={s} onClick={() => setStatus(selected.id, s)} className="frappe-btn frappe-btn-secondary" style={{ fontSize: 'var(--text-xs)' }}>Mark {STATUS_META[s]!.label}</button>
               ))}
-              <button onClick={() => del(selected.id)} className="frappe-btn frappe-btn-secondary" style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)' }}><Trash2 size={13} /> Delete</button>
+              <button onClick={() => setDeleteTarget(selected.id)} className="frappe-btn frappe-btn-secondary" style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)' }}><Trash2 size={13} /> Delete</button>
             </div>
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeleteSub(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Submission"
+        message="Are you sure you want to delete this submission?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

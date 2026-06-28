@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { allApplications, getAppSpecificNavigation } from '@/navigation';
 import { apiGet, apiPut, apiPost, apiDelete } from '@/lib/api';
+import { PageHeader } from '@unerp/ui';
 import {
   Layers, Eye, EyeOff, ArrowUp, ArrowDown, RotateCcw, Save, Plus, Trash2, Settings2, FolderPlus,
 } from 'lucide-react';
@@ -119,14 +120,10 @@ export default function CustomizeAppPage() {
 
   return (
     <div style={{ padding: 'var(--space-6)', maxWidth: 980, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-        <Settings2 size={24} style={{ color: 'var(--color-primary)' }} />
-        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Customize an App</h1>
-      </div>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-5)' }}>
-        Reorder, hide, or rename an existing app's navigation, and add new submodules — all without touching core code.
-        Changes apply only to your organization and can be reset to default at any time.
-      </p>
+      <PageHeader
+        title="Customize an App"
+        description="Reorder, hide, or rename an existing app's navigation, and add new submodules — all without touching core code. Changes apply only to your organization and can be reset to default at any time."
+      />
 
       {/* App picker */}
       <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', marginBottom: 'var(--space-5)' }}>

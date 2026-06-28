@@ -18,6 +18,7 @@ import { BuilderSidebar } from '@/components/builder/BuilderSidebar';
 import { BuilderProperties } from '@/components/builder/BuilderProperties';
 import { SortableField } from '@/components/builder/SortableField';
 import { DeployFormModal } from '@/components/builder/DeployFormModal';
+import { AiCopilotSidebar } from '@/components/builder/AiCopilotSidebar';
 
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
@@ -51,6 +52,7 @@ export function FormBuilderWorkspace({ formId, onBack, onSaved, embedded = false
   const [isSaving, setIsSaving] = useState(false);
   const [showDeployModal, setShowDeployModal] = useState(false);
   const [deploySettings, setDeploySettings] = useState({ module: defaultModule || '', slug: '', title: '' });
+  const [showCopilot, setShowCopilot] = useState(false);
 
   useEffect(() => { setCurrentId(formId); }, [formId]);
 
@@ -211,6 +213,10 @@ export function FormBuilderWorkspace({ formId, onBack, onSaved, embedded = false
             style={{ padding: '8px 16px', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, #10b981, #3b82f6)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500', fontSize: '13px' }}>
             <Sparkles size={14} /> <span>AI Generate</span>
           </button>
+          <button onClick={(e) => { e.stopPropagation(); setShowCopilot(!showCopilot); }}
+            style={{ padding: '8px 16px', borderRadius: 'var(--radius-md)', background: showCopilot ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)', color: showCopilot ? '#60a5fa' : 'white', border: '1px solid ' + (showCopilot ? 'rgba(59, 130, 246, 0.5)' : 'rgba(255,255,255,0.1)'), cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500', fontSize: '13px' }}>
+            <Sparkles size={14} /> <span>AI Copilot</span>
+          </button>
           <button onClick={(e) => { e.stopPropagation(); setPreviewMode(!previewMode); }}
             style={{ padding: '8px 16px', borderRadius: 'var(--radius-md)', background: previewMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)', color: previewMode ? '#60a5fa' : 'white', border: '1px solid ' + (previewMode ? 'rgba(59, 130, 246, 0.5)' : 'rgba(255,255,255,0.1)'), cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500', fontSize: '13px' }}>
             <Eye size={14} /> <span>{previewMode ? 'Build Mode' : 'Preview Mode'}</span>
@@ -279,6 +285,25 @@ export function FormBuilderWorkspace({ formId, onBack, onSaved, embedded = false
           </TransformWrapper>
         </div>
 
+        {!previewMode && showCopilot && (
+          <AiCopilotSidebar
+            type="form"
+            componentId={currentId}
+            onSuggestFields={(newFields) => {
+              const cleaned = newFields.map((nf, idx) => ({
+                id: `f_ai_${Date.now()}_${idx}`,
+                type: nf.type || 'Text',
+                label: nf.label || 'New Field',
+                name: nf.name || `new_field_${idx}`,
+                required: !!nf.required,
+                readOnly: false,
+                options: Array.isArray(nf.options) ? nf.options.join('\n') : nf.options,
+                columnSpan: 12
+              }));
+              setFields([...fields, ...cleaned]);
+            }}
+          />
+        )}
         {!previewMode && <BuilderProperties />}
       </div>
 

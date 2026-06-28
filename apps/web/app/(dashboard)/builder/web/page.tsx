@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader } from '@unerp/ui';
 import {
   Globe,
   Monitor,
@@ -16,7 +17,16 @@ import {
   Inbox,
   ShoppingCart,
 } from 'lucide-react';
-
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
 interface WebStats {
   publishedPages: number;
   blogPosts: number;
@@ -38,8 +48,10 @@ export default function WebBuilderPage() {
     seo: 0,
     menus: 0,
   });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetch('/api/v1/builder/stats', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') } })
       .then(res => res.json())
       .then(data => {
@@ -53,22 +65,15 @@ export default function WebBuilderPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Globe size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Web Studio
-            </h1>
-          </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Dynamic CMS editor for managing public-facing website content in real time
-          </p>
-        </div>
-        <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder')}>
-          ← Studio
-        </button>
-      </div>
+      <PageHeader
+        title="Web Studio"
+        description="Dynamic CMS editor for managing public-facing website content in real time"
+        actions={
+          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder')}>
+            ← Studio
+          </button>
+        }
+      />
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)' }}>
@@ -89,6 +94,40 @@ export default function WebBuilderPage() {
           </div>
         ))}
       </div>
+
+      {/* Recharts Traffic Analytics Chart */}
+      {mounted && (
+        <div className="frappe-card" style={{ padding: 'var(--space-5)' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-4)', color: 'var(--color-text)' }}>Web traffic & Visitor Trends</h3>
+          <div style={{ width: '100%', height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={[
+                { date: '06/22', visitors: 140, pageviews: 310 },
+                { date: '06/23', visitors: 190, pageviews: 450 },
+                { date: '06/24', visitors: 220, pageviews: 520 },
+                { date: '06/25', visitors: 170, pageviews: 380 },
+                { date: '06/26', visitors: 280, pageviews: 610 },
+                { date: '06/27', visitors: 310, pageviews: 730 },
+                { date: '06/28', visitors: 420, pageviews: 980 },
+              ]} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#7c3aed" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="date" stroke="var(--color-text-secondary)" style={{ fontSize: 11 }} />
+                <YAxis stroke="var(--color-text-secondary)" style={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Area type="monotone" dataKey="visitors" name="Unique Visitors" stroke="#7c3aed" fillOpacity={1} fill="url(#colorVisitors)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
 
       {/* Quick Access Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-4)' }}>

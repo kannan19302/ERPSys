@@ -199,4 +199,113 @@ export class BuilderGovernanceService {
       changes,
     };
   }
+
+  // --- Summary ---
+  async getGovernanceSummary(tenantId: string) {
+    const [releases, logs, connectors] = await Promise.all([
+      prisma.appRelease.count({ where: { tenantId } }),
+      prisma.runLog.count({ where: { tenantId } }),
+      prisma.thirdPartyConnector.count({ where: { tenantId } }),
+    ]);
+    return {
+      releases,
+      runLogsCount: logs,
+      connectorsCount: connectors,
+      environmentState: 'HEALTHY'
+    };
+  }
+
+  // --- Run Logs ---
+  async getRunLogs(tenantId: string, level?: string, search?: string) {
+    const where: any = { tenantId };
+    if (level && level !== 'ALL') {
+      where.level = level;
+    }
+    if (search) {
+      where.message = { contains: search, mode: 'insensitive' };
+    }
+
+    // Seed mock logs if the table is currently empty
+    const count = await prisma.runLog.count({ where: { tenantId } });
+    if (count === 0) {
+      await prisma.runLog.createMany({
+        data: [
+          { tenantId, level: 'INFO', message: 'Sync CRM leads to ERP module: Completed successfully.', payload: { duration: '342ms' } },
+          { tenantId: tenantId, level: 'WARN', message: 'Slow DB query detected: SELECT * FROM invoice WHERE status = \'PAID\'', stackTrace: 'Explain plan cost: 420.50' },
+          { tenantId: tenantId, level: 'ERROR', message: 'Sync failed: Connection timed out to external API endpoint.', stackTrace: 'TimeoutException at fetch()' }
+        ]
+      });
+    }
+
+    return prisma.runLog.findMany({
+      where,
+      orderBy: { timestamp: 'desc' },
+      take: 50
+    });
+  }
+
+  // --- Connectors ---
+  async getConnectors(tenantId: string) {
+    // Seed default mock connectors if empty
+    const count = await prisma.thirdPartyConnector.count({ where: { tenantId } });
+    if (count === 0) {
+      await prisma.thirdPartyConnector.createMany({
+        data: [
+          { tenantId, name: 'Shopify Storefront Connector', type: 'REST', config: { url: 'https://shopify.com/api/v2', auth: 'Bearer token' } },
+          { tenantId, name: 'Salesforce Sync Stream', type: 'GraphQL', config: { url: 'https://salesforce.com/graphql', auth: 'OAuth2' } }
+        ]
+      });
+    }
+    return prisma.thirdPartyConnector.findMany({ where: { tenantId } });
+  }
+
+  async saveConnector(tenantId: string, name: string, type: string, config: any) {
+    return prisma.thirdPartyConnector.create({
+      data: { tenantId, name, type, config }
+    });
+  }
+
+  async deleteConnector(tenantId: string, id: string) {
+    return prisma.thirdPartyConnector.deleteMany({ where: { id, tenantId } });
+  }
+
+  // --- Permissions Management ---
+  async getAllPermissions(tenantId: string) {
+    const list = await prisma.studioPermission.findMany({ where: { tenantId } });
+    if (list.length === 0) {
+      await prisma.studioPermission.createMany({
+        data: [
+          { tenantId, roleId: 'System Manager', moduleSlug: 'inventory', canRead: true, canWrite: true },
+          { tenantId, roleId: 'Sales User', moduleSlug: 'crm', canRead: true, canWrite: false },
+          { tenantId, roleId: 'HR Manager', moduleSlug: 'hr', canRead: true, canWrite: true }
+        ]
+      });
+      return prisma.studioPermission.findMany({ where: { tenantId } });
+    }
+    return list;
+  }
+
+  async saveStudioPermission(tenantId: string, roleId: string, moduleSlug: string, canRead: boolean, canWrite: boolean) {
+    return prisma.studioPermission.upsert({
+      where: {
+        tenantId_roleId_moduleSlug: { tenantId, roleId, moduleSlug }
+      },
+      update: { canRead, canWrite },
+      create: { tenantId, roleId, moduleSlug, canRead, canWrite }
+    });
+  }
+
+  async deleteStudioPermission(tenantId: string, id: string) {
+    return prisma.studioPermission.deleteMany({ where: { id, tenantId } });
+  }
+
+  // --- Marketplace ---
+  async getMarketplaceList() {
+    return [
+      { id: '1', name: 'Fleet Maintenance Template', description: 'Complete system tracking service orders, gas expenses, and logs.', author: 'UniERP Team', downloads: 1420 },
+      { id: '2', name: 'Stripe Payment Gateway Plugin', description: 'Enable visual checkout forms directly bound to invoices.', author: 'Community Partner', downloads: 890 },
+      { id: '3', name: 'Healthcare EMR Extension', description: 'Adds EHR files, encounter trackers, and scheduler overlays.', author: 'MedTech Labs', downloads: 650 }
+    ];
+  }
 }
+

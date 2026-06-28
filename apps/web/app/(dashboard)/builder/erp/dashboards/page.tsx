@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   BarChart3,
   PlusCircle,
@@ -32,6 +33,7 @@ export default function DashboardsPage() {
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchDashboards = async () => {
     setLoading(true);
@@ -55,8 +57,7 @@ export default function DashboardsPage() {
     return () => window.removeEventListener('unerp_page_registry_updated', fetchDashboards);
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this dashboard?')) return;
+  const executeDelete = async (id: string) => {
     try {
       const token = localStorage.getItem('token') || '';
       await fetch(`/api/v1/builder/dashboards/${id}`, {
@@ -74,28 +75,21 @@ export default function DashboardsPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div className="builder-header">
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <BarChart3 size={20} style={{ color: '#059669' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Dashboard Builder
-            </h1>
+      <PageHeader
+        title="Dashboard Builder"
+        description="Create executive dashboards with KPI widgets and real-time data visualizations"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+              ← App Studio
+            </button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => router.push('/builder/erp/dashboards/new')}>
+              <PlusCircle size={15} />
+              <span>New Dashboard</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Create executive dashboards with KPI widgets and real-time data visualizations
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← App Studio
-          </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => router.push('/builder/erp/dashboards/new')}>
-            <PlusCircle size={15} />
-            <span>New Dashboard</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="builder-stats-grid">
@@ -178,7 +172,7 @@ export default function DashboardsPage() {
                 <button className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }} onClick={() => router.push(`/dashboard?dashboardId=${d.id}`)}>
                   <Eye size={13} />
                 </button>
-                <button className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => handleDelete(d.id)}>
+                <button className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => setDeleteTarget(d.id)}>
                   <Trash2 size={13} />
                 </button>
               </div>
@@ -186,6 +180,15 @@ export default function DashboardsPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDelete(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Dashboard"
+        message="Are you sure you want to delete this dashboard? All widgets will be removed."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

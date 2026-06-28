@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap,
+  Workflow, Wrench, Zap, Link, GitBranch,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -831,28 +831,28 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
       title: 'Studio',
       icon: Cpu,
       items: [
-        { name: 'Builder Overview', href: '/builder', icon: Layers },
+        { name: 'Studio Home', href: '/builder', icon: Home },
         {
-          name: 'App Studio',
+          name: 'Build',
           isHeader: true,
           items: [
             { name: 'App Studio Overview', href: '/builder/erp', icon: Cpu },
-            { name: 'Customize an App', href: '/builder/erp/customize', icon: Settings },
+            { name: 'Custom Apps', href: '/builder/erp/modules', icon: Database },
             { name: 'Form Builder', href: '/builder/erp/forms', icon: FileCode2 },
             { name: 'Workflow Builder', href: '/builder/erp/workflows', icon: Workflow },
             { name: 'Dashboard Builder', href: '/builder/erp/dashboards', icon: BarChart3 },
-            { name: 'Custom Modules', href: '/builder/erp/modules', icon: Database },
             { name: 'Business Logic', href: '/builder/erp/logic', icon: Play },
-            { name: 'Data Import', href: '/builder/erp/data', icon: Layers },
+            { name: 'Data & Import', href: '/builder/erp/data', icon: Layers },
+            { name: 'Customize an App', href: '/builder/erp/customize', icon: Settings },
           ]
         },
         {
           name: 'Web Studio',
           isHeader: true,
           items: [
+            { name: 'Web Studio Overview', href: '/builder/web', icon: Globe },
             { name: 'Sites', href: '/builder/web/sites', icon: Globe },
             { name: 'CMS Collections', href: '/builder/web/collections', icon: Database },
-            { name: 'Pages (legacy)', href: '/builder/web/pages', icon: FileText },
             { name: 'Blog Posts', href: '/builder/web/blog', icon: FileText },
             { name: 'Asset Manager', href: '/builder/web/assets', icon: Image },
             { name: 'Templates', href: '/builder/web/templates', icon: Code2 },
@@ -860,6 +860,33 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'SEO Manager', href: '/builder/web/seo', icon: BarChart3 },
             { name: 'Orders', href: '/builder/web/orders', icon: ShoppingCart },
             { name: 'Form Submissions', href: '/builder/web/submissions', icon: Inbox },
+            { name: 'Pages (legacy)', href: '/builder/web/pages', icon: FileText },
+          ]
+        },
+        {
+          name: 'Marketplace',
+          isHeader: true,
+          items: [
+            { name: 'App Store', href: '/apps/store', icon: Store },
+            { name: 'Installed Apps', href: '/apps', icon: LayoutGrid },
+            { name: 'Developer Portal', href: '/apps/developer', icon: Code2 },
+          ]
+        },
+        {
+          name: 'Manage',
+          isHeader: true,
+          items: [
+            { name: 'Manage Overview', href: '/builder/manage', icon: Server },
+            { name: 'Releases', href: '/builder/manage/releases', icon: History },
+            { name: 'Environments', href: '/builder/manage/environments', icon: GitFork },
+            { name: 'Run Logs', href: '/builder/manage/logs', icon: Activity },
+            { name: 'Access Control', href: '/builder/manage/access', icon: Shield },
+            { name: 'Connectors', href: '/builder/manage/connectors', icon: Link },
+            { name: 'Marketplace', href: '/builder/manage/marketplace', icon: Store },
+            { name: 'Query Builder', href: '/builder/manage/query-builder', icon: Database },
+            { name: 'Widget SDK', href: '/builder/manage/widgets', icon: Settings },
+            { name: 'Git Control', href: '/builder/manage/git', icon: GitBranch },
+            { name: 'Export & Mobile', href: '/builder/manage/mobile-export', icon: Smartphone },
           ]
         },
       ] as SidebarItem[]

@@ -7,13 +7,14 @@ import { WebStudioController } from './web-studio.controller';
 import { WebStudioService } from './web-studio.service';
 import { BuilderGovernanceService } from './builder-governance.service';
 import { BuilderScriptingService } from './builder-scripting.service';
+import { BuilderAiService } from './builder-ai.service';
 import { GovernanceController } from './governance.controller';
 import { AiModule } from '../ai/ai.module';
 
 @Module({
   imports: [AiModule],
   controllers: [BuilderController, WebPublicController, WebStudioController, GovernanceController],
-  providers: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService],
-  exports: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService],
+  providers: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService, BuilderAiService],
+  exports: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService, BuilderAiService],
 })
 export class BuilderModule {}

@@ -1,6 +1,7 @@
 'use client';
 import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 import { useBuilderData } from '@/lib/hooks/useBuilderData';
+import { PageHeader, DataTable, ConfirmDialog, type Column } from '@unerp/ui';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -112,6 +113,7 @@ function WebBuilderPagesPageContent() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -269,112 +271,103 @@ function WebBuilderPagesPageContent() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', height: '100vh', boxSizing: 'border-box' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Globe size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Website Pages
-            </h1>
+      <PageHeader
+        title={activeTab === 'list' ? 'Website Pages' : `Visual Editor: ${editingPage?.name || ''}`}
+        description={activeTab === 'list' ? 'Manage your public-facing pages' : undefined}
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            {activeTab === 'editor' && (
+              <>
+                <button className="frappe-btn frappe-btn-secondary" onClick={() => { setActiveTab('list'); setEditingPageId(null); }}>
+                  Back to List
+                </button>
+                {editingPage?.status === 'PUBLISHED' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: 'var(--color-success)', fontWeight: 600 }}>
+                    <CheckCircle size={13} /> Live
+                  </span>
+                )}
+                <button className="frappe-btn frappe-btn-secondary" onClick={handlePreview}>
+                  <Eye size={15} /> <span>Preview</span>
+                </button>
+                <button className="frappe-btn frappe-btn-secondary" onClick={handleSaveDraft}>
+                  {savingState === 'saving' ? 'Saving…' : savingState === 'saved' ? 'Saved ✓' : 'Save Draft'}
+                </button>
+              </>
+            )}
+            {activeTab === 'editor' ? (
+              <button className="frappe-btn frappe-btn-primary" onClick={handlePublishPage}>
+                <CheckCircle size={15} />
+                <span>{editingPage?.status === 'PUBLISHED' ? 'Update Live' : 'Publish'}</span>
+              </button>
+            ) : (
+              <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+                <PlusCircle size={15} />
+                <span>New Page</span>
+              </button>
+            )}
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            {activeTab === 'list' ? 'Manage your public-facing pages' : `Visual Editor: ${editingPage?.name}`}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          {activeTab === 'editor' && (
-            <>
-              <button className="frappe-btn frappe-btn-secondary" onClick={() => { setActiveTab('list'); setEditingPageId(null); }}>
-                Back to List
-              </button>
-              {editingPage?.status === 'PUBLISHED' && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: 'var(--color-success)', fontWeight: 600 }}>
-                  <CheckCircle size={13} /> Live
-                </span>
-              )}
-              <button className="frappe-btn frappe-btn-secondary" onClick={handlePreview}>
-                <Eye size={15} /> <span>Preview</span>
-              </button>
-              <button className="frappe-btn frappe-btn-secondary" onClick={handleSaveDraft}>
-                {savingState === 'saving' ? 'Saving…' : savingState === 'saved' ? 'Saved ✓' : 'Save Draft'}
-              </button>
-            </>
-          )}
-          {activeTab === 'editor' ? (
-            <button className="frappe-btn frappe-btn-primary" onClick={handlePublishPage}>
-              <CheckCircle size={15} />
-              <span>{editingPage?.status === 'PUBLISHED' ? 'Update Live' : 'Publish'}</span>
-            </button>
-          ) : (
-            <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
-              <PlusCircle size={15} />
-              <span>New Page</span>
-            </button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {activeTab === 'list' && (
-        <div className="frappe-card" style={{ flexGrow: 1, overflow: 'auto' }}>
-          <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)' }}>
-            <div className="frappe-input" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexGrow: 1, background: 'var(--color-bg)' }}>
-              <Search size={16} style={{ color: 'var(--color-text-tertiary)' }} />
-              <input 
-                type="text" 
-                placeholder="Search pages..." 
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: 'var(--text-sm)' }}
-              />
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', flexGrow: 1 }}>
+          <div style={{ position: 'relative', maxWidth: '28rem' }}>
+            <Search size={15} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+            <input className="frappe-input" type="text" placeholder="Search pages..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-8)' }} />
           </div>
-          <table className="frappe-table">
-            <thead>
-              <tr>
-                <th>Page Name</th>
-                <th>URL Slug</th>
-                <th>Status</th>
-                <th>Visibility</th>
-                <th style={{ width: '120px' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((page: any) => (
-                <tr key={page.id} style={{ cursor: 'pointer' }} onClick={() => { setEditingPageId(page.id); setActiveTab('editor'); }}>
-                  <td style={{ fontWeight: 'var(--weight-medium)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <FileText size={16} style={{ color: 'var(--color-text-tertiary)' }} />
-                      {page.name}
-                    </div>
-                  </td>
-                  <td style={{ color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>/{page.slug}</td>
-                  <td>
-                    <span className={`frappe-badge ${page.status === 'PUBLISHED' ? 'frappe-badge-success' : 'frappe-badge-warning'}`}>
-                      {page.status || 'DRAFT'}
-                    </span>
-                  </td>
-                  <td>{page.visibility || 'PUBLIC'}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px' }} onClick={(e) => { e.stopPropagation(); setEditingItem(page); setIsModalOpen(true); }}>
-                        <Edit3 size={14} />
-                      </button>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px', color: 'var(--color-danger)' }} onClick={(e) => { e.stopPropagation(); deleteItem(page.id); }}>
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-tertiary)' }}>
-                    No pages found matching your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <DataTable<any>
+            columns={[
+              {
+                key: 'name',
+                header: 'Page Name',
+                render: (row: any) => (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 'var(--weight-medium)' }}>
+                    <FileText size={16} style={{ color: 'var(--color-text-tertiary)' }} />
+                    {row.name}
+                  </div>
+                ),
+              },
+              {
+                key: 'slug',
+                header: 'URL Slug',
+                render: (row: any) => <span style={{ fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>/{row.slug}</span>,
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                render: (row: any) => (
+                  <span className={`frappe-badge ${row.status === 'PUBLISHED' ? 'frappe-badge-success' : 'frappe-badge-warning'}`}>
+                    {row.status || 'DRAFT'}
+                  </span>
+                ),
+              },
+              {
+                key: 'visibility',
+                header: 'Visibility',
+                render: (row: any) => <span>{row.visibility || 'PUBLIC'}</span>,
+              },
+              {
+                key: 'actions',
+                header: 'Actions',
+                width: '120px',
+                render: (row: any) => (
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }} onClick={(e) => e.stopPropagation()}>
+                    <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px' }} onClick={() => { setEditingItem(row); setIsModalOpen(true); }}>
+                      <Edit3 size={14} />
+                    </button>
+                    <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px', color: 'var(--color-danger)' }} onClick={() => setDeleteTarget(row.id)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
+            data={filtered}
+            rowKey={(row: any) => row.id}
+            onRowClick={(row: any) => { setEditingPageId(row.id); setActiveTab('editor'); }}
+            emptyTitle="No pages found"
+            emptyMessage="No pages found matching your search."
+          />
         </div>
       )}
 
@@ -539,6 +532,15 @@ function WebBuilderPagesPageContent() {
           { name: 'visibility', label: 'Visibility', type: 'select', options: [{label:'Public', value:'PUBLIC'}, {label:'Unlisted', value:'UNLISTED'}] }
         ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { deleteItem(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Page"
+        message="Are you sure you want to delete this page? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

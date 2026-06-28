@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   Database, Plus, Search, Trash2, Edit3, Star, ArrowLeft, X, Sparkles, Layers,
   CheckCircle, Circle, Eye, Wand2, Globe, FileText, GripVertical,
@@ -263,14 +264,15 @@ export default function WebCollectionsPage() {
 
   const openCollection = async (col: any) => { setActive(col); setStatusFilter('ALL'); setItemSearch(''); };
 
+  const [deleteCollectionTarget, setDeleteCollectionTarget] = useState<string | null>(null);
+  const [deleteItemTarget, setDeleteItemTarget] = useState<string | null>(null);
+
   const deleteCollection = async (id: string) => {
-    if (!confirm('Delete this collection and all its entries?')) return;
     await api(`web-collections/${id}`, { method: 'DELETE' });
     fetchCollections();
   };
 
   const deleteItem = async (id: string) => {
-    if (!confirm('Delete this entry?')) return;
     await api(`web-collections/${active.id}/items/${id}`, { method: 'DELETE' });
     fetchItems(active);
   };
@@ -321,7 +323,7 @@ export default function WebCollectionsPage() {
                   <td>
                     <div style={{ display: 'flex', gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px' }} onClick={() => setEditingItem(it)}><Edit3 size={13} /></button>
-                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px', color: 'var(--color-danger)' }} onClick={() => deleteItem(it.id)}><Trash2 size={13} /></button>
+                      <button className="frappe-btn frappe-btn-secondary" style={{ padding: '4px 8px', color: 'var(--color-danger)' }} onClick={() => setDeleteItemTarget(it.id)}><Trash2 size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -334,6 +336,15 @@ export default function WebCollectionsPage() {
         {editingItem !== undefined && (
           <EntryEditor collection={active} item={editingItem} onClose={() => setEditingItem(undefined)} onSaved={() => { setEditingItem(undefined); fetchItems(active); fetchCollections(); }} />
         )}
+        <ConfirmDialog
+          open={!!deleteItemTarget}
+          onClose={() => setDeleteItemTarget(null)}
+          onConfirm={() => { if (deleteItemTarget) { deleteItem(deleteItemTarget); setDeleteItemTarget(null); } }}
+          title="Delete Entry"
+          message="Are you sure you want to delete this entry?"
+          confirmLabel="Delete"
+          variant="danger"
+        />
       </div>
     );
   }
@@ -341,19 +352,16 @@ export default function WebCollectionsPage() {
   // ── Collections list view ──
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 4 }}>
-            <Database size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>CMS Collections</h1>
+      <PageHeader
+        title="CMS Collections"
+        description="Model dynamic content — products, projects, team, testimonials — for your website"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => setShowCreate(true)}><Plus size={15} /> New Collection</button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Model dynamic content — products, projects, team, testimonials — for your website</p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => setShowCreate(true)}><Plus size={15} /> New Collection</button>
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 'var(--space-4)' }}>{[1, 2, 3].map((i) => <div key={i} className="frappe-card" style={{ height: 130, animation: 'pulse 1.5s ease-in-out infinite' }} />)}</div>
@@ -378,7 +386,7 @@ export default function WebCollectionsPage() {
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>/{c.slug}</div>
                   </div>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); deleteCollection(c.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={15} /></button>
+                <button onClick={(e) => { e.stopPropagation(); setDeleteCollectionTarget(c.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={15} /></button>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
                 <span><strong style={{ color: 'var(--color-text)' }}>{c.itemCount ?? 0}</strong> entries</span>
@@ -391,6 +399,15 @@ export default function WebCollectionsPage() {
       )}
 
       {showCreate && <CreateCollectionModal onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); fetchCollections(); }} />}
+      <ConfirmDialog
+        open={!!deleteCollectionTarget}
+        onClose={() => setDeleteCollectionTarget(null)}
+        onConfirm={() => { if (deleteCollectionTarget) { deleteCollection(deleteCollectionTarget); setDeleteCollectionTarget(null); } }}
+        title="Delete Collection"
+        message="Are you sure you want to delete this collection and all its entries? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
       <style>{`@keyframes pulse {0%,100%{opacity:1}50%{opacity:.5}}`}</style>
     </div>
   );

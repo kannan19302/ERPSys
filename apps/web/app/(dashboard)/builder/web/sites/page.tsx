@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { apiGet, apiPost, apiDelete } from '@/lib/api';
 import { Globe, Plus, Trash2, ExternalLink, Settings, FileText, Bot } from 'lucide-react';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ export default function SitesListPage() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -25,21 +27,17 @@ export default function SitesListPage() {
     setCreating(true);
     try { await apiPost('/builder/web-studio/sites', { name: name.trim() }); setName(''); await load(); } finally { setCreating(false); }
   };
-  const remove = async (id: string) => {
-    if (!confirm('Delete this site and all its pages?')) return;
+  const executeRemove = async (id: string) => {
     await apiDelete(`/builder/web-studio/sites/${id}`);
     await load();
   };
 
   return (
     <div style={{ padding: 'var(--space-6)', maxWidth: 980, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-        <Globe size={24} style={{ color: 'var(--color-primary)' }} />
-        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', margin: 0 }}>Sites</h1>
-      </div>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-5)' }}>
-        Build and manage multiple websites. Each site can have its own pages, blog, docs, collections, store, chatbot, and custom domain.
-      </p>
+      <PageHeader
+        title="Sites"
+        description="Build and manage multiple websites. Each site can have its own pages, blog, docs, collections, store, chatbot, and custom domain."
+      />
 
       {/* Create */}
       <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
@@ -75,7 +73,7 @@ export default function SitesListPage() {
                   <Link href={`/builder/web/sites/${site.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 'var(--text-sm)', textDecoration: 'none', cursor: 'pointer' }}>
                     <Settings size={14} /> Manage
                   </Link>
-                  <button onClick={() => remove(site.id)} style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-danger, #dc2626)', cursor: 'pointer' }}>
+                  <button onClick={() => setDeleteTarget(site.id)} style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-danger, #dc2626)', cursor: 'pointer' }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -84,6 +82,15 @@ export default function SitesListPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeRemove(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Site"
+        message="Are you sure you want to delete this site and all its pages? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

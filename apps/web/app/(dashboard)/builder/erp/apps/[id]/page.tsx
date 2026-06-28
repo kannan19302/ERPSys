@@ -40,6 +40,7 @@ import {
   MonitorPlay,
   List as ListIcon,
 } from 'lucide-react';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { DynamicFormRenderer } from '@/components/builder/DynamicFormRenderer';
 import { FormBuilderWorkspace } from '@/components/builder/FormBuilderWorkspace';
 import { PageBuilderWorkspace } from '@/components/builder/PageBuilderWorkspace';
@@ -559,10 +560,10 @@ function OverviewSection({ app, onUpdate }: { app: AppModule; onUpdate: (data: a
 
 function ComponentListSection({ app, type, typeLabel, icon: Icon, onRefresh, onBuildNew, onEditItem }: { app: AppModule; type: string; typeLabel: string; icon: React.ComponentType<any>; onRefresh: () => void; onBuildNew?: () => void; onEditItem?: (refId: string) => void }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [deleteComponentTarget, setDeleteComponentTarget] = useState<{ id: string; name: string } | null>(null);
   const components = (Array.isArray(app.components) ? app.components : []).filter(c => c.type === type);
 
   const handleRemove = async (componentId: string) => {
-    if (!confirm(`Remove this ${typeLabel.toLowerCase()} from the app?`)) return;
     const token = localStorage.getItem('token');
     await fetch(`/api/v1/builder/modules/${app.id}/components/${componentId}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token || ''}` },
@@ -607,7 +608,7 @@ function ComponentListSection({ app, type, typeLabel, icon: Icon, onRefresh, onB
                     <Pencil size={15} />
                   </button>
                 )}
-                <button onClick={() => handleRemove(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}
+                <button onClick={() => setDeleteComponentTarget({ id: c.id, name: c.name })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#dc2626')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
                   <Trash2 size={16} />
                 </button>
@@ -617,16 +618,25 @@ function ComponentListSection({ app, type, typeLabel, icon: Icon, onRefresh, onB
         </div>
       )}
       <AddComponentModal isOpen={showAdd} onClose={() => setShowAdd(false)} type={type as any} appId={app.id} onSuccess={() => { setShowAdd(false); onRefresh(); }} />
+      <ConfirmDialog
+        open={!!deleteComponentTarget}
+        onClose={() => setDeleteComponentTarget(null)}
+        onConfirm={() => { if (deleteComponentTarget) { handleRemove(deleteComponentTarget.id); setDeleteComponentTarget(null); } }}
+        title={`Remove ${typeLabel}`}
+        message={`Are you sure you want to remove this ${typeLabel.toLowerCase()} from the app?`}
+        confirmLabel="Remove"
+        variant="danger"
+      />
     </div>
   );
 }
 
 function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder, onDesignLayout }: { app: AppModule; onRefresh: () => void; forms: any[]; onLaunchFormBuilder: (draft: { name: string; slug: string; type: string }) => void; onDesignLayout: (page: any) => void }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [deletePageTarget, setDeletePageTarget] = useState<{ id: string, name: string } | null>(null);
   const pages = Array.isArray(app.pages) ? app.pages : [];
 
   const handleRemove = async (pageId: string) => {
-    if (!confirm('Remove this page?')) return;
     const token = localStorage.getItem('token');
     await fetch(`/api/v1/builder/modules/${app.id}/pages/${pageId}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token || ''}` },
@@ -665,7 +675,7 @@ function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder, onDesignLayo
                     <Pencil size={12} /> Design Layout
                   </button>
                 )}
-                <button onClick={() => handleRemove(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={16} /></button>
+                <button onClick={() => setDeletePageTarget({ id: p.id, name: p.name })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={16} /></button>
               </div>
             </div>
           ))}
@@ -674,16 +684,25 @@ function PagesSection({ app, onRefresh, forms, onLaunchFormBuilder, onDesignLayo
       <AddPageModal isOpen={showAdd} onClose={() => setShowAdd(false)} appId={app.id} forms={forms}
         onLaunchFormBuilder={(draft) => { setShowAdd(false); onLaunchFormBuilder(draft); }}
         onSuccess={() => { setShowAdd(false); onRefresh(); }} />
+      <ConfirmDialog
+        open={!!deletePageTarget}
+        onClose={() => setDeletePageTarget(null)}
+        onConfirm={() => { if (deletePageTarget) { handleRemove(deletePageTarget.id); setDeletePageTarget(null); } }}
+        title="Remove Page"
+        message={`Are you sure you want to remove page "${deletePageTarget?.name}"?`}
+        confirmLabel="Remove"
+        variant="danger"
+      />
     </div>
   );
 }
 
 function DataModelsSection({ app, onRefresh }: { app: AppModule; onRefresh: () => void }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [deleteModelTarget, setDeleteModelTarget] = useState<{ id: string, name: string } | null>(null);
   const dataModels = Array.isArray(app.dataModels) ? app.dataModels : [];
 
   const handleRemove = async (dmId: string) => {
-    if (!confirm('Remove this data model?')) return;
     const token = localStorage.getItem('token');
     await fetch(`/api/v1/builder/modules/${app.id}/data-models/${dmId}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token || ''}` },
@@ -692,42 +711,53 @@ function DataModelsSection({ app, onRefresh }: { app: AppModule; onRefresh: () =
   };
 
   return (
-    <div>
-      <SectionHeader title="Data Models" subtitle="Define custom data structures for your app" action={<AddButton onClick={() => setShowAdd(true)} label="Add Data Model" />} />
-      {dataModels.length === 0 ? (
-        <EmptyState icon={Database} title="No data models yet" description="Define the data structures that power your app."
-          action={<AddButton onClick={() => setShowAdd(true)} label="Add Data Model" />} />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          {dataModels.map((dm: any) => (
-            <div key={dm.id} style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <Database size={18} style={{ color: 'var(--color-primary)' }} />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>{dm.name}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{(dm.fields || []).length} fields</div>
+    <>
+      <div>
+        <SectionHeader title="Data Models" subtitle="Define custom data structures for your app" action={<AddButton onClick={() => setShowAdd(true)} label="Add Data Model" />} />
+        {dataModels.length === 0 ? (
+          <EmptyState icon={Database} title="No data models yet" description="Define the data structures that power your app."
+            action={<AddButton onClick={() => setShowAdd(true)} label="Add Data Model" />} />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            {dataModels.map((dm: any) => (
+              <div key={dm.id} style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <Database size={18} style={{ color: 'var(--color-primary)' }} />
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>{dm.name}</div>
+                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{(dm.fields || []).length} fields</div>
+                    </div>
                   </div>
+                  <button onClick={() => setDeleteModelTarget({ id: dm.id, name: dm.name })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={16} /></button>
                 </div>
-                <button onClick={() => handleRemove(dm.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}><Trash2 size={16} /></button>
+                {dm.fields && dm.fields.length > 0 && (
+                  <div style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-bg-subtle)' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                      {dm.fields.map((f: any, i: number) => (
+                        <span key={i} style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>
+                          {f.name}: {f.type}{f.required ? ' *' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              {dm.fields && dm.fields.length > 0 && (
-                <div style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-bg-subtle)' }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                    {dm.fields.map((f: any, i: number) => (
-                      <span key={i} style={{ fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>
-                        {f.name}: {f.type}{f.required ? ' *' : ''}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      <AddDataModelModal isOpen={showAdd} onClose={() => setShowAdd(false)} appId={app.id} onSuccess={() => { setShowAdd(false); onRefresh(); }} />
-    </div>
+            ))}
+          </div>
+        )}
+        <AddDataModelModal isOpen={showAdd} onClose={() => setShowAdd(false)} appId={app.id} onSuccess={() => { setShowAdd(false); onRefresh(); }} />
+      </div>
+      <ConfirmDialog
+        open={!!deleteModelTarget}
+        onClose={() => setDeleteModelTarget(null)}
+        onConfirm={() => { if (deleteModelTarget) { handleRemove(deleteModelTarget.id); setDeleteModelTarget(null); } }}
+        title="Remove Data Model"
+        message={`Are you sure you want to remove data model "${deleteModelTarget?.name}"?`}
+        confirmLabel="Remove"
+        variant="danger"
+      />
+    </>
   );
 }
 
@@ -1010,6 +1040,8 @@ function PublishSection({ app, onRefresh }: { app: AppModule; onRefresh: () => v
   const [releases, setReleases] = useState<any[]>([]);
   const [rollingBack, setRollingBack] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [rollbackTarget, setRollbackTarget] = useState<{ releaseId: string; version: string } | null>(null);
+  const [unpublishConfirm, setUnpublishConfirm] = useState(false);
 
   const testResults = app.testResults && typeof app.testResults === 'object' && !Array.isArray(app.testResults) ? app.testResults as any : {};
   const testScore = testResults.score ?? null;
@@ -1053,7 +1085,6 @@ function PublishSection({ app, onRefresh }: { app: AppModule; onRefresh: () => v
   };
 
   const handleUnpublish = async () => {
-    if (!confirm('Unpublish this app? It will be removed from the App Store but existing installs stay intact.')) return;
     setUnpublishing(true);
     const token = localStorage.getItem('token');
     await fetch(`/api/v1/builder/modules/${app.id}/unpublish`, { method: 'POST', headers: { Authorization: `Bearer ${token || ''}` } });
@@ -1061,8 +1092,7 @@ function PublishSection({ app, onRefresh }: { app: AppModule; onRefresh: () => v
     onRefresh();
   };
 
-  const handleRollback = async (releaseId: string, version: string) => {
-    if (!confirm(`Roll the live app back to v${version}? This restores that release's components, pages and data models.`)) return;
+  const handleRollback = async (releaseId: string) => {
     setRollingBack(releaseId);
     const token = localStorage.getItem('token');
     await fetch(`/api/v1/builder/modules/${app.id}/rollback`, {
@@ -1110,7 +1140,7 @@ function PublishSection({ app, onRefresh }: { app: AppModule; onRefresh: () => v
             </div>
           </div>
           {isPublished && (
-            <button onClick={handleUnpublish} disabled={unpublishing}
+            <button onClick={() => setUnpublishConfirm(true)} disabled={unpublishing}
               style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: '1px solid #dc2626', background: 'transparent', color: '#dc2626', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-sm)' }}>
               {unpublishing ? 'Unpublishing...' : 'Unpublish'}
             </button>
@@ -1213,7 +1243,7 @@ function PublishSection({ app, onRefresh }: { app: AppModule; onRefresh: () => v
                     </div>
                   </div>
                   {!isCurrent && (
-                    <button onClick={() => handleRollback(r.id, r.version)} disabled={rollingBack === r.id}
+                    <button onClick={() => setRollbackTarget({ releaseId: r.id, version: r.version })} disabled={rollingBack === r.id}
                       style={{ display: 'flex', alignItems: 'center', gap: 4, padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-xs)' }}>
                       <RotateCcw size={12} /> {rollingBack === r.id ? 'Restoring...' : 'Rollback'}
                     </button>
@@ -1224,6 +1254,24 @@ function PublishSection({ app, onRefresh }: { app: AppModule; onRefresh: () => v
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={unpublishConfirm}
+        onClose={() => setUnpublishConfirm(false)}
+        onConfirm={() => { handleUnpublish(); setUnpublishConfirm(false); }}
+        title="Unpublish App"
+        message="Are you sure you want to unpublish this app? It will be removed from the App Store but existing installs stay intact."
+        confirmLabel="Unpublish"
+        variant="danger"
+      />
+      <ConfirmDialog
+        open={!!rollbackTarget}
+        onClose={() => setRollbackTarget(null)}
+        onConfirm={() => { if (rollbackTarget) { handleRollback(rollbackTarget.releaseId); setRollbackTarget(null); } }}
+        title="Rollback Release"
+        message={`Are you sure you want to roll the live app back to v${rollbackTarget?.version}? This restores that release's components, pages and data models.`}
+        confirmLabel="Rollback"
+        variant="danger"
+      />
     </div>
   );
 }
@@ -1248,6 +1296,12 @@ export default function AppStudioPage() {
   // Embedded workflow + dashboard editor overlays.
   const [workflowBuilder, setWorkflowBuilder] = useState<{ workflowId: string; pendingLink: boolean } | null>(null);
   const [dashboardBuilder, setDashboardBuilder] = useState<{ dashboardId: string; pendingLink: boolean } | null>(null);
+
+  // Modal confirm targets
+  const [deletePageTarget, setDeletePageTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteModelTarget, setDeleteModelTarget] = useState<{ id: string; name: string } | null>(null);
+  const [unpublishConfirm, setUnpublishConfirm] = useState<boolean>(false);
+  const [rollbackTarget, setRollbackTarget] = useState<{ releaseId: string; version: string } | null>(null);
 
   // Generic link-on-save for workflow/dashboard so users never leave the studio.
   const linkComponentToApp = useCallback(async (type: 'workflow' | 'dashboard', refId: string, name: string) => {

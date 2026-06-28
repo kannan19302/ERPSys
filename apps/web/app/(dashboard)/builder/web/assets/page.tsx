@@ -4,6 +4,7 @@ import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { Image, PlusCircle, Search, Trash2, Download, Copy, Upload, Grid3X3, List, FileText, Film, Music, Archive } from 'lucide-react';
 
 const TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = {
@@ -57,10 +58,10 @@ function WebAssetsPageContent() {
     }
   };
 
-  const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this asset?')) {
-      await deleteItem(id);
-    }
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+  const executeDeleteAsset = async (id: any) => {
+    await deleteItem(id);
   };
 
   const router = useRouter();
@@ -72,19 +73,16 @@ function WebAssetsPageContent() {
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Image size={20} style={{ color: '#059669' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>Asset Manager</h1>
+      <PageHeader
+        title="Asset Manager"
+        description="Upload and organize media assets for your website and ERP templates"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}><Upload size={15} /><span>Upload Files</span></button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Upload and organize media assets for your website and ERP templates</p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Builder</button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}><Upload size={15} /><span>Upload Files</span></button>
-        </div>
-      </div>
+        }
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 'var(--space-4)' }}>
         {/* Folder Sidebar */}
@@ -146,7 +144,7 @@ function WebAssetsPageContent() {
                     <div style={{ display: 'flex', gap: 'var(--space-1)', marginTop: 'var(--space-2)' }}>
                       <button onClick={() => window.open(asset.url, '_blank')} className="frappe-btn frappe-btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1)' }}><Download size={11} /></button>
                       <button onClick={() => { setEditingItem(asset); setIsModalOpen(true); }} className="frappe-btn frappe-btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1)' }}><Copy size={11} /></button>
-                      <button onClick={() => handleDelete(asset.id)} className="frappe-btn" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={11} /></button>
+                      <button onClick={() => setDeleteTarget(asset.id)} className="frappe-btn" style={{ flex: 1, justifyContent: 'center', padding: 'var(--space-1)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}><Trash2 size={11} /></button>
                     </div>
                   </div>
                 );
@@ -187,7 +185,7 @@ function WebAssetsPageContent() {
                           <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                             <button onClick={() => window.open(asset.url, '_blank')} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }}><Download size={11} /></button>
                             <button onClick={() => { setEditingItem(asset); setIsModalOpen(true); }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1) var(--space-2)' }}><Copy size={11} /></button>
-                            <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => handleDelete(asset.id)}><Trash2 size={11} /></button>
+                            <button className="frappe-btn" style={{ padding: 'var(--space-1) var(--space-2)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }} onClick={() => setDeleteTarget(asset.id)}><Trash2 size={11} /></button>
                           </div>
                         </td>
                       </tr>
@@ -207,6 +205,15 @@ function WebAssetsPageContent() {
         title={editingItem ? "Edit Asset" : "Upload Asset"}
         fields={[ { name: 'name', label: 'Name', type: 'text', required: true }, { name: 'type', label: 'Type (IMAGE/VIDEO/DOCUMENT)', type: 'text', required: true }, { name: 'url', label: 'URL', type: 'text', required: true }, { name: 'sizeBytes', label: 'Size (bytes)', type: 'number' }, { name: 'uploadedBy', label: 'Uploaded By', type: 'text' } ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeleteAsset(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Asset"
+        message="Are you sure you want to delete this asset? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

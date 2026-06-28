@@ -2,9 +2,15 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    env: {
+      NEXTAUTH_SECRET: 'test_secret_for_vitest_unit_runs',
+    },
+    testTimeout: 10000,
+    hookTimeout: 10000,
     pool: 'forks',
     poolOptions: {
       forks: {
+        execArgv: ['--max-old-space-size=8192'],
         minForks: 1,
         maxForks: process.env.CI ? 1 : 2,
       },

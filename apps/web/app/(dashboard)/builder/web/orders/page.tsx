@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import { ShoppingCart, Package, DollarSign, Clock, Trash2, Search } from 'lucide-react';
 
 const api = (path: string, opts: RequestInit = {}) => {
@@ -25,6 +26,7 @@ export default function WebOrdersPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -43,8 +45,7 @@ export default function WebOrdersPage() {
     fetchData();
     if (selected?.id === id) setSelected({ ...selected, status });
   };
-  const del = async (id: string) => {
-    if (!confirm('Delete this order?')) return;
+  const executeDeleteOrder = async (id: string) => {
     await api(`web-orders/${id}`, { method: 'DELETE' });
     if (selected?.id === id) setSelected(null);
     fetchData();
@@ -61,16 +62,11 @@ export default function WebOrdersPage() {
 
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 4 }}>
-            <ShoppingCart size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', margin: 0, color: 'var(--color-text)' }}>Orders</h1>
-          </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>Storefront orders placed from your public website</p>
-        </div>
-        <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>
-      </div>
+      <PageHeader
+        title="Orders"
+        description="Storefront orders placed from your public website"
+        actions={<button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/web')}>← Web Studio</button>}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--space-4)' }}>
         {statCards.map((s, i) => (
@@ -147,11 +143,20 @@ export default function WebOrdersPage() {
               {STATUSES.map((s) => (
                 <button key={s} onClick={() => setStatus(selected.id, s)} style={{ padding: '4px 10px', borderRadius: 'var(--radius-md)', border: selected.status === s ? '1px solid var(--color-primary)' : '1px solid var(--color-border)', background: selected.status === s ? 'var(--color-primary-bg)' : 'transparent', color: selected.status === s ? 'var(--color-primary)' : 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 600 }}>{s}</button>
               ))}
-              <button onClick={() => del(selected.id)} className="frappe-btn frappe-btn-secondary" style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)' }}><Trash2 size={13} /> Delete</button>
+              <button onClick={() => setDeleteTarget(selected.id)} className="frappe-btn frappe-btn-secondary" style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)' }}><Trash2 size={13} /> Delete</button>
             </div>
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeleteOrder(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Order"
+        message="Are you sure you want to delete this order? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

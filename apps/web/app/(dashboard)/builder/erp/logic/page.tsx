@@ -3,6 +3,7 @@ import { GenericBuilderModal } from '@/components/builder/GenericBuilderModal';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   Zap,
   PlusCircle,
@@ -124,8 +125,9 @@ export default function ERPLogicPage() {
     } catch {}
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this rule?')) return;
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const executeDeleteRule = async (id: string) => {
     try {
       const token = localStorage.getItem('token') || '';
       await fetch(`/api/v1/builder/automation-rules/${id}`, {
@@ -176,27 +178,20 @@ export default function ERPLogicPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Zap size={20} style={{ color: '#7c3aed' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Business Logic & Automation
-            </h1>
+      <PageHeader
+        title="Business Logic & Automation"
+        description="Visual rule engine for trigger-based automations, scheduled jobs, and cross-module logic"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+              ← App Studio
+            </button>
+            <button onClick={handleSaveAndActivate} className="frappe-btn frappe-btn-primary">
+              <Play size={14} /> Save & Activate
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Visual rule engine for trigger-based automations, scheduled jobs, and cross-module logic
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← App Studio
-          </button>
-          <button onClick={handleSaveAndActivate} className="frappe-btn frappe-btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
-            <Play size={14} /> Save & Activate
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stats Bar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
@@ -269,7 +264,7 @@ export default function ERPLogicPage() {
                         ? <button onClick={() => handleToggleStatus(rule)} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Pause size={12} /></button>
                         : <button onClick={() => handleToggleStatus(rule)} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}><Play size={12} /></button>
                       }
-                      <button onClick={() => handleDelete(rule.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
+                      <button onClick={() => setDeleteTarget(rule.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -496,6 +491,15 @@ export default function ERPLogicPage() {
         title={editingItem ? "Edit Item" : "Create New"}
         fields={[ { name: 'name', label: 'Name', type: 'text', required: true }, { name: 'trigger', label: 'Trigger', type: 'text', required: true } ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { executeDeleteRule(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Automation Rule"
+        message="Are you sure you want to delete this automation rule?"
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

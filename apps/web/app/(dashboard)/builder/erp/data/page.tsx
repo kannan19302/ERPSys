@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
+import { PageHeader } from '@unerp/ui';
 import {
   Upload,
   Download,
@@ -139,25 +140,18 @@ export default function DataImportPage() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div className="builder-header">
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Upload size={20} style={{ color: '#059669' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Data Import
-            </h1>
+      <PageHeader
+        title="Data Import"
+        description="Import records from CSV/Excel files into any ERP module"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>← App Studio</button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => setShowWizard(true)}>
+              <Upload size={15} /> <span>New Import</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Import records from CSV/Excel files into any ERP module
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>← App Studio</button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => setShowWizard(true)}>
-            <Upload size={15} /> <span>New Import</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Import Wizard Modal */}
       {showWizard && (

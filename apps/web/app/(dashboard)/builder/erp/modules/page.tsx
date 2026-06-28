@@ -6,6 +6,7 @@ import { useBuilderData } from '@/lib/hooks/useBuilderData';
 
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader, ConfirmDialog } from '@unerp/ui';
 import {
   Database,
   PlusCircle,
@@ -84,8 +85,9 @@ function ERPModulesPageContent() {
     setIsModalOpen(false);
   };
 
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
   const handleDeleteModule = async (id: string) => {
-    if (!confirm('Delete this module?')) return;
     try {
       const token = localStorage.getItem('token') || '';
       await fetch(`/api/v1/builder/modules/${id}`, {
@@ -108,28 +110,21 @@ function ERPModulesPageContent() {
   return (
     <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-            <Database size={20} style={{ color: '#d97706' }} />
-            <h1 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text)', margin: 0 }}>
-              Custom Modules
-            </h1>
+      <PageHeader
+        title="Custom Modules"
+        description="Define custom DocTypes, data models, relationships, and permissions for new ERP modules"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
+              ← App Studio
+            </button>
+            <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
+              <PlusCircle size={15} />
+              <span>New Module</span>
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-            Define custom DocTypes, data models, relationships, and permissions for new ERP modules
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="frappe-btn frappe-btn-secondary" onClick={() => router.push('/builder/erp')}>
-            ← App Studio
-          </button>
-          <button className="frappe-btn frappe-btn-primary" onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
-            <PlusCircle size={15} />
-            <span>New Module</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Layout: List + Detail */}
       <div style={{ display: 'grid', gridTemplateColumns: selectedModule ? '340px 1fr' : '1fr', gap: 'var(--space-4)' }}>
@@ -210,7 +205,7 @@ function ERPModulesPageContent() {
                   <button onClick={() => { /* Preview module */ }} className="frappe-btn frappe-btn-secondary" style={{ padding: 'var(--space-1.5) var(--space-2.5)' }}>
                     <Eye size={13} />
                   </button>
-                  <button onClick={() => handleDeleteModule(currentMod.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
+                  <button onClick={() => setDeleteTarget(currentMod.id)} className="frappe-btn" style={{ padding: 'var(--space-1.5) var(--space-2.5)', background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -316,6 +311,15 @@ function ERPModulesPageContent() {
         title={editingItem ? "Edit Item" : "Create New"}
         fields={[ { name: 'name', label: 'Name', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'color', label: 'Color', type: 'text' } ]}
         initialData={editingItem}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { handleDeleteModule(deleteTarget); setDeleteTarget(null); } }}
+        title="Delete Module"
+        message="Are you sure you want to delete this module? All associated data will be removed."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );
