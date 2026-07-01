@@ -20,6 +20,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -27,6 +28,11 @@ const MODULES_DIR = path.join(ROOT, 'apps', 'api', 'src', 'modules');
 const COVERAGE_FILE = path.join(ROOT, 'apps', 'api', 'coverage', 'coverage-final.json');
 const OUT_FILE = path.join(ROOT, '.ai', 'SCORECARD.md');
 const CI_FILE = path.join(ROOT, '.github', 'workflows', 'ci.yml');
+// Persisted result of the last reality-gate run (compile + full test suite).
+// The heuristic scores below measure the *presence* of good patterns; these
+// gates measure whether the code actually compiles and its tests pass. A green
+// heuristic over a red gate is exactly the false-confidence this file guards.
+const GATES_FILE = path.join(ROOT, '.ai', 'gates-status.json');
 
 const DIMENSIONS = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'];
 const DIMENSION_LABELS = {
@@ -84,6 +90,43 @@ function loadCoverage() {
     // Malformed coverage — treat as absent.
   }
   return byFile;
+}
+
+/**
+ * Run a command at the repo root, returning pass/fail plus a short detail line.
+ * Output is inherited-then-captured; we only keep the tail for the report.
+ */
+function runCmd(label, command) {
+  const started = Date.now();
+  // `command` is a fixed literal below (no interpolation), so shell:true is safe.
+  const res = spawnSync(command, {
+    cwd: ROOT,
+    shell: true,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const secs = ((Date.now() - started) / 1000).toFixed(0);
+  const pass = res.status === 0;
+  return { label, pass, code: res.status ?? -1, seconds: Number(secs) };
+}
+
+/** Execute the reality gates: everything must compile and the tests must pass. */
+function runGates() {
+  const typecheck = runCmd('Typecheck (tsc --noEmit, all packages)', 'pnpm turbo run typecheck');
+  const tests = runCmd('Unit tests (full API suite)', 'pnpm --filter @unerp/api test');
+  const status = { ranAt: new Date().toISOString(), typecheck, tests };
+  fs.writeFileSync(GATES_FILE, JSON.stringify(status, null, 2), 'utf8');
+  return status;
+}
+
+/** Load the last persisted gate status, or null if never run. */
+function loadGates() {
+  if (!fs.existsSync(GATES_FILE)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(GATES_FILE, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 function scoreModule(name, coverage) {
@@ -242,12 +285,13 @@ function bar(score) {
   return '█'.repeat(filled) + '░'.repeat(10 - filled);
 }
 
-function render(modules, platform) {
+function render(modules, platform, gates) {
   const moduleAvg =
     modules.reduce((s, m) => s + m.overall, 0) / (modules.length || 1);
   const platformAvg =
     Object.values(platform).reduce((a, b) => a + b, 0) / Object.keys(platform).length;
   const systemScore = Math.round(((moduleAvg + platformAvg) / 2) * 10) / 10;
+  const gatesFailed = !!gates && (!gates.typecheck.pass || !gates.tests.pass);
 
   const sorted = [...modules].sort((a, b) => a.overall - b.overall);
 
@@ -257,13 +301,41 @@ function render(modules, platform) {
   lines.push('> **Generated file** — produced by `node scripts/scorecard.mjs`. Do not edit by hand.');
   lines.push(`> Last generated: ${new Date().toISOString()}`);
   lines.push('');
-  lines.push(`## System score: ${systemScore} / 10`);
+  lines.push(`## System score (heuristic): ${systemScore} / 10`);
   lines.push('');
   lines.push(`- Module average: **${Math.round(moduleAvg * 10) / 10} / 10** (${modules.length} modules)`);
   lines.push(`- Platform average: **${Math.round(platformAvg * 10) / 10} / 10**`);
   lines.push('');
+  lines.push('The score below measures the **presence** of good patterns (validation,');
+  lines.push('RBAC, docs, tests) via static heuristics. It is **not** proof of');
+  lines.push('correctness — see the Reality Gates section, which is the binding signal.');
   lines.push('A module reaches **10** only when all seven dimensions are 10. The');
   lines.push('system reaches 10 only when every module and every platform dimension is 10.');
+  lines.push('');
+
+  // Reality gates — actual compile + test outcome, not a heuristic.
+  lines.push('## Reality Gates (binding)');
+  lines.push('');
+  if (!gates) {
+    lines.push('> ⚠️ **Not evaluated in this run.** The heuristic score above does not');
+    lines.push('> imply the code compiles or tests pass. Run `node scripts/scorecard.mjs');
+    lines.push('> --gates` (or the CI `lint-typecheck` + `test` jobs) to verify.');
+  } else {
+    const badge = (g) => (g.pass ? '✅ PASS' : '❌ FAIL');
+    lines.push(`> Last verified: ${gates.ranAt}`);
+    lines.push('');
+    lines.push('| Gate | Result | Exit | Duration |');
+    lines.push('| --- | --- | --- | --- |');
+    lines.push(`| ${gates.typecheck.label} | ${badge(gates.typecheck)} | ${gates.typecheck.code} | ${gates.typecheck.seconds}s |`);
+    lines.push(`| ${gates.tests.label} | ${badge(gates.tests)} | ${gates.tests.code} | ${gates.tests.seconds}s |`);
+    lines.push('');
+    if (gatesFailed) {
+      lines.push('> ❌ **A reality gate is failing. The heuristic score above is void** —');
+      lines.push('> the system is not production-ready until compile and tests are green.');
+    } else {
+      lines.push('> ✅ Code compiles and the full test suite passes.');
+    }
+  }
   lines.push('');
 
   // Rubric
@@ -308,12 +380,17 @@ function render(modules, platform) {
   lines.push('roadmap in the plan that introduced this file.');
   lines.push('');
 
-  return { content: lines.join('\n'), systemScore };
+  return { content: lines.join('\n'), systemScore, gatesFailed };
 }
 
 function main() {
   const check = process.argv.includes('--check');
+  const withGates = process.argv.includes('--gates');
   const coverage = loadCoverage();
+  // Run the reality gates when asked; otherwise surface the last persisted run
+  // (or "not evaluated"). Gates are heavy (full typecheck + test suite) so they
+  // are opt-in for a plain regenerate.
+  const gates = withGates ? runGates() : loadGates();
 
   const moduleNames = fs.existsSync(MODULES_DIR)
     ? fs.readdirSync(MODULES_DIR, { withFileTypes: true })
@@ -324,7 +401,7 @@ function main() {
 
   const modules = moduleNames.map((n) => scoreModule(n, coverage));
   const platform = scorePlatform();
-  const { content, systemScore } = render(modules, platform);
+  const { content, systemScore } = render(modules, platform, gates);
 
   fs.writeFileSync(OUT_FILE, content, 'utf8');
   // eslint-disable-next-line no-console
@@ -332,6 +409,9 @@ function main() {
 
   if (check) {
     const failing = [];
+    // A failing reality gate voids the heuristic score outright.
+    if (gates && !gates.typecheck.pass) failing.push('gate.typecheck=FAIL');
+    if (gates && !gates.tests.pass) failing.push('gate.tests=FAIL');
     for (const m of modules) {
       for (const d of DIMENSIONS) {
         if (m.scores[d] < 10) failing.push(`${m.name}.${d}=${m.scores[d]}`);

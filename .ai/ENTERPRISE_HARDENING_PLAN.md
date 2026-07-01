@@ -62,11 +62,20 @@ a commit. No big-bang rewrites.
          .spec.ts`, so CI never ran the two crashing specs — the OOM could not
          have been caught in CI. Decide: run the full suite in CI (now that it's
          stable) vs. keep coverage-instrumentation scope narrow.
-5. [ ] Upgrade `scripts/scorecard.mjs` to fold in **real** gates: does it compile?
-       does the full test suite pass? coverage thresholds? Presence-checks stay
-       but can no longer produce a 10 on their own.
-**Exit:** CI runs typecheck + lint + full parallel tests on both apps and fails
-on regression; scorecard reflects compile/test reality.
+5. [x] Upgraded `scripts/scorecard.mjs` with **Reality Gates** (binding): a
+       `--gates` mode runs `turbo run typecheck` + the full API test suite,
+       persists the result to `.ai/gates-status.json`, renders a binding
+       PASS/FAIL section, and `--check` fails outright on a red gate. The
+       heuristic headline is now explicitly labelled "presence-based" and void
+       when a gate fails. Regenerating surfaced two real issues the stale
+       (2026-06-27) scorecard hid: a stray `console.error` in
+       `builder.service.ts` (D5 Observability → fixed, now uses the Nest
+       `Logger`) and the fact the scorecard had not been regenerated since.
+**Exit:** ✅ CI runs typecheck + lint + full parallel tests on both apps and
+fails on regression; scorecard reflects compile/test reality (gates green).
+
+**Phase 0 complete.** Honest baseline established: everything compiles, full
+suite green in parallel, gates enforced, quality gates re-armed.
 
 ### Phase 1 — Architecture guardrails & god-class decomposition
 - God-classes to split (SRP): `builder.service.ts` (2,905), `crm.service.ts`

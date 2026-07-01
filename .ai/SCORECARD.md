@@ -1,15 +1,29 @@
 # Production-Readiness Scorecard
 
 > **Generated file** — produced by `node scripts/scorecard.mjs`. Do not edit by hand.
-> Last generated: 2026-06-27T02:16:15.504Z
+> Last generated: 2026-07-01T03:17:11.097Z
 
-## System score: 10 / 10
+## System score (heuristic): 10 / 10
 
 - Module average: **10 / 10** (33 modules)
 - Platform average: **10 / 10**
 
+The score below measures the **presence** of good patterns (validation,
+RBAC, docs, tests) via static heuristics. It is **not** proof of
+correctness — see the Reality Gates section, which is the binding signal.
 A module reaches **10** only when all seven dimensions are 10. The
 system reaches 10 only when every module and every platform dimension is 10.
+
+## Reality Gates (binding)
+
+> Last verified: 2026-07-01T03:17:10.836Z
+
+| Gate | Result | Exit | Duration |
+| --- | --- | --- | --- |
+| Typecheck (tsc --noEmit, all packages) | ✅ PASS | 0 | 11s |
+| Unit tests (full API suite) | ✅ PASS | 0 | 33s |
+
+> ✅ Code compiles and the full test suite passes.
 
 ## Rubric (each dimension scored 0–10)
 

@@ -2890,7 +2890,7 @@ export class BuilderService {
           }
         });
       } catch (err) {
-        console.error('Async build simulation failure:', err);
+        this.logger.error(`Async build ${build.id} failed to finalize`, err instanceof Error ? err.stack : String(err));
       }
     }, 5000);
 
