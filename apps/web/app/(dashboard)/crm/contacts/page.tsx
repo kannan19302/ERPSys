@@ -221,7 +221,7 @@ export default function ContactsPage() {
               className="frappe-input"
             >
               <option value="">Select Customer</option>
-              {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {(customers as Array<{ id: string; name: string }>).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
 

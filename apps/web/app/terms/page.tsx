@@ -86,7 +86,7 @@ export default function TermsOfServicePage() {
             </Link>
             <div style={{ width: 1, height: 16, background: 'var(--color-border-strong)' }} />
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ width: 28, height: 28, borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justify: 'center', color: '#fff' }}><Shield size={16} style={{ margin: 'auto' }} /></div>
+              <div style={{ width: 28, height: 28, borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><Shield size={16} style={{ margin: 'auto' }} /></div>
               <span style={{ fontWeight: 700, letterSpacing: '-0.02em', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>UniERP</span>
             </Link>
           </div>
