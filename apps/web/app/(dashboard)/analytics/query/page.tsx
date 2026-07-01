@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GitFork, Play, Download, Filter, Table, BarChart3, Plus, Trash2, ArrowRight } from 'lucide-react';
+import { GitFork, Play, Download, Filter, Table, BarChart3, Plus, Trash2, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 
 interface QueryField {
   table: string;
@@ -18,6 +18,12 @@ interface FilterRule {
 interface QueryResult {
   columns: string[];
   rows: Record<string, string | number>[];
+}
+
+interface AskDataResponse {
+  answer: string;
+  query: { entity: string; aggregations?: Array<{ field: string; fn: string }> } | null;
+  data: Record<string, unknown>[];
 }
 
 const AVAILABLE_TABLES = [
@@ -44,6 +50,32 @@ export default function VisualQueryBuilderPage() {
   const [activeAggregation, setActiveAggregation] = useState<Record<string, string>>({});
   const [isRunning, setIsRunning] = useState(false);
   const [joins, setJoins] = useState<{ fromTable: string; toTable: string; fromCol: string; toCol: string }[]>([]);
+  const [nlQuestion, setNlQuestion] = useState('');
+  const [nlAsking, setNlAsking] = useState(false);
+  const [nlResult, setNlResult] = useState<AskDataResponse | null>(null);
+  const [nlError, setNlError] = useState('');
+
+  const askInPlainEnglish = async () => {
+    if (!nlQuestion.trim()) return;
+    setNlAsking(true);
+    setNlError('');
+    setNlResult(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/api/v1/ai/ask', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: nlQuestion }),
+      });
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      const data: AskDataResponse = await res.json();
+      setNlResult(data);
+    } catch (e) {
+      setNlError(e instanceof Error ? e.message : 'Could not reach the AI copilot.');
+    } finally {
+      setNlAsking(false);
+    }
+  };
 
   const addField = (table: string, column: string) => {
     const alias = `${table}.${column}`;
@@ -167,6 +199,47 @@ export default function VisualQueryBuilderPage() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Ask in Plain English (AI copilot, grounded in real query execution) */}
+      <div style={{
+        background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)',
+        display: 'flex', flexDirection: 'column', gap: 'var(--space-3)',
+      }}>
+        <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', margin: 0 }}>
+          <Sparkles size={14} style={{ color: 'var(--color-primary)' }} /> Ask in Plain English
+        </h3>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <input
+            value={nlQuestion}
+            onChange={(e) => setNlQuestion(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') askInPlainEnglish(); }}
+            placeholder="e.g. What's our total invoiced amount this quarter?"
+            style={{ flex: 1, padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '13px', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+          />
+          <button onClick={askInPlainEnglish} disabled={nlAsking || !nlQuestion.trim()} style={{
+            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+            background: 'var(--color-primary)', color: '#fff', border: 'none',
+            padding: '8px 16px', borderRadius: 'var(--radius-md)',
+            cursor: nlAsking || !nlQuestion.trim() ? 'not-allowed' : 'pointer',
+            opacity: nlAsking || !nlQuestion.trim() ? 0.5 : 1,
+            fontSize: '13px', fontWeight: 'var(--weight-semibold)',
+          }}>
+            {nlAsking ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} {nlAsking ? 'Thinking…' : 'Ask'}
+          </button>
+        </div>
+        {nlError && <p style={{ color: 'var(--color-error)', fontSize: '12px', margin: 0 }}>{nlError}</p>}
+        {nlResult && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-text)', margin: 0 }}>{nlResult.answer}</p>
+            {nlResult.query && (
+              <p style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', margin: 0 }}>
+                Ran against <strong>{nlResult.query.entity}</strong>{nlResult.query.aggregations?.length ? ` (${nlResult.query.aggregations.map((a) => `${a.fn}(${a.field})`).join(', ')})` : ''} — {nlResult.data.length} row(s) returned.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 'var(--space-5)', alignItems: 'start' }}>

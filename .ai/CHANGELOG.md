@@ -3,6 +3,177 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-01] Public Landing Page UI/UX Revamp & Procurement Controller Fix
+
+Revamped the public landing page with modern interactive capabilities and fixed a NestJS dependency injection startup crash in the Procurement module.
+
+### Added — Landing Page Overhaul
+- **Interactive Dashboard Playground Console**: Replaced the static hero preview with a fully functional 6-tab playground mock panel (Dashboard, Finance, HR, CRM, Inventory, Builder Studio) showcasing interactive states, client actions, list additions, and node simulation animations.
+- **Dynamic Theme Toggle**: Implemented a sun/moon switch in the header to switch between light and dark modes, persisted in `localStorage`.
+- **Floating Glassmorphism Navbar**: Restructured navbar to a floating rounded glassmorphism bar with blur transitions upon scrolling.
+- **Interactive Costing Calculator**: Added a monthly/annual toggle and a team size slider that dynamically updates estimates in real time.
+
+### Fixed — NestJS API Boot Crash
+- **Procurement Dependency Injection**: Added `VendorPortalService` to the `providers` and `exports` list of `ProcurementModule`, resolving a bootstrap DI crash.
+
+---
+
+## [2026-07-01] AI Copilot NL-to-report fix + Project revenue recognition + resource-workload date-scoping fix
+
+Closing out the remaining tractable items from the product-manager gap analysis (schema-dependent
+items — CRM ticketing/SLA, supplier portal, e-auction, POS omnichannel — remain blocked: no live
+Postgres is available in this environment to generate a real Prisma migration).
+
+### Fixed — AI Copilot (`AiCopilotService.askData`)
+- The existing "ask your data" endpoint (`POST /ai/ask`) asked the LLM to freeform "answer" a
+  business question from a hardcoded schema **description only** — it never executed a query
+  against the database. Every answer was a plausible-sounding hallucination (e.g. a fabricated
+  AR balance for "what's our AR total?"). Rewired it to: (1) ask the model to choose a structured
+  query against the real reporting-engine semantic layer, (2) actually execute that query
+  (tenant-scoped, field-allowlisted by `ReportingEngineService.executeQuery`), (3) narrate the
+  *real* result. Refuses ungrounded answers if the model names an entity outside the semantic
+  layer or returns non-JSON, instead of guessing. `AiModule` now imports `ReportingModule`.
+  Added a natural-language "Ask in Plain English" panel to `analytics/query/page.tsx` (the
+  existing Visual Query Builder) so this is actually reachable in the product. 4 new tests
+  proving the answer is grounded in real `executeQuery` output, not the model's imagination.
+- Flagged (not fixed, out of scope for this pass) two more instances of the same "fabricated
+  fallback data" anti-pattern found while investigating: `analytics/query/page.tsx`'s own
+  `runQuery()` (wrong API URL, `Math.random()` fallback data on failure) and
+  `procurement/vendors/[id]/scorecard/page.tsx` (hardcoded demo vendor data on failure).
+
+### Added — Project revenue recognition
+- Verified Resource Capacity Planning was already real (`GET /projects/resource-workload` +
+  `projects/workloads` page) — no work needed. Project revenue recognition was genuinely
+  absent. Built it using **only existing fields** (`Project.budget/startDate/endDate/status`) —
+  no schema change needed: `ProjectsService.getRevenueRecognition` computes time-based
+  percentage-of-completion revenue recognition (elapsed/total duration × budget, clamped, 100%
+  for COMPLETED, 0% for CANCELLED, an explicit "missing data" reason instead of a fabricated
+  number for unscoped projects). New endpoint `GET /projects/revenue-recognition` and page
+  `apps/web/app/(dashboard)/projects/revenue-recognition/page.tsx`, registered in nav +
+  breadcrumbs. 5 new tests.
+
+### Fixed — Resource workload utilization (regression found while verifying it was "already real")
+- `ProjectsService.getResourceWorkload` summed an employee's **entire history** of timesheets
+  with no date filter, then divided that all-time total by a single week's 40-hour capacity —
+  anyone with more than ~1 week of logged hours showed nonsensical utilization (1000%+ for six
+  months of normal timesheets). Scoped to a real 7-day window (defaults to the current week, or
+  an explicit `?weekStart=` query param). 2 new regression tests, including one simulating
+  exactly the six-months-of-history scenario that broke before.
+
+### Verified
+- 381/381 API tests pass across all touched modules. Full API + web typecheck clean, ESLint
+  clean on touched frontend files.
+
+## [2026-07-01] Finite-capacity scheduling (APS) frontend
+
+`SchedulingController`/`SchedulingService` (`apps/api/src/modules/manufacturing/scheduling.*`)
+already implemented real finite-capacity APS — sequencing work orders against actual
+workstation availability (forward/backward from a start date) and BOM cost rollups — but had
+no frontend page, so it was unreachable from the product. Built
+`apps/web/app/(dashboard)/manufacturing/scheduling/page.tsx`: run scheduling with a forward/
+backward algorithm selector, a KPI summary (scheduled/unscheduled/total operations), the
+resulting schedule table (work order → workstation → start/end), an unscheduled-orders callout,
+and a BOM cost lookup tool. Registered the route in the manufacturing sidebar nav
+(`apps/web/src/navigation/moduleNav.tsx`) and breadcrumb segment map
+(`apps/web/src/navigation/registry.tsx`) per the mandatory breadcrumb-navigation rule.
+
+Note: schema changes (e.g. a CRM Case/ticketing model, project resource-allocation model) were
+deliberately deferred this session — no live Postgres instance was available to generate a real
+Prisma migration, and hand-editing migration files is a hard "never do this" rule. Building the
+backend code against a schema change that can't be migrated/verified would be a half-finished,
+unverifiable deliverable. Flagged as the next work item once a dev DB is available.
+
+### Verified
+- Full API + web typecheck clean; ESLint clean on touched frontend files.
+
+## [2026-07-01] RBAC permission-matrix hardening + real Consolidation backend
+
+Continuing the product-manager gap-closure pass. Verified several PM-flagged items were
+already real (Rolling Forecast/xP&A is wired into the budgeting page; Succession Planning
+has full backend+frontend) — no work needed there. Built/fixed two genuine gaps:
+
+### Fixed — RBAC (`RbacGuard`, `hasPermission`)
+- `hasPermission` (`packages/shared/src/utils/index.ts`) had a wildcard-matching bug: a
+  role granted `"finance.invoice.*"` would also match an unrelated permission like
+  `"finance.invoiceapproval.create"`, because the prefix check used a bare `.startsWith()`
+  with no `.` boundary. Fixed to require an exact prefix match or a `.`-delimited boundary.
+- `RbacGuard` (`apps/api/src/common/guards/rbac.guard.ts`) had two `console.log` debug
+  statements dumping the full authenticated user object and all resolved user roles on
+  every permission check — a `AGENTS.md` rule-3 violation and a PII/permission-data log leak.
+  Removed.
+- Added a real permission-matrix test suite closing the exact gap the hardening plan named
+  ("RBAC that is actually enforced, not decorator-presence"): 17 pure-function cases
+  (`packages/shared/src/utils/permission-matrix.test.ts`) + 10 `RbacGuard` integration cases
+  mocking Prisma (`apps/api/src/common/guards/tests/rbac.guard.spec.ts`) — exact match, module
+  and resource wildcards, super-admin `*`, multi-role aggregation, malformed-role handling,
+  and the wildcard-boundary regression, all proving deny-by-default.
+
+### Added — Consolidation (Finance)
+- `finance/advanced/consolidation` was frontend-only: a hardcoded `ENTITIES`/`CONSOLIDATED_TREND`
+  mock array with no backing API call. Built a real backend:
+  - `AdvancedFinanceService.getConsolidation` — live YTD per-entity P&L + balance-sheet totals
+    (reusing `getProfitAndLoss`/`getBalanceSheet`), inter-company eliminations netted from
+    consolidated totals, and a quarterly consolidated trend for the current fiscal year.
+  - `GET /advanced-finance/consolidation/overview` and `GET /advanced-finance/consolidation/runs`
+    (run history) added alongside the existing `POST /consolidation/run`.
+  - Fixed a real bug in the pre-existing `runConsolidation`: it declared `totalRevenue`/
+    `totalExpenses` but never incremented them in the aggregation loop, so every persisted
+    `ConsolidationRun` recorded both as hardcoded 0. Now aggregated the same way as assets/
+    liabilities/equity.
+  - Frontend page rewired to fetch real data and call `POST .../consolidation/run` from the
+    "Run Consolidation" button (previously a no-op `onClick={() => {}}`).
+  - Tests: `apps/api/src/modules/advanced-finance/tests/consolidation.spec.ts` (4 cases,
+    including a check that inter-company eliminations are scoped to the tenant's own
+    organizations, not looked up unbounded).
+
+### Verified
+- `packages/shared`: 18/18 tests pass. `apps/api`: 202/202 advanced-finance tests pass,
+  10/10 new RbacGuard tests pass. Full API + web typecheck clean.
+
+## [2026-07-01] Central tenant-isolation enforcement closed (Enterprise Hardening Phase 2)
+
+Product-manager gap analysis (targeting market-leading ERP functionality) flagged that
+`MODULE_REGISTRY.md` overstates completeness vs. actual code. A follow-up audit confirmed
+most flagged functional gaps (Fixed Assets, revenue recognition, e-invoicing, bank feeds,
+treasury, ATS/benefits, quality management, CLM, POS loyalty, an AI module) are already real —
+but surfaced a live security gap that both the PM analysis and `.ai/ENTERPRISE_HARDENING_PLAN.md`
+independently called the top trust issue: tenant isolation was enforced per-service manually,
+not centrally.
+
+### Fixed
+- `TenantInterceptor` (`apps/api/src/common/guards/tenant.interceptor.ts`) — which binds the
+  authenticated user's `tenantId` to an `AsyncLocalStorage` session consumed by the Prisma
+  client extension — was only wired into 36 of 72 controllers via `@UseInterceptors`. Core
+  modules (finance, hr, crm, inventory, sales, procurement, supply-chain, projects,
+  manufacturing, analytics, documents, communication, pos, notifications, devops, saas, and
+  more) never set the session, so cross-tenant safety for those modules relied entirely on
+  each service remembering to filter by `tenantId` manually.
+- The Prisma extension itself (`packages/database/src/index.ts`) had a bug: it mutated a
+  `typedArgs` copy but called `query(args)` with the original, pre-mutation object. For any
+  call made with no options (e.g. `prisma.invoice.findMany()`, where `args` is `undefined`),
+  the tenant filter was silently dropped.
+
+### Added
+- `TenantInterceptor` is now registered globally via `APP_INTERCEPTOR` in `app.module.ts` —
+  every authenticated request is tenant-scoped by construction.
+- `@SkipTenantScope()` decorator (`common/decorators/skip-tenant-scope.decorator.ts`) for the
+  one legitimate cross-tenant surface, `SuperAdminController` (platform-wide aggregates like
+  `prisma.user.count()`), gated by `system.tenant.*` permissions instead of tenant membership.
+- Extracted the scoping logic into a pure, unit-testable function
+  (`packages/database/src/tenant-scope.ts`) and added `packages/database/src/tenant-isolation.test.ts`
+  (22 cases, including the exact `undefined`-args regression).
+- `packages/database` had **no `test` script and no vitest dependency at all** — its one existing
+  test file (misnamed `tenant-isolation.test.ts`, actually testing PII encryption) had never run
+  in CI. Added `vitest`, a `test`/`test:watch` script, and renamed that file to
+  `encryption.test.ts` to match its actual content (also fixed a missing `beforeAll`/`afterAll`
+  import that had gone unnoticed for the same reason).
+
+### Verified
+- `packages/database`: 26/26 tests pass (22 new tenant-isolation cases + 4 encryption).
+- `apps/api`: typecheck clean; targeted regression run (finance + super-admin + marketplace
+  suites, 69 tests) green — confirms the global interceptor doesn't change existing
+  correctly-scoped behavior, and `SuperAdminController`'s cross-tenant aggregates still work.
+
 ## [2026-06-27] ERP-Wide Dashboard & Visual Overhaul (Phase 2-10)
 
 ### Added

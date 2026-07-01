@@ -12,6 +12,7 @@ import { CrmSalesOpsService } from './crm-salesops.service';
 import { CrmConfigService } from './crm-config.service';
 import { CrmCollaborationService } from './crm-collaboration.service';
 import { CrmDashboardsService } from './crm-dashboards.service';
+import { CrmCasesService } from './crm-cases.service';
 
 const CRM_SERVICES = [
   CrmService,
@@ -26,6 +27,7 @@ const CRM_SERVICES = [
   CrmConfigService,
   CrmCollaborationService,
   CrmDashboardsService,
+  CrmCasesService,
 ];
 
 @Module({

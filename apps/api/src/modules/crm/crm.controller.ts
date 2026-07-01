@@ -1593,4 +1593,60 @@ export class CrmController {
   async getAvailableMetrics() {
     return this.crmService.getAvailableMetrics();
   }
+
+  // ── CASES & SLA ───────────────────────────────
+
+  @ApiOperation({ summary: 'Get customer service cases' })
+  @Permissions('crm.case.read')
+  @Get('cases')
+  async getCases(@Req() req: AuthenticatedRequest, @Query('status') status?: string, @Query('priority') priority?: string, @Query('customerId') customerId?: string) {
+    return this.crmService.getCases(req.user.tenantId, { status, priority, customerId });
+  }
+
+  @ApiOperation({ summary: 'Get case SLA compliance status' })
+  @Permissions('crm.case.read')
+  @Get('cases/sla-status')
+  async getCaseSlaStatus(@Req() req: AuthenticatedRequest) {
+    return this.crmService.getCaseSlaStatus(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get case by id' })
+  @Permissions('crm.case.read')
+  @Get('cases/:id')
+  async getCaseById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getCaseById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create case' })
+  @Permissions('crm.case.create')
+  @Post('cases')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Case')
+  async createCase(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: {
+    subject: string; description?: string; customerId?: string; contactId?: string;
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'; channel?: 'EMAIL' | 'PHONE' | 'CHAT' | 'WEB' | 'API';
+    slaHours?: number; assignedToId?: string;
+  }) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.crmService.createCase(req.user.tenantId, orgId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update case' })
+  @Permissions('crm.case.update')
+  @Patch('cases/:id')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Case', 'id')
+  async updateCase(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: {
+    subject?: string; description?: string; priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    status?: 'OPEN' | 'IN_PROGRESS' | 'WAITING_ON_CUSTOMER' | 'RESOLVED' | 'CLOSED'; assignedToId?: string;
+  }) {
+    return this.crmService.updateCase(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Add a comment to a case' })
+  @Permissions('crm.case.update')
+  @Post('cases/:id/comments')
+  async addCaseComment(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { body: string; isInternal?: boolean }) {
+    return this.crmService.addCaseComment(req.user.tenantId, id, { ...dto, authorId: req.user.userId });
+  }
 }

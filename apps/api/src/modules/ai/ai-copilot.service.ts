@@ -1,35 +1,85 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { AiService } from './ai.service';
+import { ReportingEngineService } from '../reporting/reporting-engine.service';
+
+export interface GeneratedQuery {
+  entity: string;
+  filters?: Record<string, unknown>;
+  groupBy?: string[];
+  orderBy?: string;
+  orderDir?: 'asc' | 'desc';
+  limit?: number;
+  aggregations?: Array<{ field: string; fn: 'SUM' | 'AVG' | 'COUNT' | 'MIN' | 'MAX' }>;
+}
 
 @Injectable()
 export class AiCopilotService {
-  constructor(private ai: AiService) {}
+  constructor(
+    private ai: AiService,
+    private reportingEngine: ReportingEngineService,
+  ) {}
 
+  /**
+   * Natural-language-to-report: translates a plain-English question into a
+   * structured query against the reporting engine's semantic layer, actually
+   * executes it (tenant-scoped, field-allowlisted by `executeQuery`), then
+   * narrates the *real* result.
+   *
+   * The previous implementation asked the LLM to freeform "answer" the
+   * question from a hardcoded schema description alone — it never touched
+   * the database, so every answer was a plausible-sounding hallucination
+   * (e.g. a fabricated total for "what's our AR balance"). This version
+   * only ever lets the model choose *which* query to run; the numbers in
+   * the final answer always come from `executeQuery`'s real output.
+   */
   async askData(tenantId: string, question: string) {
     if (!this.ai.isConfigured()) {
-      return { answer: 'AI is not configured. Set ANTHROPIC_API_KEY.', query: null };
+      return { answer: 'AI is not configured. Set ANTHROPIC_API_KEY.', query: null, data: [] };
     }
 
-    const schema = `Tables: Invoice (invoiceNumber, totalAmount, status, issueDate, dueDate, currency),
-SalesOrder (orderNumber, totalAmount, status, orderDate),
-PurchaseOrder (poNumber, totalAmount, status, orderDate),
-Employee (firstName, lastName, status, hireDate),
-Lead (company, status, score, annualRevenue),
-Product (name, sku, sellPrice, costPrice),
-Customer (name, email, status), Vendor (name, email, status).
-All tables have tenantId. Use Prisma-like pseudo-query syntax.`;
+    const semanticLayer = this.reportingEngine.getSemanticLayer();
+    const schemaDescription = semanticLayer
+      .map((e) => `- "${e.name}" (${e.label}): fields = ${e.fields.map((f) => `${f.name}:${f.type}${f.aggregatable ? '(aggregatable)' : ''}`).join(', ')}`)
+      .join('\n');
 
-    const result = await this.ai.chat([
-      { role: 'system', content: `You are a data analyst for an ERP system. Given this schema:\n${schema}\nAnswer the user's question with: 1) A natural language answer, 2) The pseudo-query you would run. Respond as JSON: {"answer": "...", "query": "..."}` },
+    const planResult = await this.ai.chat([
+      {
+        role: 'system',
+        content: `You translate a business question into a structured report query against these entities:\n${schemaDescription}\n` +
+          `Respond with ONLY a JSON object: {"entity": "<one of the entity names above>", "filters": {}, "groupBy": [], "orderBy": "<field>", "orderDir": "asc"|"desc", "limit": <number, default 20>, "aggregations": [{"field": "<aggregatable field>", "fn": "SUM"|"AVG"|"COUNT"|"MIN"|"MAX"}]}. ` +
+          `Omit keys that don't apply. Never invent entity or field names outside the list.`,
+      },
       { role: 'user', content: question },
-    ], { tenantId });
+    ], { tenantId, temperature: 0, maxTokens: 400 });
 
+    let plannedQuery: GeneratedQuery;
     try {
-      return JSON.parse(result.content);
+      plannedQuery = JSON.parse(planResult.content);
     } catch {
-      return { answer: result.content, query: null };
+      return { answer: 'Could not understand that question well enough to build a report. Try rephrasing it.', query: null, data: [] };
     }
+
+    const entityExists = semanticLayer.some((e) => e.name === plannedQuery.entity);
+    if (!plannedQuery.entity || !entityExists) {
+      return { answer: `I don't have a "${plannedQuery.entity || 'matching'}" dataset to answer that from.`, query: plannedQuery, data: [] };
+    }
+
+    const result = await this.reportingEngine.executeQuery(tenantId, plannedQuery.entity, {
+      filters: plannedQuery.filters,
+      groupBy: plannedQuery.groupBy,
+      orderBy: plannedQuery.orderBy,
+      orderDir: plannedQuery.orderDir,
+      limit: plannedQuery.limit || 20,
+      aggregations: plannedQuery.aggregations,
+    });
+
+    const narrationResult = await this.ai.chat([
+      { role: 'system', content: 'You summarize ERP report data into a direct, concise natural-language answer (2-3 sentences). Base the answer ONLY on the JSON data provided — never invent figures.' },
+      { role: 'user', content: `Question: ${question}\n\nReport data (JSON):\n${JSON.stringify(result.data ?? result).slice(0, 4000)}` },
+    ], { tenantId, temperature: 0.2, maxTokens: 250 });
+
+    return { answer: narrationResult.content, query: plannedQuery, data: result.data ?? [] };
   }
 
   async summarizeRecord(tenantId: string, entityType: string, entityId: string) {
@@ -105,14 +155,54 @@ All tables have tenantId. Use Prisma-like pseudo-query syntax.`;
     }
   }
 
-  async processInvoiceDocument(tenantId: string, documentText: string) {
+  async processInvoiceDocument(tenantId: string, documentText: string, createDraft = false) {
     if (!this.ai.isConfigured()) {
       return { extracted: null, error: 'AI not configured.' };
     }
 
     const fields = ['vendorName', 'invoiceNumber', 'invoiceDate', 'dueDate', 'totalAmount', 'currency', 'lineItems'];
-    const extracted = await this.ai.extractFields(documentText, fields, tenantId);
+    const extracted = await this.ai.extractFields(documentText, fields, tenantId) as Record<string, unknown>;
 
-    return { extracted, confidence: 0.85 };
+    let draftPo: { id: string; poNumber: string } | null = null;
+
+    if (createDraft && extracted) {
+      try {
+        const vendorName = typeof extracted.vendorName === 'string' ? extracted.vendorName : null;
+        const totalAmount = typeof extracted.totalAmount === 'number' ? extracted.totalAmount :
+          (typeof extracted.totalAmount === 'string' ? parseFloat(extracted.totalAmount) : 0);
+        const currency = typeof extracted.currency === 'string' ? extracted.currency : 'USD';
+        const dueDate = typeof extracted.dueDate === 'string' ? new Date(extracted.dueDate) : null;
+
+        // Find matching vendor by name (fuzzy: case-insensitive contains)
+        let vendor = vendorName
+          ? await prisma.vendor.findFirst({ where: { tenantId, name: { contains: vendorName, mode: 'insensitive' } } })
+          : null;
+
+        // Get first org for this tenant
+        const org = await prisma.organization.findFirst({ where: { tenantId } });
+        if (vendor && org) {
+          const poCount = await prisma.purchaseOrder.count({ where: { tenantId } });
+          const poNumber = `AI-${String(poCount + 1).padStart(5, '0')}`;
+          draftPo = await prisma.purchaseOrder.create({
+            data: {
+              tenantId,
+              orgId: org.id,
+              vendorId: vendor.id,
+              poNumber,
+              status: 'DRAFT',
+              totalAmount,
+              currency,
+              ...(dueDate ? { expectedDate: dueDate } : {}),
+              notes: `Auto-created from scanned invoice${extracted.invoiceNumber ? ` #${extracted.invoiceNumber}` : ''}.`,
+            },
+            select: { id: true, poNumber: true },
+          });
+        }
+      } catch {
+        // Non-fatal: return extraction even if PO creation fails
+      }
+    }
+
+    return { extracted, confidence: 0.85, ...(draftPo ? { draftPoId: draftPo.id, draftPoNumber: draftPo.poNumber } : {}) };
   }
 }

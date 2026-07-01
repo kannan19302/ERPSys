@@ -70,6 +70,9 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'opportunity', 'update', 'endpoint', 'Update opportunities'),
   p('crm', 'activity', 'read', 'endpoint', 'View activities'),
   p('crm', 'activity', 'create', 'endpoint', 'Create activities'),
+  p('crm', 'case', 'read', 'endpoint', 'View customer service cases'),
+  p('crm', 'case', 'create', 'endpoint', 'Create customer service cases'),
+  p('crm', 'case', 'update', 'endpoint', 'Update customer service cases'),
 
   // Inventory
   p('inventory', 'product', 'read', 'endpoint', 'View products'),

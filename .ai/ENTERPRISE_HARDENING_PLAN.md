@@ -106,9 +106,31 @@ suite green in parallel, gates enforced, quality gates re-armed.
 **Exit:** no service > ~600 LOC without justification; boundary lint in CI.
 
 ### Phase 2 — Data & tenant integrity
-- Verify tenant isolation is enforced **centrally** (Prisma client extension /
-  middleware + guard), not re-implemented per query. Audit for IDOR / missing
-  `tenantId` filters across 362 models.
+- [x] **Central tenant-isolation enforcement closed** (2026-07-01). The Prisma
+  client extension (`packages/database/src/index.ts` + extracted, unit-tested
+  `tenant-scope.ts`) auto-injects `tenantId` into every query/mutation for the
+  request's `AsyncLocalStorage` tenant session — but `TenantInterceptor` (which
+  sets that session) was only wired into 36 of 72 controllers, and had an
+  overriding args-mutation bug (`query(args)` used the pre-mutation object, so
+  calls made with no options — e.g. `findMany()` — silently skipped scoping
+  entirely). Both are fixed:
+  - `TenantInterceptor` is now registered globally (`APP_INTERCEPTOR` in
+    `app.module.ts`), so every authenticated request is tenant-scoped by
+    construction, not by each controller remembering to opt in. The 36
+    controllers that already had it keep working (idempotent to apply twice).
+  - Added `@SkipTenantScope()` (`common/decorators/skip-tenant-scope.decorator.ts`)
+    for the one legitimate cross-tenant surface (`SuperAdminController`, which
+    aggregates platform-wide stats like `prisma.user.count()`); everything else
+    stays scoped.
+  - Fixed the extension to always operate on a fresh args copy and pass the
+    *mutated* args to `query(...)`, not the original.
+  - Added real tests: `packages/database/src/tenant-isolation.test.ts` (22
+    cases — the previous file of that name actually tested PII encryption and
+    was renamed to `encryption.test.ts`). `packages/database` had **no test
+    script or vitest dependency at all**, so none of this was ever run in CI;
+    both are now added.
+  - Remaining audit for missing `tenantId` filters across all 362 models is
+    now defense-in-depth verification, not the last line of defense.
 - Schema review: indexing strategy, FK completeness, nullable abuse, consistent
   audit columns (createdAt/updatedAt/createdBy/deletedAt) + soft-delete policy.
 - Migration safety (expand/contract, no destructive drift). See memory:

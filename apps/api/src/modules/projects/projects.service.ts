@@ -148,16 +148,38 @@ export class ProjectsService {
     };
   }
 
-  async getResourceWorkload(tenantId: string) {
+  /**
+   * Resource capacity/utilization for a single week (defaults to the current
+   * week). Regression fix: this previously summed EVERY timesheet an employee
+   * ever logged with no date filter, then divided that all-time total by a
+   * single week's 40-hour capacity — anyone with more than ~1 week of history
+   * showed nonsensical utilization (e.g. 1000%+). Now bounded to a real
+   * 7-day window so allocatedHours/capacityHours are comparable.
+   */
+  async getResourceWorkload(tenantId: string, weekStart?: string) {
+    const start = weekStart ? new Date(weekStart) : (() => {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    })();
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+
     const employees = await prisma.employee.findMany({
       where: { tenantId },
       select: { id: true, firstName: true, lastName: true, department: { select: { name: true } } },
     });
 
     const timesheets = await prisma.timesheet.findMany({
-      where: { tenantId },
+      where: { tenantId, date: { gte: start, lt: end } },
       select: { employeeId: true, hours: true, date: true },
     });
+
+    const CAPACITY_HOURS_PER_WEEK = 40;
 
     return employees.map(emp => {
       const empTimesheets = timesheets.filter(ts => ts.employeeId === emp.id);
@@ -166,9 +188,76 @@ export class ProjectsService {
         employeeId: emp.id,
         name: `${emp.firstName} ${emp.lastName}`,
         department: emp.department?.name || 'Unassigned',
-        capacityHours: 40,
+        capacityHours: CAPACITY_HOURS_PER_WEEK,
         allocatedHours: totalHours,
-        utilizationRate: (totalHours / 40) * 100,
+        utilizationRate: (totalHours / CAPACITY_HOURS_PER_WEEK) * 100,
+        weekStart: start.toISOString(),
+      };
+    });
+  }
+
+  /**
+   * Project revenue recognition using the time-based percentage-of-completion
+   * method: recognizedRevenue = (elapsed time / total planned duration) x
+   * budget, clamped to [0, 1] and forced to 100% for COMPLETED projects.
+   * Uses only existing Project fields (budget/startDate/endDate/status) — no
+   * schema change required. Projects missing a budget or date range are
+   * reported with a reason rather than silently guessed at.
+   */
+  async getRevenueRecognition(tenantId: string) {
+    const projects = await prisma.project.findMany({
+      where: { tenantId, deletedAt: null },
+      select: { id: true, name: true, code: true, status: true, budget: true, startDate: true, endDate: true, customerId: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = new Date();
+
+    return projects.map((project) => {
+      const budget = Number(project.budget || 0);
+      if (!project.budget || !project.startDate || !project.endDate) {
+        return {
+          projectId: project.id,
+          name: project.name,
+          code: project.code,
+          status: project.status,
+          budget,
+          percentComplete: null,
+          recognizedRevenue: 0,
+          remainingRevenue: budget,
+          reason: 'Missing budget, start date, or end date — cannot compute a recognition schedule.',
+        };
+      }
+
+      const start = new Date(project.startDate);
+      const end = new Date(project.endDate);
+      const totalDurationMs = end.getTime() - start.getTime();
+
+      let percentComplete: number;
+      if (project.status === 'COMPLETED') {
+        percentComplete = 1;
+      } else if (project.status === 'CANCELLED') {
+        percentComplete = 0;
+      } else if (totalDurationMs <= 0) {
+        percentComplete = now >= start ? 1 : 0;
+      } else {
+        const elapsedMs = now.getTime() - start.getTime();
+        percentComplete = Math.min(1, Math.max(0, elapsedMs / totalDurationMs));
+      }
+
+      const recognizedRevenue = Math.round(budget * percentComplete * 100) / 100;
+
+      return {
+        projectId: project.id,
+        name: project.name,
+        code: project.code,
+        status: project.status,
+        customerId: project.customerId,
+        budget,
+        percentComplete: Math.round(percentComplete * 1000) / 10,
+        recognizedRevenue,
+        remainingRevenue: Math.round((budget - recognizedRevenue) * 100) / 100,
+        reason: null,
       };
     });
   }

@@ -68,7 +68,7 @@ export class AiController {
   @ApiOperation({ summary: 'Process invoice' })
   @Permissions('ai.create')
   @Post('process-invoice')
-  async processInvoice(@Req() req: AuthReq, @ZodBody(z.any()) body: { documentText: string }) {
-    return this.copilot.processInvoiceDocument(req.user.tenantId, body.documentText);
+  async processInvoice(@Req() req: AuthReq, @ZodBody(z.any()) body: { documentText: string; createDraft?: boolean }) {
+    return this.copilot.processInvoiceDocument(req.user.tenantId, body.documentText, body.createDraft ?? false);
   }
 }

@@ -89,10 +89,13 @@ export function hasPermission(userPermissions: string[], requiredPermission: str
     // Exact match
     if (p === requiredPermission) return true;
 
-    // Wildcard match: "finance.*" matches "finance.invoice.create"
+    // Wildcard match: "finance.*" matches "finance.invoice.create", but must
+    // respect the "." boundary — otherwise "finance.invoice.*" would also
+    // match an unrelated permission like "finance.invoiceapproval.create"
+    // just because the string happens to start with the same prefix.
     if (p.endsWith('.*')) {
       const prefix = p.slice(0, -2);
-      return requiredPermission.startsWith(prefix);
+      return requiredPermission === prefix || requiredPermission.startsWith(`${prefix}.`);
     }
 
     // Super admin: "*" matches everything

@@ -1,21 +1,57 @@
 # UniERP Subagent Team
 
-Role-based Claude Code subagents for solo development of the Universal ERP System. Each file is a subagent: YAML frontmatter (`name`, `description`, optional `tools`/`model`) + a system prompt that makes it act as a domain expert.
+Role-based AI subagents for the Universal ERP System. Each agent is context-aware: it loads the current project state (MODULE_REGISTRY, DEV_SPRINTS, CHANGELOG) before every session, checks for existing implementations before suggesting new work, and pushes back when the user is wrong.
+
+## The three guarantees every agent provides
+
+1. **Context-first**: reads MODULE_REGISTRY.md, DEV_SPRINTS.md, and CHANGELOG.md before every session
+2. **Duplicate check**: verifies a feature doesn't already exist before building or speccing it
+3. **Pushback**: corrects the user when wrong — never blindly agrees
+
+## PM Gate — auto-triggered on feature requests
+
+When you suggest any new functionality, the product-manager agent must run first. It checks MODULE_REGISTRY.md and the codebase before accepting the request. If the feature exists, it tells you where — and does not re-spec it.
 
 ## Roles
 
-**Plan** — `product-manager` (what/why, stories, acceptance criteria)
-**Design** — `uiux-designer` (UI/UX, design system), `data-architect` (schema, migrations)
-**Build** — `backend-developer`, `frontend-developer`, `fullstack-developer`, `devops-engineer`
-**Verify** — `qa-tester` (tests), `code-reviewer` (diff review), `security-auditor` (appsec), `business-analyst-uat` (user sign-off)
-**Document** — `tech-writer` (`.ai/` docs)
+| Phase | Agent | Trigger |
+|:---|:---|:---|
+| Plan | `product-manager` | New feature request, user stories, acceptance criteria, duplicate check |
+| Design | `uiux-designer` | UI/UX layout, design system, accessibility, component design |
+| Design | `data-architect` | Schema changes, migrations, new Prisma models, RLS |
+| Build | `backend-developer` | NestJS modules, services, controllers, domain events |
+| Build | `frontend-developer` | Next.js pages, UI components, API wiring |
+| Build | `fullstack-developer` | End-to-end vertical slices (DB→API→UI) |
+| Build | `devops-engineer` | CI/CD, Docker, Turborepo, observability, secrets |
+| Verify | `qa-tester` | Unit/integration/E2E tests, coverage gaps, regression |
+| Verify | `code-reviewer` | Diff review, rule enforcement, merge gate |
+| Verify | `security-auditor` | Tenant isolation, RBAC, injection, secrets, HIPAA |
+| Verify | `business-analyst-uat` | User workflow validation, UAT sign-off before release |
+| Document | `tech-writer` | `.ai/` context files, MODULE_REGISTRY, CHANGELOG |
 
-## How to use
+## Recommended feature flow
 
-- Claude Code auto-delegates based on each agent's `description`, or invoke explicitly: "Use the backend-developer subagent to build the invoices endpoint."
-- Every agent reads `AGENTS.md` + relevant `.ai/` files first, since subagents run in their own context.
-- Suggested feature flow: product-manager → data-architect → backend/frontend (or fullstack) → qa-tester → code-reviewer → security-auditor → business-analyst-uat → tech-writer.
+product-manager → data-architect → backend-developer / frontend-developer (or fullstack-developer) → qa-tester → code-reviewer → security-auditor → business-analyst-uat → tech-writer
 
-## Editing
+## Cross-IDE support
 
-Tweak an agent by editing its `.md` file. Keep `description` action-oriented (it drives auto-delegation), and keep project rules pointing back to `AGENTS.md` rather than duplicating them here.
+These agents are defined for Claude Code (`.claude/agents/*.md`), but equivalent rules exist for other tools:
+
+| IDE | Rules file |
+|:---|:---|
+| Claude Code | `.claude/agents/*.md` (this directory) |
+| Cursor | `.cursor/rules/unerp-agents.mdc` |
+| Windsurf | `.windsurfrules` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Any AI agent | `AGENTS.md` (master rule document) |
+
+All rules point back to `AGENTS.md` and `.ai/MODULE_REGISTRY.md` as the single sources of truth.
+
+## Editing agents
+
+Tweak behavior by editing the relevant `.md` file. Key sections in each:
+- **Mandatory Project Context** — what to read before doing anything
+- **Pushback Protocol** — how to correct the user
+- **Critical rules / Design rules** — domain-specific non-negotiables
+
+Keep the `description` field action-oriented (it drives auto-delegation in Claude Code).

@@ -35,6 +35,7 @@ import { CrmSalesOpsService } from './crm-salesops.service';
 import { CrmConfigService } from './crm-config.service';
 import { CrmCollaborationService } from './crm-collaboration.service';
 import { CrmDashboardsService } from './crm-dashboards.service';
+import { CrmCasesService, CreateCaseInput, UpdateCaseInput } from './crm-cases.service';
 
 /**
  * CRM facade. Presents the CRM module's public application surface to the
@@ -56,7 +57,16 @@ export class CrmService {
     @Inject(CrmConfigService) private readonly configService: CrmConfigService,
     @Inject(CrmCollaborationService) private readonly collaborationService: CrmCollaborationService,
     @Inject(CrmDashboardsService) private readonly dashboardsService: CrmDashboardsService,
+    @Inject(CrmCasesService) private readonly casesService: CrmCasesService,
   ) {}
+
+  // ── CASES & SLA ───────────────────────────────
+  getCases(tenantId: string, filters?: { status?: string; priority?: string; customerId?: string }) { return this.casesService.getCases(tenantId, filters); }
+  getCaseById(tenantId: string, id: string) { return this.casesService.getCaseById(tenantId, id); }
+  createCase(tenantId: string, orgId: string, dto: CreateCaseInput) { return this.casesService.createCase(tenantId, orgId, dto); }
+  updateCase(tenantId: string, id: string, dto: UpdateCaseInput) { return this.casesService.updateCase(tenantId, id, dto); }
+  addCaseComment(tenantId: string, caseId: string, dto: { body: string; authorId?: string; isInternal?: boolean }) { return this.casesService.addComment(tenantId, caseId, dto); }
+  getCaseSlaStatus(tenantId: string) { return this.casesService.getSlaStatus(tenantId); }
 
   // ── CUSTOMERS & VENDORS ───────────────────────
   getCustomers(tenantId: string) { return this.customersService.getCustomers(tenantId); }

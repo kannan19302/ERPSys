@@ -26,15 +26,11 @@ export class RbacGuard implements CanActivate {
       throw new ForbiddenException('User session not found');
     }
 
-    console.log('[RBAC DEBUG] User object from request:', user);
-
     // Retrieve the user's role assignments and associated roles
     const userRoles = await prisma.userRole.findMany({
       where: { userId: user.userId },
       include: { role: true },
     });
-
-    console.log('[RBAC DEBUG] User roles found:', userRoles);
 
     // Extract and parse permission strings from roles
     const userPermissions: string[] = [];

@@ -1,0 +1,64 @@
+# UniERP — Windsurf AI Rules
+
+> Universal ERP System (UniERP) — composable, multi-tenant, industry-agnostic ERP.
+> 31 modules across phases 0–20. NestJS API + Next.js 15 frontend + PostgreSQL/Prisma.
+
+## LOAD FIRST — every session, no exceptions
+
+Before any suggestion or code change:
+1. Read `AGENTS.md` — master rules for the entire project
+2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules (what already exists, their paths and status)
+3. Read `.ai/DEV_SPRINTS.md` — what's currently in-progress
+4. Read `.ai/CHANGELOG.md` — what recently changed
+
+**Most common mistake: building something that already exists. Check MODULE_REGISTRY.md first.**
+
+## PM Gate — mandatory for any new feature
+
+When the user proposes any new functionality:
+1. Check `.ai/MODULE_REGISTRY.md` for the capability
+2. Grep `apps/api/src/modules/` for the entity/service
+3. Grep `apps/web/app/(dashboard)/` for an existing UI page
+4. If found → say where it lives. Don't re-implement.
+5. If genuinely new → produce a spec with user stories and acceptance criteria before coding
+
+## Pushback Protocol
+
+You are NOT a yes-machine. When the user is wrong, say so directly:
+- Feature already exists → "That already exists at [path]. Here's what it covers."
+- Approach violates a rule → "That violates [specific rule]. The correct approach is [X]."
+- Request skips a dependency → "This depends on [X] which is [status]. Here's the right sequence."
+- Design has a flaw → Name the flaw before building.
+
+## Non-negotiable rules
+
+| Rule | Detail |
+|:---|:---|
+| TypeScript strict | No `any`, no ESLint disables |
+| Multi-tenancy | Every DB table: `tenant_id`; every query scoped by tenant |
+| RBAC | Every endpoint: `@Permissions('module.resource.action')` |
+| Change history | Every mutation: `@TrackChanges` + `ChangeHistoryInterceptor` |
+| Module isolation | No cross-module imports; use domain events |
+| UI design system | `@unerp/ui` + `.frappe-*` classes only; no inline styles; no hardcoded colors |
+| Logging | `@unerp/shared/logger` only; never `console.log` |
+| Secrets | Env vars only; never in code |
+| Migrations | `pnpm db:migrate` only; never hand-edit `prisma/migrations/` |
+| Test coverage | 80%+ on all business logic |
+| Breadcrumbs | Every UI page; register segments in `SEGMENT_NAMES` in layout.tsx |
+
+## Role assignments
+
+- **Product Manager** → feature scoping, user stories, acceptance criteria, duplicate check
+- **Backend Developer** → NestJS modules in `apps/api/src/modules/<module>/`
+- **Frontend Developer** → Next.js pages in `apps/web/app/(dashboard)/<module>/`
+- **Data Architect** → Prisma schema in `packages/database/prisma/schema.prisma`
+- **Fullstack Developer** → end-to-end DB→API→UI vertical slices
+- **UI/UX Designer** → layout, design system, accessibility
+- **DevOps Engineer** → Turborepo, CI/CD, Docker, observability
+- **QA Tester** → Vitest unit/integration tests, Playwright E2E
+- **Code Reviewer** → diff review, rule enforcement, merge gate
+- **Security Auditor** → tenant isolation, RBAC, injection, secrets, HIPAA
+- **Business Analyst / UAT** → end-user workflow validation before release
+- **Tech Writer** → `.ai/` context files, MODULE_REGISTRY, CHANGELOG
+
+Full agent instructions are in `.claude/agents/*.md`. Full project rules are in `AGENTS.md`.

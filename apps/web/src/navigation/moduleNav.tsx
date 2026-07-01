@@ -74,6 +74,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart },
+            { name: 'Rolling Forecasts (xP&A)', href: '/finance/advanced/forecast-scenarios', icon: TrendingUp },
+            { name: 'Accounting Books (Multi-GAAP)', href: '/finance/advanced/accounting-books', icon: BookOpen },
             { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen },
             { name: 'Exchange Rates', href: '/finance/advanced/exchange-rates', icon: DollarSign },
             { name: 'Financial Ratios', href: '/finance/advanced/financial-ratios', icon: Scale },
@@ -181,6 +183,13 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           ]
         },
         {
+          name: 'Customer Service',
+          isHeader: true,
+          items: [
+            { name: 'Cases & SLA', href: '/crm/cases', icon: HelpCircle },
+          ]
+        },
+        {
           name: 'Sales Enablement',
           isHeader: true,
           items: [
@@ -276,7 +285,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
         { name: 'Supplier Returns', href: '/procurement/returns', icon: History },
         { name: 'Sourcing (RFQs)', href: '/procurement/rfqs', icon: ClipboardList },
         { name: 'Supplier Bids', href: '/procurement/supplier-quotations', icon: FileText },
-        { name: 'Supplier Directory', href: '/procurement/vendors', icon: Building2 }
+        { name: 'Supplier Directory', href: '/procurement/vendors', icon: Building2 },
+        { name: 'Supplier Portal', href: '/procurement/portal', icon: Store }
       ]
     };
   }
@@ -334,6 +344,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Resource Workloads', href: '/projects/workloads', icon: Clock },
             { name: 'Project Health & CPM', href: '/projects/health', icon: Activity },
+            { name: 'Revenue Recognition', href: '/projects/revenue-recognition', icon: DollarSign },
           ]
         }
       ]
@@ -349,6 +360,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
         { name: 'MRP Replenishment', href: '/manufacturing/mrp', icon: Layers },
         { name: 'Operator Shop Floor', href: '/manufacturing/shop-floor', icon: Cpu },
         { name: 'Quality Control & NCR', href: '/manufacturing/quality', icon: ShieldCheck },
+        { name: 'Finite Capacity Scheduling', href: '/manufacturing/scheduling', icon: Clock },
         { name: 'Product Configurator', href: '/manufacturing/configurator', icon: Settings },
         {
           name: 'Execution & MES',
@@ -890,6 +902,34 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           ]
         },
       ] as SidebarItem[]
+    };
+  }
+
+  if (pathname.startsWith('/ai')) {
+    return {
+      title: 'AI Copilot',
+      icon: Zap,
+      items: [
+        { name: 'AI Copilot', href: '/ai', icon: Zap },
+        {
+          name: 'Capabilities',
+          isHeader: true,
+          items: [
+            { name: 'Ask Data (NL Query)', href: '/ai', icon: MessageSquare },
+            { name: 'Invoice Scanner', href: '/ai', icon: FileText },
+            { name: 'Email Drafter', href: '/ai', icon: Mail },
+            { name: 'Form Generator', href: '/ai', icon: LayoutGrid },
+            { name: 'Workflow Generator', href: '/ai', icon: GitBranch },
+          ]
+        },
+        {
+          name: 'More AI Tools',
+          isHeader: true,
+          items: [
+            { name: 'Visual Query Builder', href: '/analytics/query', icon: GitFork },
+          ]
+        },
+      ]
     };
   }
 

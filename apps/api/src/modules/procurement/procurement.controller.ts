@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ProcurementService } from './procurement.service';
+import { VendorPortalService } from './vendor-portal.service';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import {
   CreatePurchaseOrderInput,
@@ -35,7 +36,10 @@ interface AuthenticatedRequest extends Request {
 @Controller('procurement')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class ProcurementController {
-  constructor(private readonly procurementService: ProcurementService) {}
+  constructor(
+    private readonly procurementService: ProcurementService,
+    private readonly vendorPortalService: VendorPortalService,
+  ) {}
 
   @ApiOperation({ summary: 'Get purchase orders' })
   @Permissions('procurement.read')
@@ -300,5 +304,58 @@ export class ProcurementController {
   @Permissions('procurement.purchase-order.read')
   async getThreeWayMatchReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.procurementService.getThreeWayMatchReport(req.user.tenantId, id);
+  }
+
+  // ── VENDOR PORTAL MANAGEMENT (tenant admins only) ──
+
+  @ApiOperation({ summary: 'Invite a vendor portal user' })
+  @Permissions('procurement.vendor.manage')
+  @Post('vendors/:vendorId/portal-users')
+  async invitePortalUser(
+    @Req() req: AuthenticatedRequest,
+    @Param('vendorId') vendorId: string,
+    @Body() body: { email: string },
+  ) {
+    return this.vendorPortalService.inviteUser(req.user.tenantId, vendorId, body.email);
+  }
+
+  @ApiOperation({ summary: 'List vendor portal users' })
+  @Permissions('procurement.vendor.manage')
+  @Get('vendors/:vendorId/portal-users')
+  async listPortalUsers(
+    @Req() req: AuthenticatedRequest,
+    @Param('vendorId') vendorId: string,
+  ) {
+    return this.vendorPortalService.listUsers(req.user.tenantId, vendorId);
+  }
+
+  @ApiOperation({ summary: 'Disable a vendor portal user' })
+  @Permissions('procurement.vendor.manage')
+  @Patch('portal-users/:userId/disable')
+  async disablePortalUser(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    return this.vendorPortalService.disableUser(req.user.tenantId, userId);
+  }
+
+  @ApiOperation({ summary: 'Get POs visible to the portal user\'s vendor' })
+  @Permissions('procurement.vendor.manage')
+  @Get('vendors/:vendorId/portal/purchase-orders')
+  async getPortalPurchaseOrders(
+    @Req() req: AuthenticatedRequest,
+    @Param('vendorId') vendorId: string,
+  ) {
+    return this.vendorPortalService.getMyPurchaseOrders(req.user.tenantId, vendorId);
+  }
+
+  @ApiOperation({ summary: 'Get RFQs visible to the portal user\'s vendor' })
+  @Permissions('procurement.vendor.manage')
+  @Get('vendors/:vendorId/portal/rfqs')
+  async getPortalRfqs(
+    @Req() req: AuthenticatedRequest,
+    @Param('vendorId') vendorId: string,
+  ) {
+    return this.vendorPortalService.getMyRfqs(req.user.tenantId, vendorId);
   }
 }

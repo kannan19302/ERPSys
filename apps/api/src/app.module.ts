@@ -3,6 +3,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { TenantInterceptor } from './common/guards/tenant.interceptor';
 import { HealthController } from './health.controller';
 import { MetricsController } from './metrics.controller';
 import { AuthModule } from './modules/auth/auth.module';
@@ -147,6 +148,11 @@ import { AiModule } from './modules/ai/ai.module';
   ],
   controllers: [HealthController, MetricsController],
   providers: [
+    // Outermost: binds the authenticated user's tenantId to an AsyncLocalStorage
+    // session for the lifetime of the request, so the Prisma client extension
+    // (packages/database/src/index.ts) can auto-scope every query by tenant even
+    // if a service forgets to filter manually. Opt out via @SkipTenantScope().
+    { provide: APP_INTERCEPTOR, useClass: TenantInterceptor },
     // Always-on compliance audit log for every mutating request.
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
   ],

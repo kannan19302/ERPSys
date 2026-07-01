@@ -4,13 +4,18 @@ import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
+import { SkipTenantScope } from '../../common/decorators/skip-tenant-scope.decorator';
 import { SuperAdminService } from './super-admin.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
+// Deliberately cross-tenant: this controller aggregates data across every
+// tenant for the platform operator (e.g. `prisma.user.count()` platform-wide).
+// It is gated by `system.tenant.*` permissions, not tenant membership.
 @ApiTags('admin')
 @ApiBearerAuth()
 @Controller('super-admin')
 @UseGuards(JwtAuthGuard, RbacGuard)
+@SkipTenantScope()
 export class SuperAdminController {
   constructor(private readonly superAdminService: SuperAdminService) {}
 

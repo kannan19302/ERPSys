@@ -398,6 +398,20 @@ export class AdvancedFinanceController {
   }
 
   // ── TIER 5: Consolidation ──
+  @ApiOperation({ summary: 'Get live consolidation overview (entities, YTD consolidated KPIs, eliminations, quarterly trend)' })
+  @Permissions('advanced_finance.read')
+  @Get('consolidation/overview')
+  async getConsolidation(@Req() req: AuthenticatedRequest) {
+    return this.financeService.getConsolidation(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get consolidation run history' })
+  @Permissions('advanced_finance.read')
+  @Get('consolidation/runs')
+  async getConsolidationRuns(@Req() req: AuthenticatedRequest) {
+    return this.financeService.getConsolidationRuns(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Run consolidation' })
   @Permissions('advanced_finance.create')
   @Post('consolidation/run')
@@ -490,5 +504,46 @@ export class AdvancedFinanceController {
   @Post('e-invoices/generate') @Permissions('finance.invoice.create')
   async generateEInvoice(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { invoiceId: string; format?: string }) {
     return this.financeService.generateEInvoice(req.user.tenantId, req.user.orgId || 'org-system-default', body.invoiceId, body.format || 'UBL');
+  }
+
+  // ── MULTI-BOOK ACCOUNTING ──────────────────────────────────────
+
+  @ApiOperation({ summary: 'List accounting books (parallel GAAP ledgers)' })
+  @Permissions('finance.accounting-book.read')
+  @Get('accounting-books')
+  async getAccountingBooks(@Req() req: AuthenticatedRequest) {
+    return this.financeService.getAccountingBooks(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create an accounting book' })
+  @Permissions('finance.accounting-book.create')
+  @Post('accounting-books')
+  async createAccountingBook(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { name: string; standard: string; isPrimary?: boolean }) {
+    return this.financeService.createAccountingBook(req.user.tenantId, req.user.orgId || 'org-system-default', body);
+  }
+
+  @ApiOperation({ summary: 'Post a journal entry to a specific accounting book' })
+  @Permissions('finance.accounting-book.create')
+  @Post('accounting-books/:bookId/journals')
+  async postJournalToBook(
+    @Req() req: AuthenticatedRequest,
+    @Param('bookId') bookId: string,
+    @ZodBody(z.any()) body: { entryNumber: string; date: string; entries: Array<{ accountId: string; debit: number; credit: number; description?: string }>; notes?: string },
+  ) {
+    return this.financeService.postJournalToBook(req.user.tenantId, req.user.orgId || 'org-system-default', bookId, body);
+  }
+
+  @ApiOperation({ summary: 'Trial balance for an accounting book' })
+  @Permissions('finance.accounting-book.read')
+  @Get('accounting-books/:bookId/trial-balance')
+  async getBookTrialBalance(@Req() req: AuthenticatedRequest, @Param('bookId') bookId: string, @Query('asOf') asOf?: string) {
+    return this.financeService.getBookTrialBalance(req.user.tenantId, bookId, asOf);
+  }
+
+  @ApiOperation({ summary: 'Cross-book variance report (e.g. LOCAL_GAAP vs IFRS)' })
+  @Permissions('finance.accounting-book.read')
+  @Get('accounting-books/variance')
+  async crossBookVarianceReport(@Req() req: AuthenticatedRequest, @Query('book1') book1: string, @Query('book2') book2: string, @Query('asOf') asOf?: string) {
+    return this.financeService.crossBookVarianceReport(req.user.tenantId, book1, book2, asOf);
   }
 }

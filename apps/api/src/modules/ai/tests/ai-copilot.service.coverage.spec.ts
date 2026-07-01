@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AiCopilotService } from '../ai-copilot.service';
 import { AiService } from '../ai.service';
+import { ReportingEngineService } from '../../reporting/reporting-engine.service';
 
 vi.mock('@unerp/database', () => ({
   prisma: {
@@ -14,7 +15,8 @@ describe('AiCopilotService coverage', () => {
 
   beforeEach(() => {
     const ai = new AiService();
-    service = new AiCopilotService(ai);
+    const reportingEngine = new ReportingEngineService();
+    service = new AiCopilotService(ai, reportingEngine);
     vi.clearAllMocks();
   });
 

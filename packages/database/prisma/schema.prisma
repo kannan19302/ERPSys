@@ -151,6 +151,9 @@ model Organization {
   purchaseReturns           PurchaseReturn[]
   purchaseRequisitions      PurchaseRequisition[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
+  cases                     Case[]
+  salesChannels             SalesChannel[]
+  accountingBooks           AccountingBook[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -249,6 +252,7 @@ model Customer {
   activities    Activity[] // Added for inverse relation
   salesReturns  SalesReturn[]
   projects      Project[]
+  cases         Case[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -280,6 +284,8 @@ model Vendor {
   purchaseReturns           PurchaseReturn[]
   subcontractingOrders      SubcontractingOrder[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
+  portalUsers               VendorPortalUser[]
+  auctionBids               RFQAuctionBid[]
 
   @@index([tenantId])
   @@map("vendors")
@@ -309,6 +315,7 @@ model Contact {
   customer   Customer?        @relation(fields: [customerId], references: [id])
   activities Activity[]
   tags       ContactTagLink[]
+  cases      Case[]
 
   @@unique([tenantId, orgId, email])
   @@index([tenantId])
@@ -539,6 +546,7 @@ model Product {
   componentConsumptions         WorkOrderComponentConsumption[]
   purchaseRequisitionItems      PurchaseRequisitionItem[]
   blanketPurchaseAgreementItems BlanketPurchaseAgreementItem[]
+  channelInventory              ChannelInventory[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -825,21 +833,24 @@ model PurchaseReceiptItem {
 }
 
 model RFQ {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  orgId        String    @map("org_id")
-  rfqNumber    String    @map("rfq_number")
-  status       String    @default("DRAFT") // DRAFT, SENT, COMPLETED, CANCELLED
-  expectedDate DateTime? @map("expected_date")
-  notes        String?
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  rfqNumber     String    @map("rfq_number")
+  status        String    @default("DRAFT") // DRAFT, SENT, COMPLETED, CANCELLED
+  expectedDate  DateTime? @map("expected_date")
+  notes         String?
+  isAuction     Boolean   @default(false) @map("is_auction")
+  auctionEndsAt DateTime? @map("auction_ends_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   organization       Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
   lineItems          RFQItem[]
   supplierQuotations SupplierQuotation[]
   purchaseOrders     PurchaseOrder[]
+  auctionBids        RFQAuctionBid[]
 
   @@unique([tenantId, orgId, rfqNumber])
   @@index([tenantId])
@@ -2643,10 +2654,12 @@ model Journal {
   status      String   @default("DRAFT") // DRAFT, POSTED
   notes       String?
   createdBy   String?  @map("created_by")
+  bookId      String?  @map("book_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   entries JournalEntry[]
+  book    AccountingBook? @relation(fields: [bookId], references: [id])
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -3486,7 +3499,7 @@ model WorkflowStep {
   tenantId           String   @map("tenant_id")
   workflowId         String   @map("workflow_id")
   stepOrder          Int      @map("step_order")
-  actionType         String   @map("action_type") // APPROVAL, NOTIFICATION
+  actionType         String   @map("action_type") // APPROVAL, NOTIFICATION, AI_REVIEWER
   assigneeRole       String   @map("assignee_role")
   slaLimitHours      Int?     @map("sla_limit_hours")
   backupAssigneeRole String?  @map("backup_assignee_role")
@@ -7658,5 +7671,159 @@ model NativeBuild {
 
   @@index([tenantId])
   @@map("builder_native_builds")
+}
+
+// ════════════════════════════════════════════════
+// CRM — CUSTOMER SERVICE CASES & SLA
+// ════════════════════════════════════════════════
+
+model Case {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  caseNumber      String    @map("case_number")
+  subject         String
+  description     String?
+  customerId      String?   @map("customer_id")
+  contactId       String?   @map("contact_id")
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status          String    @default("OPEN") // OPEN, IN_PROGRESS, WAITING_ON_CUSTOMER, RESOLVED, CLOSED
+  channel         String    @default("EMAIL") // EMAIL, PHONE, CHAT, WEB, API
+  slaDeadline     DateTime? @map("sla_deadline")
+  firstResponseAt DateTime? @map("first_response_at")
+  resolvedAt      DateTime? @map("resolved_at")
+  assignedToId    String?   @map("assigned_to_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+  contact      Contact?      @relation(fields: [contactId], references: [id])
+  comments     CaseComment[]
+
+  @@unique([tenantId, caseNumber])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
+  @@map("crm_cases")
+}
+
+model CaseComment {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  caseId     String   @map("case_id")
+  authorId   String?  @map("author_id")
+  body       String
+  isInternal Boolean  @default(false) @map("is_internal")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@map("crm_case_comments")
+}
+
+// ════════════════════════════════════════════════
+// PROCUREMENT — SUPPLIER PORTAL & E-AUCTION
+// ════════════════════════════════════════════════
+
+model VendorPortalUser {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  vendorId     String    @map("vendor_id")
+  email        String
+  passwordHash String    @map("password_hash")
+  status       String    @default("INVITED") // INVITED, ACTIVE, DISABLED
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([vendorId])
+  @@map("vendor_portal_users")
+}
+
+model RFQAuctionBid {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  rfqId       String   @map("rfq_id")
+  vendorId    String   @map("vendor_id")
+  bidAmount   Decimal  @map("bid_amount") @db.Decimal(15, 2)
+  notes       String?
+  status      String   @default("SUBMITTED") // SUBMITTED, WINNING, REJECTED, WITHDRAWN
+  submittedAt DateTime @default(now()) @map("submitted_at")
+
+  rfq    RFQ    @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([rfqId])
+  @@map("rfq_auction_bids")
+}
+
+// ════════════════════════════════════════════════
+// POS — OMNICHANNEL INVENTORY SYNC
+// ════════════════════════════════════════════════
+
+model SalesChannel {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  orgId     String   @map("org_id")
+  name      String
+  type      String   @default("POS") // POS, ONLINE, MARKETPLACE
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization  Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  channelStocks ChannelInventory[]
+
+  @@unique([tenantId, orgId, name])
+  @@index([tenantId])
+  @@map("sales_channels")
+}
+
+model ChannelInventory {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  channelId    String   @map("channel_id")
+  productId    String   @map("product_id")
+  allocatedQty Decimal  @default(0) @map("allocated_qty") @db.Decimal(15, 3)
+  reservedQty  Decimal  @default(0) @map("reserved_qty") @db.Decimal(15, 3)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  channel SalesChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, channelId, productId])
+  @@index([tenantId])
+  @@map("channel_inventory")
+}
+
+// ════════════════════════════════════════════════
+// FINANCE — MULTI-BOOK ACCOUNTING (PARALLEL LEDGERS)
+// ════════════════════════════════════════════════
+
+model AccountingBook {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  orgId     String   @map("org_id")
+  name      String
+  standard  String   @default("LOCAL_GAAP") // LOCAL_GAAP, IFRS, TAX, MANAGEMENT
+  isPrimary Boolean  @default(false) @map("is_primary")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  journals     Journal[]
+
+  @@unique([tenantId, orgId, name])
+  @@index([tenantId])
+  @@map("accounting_books")
 }
 

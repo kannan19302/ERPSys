@@ -694,6 +694,10 @@ export class AdvancedFinanceService {
       totalAssets += accounts.filter(a => a.type === 'ASSET').reduce((s, a) => s + Number(a.balance), 0);
       totalLiabilities += accounts.filter(a => a.type === 'LIABILITY').reduce((s, a) => s + Number(a.balance), 0);
       totalEquity += accounts.filter(a => a.type === 'EQUITY').reduce((s, a) => s + Number(a.balance), 0);
+      // Regression fix: this loop previously never touched totalRevenue/totalExpenses,
+      // so every consolidation run was persisted with both hardcoded at 0.
+      totalRevenue += accounts.filter(a => a.type === 'REVENUE').reduce((s, a) => s + Number(a.balance), 0);
+      totalExpenses += accounts.filter(a => a.type === 'EXPENSE').reduce((s, a) => s + Number(a.balance), 0);
       if (eliminateIntercompany) {
         const transfers = await prisma.interCompanyTransfer.findMany({ where: { tenantId, fromOrgId: org.id, date: { gte: start, lte: end }, status: 'POSTED' } });
         for (const t of transfers) { eliminations.push({ fromOrgId: t.fromOrgId, toOrgId: t.toOrgId, amount: Number(t.amount), accountType: 'REVENUE' }); }
@@ -712,6 +716,7 @@ export class AdvancedFinanceService {
     return {
       runId: consolidated.id, periodStart, periodEnd, organizationsCount: orgs.length,
       consolidatedAssets: totalAssets, consolidatedLiabilities: totalLiabilities, consolidatedEquity: totalEquity,
+      consolidatedRevenue: totalRevenue, consolidatedExpenses: totalExpenses, consolidatedNetIncome: totalRevenue - totalExpenses,
       intercompanyEliminations: eliminationTotal, status: 'COMPLETED',
     };
   }
@@ -766,6 +771,122 @@ export class AdvancedFinanceService {
     const transfer = await prisma.interCompanyTransfer.findFirst({ where: { id: transferId, tenantId } });
     if (!transfer) throw new NotFoundException('Transfer not found');
     return prisma.interCompanyTransfer.update({ where: { id: transferId }, data: { status: 'APPROVED' } });
+  }
+
+  /**
+   * Multi-entity consolidation: per-organization P&L + balance sheet totals,
+   * inter-company eliminations, and a quarterly consolidated trend for the
+   * current fiscal year. Eliminations net out APPROVED/POSTED
+   * InterCompanyTransfer amounts between organizations in the same tenant —
+   * a standard simplification (the transfers themselves aren't tagged to a
+   * specific GL account here) rather than full elimination-journal netting.
+   */
+  async getConsolidation(tenantId: string) {
+    const organizations = await prisma.organization.findMany({ where: { tenantId }, orderBy: { createdAt: 'asc' } });
+    const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
+    const today = new Date().toISOString();
+
+    const entities = await Promise.all(
+      organizations.map(async (org) => {
+        const [pnl, balanceSheet] = await Promise.all([
+          this.getProfitAndLoss(tenantId, org.id, yearStart, today),
+          this.getBalanceSheet(tenantId, org.id, today),
+        ]);
+        return {
+          id: org.id,
+          name: org.name,
+          currency: org.currency,
+          revenue: pnl.revenue,
+          expenses: pnl.expenses,
+          netIncome: pnl.netProfit,
+          assets: balanceSheet.assets.total,
+          status: 'ACTIVE' as const,
+        };
+      }),
+    );
+
+    const orgIds = organizations.map((o) => o.id);
+    const eliminationTransfers = await prisma.interCompanyTransfer.findMany({
+      where: { tenantId, fromOrgId: { in: orgIds }, toOrgId: { in: orgIds }, status: { in: ['APPROVED', 'POSTED'] } },
+      orderBy: { date: 'desc' },
+    });
+    const eliminationsTotal = eliminationTransfers.reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const grossRevenue = entities.reduce((sum, e) => sum + e.revenue, 0);
+    const grossExpenses = entities.reduce((sum, e) => sum + e.expenses, 0);
+    const grossAssets = entities.reduce((sum, e) => sum + e.assets, 0);
+
+    const consolidated = {
+      revenue: grossRevenue - eliminationsTotal,
+      expenses: grossExpenses - eliminationsTotal,
+      netIncome: grossRevenue - grossExpenses,
+      assets: grossAssets - eliminationsTotal,
+      entityCount: entities.length,
+    };
+
+    const trend = await this.getConsolidatedQuarterlyTrend(tenantId, orgIds);
+
+    return {
+      entities,
+      consolidated,
+      eliminations: {
+        total: eliminationsTotal,
+        transfers: eliminationTransfers.map((t) => ({
+          id: t.id,
+          fromOrgId: t.fromOrgId,
+          toOrgId: t.toOrgId,
+          amount: Number(t.amount),
+          currency: t.currency,
+          date: t.date,
+          status: t.status,
+        })),
+      },
+      trend,
+    };
+  }
+
+  async getConsolidationRuns(tenantId: string) {
+    return prisma.consolidationRun.findMany({
+      where: { tenantId },
+      include: { eliminations: true },
+      orderBy: { runDate: 'desc' },
+    });
+  }
+
+  private async getConsolidatedQuarterlyTrend(tenantId: string, orgIds: string[]) {
+    const year = new Date().getFullYear();
+    const quarters = [
+      { name: 'Q1', start: new Date(year, 0, 1), end: new Date(year, 3, 0) },
+      { name: 'Q2', start: new Date(year, 3, 1), end: new Date(year, 6, 0) },
+      { name: 'Q3', start: new Date(year, 6, 1), end: new Date(year, 9, 0) },
+      { name: 'Q4', start: new Date(year, 9, 1), end: new Date(year, 12, 0) },
+    ];
+
+    const accounts = await prisma.account.findMany({ where: { tenantId, orgId: { in: orgIds }, isActive: true } });
+    const accountById = new Map(accounts.map((a) => [a.id, a]));
+    const revenueAccountIds = accounts.filter((a) => a.type === 'REVENUE').map((a) => a.id);
+    const expenseAccountIds = accounts.filter((a) => a.type === 'EXPENSE').map((a) => a.id);
+
+    return Promise.all(
+      quarters.map(async (q) => {
+        const entries = await prisma.journalEntry.findMany({
+          where: {
+            tenantId,
+            accountId: { in: [...revenueAccountIds, ...expenseAccountIds] },
+            journal: { orgId: { in: orgIds }, date: { gte: q.start, lte: q.end }, status: 'POSTED' },
+          },
+        });
+        let revenue = 0;
+        let expenses = 0;
+        for (const entry of entries) {
+          const account = accountById.get(entry.accountId);
+          if (!account) continue;
+          if (account.type === 'REVENUE') revenue += Number(entry.credit) - Number(entry.debit);
+          else if (account.type === 'EXPENSE') expenses += Number(entry.debit) - Number(entry.credit);
+        }
+        return { name: q.name, revenue, expenses, netIncome: revenue - expenses };
+      }),
+    );
   }
 
   // ════════════════════════════════════════════════
@@ -1278,5 +1399,148 @@ export class AdvancedFinanceService {
     });
     await this.logFinanceAudit(prisma, tenantId, 'EInvoice', doc.id, 'GENERATE', { format: fmt, invoiceNumber: invoice.invoiceNumber }, 'system');
     return doc;
+  }
+
+  // ── MULTI-BOOK ACCOUNTING ────────────────────────────────────────
+
+  async getAccountingBooks(tenantId: string) {
+    return prisma.accountingBook.findMany({
+      where: { tenantId },
+      include: { organization: { select: { id: true, name: true } } },
+      orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
+    });
+  }
+
+  async createAccountingBook(tenantId: string, orgId: string, dto: {
+    name: string;
+    standard: string;
+    isPrimary?: boolean;
+  }) {
+    const org = await prisma.organization.findFirst({ where: { id: orgId, tenantId } });
+    if (!org) throw new NotFoundException('Organization not found');
+
+    const valid = ['LOCAL_GAAP', 'IFRS', 'TAX', 'MANAGEMENT'];
+    const standard = (dto.standard || 'LOCAL_GAAP').toUpperCase();
+    if (!valid.includes(standard)) throw new BadRequestException(`Standard must be one of: ${valid.join(', ')}`);
+
+    // If setting as primary, demote existing primary
+    if (dto.isPrimary) {
+      await prisma.accountingBook.updateMany({
+        where: { tenantId, orgId, isPrimary: true },
+        data: { isPrimary: false },
+      });
+    }
+
+    return prisma.accountingBook.create({
+      data: { tenantId, orgId, name: dto.name, standard, isPrimary: dto.isPrimary ?? false },
+    });
+  }
+
+  async postJournalToBook(tenantId: string, orgId: string, bookId: string, dto: {
+    entryNumber: string;
+    date: string;
+    entries: Array<{ accountId: string; debit: number; credit: number; description?: string }>;
+    notes?: string;
+  }) {
+    const book = await prisma.accountingBook.findFirst({ where: { id: bookId, tenantId, isActive: true } });
+    if (!book) throw new NotFoundException('Accounting book not found');
+
+    const totalDebit = dto.entries.reduce((s, l) => s + (l.debit || 0), 0);
+    const totalCredit = dto.entries.reduce((s, l) => s + (l.credit || 0), 0);
+    if (Math.abs(totalDebit - totalCredit) > 0.01) {
+      throw new BadRequestException('Journal is not balanced (debits ≠ credits)');
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const journal = await tx.journal.create({
+        data: {
+          tenantId, orgId,
+          bookId,
+          entryNumber: dto.entryNumber,
+          date: new Date(dto.date),
+          status: 'DRAFT',
+          notes: dto.notes,
+        },
+      });
+
+      await tx.journalEntry.createMany({
+        data: dto.entries.map(l => ({
+          tenantId,
+          journalId: journal.id,
+          accountId: l.accountId,
+          debit: l.debit,
+          credit: l.credit,
+          description: l.description || '',
+        })),
+      });
+
+      return tx.journal.findFirst({ where: { id: journal.id }, include: { entries: true } });
+    });
+  }
+
+  async getBookTrialBalance(tenantId: string, bookId: string, asOf?: string) {
+    const book = await prisma.accountingBook.findFirst({ where: { id: bookId, tenantId } });
+    if (!book) throw new NotFoundException('Accounting book not found');
+
+    const dateFilter = asOf ? { lte: new Date(asOf) } : undefined;
+
+    const journals = await prisma.journal.findMany({
+      where: { tenantId, bookId, status: 'POSTED', ...(dateFilter ? { date: dateFilter } : {}) },
+      include: { entries: { include: { account: { select: { id: true, code: true, name: true, type: true } } } } },
+    });
+
+    const balances: Record<string, { accountId: string; code: string; name: string; type: string; debit: number; credit: number; balance: number }> = {};
+
+    for (const j of journals) {
+      for (const e of j.entries) {
+        const key = e.accountId;
+        if (!balances[key]) {
+          balances[key] = { accountId: e.accountId, code: e.account.code, name: e.account.name, type: e.account.type, debit: 0, credit: 0, balance: 0 };
+        }
+        balances[key].debit += Number(e.debit);
+        balances[key].credit += Number(e.credit);
+        balances[key].balance = balances[key].debit - balances[key].credit;
+      }
+    }
+
+    const rows = Object.values(balances).sort((a, b) => a.code.localeCompare(b.code));
+    const totalDebit = rows.reduce((s, r) => s + r.debit, 0);
+    const totalCredit = rows.reduce((s, r) => s + r.credit, 0);
+
+    return { book: { id: book.id, name: book.name, standard: book.standard }, asOf: asOf || 'current', rows, totalDebit, totalCredit };
+  }
+
+  async crossBookVarianceReport(tenantId: string, bookId1: string, bookId2: string, asOf?: string) {
+    const [tb1, tb2] = await Promise.all([
+      this.getBookTrialBalance(tenantId, bookId1, asOf),
+      this.getBookTrialBalance(tenantId, bookId2, asOf),
+    ]);
+
+    const map1 = Object.fromEntries(tb1.rows.map(r => [r.accountId, r]));
+    const map2 = Object.fromEntries(tb2.rows.map(r => [r.accountId, r]));
+    const allIds = new Set([...Object.keys(map1), ...Object.keys(map2)]);
+
+    const variances = Array.from(allIds).map(id => {
+      const r1 = map1[id];
+      const r2 = map2[id];
+      const code = r1?.code ?? r2?.code ?? '';
+      const name = r1?.name ?? r2?.name ?? '';
+      return {
+        accountId: id,
+        code,
+        name,
+        book1Balance: r1?.balance ?? 0,
+        book2Balance: r2?.balance ?? 0,
+        variance: (r2?.balance ?? 0) - (r1?.balance ?? 0),
+      };
+    }).filter(v => Math.abs(v.variance) > 0.01).sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance));
+
+    return {
+      book1: { id: bookId1, name: tb1.book.name, standard: tb1.book.standard },
+      book2: { id: bookId2, name: tb2.book.name, standard: tb2.book.standard },
+      asOf: asOf || 'current',
+      variances,
+      totalVariance: variances.reduce((s, v) => s + Math.abs(v.variance), 0),
+    };
   }
 }

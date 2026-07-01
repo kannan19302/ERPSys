@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  PageHeader, Card, Button, Badge, DataTable, type Column, KPICard, DashboardChart, Tabs,
+  PageHeader, Card, Button, Badge, DataTable, type Column, KPICard, DashboardChart, Tabs, Spinner,
 } from '@unerp/ui';
-import { Building2, DollarSign, TrendingUp, GitMerge, BarChart3, FileText } from 'lucide-react';
+import { Building2, DollarSign, TrendingUp, GitMerge, BarChart3 } from 'lucide-react';
 
 interface Entity {
   id: string;
@@ -17,28 +17,68 @@ interface Entity {
   status: 'ACTIVE' | 'INACTIVE';
 }
 
-const ENTITIES: Entity[] = [
-  { id: '1', name: 'Acme Corp (Parent)', currency: 'USD', revenue: 2400000, expenses: 1800000, netIncome: 600000, assets: 5200000, status: 'ACTIVE' },
-  { id: '2', name: 'Acme Europe GmbH', currency: 'EUR', revenue: 850000, expenses: 720000, netIncome: 130000, assets: 1800000, status: 'ACTIVE' },
-  { id: '3', name: 'Acme Asia Pte Ltd', currency: 'SGD', revenue: 620000, expenses: 510000, netIncome: 110000, assets: 1200000, status: 'ACTIVE' },
-  { id: '4', name: 'Acme UK Ltd', currency: 'GBP', revenue: 440000, expenses: 380000, netIncome: 60000, assets: 890000, status: 'ACTIVE' },
-];
+interface QuarterTrend {
+  name: string;
+  revenue: number;
+  expenses: number;
+  netIncome: number;
+  [key: string]: unknown;
+}
 
-const CONSOLIDATED_TREND = [
-  { name: 'Q1', revenue: 980000, expenses: 780000, netIncome: 200000 },
-  { name: 'Q2', revenue: 1100000, expenses: 850000, netIncome: 250000 },
-  { name: 'Q3', revenue: 1050000, expenses: 810000, netIncome: 240000 },
-  { name: 'Q4', revenue: 1180000, expenses: 970000, netIncome: 210000 },
-];
+interface ConsolidationOverview {
+  entities: Entity[];
+  consolidated: { revenue: number; expenses: number; netIncome: number; assets: number; entityCount: number };
+  eliminations: { total: number; transfers: unknown[] };
+  trend: QuarterTrend[];
+}
 
-const fmtCurrency = (n: number) => `$${(n / 1000).toFixed(0)}K`;
 const fmtFull = (n: number) => `$${n.toLocaleString()}`;
 
 export default function ConsolidationPage() {
   const [activeTab, setActiveTab] = useState('entities');
-  const totalRevenue = ENTITIES.reduce((a, e) => a + e.revenue, 0);
-  const totalNet = ENTITIES.reduce((a, e) => a + e.netIncome, 0);
-  const totalAssets = ENTITIES.reduce((a, e) => a + e.assets, 0);
+  const [overview, setOverview] = useState<ConsolidationOverview | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [running, setRunning] = useState(false);
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') || localStorage.getItem('admin_token') || '' : '';
+
+  const fetchOverview = useCallback(async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/v1/advanced-finance/consolidation/overview', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setOverview(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
+
+  const runConsolidation = async () => {
+    setRunning(true);
+    try {
+      const now = new Date();
+      const periodStart = new Date(now.getFullYear(), 0, 1).toISOString();
+      const periodEnd = now.toISOString();
+      const res = await fetch('http://localhost:3001/api/v1/advanced-finance/consolidation/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ periodStart, periodEnd, eliminateIntercompany: true }),
+      });
+      if (res.ok) await fetchOverview();
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const entities = overview?.entities || [];
+  const trend = overview?.trend || [];
+  const totalRevenue = overview?.consolidated.revenue || 0;
+  const totalNet = overview?.consolidated.netIncome || 0;
+  const totalAssets = overview?.consolidated.assets || 0;
 
   const columns: Column<Entity>[] = [
     {
@@ -65,19 +105,36 @@ export default function ConsolidationPage() {
     { key: 'status', header: 'Status', render: (row) => <Badge variant={row.status === 'ACTIVE' ? 'success' : 'default'}>{row.status}</Badge> },
   ];
 
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader title="Financial Consolidation" description="Multi-entity consolidated financial statements and inter-company eliminations"
         breadcrumbs={[{ label: 'Finance', href: '/finance' }, { label: 'Advanced', href: '/finance/advanced' }, { label: 'Consolidation' }]}
-        actions={<Button variant="primary" onClick={() => {}}><GitMerge size={14} style={{ marginRight: 6 }} /> Run Consolidation</Button>}
+        actions={
+          <Button variant="primary" onClick={runConsolidation} disabled={running}>
+            <GitMerge size={14} style={{ marginRight: 6 }} /> {running ? 'Running…' : 'Run Consolidation'}
+          </Button>
+        }
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
         <KPICard title="Consolidated Revenue" value={fmtFull(totalRevenue)} icon={<TrendingUp size={20} />} color="var(--color-success)" />
         <KPICard title="Consolidated Net Income" value={fmtFull(totalNet)} icon={<DollarSign size={20} />} color="var(--color-primary)" />
         <KPICard title="Consolidated Assets" value={fmtFull(totalAssets)} icon={<BarChart3 size={20} />} color="var(--color-info)" />
-        <KPICard title="Entities" value={ENTITIES.length} icon={<Building2 size={20} />} color="var(--color-text-secondary)" />
+        <KPICard title="Entities" value={entities.length} icon={<Building2 size={20} />} color="var(--color-text-secondary)" />
       </div>
+
+      {overview && overview.eliminations.total > 0 && (
+        <Card padding="md">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+            <GitMerge size={14} />
+            Inter-company eliminations netted from consolidated totals: <strong>{fmtFull(overview.eliminations.total)}</strong>
+          </div>
+        </Card>
+      )}
 
       <Tabs tabs={[
         { key: 'entities', label: 'Entities', icon: <Building2 size={14} /> },
@@ -86,11 +143,11 @@ export default function ConsolidationPage() {
 
       {activeTab === 'entities' ? (
         <Card padding="none">
-          <DataTable columns={columns} data={ENTITIES} rowKey={(r) => r.id} emptyTitle="No entities" emptyMessage="Add subsidiary entities for consolidation." emptyIcon={<Building2 size={48} />} />
+          <DataTable columns={columns} data={entities} rowKey={(r) => r.id} emptyTitle="No entities" emptyMessage="Add subsidiary organizations for consolidation." emptyIcon={<Building2 size={48} />} />
         </Card>
       ) : (
         <DashboardChart title="Quarterly Consolidated P&L" subtitle="Revenue, expenses, and net income across all entities"
-          data={CONSOLIDATED_TREND}
+          data={trend}
           config={{ xAxisKey: 'name', series: [
             { dataKey: 'revenue', name: 'Revenue', color: '#22c55e' },
             { dataKey: 'expenses', name: 'Expenses', color: '#ef4444' },

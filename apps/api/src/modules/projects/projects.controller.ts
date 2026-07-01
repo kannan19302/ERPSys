@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -33,12 +33,20 @@ export class ProjectsController {
     return this.projectsService.getProjects(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Get resource workload' })
+  @ApiOperation({ summary: 'Get resource workload for a week (defaults to the current week)' })
   @Permissions('projects.read')
   @Get('resource-workload')
   @Permissions('projects.project.read')
-  async getResourceWorkload(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    return this.projectsService.getResourceWorkload(req.user.tenantId);
+  async getResourceWorkload(@Req() req: AuthenticatedRequest, @Query('weekStart') weekStart?: string): Promise<unknown> {
+    return this.projectsService.getResourceWorkload(req.user.tenantId, weekStart);
+  }
+
+  @ApiOperation({ summary: 'Get project revenue recognition schedule (time-based percentage-of-completion)' })
+  @Permissions('projects.read')
+  @Get('revenue-recognition')
+  @Permissions('projects.project.read')
+  async getRevenueRecognition(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.projectsService.getRevenueRecognition(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get portfolios' })

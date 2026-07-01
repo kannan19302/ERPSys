@@ -1,7 +1,7 @@
 import {
   Home, CreditCard, Users, BarChart3, Package, ShoppingCart, ClipboardList, Truck,
   Briefcase, Hammer, PieChart, FolderOpen, MessageSquare, Store, GraduationCap,
-  Building2, Wrench, Key, Cloud, ShieldAlert, ShoppingBag, Cpu,
+  Building2, Wrench, Key, Cloud, ShieldAlert, ShoppingBag, Cpu, Sparkles,
 } from 'lucide-react';
 import type { AppDefinition, SwitcherFolder } from './types';
 
@@ -52,6 +52,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   customers: 'Customers',
   vendors: 'Vendors',
   contacts: 'Contacts',
+  cases: 'Cases & SLA',
   leads: 'Leads',
   opportunities: 'Opportunities',
   quotations: 'Quotations',
@@ -71,16 +72,21 @@ export const SEGMENT_NAMES: Record<string, string> = {
   health: 'Strategic Health',
   portfolios: 'Portfolios',
   workloads: 'Workloads',
+  'revenue-recognition': 'Revenue Recognition',
   boms: 'BOMs',
   configurator: 'Configurator',
   diagnostics: 'Diagnostics',
   mrp: 'MRP',
   quality: 'Quality',
+  scheduling: 'Scheduling',
   'shop-floor': 'Shop Floor',
   designer: 'Receipt Designer',
   'ap-automation': 'AP Automation',
   'ar-automation': 'AR Automation',
   'bank-accounts': 'Bank Accounts',
+  ai: 'AI Copilot',
+  'forecast-scenarios': 'Rolling Forecasts (xP&A)',
+  'accounting-books': 'Accounting Books',
   budgeting: 'Budgeting',
   'chart-of-accounts': 'Chart of Accounts',
   'financial-periods': 'Financial Periods',
@@ -124,7 +130,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   simulation: 'Simulation',
   requisitions: 'Requisitions',
   'blanket-agreements': 'Blanket Agreements',
-  portal: 'Portal',
+  portal: 'Supplier Portal',
   'super-admin': 'Super Admin',
   'access-control': 'Access Control',
   tenants: 'Tenants',
@@ -209,6 +215,7 @@ export const allApplications: AppDefinition[] = [
   { id: 'projects', name: 'Project Management', href: '/projects', icon: Briefcase, installed: true },
   { id: 'manufacturing', name: 'Manufacturing', href: '/manufacturing', icon: Hammer, installed: true },
   { id: 'analytics', name: 'Business Intelligence', href: '/analytics', icon: PieChart, installed: true },
+  { id: 'ai', name: 'AI Copilot', href: '/ai', icon: Sparkles, installed: true },
   { id: 'drive', name: 'Drive', href: '/drive', icon: FolderOpen, installed: true },
   { id: 'communication', name: 'Connect', href: '/connect', icon: MessageSquare, installed: true },
   { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
@@ -235,4 +242,4 @@ export const switcherFolders: SwitcherFolder[] = [
  * Kernel apps are always present (never uninstallable); every other app shows
  * only when it's installed for the tenant.
  */
-export const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'admin', 'app-store', 'builder']);
+export const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'admin', 'app-store', 'builder', 'ai']);

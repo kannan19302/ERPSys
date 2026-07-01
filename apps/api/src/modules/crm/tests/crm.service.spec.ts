@@ -10,6 +10,7 @@ import { CrmSalesOpsService } from '../crm-salesops.service';
 import { CrmConfigService } from '../crm-config.service';
 import { CrmCollaborationService } from '../crm-collaboration.service';
 import { CrmDashboardsService } from '../crm-dashboards.service';
+import { CrmCasesService } from '../crm-cases.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Prisma } from '@prisma/client';
@@ -91,7 +92,7 @@ describe('CrmService', () => {
       providers: [
         CrmService, CrmCustomersService, CrmContactsService, CrmLeadsService,
         CrmDealsService, CrmActivitiesService, CrmMarketingService, CrmSalesOpsService,
-        CrmConfigService, CrmCollaborationService, CrmDashboardsService,
+        CrmConfigService, CrmCollaborationService, CrmDashboardsService, CrmCasesService,
       ],
     }).compile();
 
