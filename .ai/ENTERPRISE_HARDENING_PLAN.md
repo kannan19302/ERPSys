@@ -45,8 +45,9 @@ a commit. No big-bang rewrites.
 ### Phase 0 — Restore honest quality gates  *(in progress)*
 1. [x] Green `tsc` on web (3 masked errors fixed).
 2. [ ] Add `typecheck` script to web + api; wire `tsc --noEmit` into `turbo` + CI.
-3. [ ] Remove `ignoreBuildErrors` / `ignoreDuringBuilds` from `next.config` once
-       green (fail the build on type/lint regressions).
+3. [x] Removed `ignoreBuildErrors` / `ignoreDuringBuilds` from `next.config`.
+       `next lint` is clean (warnings only) and a full production `next build`
+       passes with type + lint gates enforced — type errors can no longer ship.
 4. [x] Fix the test runner. Root cause was **not** a "Node worker memory leak":
        two specs (`marketplace/vendor.service.coverage`, `builder/web-collections
        .service.coverage`) OOM-crashed their worker because the services had

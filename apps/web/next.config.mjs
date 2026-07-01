@@ -15,12 +15,9 @@ const nextConfig = {
       },
     ];
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Type and lint errors fail the build. Previously both were ignored, which
+  // let type errors ship (see the hardening plan). tsc --noEmit and next lint
+  // are green; keep them that way — the CI typecheck gate is the backstop.
 };
 
 export default nextConfig;
