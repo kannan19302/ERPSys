@@ -1,7 +1,7 @@
 # Production-Readiness Scorecard
 
 > **Generated file** — produced by `node scripts/scorecard.mjs`. Do not edit by hand.
-> Last generated: 2026-07-01T03:17:11.097Z
+> Last generated: 2026-07-01T03:24:17.297Z
 
 ## System score (heuristic): 10 / 10
 
@@ -16,12 +16,12 @@ system reaches 10 only when every module and every platform dimension is 10.
 
 ## Reality Gates (binding)
 
-> Last verified: 2026-07-01T03:17:10.836Z
+> Last verified: 2026-07-01T03:24:17.202Z
 
 | Gate | Result | Exit | Duration |
 | --- | --- | --- | --- |
-| Typecheck (tsc --noEmit, all packages) | ✅ PASS | 0 | 11s |
-| Unit tests (full API suite) | ✅ PASS | 0 | 33s |
+| Typecheck (tsc --noEmit, all packages) | ✅ PASS | 0 | 6s |
+| Unit tests (full API suite) | ✅ PASS | 0 | 32s |
 
 > ✅ Code compiles and the full test suite passes.
 

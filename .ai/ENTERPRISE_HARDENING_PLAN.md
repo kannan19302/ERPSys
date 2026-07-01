@@ -82,7 +82,13 @@ suite green in parallel, gates enforced, quality gates re-armed.
   (2,330), `crm.controller.ts` (66 KB), `inventory.service.ts` (1,792),
   `advanced-finance` (1,281), `procurement` (1,252), `manufacturing` (1,227).
   CRM split already begun (`crm-contacts`/`crm-customers` services) — finish it
-  as the reference pattern, then apply to the rest.
+  as the reference pattern, then apply to the rest. **In progress:** using a
+  strangler-fig facade — `CrmService` keeps its public API but delegates to
+  focused domain services; the controller and tests are untouched (zero-break).
+  Extracted so far: customers, contacts, **leads** (`crm-leads.service.ts`,
+  incl. scoring + convert). `crm.service.ts` 2,330 → 2,205 LOC. Remaining
+  domains to peel off: opportunities, pipelines, activities, campaigns,
+  price-books, territories, commissions, web-forms, custom-fields, analytics.
 - Enforce layering with `dependency-cruiser` / ESLint boundaries: controllers
   thin, no business logic in controllers or UI, no cross-module deep imports.
 - Standardize DTOs, pagination, filtering, sorting, RFC7807 error shape.

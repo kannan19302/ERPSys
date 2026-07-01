@@ -1,15 +1,15 @@
 {
-  "ranAt": "2026-07-01T03:17:10.836Z",
+  "ranAt": "2026-07-01T03:24:17.202Z",
   "typecheck": {
     "label": "Typecheck (tsc --noEmit, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 11
+    "seconds": 6
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 33
+    "seconds": 32
   }
 }
