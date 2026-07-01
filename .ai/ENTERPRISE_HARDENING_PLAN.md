@@ -81,14 +81,25 @@ suite green in parallel, gates enforced, quality gates re-armed.
 - God-classes to split (SRP): `builder.service.ts` (2,905), `crm.service.ts`
   (2,330), `crm.controller.ts` (66 KB), `inventory.service.ts` (1,792),
   `advanced-finance` (1,281), `procurement` (1,252), `manufacturing` (1,227).
-  CRM split already begun (`crm-contacts`/`crm-customers` services) — finish it
-  as the reference pattern, then apply to the rest. **In progress:** using a
-  strangler-fig facade — `CrmService` keeps its public API but delegates to
-  focused domain services; the controller and tests are untouched (zero-break).
-  Extracted so far: customers, contacts, **leads** (`crm-leads.service.ts`,
-  incl. scoring + convert). `crm.service.ts` 2,330 → 2,205 LOC. Remaining
-  domains to peel off: opportunities, pipelines, activities, campaigns,
-  price-books, territories, commissions, web-forms, custom-fields, analytics.
+  **CRM god-class DONE.** `crm.service.ts` 2,330 → **322 LOC pure facade**
+  (strangler-fig: keeps the public API, delegates to focused domain services;
+  controller untouched, zero-break). Extracted into 10 cohesive services:
+  customers, contacts (+tags/360/merge), leads (scoring/convert), deals
+  (pipelines/opps/line-items/price-books/analytics/playbooks/battlecards,
+  655 LOC), activities, marketing (campaigns/workflows/sequences/web-forms/
+  saved-reports), sales-ops (targets/territories/commissions), config
+  (custom-fields/record-types/approvals/CPQ/documents/import-export),
+  collaboration (comments/notes/followers), dashboards. Shared `resolveOrgId`
+  helper de-dupes org resolution. Cross-domain aggregators (runSavedReport,
+  getWidgetData) stay in the facade to avoid circular service deps. Gates green:
+  typecheck PASS, full suite PASS.
+  - [ ] **Follow-up:** the generated `crm.service.coverage.spec.ts` instantiates
+        `new CrmService()` with no sub-services, so it no longer exercises the
+        moved domain logic (the real DI spec covers customers/contacts/leads).
+        Repoint it (or add per-service specs) so deals/marketing/config/etc.
+        regain real unit coverage.
+  - Next god-classes: `builder.service.ts` (2,905), `inventory.service.ts`
+    (1,792), advanced-finance/procurement/manufacturing (>1,200).
 - Enforce layering with `dependency-cruiser` / ESLint boundaries: controllers
   thin, no business logic in controllers or UI, no cross-module deep imports.
 - Standardize DTOs, pagination, filtering, sorting, RFC7807 error shape.

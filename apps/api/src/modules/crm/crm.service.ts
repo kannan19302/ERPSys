@@ -1,6 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import { Injectable, Inject } from '@nestjs/common';
 import {
   CreateCustomerInput, CreateVendorInput,
   CreateContactInput, CreateLeadInput, CreateOpportunityInput,
@@ -26,2162 +24,291 @@ import {
   CreatePlaybookInput, UpdatePlaybookInput, CreateBattlecardInput, UpdateBattlecardInput,
   CreateCrmDashboardInput, UpdateCrmDashboardInput, CreateDashboardWidgetInput, UpdateDashboardWidgetInput,
 } from '@unerp/shared';
-import * as crypto from 'crypto';
 
 import { CrmCustomersService } from './crm-customers.service';
 import { CrmContactsService } from './crm-contacts.service';
 import { CrmLeadsService } from './crm-leads.service';
+import { CrmDealsService } from './crm-deals.service';
+import { CrmActivitiesService } from './crm-activities.service';
+import { CrmMarketingService } from './crm-marketing.service';
+import { CrmSalesOpsService } from './crm-salesops.service';
+import { CrmConfigService } from './crm-config.service';
+import { CrmCollaborationService } from './crm-collaboration.service';
+import { CrmDashboardsService } from './crm-dashboards.service';
 
+/**
+ * CRM facade. Presents the CRM module's public application surface to the
+ * controller and delegates to focused domain services (strangler-fig). It owns
+ * only the cross-domain aggregators (saved-report execution, dashboard widget
+ * data) that must coordinate several domains; every other method is a
+ * one-to-one delegation.
+ */
 @Injectable()
 export class CrmService {
   constructor(
-    @Inject(CrmCustomersService)
-    private readonly customersService: CrmCustomersService,
-    @Inject(CrmContactsService)
-    private readonly contactsService: CrmContactsService,
-    @Inject(CrmLeadsService)
-    private readonly leadsService: CrmLeadsService,
+    @Inject(CrmCustomersService) private readonly customersService: CrmCustomersService,
+    @Inject(CrmContactsService) private readonly contactsService: CrmContactsService,
+    @Inject(CrmLeadsService) private readonly leadsService: CrmLeadsService,
+    @Inject(CrmDealsService) private readonly dealsService: CrmDealsService,
+    @Inject(CrmActivitiesService) private readonly activitiesService: CrmActivitiesService,
+    @Inject(CrmMarketingService) private readonly marketingService: CrmMarketingService,
+    @Inject(CrmSalesOpsService) private readonly salesOpsService: CrmSalesOpsService,
+    @Inject(CrmConfigService) private readonly configService: CrmConfigService,
+    @Inject(CrmCollaborationService) private readonly collaborationService: CrmCollaborationService,
+    @Inject(CrmDashboardsService) private readonly dashboardsService: CrmDashboardsService,
   ) {}
 
-  // ════════════════════════════════════════════════
-  // CUSTOMERS
-  // ════════════════════════════════════════════════
+  // ── CUSTOMERS & VENDORS ───────────────────────
+  getCustomers(tenantId: string) { return this.customersService.getCustomers(tenantId); }
+  getCustomerById(tenantId: string, id: string) { return this.customersService.getCustomerById(tenantId, id); }
+  createCustomer(tenantId: string, orgId: string, dto: CreateCustomerInput) { return this.customersService.createCustomer(tenantId, orgId, dto); }
+  updateCustomer(tenantId: string, id: string, dto: UpdateCustomerInput) { return this.customersService.updateCustomer(tenantId, id, dto); }
+  deleteCustomer(tenantId: string, id: string) { return this.customersService.deleteCustomer(tenantId, id); }
+  getVendors(tenantId: string) { return this.customersService.getVendors(tenantId); }
+  createVendor(tenantId: string, orgId: string, dto: CreateVendorInput) { return this.customersService.createVendor(tenantId, orgId, dto); }
 
-  async getCustomers(tenantId: string) {
-    return this.customersService.getCustomers(tenantId);
-  }
+  // ── CONTACTS ──────────────────────────────────
+  getContacts(tenantId: string, customerId?: string) { return this.contactsService.getContacts(tenantId, customerId); }
+  createContact(tenantId: string, orgId: string, dto: CreateContactInput) { return this.contactsService.createContact(tenantId, orgId, dto); }
+  updateContact(tenantId: string, id: string, dto: UpdateContactInput) { return this.contactsService.updateContact(tenantId, id, dto); }
+  deleteContact(tenantId: string, id: string) { return this.contactsService.deleteContact(tenantId, id); }
+  getContactTags(tenantId: string) { return this.contactsService.getContactTags(tenantId); }
+  createContactTag(tenantId: string, dto: CreateContactTagInput) { return this.contactsService.createContactTag(tenantId, dto); }
+  deleteContactTag(tenantId: string, id: string) { return this.contactsService.deleteContactTag(tenantId, id); }
+  assignContactTag(tenantId: string, contactId: string, tagId: string) { return this.contactsService.assignContactTag(tenantId, contactId, tagId); }
+  removeContactTag(contactId: string, tagId: string) { return this.contactsService.removeContactTag(contactId, tagId); }
+  getContactTimeline(tenantId: string, contactId: string) { return this.contactsService.getContactTimeline(tenantId, contactId); }
+  findDuplicateContacts(tenantId: string) { return this.contactsService.findDuplicateContacts(tenantId); }
+  mergeContacts(tenantId: string, dto: MergeContactsInput) { return this.contactsService.mergeContacts(tenantId, dto); }
 
-  async getCustomerById(tenantId: string, id: string) {
-    return this.customersService.getCustomerById(tenantId, id);
-  }
+  // ── LEADS ─────────────────────────────────────
+  getLeadSources(tenantId: string) { return this.leadsService.getLeadSources(tenantId); }
+  getLeads(tenantId: string, status?: string) { return this.leadsService.getLeads(tenantId, status); }
+  getLeadById(tenantId: string, id: string) { return this.leadsService.getLeadById(tenantId, id); }
+  recalculateLeadScore(tenantId: string, leadId: string) { return this.leadsService.recalculateLeadScore(tenantId, leadId); }
+  createLead(tenantId: string, orgId: string, dto: CreateLeadInput) { return this.leadsService.createLead(tenantId, orgId, dto); }
+  updateLead(tenantId: string, id: string, dto: UpdateLeadInput) { return this.leadsService.updateLead(tenantId, id, dto); }
+  updateLeadStatus(tenantId: string, id: string, status: string) { return this.leadsService.updateLeadStatus(tenantId, id, status); }
+  convertLead(tenantId: string, orgId: string, leadId: string, customerName?: string, opportunityName?: string, opportunityAmount?: number) { return this.leadsService.convertLead(tenantId, orgId, leadId, customerName, opportunityName, opportunityAmount); }
+  deleteLead(tenantId: string, id: string) { return this.leadsService.deleteLead(tenantId, id); }
 
-  async createCustomer(tenantId: string, orgId: string, dto: CreateCustomerInput) {
-    return this.customersService.createCustomer(tenantId, orgId, dto);
-  }
+  // ── PIPELINES & OPPORTUNITIES ─────────────────
+  getPipelines(tenantId: string) { return this.dealsService.getPipelines(tenantId); }
+  createPipeline(tenantId: string, dto: CreateSalesPipelineInput) { return this.dealsService.createPipeline(tenantId, dto); }
+  getOpportunities(tenantId: string, pipelineId?: string, stage?: string) { return this.dealsService.getOpportunities(tenantId, pipelineId, stage); }
+  getOpportunityById(tenantId: string, id: string) { return this.dealsService.getOpportunityById(tenantId, id); }
+  createOpportunity(tenantId: string, orgId: string, dto: CreateOpportunityInput) { return this.dealsService.createOpportunity(tenantId, orgId, dto); }
+  updateOpportunity(tenantId: string, id: string, dto: UpdateOpportunityInput) { return this.dealsService.updateOpportunity(tenantId, id, dto); }
+  updateOpportunityStage(tenantId: string, id: string, stage: string, probability?: number, actualCloseDate?: string, lossReason?: string) { return this.dealsService.updateOpportunityStage(tenantId, id, stage, probability, actualCloseDate, lossReason); }
+  deleteOpportunity(tenantId: string, id: string) { return this.dealsService.deleteOpportunity(tenantId, id); }
+  getOpportunityLineItems(tenantId: string, opportunityId: string) { return this.dealsService.getOpportunityLineItems(tenantId, opportunityId); }
+  addOpportunityLineItem(tenantId: string, opportunityId: string, dto: CreateOpportunityLineItemInput) { return this.dealsService.addOpportunityLineItem(tenantId, opportunityId, dto); }
+  updateOpportunityLineItem(tenantId: string, opportunityId: string, itemId: string, dto: UpdateOpportunityLineItemInput) { return this.dealsService.updateOpportunityLineItem(tenantId, opportunityId, itemId, dto); }
+  deleteOpportunityLineItem(tenantId: string, opportunityId: string, itemId: string) { return this.dealsService.deleteOpportunityLineItem(tenantId, opportunityId, itemId); }
 
-  async updateCustomer(tenantId: string, id: string, dto: UpdateCustomerInput) {
-    return this.customersService.updateCustomer(tenantId, id, dto);
-  }
+  // ── PRICE BOOKS & PRODUCTS ────────────────────
+  getPriceBooks(tenantId: string) { return this.dealsService.getPriceBooks(tenantId); }
+  createPriceBook(tenantId: string, orgId: string, dto: CreatePriceBookInput) { return this.dealsService.createPriceBook(tenantId, orgId, dto); }
+  updatePriceBook(tenantId: string, id: string, dto: UpdatePriceBookInput) { return this.dealsService.updatePriceBook(tenantId, id, dto); }
+  deletePriceBook(tenantId: string, id: string) { return this.dealsService.deletePriceBook(tenantId, id); }
+  getPriceBookEntries(tenantId: string, priceBookId: string) { return this.dealsService.getPriceBookEntries(tenantId, priceBookId); }
+  addPriceBookEntry(tenantId: string, priceBookId: string, dto: CreatePriceBookEntryInput) { return this.dealsService.addPriceBookEntry(tenantId, priceBookId, dto); }
+  deletePriceBookEntry(tenantId: string, entryId: string) { return this.dealsService.deletePriceBookEntry(tenantId, entryId); }
+  getCrmProducts(tenantId: string) { return this.dealsService.getCrmProducts(tenantId); }
 
-  async deleteCustomer(tenantId: string, id: string) {
-    return this.customersService.deleteCustomer(tenantId, id);
-  }
+  // ── ACTIVITIES & EMAIL TEMPLATES ──────────────
+  getActivities(tenantId: string, leadId?: string, opportunityId?: string, customerId?: string) { return this.activitiesService.getActivities(tenantId, leadId, opportunityId, customerId); }
+  createActivity(tenantId: string, orgId: string, dto: CreateActivityInput) { return this.activitiesService.createActivity(tenantId, orgId, dto); }
+  completeActivity(tenantId: string, id: string) { return this.activitiesService.completeActivity(tenantId, id); }
+  getEmailTemplates(tenantId: string) { return this.activitiesService.getEmailTemplates(tenantId); }
+  createEmailTemplate(tenantId: string, dto: CreateEmailTemplateInput) { return this.activitiesService.createEmailTemplate(tenantId, dto); }
+  updateEmailTemplate(tenantId: string, id: string, dto: UpdateEmailTemplateInput) { return this.activitiesService.updateEmailTemplate(tenantId, id, dto); }
+  deleteEmailTemplate(tenantId: string, id: string) { return this.activitiesService.deleteEmailTemplate(tenantId, id); }
 
-  // ════════════════════════════════════════════════
-  // VENDORS
-  // ════════════════════════════════════════════════
-
-  async getVendors(tenantId: string) {
-    return this.customersService.getVendors(tenantId);
-  }
-
-  async createVendor(tenantId: string, orgId: string, dto: CreateVendorInput) {
-    return this.customersService.createVendor(tenantId, orgId, dto);
-  }
-
-  // ════════════════════════════════════════════════
-  // CONTACTS
-  // ════════════════════════════════════════════════
-
-  async getContacts(tenantId: string, customerId?: string) {
-    return this.contactsService.getContacts(tenantId, customerId);
-  }
-
-  async createContact(tenantId: string, orgId: string, dto: CreateContactInput) {
-    return this.contactsService.createContact(tenantId, orgId, dto);
-  }
-
-  async updateContact(tenantId: string, id: string, dto: UpdateContactInput) {
-    return this.contactsService.updateContact(tenantId, id, dto);
-  }
-
-  async deleteContact(tenantId: string, id: string) {
-    return this.contactsService.deleteContact(tenantId, id);
-  }
-
-  // ════════════════════════════════════════════════
-  // LEAD SOURCES
-  // ════════════════════════════════════════════════
-
-  async getLeadSources(tenantId: string) {
-    return this.leadsService.getLeadSources(tenantId);
-  }
-
-  // ════════════════════════════════════════════════
-  // LEADS
-  // ════════════════════════════════════════════════
-
-  async getLeads(tenantId: string, status?: string) {
-    return this.leadsService.getLeads(tenantId, status);
-  }
-
-  async getLeadById(tenantId: string, id: string) {
-    return this.leadsService.getLeadById(tenantId, id);
-  }
-
-  async recalculateLeadScore(tenantId: string, leadId: string) {
-    return this.leadsService.recalculateLeadScore(tenantId, leadId);
-  }
-
-  async createLead(tenantId: string, orgId: string, dto: CreateLeadInput) {
-    return this.leadsService.createLead(tenantId, orgId, dto);
-  }
-
-  async updateLead(tenantId: string, id: string, dto: UpdateLeadInput) {
-    return this.leadsService.updateLead(tenantId, id, dto);
-  }
-
-  async updateLeadStatus(tenantId: string, id: string, status: string) {
-    return this.leadsService.updateLeadStatus(tenantId, id, status);
-  }
-
-  async convertLead(tenantId: string, orgId: string, leadId: string, customerName?: string, opportunityName?: string, opportunityAmount?: number) {
-    return this.leadsService.convertLead(tenantId, orgId, leadId, customerName, opportunityName, opportunityAmount);
-  }
-
-  async deleteLead(tenantId: string, id: string) {
-    return this.leadsService.deleteLead(tenantId, id);
-  }
-
-  // ════════════════════════════════════════════════
-  // SALES PIPELINES
-  // ════════════════════════════════════════════════
-
-  async getPipelines(tenantId: string) {
-    return prisma.salesPipeline.findMany({
-      where: { tenantId },
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  async createPipeline(tenantId: string, dto: CreateSalesPipelineInput) {
-    if (dto.isDefault) {
-      await prisma.salesPipeline.updateMany({
-        where: { tenantId },
-        data: { isDefault: false },
-      });
-    }
-    return prisma.salesPipeline.create({
-      data: {
-        tenantId,
-        name: dto.name,
-        stages: dto.stages as Prisma.InputJsonValue,
-        isDefault: dto.isDefault || false,
-      },
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // OPPORTUNITIES
-  // ════════════════════════════════════════════════
-
-  async getOpportunities(tenantId: string, pipelineId?: string, stage?: string) {
-    const where: Prisma.OpportunityWhereInput = { tenantId, deletedAt: null };
-    if (pipelineId) where.pipelineId = pipelineId;
-    if (stage) where.stage = stage;
-    return prisma.opportunity.findMany({
-      where,
-      include: {
-        customer: { select: { id: true, name: true } },
-        pipeline: { select: { id: true, name: true } },
-        _count: { select: { activities: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async getOpportunityById(tenantId: string, id: string) {
-    const opp = await prisma.opportunity.findFirst({
-      where: { id, tenantId, deletedAt: null },
-      include: {
-        customer: { select: { id: true, name: true } },
-        lead: true,
-        pipeline: { select: { id: true, name: true, stages: true } },
-        activities: { orderBy: { createdAt: 'desc' } },
-        lineItems: { include: { product: { select: { id: true, name: true, sku: true } } }, orderBy: { sortOrder: 'asc' } },
-      },
-    });
-    if (!opp) throw new NotFoundException('Opportunity not found');
-    return opp;
-  }
-
-  async createOpportunity(tenantId: string, orgId: string, dto: CreateOpportunityInput) {
-    let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
-      const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered');
-      resolvedOrgId = org.id;
-    }
-    if (dto.customerId) {
-      const cust = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
-      if (!cust) throw new BadRequestException('Customer not found');
-    }
-    return prisma.opportunity.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name,
-        customerId: dto.customerId || null,
-        leadId: dto.leadId || null,
-        pipelineId: dto.pipelineId || null,
-        stage: dto.stage || 'PROSPECTING',
-        amount: dto.amount || null,
-        probability: dto.probability || 0,
-        expectedCloseDate: dto.expectedCloseDate ? new Date(dto.expectedCloseDate) : null,
-        competitor: dto.competitor || null,
-        notes: dto.notes || null,
-      },
-    });
-  }
-
-  async updateOpportunity(tenantId: string, id: string, dto: UpdateOpportunityInput) {
-    const existing = await prisma.opportunity.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Opportunity not found');
-    const data: Prisma.OpportunityUpdateInput = { ...dto };
-    if (dto.expectedCloseDate) data.expectedCloseDate = new Date(dto.expectedCloseDate);
-    return prisma.opportunity.update({ where: { id }, data });
-  }
-
-  async updateOpportunityStage(tenantId: string, id: string, stage: string, probability?: number, actualCloseDate?: string, lossReason?: string) {
-    const existing = await prisma.opportunity.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Opportunity not found');
-    const data: Prisma.OpportunityUpdateInput = { stage, stageEnteredAt: new Date() };
-    if (probability !== undefined) data.probability = probability;
-    if (actualCloseDate) data.actualCloseDate = new Date(actualCloseDate);
-    if (lossReason !== undefined) data.lossReason = lossReason;
-    const prob = probability !== undefined ? probability : existing.probability;
-    const amount = Number(existing.amount || 0);
-    data.weightedAmount = new Prisma.Decimal(amount * (prob / 100));
-    return prisma.opportunity.update({ where: { id }, data });
-  }
-
-  async deleteOpportunity(tenantId: string, id: string) {
-    const existing = await prisma.opportunity.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Opportunity not found');
-    return prisma.opportunity.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  // ════════════════════════════════════════════════
-  // ACTIVITIES
-  // ════════════════════════════════════════════════
-
-  async getActivities(tenantId: string, leadId?: string, opportunityId?: string, customerId?: string) {
-    const where: Prisma.ActivityWhereInput = { tenantId };
-    if (leadId) where.leadId = leadId;
-    if (opportunityId) where.opportunityId = opportunityId;
-    if (customerId) where.customerId = customerId;
-    return prisma.activity.findMany({
-      where,
-      include: { lead: { select: { id: true, firstName: true, lastName: true } }, contact: { select: { id: true, firstName: true, lastName: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createActivity(tenantId: string, orgId: string, dto: CreateActivityInput) {
-    let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
-      const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered');
-      resolvedOrgId = org.id;
-    }
-    const act = await prisma.activity.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        type: dto.type, subject: dto.subject,
-        description: dto.description || null,
-        leadId: dto.leadId || null,
-        opportunityId: dto.opportunityId || null,
-        customerId: dto.customerId || null,
-        contactId: dto.contactId || null,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-        assignedToId: dto.assignedToId || null,
-      },
-    });
-    if (dto.leadId) {
-      await this.recalculateLeadScore(tenantId, dto.leadId);
-    }
-    return act;
-  }
-
-  async completeActivity(tenantId: string, id: string) {
-    const existing = await prisma.activity.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Activity not found');
-    const updated = await prisma.activity.update({
-      where: { id },
-      data: { completedAt: new Date() },
-    });
-    if (existing.leadId) {
-      await this.recalculateLeadScore(tenantId, existing.leadId);
-    }
-    return updated;
-  }
-
-  // ════════════════════════════════════════════════
-  // EMAIL TEMPLATES
-  // ════════════════════════════════════════════════
-
-  async getEmailTemplates(tenantId: string) {
-    return prisma.emailTemplate.findMany({
-      where: { tenantId },
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  async createEmailTemplate(tenantId: string, dto: CreateEmailTemplateInput) {
-    return prisma.emailTemplate.create({
-      data: {
-        tenantId,
-        name: dto.name,
-        category: dto.category || 'GENERAL',
-        subject: dto.subject,
-        body: dto.body,
-        variables: dto.variables as Prisma.InputJsonValue || [],
-      },
-    });
-  }
-
-  async updateEmailTemplate(tenantId: string, id: string, dto: UpdateEmailTemplateInput) {
-    const existing = await prisma.emailTemplate.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Email template not found');
-    return prisma.emailTemplate.update({ where: { id }, data: dto as Prisma.EmailTemplateUpdateInput });
-  }
-
-  async deleteEmailTemplate(tenantId: string, id: string) {
-    const existing = await prisma.emailTemplate.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Email template not found');
-    return prisma.emailTemplate.delete({ where: { id } });
-  }
-
-  // ════════════════════════════════════════════════
-  // CRM ANALYTICS
-  // ════════════════════════════════════════════════
-
-  async getPipelineFunnel(tenantId: string) {
-    const opportunities = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null },
-      select: { stage: true, amount: true },
-    });
-    const stages: Record<string, { count: number; totalAmount: number }> = {};
-    for (const opp of opportunities) {
-      if (!stages[opp.stage]) stages[opp.stage] = { count: 0, totalAmount: 0 };
-      stages[opp.stage]!.count++;
-      stages[opp.stage]!.totalAmount += Number(opp.amount || 0);
-    }
-    return stages;
-  }
-
-  async getWinRate(tenantId: string) {
-    const won = await prisma.opportunity.count({ where: { tenantId, stage: 'CLOSED_WON', deletedAt: null } });
-    const lost = await prisma.opportunity.count({ where: { tenantId, stage: 'CLOSED_LOST', deletedAt: null } });
-    const total = won + lost;
-    return { won, lost, total, winRate: total > 0 ? Math.round((won / total) * 100) : 0 };
-  }
-
-  async getLeadSourceBreakdown(tenantId: string) {
-    const raw = await prisma.lead.groupBy({
-      by: ['sourceId'],
-      where: { tenantId, deletedAt: null },
-      _count: { id: true },
-    });
-    // map names
-    const sources = await prisma.leadSource.findMany({ where: { tenantId } });
-    return raw.map((r) => {
-      const src = sources.find((s) => s.id === r.sourceId);
-      return {
-        source: src ? src.name : 'Unknown',
-        count: r._count.id,
-      };
-    });
-  }
+  // ── ANALYTICS ─────────────────────────────────
+  getPipelineFunnel(tenantId: string) { return this.dealsService.getPipelineFunnel(tenantId); }
+  getWinRate(tenantId: string) { return this.dealsService.getWinRate(tenantId); }
+  getLeadSourceBreakdown(tenantId: string) { return this.dealsService.getLeadSourceBreakdown(tenantId); }
+  getRevenueForecast(tenantId: string) { return this.dealsService.getRevenueForecast(tenantId); }
+  getDealAging(tenantId: string) { return this.dealsService.getDealAging(tenantId); }
+  getStageDuration(tenantId: string) { return this.dealsService.getStageDuration(tenantId); }
+  getPipelineHealth(tenantId: string) { return this.dealsService.getPipelineHealth(tenantId); }
+  getForecast(tenantId: string) { return this.dealsService.getForecast(tenantId); }
+  getRepPerformance(tenantId: string) { return this.dealsService.getRepPerformance(tenantId); }
+  getConversionFunnel(tenantId: string) { return this.dealsService.getConversionFunnel(tenantId); }
+  getCohortAnalysis(tenantId: string) { return this.dealsService.getCohortAnalysis(tenantId); }
 
   // ── CAMPAIGNS ─────────────────────────────────
+  getCampaigns(tenantId: string) { return this.marketingService.getCampaigns(tenantId); }
+  createCampaign(tenantId: string, orgId: string, dto: CreateCampaignInput, createdBy: string) { return this.marketingService.createCampaign(tenantId, orgId, dto, createdBy); }
 
-  async getCampaigns(tenantId: string) {
-    const campaigns = await prisma.campaign.findMany({
-      where: { tenantId, deletedAt: null },
-      include: {
-        leads: {
-          select: {
-            id: true,
-            status: true,
-            opportunities: {
-              select: {
-                id: true,
-                stage: true,
-                amount: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  // ── SALES TARGETS ─────────────────────────────
+  getSalesTargets(tenantId: string) { return this.salesOpsService.getSalesTargets(tenantId); }
+  createSalesTarget(tenantId: string, orgId: string, dto: CreateSalesTargetInput) { return this.salesOpsService.createSalesTarget(tenantId, orgId, dto); }
+  updateSalesTarget(tenantId: string, id: string, dto: UpdateSalesTargetInput) { return this.salesOpsService.updateSalesTarget(tenantId, id, dto); }
+  deleteSalesTarget(tenantId: string, id: string) { return this.salesOpsService.deleteSalesTarget(tenantId, id); }
 
-    return campaigns.map((c) => {
-      const leads = c.leads;
-      const leadCount = leads.length;
-      
-      const opps = leads.flatMap((l) => l.opportunities);
-      const opportunityCount = opps.length;
-      
-      const wonOpps = opps.filter((o) => o.stage === 'CLOSED_WON');
-      const wonCount = wonOpps.length;
-      
-      const conversionRate = leadCount > 0 ? (wonCount / leadCount) * 100 : 0;
-      const actualCost = Number(c.actualCost);
-      const budget = Number(c.budget);
+  // ── SAVED REPORTS ─────────────────────────────
+  getSavedReports(tenantId: string) { return this.marketingService.getSavedReports(tenantId); }
+  createSavedReport(tenantId: string, dto: CreateSavedReportInput, createdBy: string) { return this.marketingService.createSavedReport(tenantId, dto, createdBy); }
+  deleteSavedReport(tenantId: string, id: string) { return this.marketingService.deleteSavedReport(tenantId, id); }
 
-      return {
-        id: c.id,
-        name: c.name,
-        status: c.status,
-        type: c.type,
-        budget,
-        actualCost,
-        notes: c.notes,
-        leadCount,
-        opportunityCount,
-        wonCount,
-        conversionRate: Number(conversionRate.toFixed(2)),
-        createdAt: c.createdAt,
-      };
-    });
-  }
-
-  async createCampaign(tenantId: string, orgId: string, dto: CreateCampaignInput, createdBy: string) {
-    let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
-      const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered');
-      resolvedOrgId = org.id;
-    }
-
-    const existing = await prisma.campaign.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, name: dto.name, deletedAt: null },
-    });
-    if (existing) throw new BadRequestException(`Campaign with name "${dto.name}" already exists.`);
-
-    return prisma.campaign.create({
-      data: {
-        tenantId,
-        orgId: resolvedOrgId,
-        name: dto.name,
-        status: dto.status,
-        type: dto.type,
-        budget: new Prisma.Decimal(dto.budget || 0),
-        actualCost: new Prisma.Decimal(dto.actualCost || 0),
-        notes: dto.notes || null,
-        createdBy,
-      },
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 1: OPPORTUNITY LINE ITEMS
-  // ════════════════════════════════════════════════
-
-  async getOpportunityLineItems(tenantId: string, opportunityId: string) {
-    await this.getOpportunityById(tenantId, opportunityId);
-    return prisma.opportunityLineItem.findMany({
-      where: { opportunityId, tenantId },
-      include: { product: { select: { id: true, name: true, sku: true } } },
-      orderBy: { sortOrder: 'asc' },
-    });
-  }
-
-  async addOpportunityLineItem(tenantId: string, opportunityId: string, dto: CreateOpportunityLineItemInput) {
-    const opp = await prisma.opportunity.findFirst({ where: { id: opportunityId, tenantId, deletedAt: null } });
-    if (!opp) throw new NotFoundException('Opportunity not found');
-    const totalAmount = dto.quantity * dto.unitPrice * (1 - (dto.discount || 0) / 100);
-    const item = await prisma.opportunityLineItem.create({
-      data: {
-        tenantId, opportunityId,
-        productId: dto.productId || null,
-        description: dto.description,
-        quantity: new Prisma.Decimal(dto.quantity),
-        unitPrice: new Prisma.Decimal(dto.unitPrice),
-        discount: new Prisma.Decimal(dto.discount || 0),
-        totalAmount: new Prisma.Decimal(totalAmount),
-        sortOrder: dto.sortOrder || 0,
-      },
-    });
-    await this.recalcOpportunityAmount(opportunityId);
-    return item;
-  }
-
-  async updateOpportunityLineItem(tenantId: string, opportunityId: string, itemId: string, dto: UpdateOpportunityLineItemInput) {
-    const item = await prisma.opportunityLineItem.findFirst({ where: { id: itemId, tenantId, opportunityId } });
-    if (!item) throw new NotFoundException('Line item not found');
-    const qty = dto.quantity ?? Number(item.quantity);
-    const price = dto.unitPrice ?? Number(item.unitPrice);
-    const disc = dto.discount ?? Number(item.discount);
-    const totalAmount = qty * price * (1 - disc / 100);
-    const updated = await prisma.opportunityLineItem.update({
-      where: { id: itemId },
-      data: {
-        ...(dto.productId !== undefined && { productId: dto.productId }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.quantity !== undefined && { quantity: new Prisma.Decimal(dto.quantity) }),
-        ...(dto.unitPrice !== undefined && { unitPrice: new Prisma.Decimal(dto.unitPrice) }),
-        ...(dto.discount !== undefined && { discount: new Prisma.Decimal(dto.discount) }),
-        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
-        totalAmount: new Prisma.Decimal(totalAmount),
-      },
-    });
-    await this.recalcOpportunityAmount(opportunityId);
-    return updated;
-  }
-
-  async deleteOpportunityLineItem(tenantId: string, opportunityId: string, itemId: string) {
-    const item = await prisma.opportunityLineItem.findFirst({ where: { id: itemId, tenantId, opportunityId } });
-    if (!item) throw new NotFoundException('Line item not found');
-    await prisma.opportunityLineItem.delete({ where: { id: itemId } });
-    await this.recalcOpportunityAmount(opportunityId);
-  }
-
-  private async recalcOpportunityAmount(opportunityId: string) {
-    const items = await prisma.opportunityLineItem.findMany({ where: { opportunityId } });
-    const total = items.reduce((sum, i) => sum + Number(i.totalAmount), 0);
-    const opp = await prisma.opportunity.findUnique({ where: { id: opportunityId } });
-    const prob = opp?.probability || 0;
-    await prisma.opportunity.update({
-      where: { id: opportunityId },
-      data: { amount: new Prisma.Decimal(total), weightedAmount: new Prisma.Decimal(total * prob / 100) },
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 1: PRICE BOOKS
-  // ════════════════════════════════════════════════
-
-  async getPriceBooks(tenantId: string) {
-    return prisma.priceBook.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { _count: { select: { entries: true } } },
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  async createPriceBook(tenantId: string, orgId: string, dto: CreatePriceBookInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    if (dto.isDefault) {
-      await prisma.priceBook.updateMany({ where: { tenantId }, data: { isDefault: false } });
-    }
-    return prisma.priceBook.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, description: dto.description || null,
-        currency: dto.currency || 'USD', isDefault: dto.isDefault || false,
-        validFrom: dto.validFrom ? new Date(dto.validFrom) : null,
-        validTo: dto.validTo ? new Date(dto.validTo) : null,
-      },
-    });
-  }
-
-  async updatePriceBook(tenantId: string, id: string, dto: UpdatePriceBookInput) {
-    const existing = await prisma.priceBook.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Price book not found');
-    if (dto.isDefault) {
-      await prisma.priceBook.updateMany({ where: { tenantId, id: { not: id } }, data: { isDefault: false } });
-    }
-    return prisma.priceBook.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.currency !== undefined && { currency: dto.currency }),
-        ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
-        ...(dto.validFrom !== undefined && { validFrom: dto.validFrom ? new Date(dto.validFrom) : null }),
-        ...(dto.validTo !== undefined && { validTo: dto.validTo ? new Date(dto.validTo) : null }),
-      },
-    });
-  }
-
-  async deletePriceBook(tenantId: string, id: string) {
-    const existing = await prisma.priceBook.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Price book not found');
-    return prisma.priceBook.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async getPriceBookEntries(tenantId: string, priceBookId: string) {
-    return prisma.priceBookEntry.findMany({
-      where: { tenantId, priceBookId },
-      include: { product: { select: { id: true, name: true, sku: true, sellPrice: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async addPriceBookEntry(tenantId: string, priceBookId: string, dto: CreatePriceBookEntryInput) {
-    const pb = await prisma.priceBook.findFirst({ where: { id: priceBookId, tenantId, deletedAt: null } });
-    if (!pb) throw new NotFoundException('Price book not found');
-    return prisma.priceBookEntry.create({
-      data: {
-        tenantId, priceBookId,
-        productId: dto.productId,
-        listPrice: new Prisma.Decimal(dto.listPrice),
-        minQuantity: new Prisma.Decimal(dto.minQuantity || 1),
-      },
-    });
-  }
-
-  async deletePriceBookEntry(tenantId: string, entryId: string) {
-    const entry = await prisma.priceBookEntry.findFirst({ where: { id: entryId, tenantId } });
-    if (!entry) throw new NotFoundException('Price book entry not found');
-    return prisma.priceBookEntry.delete({ where: { id: entryId } });
-  }
-
-  async getCrmProducts(tenantId: string) {
-    return prisma.product.findMany({
-      where: { tenantId, isActive: true, deletedAt: null },
-      select: { id: true, name: true, sku: true, sellPrice: true, category: true, type: true, unit: true },
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 1: REVENUE ANALYTICS
-  // ════════════════════════════════════════════════
-
-  async getRevenueForecast(tenantId: string) {
-    const opps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: { notIn: ['CLOSED_WON', 'CLOSED_LOST'] } },
-      select: { amount: true, probability: true, expectedCloseDate: true, weightedAmount: true },
-    });
-    const byMonth: Record<string, { totalAmount: number; weightedAmount: number; count: number }> = {};
-    for (const opp of opps) {
-      const month = opp.expectedCloseDate
-        ? `${opp.expectedCloseDate.getFullYear()}-${String(opp.expectedCloseDate.getMonth() + 1).padStart(2, '0')}`
-        : 'Unscheduled';
-      if (!byMonth[month]) byMonth[month] = { totalAmount: 0, weightedAmount: 0, count: 0 };
-      byMonth[month].totalAmount += Number(opp.amount || 0);
-      byMonth[month].weightedAmount += Number(opp.weightedAmount || 0);
-      byMonth[month].count++;
-    }
-    return Object.entries(byMonth).map(([month, data]) => ({ month, ...data })).sort((a, b) => a.month.localeCompare(b.month));
-  }
-
-  async getDealAging(tenantId: string) {
-    const opps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: { notIn: ['CLOSED_WON', 'CLOSED_LOST'] } },
-      select: { id: true, name: true, stage: true, amount: true, stageEnteredAt: true, updatedAt: true, customer: { select: { name: true } } },
-    });
-    const now = new Date();
-    return opps.map((opp) => {
-      const ref = opp.stageEnteredAt || opp.updatedAt;
-      const daysInStage = Math.floor((now.getTime() - ref.getTime()) / (1000 * 60 * 60 * 24));
-      return { id: opp.id, name: opp.name, stage: opp.stage, amount: Number(opp.amount || 0), customerName: opp.customer?.name || null, daysInStage, isRotting: daysInStage > 30 };
-    }).sort((a, b) => b.daysInStage - a.daysInStage);
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 2: CONTACT TAGS & 360
-  // ════════════════════════════════════════════════
-
-  async getContactTags(tenantId: string) {
-    return prisma.contactTag.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
-  }
-
-  async createContactTag(tenantId: string, dto: CreateContactTagInput) {
-    return prisma.contactTag.create({ data: { tenantId, name: dto.name, color: dto.color || '#3b82f6' } });
-  }
-
-  async deleteContactTag(tenantId: string, id: string) {
-    const tag = await prisma.contactTag.findFirst({ where: { id, tenantId } });
-    if (!tag) throw new NotFoundException('Tag not found');
-    return prisma.contactTag.delete({ where: { id } });
-  }
-
-  async assignContactTag(tenantId: string, contactId: string, tagId: string) {
-    const contact = await prisma.contact.findFirst({ where: { id: contactId, tenantId } });
-    if (!contact) throw new NotFoundException('Contact not found');
-    return prisma.contactTagLink.create({ data: { contactId, tagId } });
-  }
-
-  async removeContactTag(contactId: string, tagId: string) {
-    const link = await prisma.contactTagLink.findFirst({ where: { contactId, tagId } });
-    if (!link) throw new NotFoundException('Tag assignment not found');
-    return prisma.contactTagLink.delete({ where: { id: link.id } });
-  }
-
-  async getContactTimeline(tenantId: string, contactId: string) {
-    const contact = await prisma.contact.findFirst({
-      where: { id: contactId, tenantId, deletedAt: null },
-      include: { customer: { select: { id: true, name: true } }, tags: { include: { tag: true } } },
-    });
-    if (!contact) throw new NotFoundException('Contact not found');
-    const activities = await prisma.activity.findMany({
-      where: { tenantId, OR: [{ contactId }, ...(contact.customerId ? [{ customerId: contact.customerId }] : [])] },
-      orderBy: { createdAt: 'desc' }, take: 50,
-    });
-    const opportunities = contact.customerId
-      ? await prisma.opportunity.findMany({ where: { tenantId, customerId: contact.customerId, deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 20 })
-      : [];
-    return { contact, activities, opportunities };
-  }
-
-  async findDuplicateContacts(tenantId: string) {
-    const contacts = await prisma.contact.findMany({ where: { tenantId, deletedAt: null }, select: { id: true, firstName: true, lastName: true, email: true, phone: true } });
-    const dupes: Array<{ contactA: typeof contacts[0]; contactB: typeof contacts[0]; reason: string }> = [];
-    for (let i = 0; i < contacts.length; i++) {
-      for (let j = i + 1; j < contacts.length; j++) {
-        const a = contacts[i], b = contacts[j];
-        if (!a || !b) continue;
-        if (a.email && b.email && a.email.toLowerCase() === b.email.toLowerCase()) {
-          dupes.push({ contactA: a, contactB: b, reason: 'Same email' });
-        } else if (a.firstName.toLowerCase() === b.firstName.toLowerCase() && a.lastName.toLowerCase() === b.lastName.toLowerCase() && a.phone && a.phone === b.phone) {
-          dupes.push({ contactA: a, contactB: b, reason: 'Same name and phone' });
-        }
-      }
-    }
-    return dupes;
-  }
-
-  async mergeContacts(tenantId: string, dto: MergeContactsInput) {
-    const primary = await prisma.contact.findFirst({ where: { id: dto.primaryContactId, tenantId } });
-    const secondary = await prisma.contact.findFirst({ where: { id: dto.secondaryContactId, tenantId } });
-    if (!primary || !secondary) throw new NotFoundException('Contact not found');
-    return prisma.$transaction(async (tx) => {
-      await tx.activity.updateMany({ where: { contactId: dto.secondaryContactId }, data: { contactId: dto.primaryContactId } });
-      const secTags = await tx.contactTagLink.findMany({ where: { contactId: dto.secondaryContactId } });
-      for (const t of secTags) {
-        const exists = await tx.contactTagLink.findFirst({ where: { contactId: dto.primaryContactId, tagId: t.tagId } });
-        if (!exists) await tx.contactTagLink.create({ data: { contactId: dto.primaryContactId, tagId: t.tagId } });
-      }
-      await tx.contactTagLink.deleteMany({ where: { contactId: dto.secondaryContactId } });
-      await tx.contact.update({ where: { id: dto.secondaryContactId }, data: { deletedAt: new Date() } });
-      return tx.contact.findFirst({ where: { id: dto.primaryContactId }, include: { tags: { include: { tag: true } } } });
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 2: PIPELINE HEALTH
-  // ════════════════════════════════════════════════
-
-  async getStageDuration(tenantId: string) {
-    const opps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: 'CLOSED_WON', stageEnteredAt: { not: null } },
-      select: { createdAt: true, actualCloseDate: true },
-    });
-    if (opps.length === 0) return { avgDaysToClose: 0, totalDeals: 0 };
-    const totalDays = opps.reduce((sum, o) => {
-      const end = o.actualCloseDate || new Date();
-      return sum + (end.getTime() - o.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    }, 0);
-    return { avgDaysToClose: Math.round(totalDays / opps.length), totalDeals: opps.length };
-  }
-
-  async getPipelineHealth(tenantId: string) {
-    const opps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null },
-      select: { stage: true, amount: true, probability: true, stageEnteredAt: true, updatedAt: true, createdAt: true, actualCloseDate: true },
-    });
-    const open = opps.filter((o) => !['CLOSED_WON', 'CLOSED_LOST'].includes(o.stage));
-    const won = opps.filter((o) => o.stage === 'CLOSED_WON');
-    const lost = opps.filter((o) => o.stage === 'CLOSED_LOST');
-    const now = new Date();
-    const avgAge = open.length > 0
-      ? Math.round(open.reduce((s, o) => s + (now.getTime() - o.createdAt.getTime()) / 86400000, 0) / open.length)
-      : 0;
-    const velocity = won.length > 0
-      ? Math.round(won.reduce((s, o) => s + ((o.actualCloseDate || now).getTime() - o.createdAt.getTime()) / 86400000, 0) / won.length)
-      : 0;
-    const winRate = (won.length + lost.length) > 0 ? Math.round((won.length / (won.length + lost.length)) * 100) : 0;
-    const totalPipeline = open.reduce((s, o) => s + Number(o.amount || 0), 0);
-    const weightedPipeline = open.reduce((s, o) => s + Number(o.amount || 0) * (o.probability / 100), 0);
-    const rottingCount = open.filter((o) => {
-      const ref = o.stageEnteredAt || o.updatedAt;
-      return (now.getTime() - ref.getTime()) / 86400000 > 30;
-    }).length;
-    return { totalPipeline, weightedPipeline, avgAge, velocity, winRate, openDeals: open.length, rottingCount };
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 3: SALES TARGETS
-  // ════════════════════════════════════════════════
-
-  async getSalesTargets(tenantId: string) {
-    return prisma.salesTarget.findMany({ where: { tenantId }, orderBy: { period: 'desc' } });
-  }
-
-  async createSalesTarget(tenantId: string, orgId: string, dto: CreateSalesTargetInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.salesTarget.create({
-      data: { tenantId, orgId: resolvedOrgId, userId: dto.userId || null, period: dto.period, targetType: dto.targetType || 'REVENUE', target: new Prisma.Decimal(dto.target) },
-    });
-  }
-
-  async updateSalesTarget(tenantId: string, id: string, dto: UpdateSalesTargetInput) {
-    const existing = await prisma.salesTarget.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Sales target not found');
-    return prisma.salesTarget.update({
-      where: { id },
-      data: {
-        ...(dto.target !== undefined && { target: new Prisma.Decimal(dto.target) }),
-        ...(dto.period !== undefined && { period: dto.period }),
-        ...(dto.targetType !== undefined && { targetType: dto.targetType }),
-        ...(dto.userId !== undefined && { userId: dto.userId }),
-      },
-    });
-  }
-
-  async deleteSalesTarget(tenantId: string, id: string) {
-    const existing = await prisma.salesTarget.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Sales target not found');
-    return prisma.salesTarget.delete({ where: { id } });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 3: FORECASTING & ADVANCED ANALYTICS
-  // ════════════════════════════════════════════════
-
-  async getForecast(tenantId: string) {
-    const opps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: { notIn: ['CLOSED_WON', 'CLOSED_LOST'] } },
-      select: { amount: true, probability: true, expectedCloseDate: true },
-    });
-    const bestCase = opps.reduce((s, o) => s + Number(o.amount || 0), 0);
-    const commit = opps.filter((o) => o.probability >= 70).reduce((s, o) => s + Number(o.amount || 0), 0);
-    const worstCase = opps.filter((o) => o.probability >= 90).reduce((s, o) => s + Number(o.amount || 0), 0);
-    return { bestCase, commit, worstCase, dealCount: opps.length };
-  }
-
-  async getRepPerformance(tenantId: string) {
-    const wonOpps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: 'CLOSED_WON', assignedToId: { not: null } },
-      select: { assignedToId: true, amount: true, createdAt: true, actualCloseDate: true },
-    });
-    const byRep: Record<string, { deals: number; revenue: number; totalDays: number }> = {};
-    for (const opp of wonOpps) {
-      const rep = opp.assignedToId!;
-      if (!byRep[rep]) byRep[rep] = { deals: 0, revenue: 0, totalDays: 0 };
-      byRep[rep].deals++;
-      byRep[rep].revenue += Number(opp.amount || 0);
-      const days = (opp.actualCloseDate || new Date()).getTime() - opp.createdAt.getTime();
-      byRep[rep].totalDays += days / 86400000;
-    }
-    return Object.entries(byRep).map(([userId, d]) => ({
-      userId, dealsWon: d.deals, totalRevenue: d.revenue,
-      avgDealSize: Math.round(d.revenue / d.deals),
-      avgCycleTimeDays: Math.round(d.totalDays / d.deals),
-    })).sort((a, b) => b.totalRevenue - a.totalRevenue);
-  }
-
-  async getConversionFunnel(tenantId: string) {
-    const totalLeads = await prisma.lead.count({ where: { tenantId, deletedAt: null } });
-    const convertedLeads = await prisma.lead.count({ where: { tenantId, deletedAt: null, status: 'CONVERTED' } });
-    const totalOpps = await prisma.opportunity.count({ where: { tenantId, deletedAt: null } });
-    const wonOpps = await prisma.opportunity.count({ where: { tenantId, deletedAt: null, stage: 'CLOSED_WON' } });
-    return {
-      totalLeads, convertedLeads,
-      leadToOppRate: totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0,
-      totalOpportunities: totalOpps, wonOpportunities: wonOpps,
-      oppToWinRate: totalOpps > 0 ? Math.round((wonOpps / totalOpps) * 100) : 0,
-    };
-  }
-
-  async getCohortAnalysis(tenantId: string) {
-    const leads = await prisma.lead.findMany({
-      where: { tenantId, deletedAt: null },
-      select: { id: true, status: true, createdAt: true },
-    });
-    const cohorts: Record<string, { total: number; converted: number; qualified: number; disqualified: number }> = {};
-    for (const l of leads) {
-      const m = `${l.createdAt.getFullYear()}-${String(l.createdAt.getMonth() + 1).padStart(2, '0')}`;
-      if (!cohorts[m]) cohorts[m] = { total: 0, converted: 0, qualified: 0, disqualified: 0 };
-      cohorts[m].total++;
-      if (l.status === 'CONVERTED') cohorts[m].converted++;
-      if (l.status === 'QUALIFIED') cohorts[m].qualified++;
-      if (l.status === 'DISQUALIFIED') cohorts[m].disqualified++;
-    }
-    return Object.entries(cohorts).map(([month, data]) => ({
-      month, ...data, conversionRate: data.total > 0 ? Math.round((data.converted / data.total) * 100) : 0,
-    })).sort((a, b) => a.month.localeCompare(b.month));
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 3: SAVED REPORTS
-  // ════════════════════════════════════════════════
-
-  async getSavedReports(tenantId: string) {
-    return prisma.savedReport.findMany({ where: { tenantId, deletedAt: null }, orderBy: { createdAt: 'desc' } });
-  }
-
-  async createSavedReport(tenantId: string, dto: CreateSavedReportInput, createdBy: string) {
-    return prisma.savedReport.create({
-      data: {
-        tenantId, name: dto.name, type: dto.type,
-        filters: dto.filters as Prisma.InputJsonValue,
-        columns: dto.columns as Prisma.InputJsonValue,
-        chartType: dto.chartType || null,
-        isShared: dto.isShared || false,
-        schedule: dto.schedule || null,
-        createdBy,
-      },
-    });
-  }
-
-  async deleteSavedReport(tenantId: string, id: string) {
-    const existing = await prisma.savedReport.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Report not found');
-    return prisma.savedReport.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
+  /** Cross-domain aggregator: resolve a saved report definition to live data. */
   async runSavedReport(tenantId: string, id: string) {
-    const report = await prisma.savedReport.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!report) throw new NotFoundException('Report not found');
+    const report = await this.marketingService.getSavedReportById(tenantId, id);
     switch (report.type) {
-      case 'PIPELINE': return this.getPipelineFunnel(tenantId);
-      case 'LEADS': return this.getLeadSourceBreakdown(tenantId);
-      case 'REVENUE': return this.getRevenueForecast(tenantId);
-      case 'CONVERSION': return this.getConversionFunnel(tenantId);
-      case 'ACTIVITIES': return this.getActivities(tenantId);
-      default: return this.getPipelineFunnel(tenantId);
+      case 'PIPELINE': return this.dealsService.getPipelineFunnel(tenantId);
+      case 'LEADS': return this.dealsService.getLeadSourceBreakdown(tenantId);
+      case 'REVENUE': return this.dealsService.getRevenueForecast(tenantId);
+      case 'CONVERSION': return this.dealsService.getConversionFunnel(tenantId);
+      case 'ACTIVITIES': return this.activitiesService.getActivities(tenantId);
+      default: return this.dealsService.getPipelineFunnel(tenantId);
     }
   }
 
-  // ════════════════════════════════════════════════
-  // PHASE 4: WORKFLOW RULES
-  // ════════════════════════════════════════════════
-
-  async getWorkflowRules(tenantId: string) {
-    return prisma.crmWorkflowRule.findMany({ where: { tenantId, deletedAt: null }, orderBy: { createdAt: 'desc' } });
-  }
-
-  async createWorkflowRule(tenantId: string, orgId: string, dto: CreateCrmWorkflowRuleInput, createdBy: string) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.crmWorkflowRule.create({
-      data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name,
-        entity: dto.entity, trigger: dto.trigger,
-        conditions: dto.conditions as Prisma.InputJsonValue,
-        actions: dto.actions as Prisma.InputJsonValue,
-        isActive: dto.isActive ?? true, createdBy,
-      },
-    });
-  }
-
-  async updateWorkflowRule(tenantId: string, id: string, dto: UpdateCrmWorkflowRuleInput) {
-    const existing = await prisma.crmWorkflowRule.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Workflow rule not found');
-    return prisma.crmWorkflowRule.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.entity !== undefined && { entity: dto.entity }),
-        ...(dto.trigger !== undefined && { trigger: dto.trigger }),
-        ...(dto.conditions !== undefined && { conditions: dto.conditions as Prisma.InputJsonValue }),
-        ...(dto.actions !== undefined && { actions: dto.actions as Prisma.InputJsonValue }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-      },
-    });
-  }
-
-  async toggleWorkflowRule(tenantId: string, id: string) {
-    const existing = await prisma.crmWorkflowRule.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Workflow rule not found');
-    return prisma.crmWorkflowRule.update({ where: { id }, data: { isActive: !existing.isActive } });
-  }
-
-  async deleteWorkflowRule(tenantId: string, id: string) {
-    const existing = await prisma.crmWorkflowRule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Workflow rule not found');
-    return prisma.crmWorkflowRule.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 4: EMAIL SEQUENCES
-  // ════════════════════════════════════════════════
-
-  async getEmailSequences(tenantId: string) {
-    return prisma.emailSequence.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { _count: { select: { steps: true, enrollments: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createEmailSequence(tenantId: string, orgId: string, dto: CreateEmailSequenceInput, createdBy: string) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.emailSequence.create({
-      data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name,
-        description: dto.description || null, createdBy,
-        steps: { create: dto.steps.map((s, i) => ({ templateId: s.templateId, delayDays: s.delayDays || 1, sortOrder: s.sortOrder ?? i })) },
-      },
-      include: { steps: { orderBy: { sortOrder: 'asc' } } },
-    });
-  }
-
-  async enrollInSequence(tenantId: string, sequenceId: string, dto: EnrollSequenceInput) {
-    const seq = await prisma.emailSequence.findFirst({ where: { id: sequenceId, tenantId, deletedAt: null, isActive: true } });
-    if (!seq) throw new NotFoundException('Sequence not found or inactive');
-    if (!dto.contactId && !dto.leadId) throw new BadRequestException('Must provide contactId or leadId');
-    const firstStep = await prisma.emailSequenceStep.findFirst({ where: { sequenceId }, orderBy: { sortOrder: 'asc' } });
-    const nextSendAt = new Date();
-    if (firstStep) nextSendAt.setDate(nextSendAt.getDate() + firstStep.delayDays);
-    return prisma.emailSequenceEnrollment.create({
-      data: { tenantId, sequenceId, contactId: dto.contactId || null, leadId: dto.leadId || null, nextSendAt },
-    });
-  }
-
-  async pauseEnrollment(tenantId: string, enrollmentId: string) {
-    const enrollment = await prisma.emailSequenceEnrollment.findFirst({ where: { id: enrollmentId, tenantId } });
-    if (!enrollment) throw new NotFoundException('Enrollment not found');
-    const newStatus = enrollment.status === 'PAUSED' ? 'ACTIVE' : 'PAUSED';
-    return prisma.emailSequenceEnrollment.update({ where: { id: enrollmentId }, data: { status: newStatus } });
-  }
-
-  async deleteEmailSequence(tenantId: string, id: string) {
-    const existing = await prisma.emailSequence.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Sequence not found');
-    return prisma.emailSequence.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 5: TERRITORIES
-  // ════════════════════════════════════════════════
-
-  async getTerritories(tenantId: string) {
-    return prisma.salesTerritory.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { members: true, children: { select: { id: true, name: true } }, parent: { select: { id: true, name: true } } },
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  async createTerritory(tenantId: string, orgId: string, dto: CreateSalesTerritoryInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.salesTerritory.create({
-      data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name,
-        description: dto.description || null,
-        criteria: dto.criteria as Prisma.InputJsonValue || {},
-        parentId: dto.parentId || null, managerId: dto.managerId || null,
-      },
-    });
-  }
-
-  async updateTerritory(tenantId: string, id: string, dto: UpdateSalesTerritoryInput) {
-    const existing = await prisma.salesTerritory.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Territory not found');
-    return prisma.salesTerritory.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.criteria !== undefined && { criteria: dto.criteria as Prisma.InputJsonValue }),
-        ...(dto.parentId !== undefined && { parentId: dto.parentId }),
-        ...(dto.managerId !== undefined && { managerId: dto.managerId }),
-      },
-    });
-  }
-
-  async deleteTerritory(tenantId: string, id: string) {
-    const existing = await prisma.salesTerritory.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Territory not found');
-    return prisma.salesTerritory.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async addTeamMember(tenantId: string, territoryId: string, dto: AddTeamMemberInput) {
-    const territory = await prisma.salesTerritory.findFirst({ where: { id: territoryId, tenantId, deletedAt: null } });
-    if (!territory) throw new NotFoundException('Territory not found');
-    return prisma.salesTeamMember.create({ data: { tenantId, territoryId, userId: dto.userId, role: dto.role || 'REP' } });
-  }
-
-  async removeTeamMember(tenantId: string, territoryId: string, userId: string) {
-    const member = await prisma.salesTeamMember.findFirst({ where: { territoryId, userId, tenantId } });
-    if (!member) throw new NotFoundException('Team member not found');
-    return prisma.salesTeamMember.delete({ where: { id: member.id } });
-  }
-
-  async getTerritoryPerformance(tenantId: string) {
-    const territories = await prisma.salesTerritory.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { members: true },
-    });
-    const results = [];
-    for (const t of territories) {
-      const memberIds = t.members.map((m) => m.userId);
-      if (memberIds.length === 0) { results.push({ territoryId: t.id, name: t.name, deals: 0, revenue: 0, members: 0 }); continue; }
-      const wonOpps = await prisma.opportunity.findMany({
-        where: { tenantId, deletedAt: null, stage: 'CLOSED_WON', assignedToId: { in: memberIds } },
-        select: { amount: true },
-      });
-      results.push({
-        territoryId: t.id, name: t.name, members: memberIds.length,
-        deals: wonOpps.length, revenue: wonOpps.reduce((s, o) => s + Number(o.amount || 0), 0),
-      });
-    }
-    return results.sort((a, b) => b.revenue - a.revenue);
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 5: COMMISSIONS
-  // ════════════════════════════════════════════════
-
-  async getCommissionRules(tenantId: string) {
-    return prisma.commissionRule.findMany({ where: { tenantId }, include: { _count: { select: { entries: true } } }, orderBy: { createdAt: 'desc' } });
-  }
-
-  async createCommissionRule(tenantId: string, orgId: string, dto: CreateCommissionRuleInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.commissionRule.create({
-      data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name, type: dto.type || 'PERCENTAGE',
-        rate: new Prisma.Decimal(dto.rate), tiers: dto.tiers as Prisma.InputJsonValue,
-        appliesToAll: dto.appliesToAll ?? true, productIds: dto.productIds as Prisma.InputJsonValue,
-      },
-    });
-  }
-
-  async updateCommissionRule(tenantId: string, id: string, dto: UpdateCommissionRuleInput) {
-    const existing = await prisma.commissionRule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Commission rule not found');
-    return prisma.commissionRule.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.type !== undefined && { type: dto.type }),
-        ...(dto.rate !== undefined && { rate: new Prisma.Decimal(dto.rate) }),
-        ...(dto.tiers !== undefined && { tiers: dto.tiers as Prisma.InputJsonValue }),
-        ...(dto.appliesToAll !== undefined && { appliesToAll: dto.appliesToAll }),
-        ...(dto.productIds !== undefined && { productIds: dto.productIds as Prisma.InputJsonValue }),
-      },
-    });
-  }
-
-  async deleteCommissionRule(tenantId: string, id: string) {
-    const existing = await prisma.commissionRule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Commission rule not found');
-    return prisma.commissionRule.delete({ where: { id } });
-  }
-
-  async getCommissionEntries(tenantId: string, userId?: string) {
-    const where: Prisma.CommissionEntryWhereInput = { tenantId };
-    if (userId) where.userId = userId;
-    return prisma.commissionEntry.findMany({ where, include: { rule: { select: { name: true, type: true } } }, orderBy: { createdAt: 'desc' } });
-  }
-
-  async calculateCommissions(tenantId: string, dto: CalculateCommissionsInput) {
-    const start = new Date(dto.periodStart);
-    const end = new Date(dto.periodEnd);
-    const rules = await prisma.commissionRule.findMany({ where: { tenantId, isActive: true } });
-    const wonOpps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: 'CLOSED_WON', actualCloseDate: { gte: start, lte: end }, assignedToId: { not: null } },
-      select: { id: true, amount: true, assignedToId: true },
-    });
-    const entries = [];
-    for (const opp of wonOpps) {
-      for (const rule of rules) {
-        const amount = Number(opp.amount || 0);
-        let commission = 0;
-        if (rule.type === 'PERCENTAGE') commission = amount * Number(rule.rate) / 100;
-        else if (rule.type === 'FLAT') commission = Number(rule.rate);
-        else if (rule.type === 'TIERED') {
-          const tiers = rule.tiers as Array<{ min: number; max: number; rate: number }>;
-          for (const tier of tiers) { if (amount >= tier.min && amount <= tier.max) { commission = amount * tier.rate / 100; break; } }
-        }
-        if (commission > 0) {
-          entries.push(await prisma.commissionEntry.create({
-            data: { tenantId, userId: opp.assignedToId!, opportunityId: opp.id, ruleId: rule.id, amount: new Prisma.Decimal(commission), periodStart: start, periodEnd: end },
-          }));
-        }
-      }
-    }
-    return { calculated: entries.length, entries };
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 6: WEB-TO-LEAD FORMS
-  // ════════════════════════════════════════════════
-
-  async getWebForms(tenantId: string) {
-    return prisma.webToLeadForm.findMany({ where: { tenantId, deletedAt: null }, orderBy: { createdAt: 'desc' } });
-  }
-
-  async createWebForm(tenantId: string, orgId: string, dto: CreateWebToLeadFormInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    const form = await prisma.webToLeadForm.create({
-      data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name,
-        fields: dto.fields as Prisma.InputJsonValue,
-        settings: dto.settings as Prisma.InputJsonValue,
-      },
-    });
-    const embedCode = `<form action="/api/v1/crm/forms/${form.id}/submit" method="POST">${(dto.fields as Array<{ name: string; label: string; type: string; required: boolean }>).map((f) => `<label>${f.label}<input name="${f.name}" type="${f.type === 'EMAIL' ? 'email' : f.type === 'PHONE' ? 'tel' : 'text'}" ${f.required ? 'required' : ''}/></label>`).join('')}<button type="submit">Submit</button></form>`;
-    return prisma.webToLeadForm.update({ where: { id: form.id }, data: { embedCode } });
-  }
-
-  async updateWebForm(tenantId: string, id: string, dto: UpdateWebToLeadFormInput) {
-    const existing = await prisma.webToLeadForm.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Form not found');
-    return prisma.webToLeadForm.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.fields !== undefined && { fields: dto.fields as Prisma.InputJsonValue }),
-        ...(dto.settings !== undefined && { settings: dto.settings as Prisma.InputJsonValue }),
-      },
-    });
-  }
-
-  async deleteWebForm(tenantId: string, id: string) {
-    const existing = await prisma.webToLeadForm.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Form not found');
-    return prisma.webToLeadForm.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async submitWebForm(formId: string, dto: SubmitWebFormInput) {
-    const form = await prisma.webToLeadForm.findFirst({ where: { id: formId, isActive: true, deletedAt: null } });
-    if (!form) throw new NotFoundException('Form not found or inactive');
-    const settings = form.settings as { assignToId?: string; sourceId?: string; campaignId?: string };
-    const data = dto.data;
-    const lead = await prisma.lead.create({
-      data: {
-        tenantId: form.tenantId, orgId: form.orgId,
-        firstName: data.firstName || data.first_name || 'Unknown',
-        lastName: data.lastName || data.last_name || 'Unknown',
-        email: data.email || null, phone: data.phone || null,
-        company: data.company || null,
-        sourceId: settings.sourceId || null,
-        campaignId: settings.campaignId || null,
-        assignedToId: settings.assignToId || null,
-        notes: `Web form submission: ${form.name}`,
-      },
-    });
-    await prisma.webToLeadForm.update({ where: { id: formId }, data: { submissions: { increment: 1 } } });
-    await this.recalculateLeadScore(form.tenantId, lead.id);
-    return lead;
-  }
-
-  async getWebFormEmbed(tenantId: string, id: string) {
-    const form = await prisma.webToLeadForm.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!form) throw new NotFoundException('Form not found');
-    return { embedCode: form.embedCode, fields: form.fields, settings: form.settings };
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 6: DOCUMENTS
-  // ════════════════════════════════════════════════
-
-  async getCrmDocuments(tenantId: string, entityType?: string, entityId?: string) {
-    const where: Prisma.CrmDocumentWhereInput = { tenantId, deletedAt: null };
-    if (entityType) where.entityType = entityType;
-    if (entityId) where.entityId = entityId;
-    return prisma.crmDocument.findMany({ where, orderBy: { createdAt: 'desc' } });
-  }
-
-  async createCrmDocument(tenantId: string, orgId: string, dto: CreateCrmDocumentInput, uploadedBy: string) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.crmDocument.create({
-      data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name, type: dto.type,
-        fileUrl: dto.fileUrl, fileSize: dto.fileSize || null, mimeType: dto.mimeType || null,
-        entityType: dto.entityType, entityId: dto.entityId, uploadedBy,
-      },
-    });
-  }
-
-  async deleteCrmDocument(tenantId: string, id: string) {
-    const doc = await prisma.crmDocument.findFirst({ where: { id, tenantId } });
-    if (!doc) throw new NotFoundException('Document not found');
-    return prisma.crmDocument.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 6: IMPORT/EXPORT
-  // ════════════════════════════════════════════════
-
-  async importContacts(tenantId: string, orgId: string, rows: Array<Record<string, string>>) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    let success = 0;
-    let failed = 0;
-    const errors: Array<{ row: number; error: string }> = [];
-    for (let i = 0; i < rows.length; i++) {
-      try {
-        const r = rows[i];
-        if (!r) continue;
-        if (!r.firstName || !r.lastName) { failed++; errors.push({ row: i + 1, error: 'Missing firstName or lastName' }); continue; }
-        await prisma.contact.create({
-          data: {
-            tenantId, orgId: resolvedOrgId,
-            firstName: r.firstName, lastName: r.lastName,
-            email: r.email || null, phone: r.phone || null, mobile: r.mobile || null,
-            title: r.title || null, department: r.department || null,
-          },
-        });
-        success++;
-      } catch {
-        failed++;
-        errors.push({ row: i + 1, error: 'Database error' });
-      }
-    }
-    return { success, failed, errors };
-  }
-
-  async exportContacts(tenantId: string) {
-    const contacts = await prisma.contact.findMany({
-      where: { tenantId, deletedAt: null },
-      select: { firstName: true, lastName: true, email: true, phone: true, mobile: true, title: true, department: true, isPrimary: true },
-      orderBy: { firstName: 'asc' },
-    });
-    const headers = ['firstName', 'lastName', 'email', 'phone', 'mobile', 'title', 'department', 'isPrimary'];
-    const csvRows = [headers.join(',')];
-    for (const c of contacts) {
-      csvRows.push(headers.map((h) => `"${String((c as Record<string, unknown>)[h] || '').replace(/"/g, '""')}"`).join(','));
-    }
-    return csvRows.join('\n');
-  }
-
-  async importLeads(tenantId: string, orgId: string, rows: Array<Record<string, string>>) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    let success = 0;
-    let failed = 0;
-    const errors: Array<{ row: number; error: string }> = [];
-    for (let i = 0; i < rows.length; i++) {
-      try {
-        const r = rows[i];
-        if (!r) continue;
-        if (!r.firstName || !r.lastName) { failed++; errors.push({ row: i + 1, error: 'Missing firstName or lastName' }); continue; }
-        const lead = await prisma.lead.create({
-          data: {
-            tenantId, orgId: resolvedOrgId,
-            firstName: r.firstName, lastName: r.lastName,
-            email: r.email || null, phone: r.phone || null,
-            company: r.company || null, industry: r.industry || null,
-          },
-        });
-        await this.recalculateLeadScore(tenantId, lead.id);
-        success++;
-      } catch {
-        failed++;
-        errors.push({ row: i + 1, error: 'Database error' });
-      }
-    }
-    return { success, failed, errors };
-  }
-
-  async exportLeads(tenantId: string) {
-    const leads = await prisma.lead.findMany({
-      where: { tenantId, deletedAt: null },
-      select: { firstName: true, lastName: true, email: true, phone: true, company: true, status: true, score: true, industry: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    const headers = ['firstName', 'lastName', 'email', 'phone', 'company', 'status', 'score', 'industry'];
-    const csvRows = [headers.join(',')];
-    for (const l of leads) {
-      csvRows.push(headers.map((h) => `"${String((l as Record<string, unknown>)[h] || '').replace(/"/g, '""')}"`).join(','));
-    }
-    return csvRows.join('\n');
-  }
-
-  // ════════════════════════════════════════════════
-  // HELPERS
-  // ════════════════════════════════════════════════
-
-  // ════════════════════════════════════════════════
-  // PHASE 7: CUSTOM FIELDS
-  // ════════════════════════════════════════════════
-
-  async getCustomFields(tenantId: string, entity?: string) {
-    return prisma.crmCustomField.findMany({
-      where: { tenantId, ...(entity && { entity }), deletedAt: null },
-      orderBy: { sortOrder: 'asc' },
-    });
-  }
-
-  async createCustomField(tenantId: string, orgId: string, dto: CreateCustomFieldInput, createdBy: string) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.crmCustomField.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        entity: dto.entity, fieldName: dto.fieldName, label: dto.label,
-        fieldType: dto.fieldType, options: dto.options as Prisma.InputJsonValue,
-        isRequired: dto.isRequired || false, sortOrder: dto.sortOrder || 0,
-        defaultValue: dto.defaultValue || null, createdBy,
-      },
-    });
-  }
-
-  async updateCustomField(tenantId: string, id: string, dto: UpdateCustomFieldInput) {
-    const existing = await prisma.crmCustomField.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Custom field not found');
-    return prisma.crmCustomField.update({
-      where: { id },
-      data: {
-        ...(dto.label !== undefined && { label: dto.label }),
-        ...(dto.fieldType !== undefined && { fieldType: dto.fieldType }),
-        ...(dto.options !== undefined && { options: dto.options as Prisma.InputJsonValue }),
-        ...(dto.isRequired !== undefined && { isRequired: dto.isRequired }),
-        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
-        ...(dto.defaultValue !== undefined && { defaultValue: dto.defaultValue }),
-      },
-    });
-  }
-
-  async deleteCustomField(tenantId: string, id: string) {
-    const existing = await prisma.crmCustomField.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Custom field not found');
-    return prisma.crmCustomField.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async getCustomFieldValues(tenantId: string, entityType: string, entityId: string) {
-    return prisma.crmCustomFieldValue.findMany({
-      where: { tenantId, entityType, entityId },
-      include: { field: true },
-    });
-  }
-
-  async upsertCustomFieldValues(tenantId: string, entityType: string, entityId: string, values: Array<{ fieldId: string; value: string | null }>) {
-    const results = [];
-    for (const v of values) {
-      const result = await prisma.crmCustomFieldValue.upsert({
-        where: { fieldId_entityId: { fieldId: v.fieldId, entityId } },
-        create: { tenantId, fieldId: v.fieldId, entityType, entityId, value: v.value || '' },
-        update: { value: v.value || '' },
-      });
-      results.push(result);
-    }
-    return results;
-  }
-
-  async getRecordTypes(tenantId: string, entity?: string) {
-    return prisma.crmRecordType.findMany({
-      where: { tenantId, ...(entity && { entity }), deletedAt: null },
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  async createRecordType(tenantId: string, orgId: string, dto: CreateRecordTypeInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    if (dto.isDefault) {
-      await prisma.crmRecordType.updateMany({ where: { tenantId, entity: dto.entity }, data: { isDefault: false } });
-    }
-    return prisma.crmRecordType.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        entity: dto.entity, name: dto.name, description: dto.description || null,
-        isDefault: dto.isDefault || false,
-        fieldLayout: dto.fieldLayout as Prisma.InputJsonValue,
-      },
-    });
-  }
-
-  async updateRecordType(tenantId: string, id: string, dto: UpdateRecordTypeInput) {
-    const existing = await prisma.crmRecordType.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Record type not found');
-    if (dto.isDefault) {
-      await prisma.crmRecordType.updateMany({ where: { tenantId, entity: existing.entity, id: { not: id } }, data: { isDefault: false } });
-    }
-    return prisma.crmRecordType.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
-        ...(dto.fieldLayout !== undefined && { fieldLayout: dto.fieldLayout as Prisma.InputJsonValue }),
-      },
-    });
-  }
-
-  async deleteRecordType(tenantId: string, id: string) {
-    const existing = await prisma.crmRecordType.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Record type not found');
-    return prisma.crmRecordType.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 8: APPROVALS
-  // ════════════════════════════════════════════════
-
-  async getApprovalProcesses(tenantId: string) {
-    return prisma.approvalProcess.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { _count: { select: { requests: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createApprovalProcess(tenantId: string, orgId: string, dto: CreateApprovalProcessInput, createdBy: string) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.approvalProcess.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, entity: dto.entity,
-        triggerConditions: dto.triggerConditions as Prisma.InputJsonValue,
-        steps: dto.steps as Prisma.InputJsonValue,
-        createdBy,
-      },
-    });
-  }
-
-  async updateApprovalProcess(tenantId: string, id: string, dto: UpdateApprovalProcessInput) {
-    const existing = await prisma.approvalProcess.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Approval process not found');
-    return prisma.approvalProcess.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.entity !== undefined && { entity: dto.entity }),
-        ...(dto.triggerConditions !== undefined && { triggerConditions: dto.triggerConditions as Prisma.InputJsonValue }),
-        ...(dto.steps !== undefined && { steps: dto.steps as Prisma.InputJsonValue }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-      },
-    });
-  }
-
-  async deleteApprovalProcess(tenantId: string, id: string) {
-    const existing = await prisma.approvalProcess.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Approval process not found');
-    return prisma.approvalProcess.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async submitForApproval(tenantId: string, userId: string, entityType: string, entityId: string, processId?: string) {
-    let process;
-    if (processId) {
-      process = await prisma.approvalProcess.findFirst({ where: { id: processId, tenantId, isActive: true, deletedAt: null } });
-    } else {
-      process = await prisma.approvalProcess.findFirst({ where: { tenantId, entity: entityType, isActive: true, deletedAt: null } });
-    }
-    if (!process) throw new NotFoundException('No matching approval process found');
-    return prisma.approvalRequest.create({
-      data: {
-        tenantId, processId: process.id,
-        entityType, entityId,
-        submittedBy: userId, status: 'PENDING', currentStep: 0,
-      },
-    });
-  }
-
-  async getPendingApprovals(tenantId: string, _userId: string) {
-    return prisma.approvalRequest.findMany({
-      where: { tenantId, status: 'PENDING' },
-      include: { process: { select: { id: true, name: true, steps: true } } },
-      orderBy: { submittedAt: 'desc' },
-    });
-  }
-
-  async approveRequest(tenantId: string, requestId: string, userId: string, comments?: string) {
-    const request = await prisma.approvalRequest.findFirst({ where: { id: requestId, tenantId, status: 'PENDING' } });
-    if (!request) throw new NotFoundException('Approval request not found or not pending');
-    const process = await prisma.approvalProcess.findFirst({ where: { id: request.processId } });
-    if (!process) throw new NotFoundException('Approval process not found');
-    const steps = process.steps as Array<{ approvers: string[] }>;
-    await prisma.approvalAction.create({
-      data: { tenantId, requestId, step: request.currentStep, userId, action: 'APPROVED', comments: comments || null },
-    });
-    const nextStep = request.currentStep + 1;
-    if (nextStep >= steps.length) {
-      return prisma.approvalRequest.update({
-        where: { id: requestId },
-        data: { status: 'APPROVED', currentStep: nextStep, completedAt: new Date() },
-      });
-    }
-    return prisma.approvalRequest.update({
-      where: { id: requestId },
-      data: { currentStep: nextStep },
-    });
-  }
-
-  async rejectRequest(tenantId: string, requestId: string, userId: string, comments: string) {
-    const request = await prisma.approvalRequest.findFirst({ where: { id: requestId, tenantId, status: 'PENDING' } });
-    if (!request) throw new NotFoundException('Approval request not found or not pending');
-    await prisma.approvalAction.create({
-      data: { tenantId, requestId, step: request.currentStep, userId, action: 'REJECTED', comments },
-    });
-    return prisma.approvalRequest.update({
-      where: { id: requestId },
-      data: { status: 'REJECTED', completedAt: new Date() },
-    });
-  }
-
-  async recallRequest(tenantId: string, requestId: string, userId: string) {
-    const request = await prisma.approvalRequest.findFirst({ where: { id: requestId, tenantId, status: 'PENDING' } });
-    if (!request) throw new NotFoundException('Approval request not found or not pending');
-    if (request.submittedBy !== userId) throw new BadRequestException('Only the submitter can recall this request');
-    return prisma.approvalRequest.update({
-      where: { id: requestId },
-      data: { status: 'RECALLED' },
-    });
-  }
-
-  async getApprovalHistory(tenantId: string, entityType: string, entityId: string) {
-    return prisma.approvalRequest.findMany({
-      where: { tenantId, entityType, entityId },
-      include: { actions: { orderBy: { actedAt: 'asc' } }, process: { select: { name: true } } },
-      orderBy: { submittedAt: 'desc' },
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 9: CPQ (CONFIGURE-PRICE-QUOTE)
-  // ════════════════════════════════════════════════
-
-  async getQuotationTemplates(tenantId: string) {
-    return prisma.quotationTemplate.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createQuotationTemplate(tenantId: string, orgId: string, dto: CreateQuotationTemplateInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    if (dto.isDefault) {
-      await prisma.quotationTemplate.updateMany({ where: { tenantId }, data: { isDefault: false } });
-    }
-    return prisma.quotationTemplate.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, description: dto.description || null,
-        headerHtml: dto.headerHtml || null, footerHtml: dto.footerHtml || null,
-        termsTemplate: dto.termsTemplate || null,
-        colorScheme: (dto.colorScheme || {}) as Prisma.InputJsonValue,
-        isDefault: dto.isDefault || false,
-      },
-    });
-  }
-
-  async updateQuotationTemplate(tenantId: string, id: string, dto: UpdateQuotationTemplateInput) {
-    const existing = await prisma.quotationTemplate.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Quotation template not found');
-    if (dto.isDefault) {
-      await prisma.quotationTemplate.updateMany({ where: { tenantId, id: { not: id } }, data: { isDefault: false } });
-    }
-    return prisma.quotationTemplate.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.headerHtml !== undefined && { headerHtml: dto.headerHtml }),
-        ...(dto.footerHtml !== undefined && { footerHtml: dto.footerHtml }),
-        ...(dto.termsTemplate !== undefined && { termsTemplate: dto.termsTemplate }),
-        ...(dto.logoUrl !== undefined && { logoUrl: dto.logoUrl }),
-        ...(dto.colorScheme !== undefined && { colorScheme: dto.colorScheme as Prisma.InputJsonValue }),
-        ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
-      },
-    });
-  }
-
-  async deleteQuotationTemplate(tenantId: string, id: string) {
-    const existing = await prisma.quotationTemplate.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Quotation template not found');
-    return prisma.quotationTemplate.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async createQuotationVersion(tenantId: string, quotationId: string, userId: string, note?: string) {
-    const quotation = await prisma.quotation.findFirst({
-      where: { id: quotationId, tenantId },
-      include: { lineItems: true },
-    });
-    if (!quotation) throw new NotFoundException('Quotation not found');
-    const lastVersion = await prisma.quotationVersion.findFirst({
-      where: { quotationId }, orderBy: { versionNumber: 'desc' },
-    });
-    const versionNumber = (lastVersion?.versionNumber || 0) + 1;
-    return prisma.quotationVersion.create({
-      data: {
-        tenantId, quotationId, versionNumber,
-        snapshot: { quotation, lineItems: quotation.lineItems } as unknown as Prisma.InputJsonValue,
-        changedBy: userId, changeNote: note || null,
-      },
-    });
-  }
-
-  async getQuotationVersions(tenantId: string, quotationId: string) {
-    return prisma.quotationVersion.findMany({
-      where: { tenantId, quotationId },
-      orderBy: { versionNumber: 'desc' },
-    });
-  }
-
-  async cloneQuotation(tenantId: string, quotationId: string, userId: string) {
-    const original = await prisma.quotation.findFirst({
-      where: { id: quotationId, tenantId, deletedAt: null },
-      include: { lineItems: true },
-    });
-    if (!original) throw new NotFoundException('Quotation not found');
-    const clone = await prisma.quotation.create({
-      data: {
-        tenantId, orgId: original.orgId, customerId: original.customerId,
-        quotationNumber: `${original.quotationNumber}-COPY-${Date.now()}`,
-        status: 'DRAFT', validUntil: original.validUntil, currency: original.currency,
-        notes: original.notes, termsConditions: original.termsConditions, createdBy: userId,
-      },
-    });
-    for (const item of original.lineItems) {
-      await prisma.quotationItem.create({
-        data: { 
-          tenantId, 
-          quotationId: clone.id, 
-          productId: item.productId, 
-          description: item.description, 
-          quantity: item.quantity, 
-          unitPrice: item.unitPrice, 
-          taxRate: item.taxRate, 
-          taxAmount: item.taxAmount, 
-          totalAmount: item.totalAmount, 
-          sortOrder: item.sortOrder 
-        },
-      });
-    }
-    return clone;
-  }
-
-  async sendForSignature(tenantId: string, quotationId: string, signerName: string, signerEmail: string) {
-    const quotation = await prisma.quotation.findFirst({ where: { id: quotationId, tenantId } });
-    if (!quotation) throw new NotFoundException('Quotation not found');
-    const token = crypto.randomUUID();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    return prisma.quotationSignature.create({
-      data: {
-        tenantId, quotationId, signerName, signerEmail,
-        token, expiresAt, status: 'PENDING',
-      },
-    });
-  }
-
-  async getQuotationBySignToken(token: string) {
-    const signature = await prisma.quotationSignature.findFirst({
-      where: { token },
-      include: { quotation: { include: { lineItems: true, customer: { select: { id: true, name: true } } } } },
-    });
-    if (!signature) throw new NotFoundException('Invalid signature token');
-    if (signature.expiresAt < new Date()) throw new BadRequestException('Signature link has expired');
-    return signature;
-  }
-
-  async submitSignature(token: string, signatureData: string, ipAddress: string) {
-    const signature = await prisma.quotationSignature.findFirst({ where: { token, status: 'PENDING' } });
-    if (!signature) throw new NotFoundException('Invalid or already used signature token');
-    if (signature.expiresAt < new Date()) throw new BadRequestException('Signature link has expired');
-    await prisma.quotationSignature.update({
-      where: { id: signature.id },
-      data: { status: 'SIGNED', signedAt: new Date(), signatureData, ipAddress },
-    });
-    return prisma.quotation.update({
-      where: { id: signature.quotationId },
-      data: { status: 'ACCEPTED' },
-    });
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 10: COLLABORATION
-  // ════════════════════════════════════════════════
-
-  async getComments(tenantId: string, entityType: string, entityId: string) {
-    return prisma.crmComment.findMany({
-      where: { tenantId, entityType, entityId, deletedAt: null, parentId: null },
-      include: { replies: { where: { deletedAt: null }, orderBy: { createdAt: 'asc' } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createComment(tenantId: string, userId: string, entityType: string, entityId: string, dto: CreateCrmCommentInput) {
-    return prisma.crmComment.create({
-      data: {
-        tenantId, entityType, entityId,
-        body: dto.body, createdBy: userId,
-        parentId: dto.parentId || null,
-      },
-    });
-  }
-
-  async updateComment(tenantId: string, id: string, userId: string, body: string) {
-    const comment = await prisma.crmComment.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!comment) throw new NotFoundException('Comment not found');
-    if (comment.createdBy !== userId) throw new BadRequestException('You can only edit your own comments');
-    return prisma.crmComment.update({ where: { id }, data: { body } });
-  }
-
-  async deleteComment(tenantId: string, id: string, userId: string) {
-    const comment = await prisma.crmComment.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!comment) throw new NotFoundException('Comment not found');
-    if (comment.createdBy !== userId) throw new BadRequestException('You can only delete your own comments');
-    return prisma.crmComment.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async togglePinComment(tenantId: string, id: string) {
-    const comment = await prisma.crmComment.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!comment) throw new NotFoundException('Comment not found');
-    return prisma.crmComment.update({ where: { id }, data: { isPinned: !comment.isPinned } });
-  }
-
-  async getFollowers(tenantId: string, entityType: string, entityId: string) {
-    return prisma.crmFollower.findMany({
-      where: { tenantId, entityType, entityId },
-    });
-  }
-
-  async followRecord(tenantId: string, userId: string, entityType: string, entityId: string) {
-    try {
-      return await prisma.crmFollower.create({
-        data: { tenantId, userId, entityType, entityId },
-      });
-    } catch (e: unknown) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        return prisma.crmFollower.findFirst({ where: { tenantId, userId, entityType, entityId } });
-      }
-      throw e;
-    }
-  }
-
-  async unfollowRecord(tenantId: string, userId: string, entityType: string, entityId: string) {
-    const follower = await prisma.crmFollower.findFirst({ where: { tenantId, userId, entityType, entityId } });
-    if (!follower) throw new NotFoundException('Not following this record');
-    return prisma.crmFollower.delete({ where: { id: follower.id } });
-  }
-
-  async getNotes(tenantId: string, entityType: string, entityId: string) {
-    return prisma.crmNote.findMany({
-      where: { tenantId, entityType, entityId, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createNote(tenantId: string, userId: string, entityType: string, entityId: string, dto: CreateCrmNoteInput) {
-    return prisma.crmNote.create({
-      data: {
-        tenantId, entityType, entityId,
-        title: dto.title || null, body: dto.body,
-        createdBy: userId,
-      },
-    });
-  }
-
-  async updateNote(tenantId: string, id: string, dto: UpdateCrmNoteInput) {
-    const existing = await prisma.crmNote.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Note not found');
-    return prisma.crmNote.update({
-      where: { id },
-      data: {
-        ...(dto.title !== undefined && { title: dto.title }),
-        ...(dto.body !== undefined && { body: dto.body }),
-      },
-    });
-  }
-
-  async deleteNote(tenantId: string, id: string) {
-    const existing = await prisma.crmNote.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Note not found');
-    return prisma.crmNote.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async togglePinNote(tenantId: string, id: string) {
-    const note = await prisma.crmNote.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!note) throw new NotFoundException('Note not found');
-    return prisma.crmNote.update({ where: { id }, data: { isPinned: !note.isPinned } });
-  }
-
-  async getUnifiedActivityFeed(tenantId: string, entityType: string, entityId: string) {
-    const [comments, notes, activities, documents] = await Promise.all([
-      prisma.crmComment.findMany({ where: { tenantId, entityType, entityId, deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 50 }),
-      prisma.crmNote.findMany({ where: { tenantId, entityType, entityId, deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 50 }),
-      prisma.activity.findMany({ where: { tenantId, ...(entityType === 'LEAD' ? { leadId: entityId } : entityType === 'OPPORTUNITY' ? { opportunityId: entityId } : entityType === 'CUSTOMER' ? { customerId: entityId } : {}) }, orderBy: { createdAt: 'desc' }, take: 50 }),
-      prisma.crmDocument.findMany({ where: { tenantId, entityType, entityId, deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 50 }),
-    ]);
-    const feed = [
-      ...comments.map((c) => ({ type: 'COMMENT' as const, id: c.id, data: c, createdAt: c.createdAt })),
-      ...notes.map((n) => ({ type: 'NOTE' as const, id: n.id, data: n, createdAt: n.createdAt })),
-      ...activities.map((a) => ({ type: 'ACTIVITY' as const, id: a.id, data: a, createdAt: a.createdAt })),
-      ...documents.map((d) => ({ type: 'DOCUMENT' as const, id: d.id, data: d, createdAt: d.createdAt })),
-    ];
-    feed.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    return feed.slice(0, 50);
-  }
-
-  // ════════════════════════════════════════════════
-  // PHASE 11: PLAYBOOKS
-  // ════════════════════════════════════════════════
-
-  async getPlaybooks(tenantId: string) {
-    return prisma.salesPlaybook.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { _count: { select: { stages: true, battlecards: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createPlaybook(tenantId: string, orgId: string, dto: CreatePlaybookInput, createdBy: string) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.salesPlaybook.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, description: dto.description || null,
-        pipelineId: dto.pipelineId || null,
-        createdBy,
-      },
-    });
-  }
-
-  async updatePlaybook(tenantId: string, id: string, dto: UpdatePlaybookInput) {
-    const existing = await prisma.salesPlaybook.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Playbook not found');
-    return prisma.salesPlaybook.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.pipelineId !== undefined && { pipelineId: dto.pipelineId }),
-      },
-    });
-  }
-
-  async deletePlaybook(tenantId: string, id: string) {
-    const existing = await prisma.salesPlaybook.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Playbook not found');
-    return prisma.salesPlaybook.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async getPlaybookStages(tenantId: string, playbookId: string) {
-    return prisma.playbookStage.findMany({
-      where: { playbookId, playbook: { tenantId } },
-      orderBy: { sortOrder: 'asc' },
-    });
-  }
-
-  async upsertPlaybookStages(
-    tenantId: string,
-    playbookId: string,
-    stages: Array<{
-      stageName: string;
-      guidanceNotes?: string;
-      checklist?: unknown[];
-      requiredFields?: string[];
-      talkingPoints?: string[];
-      exitCriteria?: unknown[];
-      sortOrder?: number;
-    }>
-  ) {
-    const playbook = await prisma.salesPlaybook.findFirst({ where: { id: playbookId, tenantId, deletedAt: null } });
-    if (!playbook) throw new NotFoundException('Playbook not found');
-    return prisma.$transaction(async (tx) => {
-      await tx.playbookStage.deleteMany({ where: { playbookId } });
-      return tx.playbookStage.createMany({
-        data: stages.map((s, idx) => ({
-          tenantId,
-          playbookId,
-          stageName: s.stageName,
-          guidanceNotes: s.guidanceNotes || null,
-          requiredFields: (s.requiredFields || []) as unknown as Prisma.InputJsonValue,
-          checklist: (s.checklist || []) as unknown as Prisma.InputJsonValue,
-          talkingPoints: (s.talkingPoints || []) as unknown as Prisma.InputJsonValue,
-          exitCriteria: (s.exitCriteria || []) as unknown as Prisma.InputJsonValue,
-          sortOrder: s.sortOrder !== undefined ? s.sortOrder : idx,
-        })),
-      });
-    });
-  }
-
-  async getBattlecards(tenantId: string) {
-    return prisma.battlecard.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { playbook: { select: { id: true, name: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createBattlecard(tenantId: string, dto: CreateBattlecardInput, createdBy: string) {
-    return prisma.battlecard.create({
-      data: {
-        tenantId, playbookId: dto.playbookId || null,
-        competitor: dto.competitor, strengths: dto.strengths as Prisma.InputJsonValue,
-        weaknesses: dto.weaknesses as Prisma.InputJsonValue,
-        objections: dto.objections as Prisma.InputJsonValue,
-        winStrategy: dto.winStrategy || null,
-        loseReasons: dto.loseReasons as Prisma.InputJsonValue,
-        createdBy,
-      },
-    });
-  }
-
-  async updateBattlecard(tenantId: string, id: string, dto: UpdateBattlecardInput) {
-    const existing = await prisma.battlecard.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Battlecard not found');
-    return prisma.battlecard.update({
-      where: { id },
-      data: {
-        ...(dto.competitor !== undefined && { competitor: dto.competitor }),
-        ...(dto.strengths !== undefined && { strengths: dto.strengths as Prisma.InputJsonValue }),
-        ...(dto.weaknesses !== undefined && { weaknesses: dto.weaknesses as Prisma.InputJsonValue }),
-        ...(dto.objections !== undefined && { objections: dto.objections as Prisma.InputJsonValue }),
-        ...(dto.winStrategy !== undefined && { winStrategy: dto.winStrategy }),
-        ...(dto.loseReasons !== undefined && { loseReasons: dto.loseReasons as Prisma.InputJsonValue }),
-        ...(dto.playbookId !== undefined && { playbookId: dto.playbookId }),
-      },
-    });
-  }
-
-  async deleteBattlecard(tenantId: string, id: string) {
-    const existing = await prisma.battlecard.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Battlecard not found');
-    return prisma.battlecard.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async getBattlecardByCompetitor(tenantId: string, competitor: string) {
-    return prisma.battlecard.findFirst({
-      where: { tenantId, competitor, deletedAt: null },
-      include: { playbook: { select: { id: true, name: true } } },
-    });
-  }
-
-  async getOpportunityChecklist(tenantId: string, opportunityId: string) {
-    return prisma.opportunityChecklist.findMany({
-      where: { opportunityId, tenantId },
-    });
-  }
-
-  async toggleChecklistItem(tenantId: string, opportunityId: string, itemId: string, userId: string) {
-    const existing = await prisma.opportunityChecklist.findFirst({
-      where: { id: itemId, opportunityId, tenantId },
-    });
-    if (!existing) throw new NotFoundException('Checklist item not found');
-    return prisma.opportunityChecklist.update({
-      where: { id: itemId },
-      data: {
-        isCompleted: !existing.isCompleted,
-        completedBy: !existing.isCompleted ? userId : null,
-        completedAt: !existing.isCompleted ? new Date() : null,
-      },
-    });
-  }
-
-  async validateStageAdvance(tenantId: string, opportunityId: string, targetStage: string) {
-    const opp = await prisma.opportunity.findFirst({
-      where: { id: opportunityId, tenantId, deletedAt: null },
-      include: { pipeline: true },
-    });
-    if (!opp) throw new NotFoundException('Opportunity not found');
-    const blockers: string[] = [];
-    const playbook = await prisma.salesPlaybook.findFirst({
-      where: { tenantId, pipelineId: opp.pipelineId, isActive: true, deletedAt: null },
-      include: { stages: { orderBy: { sortOrder: 'asc' } } },
-    });
-    if (!playbook) return { canAdvance: true, blockers: [] };
-    const stageConfig = playbook.stages.find((s: { stageName: string }) => s.stageName === targetStage);
-    if (!stageConfig) return { canAdvance: true, blockers: [] };
-    const requiredFields = stageConfig.requiredFields as string[] | null;
-    if (requiredFields && requiredFields.length > 0) {
-      for (const field of requiredFields) {
-        if (!(opp as Record<string, unknown>)[field]) {
-          blockers.push(`Required field "${field}" is missing`);
-        }
-      }
-    }
-    const requiredChecklist = stageConfig.checklist as string[] | null;
-    if (requiredChecklist && requiredChecklist.length > 0) {
-      const checklistItems = await prisma.opportunityChecklist.findMany({
-        where: { opportunityId, stageChecklistId: { in: requiredChecklist } },
-      });
-      for (const label of requiredChecklist) {
-        const item = checklistItems.find((c) => c.stageChecklistId === label);
-        if (!item || !item.isCompleted) {
-          blockers.push(`Required checklist item "${label}" is not completed`);
-        }
-      }
-    }
-    return { canAdvance: blockers.length === 0, blockers };
-  }
-
-
-
-
-  // ════════════════════════════════════════════════
-  // PHASE 12: DASHBOARD BUILDER
-  // ════════════════════════════════════════════════
-
-  async getDashboards(tenantId: string, userId: string) {
-    return prisma.crmDashboard.findMany({
-      where: { tenantId, deletedAt: null, OR: [{ createdBy: userId }, { isShared: true }] },
-      include: { _count: { select: { widgets: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async createDashboard(tenantId: string, orgId: string, userId: string, dto: CreateCrmDashboardInput) {
-    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    return prisma.crmDashboard.create({
-      data: { tenantId, orgId: resolvedOrgId, name: dto.name, description: dto.description || null, isShared: dto.isShared || false, createdBy: userId },
-    });
-  }
-
-  async updateDashboard(tenantId: string, id: string, dto: UpdateCrmDashboardInput) {
-    const existing = await prisma.crmDashboard.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Dashboard not found');
-    return prisma.crmDashboard.update({ where: { id }, data: {
-      ...(dto.name !== undefined && { name: dto.name }),
-      ...(dto.description !== undefined && { description: dto.description }),
-      ...(dto.isShared !== undefined && { isShared: dto.isShared }),
-    } });
-  }
-
-  async deleteDashboard(tenantId: string, id: string) {
-    const existing = await prisma.crmDashboard.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Dashboard not found');
-    return prisma.crmDashboard.update({ where: { id }, data: { deletedAt: new Date() } });
-  }
-
-  async cloneDashboard(tenantId: string, id: string, userId: string) {
-    const original = await prisma.crmDashboard.findFirst({ where: { id, tenantId, deletedAt: null }, include: { widgets: true } });
-    if (!original) throw new NotFoundException('Dashboard not found');
-    const clone = await prisma.crmDashboard.create({
-      data: { tenantId, orgId: original.orgId, name: `${original.name} (Copy)`, description: original.description, layout: original.layout as Prisma.InputJsonValue, isShared: false, createdBy: userId },
-    });
-    for (const w of original.widgets) {
-      await prisma.crmDashboardWidget.create({
-        data: { tenantId, dashboardId: clone.id, widgetType: w.widgetType, title: w.title, dataSource: w.dataSource, config: w.config as Prisma.InputJsonValue, refreshInterval: w.refreshInterval },
-      });
-    }
-    return clone;
-  }
-
-  async addWidget(tenantId: string, dashboardId: string, dto: CreateDashboardWidgetInput) {
-    const dashboard = await prisma.crmDashboard.findFirst({ where: { id: dashboardId, tenantId, deletedAt: null } });
-    if (!dashboard) throw new NotFoundException('Dashboard not found');
-    return prisma.crmDashboardWidget.create({
-      data: { tenantId, dashboardId, widgetType: dto.widgetType, title: dto.title, dataSource: dto.dataSource, config: dto.config as Prisma.InputJsonValue, refreshInterval: dto.refreshInterval || 0 },
-    });
-  }
-
-  async updateWidget(tenantId: string, widgetId: string, dto: UpdateDashboardWidgetInput) {
-    const widget = await prisma.crmDashboardWidget.findFirst({ where: { id: widgetId, tenantId } });
-    if (!widget) throw new NotFoundException('Widget not found');
-    return prisma.crmDashboardWidget.update({ where: { id: widgetId }, data: {
-      ...(dto.title !== undefined && { title: dto.title }),
-      ...(dto.widgetType !== undefined && { widgetType: dto.widgetType }),
-      ...(dto.dataSource !== undefined && { dataSource: dto.dataSource }),
-      ...(dto.config !== undefined && { config: dto.config as Prisma.InputJsonValue }),
-      ...(dto.refreshInterval !== undefined && { refreshInterval: dto.refreshInterval }),
-    } });
-  }
-
-  async removeWidget(tenantId: string, widgetId: string) {
-    const widget = await prisma.crmDashboardWidget.findFirst({ where: { id: widgetId, tenantId } });
-    if (!widget) throw new NotFoundException('Widget not found');
-    return prisma.crmDashboardWidget.delete({ where: { id: widgetId } });
-  }
-
-  async updateDashboardLayout(tenantId: string, dashboardId: string, layout: Array<{ widgetId: string; x: number; y: number; w: number; h: number }>) {
-    const dashboard = await prisma.crmDashboard.findFirst({ where: { id: dashboardId, tenantId } });
-    if (!dashboard) throw new NotFoundException('Dashboard not found');
-    return prisma.crmDashboard.update({ where: { id: dashboardId }, data: { layout: layout as Prisma.InputJsonValue } });
-  }
-
+  // ── WORKFLOW RULES ────────────────────────────
+  getWorkflowRules(tenantId: string) { return this.marketingService.getWorkflowRules(tenantId); }
+  createWorkflowRule(tenantId: string, orgId: string, dto: CreateCrmWorkflowRuleInput, createdBy: string) { return this.marketingService.createWorkflowRule(tenantId, orgId, dto, createdBy); }
+  updateWorkflowRule(tenantId: string, id: string, dto: UpdateCrmWorkflowRuleInput) { return this.marketingService.updateWorkflowRule(tenantId, id, dto); }
+  toggleWorkflowRule(tenantId: string, id: string) { return this.marketingService.toggleWorkflowRule(tenantId, id); }
+  deleteWorkflowRule(tenantId: string, id: string) { return this.marketingService.deleteWorkflowRule(tenantId, id); }
+
+  // ── EMAIL SEQUENCES ───────────────────────────
+  getEmailSequences(tenantId: string) { return this.marketingService.getEmailSequences(tenantId); }
+  createEmailSequence(tenantId: string, orgId: string, dto: CreateEmailSequenceInput, createdBy: string) { return this.marketingService.createEmailSequence(tenantId, orgId, dto, createdBy); }
+  enrollInSequence(tenantId: string, sequenceId: string, dto: EnrollSequenceInput) { return this.marketingService.enrollInSequence(tenantId, sequenceId, dto); }
+  pauseEnrollment(tenantId: string, enrollmentId: string) { return this.marketingService.pauseEnrollment(tenantId, enrollmentId); }
+  deleteEmailSequence(tenantId: string, id: string) { return this.marketingService.deleteEmailSequence(tenantId, id); }
+
+  // ── TERRITORIES ───────────────────────────────
+  getTerritories(tenantId: string) { return this.salesOpsService.getTerritories(tenantId); }
+  createTerritory(tenantId: string, orgId: string, dto: CreateSalesTerritoryInput) { return this.salesOpsService.createTerritory(tenantId, orgId, dto); }
+  updateTerritory(tenantId: string, id: string, dto: UpdateSalesTerritoryInput) { return this.salesOpsService.updateTerritory(tenantId, id, dto); }
+  deleteTerritory(tenantId: string, id: string) { return this.salesOpsService.deleteTerritory(tenantId, id); }
+  addTeamMember(tenantId: string, territoryId: string, dto: AddTeamMemberInput) { return this.salesOpsService.addTeamMember(tenantId, territoryId, dto); }
+  removeTeamMember(tenantId: string, territoryId: string, userId: string) { return this.salesOpsService.removeTeamMember(tenantId, territoryId, userId); }
+  getTerritoryPerformance(tenantId: string) { return this.salesOpsService.getTerritoryPerformance(tenantId); }
+
+  // ── COMMISSIONS ───────────────────────────────
+  getCommissionRules(tenantId: string) { return this.salesOpsService.getCommissionRules(tenantId); }
+  createCommissionRule(tenantId: string, orgId: string, dto: CreateCommissionRuleInput) { return this.salesOpsService.createCommissionRule(tenantId, orgId, dto); }
+  updateCommissionRule(tenantId: string, id: string, dto: UpdateCommissionRuleInput) { return this.salesOpsService.updateCommissionRule(tenantId, id, dto); }
+  deleteCommissionRule(tenantId: string, id: string) { return this.salesOpsService.deleteCommissionRule(tenantId, id); }
+  getCommissionEntries(tenantId: string, userId?: string) { return this.salesOpsService.getCommissionEntries(tenantId, userId); }
+  calculateCommissions(tenantId: string, dto: CalculateCommissionsInput) { return this.salesOpsService.calculateCommissions(tenantId, dto); }
+
+  // ── WEB-TO-LEAD FORMS ─────────────────────────
+  getWebForms(tenantId: string) { return this.marketingService.getWebForms(tenantId); }
+  createWebForm(tenantId: string, orgId: string, dto: CreateWebToLeadFormInput) { return this.marketingService.createWebForm(tenantId, orgId, dto); }
+  updateWebForm(tenantId: string, id: string, dto: UpdateWebToLeadFormInput) { return this.marketingService.updateWebForm(tenantId, id, dto); }
+  deleteWebForm(tenantId: string, id: string) { return this.marketingService.deleteWebForm(tenantId, id); }
+  submitWebForm(formId: string, dto: SubmitWebFormInput) { return this.marketingService.submitWebForm(formId, dto); }
+  getWebFormEmbed(tenantId: string, id: string) { return this.marketingService.getWebFormEmbed(tenantId, id); }
+
+  // ── DOCUMENTS & IMPORT/EXPORT ─────────────────
+  getCrmDocuments(tenantId: string, entityType?: string, entityId?: string) { return this.configService.getCrmDocuments(tenantId, entityType, entityId); }
+  createCrmDocument(tenantId: string, orgId: string, dto: CreateCrmDocumentInput, uploadedBy: string) { return this.configService.createCrmDocument(tenantId, orgId, dto, uploadedBy); }
+  deleteCrmDocument(tenantId: string, id: string) { return this.configService.deleteCrmDocument(tenantId, id); }
+  importContacts(tenantId: string, orgId: string, rows: Array<Record<string, string>>) { return this.configService.importContacts(tenantId, orgId, rows); }
+  exportContacts(tenantId: string) { return this.configService.exportContacts(tenantId); }
+  importLeads(tenantId: string, orgId: string, rows: Array<Record<string, string>>) { return this.configService.importLeads(tenantId, orgId, rows); }
+  exportLeads(tenantId: string) { return this.configService.exportLeads(tenantId); }
+
+  // ── CUSTOM FIELDS & RECORD TYPES ──────────────
+  getCustomFields(tenantId: string, entity?: string) { return this.configService.getCustomFields(tenantId, entity); }
+  createCustomField(tenantId: string, orgId: string, dto: CreateCustomFieldInput, createdBy: string) { return this.configService.createCustomField(tenantId, orgId, dto, createdBy); }
+  updateCustomField(tenantId: string, id: string, dto: UpdateCustomFieldInput) { return this.configService.updateCustomField(tenantId, id, dto); }
+  deleteCustomField(tenantId: string, id: string) { return this.configService.deleteCustomField(tenantId, id); }
+  getCustomFieldValues(tenantId: string, entityType: string, entityId: string) { return this.configService.getCustomFieldValues(tenantId, entityType, entityId); }
+  upsertCustomFieldValues(tenantId: string, entityType: string, entityId: string, values: Array<{ fieldId: string; value: string | null }>) { return this.configService.upsertCustomFieldValues(tenantId, entityType, entityId, values); }
+  getRecordTypes(tenantId: string, entity?: string) { return this.configService.getRecordTypes(tenantId, entity); }
+  createRecordType(tenantId: string, orgId: string, dto: CreateRecordTypeInput) { return this.configService.createRecordType(tenantId, orgId, dto); }
+  updateRecordType(tenantId: string, id: string, dto: UpdateRecordTypeInput) { return this.configService.updateRecordType(tenantId, id, dto); }
+  deleteRecordType(tenantId: string, id: string) { return this.configService.deleteRecordType(tenantId, id); }
+
+  // ── APPROVALS ─────────────────────────────────
+  getApprovalProcesses(tenantId: string) { return this.configService.getApprovalProcesses(tenantId); }
+  createApprovalProcess(tenantId: string, orgId: string, dto: CreateApprovalProcessInput, createdBy: string) { return this.configService.createApprovalProcess(tenantId, orgId, dto, createdBy); }
+  updateApprovalProcess(tenantId: string, id: string, dto: UpdateApprovalProcessInput) { return this.configService.updateApprovalProcess(tenantId, id, dto); }
+  deleteApprovalProcess(tenantId: string, id: string) { return this.configService.deleteApprovalProcess(tenantId, id); }
+  submitForApproval(tenantId: string, userId: string, entityType: string, entityId: string, processId?: string) { return this.configService.submitForApproval(tenantId, userId, entityType, entityId, processId); }
+  getPendingApprovals(tenantId: string, userId: string) { return this.configService.getPendingApprovals(tenantId, userId); }
+  approveRequest(tenantId: string, requestId: string, userId: string, comments?: string) { return this.configService.approveRequest(tenantId, requestId, userId, comments); }
+  rejectRequest(tenantId: string, requestId: string, userId: string, comments: string) { return this.configService.rejectRequest(tenantId, requestId, userId, comments); }
+  recallRequest(tenantId: string, requestId: string, userId: string) { return this.configService.recallRequest(tenantId, requestId, userId); }
+  getApprovalHistory(tenantId: string, entityType: string, entityId: string) { return this.configService.getApprovalHistory(tenantId, entityType, entityId); }
+
+  // ── CPQ ───────────────────────────────────────
+  getQuotationTemplates(tenantId: string) { return this.configService.getQuotationTemplates(tenantId); }
+  createQuotationTemplate(tenantId: string, orgId: string, dto: CreateQuotationTemplateInput) { return this.configService.createQuotationTemplate(tenantId, orgId, dto); }
+  updateQuotationTemplate(tenantId: string, id: string, dto: UpdateQuotationTemplateInput) { return this.configService.updateQuotationTemplate(tenantId, id, dto); }
+  deleteQuotationTemplate(tenantId: string, id: string) { return this.configService.deleteQuotationTemplate(tenantId, id); }
+  createQuotationVersion(tenantId: string, quotationId: string, userId: string, note?: string) { return this.configService.createQuotationVersion(tenantId, quotationId, userId, note); }
+  getQuotationVersions(tenantId: string, quotationId: string) { return this.configService.getQuotationVersions(tenantId, quotationId); }
+  cloneQuotation(tenantId: string, quotationId: string, userId: string) { return this.configService.cloneQuotation(tenantId, quotationId, userId); }
+  sendForSignature(tenantId: string, quotationId: string, signerName: string, signerEmail: string) { return this.configService.sendForSignature(tenantId, quotationId, signerName, signerEmail); }
+  getQuotationBySignToken(token: string) { return this.configService.getQuotationBySignToken(token); }
+  submitSignature(token: string, signatureData: string, ipAddress: string) { return this.configService.submitSignature(token, signatureData, ipAddress); }
+
+  // ── COLLABORATION ─────────────────────────────
+  getComments(tenantId: string, entityType: string, entityId: string) { return this.collaborationService.getComments(tenantId, entityType, entityId); }
+  createComment(tenantId: string, userId: string, entityType: string, entityId: string, dto: CreateCrmCommentInput) { return this.collaborationService.createComment(tenantId, userId, entityType, entityId, dto); }
+  updateComment(tenantId: string, id: string, userId: string, body: string) { return this.collaborationService.updateComment(tenantId, id, userId, body); }
+  deleteComment(tenantId: string, id: string, userId: string) { return this.collaborationService.deleteComment(tenantId, id, userId); }
+  togglePinComment(tenantId: string, id: string) { return this.collaborationService.togglePinComment(tenantId, id); }
+  getFollowers(tenantId: string, entityType: string, entityId: string) { return this.collaborationService.getFollowers(tenantId, entityType, entityId); }
+  followRecord(tenantId: string, userId: string, entityType: string, entityId: string) { return this.collaborationService.followRecord(tenantId, userId, entityType, entityId); }
+  unfollowRecord(tenantId: string, userId: string, entityType: string, entityId: string) { return this.collaborationService.unfollowRecord(tenantId, userId, entityType, entityId); }
+  getNotes(tenantId: string, entityType: string, entityId: string) { return this.collaborationService.getNotes(tenantId, entityType, entityId); }
+  createNote(tenantId: string, userId: string, entityType: string, entityId: string, dto: CreateCrmNoteInput) { return this.collaborationService.createNote(tenantId, userId, entityType, entityId, dto); }
+  updateNote(tenantId: string, id: string, dto: UpdateCrmNoteInput) { return this.collaborationService.updateNote(tenantId, id, dto); }
+  deleteNote(tenantId: string, id: string) { return this.collaborationService.deleteNote(tenantId, id); }
+  togglePinNote(tenantId: string, id: string) { return this.collaborationService.togglePinNote(tenantId, id); }
+  getUnifiedActivityFeed(tenantId: string, entityType: string, entityId: string) { return this.collaborationService.getUnifiedActivityFeed(tenantId, entityType, entityId); }
+
+  // ── PLAYBOOKS, BATTLECARDS & CHECKLISTS ───────
+  getPlaybooks(tenantId: string) { return this.dealsService.getPlaybooks(tenantId); }
+  createPlaybook(tenantId: string, orgId: string, dto: CreatePlaybookInput, createdBy: string) { return this.dealsService.createPlaybook(tenantId, orgId, dto, createdBy); }
+  updatePlaybook(tenantId: string, id: string, dto: UpdatePlaybookInput) { return this.dealsService.updatePlaybook(tenantId, id, dto); }
+  deletePlaybook(tenantId: string, id: string) { return this.dealsService.deletePlaybook(tenantId, id); }
+  getPlaybookStages(tenantId: string, playbookId: string) { return this.dealsService.getPlaybookStages(tenantId, playbookId); }
+  upsertPlaybookStages(tenantId: string, playbookId: string, stages: Array<{ stageName: string; guidanceNotes?: string; checklist?: unknown[]; requiredFields?: string[]; talkingPoints?: string[]; exitCriteria?: unknown[]; sortOrder?: number }>) { return this.dealsService.upsertPlaybookStages(tenantId, playbookId, stages); }
+  getBattlecards(tenantId: string) { return this.dealsService.getBattlecards(tenantId); }
+  createBattlecard(tenantId: string, dto: CreateBattlecardInput, createdBy: string) { return this.dealsService.createBattlecard(tenantId, dto, createdBy); }
+  updateBattlecard(tenantId: string, id: string, dto: UpdateBattlecardInput) { return this.dealsService.updateBattlecard(tenantId, id, dto); }
+  deleteBattlecard(tenantId: string, id: string) { return this.dealsService.deleteBattlecard(tenantId, id); }
+  getBattlecardByCompetitor(tenantId: string, competitor: string) { return this.dealsService.getBattlecardByCompetitor(tenantId, competitor); }
+  getOpportunityChecklist(tenantId: string, opportunityId: string) { return this.dealsService.getOpportunityChecklist(tenantId, opportunityId); }
+  toggleChecklistItem(tenantId: string, opportunityId: string, itemId: string, userId: string) { return this.dealsService.toggleChecklistItem(tenantId, opportunityId, itemId, userId); }
+  validateStageAdvance(tenantId: string, opportunityId: string, targetStage: string) { return this.dealsService.validateStageAdvance(tenantId, opportunityId, targetStage); }
+
+  // ── DASHBOARD BUILDER ─────────────────────────
+  getDashboards(tenantId: string, userId: string) { return this.dashboardsService.getDashboards(tenantId, userId); }
+  createDashboard(tenantId: string, orgId: string, userId: string, dto: CreateCrmDashboardInput) { return this.dashboardsService.createDashboard(tenantId, orgId, userId, dto); }
+  updateDashboard(tenantId: string, id: string, dto: UpdateCrmDashboardInput) { return this.dashboardsService.updateDashboard(tenantId, id, dto); }
+  deleteDashboard(tenantId: string, id: string) { return this.dashboardsService.deleteDashboard(tenantId, id); }
+  cloneDashboard(tenantId: string, id: string, userId: string) { return this.dashboardsService.cloneDashboard(tenantId, id, userId); }
+  addWidget(tenantId: string, dashboardId: string, dto: CreateDashboardWidgetInput) { return this.dashboardsService.addWidget(tenantId, dashboardId, dto); }
+  updateWidget(tenantId: string, widgetId: string, dto: UpdateDashboardWidgetInput) { return this.dashboardsService.updateWidget(tenantId, widgetId, dto); }
+  removeWidget(tenantId: string, widgetId: string) { return this.dashboardsService.removeWidget(tenantId, widgetId); }
+  updateDashboardLayout(tenantId: string, dashboardId: string, layout: Array<{ widgetId: string; x: number; y: number; w: number; h: number }>) { return this.dashboardsService.updateDashboardLayout(tenantId, dashboardId, layout); }
+
+  /** Cross-domain aggregator: resolve a widget's configured data source to live data. */
   async getWidgetData(tenantId: string, widgetId: string) {
-    const widget = await prisma.crmDashboardWidget.findFirst({ where: { id: widgetId, tenantId } });
-    if (!widget) throw new NotFoundException('Widget not found');
+    const widget = await this.dashboardsService.getWidget(tenantId, widgetId);
     switch (widget.dataSource) {
-      case 'PIPELINE': return this.getPipelineFunnel(tenantId);
-      case 'LEADS': return this.getLeadSourceBreakdown(tenantId);
-      case 'REVENUE': return this.getRevenueForecast(tenantId);
-      case 'TARGETS': return this.getSalesTargets(tenantId);
-      case 'CONVERSIONS': return this.getConversionFunnel(tenantId);
-      case 'COMMISSIONS': return this.getCommissionEntries(tenantId);
-      case 'ACTIVITIES': return this.getActivities(tenantId);
-      default: return this.getPipelineFunnel(tenantId);
+      case 'PIPELINE': return this.dealsService.getPipelineFunnel(tenantId);
+      case 'LEADS': return this.dealsService.getLeadSourceBreakdown(tenantId);
+      case 'REVENUE': return this.dealsService.getRevenueForecast(tenantId);
+      case 'TARGETS': return this.salesOpsService.getSalesTargets(tenantId);
+      case 'CONVERSIONS': return this.dealsService.getConversionFunnel(tenantId);
+      case 'COMMISSIONS': return this.salesOpsService.getCommissionEntries(tenantId);
+      case 'ACTIVITIES': return this.activitiesService.getActivities(tenantId);
+      default: return this.dealsService.getPipelineFunnel(tenantId);
     }
   }
 
-  async getAvailableMetrics() {
+  getAvailableMetrics() {
     return [
       { dataSource: 'PIPELINE', label: 'Pipeline Funnel', metrics: ['count', 'totalAmount'] },
       { dataSource: 'LEADS', label: 'Lead Sources', metrics: ['count'] },
@@ -2191,16 +318,5 @@ export class CrmService {
       { dataSource: 'COMMISSIONS', label: 'Commissions', metrics: ['amount'] },
       { dataSource: 'ACTIVITIES', label: 'Activities', metrics: ['count'] },
     ];
-  }
-
-  // ════════════════════════════════════════════════
-  // HELPERS
-  // ════════════════════════════════════════════════
-
-  private async resolveOrgId(tenantId: string, orgId: string): Promise<string> {
-    if (orgId && orgId !== 'org-system-default') return orgId;
-    const org = await prisma.organization.findFirst({ where: { tenantId } });
-    if (!org) throw new BadRequestException('No Organization registered in this tenant');
-    return org.id;
   }
 }
