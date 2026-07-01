@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmService } from '../crm.service';
+import { CrmCustomersService } from '../crm-customers.service';
+import { CrmContactsService } from '../crm-contacts.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Prisma } from '@prisma/client';
@@ -78,7 +80,7 @@ describe('CrmService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CrmService],
+      providers: [CrmService, CrmCustomersService, CrmContactsService],
     }).compile();
 
     service = module.get<CrmService>(CrmService);

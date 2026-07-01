@@ -7,10 +7,12 @@ vi.mock('@unerp/database', () => {
       patient: {
         findMany: vi.fn(),
         create: vi.fn(),
+        count: vi.fn(),
       },
       practitioner: {
         findMany: vi.fn(),
         create: vi.fn(),
+        count: vi.fn(),
       },
       appointment: {
         findMany: vi.fn(),
@@ -44,19 +46,21 @@ describe('HealthcareService', () => {
     const { prisma } = await import('@unerp/database');
     const mockPatients = [{ id: 'p-1', firstName: 'John', lastName: 'Doe' }];
     vi.mocked(prisma.patient.findMany).mockResolvedValue(mockPatients as never);
+    vi.mocked(prisma.patient.count).mockResolvedValue(1 as never);
 
     const res = await service.getPatients('tenant-123');
     expect(res).toBeDefined();
-    expect(res[0]?.firstName).toBe('John');
+    expect(res.data[0]?.firstName).toBe('John');
   });
 
   it('should get practitioner list', async () => {
     const { prisma } = await import('@unerp/database');
     const mockPracts = [{ id: 'pract-1', specialty: 'Cardiology' }];
     vi.mocked(prisma.practitioner.findMany).mockResolvedValue(mockPracts as never);
+    vi.mocked(prisma.practitioner.count).mockResolvedValue(1 as never);
 
     const res = await service.getPractitioners('tenant-123');
     expect(res).toBeDefined();
-    expect(res[0]?.specialty).toBe('Cardiology');
+    expect(res.data[0]?.specialty).toBe('Cardiology');
   });
 });

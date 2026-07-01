@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import {
@@ -34,7 +34,9 @@ import { CrmContactsService } from './crm-contacts.service';
 @Injectable()
 export class CrmService {
   constructor(
+    @Inject(CrmCustomersService)
     private readonly customersService: CrmCustomersService,
+    @Inject(CrmContactsService)
     private readonly contactsService: CrmContactsService,
   ) {}
 
