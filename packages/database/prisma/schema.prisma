@@ -60,15 +60,33 @@ model User {
   deletedAt    DateTime? @map("deleted_at")
   preferences  Json      @default("{}")
 
+  mfaEnabled   Boolean   @default(false) @map("mfa_enabled")
+  mfaSecret    String?   @map("mfa_secret")
+
   tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   roles            UserRole[]
   userSessions     UserSession[]
   groupMemberships UserGroupMember[]
+  passkeys         Passkey[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
   @@index([email])
   @@map("users")
+}
+
+model Passkey {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  credentialID String   @unique @map("credential_id")
+  publicKey    String   @map("public_key")
+  counter      Int
+  transports   String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("passkeys")
 }
 
 model Role {

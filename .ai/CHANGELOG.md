@@ -3,6 +3,30 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-01] Layout Navbar Revamp & Floating AI Chatbot Companion
+
+Overhauled the main ERP top header navigation panel with modern, premium glassmorphism styling and integrated a floating AI chatbot companion at the bottom of all dashboard pages.
+
+### Added — Navigation & Layout UI/UX
+- **Glassmorphic Top Header**: Replaced the solid white header in `layout.tsx` with a translucent glass background (`rgba(255, 255, 255, 0.72)` in light theme, `rgba(24, 25, 32, 0.72)` in dark theme) paired with an active blur overlay.
+- **Commander Search Bar**: Styled the search input with hover glows, focus scale transitions, and custom keyboard shortcut pills (`⌘K` / `Ctrl+K`).
+- **Status Indicator Badges**: Added JIT active session green ring badges to the revamped user profile avatar button.
+- **Floating AI Chatbot Copilot**: Implemented a floating Sparkles button at the bottom-right of all dashboard layouts. Clicking it toggles a translucent chat box that responds contextually to queries regarding ledgers, inventory, active directories, and workflows.
+
+## [2026-07-01] Authentication, Registration & Password Recovery System Overhaul
+
+Overhauled user authentication and onboarding pages, introducing a multi-step registration wizard, a demo user login bypass modal, OIDC/SAML SSO configurations checkers, and a signed JWT-based secure password recovery flow.
+
+### Added — Authentication & Onboarding
+- **Multi-Step Onboarding Wizard**: Converted `/register` page into a 3-step setup form (Step 1: Org profile, Step 2: System Admin profile + password strength meter, Step 3: Interactive terminal progress logs seeding simulated partitioned resources) with automatic silent background log in.
+- **Biometric & SSO Checkers**: Integrated automatic query to detect OIDC/SAML tenant-level SSO configs on `/login`, dynamically toggling authentication flows.
+- **One-Click Demo Personas Shortcut**: Added a popover drawer on `/login` to log in instantly as pre-seeded roles (Super Admin, HR, Finance, Guest/Viewer) provisioning database tables and users JIT on demand.
+- **Secure Password Reset Portal**: Created `/reset-password` page wrapped in a Next.js 15 compliant `<Suspense>` wrapper to prevent build time optimizations errors.
+- **Signed Recovery JWTs Backend**: Implemented secure recovery token signed JWT generation and validation endpoints (`POST /auth/forgot-password` and `POST /auth/reset-password`) in NestJS `auth.service.ts` and `auth.controller.ts`.
+
+### Verified
+- Zero linting or type-checking errors across `@unerp/web` and `@unerp/api`.
+
 ## [2026-07-01] Public Landing Page UI/UX Revamp & Procurement Controller Fix
 
 Revamped the public landing page with modern interactive capabilities and fixed a NestJS dependency injection startup crash in the Procurement module.

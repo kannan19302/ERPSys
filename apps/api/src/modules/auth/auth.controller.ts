@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@unerp/shared';
+import { registerSchema, loginSchema, RegisterInput, LoginInput, forgotPasswordSchema, resetPasswordSchema, ForgotPasswordInput, ResetPasswordInput } from '@unerp/shared';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 const AUTH_COOKIE = 'auth_token';
@@ -95,5 +95,93 @@ export class AuthController {
     );
     const dto = validationPipe.transform(body, { type: 'body', metatype: Object });
     return this.authService.updateProfile(req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Request password reset' })
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body(new ZodValidationPipe(forgotPasswordSchema)) dto: ForgotPasswordInput) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @ApiOperation({ summary: 'Reset password' })
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body(new ZodValidationPipe(resetPasswordSchema)) dto: ResetPasswordInput) {
+    return this.authService.resetPassword(dto);
+  }
+
+  @ApiOperation({ summary: 'Login demo user' })
+  @Post('login-demo')
+  @HttpCode(HttpStatus.OK)
+  async loginDemo(
+    @Body() body: { role: 'SUPER_ADMIN' | 'HR_MANAGER' | 'FINANCE_MANAGER' | 'VIEWER' },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.loginDemo(body.role);
+    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    return result;
+  }
+
+  @ApiOperation({ summary: 'Setup TOTP MFA' })
+  @Post('mfa/setup')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async setupMfa(@Req() req: AuthenticatedRequest) {
+    return this.authService.generateMfaSecret(req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Verify and enable/disable TOTP MFA' })
+  @Post('mfa/verify')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async verifyMfa(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: { code: string; enable: boolean },
+  ) {
+    return this.authService.verifyMfaAndEnable(req.user.userId, body.code, body.enable);
+  }
+
+  @ApiOperation({ summary: 'Generate Passkey Registration Options' })
+  @Post('passkey/register-options')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getPasskeyRegisterOptions(@Req() req: AuthenticatedRequest) {
+    return this.authService.generatePasskeyRegisterOptions(req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Register Passkey Credential' })
+  @Post('passkey/register')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async registerPasskey(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: { credentialID: string; publicKey: string },
+  ) {
+    return this.authService.verifyPasskeyRegister(req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Login with Passkey' })
+  @Post('passkey/login')
+  @HttpCode(HttpStatus.OK)
+  async loginPasskey(
+    @Body() body: { credentialID: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.verifyPasskeyLogin(body.credentialID);
+    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    return result;
+  }
+
+  @ApiOperation({ summary: 'Verify MFA and Login' })
+  @Post('mfa/verify-login')
+  @HttpCode(HttpStatus.OK)
+  async verifyMfaLogin(
+    @Body() body: { userId: string; code: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.verifyMfaLogin(body.userId, body.code);
+    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    return result;
   }
 }

@@ -225,6 +225,7 @@ export default function LandingPage() {
 
   // Interactive states for Playground
   const [playgroundTab, setPlaygroundTab] = useState('dashboard');
+  const [playgroundIndustry, setPlaygroundIndustry] = useState('general');
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   const [financeInvoices, setFinanceInvoices] = useState([
@@ -263,6 +264,222 @@ export default function LandingPage() {
   ]);
   const [activeWorkflowStep, setActiveWorkflowStep] = useState<number | null>(null);
   const [isSimulatingWorkflow, setIsSimulatingWorkflow] = useState(false);
+
+  // Industry-specific getters for Playground console
+  const getDashboardCards = () => {
+    switch (playgroundIndustry) {
+      case 'healthcare':
+        return [
+          { label: 'Patient Admissions', value: '1,280', change: '+12.4%', color: '#10b981' },
+          { label: 'Available Beds', value: '45', change: '-8.3%', color: 'var(--color-primary)' },
+          { label: 'Prescriptions Filled', value: '894', change: '+15.1%', color: '#f59e0b' },
+          { label: 'Satisfaction Rate', value: '98.2%', change: '+1.5%', color: '#0ea5e9' },
+        ];
+      case 'education':
+        return [
+          { label: 'Students Enrolled', value: '8,560', change: '+8.3%', color: '#f59e0b' },
+          { label: 'Classes Scheduled', value: '342', change: '+5.1%', color: 'var(--color-primary)' },
+          { label: 'Fee Collections', value: '$890K', change: '+12.4%', color: '#10b981' },
+          { label: 'Attendance Rate', value: '95.4%', change: '+0.5%', color: '#0ea5e9' },
+        ];
+      case 'realestate':
+        return [
+          { label: 'Properties Managed', value: '1,247', change: '+2.1%', color: '#0ea5e9' },
+          { label: 'Active Leases', value: '3,891', change: '+10.2%', color: '#10b981' },
+          { label: 'Maintenance Requests', value: '112', change: '-12.5%', color: '#f43f5e' },
+          { label: 'Net Operating Income', value: '$4.5M', change: '+8.5%', color: '#f59e0b' },
+        ];
+      case 'fieldservice':
+        return [
+          { label: 'Tickets Opened', value: '5,120', change: '+14.2%', color: '#f43f5e' },
+          { label: 'Technicians Active', value: '248', change: '+4.5%', color: 'var(--color-primary)' },
+          { label: 'Average Resolution', value: '1.8h', change: '-15.4%', color: '#10b981' },
+          { label: 'SLA Compliance', value: '98.2%', change: '+0.8%', color: '#0ea5e9' },
+        ];
+      default:
+        return [
+          { label: 'Monthly Revenue', value: '$142,380', change: '+12.4%', color: 'var(--color-primary)' },
+          { label: 'Active Users', value: '1,280', change: '+8.3%', color: 'var(--color-success)' },
+          { label: 'Procurement RFQs', value: '47', change: '-2.1%', color: 'var(--color-warning)' },
+          { label: 'Net Yield', value: '98.6%', change: '+1.5%', color: 'var(--color-info)' },
+        ];
+    }
+  };
+
+  const getDashboardChartData = () => {
+    switch (playgroundIndustry) {
+      case 'healthcare':
+        return [
+          { month: 'Jan', value: 80 }, { month: 'Feb', value: 85 }, { month: 'Mar', value: 92 },
+          { month: 'Apr', value: 110 }, { month: 'May', value: 105 }, { month: 'Jun', value: 120 },
+          { month: 'Jul', value: 115 }, { month: 'Aug', value: 130 }, { month: 'Sep', value: 125 },
+          { month: 'Oct', value: 140 }, { month: 'Nov', value: 135 }, { month: 'Dec', value: 150 },
+        ];
+      case 'education':
+        return [
+          { month: 'Jan', value: 90 }, { month: 'Feb', value: 95 }, { month: 'Mar', value: 105 },
+          { month: 'Apr', value: 120 }, { month: 'May', value: 110 }, { month: 'Jun', value: 130 },
+          { month: 'Jul', value: 125 }, { month: 'Aug', value: 140 }, { month: 'Sep', value: 165 },
+          { month: 'Oct', value: 155 }, { month: 'Nov', value: 160 }, { month: 'Dec', value: 180 },
+        ];
+      case 'realestate':
+        return [
+          { month: 'Jan', value: 180 }, { month: 'Feb', value: 185 }, { month: 'Mar', value: 190 },
+          { month: 'Apr', value: 195 }, { month: 'May', value: 205 }, { month: 'Jun', value: 210 },
+          { month: 'Jul', value: 215 }, { month: 'Aug', value: 220 }, { month: 'Sep', value: 230 },
+          { month: 'Oct', value: 240 }, { month: 'Nov', value: 250 }, { month: 'Dec', value: 265 },
+        ];
+      case 'fieldservice':
+        return [
+          { month: 'Jan', value: 120 }, { month: 'Feb', value: 130 }, { month: 'Mar', value: 115 },
+          { month: 'Apr', value: 140 }, { month: 'May', value: 135 }, { month: 'Jun', value: 150 },
+          { month: 'Jul', value: 145 }, { month: 'Aug', value: 160 }, { month: 'Sep', value: 155 },
+          { month: 'Oct', value: 170 }, { month: 'Nov', value: 165 }, { month: 'Dec', value: 185 },
+        ];
+      default:
+        return DASHBOARD_CHART_DATA;
+    }
+  };
+
+  const getFinanceInvoices = () => {
+    switch (playgroundIndustry) {
+      case 'healthcare':
+        return [
+          { id: 'COPAY-001', customer: 'Sarah Miller (Copay)', amount: 45, status: 'PAID' },
+          { id: 'LAB-002', customer: 'John Doe (Blood Panel)', amount: 180, status: 'PAID' },
+          { id: 'EQUIP-003', customer: 'HealthClinic Lease', amount: 1500, status: 'OVERDUE' },
+          { id: 'PHARMA-004', customer: 'Sarah Chen (Prescriptions)', amount: 350, status: 'DRAFT' },
+        ];
+      case 'education':
+        return [
+          { id: 'TERM-001', customer: 'Sarah Miller (Tuition)', amount: 3200, status: 'PAID' },
+          { id: 'LIB-002', customer: 'John Doe (Library Fine)', amount: 15, status: 'PAID' },
+          { id: 'CAMP-003', customer: 'Emma Watson (Summer Camp)', amount: 250, status: 'OVERDUE' },
+          { id: 'HOSTEL-004', customer: 'Alex Mercer (Dormitory)', amount: 1200, status: 'DRAFT' },
+        ];
+      case 'realestate':
+        return [
+          { id: 'RENT-001', customer: 'Sarah Miller (Unit 4B)', amount: 2400, status: 'PAID' },
+          { id: 'MAINT-002', customer: 'John Doe (AC Repair)', amount: 120, status: 'PAID' },
+          { id: 'DEPOSIT-003', customer: 'Emma Watson (Unit 12)', amount: 3500, status: 'OVERDUE' },
+          { id: 'LEASE-004', customer: 'Alex Mercer (Office Suite)', amount: 5000, status: 'DRAFT' },
+        ];
+      case 'fieldservice':
+        return [
+          { id: 'TICKET-001', customer: 'Sarah Miller (HVAC)', amount: 320, status: 'PAID' },
+          { id: 'PARTS-002', customer: 'John Doe (Cabling)', amount: 75, status: 'PAID' },
+          { id: 'ANNUAL-003', customer: 'Emma Watson (Service plan)', amount: 1200, status: 'OVERDUE' },
+          { id: 'EMERG-004', customer: 'Alex Mercer (Emergency fix)', amount: 650, status: 'DRAFT' },
+        ];
+      default:
+        return financeInvoices;
+    }
+  };
+
+  const getEmployees = () => {
+    switch (playgroundIndustry) {
+      case 'healthcare':
+        return [
+          { name: 'Dr. Sarah Chen', role: 'Chief Medical Officer', dept: 'Surgery', status: 'Present' },
+          { name: 'Dr. John Doe', role: 'Senior Resident', dept: 'Pediatrics', status: 'Present' },
+          { name: 'Emma Watson', role: 'RN Head Nurse', dept: 'Emergency', status: 'Away' },
+          { name: 'Alex Mercer', role: 'Recruiter', dept: 'HR & Onboarding', status: 'On Leave' },
+        ];
+      case 'education':
+        return [
+          { name: 'Prof. Sarah Chen', role: 'Mathematics Faculty', dept: 'Sciences', status: 'Present' },
+          { name: 'Dr. John Doe', role: 'History Lecturer', dept: 'Humanities', status: 'Present' },
+          { name: 'Emma Watson', role: 'Dean of Students', dept: 'Administration', status: 'Away' },
+          { name: 'Alex Mercer', role: 'Counselor', dept: 'Student Support', status: 'On Leave' },
+        ];
+      case 'realestate':
+        return [
+          { name: 'Sarah Chen', role: 'Leasing Director', dept: 'Sales', status: 'Present' },
+          { name: 'John Doe', role: 'Property Manager', dept: 'Operations', status: 'Present' },
+          { name: 'Emma Watson', role: 'Acquisitions Lead', dept: 'Finance', status: 'Away' },
+          { name: 'Alex Mercer', role: 'Maintenance Coordinator', dept: 'Ops', status: 'On Leave' },
+        ];
+      case 'fieldservice':
+        return [
+          { name: 'Sarah Chen', role: 'Dispatch Coordinator', dept: 'HQ Operations', status: 'Present' },
+          { name: 'John Doe', role: 'Lead Field Engineer', dept: 'On-site Dispatch', status: 'Present' },
+          { name: 'Emma Watson', role: 'Safety Inspector', dept: 'Compliance', status: 'Away' },
+          { name: 'Alex Mercer', role: 'Junior Technician', dept: 'Maintenance', status: 'On Leave' },
+        ];
+      default:
+        return employees;
+    }
+  };
+
+  const getCrmDeals = () => {
+    switch (playgroundIndustry) {
+      case 'healthcare':
+        return {
+          leads: [{ company: 'General Hospital Referral', value: 15000 }, { company: 'MedCare Insurance Inc', value: 45000 }],
+          contacted: [{ company: 'Aetna Health Policy', value: 20000 }],
+          proposal: [{ company: 'Valley Clinics Agreement', value: 35000 }],
+          won: [{ company: 'City Health Network', value: 120000 }]
+        };
+      case 'education':
+        return {
+          leads: [{ company: 'State School District', value: 75000 }, { company: 'Oakridge Prep Admissions', value: 12000 }],
+          contacted: [{ company: 'Metro University Timetabling', value: 40000 }],
+          proposal: [{ company: 'Global Tech Bootcamp', value: 25000 }],
+          won: [{ company: 'Beacon Academy (Full Suite)', value: 95000 }]
+        };
+      case 'realestate':
+        return {
+          leads: [{ company: 'Plaza Tower Commercial Lease', value: 180000 }, { company: 'Unit 14B Purchase Offer', value: 450000 }],
+          contacted: [{ company: 'Summit Residential Portfolio', value: 120000 }],
+          proposal: [{ company: 'Sunset Retail Plaza Lease', value: 95000 }],
+          won: [{ company: 'Grand Avenue Offices Agreement', value: 320000 }]
+        };
+      case 'fieldservice':
+        return {
+          leads: [{ company: 'Municipal Gas Maintenance Contract', value: 85000 }, { company: 'HVAC Seasonal Upgrade RFP', value: 14000 }],
+          contacted: [{ company: 'County Electrical Roster', value: 30000 }],
+          proposal: [{ company: 'Metro Water Systems Upgrade', value: 55000 }],
+          won: [{ company: 'Aviation Center Services Plan', value: 110000 }]
+        };
+      default:
+        return crmDeals;
+    }
+  };
+
+  const getInventoryItems = () => {
+    switch (playgroundIndustry) {
+      case 'healthcare':
+        return [
+          { sku: 'SKU-MED-201', name: 'Amoxicillin 500mg Capsule', warehouse: 'WH-Pharma', qty: 15000, status: 'In Stock' },
+          { sku: 'SKU-PPE-402', name: 'N95 Respirator Face Mask', warehouse: 'WH-Surgical', qty: 120, status: 'Low Stock' },
+          { sku: 'SKU-SEN-009', name: 'ECG Electrodes Pack', warehouse: 'WH-Surgical', qty: 850, status: 'In Stock' },
+          { sku: 'SKU-EQU-903', name: 'Surgical Steel Scissors', warehouse: 'WH-Surgical', qty: 0, status: 'Out of Stock' },
+        ];
+      case 'education':
+        return [
+          { sku: 'SKU-BOK-301', name: 'Intro to Chemistry Textbook', warehouse: 'WH-Library', qty: 450, status: 'In Stock' },
+          { sku: 'SKU-PRO-402', name: 'Digital Projector Core', warehouse: 'WH-Classroom', qty: 3, status: 'Low Stock' },
+          { sku: 'SKU-STA-103', name: 'Whiteboard Erasable Markers', warehouse: 'WH-Main', qty: 8200, status: 'In Stock' },
+          { sku: 'SKU-EQU-903', name: 'Classroom Chromebook Laptop', warehouse: 'WH-ITStorage', qty: 0, status: 'Out of Stock' },
+        ];
+      case 'realestate':
+        return [
+          { sku: 'SKU-PLU-301', name: 'PEX Pipe Connector Joint', warehouse: 'WH-Maintenance', qty: 1200, status: 'In Stock' },
+          { sku: 'SKU-ELE-402', name: 'LED Office Ceiling Fixture', warehouse: 'WH-Maintenance', qty: 8, status: 'Low Stock' },
+          { sku: 'SKU-LOCK-103', name: 'Bluetooth Smart Door Lock', warehouse: 'WH-Office', qty: 85, status: 'In Stock' },
+          { sku: 'SKU-EQU-903', name: 'Submersible Water Pump', warehouse: 'WH-Maintenance', qty: 0, status: 'Out of Stock' },
+        ];
+      case 'fieldservice':
+        return [
+          { sku: 'SKU-CAB-304', name: 'Copper Coaxial Cable Spool', warehouse: 'WH-Truck-1', qty: 45, status: 'In Stock' },
+          { sku: 'SKU-THERM-20', name: 'Smart Climate Thermostat', warehouse: 'WH-Main', qty: 4, status: 'Low Stock' },
+          { sku: 'SKU-VALVE-5', name: 'Heavy Duty Gas Shutoff Valve', warehouse: 'WH-Truck-2', qty: 12, status: 'In Stock' },
+          { sku: 'SKU-COMP-09', name: 'Air Compressor 2HP', warehouse: 'WH-Main', qty: 0, status: 'Out of Stock' },
+        ];
+      default:
+        return inventoryItems;
+    }
+  };
 
   // Pricing calculator states
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('annual');
@@ -525,6 +742,36 @@ export default function LandingPage() {
                 localhost:3000/apps/studio
               </span>
             </div>
+
+            {/* Premium Industry Selector Header Bar */}
+            <div className="landing-preview-industry-selector" style={{ background: 'var(--color-bg-sunken)', borderBottom: '1px solid var(--color-border)', padding: '8px 16px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginRight: '8px' }}>Select Industry Sandbox:</span>
+              {[
+                { id: 'general', label: 'General ERP', color: '#6366f1' },
+                { id: 'healthcare', label: 'Healthcare', color: '#10b981' },
+                { id: 'education', label: 'Education', color: '#f59e0b' },
+                { id: 'realestate', label: 'Real Estate', color: '#0ea5e9' },
+                { id: 'fieldservice', label: 'Field Service', color: '#f43f5e' }
+              ].map(ind => (
+                <button
+                  key={ind.id}
+                  onClick={() => setPlaygroundIndustry(ind.id)}
+                  style={{
+                    background: playgroundIndustry === ind.id ? ind.color : 'transparent',
+                    color: playgroundIndustry === ind.id ? '#fff' : 'var(--color-text-secondary)',
+                    border: '1px solid ' + (playgroundIndustry === ind.id ? ind.color : 'var(--color-border)'),
+                    borderRadius: 'var(--radius-full)',
+                    padding: '3px 10px',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {ind.label}
+                </button>
+              ))}
+            </div>
             
             <div className="landing-preview-body">
               {/* Interactive Sidebar */}
@@ -551,16 +798,11 @@ export default function LandingPage() {
                 {playgroundTab === 'dashboard' && (
                   <div className="playground-tab-pane">
                     <div className="playground-pane-header">
-                      <h3>Enterprise Command Center</h3>
+                      <h3>{playgroundIndustry === 'general' ? 'Enterprise Command Center' : `${playgroundIndustry.charAt(0).toUpperCase() + playgroundIndustry.slice(1)} Dashboard`}</h3>
                       <span className="playground-badge">Real-Time</span>
                     </div>
                     <div className="landing-preview-cards">
-                      {[
-                        { label: 'Monthly Revenue', value: '$142,380', change: '+12.4%', color: 'var(--color-primary)' },
-                        { label: 'Active Users', value: '1,280', change: '+8.3%', color: 'var(--color-success)' },
-                        { label: 'Procurement RFQs', value: '47', change: '-2.1%', color: 'var(--color-warning)' },
-                        { label: 'Net Yield', value: '98.6%', change: '+1.5%', color: 'var(--color-info)' },
-                      ].map((card) => (
+                      {getDashboardCards().map((card) => (
                         <div key={card.label} className="landing-preview-card">
                           <div className="landing-preview-card-label">{card.label}</div>
                           <div className="landing-preview-card-value" style={{ color: card.color }}>{card.value}</div>
@@ -570,15 +812,15 @@ export default function LandingPage() {
                     </div>
                     <div className="landing-preview-chart">
                       <div className="chart-header">
-                        <span>Revenue Growth Trend (2026)</span>
+                        <span>{playgroundIndustry === 'healthcare' ? 'Patient Inflow Trend (2026)' : playgroundIndustry === 'education' ? 'Fee Collections Trend (2026)' : 'Revenue Growth Trend (2026)'}</span>
                         {hoveredBar !== null && (
                           <span className="chart-tooltip">
-                            {DASHBOARD_CHART_DATA[hoveredBar]?.month}: ${DASHBOARD_CHART_DATA[hoveredBar]?.value}K
+                            {getDashboardChartData()[hoveredBar]?.month}: ${getDashboardChartData()[hoveredBar]?.value}K
                           </span>
                         )}
                       </div>
                       <div className="landing-preview-bars">
-                        {DASHBOARD_CHART_DATA.map((bar, i) => (
+                        {getDashboardChartData().map((bar, i) => (
                           <div
                             key={i}
                             className="landing-preview-bar-wrapper"
@@ -598,7 +840,7 @@ export default function LandingPage() {
                 {playgroundTab === 'finance' && (
                   <div className="playground-tab-pane">
                     <div className="playground-pane-header">
-                      <h3>Finance & Double-Entry Ledger</h3>
+                      <h3>{playgroundIndustry === 'healthcare' ? 'Healthcare Claims & Copays Ledger' : playgroundIndustry === 'education' ? 'Student Fee Accounts & Billing' : playgroundIndustry === 'realestate' ? 'Property Rental Invoices & Deposits' : playgroundIndustry === 'fieldservice' ? 'Field Service Work Orders Ledger' : 'Finance & Double-Entry Ledger'}</h3>
                       <button className="playground-action-btn" onClick={addSimulatedInvoice}>
                         <Plus size={14} /> Create Invoice
                       </button>
@@ -608,13 +850,13 @@ export default function LandingPage() {
                         <thead>
                           <tr>
                             <th>Invoice ID</th>
-                            <th>Customer</th>
+                            <th>Description / Client</th>
                             <th>Amount</th>
                             <th>Status</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {financeInvoices.map((inv) => (
+                          {getFinanceInvoices().map((inv) => (
                             <tr key={inv.id}>
                               <td className="font-mono">{inv.id}</td>
                               <td>{inv.customer}</td>
@@ -632,11 +874,11 @@ export default function LandingPage() {
                     <div className="playground-ledger-balance">
                       <div className="ledger-block">
                         <span className="label">Total Debit Accounts</span>
-                        <span className="value">$26,800.00</span>
+                        <span className="value">${getFinanceInvoices().reduce((sum, item) => sum + item.amount, 0).toLocaleString()}.00</span>
                       </div>
                       <div className="ledger-block">
                         <span className="label">Total Credit Accounts</span>
-                        <span className="value">$26,800.00</span>
+                        <span className="value">${getFinanceInvoices().reduce((sum, item) => sum + item.amount, 0).toLocaleString()}.00</span>
                       </div>
                       <div className="ledger-status success">
                         <Check size={14} /> Trial Balance Verified
@@ -645,18 +887,19 @@ export default function LandingPage() {
                   </div>
                 )}
 
+                {/* ── B. Finance Pane ── */}
                 {/* ── C. HR Pane ── */}
                 {playgroundTab === 'hr' && (
                   <div className="playground-tab-pane">
                     <div className="playground-pane-header">
-                      <h3>Employee Directory & Attendance</h3>
+                      <h3>{playgroundIndustry === 'healthcare' ? 'Medical Practitioner Directory' : playgroundIndustry === 'education' ? 'Academic Faculty Roster' : 'Employee Directory & Attendance'}</h3>
                       <p className="subtitle">Click any status to toggle live attendance state.</p>
                     </div>
                     <div className="playground-grid-2">
-                      {employees.map((emp, index) => (
+                      {getEmployees().map((emp, index) => (
                         <div key={emp.name} className="playground-employee-card">
                           <div className="avatar" style={{ background: `var(--color-primary-light)` }}>
-                            {emp.name.split(' ').map(n => n[0]).join('')}
+                            {emp.name.replace('Dr. ', '').replace('Prof. ', '').split(' ').map(n => n[0]).join('')}
                           </div>
                           <div className="details">
                             <h4>{emp.name}</h4>
@@ -678,9 +921,9 @@ export default function LandingPage() {
                 {playgroundTab === 'crm' && (
                   <div className="playground-tab-pane">
                     <div className="playground-pane-header">
-                      <h3>Active Sales pipeline</h3>
+                      <h3>{playgroundIndustry === 'healthcare' ? 'Patient Intake Kanban' : playgroundIndustry === 'education' ? 'Admissions Pipelines' : playgroundIndustry === 'realestate' ? 'Lease negotiations board' : 'Active Sales pipeline'}</h3>
                       <button className="playground-action-btn" onClick={simulateDealWon}>
-                        <RefreshCw size={14} /> Simulate Deal Won
+                        <RefreshCw size={14} /> Simulate Next Stage
                       </button>
                     </div>
                     {crmNotification && (
@@ -689,8 +932,8 @@ export default function LandingPage() {
                     <div className="playground-kanban-board">
                       {/* Leads Column */}
                       <div className="kanban-col">
-                        <div className="col-header">Leads ({crmDeals.leads.length})</div>
-                        {crmDeals.leads.map((deal) => (
+                        <div className="col-header">{playgroundIndustry === 'healthcare' ? 'Intake' : 'Leads'} ({getCrmDeals().leads.length})</div>
+                        {getCrmDeals().leads.map((deal) => (
                           <div key={deal.company} className="kanban-card">
                             <h5>{deal.company}</h5>
                             <span className="value">${deal.value.toLocaleString()}</span>
@@ -699,8 +942,8 @@ export default function LandingPage() {
                       </div>
                       {/* Contacted Column */}
                       <div className="kanban-col">
-                        <div className="col-header">Contacted ({crmDeals.contacted.length})</div>
-                        {crmDeals.contacted.map((deal) => (
+                        <div className="col-header">{playgroundIndustry === 'healthcare' ? 'Consulting' : 'Contacted'} ({getCrmDeals().contacted.length})</div>
+                        {getCrmDeals().contacted.map((deal) => (
                           <div key={deal.company} className="kanban-card">
                             <h5>{deal.company}</h5>
                             <span className="value">${deal.value.toLocaleString()}</span>
@@ -709,8 +952,8 @@ export default function LandingPage() {
                       </div>
                       {/* Proposal Column */}
                       <div className="kanban-col">
-                        <div className="col-header">Proposal ({crmDeals.proposal.length})</div>
-                        {crmDeals.proposal.map((deal) => (
+                        <div className="col-header">{playgroundIndustry === 'healthcare' ? 'Diagnosis' : 'Proposal'} ({getCrmDeals().proposal.length})</div>
+                        {getCrmDeals().proposal.map((deal) => (
                           <div key={deal.company} className="kanban-card highlight">
                             <h5>{deal.company}</h5>
                             <span className="value">${deal.value.toLocaleString()}</span>
@@ -719,8 +962,8 @@ export default function LandingPage() {
                       </div>
                       {/* Won Column */}
                       <div className="kanban-col">
-                        <div className="col-header">Won ({crmDeals.won.length})</div>
-                        {crmDeals.won.map((deal) => (
+                        <div className="col-header">{playgroundIndustry === 'healthcare' ? 'Discharged' : 'Won'} ({getCrmDeals().won.length})</div>
+                        {getCrmDeals().won.map((deal) => (
                           <div key={deal.company} className="kanban-card won">
                             <h5>{deal.company}</h5>
                             <span className="value">${deal.value.toLocaleString()}</span>
@@ -735,7 +978,7 @@ export default function LandingPage() {
                 {playgroundTab === 'inventory' && (
                   <div className="playground-tab-pane">
                     <div className="playground-pane-header">
-                      <h3>Inventory & Stock Reorder Points</h3>
+                      <h3>{playgroundIndustry === 'healthcare' ? 'Pharmacy & Surgical Inventory' : playgroundIndustry === 'education' ? 'Campus Asset Inventory' : 'Inventory & Stock Reorder Points'}</h3>
                       <button className="playground-action-btn" onClick={triggerInventoryReorder}>
                         <RefreshCw size={14} /> Auto-Reorder Items
                       </button>
@@ -749,13 +992,13 @@ export default function LandingPage() {
                           <tr>
                             <th>SKU</th>
                             <th>Product Name</th>
-                            <th>Warehouse</th>
+                            <th>Warehouse / Location</th>
                             <th>Qty</th>
                             <th>Status</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {inventoryItems.map((item) => (
+                          {getInventoryItems().map((item) => (
                             <tr key={item.sku}>
                               <td className="font-mono">{item.sku}</td>
                               <td>{item.name}</td>

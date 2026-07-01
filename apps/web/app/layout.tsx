@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import '@unerp/ui/styles';
 import { ToastProvider } from '@unerp/ui';
 import { CommandPalette } from '@/components/CommandPalette';
 import { QueryProvider } from '@/lib/query-provider';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -20,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" className={inter.variable} data-theme="light" suppressHydrationWarning>
       <body>
         <QueryProvider>
           <ToastProvider>

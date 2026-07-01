@@ -81,6 +81,8 @@ import {
   Scale,
   Calendar,
   Video,
+  X,
+  Sparkles,
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -515,6 +517,58 @@ export default function DashboardLayout({
     setTenantDropdownOpen(false);
   };
 
+  // AI Chatbot States
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string; time: string }>>([
+    { sender: 'ai', text: 'Hello! I am your UniERP AI Copilot. How can I assist you with your modules, workflows, or ledger auditing today?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+  ]);
+  const [chatTyping, setChatTyping] = useState(false);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, chatTyping]);
+
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMsg = chatInput.trim();
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Add user message
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg, time: timeStr }]);
+    setChatInput('');
+    setChatTyping(true);
+
+    // Simulate AI response after 1.2s delay
+    setTimeout(() => {
+      let replyText = '';
+      const query = userMsg.toLowerCase();
+
+      if (query.includes('finance') || query.includes('ledger') || query.includes('revenue') || query.includes('profit') || query.includes('invoice')) {
+        replyText = "Ledger systems are fully integrated! Real-time double-entry logs verify that all debit and credit statements balance. Net profit margin is holding steady at 12.4% with a 98.6% compliance rate.";
+      } else if (query.includes('warehouse') || query.includes('inventory') || query.includes('stock') || query.includes('sku')) {
+        replyText = "Inventory telemetry status: Active. Warehouse WH-MAIN is running at 72% capacity. Reorder thresholds have automatically updated to prevent shortages for critical brackets and cores.";
+      } else if (query.includes('user') || query.includes('admin') || query.includes('employee') || query.includes('role')) {
+        replyText = "Access directories report 1,280 active tenant identities. Role-based configurations are enforced JIT. You can review user matrix logs under Admin -> Access Control.";
+      } else if (query.includes('workflow') || query.includes('approve') || query.includes('builder')) {
+        replyText = "Workflow Engine is operational. You have 3 pending purchase approval requests (> $10k threshold) routing to VP. You can customize form canvasses in the visual Zero-Code Studio.";
+      } else if (query.includes('hello') || query.includes('hi') || query.includes('help')) {
+        replyText = "I can query warehouse listings, audit double-entry accounts, verify Active Directory sessions, or inspect workflow routing rules. What would you like to build or check?";
+      } else {
+        replyText = "I've scanned the UniERP schema registry. Sandbox databases are isolated and synchronized. Let me know if you would like me to draft an email template, generate a custom form module, or check audit logs.";
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'ai', text: replyText, time: timeStr }]);
+      setChatTyping(false);
+    }, 1200);
+  };
+
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
   const hideSidebar = isAppsLanding || pathname === '/profile' || pathname.startsWith('/profile/');
   const appNav = (pathname.startsWith('/app/') && dynamicAppNav && dynamicAppNav.slug === pathname.split('/')[2])
@@ -771,13 +825,18 @@ export default function DashboardLayout({
         <header
           style={{
             height: 'var(--header-height)',
-            background: 'var(--color-bg-elevated)',
+            background: theme === 'light' ? 'rgba(255, 255, 255, 0.72)' : 'rgba(24, 25, 32, 0.72)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
             borderBottom: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 var(--space-6)',
             zIndex: 90,
+            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.02)',
+            position: 'sticky',
+            top: 0,
           }}
         >
           {/* Top Left: Apps Switcher & Tenant Selector */}
@@ -787,12 +846,32 @@ export default function DashboardLayout({
                 <div style={{ position: 'relative' }} ref={appsDropdownRef}>
                   <button
                     onClick={() => setAppsDropdownOpen(!appsDropdownOpen)}
-                    className="frappe-btn frappe-btn-secondary"
-                    style={{ padding: 'var(--space-1.5) var(--space-3)', gap: 'var(--space-1)' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-1.5)',
+                      padding: 'var(--space-2) var(--space-3.5)',
+                      background: theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = theme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.06)';
+                      e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)';
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                    }}
                   >
                     <span>Switch App</span>
                     <ChevronDown
-                      size={14}
+                      size={13}
                       style={{
                         color: 'var(--color-text-secondary)',
                         transform: appsDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -889,12 +968,32 @@ export default function DashboardLayout({
               <div style={{ position: 'relative' }} ref={tenantDropdownRef}>
                 <button
                   onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
-                  className="frappe-btn frappe-btn-secondary"
-                  style={{ padding: 'var(--space-1.5) var(--space-3)', gap: 'var(--space-1)' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-1.5)',
+                    padding: 'var(--space-2) var(--space-3.5)',
+                    background: theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-lg)',
+                    color: 'var(--color-text)',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = theme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.06)';
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)';
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                  }}
                 >
                   <span>{currentTenant.name}</span>
                   <ChevronDown
-                    size={14}
+                    size={13}
                     style={{
                       color: 'var(--color-text-secondary)',
                       transform: tenantDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -934,33 +1033,68 @@ export default function DashboardLayout({
                   display: 'block',
                 }}
               >
-                <Search
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: 'var(--space-3)',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--color-text-tertiary)',
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Search apps, actions... (Ctrl+K)"
-                  value={searchQuery}
-                  onClick={() => { setCmdPaletteOpen(true); }}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setSearchOpen(e.target.value.length > 0);
-                  }}
-                  className="frappe-input"
-                  style={{
-                    paddingLeft: 'var(--space-8)',
-                  }}
-                  onFocus={(e) => {
-                    if (searchQuery.length > 0) setSearchOpen(true);
-                  }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%', position: 'relative' }}>
+                  <Search
+                    size={15}
+                    style={{
+                      position: 'absolute',
+                      left: 'var(--space-3)',
+                      color: 'var(--color-text-tertiary)',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search or type Cmd+K..."
+                    value={searchQuery}
+                    onClick={() => { setCmdPaletteOpen(true); }}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchOpen(e.target.value.length > 0);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: 'var(--space-2) var(--space-3)',
+                      paddingLeft: 'var(--space-8)',
+                      paddingRight: '46px',
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--color-text)',
+                      backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      transition: 'all 0.2s ease',
+                      outline: 'none',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-border-strong)';
+                      e.currentTarget.style.backgroundColor = theme === 'light' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                      e.currentTarget.style.backgroundColor = theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)';
+                    }}
+                    onFocus={(e) => {
+                      if (searchQuery.length > 0) setSearchOpen(true);
+                    }}
+                  />
+                  <kbd
+                    style={{
+                      position: 'absolute',
+                      right: 'var(--space-2)',
+                      fontSize: '9px',
+                      padding: '2px 5px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-tertiary)',
+                      background: theme === 'light' ? '#fff' : 'var(--color-bg-elevated)',
+                      fontFamily: 'var(--font-mono)',
+                      userSelect: 'none',
+                      pointerEvents: 'none'
+                    }}
+                  >
+                    ⌘K
+                  </kbd>
+                </div>
 
                 {/* Dynamic Search Dropdown Results */}
                 {searchOpen && searchQuery.length > 0 && (
@@ -994,38 +1128,68 @@ export default function DashboardLayout({
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="frappe-btn frappe-btn-secondary"
               style={{
-                width: '36px',
-                height: '36px',
+                width: '34px',
+                height: '34px',
                 padding: 0,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                background: theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-text)';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-secondary)';
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </button>
 
             {/* Notification Bell */}
             <button
-              className="frappe-btn frappe-btn-secondary"
               style={{
-                width: '36px',
-                height: '36px',
+                width: '34px',
+                height: '34px',
                 padding: 0,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                background: theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
                 position: 'relative',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-text)';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-secondary)';
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              <Bell size={18} />
+              <Bell size={16} />
               <span
                 style={{
                   position: 'absolute',
-                  top: '6px',
-                  right: '6px',
+                  top: '8px',
+                  right: '8px',
                   width: '6px',
                   height: '6px',
                   borderRadius: 'var(--radius-full)',
@@ -1035,7 +1199,7 @@ export default function DashboardLayout({
             </button>
 
             {/* Separator */}
-            <div style={{ width: '1px', height: '24px', background: 'var(--color-border)', margin: '0 var(--space-1)' }} />
+            <div style={{ width: '1px', height: '20px', background: 'var(--color-border)', margin: '0 4px' }} />
 
             {/* User Dropdown */}
             <div style={{ position: 'relative' }} ref={userDropdownRef}>
@@ -1044,32 +1208,55 @@ export default function DashboardLayout({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 'var(--space-2)',
+                  gap: 'var(--space-1.5)',
                   background: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
-                  padding: 'var(--space-1)',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '4px',
+                  borderRadius: 'var(--radius-lg)',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = theme === 'light' ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: 'var(--radius-full)',
-                    background: 'var(--color-primary-light)',
-                    color: 'var(--color-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 'var(--weight-bold)',
-                    fontSize: 'var(--text-xs)',
-                  }}
-                >
-                  {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'linear-gradient(135deg, var(--color-primary-light), rgba(167, 139, 250, 0.2))',
+                      border: '1px solid var(--color-primary-light)',
+                      color: 'var(--color-primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'var(--weight-bold)',
+                      fontSize: 'var(--text-xs)',
+                    }}
+                  >
+                    {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
+                  </div>
+                  {/* Status Indicator Dot */}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '-1px',
+                      right: '-1px',
+                      width: '9px',
+                      height: '9px',
+                      borderRadius: 'var(--radius-full)',
+                      background: '#10b981',
+                      border: theme === 'light' ? '2px solid #fff' : '2px solid var(--color-bg-elevated)',
+                    }}
+                  />
                 </div>
                 <ChevronDown
-                  size={14}
+                  size={12}
                   style={{
                     color: 'var(--color-text-secondary)',
                     transform: userDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -1227,6 +1414,242 @@ export default function DashboardLayout({
           </div>
         </div>
       )}
+      {/* ── Floating AI Chatbot Companion ── */}
+      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>
+        {/* Chat Toggle Button */}
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          style={{
+            width: '50px',
+            height: '50px',
+            borderRadius: 'var(--radius-full)',
+            background: 'var(--color-primary)',
+            color: '#fff',
+            border: 'none',
+            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.35)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: chatOpen ? 'rotate(90deg)' : 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = chatOpen ? 'rotate(90deg) scale(1.05)' : 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 10px 30px rgba(99, 102, 241, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = chatOpen ? 'rotate(90deg) scale(1)' : 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(99, 102, 241, 0.35)';
+          }}
+        >
+          {chatOpen ? <X size={20} /> : <Sparkles size={20} />}
+        </button>
+
+        {/* Chat Window Box */}
+        {chatOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '64px',
+              right: 0,
+              width: '360px',
+              height: '460px',
+              background: theme === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(30, 31, 42, 0.85)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              animation: 'modalSlideUp 0.2s ease-out',
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: 'var(--space-4)',
+                borderBottom: '1px solid var(--color-border)',
+                background: theme === 'light' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: 'var(--color-primary-light)',
+                      color: 'var(--color-primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Sparkles size={14} />
+                  </div>
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: '#10b981',
+                      border: '1.5px solid var(--color-bg-elevated)',
+                    }}
+                  />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, margin: 0 }}>UniERP AI Copilot</h4>
+                  <span style={{ fontSize: '9px', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>Active Assistant</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setChatOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-text-secondary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: 'var(--radius-sm)',
+                  display: 'flex',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Messages Area */}
+            <div
+              style={{
+                flex: 1,
+                padding: 'var(--space-4)',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-3.5)',
+              }}
+            >
+              {chatMessages.map((msg, idx) => {
+                const isAi = msg.sender === 'ai';
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: isAi ? 'flex-start' : 'flex-end',
+                      maxWidth: '85%',
+                      alignSelf: isAi ? 'flex-start' : 'flex-end',
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: 'var(--space-2.5) var(--space-3.5)',
+                        borderRadius: 'var(--radius-lg)',
+                        fontSize: 'var(--text-xs)',
+                        lineHeight: '1.4',
+                        background: isAi
+                          ? theme === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)'
+                          : 'var(--color-primary)',
+                        color: isAi ? 'var(--color-text)' : '#fff',
+                        border: isAi ? '1px solid var(--color-border)' : 'none',
+                        borderBottomLeftRadius: isAi ? '0' : 'var(--radius-lg)',
+                        borderBottomRightRadius: isAi ? 'var(--radius-lg)' : '0',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {msg.text}
+                    </div>
+                    <span style={{ fontSize: '9px', color: 'var(--color-text-tertiary)', marginTop: '3px', padding: '0 2px' }}>
+                      {msg.time}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {chatTyping && (
+                <div style={{ display: 'flex', gap: '3px', padding: 'var(--space-3) var(--space-4)', background: theme === 'light' ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', width: 'fit-content', borderBottomLeftRadius: '0' }}>
+                  <span className="chat-dot" style={{ width: '5px', height: '5px', background: 'var(--color-text-secondary)', borderRadius: '50%', animation: 'chatDot 1.4s infinite' }} />
+                  <span className="chat-dot" style={{ width: '5px', height: '5px', background: 'var(--color-text-secondary)', borderRadius: '50%', animation: 'chatDot 1.4s infinite 0.2s' }} />
+                  <span className="chat-dot" style={{ width: '5px', height: '5px', background: 'var(--color-text-secondary)', borderRadius: '50%', animation: 'chatDot 1.4s infinite 0.4s' }} />
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Box Form */}
+            <form
+              onSubmit={handleChatSubmit}
+              style={{
+                padding: 'var(--space-3)',
+                borderTop: '1px solid var(--color-border)',
+                background: theme === 'light' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                gap: 'var(--space-2)',
+                alignItems: 'center',
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Ask UniERP AI..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: 'var(--space-2) var(--space-3)',
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--color-text)',
+                  background: theme === 'light' ? '#fff' : 'var(--color-bg)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--color-primary)',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'opacity 0.2s ease',
+                  opacity: chatInput.trim() ? 1 : 0.6,
+                }}
+                disabled={!chatInput.trim()}
+              >
+                <Send size={12} />
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* AI Chat CSS Overrides */}
+      <style>{`
+        @keyframes chatDot {
+          0%, 100% { transform: translateY(0); opacity: 0.4; }
+          50% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
