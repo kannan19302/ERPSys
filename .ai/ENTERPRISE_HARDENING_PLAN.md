@@ -47,8 +47,20 @@ a commit. No big-bang rewrites.
 2. [ ] Add `typecheck` script to web + api; wire `tsc --noEmit` into `turbo` + CI.
 3. [ ] Remove `ignoreBuildErrors` / `ignoreDuringBuilds` from `next.config` once
        green (fail the build on type/lint regressions).
-4. [ ] Fix the test runner: root-cause the vitest worker memory leak, restore
-       parallel `vitest run`, stop exiting on first failure. Real full-suite green.
+4. [x] Fix the test runner. Root cause was **not** a "Node worker memory leak":
+       two specs (`marketplace/vendor.service.coverage`, `builder/web-collections
+       .service.coverage`) OOM-crashed their worker because the services had
+       **unbounded `while(true)` slug-uniqueness loops** that never terminate when
+       the DB (here, a mock) keeps returning a match — a latent DoS. Fixed with a
+       bounded `resolveUniqueSlug` helper (`common/utils/slug.util.ts`); also
+       fixed the config's 8 GB-per-fork heap that could exhaust a 16 GB host.
+       Full suite now **121/121 files, 1694/1694 tests green in parallel (~30s)**.
+       Replaced `run-tests-sequential.ps1` (one-file-per-process, bailed on first
+       failure) with plain `vitest run`.
+   - [ ] **CI gap:** `test:coverage` (the CI test gate) *excludes* `*.coverage
+         .spec.ts`, so CI never ran the two crashing specs — the OOM could not
+         have been caught in CI. Decide: run the full suite in CI (now that it's
+         stable) vs. keep coverage-instrumentation scope narrow.
 5. [ ] Upgrade `scripts/scorecard.mjs` to fold in **real** gates: does it compile?
        does the full test suite pass? coverage thresholds? Presence-checks stay
        but can no longer produce a 10 on their own.

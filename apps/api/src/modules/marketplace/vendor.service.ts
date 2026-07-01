@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException }
 import { prisma } from '@unerp/database';
 import { BundleStoreService } from './bundle-store.service';
 import { validateManifest, AppManifest } from './manifest';
+import { resolveUniqueSlug } from '../../common/utils/slug.util';
 
 /**
  * Third-party publishing pipeline: a Vendor owns AppPackages; each package has
@@ -230,16 +231,12 @@ export class VendorService {
     return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'app';
   }
 
-  private async uniqueSlug(model: 'appVendor' | 'appPackage', base: string): Promise<string> {
-    let slug = base;
-    let n = 1;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+  private uniqueSlug(model: 'appVendor' | 'appPackage', base: string): Promise<string> {
+    return resolveUniqueSlug(base, async (slug) => {
       const found = model === 'appVendor'
         ? await prisma.appVendor.findUnique({ where: { slug } })
         : await prisma.appPackage.findUnique({ where: { slug } });
-      if (!found) return slug;
-      slug = `${base}-${++n}`;
-    }
+      return found != null;
+    });
   }
 }

@@ -9,6 +9,7 @@ import type {
   WebCheckoutInput,
 } from '@unerp/shared';
 import { COLLECTION_PRESETS } from './web-collections.presets';
+import { resolveUniqueSlug } from '../../common/utils/slug.util';
 
 function slugify(input: string): string {
   return String(input || '')
@@ -100,11 +101,13 @@ export class WebCollectionsService {
     if (!def) throw new BadRequestException(`Unknown preset: ${preset}`);
 
     // Ensure a unique slug if the preset slug is taken.
-    let slug = def.slug;
-    let n = 1;
-    while (await prisma.webCollection.findUnique({ where: { tenantId_slug: { tenantId, slug } } })) {
-      slug = `${def.slug}-${++n}`;
-    }
+    const slug = await resolveUniqueSlug(
+      def.slug,
+      async (candidate) =>
+        (await prisma.webCollection.findUnique({
+          where: { tenantId_slug: { tenantId, slug: candidate } },
+        })) != null,
+    );
 
     const collection = await prisma.webCollection.create({
       data: {
@@ -196,19 +199,15 @@ export class WebCollectionsService {
     return item;
   }
 
-  private async resolveItemSlug(collectionId: string, desired: string, ignoreId?: string) {
-    let slug = slugify(desired);
-    let n = 1;
+  private resolveItemSlug(collectionId: string, desired: string, ignoreId?: string) {
     // Ensure uniqueness within the collection.
-    while (true) {
+    return resolveUniqueSlug(slugify(desired), async (candidate) => {
       const clash = await prisma.webCollectionItem.findFirst({
-        where: { collectionId, slug, ...(ignoreId ? { NOT: { id: ignoreId } } : {}) },
+        where: { collectionId, slug: candidate, ...(ignoreId ? { NOT: { id: ignoreId } } : {}) },
         select: { id: true },
       });
-      if (!clash) break;
-      slug = `${slugify(desired)}-${++n}`;
-    }
-    return slug;
+      return clash != null;
+    });
   }
 
   async createItem(tenantId: string, collectionId: string, dto: CreateWebCollectionItemInput, userId?: string) {

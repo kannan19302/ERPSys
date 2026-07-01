@@ -7,12 +7,19 @@ export default defineConfig({
     },
     testTimeout: 10000,
     hookTimeout: 10000,
+    // Memory-isolated forks. The generated Prisma client (362 models) plus the
+    // large service graph make module transform/collection memory-heavy, so we
+    // spread files across several forks (each accumulates less) and cap per-fork
+    // heap so the total stays well under host RAM. Previously a single 8 GB
+    // heap per fork × maxForks exhausted a 16 GB host and killed workers
+    // ("Worker exited unexpectedly"), which the run-tests-sequential.ps1 hack
+    // worked around one-file-per-process. This runs the full suite in parallel.
     pool: 'forks',
     poolOptions: {
       forks: {
-        execArgv: ['--max-old-space-size=8192'],
+        execArgv: ['--max-old-space-size=2048'],
         minForks: 1,
-        maxForks: process.env.CI ? 1 : 2,
+        maxForks: process.env.CI ? 2 : 4,
       },
     },
     exclude: process.env.CI
