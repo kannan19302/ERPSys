@@ -31,7 +31,12 @@ jobs:
       - run: pnpm --filter @unerp/database build
       - run: pnpm --filter @unerp/shared build
       - run: pnpm --filter @unerp/auth build
+      - run: pnpm --filter @unerp/ui build
       - run: pnpm --filter @unerp/api build
+      # Real type-check gate: next build ignores type errors, so tsc --noEmit
+      # is the only thing that actually fails CI on a web type regression.
+      - run: pnpm --filter @unerp/api typecheck
+      - run: pnpm --filter @unerp/web typecheck
 
   test:
     name: "Gate: Unit Tests"
