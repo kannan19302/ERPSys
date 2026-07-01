@@ -113,6 +113,29 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 ---
 
 
+## 🤖 Role-Based Subagent Team
+
+This project ships a team of specialized subagents in [`.claude/agents/`](.claude/agents/). Each acts as a domain expert and is expected to **read this `AGENTS.md` and the relevant `.ai/` files first** (subagents do not auto-inherit this context). Delegate to the right role instead of doing everything in one thread:
+
+| Agent | Owns | Typical trigger |
+|:---|:---|:---|
+| `product-manager` | Scope, user stories, acceptance criteria, sequencing | "What/why should we build?" |
+| `uiux-designer` | Layout, design tokens, `@unerp/ui`, accessibility, Frappe aesthetic | Any UI/UX decision |
+| `data-architect` | Prisma schema, migrations, indexes, multi-tenant RLS | Data-model changes |
+| `backend-developer` | NestJS modules, services, DTOs, domain events, RBAC | Server-side APIs |
+| `frontend-developer` | Next.js App Router pages, API wiring, forms | Client-side UI |
+| `fullstack-developer` | End-to-end vertical slices (DB→API→UI) | New module/feature slice |
+| `devops-engineer` | Turbo/pnpm, Docker, CI/CD, migrations-in-deploy, observability | Build/infra/pipeline |
+| `qa-tester` | Vitest/Playwright, edge cases, tenant/RBAC tests | Verify before ship |
+| `business-analyst-uat` | UAT scripts, business-rule validation, sign-off | End-user acceptance |
+| `code-reviewer` | Diff review vs. project rules, correctness | Before merge |
+| `security-auditor` | Auth, tenant isolation, injection, secrets, HIPAA | Security-sensitive change |
+| `tech-writer` | `.ai/` docs, CHANGELOG, MODULE_REGISTRY, API docs | Keep docs true |
+
+**Typical flow for a feature:** product-manager → data-architect → backend-developer + frontend-developer (or fullstack-developer) → qa-tester → code-reviewer → security-auditor → business-analyst-uat → tech-writer.
+
+---
+
 ## 📁 Navigation Guide
 
 ```
