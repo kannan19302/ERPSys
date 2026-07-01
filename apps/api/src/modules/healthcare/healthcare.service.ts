@@ -1,18 +1,45 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { buildPaginationValues, buildOrderBy, paginatedResult, PaginatedResult, PaginationParams } from '../../common/utils/pagination.util';
+import {
+  CreatePatientInput,
+  CreatePractitionerInput,
+  CreateAppointmentInput,
+  CreatePrescriptionInput,
+  LogDrugRegisterInput,
+  CreateMedicalEncounterInput,
+} from '@unerp/shared';
 
 @Injectable()
 export class HealthcareService {
-  async getPatients(tenantId: string) {
-    return prisma.patient.findMany({
-      where: { tenantId },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getPatients(tenantId: string, params: PaginationParams & { search?: string } = {}): Promise<PaginatedResult<any>> {
+    const where: any = { tenantId };
+    if (params.search) {
+      where.OR = [
+        { firstName: { contains: params.search, mode: 'insensitive' } },
+        { lastName: { contains: params.search, mode: 'insensitive' } },
+        { email: { contains: params.search, mode: 'insensitive' } },
+      ];
+    }
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [patients, total] = await Promise.all([
+      prisma.patient.findMany({
+        where,
+        skip,
+        take,
+        orderBy: orderBy as any,
+      }),
+      prisma.patient.count({ where }),
+    ]);
+
+    return paginatedResult(patients, total, params);
   }
 
   async createPatient(
     tenantId: string,
-    dto: { firstName: string; lastName: string; dateOfBirth: string; gender: string; email?: string; phone?: string; medicalHistory?: string; vitalsHistory?: string; allergies?: string }
+    dto: CreatePatientInput
   ) {
     return prisma.patient.create({
       data: {
@@ -21,8 +48,8 @@ export class HealthcareService {
         lastName: dto.lastName,
         dateOfBirth: new Date(dto.dateOfBirth),
         gender: dto.gender,
-        email: dto.email,
-        phone: dto.phone,
+        email: dto.email || null,
+        phone: dto.phone || null,
         medicalHistory: dto.medicalHistory ? JSON.parse(dto.medicalHistory) : null,
         vitalsHistory: dto.vitalsHistory ? JSON.parse(dto.vitalsHistory) : null,
         allergies: dto.allergies ? JSON.parse(dto.allergies) : null,
@@ -30,17 +57,28 @@ export class HealthcareService {
     });
   }
 
-  async getPractitioners(tenantId: string) {
-    return prisma.practitioner.findMany({
-      where: { tenantId },
-      include: { employee: true },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getPractitioners(tenantId: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where: any = { tenantId };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [practitioners, total] = await Promise.all([
+      prisma.practitioner.findMany({
+        where,
+        include: { employee: true },
+        skip,
+        take,
+        orderBy: orderBy as any,
+      }),
+      prisma.practitioner.count({ where }),
+    ]);
+
+    return paginatedResult(practitioners, total, params);
   }
 
   async createPractitioner(
     tenantId: string,
-    dto: { employeeId: string; specialty: string; licenseNumber: string }
+    dto: CreatePractitionerInput
   ) {
     return prisma.practitioner.create({
       data: {
@@ -62,7 +100,7 @@ export class HealthcareService {
 
   async createAppointment(
     tenantId: string,
-    dto: { patientId: string; practitionerId: string; startTime: string; endTime: string; notes?: string }
+    dto: CreateAppointmentInput
   ) {
     return prisma.appointment.create({
       data: {
@@ -71,7 +109,7 @@ export class HealthcareService {
         practitionerId: dto.practitionerId,
         startTime: new Date(dto.startTime),
         endTime: new Date(dto.endTime),
-        notes: dto.notes,
+        notes: dto.notes || null,
         status: 'CONFIRMED',
       },
     });
@@ -87,7 +125,7 @@ export class HealthcareService {
 
   async createPrescription(
     tenantId: string,
-    dto: { patientId: string; practitionerId: string; details: string }
+    dto: CreatePrescriptionInput
   ) {
     return prisma.prescription.create({
       data: {
@@ -109,7 +147,7 @@ export class HealthcareService {
 
   async logDrugRegister(
     tenantId: string,
-    dto: { name: string; batchNumber: string; expiryDate: string; isControlled?: boolean; quantity: number }
+    dto: LogDrugRegisterInput
   ) {
     return prisma.drugRegister.create({
       data: {
@@ -133,7 +171,7 @@ export class HealthcareService {
 
   async createMedicalEncounter(
     tenantId: string,
-    dto: { patientId: string; practitionerId: string; diagnosis: string; treatmentCode: string; billingAmount: number }
+    dto: CreateMedicalEncounterInput
   ) {
     return prisma.medicalEncounter.create({
       data: {
@@ -148,3 +186,4 @@ export class HealthcareService {
     });
   }
 }
+

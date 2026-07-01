@@ -1,12 +1,22 @@
-import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Req, Query } from '@nestjs/common';
-import { z } from 'zod';
+import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Req, Query, UseInterceptors } from '@nestjs/common';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { FinanceService } from './finance.service';
-import { CreateInvoiceInput, UpdateInvoiceInput, CreatePaymentInput, BulkActionInput } from '@unerp/shared';
+import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
+import { TrackChanges } from '../../common/decorators/track-changes.decorator';
+import {
+  CreateInvoiceInput,
+  UpdateInvoiceInput,
+  CreatePaymentInput,
+  BulkActionInput,
+  createInvoiceSchema,
+  updateInvoiceSchema,
+  createPaymentSchema,
+  bulkActionSchema,
+} from '@unerp/shared';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
@@ -70,7 +80,9 @@ export class FinanceController {
   @Permissions('finance.create')
   @Post('invoices')
   @Permissions('finance.invoice.create')
-  async createInvoice(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateInvoiceInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Invoice')
+  async createInvoice(@Req() req: AuthenticatedRequest, @ZodBody(createInvoiceSchema) dto: CreateInvoiceInput) {
     const orgId = req.user.orgId || 'org-system-default';
     return this.financeService.createInvoice(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
@@ -79,7 +91,9 @@ export class FinanceController {
   @Permissions('finance.update')
   @Patch('invoices/:id')
   @Permissions('finance.invoice.update')
-  async updateInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateInvoiceInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Invoice', 'id')
+  async updateInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateInvoiceSchema) dto: UpdateInvoiceInput) {
     return this.financeService.updateInvoice(req.user.tenantId, id, dto);
   }
 
@@ -111,7 +125,7 @@ export class FinanceController {
   @Permissions('finance.create')
   @Post('invoices/bulk')
   @Permissions('finance.invoice.update')
-  async bulkAction(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: BulkActionInput) {
+  async bulkAction(@Req() req: AuthenticatedRequest, @ZodBody(bulkActionSchema) dto: BulkActionInput) {
     return this.financeService.bulkAction(req.user.tenantId, dto.action, dto.ids, dto.data);
   }
 
@@ -121,7 +135,9 @@ export class FinanceController {
   @Permissions('finance.create')
   @Post('payments')
   @Permissions('finance.payment.create')
-  async createPayment(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePaymentInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Payment')
+  async createPayment(@Req() req: AuthenticatedRequest, @ZodBody(createPaymentSchema) dto: CreatePaymentInput) {
     return this.financeService.createPayment(req.user.tenantId, dto, req.user.userId || 'system');
   }
 

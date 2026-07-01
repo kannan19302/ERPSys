@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Delete, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Query, UseGuards, Req, UseInterceptors } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { CrmService } from './crm.service';
+import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
+import { TrackChanges } from '../../common/decorators/track-changes.decorator';
 import {
   CreateCustomerInput, UpdateCustomerInput,
   CreateVendorInput,
@@ -32,7 +34,11 @@ import {
   CreateQuotationTemplateInput, UpdateQuotationTemplateInput,
   CreateCrmCommentInput, CreateCrmNoteInput, UpdateCrmNoteInput,
   CreatePlaybookInput, UpdatePlaybookInput, CreateBattlecardInput, UpdateBattlecardInput,
-  CreateCrmDashboardInput, UpdateCrmDashboardInput, CreateDashboardWidgetInput, UpdateDashboardWidgetInput } from '@unerp/shared';
+  CreateCrmDashboardInput, UpdateCrmDashboardInput, CreateDashboardWidgetInput, UpdateDashboardWidgetInput,
+  createCustomerSchema, updateCustomerSchema,
+  createVendorSchema,
+  createContactSchema, updateContactSchema
+} from '@unerp/shared';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
@@ -74,7 +80,9 @@ export class CrmController {
   @Permissions('crm.create')
   @Post('customers')
   @Permissions('crm.contact.create')
-  async createCustomer(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateCustomerInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer')
+  async createCustomer(@Req() req: AuthenticatedRequest, @ZodBody(createCustomerSchema) dto: CreateCustomerInput) {
     return this.crmService.createCustomer(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
@@ -82,7 +90,9 @@ export class CrmController {
   @Permissions('crm.update')
   @Put('customers/:id')
   @Permissions('crm.contact.update')
-  async updateCustomer(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateCustomerInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer', 'id')
+  async updateCustomer(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateCustomerSchema) dto: UpdateCustomerInput) {
     return this.crmService.updateCustomer(req.user.tenantId, id, dto);
   }
 
@@ -108,7 +118,9 @@ export class CrmController {
   @Permissions('crm.create')
   @Post('vendors')
   @Permissions('procurement.vendor.create')
-  async createVendor(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateVendorInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Vendor')
+  async createVendor(@Req() req: AuthenticatedRequest, @ZodBody(createVendorSchema) dto: CreateVendorInput) {
     return this.crmService.createVendor(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
@@ -126,7 +138,9 @@ export class CrmController {
   @Permissions('crm.create')
   @Post('contacts')
   @Permissions('crm.contact.create')
-  async createContact(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateContactInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Contact')
+  async createContact(@Req() req: AuthenticatedRequest, @ZodBody(createContactSchema) dto: CreateContactInput) {
     return this.crmService.createContact(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
@@ -134,7 +148,9 @@ export class CrmController {
   @Permissions('crm.update')
   @Put('contacts/:id')
   @Permissions('crm.contact.update')
-  async updateContact(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateContactInput) {
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Contact', 'id')
+  async updateContact(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateContactSchema) dto: UpdateContactInput) {
     return this.crmService.updateContact(req.user.tenantId, id, dto);
   }
 

@@ -1897,3 +1897,68 @@ export const removeDemoDataSchema = z.object({
   module: z.string().optional(),
 });
 export type RemoveDemoDataInput = z.infer<typeof removeDemoDataSchema>;
+
+// ════════════════════════════════════════════════════
+// Healthcare Schemas
+// ════════════════════════════════════════════════════
+
+export const createPatientSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').max(100),
+  lastName: z.string().min(1, 'Last name is required').max(100),
+  dateOfBirth: z.string().min(1, 'Date of birth is required'),
+  gender: z.string().min(1, 'Gender is required'),
+  email: z.string().email('Invalid email address').optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+  medicalHistory: z.string().optional().nullable(),
+  vitalsHistory: z.string().optional().nullable(),
+  allergies: z.string().optional().nullable(),
+});
+export type CreatePatientInput = z.infer<typeof createPatientSchema>;
+
+export const updatePatientSchema = createPatientSchema.partial();
+export type UpdatePatientInput = z.infer<typeof updatePatientSchema>;
+
+export const createPractitionerSchema = z.object({
+  employeeId: z.string().min(1, 'Employee ID is required'),
+  specialty: z.string().min(1, 'Specialty is required').max(100),
+  licenseNumber: z.string().min(1, 'License number is required').max(50),
+});
+export type CreatePractitionerInput = z.infer<typeof createPractitionerSchema>;
+
+export const updatePractitionerSchema = createPractitionerSchema.partial();
+export type UpdatePractitionerInput = z.infer<typeof updatePractitionerSchema>;
+
+export const createAppointmentSchema = z.object({
+  patientId: z.string().min(1, 'Patient ID is required'),
+  practitionerId: z.string().min(1, 'Practitioner ID is required'),
+  startTime: z.string().min(1, 'Start time is required'),
+  endTime: z.string().min(1, 'End time is required'),
+  notes: z.string().max(2000).optional().nullable(),
+});
+export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
+
+export const createPrescriptionSchema = z.object({
+  patientId: z.string().min(1, 'Patient ID is required'),
+  practitionerId: z.string().min(1, 'Practitioner ID is required'),
+  details: z.string().min(1, 'Details are required'),
+});
+export type CreatePrescriptionInput = z.infer<typeof createPrescriptionSchema>;
+
+export const logDrugRegisterSchema = z.object({
+  name: z.string().min(1, 'Drug name is required').max(200),
+  batchNumber: z.string().min(1, 'Batch number is required').max(100),
+  expiryDate: z.string().min(1, 'Expiry date is required'),
+  isControlled: z.boolean().default(false),
+  quantity: z.number().int().positive('Quantity must be greater than zero'),
+});
+export type LogDrugRegisterInput = z.infer<typeof logDrugRegisterSchema>;
+
+export const createMedicalEncounterSchema = z.object({
+  patientId: z.string().min(1, 'Patient ID is required'),
+  practitionerId: z.string().min(1, 'Practitioner ID is required'),
+  diagnosis: z.string().min(1, 'Diagnosis is required'),
+  treatmentCode: z.string().min(1, 'Treatment code is required'),
+  billingAmount: z.number().positive('Billing amount must be greater than zero'),
+});
+export type CreateMedicalEncounterInput = z.infer<typeof createMedicalEncounterSchema>;
+

@@ -229,7 +229,9 @@ export class FinanceService {
   async deleteInvoice(tenantId: string, id: string) {
     const invoice = await prisma.invoice.findFirst({ where: { id, tenantId, deletedAt: null } });
     if (!invoice) throw new NotFoundException('Invoice not found');
-    if (invoice.status === 'PAID') throw new BadRequestException('Cannot delete a paid invoice.');
+    if (invoice.status === 'PAID' || invoice.status === 'PARTIALLY_PAID') {
+      throw new BadRequestException('Cannot delete an invoice that has payments registered.');
+    }
 
     await prisma.invoice.update({
       where: { id },

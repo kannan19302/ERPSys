@@ -28,72 +28,38 @@ import {
 } from '@unerp/shared';
 import * as crypto from 'crypto';
 
+import { CrmCustomersService } from './crm-customers.service';
+import { CrmContactsService } from './crm-contacts.service';
+
 @Injectable()
 export class CrmService {
+  constructor(
+    private readonly customersService: CrmCustomersService,
+    private readonly contactsService: CrmContactsService,
+  ) {}
+
   // ════════════════════════════════════════════════
   // CUSTOMERS
   // ════════════════════════════════════════════════
 
   async getCustomers(tenantId: string) {
-    return prisma.customer.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
-      orderBy: { name: 'asc' },
-    });
+    return this.customersService.getCustomers(tenantId);
   }
 
   async getCustomerById(tenantId: string, id: string) {
-    const customer = await prisma.customer.findFirst({
-      where: { id, tenantId, deletedAt: null },
-      include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
-    });
-    if (!customer) throw new NotFoundException('Customer not found');
-    return customer;
+    return this.customersService.getCustomerById(tenantId, id);
   }
 
   async createCustomer(tenantId: string, orgId: string, dto: CreateCustomerInput) {
-    let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
-      const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered in this tenant');
-      resolvedOrgId = org.id;
-    }
-    return prisma.customer.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, type: dto.type,
-        email: dto.email || null, phone: dto.phone || null, taxId: dto.taxId || null,
-        billingAddress: dto.billingAddress ? (dto.billingAddress as Prisma.InputJsonValue) : Prisma.DbNull,
-        shippingAddress: dto.shippingAddress ? (dto.shippingAddress as Prisma.InputJsonValue) : Prisma.DbNull,
-        creditLimit: dto.creditLimit || null, paymentTerms: dto.paymentTerms, notes: dto.notes || null,
-      },
-    });
+    return this.customersService.createCustomer(tenantId, orgId, dto);
   }
 
   async updateCustomer(tenantId: string, id: string, dto: UpdateCustomerInput) {
-    const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Customer not found');
-    return prisma.customer.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.email !== undefined && { email: dto.email }),
-        ...(dto.phone !== undefined && { phone: dto.phone }),
-        ...(dto.taxId !== undefined && { taxId: dto.taxId }),
-        ...(dto.creditLimit !== undefined && { creditLimit: dto.creditLimit }),
-        ...(dto.paymentTerms !== undefined && { paymentTerms: dto.paymentTerms }),
-        ...(dto.notes !== undefined && { notes: dto.notes }),
-        ...(dto.type !== undefined && { type: dto.type }),
-        ...(dto.billingAddress && { billingAddress: dto.billingAddress as Prisma.InputJsonValue }),
-        ...(dto.shippingAddress && { shippingAddress: dto.shippingAddress as Prisma.InputJsonValue }),
-      },
-    });
+    return this.customersService.updateCustomer(tenantId, id, dto);
   }
 
   async deleteCustomer(tenantId: string, id: string) {
-    const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Customer not found');
-    return prisma.customer.update({ where: { id }, data: { deletedAt: new Date() } });
+    return this.customersService.deleteCustomer(tenantId, id);
   }
 
   // ════════════════════════════════════════════════
@@ -101,27 +67,11 @@ export class CrmService {
   // ════════════════════════════════════════════════
 
   async getVendors(tenantId: string) {
-    return prisma.vendor.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { name: 'asc' },
-    });
+    return this.customersService.getVendors(tenantId);
   }
 
   async createVendor(tenantId: string, orgId: string, dto: CreateVendorInput) {
-    let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
-      const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered in this tenant');
-      resolvedOrgId = org.id;
-    }
-    return prisma.vendor.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, email: dto.email || null, phone: dto.phone || null,
-        taxId: dto.taxId || null, address: Prisma.DbNull,
-        paymentTerms: dto.paymentTerms, notes: dto.notes || null,
-      },
-    });
+    return this.customersService.createVendor(tenantId, orgId, dto);
   }
 
   // ════════════════════════════════════════════════
@@ -129,45 +79,19 @@ export class CrmService {
   // ════════════════════════════════════════════════
 
   async getContacts(tenantId: string, customerId?: string) {
-    const where: Prisma.ContactWhereInput = { tenantId, deletedAt: null };
-    if (customerId) where.customerId = customerId;
-    return prisma.contact.findMany({ where, orderBy: { firstName: 'asc' } });
+    return this.contactsService.getContacts(tenantId, customerId);
   }
 
   async createContact(tenantId: string, orgId: string, dto: CreateContactInput) {
-    let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
-      const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered');
-      resolvedOrgId = org.id;
-    }
-    if (dto.customerId) {
-      const cust = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
-      if (!cust) throw new BadRequestException('Customer not found');
-    }
-    return prisma.contact.create({
-      data: {
-        tenantId, orgId: resolvedOrgId,
-        customerId: dto.customerId || null,
-        salutation: dto.salutation || null,
-        firstName: dto.firstName, lastName: dto.lastName,
-        email: dto.email || null, phone: dto.phone || null, mobile: dto.mobile || null,
-        title: dto.title || null, department: dto.department || null,
-        isPrimary: dto.isPrimary || false, notes: dto.notes || null,
-      },
-    });
+    return this.contactsService.createContact(tenantId, orgId, dto);
   }
 
   async updateContact(tenantId: string, id: string, dto: UpdateContactInput) {
-    const existing = await prisma.contact.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Contact not found');
-    return prisma.contact.update({ where: { id }, data: dto as Prisma.ContactUpdateInput });
+    return this.contactsService.updateContact(tenantId, id, dto);
   }
 
   async deleteContact(tenantId: string, id: string) {
-    const existing = await prisma.contact.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Contact not found');
-    return prisma.contact.update({ where: { id }, data: { deletedAt: new Date() } });
+    return this.contactsService.deleteContact(tenantId, id);
   }
 
   // ════════════════════════════════════════════════
