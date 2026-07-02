@@ -93,6 +93,7 @@
 | **@unerp/ui** | `packages/ui` | 🟢 ACTIVE | Design system, components, tokens |
 | **@unerp/auth** | `packages/auth` | 🟢 ACTIVE | Authentication providers, RBAC, guards |
 | **@unerp/config** | `packages/config` | 🟢 ACTIVE | ESLint, TypeScript, Prettier configs |
+| **@unerp/framework** (Frontend Framework) | `packages/framework` | 🟡 IN_PROGRESS | Unified metadata/schema-driven frontend framework for ALL apps/modules (replaces ERPNext/Frappe-inspired patterns). Layers ABOVE `@unerp/ui`: module registration API, schema-driven List/Detail/Form views, data layer (typed API client + caching), forms engine (validation, conditional fields), permissions-aware navigation/menus (RBAC `module.resource.action`), tenant-scoped by construction, i18n-aware. Consumed by `apps/web`; complements (does not duplicate) Studio's dynamic rendering — Studio-built pages become a consumer of this runtime. |
 
 ---
 
