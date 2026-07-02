@@ -27,7 +27,6 @@ export class HrController {
   constructor(private readonly hrService: HrService) { }
 
   @ApiOperation({ summary: 'Get employees' })
-  @Permissions('hr.read')
   @Get('employees')
   @Permissions('hr.employee.read')
   async getEmployees(
@@ -49,7 +48,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Get employee stats' })
-  @Permissions('hr.read')
   @Get('employees/stats')
   @Permissions('hr.employee.read')
   async getEmployeeStats(@Req() req: AuthenticatedRequest) {
@@ -57,7 +55,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Get employee by id' })
-  @Permissions('hr.read')
   @Get('employees/:id')
   @Permissions('hr.employee.read')
   async getEmployeeById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -65,7 +62,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Create employee' })
-  @Permissions('hr.create')
   @Post('employees')
   @Permissions('hr.employee.create')
   async createEmployee(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateEmployeeInput) {
@@ -74,7 +70,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Update employee' })
-  @Permissions('hr.update')
   @Patch('employees/:id')
   @Permissions('hr.employee.update')
   async updateEmployee(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateEmployeeInput) {
@@ -82,7 +77,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Delete employee' })
-  @Permissions('hr.delete')
   @Delete('employees/:id')
   @Permissions('hr.employee.delete')
   async deleteEmployee(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -90,7 +84,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Bulk action' })
-  @Permissions('hr.create')
   @Post('employees/bulk')
   @Permissions('hr.employee.update')
   async bulkAction(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: BulkActionInput) {
@@ -98,7 +91,6 @@ export class HrController {
   }
 
   @ApiOperation({ summary: 'Get departments' })
-  @Permissions('hr.read')
   @Get('departments')
   @Permissions('hr.employee.read')
   async getDepartments(@Req() req: AuthenticatedRequest) {

@@ -27,7 +27,6 @@ export class ScheduledReportsController {
   constructor(private readonly scheduledReportsService: ScheduledReportsService) {}
 
   @ApiOperation({ summary: 'Get scheduled reports' })
-  @Permissions('reporting.read')
   @Get()
   @Permissions('finance.report.read')
   async getScheduledReports(@Req() req: AuthenticatedRequest) {
@@ -35,7 +34,6 @@ export class ScheduledReportsController {
   }
 
   @ApiOperation({ summary: 'Create scheduled report' })
-  @Permissions('reporting.create')
   @Post()
   @Permissions('finance.report.read')
   async createScheduledReport(
@@ -53,7 +51,6 @@ export class ScheduledReportsController {
   }
 
   @ApiOperation({ summary: 'Update scheduled report' })
-  @Permissions('reporting.update')
   @Patch(':id')
   @Permissions('finance.report.read')
   async updateScheduledReport(
@@ -73,7 +70,6 @@ export class ScheduledReportsController {
   }
 
   @ApiOperation({ summary: 'Delete scheduled report' })
-  @Permissions('reporting.delete')
   @Delete(':id')
   @Permissions('finance.report.read')
   async deleteScheduledReport(
@@ -84,7 +80,6 @@ export class ScheduledReportsController {
   }
 
   @ApiOperation({ summary: 'Run scheduled report' })
-  @Permissions('reporting.create')
   @Post(':id/run')
   @Permissions('finance.report.read')
   async runScheduledReport(

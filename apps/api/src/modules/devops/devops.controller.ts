@@ -13,7 +13,6 @@ export class DevopsController {
   constructor(private readonly devopsService: DevopsService) {}
 
   @ApiOperation({ summary: 'Get metrics' })
-  @Permissions('devops.read')
   @Get('metrics')
   @Permissions('admin.devops.read')
   async getMetrics() {
@@ -21,7 +20,6 @@ export class DevopsController {
   }
 
   @ApiOperation({ summary: 'Get recent errors' })
-  @Permissions('devops.read')
   @Get('errors')
   @Permissions('admin.devops.read')
   async getRecentErrors(@Req() req: any) {
@@ -30,7 +28,6 @@ export class DevopsController {
   }
 
   @ApiOperation({ summary: 'Get integrations' })
-  @Permissions('devops.read')
   @Get('integrations')
   @Permissions('admin.devops.read')
   async getIntegrations() {

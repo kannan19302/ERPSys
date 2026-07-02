@@ -26,7 +26,6 @@ export class StorageController {
   constructor(private readonly service: StorageService) {}
 
   @ApiOperation({ summary: 'Get files' })
-  @Permissions('storage.read')
   @Get('files')
   @Permissions('documents.document.read')
   async getFiles(@Req() req: AuthenticatedRequest) {
@@ -34,7 +33,6 @@ export class StorageController {
   }
 
   @ApiOperation({ summary: 'Register file' })
-  @Permissions('storage.create')
   @Post('files')
   @Permissions('documents.document.create')
   async registerFile(
@@ -46,7 +44,6 @@ export class StorageController {
   }
 
   @ApiOperation({ summary: 'Get generated documents' })
-  @Permissions('storage.read')
   @Get('generated')
   @Permissions('documents.document.read')
   async getGeneratedDocuments(@Req() req: AuthenticatedRequest) {
@@ -54,7 +51,6 @@ export class StorageController {
   }
 
   @ApiOperation({ summary: 'Generate document' })
-  @Permissions('storage.create')
   @Post('generate')
   @Permissions('documents.document.create')
   async generateDocument(
@@ -65,7 +61,6 @@ export class StorageController {
   }
 
   @ApiOperation({ summary: 'Generate presigned url' })
-  @Permissions('storage.create')
   @Post('presigned')
   @Permissions('documents.document.read')
   async generatePresignedUrl(
@@ -76,7 +71,6 @@ export class StorageController {
   }
 
   @ApiOperation({ summary: 'Update lifecycle policy' })
-  @Permissions('storage.create')
   @Post('lifecycle')
   @Permissions('documents.document.create')
   async updateLifecyclePolicy(

@@ -21,6 +21,7 @@ import { CustomFieldsController } from './custom-fields.controller';
 import { CustomFieldsService } from './custom-fields.service';
 import { AutomationRulesController } from './automation-rules.controller';
 import { AutomationRulesService } from './automation-rules.service';
+import { AutomationRuleEngineService } from './automation-rule-engine.service';
 import { RecycleBinController } from './recycle-bin.controller';
 import { RecycleBinService } from './recycle-bin.service';
 import { AlertsController } from './alerts.controller';
@@ -84,6 +85,7 @@ import { DeveloperController } from '../marketplace/developer.controller';
     PlatformService,
     CustomFieldsService,
     AutomationRulesService,
+    AutomationRuleEngineService,
     RecycleBinService,
     AlertsService,
     MarketplaceService,

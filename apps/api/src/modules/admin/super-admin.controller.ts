@@ -20,7 +20,6 @@ export class SuperAdminController {
   constructor(private readonly superAdminService: SuperAdminService) {}
 
   @ApiOperation({ summary: 'Get tenants' })
-  @Permissions('admin.read')
   @Get('tenants')
   @Permissions('system.tenant.read')
   async getTenants() {
@@ -28,7 +27,6 @@ export class SuperAdminController {
   }
 
   @ApiOperation({ summary: 'Get tenant detail' })
-  @Permissions('admin.read')
   @Get('tenants/:id')
   @Permissions('system.tenant.read')
   async getTenantDetail(@Param('id') id: string) {
@@ -36,7 +34,6 @@ export class SuperAdminController {
   }
 
   @ApiOperation({ summary: 'Provision tenant' })
-  @Permissions('admin.create')
   @Post('tenants')
   @Permissions('system.tenant.create')
   async provisionTenant(
@@ -46,7 +43,6 @@ export class SuperAdminController {
   }
 
   @ApiOperation({ summary: 'Update tenant' })
-  @Permissions('admin.update')
   @Patch('tenants/:id')
   @Permissions('system.tenant.update')
   async updateTenant(
@@ -57,7 +53,6 @@ export class SuperAdminController {
   }
 
   @ApiOperation({ summary: 'Get all admins' })
-  @Permissions('admin.read')
   @Get('admins')
   @Permissions('system.superadmin.access')
   async getAllAdmins() {
@@ -65,7 +60,6 @@ export class SuperAdminController {
   }
 
   @ApiOperation({ summary: 'Get analytics' })
-  @Permissions('admin.read')
   @Get('analytics')
   @Permissions('system.analytics.read')
   async getAnalytics() {
@@ -73,7 +67,6 @@ export class SuperAdminController {
   }
 
   @ApiOperation({ summary: 'Get system health' })
-  @Permissions('admin.read')
   @Get('health')
   @Permissions('system.health.read')
   async getSystemHealth() {

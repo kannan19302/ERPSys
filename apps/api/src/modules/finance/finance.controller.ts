@@ -39,7 +39,6 @@ export class FinanceController {
   // ─── Invoice Endpoints ──────────────────────────────
 
   @ApiOperation({ summary: 'Get invoices' })
-  @Permissions('finance.read')
   @Get('invoices')
   @Permissions('finance.invoice.read')
   async getInvoices(
@@ -61,7 +60,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Get invoice stats' })
-  @Permissions('finance.read')
   @Get('invoices/stats')
   @Permissions('finance.invoice.read')
   async getInvoiceStats(@Req() req: AuthenticatedRequest) {
@@ -69,7 +67,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Get invoice by id' })
-  @Permissions('finance.read')
   @Get('invoices/:id')
   @Permissions('finance.invoice.read')
   async getInvoiceById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -77,7 +74,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Create invoice' })
-  @Permissions('finance.create')
   @Post('invoices')
   @Permissions('finance.invoice.create')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -88,7 +84,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Update invoice' })
-  @Permissions('finance.update')
   @Patch('invoices/:id')
   @Permissions('finance.invoice.update')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -98,7 +93,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Delete invoice' })
-  @Permissions('finance.delete')
   @Delete('invoices/:id')
   @Permissions('finance.invoice.delete')
   async deleteInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -106,7 +100,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Send invoice' })
-  @Permissions('finance.create')
   @Post('invoices/:id/send')
   @Permissions('finance.invoice.update')
   async sendInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -114,7 +107,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Void invoice' })
-  @Permissions('finance.create')
   @Post('invoices/:id/void')
   @Permissions('finance.invoice.update')
   async voidInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -122,7 +114,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Bulk action' })
-  @Permissions('finance.create')
   @Post('invoices/bulk')
   @Permissions('finance.invoice.update')
   async bulkAction(@Req() req: AuthenticatedRequest, @ZodBody(bulkActionSchema) dto: BulkActionInput) {
@@ -132,7 +123,6 @@ export class FinanceController {
   // ─── Payment Endpoints ──────────────────────────────
 
   @ApiOperation({ summary: 'Create payment' })
-  @Permissions('finance.create')
   @Post('payments')
   @Permissions('finance.payment.create')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -142,7 +132,6 @@ export class FinanceController {
   }
 
   @ApiOperation({ summary: 'Get payments' })
-  @Permissions('finance.read')
   @Get('invoices/:id/payments')
   @Permissions('finance.payment.read')
   async getPayments(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

@@ -29,7 +29,6 @@ export class CustomFieldsController {
   constructor(private readonly customFieldsService: CustomFieldsService) {}
 
   @ApiOperation({ summary: 'Get definitions' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.custom-fields.read')
   async getDefinitions(
@@ -40,7 +39,6 @@ export class CustomFieldsController {
   }
 
   @ApiOperation({ summary: 'Get entity types' })
-  @Permissions('admin.read')
   @Get('entity-types')
   @Permissions('admin.custom-fields.read')
   async getEntityTypes() {
@@ -48,7 +46,6 @@ export class CustomFieldsController {
   }
 
   @ApiOperation({ summary: 'Create definition' })
-  @Permissions('admin.create')
   @Post()
   @Permissions('admin.custom-fields.create')
   async createDefinition(
@@ -71,7 +68,6 @@ export class CustomFieldsController {
   }
 
   @ApiOperation({ summary: 'Update definition' })
-  @Permissions('admin.update')
   @Patch(':id')
   @Permissions('admin.custom-fields.update')
   async updateDefinition(
@@ -93,7 +89,6 @@ export class CustomFieldsController {
   }
 
   @ApiOperation({ summary: 'Delete definition' })
-  @Permissions('admin.delete')
   @Delete(':id')
   @Permissions('admin.custom-fields.delete')
   async deleteDefinition(
@@ -104,7 +99,6 @@ export class CustomFieldsController {
   }
 
   @ApiOperation({ summary: 'Get values' })
-  @Permissions('admin.read')
   @Get('values/:entityType/:entityId')
   @Permissions('admin.custom-fields.read')
   async getValues(
@@ -116,7 +110,6 @@ export class CustomFieldsController {
   }
 
   @ApiOperation({ summary: 'Save values' })
-  @Permissions('admin.update')
   @Put('values/:entityType/:entityId')
   @Permissions('admin.custom-fields.update')
   async saveValues(

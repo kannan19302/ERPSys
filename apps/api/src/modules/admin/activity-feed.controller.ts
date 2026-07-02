@@ -25,7 +25,6 @@ export class ActivityFeedController {
   constructor(private readonly activityFeedService: ActivityFeedService) {}
 
   @ApiOperation({ summary: 'Get activity feed' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.setting.read')
   async getActivityFeed(

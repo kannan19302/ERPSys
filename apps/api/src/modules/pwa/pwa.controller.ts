@@ -25,7 +25,6 @@ export class PwaController {
   constructor(private readonly pwaService: PwaService) {}
 
   @ApiOperation({ summary: 'Get sync queue' })
-  @Permissions('pwa.read')
   @Get('queue')
   @Permissions('admin.sync.read')
   async getSyncQueue(@Req() req: AuthenticatedRequest) {
@@ -33,7 +32,6 @@ export class PwaController {
   }
 
   @ApiOperation({ summary: 'Push offline operations' })
-  @Permissions('pwa.create')
   @Post('push')
   @Permissions('admin.sync.create')
   async pushOfflineOperations(
@@ -44,7 +42,6 @@ export class PwaController {
   }
 
   @ApiOperation({ summary: 'Reconcile operation' })
-  @Permissions('pwa.update')
   @Put('reconcile/:id')
   @Permissions('admin.sync.create')
   async reconcileOperation(

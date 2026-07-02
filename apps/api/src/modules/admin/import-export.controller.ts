@@ -31,7 +31,6 @@ export class ImportExportController {
   constructor(private readonly importExportService: ImportExportService) {}
 
   @ApiOperation({ summary: 'List import history' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.setting.read')
   async listImportHistory(@Req() req: AuthenticatedRequest) {
@@ -39,7 +38,6 @@ export class ImportExportController {
   }
 
   @ApiOperation({ summary: 'Validate import' })
-  @Permissions('admin.create')
   @Post('validate')
   @Permissions('admin.setting.read')
   async validateImport(
@@ -54,7 +52,6 @@ export class ImportExportController {
   }
 
   @ApiOperation({ summary: 'Execute import' })
-  @Permissions('admin.create')
   @Post('execute')
   @Permissions('admin.setting.read')
   async executeImport(
@@ -70,7 +67,6 @@ export class ImportExportController {
   }
 
   @ApiOperation({ summary: 'Export data' })
-  @Permissions('admin.read')
   @Get('/exports/:entityType')
   @Permissions('admin.setting.read')
   async exportData(

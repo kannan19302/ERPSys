@@ -27,7 +27,6 @@ export class PlatformController {
   constructor(private readonly platformService: PlatformService) {}
 
   @ApiOperation({ summary: 'Get modules' })
-  @Permissions('admin.read')
   @Get('modules')
   @Permissions('admin.platform.read')
   async getModules(@Req() req: AuthenticatedRequest) {
@@ -35,7 +34,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Toggle module' })
-  @Permissions('admin.create')
   @Post('modules/:name/toggle')
   @Permissions('admin.platform.update')
   async toggleModule(
@@ -47,7 +45,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get feature flags' })
-  @Permissions('admin.read')
   @Get('feature-flags')
   @Permissions('admin.platform.read')
   async getFeatureFlags(@Req() req: AuthenticatedRequest) {
@@ -55,7 +52,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Save feature flag' })
-  @Permissions('admin.create')
   @Post('feature-flags/:key/toggle')
   @Permissions('admin.platform.update')
   async saveFeatureFlag(
@@ -67,7 +63,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get custom domains' })
-  @Permissions('admin.read')
   @Get('domains')
   @Permissions('admin.platform.read')
   async getCustomDomains(@Req() req: AuthenticatedRequest) {
@@ -75,7 +70,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Add custom domain' })
-  @Permissions('admin.create')
   @Post('domains')
   @Permissions('admin.platform.update')
   async addCustomDomain(
@@ -86,7 +80,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get environments' })
-  @Permissions('admin.read')
   @Get('environments')
   @Permissions('admin.platform.read')
   async getEnvironments(@Req() req: AuthenticatedRequest) {
@@ -94,7 +87,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Sync environment' })
-  @Permissions('admin.create')
   @Post('environments/:type/sync')
   @Permissions('admin.platform.update')
   async syncEnvironment(
@@ -105,7 +97,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get maintenance mode' })
-  @Permissions('admin.read')
   @Get('maintenance')
   @Permissions('admin.platform.read')
   async getMaintenanceMode(@Req() req: AuthenticatedRequest) {
@@ -113,7 +104,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Save maintenance mode' })
-  @Permissions('admin.create')
   @Post('maintenance')
   @Permissions('admin.platform.update')
   async saveMaintenanceMode(
@@ -124,7 +114,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get smtp config' })
-  @Permissions('admin.read')
   @Get('smtp')
   @Permissions('admin.platform.read')
   async getSmtpConfig(@Req() req: AuthenticatedRequest) {
@@ -132,7 +121,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Save smtp config' })
-  @Permissions('admin.create')
   @Post('smtp')
   @Permissions('admin.platform.update')
   async saveSmtpConfig(
@@ -143,7 +131,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get login customizer' })
-  @Permissions('admin.read')
   @Get('login-customizer')
   @Permissions('admin.platform.read')
   async getLoginCustomizer(@Req() req: AuthenticatedRequest) {
@@ -151,7 +138,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Save login customizer' })
-  @Permissions('admin.create')
   @Post('login-customizer')
   @Permissions('admin.platform.update')
   async saveLoginCustomizer(
@@ -162,7 +148,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get email templates' })
-  @Permissions('admin.read')
   @Get('email-templates')
   @Permissions('admin.platform.read')
   async getEmailTemplates(@Req() req: AuthenticatedRequest) {
@@ -170,7 +155,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Save email template' })
-  @Permissions('admin.create')
   @Post('email-templates')
   @Permissions('admin.platform.update')
   async saveEmailTemplate(
@@ -181,7 +165,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Delete email template' })
-  @Permissions('admin.delete')
   @Delete('email-templates/:id')
   @Permissions('admin.platform.update')
   async deleteEmailTemplate(
@@ -192,7 +175,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get usage analytics' })
-  @Permissions('admin.read')
   @Get('usage-analytics')
   @Permissions('admin.platform.read')
   async getUsageAnalytics(@Req() req: AuthenticatedRequest) {
@@ -200,7 +182,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get white label settings' })
-  @Permissions('admin.read')
   @Get('white-label')
   @Permissions('admin.platform.read')
   async getWhiteLabelSettings(@Req() req: AuthenticatedRequest) {
@@ -208,7 +189,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Save white label settings' })
-  @Permissions('admin.create')
   @Post('white-label')
   @Permissions('admin.platform.update')
   async saveWhiteLabelSettings(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: any) {
@@ -216,7 +196,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Get system updates' })
-  @Permissions('admin.read')
   @Get('updates')
   @Permissions('admin.platform.read')
   async getSystemUpdates(@Req() req: AuthenticatedRequest) {
@@ -224,7 +203,6 @@ export class PlatformController {
   }
 
   @ApiOperation({ summary: 'Check for updates' })
-  @Permissions('admin.create')
   @Post('check-updates')
   @Permissions('admin.platform.update')
   async checkForUpdates(@Req() req: AuthenticatedRequest) {

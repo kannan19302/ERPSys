@@ -29,7 +29,6 @@ export class RecycleBinController {
   constructor(private readonly recycleBinService: RecycleBinService) {}
 
   @ApiOperation({ summary: 'Get items' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.recycle-bin.read')
   async getItems(
@@ -47,7 +46,6 @@ export class RecycleBinController {
   }
 
   @ApiOperation({ summary: 'Get stats' })
-  @Permissions('admin.read')
   @Get('stats')
   @Permissions('admin.recycle-bin.read')
   async getStats(@Req() req: AuthenticatedRequest) {
@@ -55,7 +53,6 @@ export class RecycleBinController {
   }
 
   @ApiOperation({ summary: 'Restore item' })
-  @Permissions('admin.create')
   @Post(':id/restore')
   @Permissions('admin.recycle-bin.update')
   async restoreItem(
@@ -66,7 +63,6 @@ export class RecycleBinController {
   }
 
   @ApiOperation({ summary: 'Permanent delete' })
-  @Permissions('admin.delete')
   @Delete(':id')
   @Permissions('admin.recycle-bin.delete')
   async permanentDelete(
@@ -77,7 +73,6 @@ export class RecycleBinController {
   }
 
   @ApiOperation({ summary: 'Purge all' })
-  @Permissions('admin.create')
   @Post('purge')
   @Permissions('admin.recycle-bin.delete')
   async purgeAll(

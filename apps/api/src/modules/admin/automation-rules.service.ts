@@ -81,17 +81,14 @@ export class AutomationRulesService {
     });
   }
 
-  async testRule(tenantId: string, id: string, sampleData: any) {
-    const startTime = Date.now();
-    const rule = await prisma.automationRule.findFirstOrThrow({
-      where: { id, tenantId },
-    });
-
-    const conditions = rule.conditions as any[];
-    const actions = rule.actions as any[];
-
+  /**
+   * Shared condition-evaluation logic. Extracted so both `testRule` (sample-data,
+   * caller-supplied) and `AutomationRuleEngineService` (real domain events) evaluate
+   * a rule's stored `conditions` identically — do not duplicate this logic elsewhere.
+   */
+  static evaluateConditions(conditions: any[], data: Record<string, any>) {
     const matchedConditions = conditions.filter((condition: any) => {
-      const fieldValue = sampleData[condition.field];
+      const fieldValue = data[condition.field];
       switch (condition.operator) {
         case 'equals':
           return fieldValue === condition.value;
@@ -113,6 +110,22 @@ export class AutomationRulesService {
     });
 
     const allConditionsMet = matchedConditions.length === conditions.length;
+    return { matchedConditions, allConditionsMet };
+  }
+
+  async testRule(tenantId: string, id: string, sampleData: any) {
+    const startTime = Date.now();
+    const rule = await prisma.automationRule.findFirstOrThrow({
+      where: { id, tenantId },
+    });
+
+    const conditions = rule.conditions as any[];
+    const actions = rule.actions as any[];
+
+    const { matchedConditions, allConditionsMet } = AutomationRulesService.evaluateConditions(
+      conditions,
+      sampleData,
+    );
     const actionsToFire = allConditionsMet ? actions : [];
     const durationMs = Date.now() - startTime;
 

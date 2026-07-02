@@ -28,7 +28,6 @@ export class DeveloperController {
   // ─── Vendor (developer account) ───
 
   @ApiOperation({ summary: 'My vendor' })
-  @Permissions('marketplace.read')
   @Get('me')
   @Permissions('admin.platform.read')
   async myVendor(@Req() req: AuthenticatedRequest) {
@@ -36,7 +35,6 @@ export class DeveloperController {
   }
 
   @ApiOperation({ summary: 'Update my vendor' })
-  @Permissions('marketplace.update')
   @Put('me')
   @Permissions('admin.platform.update')
   async updateMyVendor(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { name?: string; contactEmail?: string; websiteUrl?: string; description?: string }) {
@@ -47,7 +45,6 @@ export class DeveloperController {
   // ─── My apps (packages) ───
 
   @ApiOperation({ summary: 'My apps' })
-  @Permissions('marketplace.read')
   @Get('apps')
   @Permissions('admin.platform.read')
   async myApps(@Req() req: AuthenticatedRequest) {
@@ -56,7 +53,6 @@ export class DeveloperController {
   }
 
   @ApiOperation({ summary: 'Create app' })
-  @Permissions('marketplace.create')
   @Post('apps')
   @Permissions('admin.platform.update')
   async createApp(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { name: string; description?: string; longDescription?: string; category: string; icon?: string; pricing?: string; price?: number; tags?: string[]; screenshots?: any[] }) {
@@ -67,7 +63,6 @@ export class DeveloperController {
   // ─── Bundles (versions) ───
 
   @ApiOperation({ summary: 'Create bundle' })
-  @Permissions('marketplace.create')
   @Post('apps/:packageId/bundles')
   @Permissions('admin.platform.update')
   async createBundle(@Param('packageId') packageId: string, @ZodBody(z.any()) body: { manifest: any; channel?: string; changelog?: string }) {
@@ -75,7 +70,6 @@ export class DeveloperController {
   }
 
   @ApiOperation({ summary: 'Submit' })
-  @Permissions('marketplace.update')
   @Put('bundles/:bundleId/submit')
   @Permissions('admin.platform.update')
   async submit(@Param('bundleId') bundleId: string) {
@@ -85,7 +79,6 @@ export class DeveloperController {
   // ─── Admin review queue ───
 
   @ApiOperation({ summary: 'Pending' })
-  @Permissions('marketplace.read')
   @Get('review/pending')
   @Permissions('admin.platform.update')
   async pending() {
@@ -93,7 +86,6 @@ export class DeveloperController {
   }
 
   @ApiOperation({ summary: 'Approve' })
-  @Permissions('marketplace.update')
   @Put('review/:bundleId/approve')
   @Permissions('admin.platform.update')
   async approve(@Req() req: AuthenticatedRequest, @Param('bundleId') bundleId: string) {
@@ -101,7 +93,6 @@ export class DeveloperController {
   }
 
   @ApiOperation({ summary: 'Reject' })
-  @Permissions('marketplace.update')
   @Put('review/:bundleId/reject')
   @Permissions('admin.platform.update')
   async reject(@Req() req: AuthenticatedRequest, @Param('bundleId') bundleId: string, @ZodBody(z.any()) body: { reviewNotes: string }) {
@@ -109,7 +100,6 @@ export class DeveloperController {
   }
 
   @ApiOperation({ summary: 'Rollback' })
-  @Permissions('marketplace.update')
   @Put('apps/:packageId/rollback')
   @Permissions('admin.platform.update')
   async rollback(@Req() req: AuthenticatedRequest, @Param('packageId') packageId: string, @ZodBody(z.any()) body: { bundleId: string }) {

@@ -29,7 +29,6 @@ export class AdvancedHrController {
 
   // ── TIER 1: Salary Structures & Components ──
   @ApiOperation({ summary: 'Get salary structures' })
-  @Permissions('advanced_hr.read')
   @Get('salaries')
   @Permissions('hr.employee.read')
   async getSalaryStructures(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -37,7 +36,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create salary structure' })
-  @Permissions('advanced_hr.create')
   @Post('salaries')
   @Permissions('hr.employee.create')
   async createSalaryStructure(
@@ -49,7 +47,6 @@ export class AdvancedHrController {
 
   // ── TIER 1: Payroll ──
   @ApiOperation({ summary: 'Get payroll runs' })
-  @Permissions('advanced_hr.read')
   @Get('payroll')
   @Permissions('hr.payroll.read')
   async getPayrollRuns(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -57,7 +54,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Run payroll' })
-  @Permissions('advanced_hr.create')
   @Post('payroll/run')
   @Permissions('hr.payroll.create')
   async runPayroll(
@@ -69,7 +65,6 @@ export class AdvancedHrController {
 
   // ── TIER 1: Attendance ──
   @ApiOperation({ summary: 'Get attendance records' })
-  @Permissions('advanced_hr.read')
   @Get('attendance')
   @Permissions('hr.employee.read')
   async getAttendanceRecords(
@@ -80,7 +75,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Check in' })
-  @Permissions('advanced_hr.create')
   @Post('attendance/check-in')
   @Permissions('hr.employee.create')
   async checkIn(
@@ -91,7 +85,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Check out' })
-  @Permissions('advanced_hr.create')
   @Post('attendance/check-out')
   @Permissions('hr.employee.create')
   async checkOut(
@@ -103,7 +96,6 @@ export class AdvancedHrController {
 
   // ── TIER 1: Employee Documents ──
   @ApiOperation({ summary: 'Get employee documents' })
-  @Permissions('advanced_hr.read')
   @Get('documents/:employeeId')
   @Permissions('hr.employee.read')
   async getEmployeeDocuments(
@@ -114,7 +106,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create employee document' })
-  @Permissions('advanced_hr.create')
   @Post('documents/:employeeId')
   @Permissions('hr.employee.create')
   async createEmployeeDocument(
@@ -127,7 +118,6 @@ export class AdvancedHrController {
 
   // ── TIER 1: Asset Assignments ──
   @ApiOperation({ summary: 'Get assets' })
-  @Permissions('advanced_hr.read')
   @Get('assets')
   @Permissions('hr.employee.read')
   async getAssets(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -135,7 +125,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Assign asset' })
-  @Permissions('advanced_hr.create')
   @Post('assets')
   @Permissions('hr.employee.create')
   async assignAsset(
@@ -146,7 +135,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Return asset' })
-  @Permissions('advanced_hr.create')
   @Post('assets/:id/return')
   @Permissions('hr.employee.update')
   async returnAsset(
@@ -158,7 +146,6 @@ export class AdvancedHrController {
 
   // ── TIER 2: Org Chart ──
   @ApiOperation({ summary: 'Get org chart' })
-  @Permissions('advanced_hr.read')
   @Get('org-chart')
   @Permissions('hr.employee.read')
   async getOrgChart(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -168,7 +155,6 @@ export class AdvancedHrController {
 
   // ── TIER 2: Leave Balances & Policies & Requests ──
   @ApiOperation({ summary: 'Get leave balances' })
-  @Permissions('advanced_hr.read')
   @Get('leaves/balances')
   @Permissions('hr.leave.read')
   async getLeaveBalances(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -176,7 +162,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get leave policies' })
-  @Permissions('advanced_hr.read')
   @Get('leaves/policies')
   @Permissions('hr.leave.read')
   async getLeavePolicies(@Req() req: AuthenticatedRequest) {
@@ -184,7 +169,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create leave policy' })
-  @Permissions('advanced_hr.create')
   @Post('leaves/policies')
   @Permissions('hr.leave.create')
   async createLeavePolicy(
@@ -195,7 +179,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get leave requests' })
-  @Permissions('advanced_hr.read')
   @Get('leaves/requests')
   @Permissions('hr.leave.read')
   async getLeaveRequests(@Req() req: AuthenticatedRequest) {
@@ -203,7 +186,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create leave request' })
-  @Permissions('advanced_hr.create')
   @Post('leaves/requests')
   @Permissions('hr.leave.create')
   async createLeaveRequest(
@@ -214,7 +196,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Approve leave request' })
-  @Permissions('advanced_hr.update')
   @Put('leaves/requests/:id/approve')
   @Permissions('hr.leave.create')
   async approveLeaveRequest(
@@ -228,7 +209,6 @@ export class AdvancedHrController {
 
   // ── TIER 2: Onboarding ──
   @ApiOperation({ summary: 'Get onboarding checklists' })
-  @Permissions('advanced_hr.read')
   @Get('onboarding/checklists')
   @Permissions('hr.employee.read')
   async getOnboardingChecklists(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -236,7 +216,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create onboarding checklist' })
-  @Permissions('advanced_hr.create')
   @Post('onboarding/checklists')
   @Permissions('hr.employee.create')
   async createOnboardingChecklist(
@@ -247,7 +226,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Complete onboarding item' })
-  @Permissions('advanced_hr.update')
   @Put('onboarding/items/:itemId/complete')
   @Permissions('hr.employee.update')
   async completeOnboardingItem(
@@ -258,7 +236,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update onboarding item' })
-  @Permissions('advanced_hr.update')
   @Put('onboarding/items/:itemId')
   @Permissions('hr.employee.update')
   async updateOnboardingItem(
@@ -270,7 +247,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Add onboarding item' })
-  @Permissions('advanced_hr.create')
   @Post('onboarding/checklists/:checklistId/items')
   @Permissions('hr.employee.update')
   async addOnboardingItem(
@@ -282,7 +258,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Delete onboarding item' })
-  @Permissions('advanced_hr.delete')
   @Delete('onboarding/items/:itemId')
   @Permissions('hr.employee.update')
   async deleteOnboardingItem(
@@ -294,7 +269,6 @@ export class AdvancedHrController {
 
   // ── TIER 2: Offboarding ──
   @ApiOperation({ summary: 'Get offboarding checklists' })
-  @Permissions('advanced_hr.read')
   @Get('offboarding/checklists')
   @Permissions('hr.employee.read')
   async getOffboardingChecklists(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -302,7 +276,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create offboarding checklist' })
-  @Permissions('advanced_hr.create')
   @Post('offboarding/checklists')
   @Permissions('hr.employee.create')
   async createOffboardingChecklist(
@@ -313,7 +286,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update offboarding item' })
-  @Permissions('advanced_hr.update')
   @Put('offboarding/items/:itemId')
   @Permissions('hr.employee.update')
   async updateOffboardingItem(
@@ -325,7 +297,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Add offboarding item' })
-  @Permissions('advanced_hr.create')
   @Post('offboarding/checklists/:checklistId/items')
   @Permissions('hr.employee.update')
   async addOffboardingItem(
@@ -337,7 +308,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Delete offboarding item' })
-  @Permissions('advanced_hr.delete')
   @Delete('offboarding/items/:itemId')
   @Permissions('hr.employee.update')
   async deleteOffboardingItem(
@@ -349,7 +319,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Shift Scheduling ──
   @ApiOperation({ summary: 'Get shift schedules' })
-  @Permissions('advanced_hr.read')
   @Get('shifts')
   @Permissions('hr.employee.read')
   async getShiftSchedules(@Req() req: AuthenticatedRequest) {
@@ -357,7 +326,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create shift schedule' })
-  @Permissions('advanced_hr.create')
   @Post('shifts')
   @Permissions('hr.employee.create')
   async createShiftSchedule(
@@ -369,7 +337,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Recruitment ──
   @ApiOperation({ summary: 'Get job postings' })
-  @Permissions('advanced_hr.read')
   @Get('jobs')
   @Permissions('hr.employee.read')
   async getJobPostings(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -377,7 +344,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create job posting' })
-  @Permissions('advanced_hr.create')
   @Post('jobs')
   @Permissions('hr.employee.create')
   async createJobPosting(
@@ -389,7 +355,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get applicants' })
-  @Permissions('advanced_hr.read')
   @Get('applicants')
   @Permissions('hr.employee.read')
   async getApplicants(
@@ -400,7 +365,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create applicant' })
-  @Permissions('advanced_hr.create')
   @Post('applicants')
   @Permissions('hr.employee.create')
   async createApplicant(
@@ -411,7 +375,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Advance applicant' })
-  @Permissions('advanced_hr.create')
   @Post('applicants/:id/advance')
   @Permissions('hr.employee.update')
   async advanceApplicant(
@@ -423,7 +386,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get interviews' })
-  @Permissions('advanced_hr.read')
   @Get('interviews')
   @Permissions('hr.employee.read')
   async getInterviews(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -431,7 +393,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create interview' })
-  @Permissions('advanced_hr.create')
   @Post('interviews')
   @Permissions('hr.employee.create')
   async createInterview(
@@ -443,7 +404,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Goals & OKRs ──
   @ApiOperation({ summary: 'Get goals' })
-  @Permissions('advanced_hr.read')
   @Get('goals')
   @Permissions('hr.employee.read')
   async getGoals(
@@ -454,7 +414,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create goal' })
-  @Permissions('advanced_hr.create')
   @Post('goals')
   @Permissions('hr.employee.create')
   async createGoal(
@@ -465,7 +424,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update key result progress' })
-  @Permissions('advanced_hr.update')
   @Put('key-results/:id')
   @Permissions('hr.employee.update')
   async updateKeyResultProgress(
@@ -477,7 +435,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get goal comments' })
-  @Permissions('advanced_hr.read')
   @Get('goals/:goalId/comments')
   @Permissions('hr.employee.read')
   async getGoalComments(
@@ -488,7 +445,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create goal comment' })
-  @Permissions('advanced_hr.create')
   @Post('goals/:goalId/comments')
   @Permissions('hr.employee.create')
   async createGoalComment(
@@ -507,7 +463,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: 360° Feedback ──
   @ApiOperation({ summary: 'Get feedback360' })
-  @Permissions('advanced_hr.read')
   @Get('feedback')
   @Permissions('hr.employee.read')
   async getFeedback360(
@@ -518,7 +473,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create feedback360' })
-  @Permissions('advanced_hr.create')
   @Post('feedback')
   @Permissions('hr.employee.create')
   async createFeedback360(
@@ -530,7 +484,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Succession Planning ──
   @ApiOperation({ summary: 'Get succession plans' })
-  @Permissions('advanced_hr.read')
   @Get('succession')
   @Permissions('hr.employee.read')
   async getSuccessionPlans(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -538,7 +491,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create succession plan' })
-  @Permissions('advanced_hr.create')
   @Post('succession')
   @Permissions('hr.employee.create')
   async createSuccessionPlan(
@@ -550,7 +502,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Skills Matrix ──
   @ApiOperation({ summary: 'Get employee skills' })
-  @Permissions('advanced_hr.read')
   @Get('skills')
   @Permissions('hr.employee.read')
   async getEmployeeSkills(
@@ -561,7 +512,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create employee skill' })
-  @Permissions('advanced_hr.create')
   @Post('skills')
   @Permissions('hr.employee.create')
   async createEmployeeSkill(
@@ -573,7 +523,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Appraisals ──
   @ApiOperation({ summary: 'Get appraisals' })
-  @Permissions('advanced_hr.read')
   @Get('appraisals')
   @Permissions('hr.employee.read')
   async getAppraisals(@Req() req: AuthenticatedRequest) {
@@ -581,7 +530,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create appraisal' })
-  @Permissions('advanced_hr.create')
   @Post('appraisals')
   @Permissions('hr.employee.create')
   async createAppraisal(
@@ -600,7 +548,6 @@ export class AdvancedHrController {
 
   // ── TIER 3: Trainings ──
   @ApiOperation({ summary: 'Get trainings' })
-  @Permissions('advanced_hr.read')
   @Get('trainings')
   @Permissions('hr.employee.read')
   async getTrainings(@Req() req: AuthenticatedRequest) {
@@ -608,7 +555,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create training' })
-  @Permissions('advanced_hr.create')
   @Post('trainings')
   @Permissions('hr.employee.create')
   async createTraining(
@@ -619,7 +565,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Enroll participant' })
-  @Permissions('advanced_hr.create')
   @Post('trainings/:trainingId/enroll')
   @Permissions('hr.employee.create')
   async enrollParticipant(
@@ -631,7 +576,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Unenroll participant' })
-  @Permissions('advanced_hr.delete')
   @Delete('trainings/:trainingId/enroll/:employeeId')
   @Permissions('hr.employee.delete')
   async unenrollParticipant(
@@ -643,7 +587,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update enrollment status' })
-  @Permissions('advanced_hr.update')
   @Put('trainings/:trainingId/enroll/:employeeId')
   @Permissions('hr.employee.update')
   async updateEnrollmentStatus(
@@ -657,7 +600,6 @@ export class AdvancedHrController {
 
   // ── TIER 4: Workforce Analytics ──
   @ApiOperation({ summary: 'Get headcount analytics' })
-  @Permissions('advanced_hr.read')
   @Get('analytics/headcount')
   @Permissions('hr.employee.read')
   async getHeadcountAnalytics(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -665,7 +607,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get compensation analytics' })
-  @Permissions('advanced_hr.read')
   @Get('analytics/compensation')
   @Permissions('hr.employee.read')
   async getCompensationAnalytics(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -673,7 +614,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get h r cost analysis' })
-  @Permissions('advanced_hr.read')
   @Get('analytics/cost')
   @Permissions('hr.employee.read')
   async getHRCostAnalysis(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -682,7 +622,6 @@ export class AdvancedHrController {
 
   // ── TIER 5: HR Helpdesk / Tickets ──
   @ApiOperation({ summary: 'Get h r tickets' })
-  @Permissions('advanced_hr.read')
   @Get('tickets')
   @Permissions('hr.employee.read')
   async getHRTickets(
@@ -693,7 +632,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create h r ticket' })
-  @Permissions('advanced_hr.create')
   @Post('tickets')
   @Permissions('hr.employee.create')
   async createHRTicket(
@@ -704,7 +642,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Resolve h r ticket' })
-  @Permissions('advanced_hr.update')
   @Put('tickets/:id/resolve')
   @Permissions('hr.employee.update')
   async resolveHRTicket(
@@ -717,7 +654,6 @@ export class AdvancedHrController {
 
   // ── TIER 5: Engagement Surveys ──
   @ApiOperation({ summary: 'Get engagement surveys' })
-  @Permissions('advanced_hr.read')
   @Get('surveys')
   @Permissions('hr.employee.read')
   async getEngagementSurveys(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -725,7 +661,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create engagement survey' })
-  @Permissions('advanced_hr.create')
   @Post('surveys')
   @Permissions('hr.employee.create')
   async createEngagementSurvey(
@@ -736,7 +671,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Submit survey response' })
-  @Permissions('advanced_hr.create')
   @Post('surveys/responses')
   @Permissions('hr.employee.create')
   async submitSurveyResponse(
@@ -748,7 +682,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Offers ──
   @ApiOperation({ summary: 'Get offers' })
-  @Permissions('advanced_hr.read')
   @Get('offers')
   @Permissions('hr.employee.read')
   async getOffers(@Req() req: AuthenticatedRequest) {
@@ -756,7 +689,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create offer' })
-  @Permissions('advanced_hr.create')
   @Post('offers')
   @Permissions('hr.employee.create')
   async createOffer(
@@ -767,7 +699,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update offer status' })
-  @Permissions('advanced_hr.update')
   @Put('offers/:id/status')
   @Permissions('hr.employee.update')
   async updateOfferStatus(
@@ -780,7 +711,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Benefits ──
   @ApiOperation({ summary: 'Get benefit schemes' })
-  @Permissions('advanced_hr.read')
   @Get('benefits/schemes')
   @Permissions('hr.employee.read')
   async getBenefitSchemes(@Req() req: AuthenticatedRequest) {
@@ -788,7 +718,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create benefit scheme' })
-  @Permissions('advanced_hr.create')
   @Post('benefits/schemes')
   @Permissions('hr.employee.create')
   async createBenefitScheme(
@@ -799,7 +728,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get employee benefits' })
-  @Permissions('advanced_hr.read')
   @Get('benefits/enrollments')
   @Permissions('hr.employee.read')
   async getEmployeeBenefits(
@@ -810,7 +738,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Enroll employee benefit' })
-  @Permissions('advanced_hr.create')
   @Post('benefits/enroll')
   @Permissions('hr.employee.create')
   async enrollEmployeeBenefit(
@@ -821,7 +748,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update employee benefit' })
-  @Permissions('advanced_hr.update')
   @Put('benefits/enrollments/:id')
   @Permissions('hr.employee.update')
   async updateEmployeeBenefit(
@@ -834,7 +760,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Skills Requirements & Gap Analysis ──
   @ApiOperation({ summary: 'Get skill requirements' })
-  @Permissions('advanced_hr.read')
   @Get('skills/requirements')
   @Permissions('hr.employee.read')
   async getSkillRequirements(@Req() req: AuthenticatedRequest) {
@@ -842,7 +767,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Upsert skill requirement' })
-  @Permissions('advanced_hr.create')
   @Post('skills/requirements')
   @Permissions('hr.employee.create')
   async upsertSkillRequirement(
@@ -853,7 +777,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get skill gap analysis' })
-  @Permissions('advanced_hr.read')
   @Get('skills/gap-analysis')
   @Permissions('hr.employee.read')
   async getSkillGapAnalysis(@Req() req: AuthenticatedRequest) {
@@ -862,7 +785,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Positions Control ──
   @ApiOperation({ summary: 'Get positions' })
-  @Permissions('advanced_hr.read')
   @Get('positions')
   @Permissions('hr.employee.read')
   async getPositions(@Req() req: AuthenticatedRequest) {
@@ -870,7 +792,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create position' })
-  @Permissions('advanced_hr.create')
   @Post('positions')
   @Permissions('hr.employee.create')
   async createPosition(
@@ -881,7 +802,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update position' })
-  @Permissions('advanced_hr.update')
   @Put('positions/:id')
   @Permissions('hr.employee.update')
   async updatePosition(
@@ -893,7 +813,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Get position budget variance' })
-  @Permissions('advanced_hr.read')
   @Get('positions/budget-variance')
   @Permissions('hr.employee.read')
   async getPositionBudgetVariance(@Req() req: AuthenticatedRequest) {
@@ -902,7 +821,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Compliance Checks ──
   @ApiOperation({ summary: 'Get compliance checks' })
-  @Permissions('advanced_hr.read')
   @Get('compliance/checks')
   @Permissions('hr.employee.read')
   async getComplianceChecks(@Req() req: AuthenticatedRequest) {
@@ -910,7 +828,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Run compliance checks' })
-  @Permissions('advanced_hr.create')
   @Post('compliance/run-checks')
   @Permissions('hr.employee.create')
   async runComplianceChecks(@Req() req: AuthenticatedRequest) {
@@ -919,7 +836,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Tax Tables ──
   @ApiOperation({ summary: 'Get tax tables' })
-  @Permissions('advanced_hr.read')
   @Get('tax-tables')
   @Permissions('hr.employee.read')
   async getTaxTables(@Req() req: AuthenticatedRequest) {
@@ -927,7 +843,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create tax table' })
-  @Permissions('advanced_hr.create')
   @Post('tax-tables')
   @Permissions('hr.employee.create')
   async createTaxTable(
@@ -939,7 +854,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Holidays Calendar ──
   @ApiOperation({ summary: 'Get holidays' })
-  @Permissions('advanced_hr.read')
   @Get('holidays')
   @Permissions('hr.employee.read')
   async getHolidays(@Req() req: AuthenticatedRequest) {
@@ -947,7 +861,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Create holiday' })
-  @Permissions('advanced_hr.create')
   @Post('holidays')
   @Permissions('hr.employee.create')
   async createHoliday(
@@ -959,7 +872,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Biometric/RFID simulator endpoint ──
   @ApiOperation({ summary: 'Check in r f i d' })
-  @Permissions('advanced_hr.create')
   @Post('attendance/biometric')
   @Permissions('hr.employee.create')
   async checkInRFID(
@@ -985,7 +897,6 @@ export class AdvancedHrController {
 
   // ── GAPS: Self Service Portal ──
   @ApiOperation({ summary: 'Get self service dashboard' })
-  @Permissions('advanced_hr.read')
   @Get('self-service/dashboard')
   @Permissions('hr.employee.read')
   async getSelfServiceDashboard(@Req() req: AuthenticatedRequest) {
@@ -993,7 +904,6 @@ export class AdvancedHrController {
   }
 
   @ApiOperation({ summary: 'Update self service profile' })
-  @Permissions('advanced_hr.update')
   @Put('self-service/profile')
   @Permissions('hr.employee.update')
   async updateSelfServiceProfile(

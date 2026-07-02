@@ -6,7 +6,7 @@ import {
   DataTable, type Column, Tabs,
 } from '@unerp/ui';
 import { Shield, Plus, ChevronDown, ChevronRight, Search, Edit2, Trash2, Copy, Users } from 'lucide-react';
-import { PERMISSION_REGISTRY, getPermissionsByModule } from '@unerp/shared';
+import { PERMISSION_REGISTRY, getPermissionsByModule, getCategoriesForModule, getPermissionsByCategory } from '@unerp/shared';
 
 interface RoleData {
   id: string;
@@ -144,14 +144,19 @@ export default function RolesPage() {
 function RoleCard({ role, expanded, onToggle }: { role: RoleData; expanded: boolean; onToggle: () => void }) {
   const modules = allModules();
   const permCount = role.permissions.length;
+  const panelId = `role-card-panel-${role.id}`;
 
   return (
     <Card padding="none" style={{ overflow: 'hidden' }}>
-      <div
+      <button
+        type="button"
         onClick={onToggle}
+        aria-expanded={expanded}
+        aria-controls={panelId}
         style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: 'var(--space-4) var(--space-5)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+          padding: 'var(--space-4) var(--space-5)', cursor: 'pointer', border: 'none',
+          background: 'transparent', font: 'inherit', color: 'inherit', textAlign: 'left',
           transition: 'background var(--duration-fast) var(--ease-default)',
         }}
         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
@@ -180,10 +185,10 @@ function RoleCard({ role, expanded, onToggle }: { role: RoleData; expanded: bool
           <Badge variant="info">{permCount} permissions</Badge>
           {expanded ? <ChevronDown size={16} style={{ color: 'var(--color-text-tertiary)' }} /> : <ChevronRight size={16} style={{ color: 'var(--color-text-tertiary)' }} />}
         </div>
-      </div>
+      </button>
 
       {expanded && (
-        <div style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-5)', background: 'var(--color-bg-sunken)' }}>
+        <div id={panelId} style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-5)', background: 'var(--color-bg-sunken)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)' }}>
               MODULE PERMISSIONS
@@ -205,6 +210,7 @@ function RoleCard({ role, expanded, onToggle }: { role: RoleData; expanded: bool
               if (modPerms.length === 0) return null;
               const grantedCount = modPerms.filter((p) => role.permissions.includes(p.code)).length;
               const percentage = Math.round((grantedCount / modPerms.length) * 100);
+              const categories = getCategoriesForModule(mod);
               return (
                 <div key={mod} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)', background: 'var(--color-bg-elevated)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
@@ -222,20 +228,51 @@ function RoleCard({ role, expanded, onToggle }: { role: RoleData; expanded: bool
                       transition: 'width var(--duration-normal) var(--ease-default)',
                     }} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {modPerms.map((perm) => {
-                      const has = role.permissions.includes(perm.code);
-                      return (
-                        <label key={perm.code} style={{
-                          display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-                          fontSize: '11px', color: has ? 'var(--color-text)' : 'var(--color-text-tertiary)',
-                        }}>
-                          <input type="checkbox" checked={has} readOnly style={{ accentColor: 'var(--color-primary)', width: 13, height: 13 }} />
-                          {perm.description || perm.code}
-                        </label>
-                      );
-                    })}
-                  </div>
+                  {categories.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                      {categories.map((category) => {
+                        const catPerms = getPermissionsByCategory(mod, category);
+                        const catGranted = catPerms.filter((p) => role.permissions.includes(p.code)).length;
+                        return (
+                          <div key={category}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                              <span style={{ fontSize: '10px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>{category}</span>
+                              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{catGranted}/{catPerms.length}</span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingLeft: 'var(--space-3)' }}>
+                              {catPerms.map((perm) => {
+                                const has = role.permissions.includes(perm.code);
+                                return (
+                                  <label key={perm.code} style={{
+                                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                    fontSize: '11px', color: has ? 'var(--color-text)' : 'var(--color-text-tertiary)',
+                                  }}>
+                                    <input type="checkbox" checked={has} readOnly style={{ accentColor: 'var(--color-primary)', width: 13, height: 13 }} />
+                                    {perm.description || perm.code}
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {modPerms.map((perm) => {
+                        const has = role.permissions.includes(perm.code);
+                        return (
+                          <label key={perm.code} style={{
+                            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                            fontSize: '11px', color: has ? 'var(--color-text)' : 'var(--color-text-tertiary)',
+                          }}>
+                            <input type="checkbox" checked={has} readOnly style={{ accentColor: 'var(--color-primary)', width: 13, height: 13 }} />
+                            {perm.description || perm.code}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -252,6 +289,7 @@ function CreateRoleModal({ open, onClose, onCreated }: { open: boolean; onClose:
   const [selectedPerms, setSelectedPerms] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [permSearch, setPermSearch] = useState('');
   const modules = allModules();
 
   const togglePerm = (code: string) => {
@@ -271,6 +309,21 @@ function CreateRoleModal({ open, onClose, onCreated }: { open: boolean; onClose:
       return next;
     });
   };
+
+  const toggleCategory = (mod: string, category: string) => {
+    const catPerms = getPermissionsByCategory(mod, category);
+    const allSelected = catPerms.every((p) => selectedPerms.has(p.code));
+    setSelectedPerms((prev) => {
+      const next = new Set(prev);
+      catPerms.forEach((p) => { allSelected ? next.delete(p.code) : next.add(p.code); });
+      return next;
+    });
+  };
+
+  const matchesSearch = (label: string, code: string) =>
+    !permSearch ||
+    label.toLowerCase().includes(permSearch.toLowerCase()) ||
+    code.toLowerCase().includes(permSearch.toLowerCase());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,13 +376,28 @@ function CreateRoleModal({ open, onClose, onCreated }: { open: boolean; onClose:
         </div>
 
         <FormField label={`Permissions (${selectedPerms.size} selected)`} required>
+          <div style={{ position: 'relative', marginBottom: 'var(--space-2)' }}>
+            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+            <input
+              type="text" placeholder="Filter permissions..."
+              value={permSearch} onChange={(e) => setPermSearch(e.target.value)}
+              style={{
+                width: '100%', padding: '6px 10px 6px 30px', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-xs)',
+                color: 'var(--color-text)', outline: 'none',
+              }}
+            />
+          </div>
           <div style={{
             maxHeight: 360, overflowY: 'auto', border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)', background: 'var(--color-bg)',
           }}>
             {modules.map((mod) => {
-              const modPerms = getPermissionsByModule(mod);
+              const allModPerms = getPermissionsByModule(mod);
+              const modPerms = allModPerms.filter((p) => matchesSearch(p.description || p.code, p.code));
+              if (modPerms.length === 0) return null;
               const selectedCount = modPerms.filter((p) => selectedPerms.has(p.code)).length;
+              const categories = getCategoriesForModule(mod);
               return (
                 <div key={mod} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <label style={{
@@ -347,14 +415,49 @@ function CreateRoleModal({ open, onClose, onCreated }: { open: boolean; onClose:
                     <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)', textTransform: 'uppercase', flex: 1 }}>{mod}</span>
                     <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{selectedCount}/{modPerms.length}</span>
                   </label>
-                  <div style={{ padding: 'var(--space-2) var(--space-4) var(--space-2) var(--space-8)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
-                    {modPerms.map((perm) => (
-                      <label key={perm.code} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '2px 0' }}>
-                        <input type="checkbox" checked={selectedPerms.has(perm.code)} onChange={() => togglePerm(perm.code)} style={{ accentColor: 'var(--color-primary)' }} />
-                        {perm.description || perm.code}
-                      </label>
-                    ))}
-                  </div>
+
+                  {categories.length > 0 ? (
+                    <div style={{ padding: 'var(--space-2) var(--space-4) var(--space-2) var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                      {categories.map((category) => {
+                        const allCatPerms = getPermissionsByCategory(mod, category);
+                        const catPerms = allCatPerms.filter((p) => matchesSearch(p.description || p.code, p.code));
+                        if (catPerms.length === 0) return null;
+                        const catSelectedCount = catPerms.filter((p) => selectedPerms.has(p.code)).length;
+                        return (
+                          <div key={category}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer', marginBottom: 4 }}>
+                              <input
+                                type="checkbox"
+                                checked={catSelectedCount === catPerms.length && catPerms.length > 0}
+                                ref={(el) => { if (el) el.indeterminate = catSelectedCount > 0 && catSelectedCount < catPerms.length; }}
+                                onChange={() => toggleCategory(mod, category)}
+                                style={{ accentColor: 'var(--color-primary)', width: 13, height: 13 }}
+                              />
+                              <span style={{ fontSize: '11px', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', flex: 1 }}>{category}</span>
+                              <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{catSelectedCount}/{catPerms.length}</span>
+                            </label>
+                            <div style={{ paddingLeft: 'var(--space-6)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
+                              {catPerms.map((perm) => (
+                                <label key={perm.code} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '2px 0' }}>
+                                  <input type="checkbox" checked={selectedPerms.has(perm.code)} onChange={() => togglePerm(perm.code)} style={{ accentColor: 'var(--color-primary)' }} />
+                                  {perm.description || perm.code}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ padding: 'var(--space-2) var(--space-4) var(--space-2) var(--space-8)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
+                      {modPerms.map((perm) => (
+                        <label key={perm.code} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '11px', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: '2px 0' }}>
+                          <input type="checkbox" checked={selectedPerms.has(perm.code)} onChange={() => togglePerm(perm.code)} style={{ accentColor: 'var(--color-primary)' }} />
+                          {perm.description || perm.code}
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}

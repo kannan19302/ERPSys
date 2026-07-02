@@ -32,7 +32,6 @@ export class LocalizationController {
   }
 
   @ApiOperation({ summary: 'Get overrides' })
-  @Permissions('localization.read')
   @Get('overrides')
   @Permissions('admin.localization.read')
   async getOverrides(@Req() req: AuthenticatedRequest) {
@@ -40,7 +39,6 @@ export class LocalizationController {
   }
 
   @ApiOperation({ summary: 'Create or update override' })
-  @Permissions('localization.create')
   @Post('overrides')
   @Permissions('admin.localization.create')
   async createOrUpdateOverride(
@@ -51,7 +49,6 @@ export class LocalizationController {
   }
 
   @ApiOperation({ summary: 'Delete override' })
-  @Permissions('localization.delete')
   @Delete('overrides/:id')
   @Permissions('admin.localization.delete')
   async deleteOverride(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

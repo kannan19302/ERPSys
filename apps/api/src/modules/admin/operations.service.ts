@@ -1,9 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { prisma } from '@unerp/database';
 import * as os from 'os';
 
 @Injectable()
 export class OperationsService {
+  constructor(
+    @Optional() @InjectQueue('email') private readonly emailQueue?: Queue,
+    @Optional() @InjectQueue('export') private readonly exportQueue?: Queue,
+    @Optional() @InjectQueue('payroll') private readonly payrollQueue?: Queue,
+    @Optional() @InjectQueue('data-import') private readonly dataImportQueue?: Queue,
+  ) {}
+
+  private resolveQueue(queueName: string): Queue | undefined {
+    switch (queueName) {
+      case 'email':
+        return this.emailQueue;
+      case 'export':
+        return this.exportQueue;
+      case 'payroll':
+        return this.payrollQueue;
+      case 'data-import':
+        return this.dataImportQueue;
+      default:
+        return undefined;
+    }
+  }
   /**
    * Get dynamic System Health statistics.
    */
@@ -91,17 +114,53 @@ export class OperationsService {
 
   /**
    * Retry all failed background jobs for a tenant.
+   *
+   * Previously this only flipped `BackgroundJob.status` back to PENDING — nothing consumed
+   * that table, so a "retry" never actually re-ran anything (see P1-1 in
+   * .ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md). Now it re-enqueues each failed job into the
+   * correct BullMQ queue by `queueName`, using the stored `payload`/`jobType`, and re-links the
+   * row to the new `bullJobId`. Rows whose `queueName` doesn't map to a live Queue instance
+   * (e.g. legacy `scheduled-*` rows from `triggerTask`, which have no processor — a P2 item)
+   * are left FAILED with a note, rather than silently pretending to retry them.
    */
   async retryJobs(tenantId: string) {
-    const result = await prisma.backgroundJob.updateMany({
+    const failedJobs = await prisma.backgroundJob.findMany({
       where: { tenantId, status: 'FAILED' },
-      data: { status: 'PENDING', attempts: 0, error: null, startedAt: null, completedAt: null },
     });
+
+    let retriedCount = 0;
+    let skippedCount = 0;
+
+    for (const job of failedJobs) {
+      const queue = this.resolveQueue(job.queueName);
+      if (!queue) {
+        skippedCount += 1;
+        continue;
+      }
+
+      const bullJob = await queue.add(job.jobType, job.payload ?? {}, {
+        priority: job.priority,
+      });
+
+      await prisma.backgroundJob.update({
+        where: { id: job.id },
+        data: {
+          status: 'PENDING',
+          bullJobId: String(bullJob.id),
+          attempts: 0,
+          error: null,
+          startedAt: null,
+          completedAt: null,
+        },
+      });
+      retriedCount += 1;
+    }
 
     return {
       success: true,
-      message: `${result.count} failed job(s) have been scheduled for retry.`,
-      retriedCount: result.count,
+      message: `${retriedCount} failed job(s) re-enqueued into BullMQ.${skippedCount > 0 ? ` ${skippedCount} job(s) skipped (no live queue for their queueName).` : ''}`,
+      retriedCount,
+      skippedCount,
     };
   }
 
@@ -205,6 +264,14 @@ export class OperationsService {
 
   /**
    * Get database backup records.
+   *
+   * NOTE — these are NOT real files. There is no `pg_dump` process behind this list; it is
+   * metadata stored in the `Setting` table. `source: 'SIMULATED'` is surfaced on every record
+   * (including the two seeded fallback rows) so the frontend can render an honest "not a real
+   * DR artifact" indicator instead of presenting fabricated data as real backup coverage. See
+   * P1-1 in .ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md — a real `pg_dump`-backed pipeline
+   * requires devops-engineer sign-off on shelling out from the API container, which this pass
+   * does not have; relabeling honestly was the explicitly chosen safer path.
    */
   async getBackups(tenantId: string) {
     const setting = await prisma.setting.findUnique({
@@ -212,15 +279,22 @@ export class OperationsService {
     });
     if (!setting) {
       return [
-        { id: 'bak-1', filename: 'unerp_backup_2026-06-20.sql', sizeBytes: 15421800, createdBy: 'System Cron', createdAt: new Date(Date.now() - 86400000).toISOString() },
-        { id: 'bak-2', filename: 'unerp_backup_2026-06-19.sql', sizeBytes: 15410900, createdBy: 'admin@unerp.dev', createdAt: new Date(Date.now() - 172800000).toISOString() },
+        { id: 'bak-1', filename: 'unerp_backup_2026-06-20.sql', sizeBytes: 15421800, createdBy: 'System Cron', createdAt: new Date(Date.now() - 86400000).toISOString(), source: 'SIMULATED' },
+        { id: 'bak-2', filename: 'unerp_backup_2026-06-19.sql', sizeBytes: 15410900, createdBy: 'admin@unerp.dev', createdAt: new Date(Date.now() - 172800000).toISOString(), source: 'SIMULATED' },
       ];
     }
-    return setting.value;
+    const backups = setting.value as any[];
+    // Backfill `source` for rows persisted before this field existed, so old and new records
+    // are equally honest about not being real DR artifacts.
+    return backups.map((b) => ({ source: 'SIMULATED', ...b }));
   }
 
   /**
    * Create database backup.
+   *
+   * `sizeBytes` here is a fabricated placeholder (no real `pg_dump` runs) — see the `source`
+   * field note on `getBackups` above. Every created record is explicitly flagged
+   * `source: 'SIMULATED'` rather than presented as a trustworthy DR artifact.
    */
   async createBackup(tenantId: string, userId: string) {
     const backups = await this.getBackups(tenantId) as any[];
@@ -230,6 +304,7 @@ export class OperationsService {
       sizeBytes: Math.round(15000000 + Math.random() * 500000),
       createdBy: userId,
       createdAt: new Date().toISOString(),
+      source: 'SIMULATED',
     };
 
     const updated = [newBackup, ...backups];

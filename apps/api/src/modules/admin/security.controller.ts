@@ -27,7 +27,6 @@ export class SecurityController {
   constructor(private readonly securityService: SecurityService) {}
 
   @ApiOperation({ summary: 'Get audit logs' })
-  @Permissions('admin.read')
   @Get('audit-logs')
   @Permissions('admin.security.read')
   async getAuditLogs(
@@ -47,7 +46,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Get active sessions' })
-  @Permissions('admin.read')
   @Get('sessions')
   @Permissions('admin.security.read')
   async getActiveSessions(@Req() req: AuthenticatedRequest) {
@@ -55,7 +53,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Revoke session' })
-  @Permissions('admin.delete')
   @Delete('sessions/:id')
   @Permissions('admin.security.update')
   async revokeSession(
@@ -66,7 +63,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Get password policy' })
-  @Permissions('admin.read')
   @Get('password-policy')
   @Permissions('admin.security.read')
   async getPasswordPolicy(@Req() req: AuthenticatedRequest) {
@@ -74,7 +70,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Save password policy' })
-  @Permissions('admin.create')
   @Post('password-policy')
   @Permissions('admin.security.update')
   async savePasswordPolicy(
@@ -91,7 +86,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Get sso configs' })
-  @Permissions('admin.read')
   @Get('sso')
   @Permissions('admin.security.read')
   async getSsoConfigs(@Req() req: AuthenticatedRequest) {
@@ -99,7 +93,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Save sso config' })
-  @Permissions('admin.create')
   @Post('sso')
   @Permissions('admin.security.update')
   async saveSsoConfig(
@@ -125,7 +118,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Get mfa settings' })
-  @Permissions('admin.read')
   @Get('mfa')
   @Permissions('admin.security.read')
   async getMfaSettings(@Req() req: AuthenticatedRequest) {
@@ -133,7 +125,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Save mfa settings' })
-  @Permissions('admin.create')
   @Post('mfa')
   @Permissions('admin.security.update')
   async saveMfaSettings(
@@ -144,7 +135,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Get ip restrictions' })
-  @Permissions('admin.read')
   @Get('ip-restrictions')
   @Permissions('admin.security.read')
   async getIpRestrictions(@Req() req: AuthenticatedRequest) {
@@ -152,7 +142,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Create ip restriction' })
-  @Permissions('admin.create')
   @Post('ip-restrictions')
   @Permissions('admin.security.update')
   async createIpRestriction(
@@ -163,7 +152,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Delete ip restriction' })
-  @Permissions('admin.delete')
   @Delete('ip-restrictions/:id')
   @Permissions('admin.security.update')
   async deleteIpRestriction(
@@ -174,7 +162,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Impersonate user' })
-  @Permissions('admin.create')
   @Post('impersonate/:userId')
   @Permissions('admin.security.update')
   async impersonateUser(
@@ -187,7 +174,6 @@ export class SecurityController {
   // ── Data Retention Policies ──
 
   @ApiOperation({ summary: 'Get data retention policies' })
-  @Permissions('admin.read')
   @Get('data-retention')
   @Permissions('admin.security.read')
   async getDataRetentionPolicies(@Req() req: AuthenticatedRequest) {
@@ -195,7 +181,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Save data retention policy' })
-  @Permissions('admin.create')
   @Post('data-retention')
   @Permissions('admin.security.update')
   async saveDataRetentionPolicy(
@@ -206,7 +191,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Delete data retention policy' })
-  @Permissions('admin.delete')
   @Delete('data-retention/:id')
   @Permissions('admin.security.update')
   async deleteDataRetentionPolicy(
@@ -219,7 +203,6 @@ export class SecurityController {
   // ── Compliance Reports ──
 
   @ApiOperation({ summary: 'Get compliance reports' })
-  @Permissions('admin.read')
   @Get('compliance/reports')
   @Permissions('admin.security.read')
   async getComplianceReports(@Req() req: AuthenticatedRequest) {
@@ -227,7 +210,6 @@ export class SecurityController {
   }
 
   @ApiOperation({ summary: 'Generate compliance report' })
-  @Permissions('admin.create')
   @Post('compliance/generate')
   @Permissions('admin.security.update')
   async generateComplianceReport(@Req() req: AuthenticatedRequest) {

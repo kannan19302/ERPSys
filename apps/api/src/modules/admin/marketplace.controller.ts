@@ -24,7 +24,6 @@ export class MarketplaceController {
   // ─── App Browsing ───
 
   @ApiOperation({ summary: 'Get apps' })
-  @Permissions('admin.read')
   @Get('apps')
   @Permissions('admin.platform.read')
   async getApps(
@@ -47,7 +46,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Get app' })
-  @Permissions('admin.read')
   @Get('apps/:slug')
   @Permissions('admin.platform.read')
   async getApp(@Param('slug') slug: string) {
@@ -55,7 +53,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Get related apps' })
-  @Permissions('admin.read')
   @Get('apps/:slug/related')
   @Permissions('admin.platform.read')
   async getRelatedApps(@Param('slug') slug: string) {
@@ -63,7 +60,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Get stats' })
-  @Permissions('admin.read')
   @Get('stats')
   @Permissions('admin.platform.read')
   async getStats() {
@@ -73,7 +69,6 @@ export class MarketplaceController {
   // ─── Install / Uninstall ───
 
   @ApiOperation({ summary: 'Get installed apps' })
-  @Permissions('admin.read')
   @Get('installed')
   @Permissions('admin.platform.read')
   async getInstalledApps(@Req() req: AuthenticatedRequest) {
@@ -81,7 +76,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Install app' })
-  @Permissions('admin.create')
   @Post('install/:slug')
   @Permissions('admin.platform.update')
   async installApp(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -89,7 +83,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Uninstall app' })
-  @Permissions('admin.delete')
   @Delete('uninstall/:slug')
   @Permissions('admin.platform.update')
   async uninstallApp(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -97,7 +90,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Get app config' })
-  @Permissions('admin.read')
   @Get('installed/:slug/config')
   @Permissions('admin.platform.read')
   async getAppConfig(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -105,7 +97,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Update app config' })
-  @Permissions('admin.update')
   @Put('installed/:slug/config')
   @Permissions('admin.platform.update')
   async updateAppConfig(@Req() req: AuthenticatedRequest, @Param('slug') slug: string, @ZodBody(z.any()) body: { config: Record<string, any> }) {
@@ -115,7 +106,6 @@ export class MarketplaceController {
   // ─── Industry-app shell: modules + in-app admin console ───
 
   @ApiOperation({ summary: 'Get installed app modules' })
-  @Permissions('admin.read')
   @Get('installed/:slug/modules')
   @Permissions('admin.platform.read')
   async getInstalledAppModules(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -123,7 +113,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Get installed app metrics' })
-  @Permissions('admin.read')
   @Get('installed/:slug/metrics')
   @Permissions('admin.platform.read')
   async getInstalledAppMetrics(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -131,7 +120,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Set module enabled' })
-  @Permissions('admin.update')
   @Put('installed/:slug/modules/:moduleSlug')
   @Permissions('admin.platform.update')
   async setModuleEnabled(@Req() req: AuthenticatedRequest, @Param('slug') slug: string, @Param('moduleSlug') moduleSlug: string, @ZodBody(z.any()) body: { enabled: boolean }) {
@@ -141,7 +129,6 @@ export class MarketplaceController {
   // ─── Reviews ───
 
   @ApiOperation({ summary: 'Get reviews' })
-  @Permissions('admin.read')
   @Get('apps/:slug/reviews')
   @Permissions('admin.platform.read')
   async getReviews(@Param('slug') slug: string, @Query('page') page?: string, @Query('limit') limit?: string) {
@@ -149,7 +136,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Create review' })
-  @Permissions('admin.create')
   @Post('apps/:slug/reviews')
   @Permissions('admin.platform.update')
   async createReview(@Req() req: AuthenticatedRequest, @Param('slug') slug: string, @ZodBody(z.any()) body: { rating: number; title?: string; body?: string }) {
@@ -157,7 +143,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Update review' })
-  @Permissions('admin.update')
   @Put('reviews/:id')
   @Permissions('admin.platform.update')
   async updateReview(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) body: { rating?: number; title?: string; body?: string }) {
@@ -165,7 +150,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Delete review' })
-  @Permissions('admin.delete')
   @Delete('reviews/:id')
   @Permissions('admin.platform.update')
   async deleteReview(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -173,7 +157,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Mark review helpful' })
-  @Permissions('admin.create')
   @Post('reviews/:id/helpful')
   @Permissions('admin.platform.read')
   async markReviewHelpful(@Param('id') id: string) {
@@ -183,7 +166,6 @@ export class MarketplaceController {
   // ─── Changelogs ───
 
   @ApiOperation({ summary: 'Get changelogs' })
-  @Permissions('admin.read')
   @Get('apps/:slug/changelog')
   @Permissions('admin.platform.read')
   async getChangelogs(@Param('slug') slug: string) {
@@ -193,7 +175,6 @@ export class MarketplaceController {
   // ─── Collections ───
 
   @ApiOperation({ summary: 'Get collections' })
-  @Permissions('admin.read')
   @Get('collections')
   @Permissions('admin.platform.read')
   async getCollections() {
@@ -201,7 +182,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Get collection' })
-  @Permissions('admin.read')
   @Get('collections/:slug')
   @Permissions('admin.platform.read')
   async getCollection(@Param('slug') slug: string) {
@@ -209,7 +189,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Create collection' })
-  @Permissions('admin.create')
   @Post('collections')
   @Permissions('admin.platform.update')
   async createCollection(@ZodBody(z.any()) body: { name: string; slug: string; description?: string; icon?: string; coverImage?: string; featured?: boolean }) {
@@ -217,7 +196,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Update collection' })
-  @Permissions('admin.update')
   @Put('collections/:id')
   @Permissions('admin.platform.update')
   async updateCollection(@Param('id') id: string, @ZodBody(z.any()) body: { name?: string; description?: string; icon?: string; coverImage?: string; featured?: boolean; sortOrder?: number }) {
@@ -225,7 +203,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Delete collection' })
-  @Permissions('admin.delete')
   @Delete('collections/:id')
   @Permissions('admin.platform.update')
   async deleteCollection(@Param('id') id: string) {
@@ -233,7 +210,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Add app to collection' })
-  @Permissions('admin.create')
   @Post('collections/:id/apps')
   @Permissions('admin.platform.update')
   async addAppToCollection(@Param('id') id: string, @ZodBody(z.any()) body: { appId: string; sortOrder?: number }) {
@@ -241,7 +217,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Remove app from collection' })
-  @Permissions('admin.delete')
   @Delete('collections/:collectionId/apps/:appId')
   @Permissions('admin.platform.update')
   async removeAppFromCollection(@Param('collectionId') collectionId: string, @Param('appId') appId: string) {
@@ -251,7 +226,6 @@ export class MarketplaceController {
   // ─── Favorites ───
 
   @ApiOperation({ summary: 'Get favorites' })
-  @Permissions('admin.read')
   @Get('favorites')
   @Permissions('admin.platform.read')
   async getFavorites(@Req() req: AuthenticatedRequest) {
@@ -259,7 +233,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Add favorite' })
-  @Permissions('admin.create')
   @Post('favorites/:slug')
   @Permissions('admin.platform.read')
   async addFavorite(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -267,7 +240,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Remove favorite' })
-  @Permissions('admin.delete')
   @Delete('favorites/:slug')
   @Permissions('admin.platform.read')
   async removeFavorite(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -277,7 +249,6 @@ export class MarketplaceController {
   // ─── Submissions ───
 
   @ApiOperation({ summary: 'Get submissions' })
-  @Permissions('admin.read')
   @Get('submissions')
   @Permissions('admin.platform.read')
   async getSubmissions(@Query('status') status?: string) {
@@ -285,7 +256,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Create submission' })
-  @Permissions('admin.create')
   @Post('submissions')
   @Permissions('admin.platform.update')
   async createSubmission(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: {
@@ -298,7 +268,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Approve submission' })
-  @Permissions('admin.update')
   @Put('submissions/:id/approve')
   @Permissions('admin.platform.update')
   async approveSubmission(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -306,7 +275,6 @@ export class MarketplaceController {
   }
 
   @ApiOperation({ summary: 'Reject submission' })
-  @Permissions('admin.update')
   @Put('submissions/:id/reject')
   @Permissions('admin.platform.update')
   async rejectSubmission(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) body: { reviewNotes: string }) {
@@ -316,7 +284,6 @@ export class MarketplaceController {
   // ─── Seed ───
 
   @ApiOperation({ summary: 'Seed apps' })
-  @Permissions('admin.create')
   @Post('seed')
   @Permissions('admin.platform.update')
   async seedApps() {

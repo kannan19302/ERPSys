@@ -26,7 +26,6 @@ export class WorkflowController {
   constructor(private readonly workflowService: WorkflowService) {}
 
   @ApiOperation({ summary: 'Get workflows' })
-  @Permissions('workflow.read')
   @Get()
   @Permissions('admin.setting.read')
   async getWorkflows(@Req() req: AuthenticatedRequest) {
@@ -34,7 +33,6 @@ export class WorkflowController {
   }
 
   @ApiOperation({ summary: 'Create workflow' })
-  @Permissions('workflow.create')
   @Post()
   @Permissions('admin.setting.create')
   async createWorkflow(
@@ -45,7 +43,6 @@ export class WorkflowController {
   }
 
   @ApiOperation({ summary: 'Get approval chains' })
-  @Permissions('workflow.read')
   @Get('approvals')
   @Permissions('admin.setting.read')
   async getApprovalChains(@Req() req: AuthenticatedRequest) {
@@ -53,7 +50,6 @@ export class WorkflowController {
   }
 
   @ApiOperation({ summary: 'Submit approval action' })
-  @Permissions('workflow.update')
   @Put('approvals/:id')
   @Permissions('admin.setting.create')
   async submitApprovalAction(
@@ -66,7 +62,6 @@ export class WorkflowController {
   }
 
   @ApiOperation({ summary: 'Check sla breaches' })
-  @Permissions('workflow.create')
   @Post('sla-check')
   @Permissions('admin.setting.create')
   async checkSlaBreaches(@Req() req: AuthenticatedRequest) {
@@ -74,7 +69,6 @@ export class WorkflowController {
   }
 
   @ApiOperation({ summary: 'Simulate workflow' })
-  @Permissions('workflow.create')
   @Post('simulate')
   @Permissions('admin.setting.create')
   async simulateWorkflow(

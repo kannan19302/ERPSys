@@ -5,7 +5,9 @@
 // ─────────────────────────────────────────────────
 
 // Platform-level tables that are tenant-agnostic (no tenantId column).
-export const MODELS_WITHOUT_TENANT = new Set(['Tenant', 'SaaSPlan', 'LanguageOverride']);
+// UserRole is a pure join table (userId + roleId) — tenant scoping is
+// enforced transitively through the related, tenant-scoped Role row.
+export const MODELS_WITHOUT_TENANT = new Set(['Tenant', 'SaaSPlan', 'LanguageOverride', 'UserRole']);
 
 const READ_OPS = new Set([
   'findFirst',

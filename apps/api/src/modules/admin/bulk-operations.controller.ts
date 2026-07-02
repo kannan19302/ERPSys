@@ -31,7 +31,6 @@ export class BulkOperationsController {
   constructor(private readonly bulkOperationsService: BulkOperationsService) {}
 
   @ApiOperation({ summary: 'Create' })
-  @Permissions('admin.create')
   @Post()
   @Permissions('admin.bulk-ops.create')
   async create(
@@ -47,7 +46,6 @@ export class BulkOperationsController {
   }
 
   @ApiOperation({ summary: 'List' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.bulk-ops.read')
   async list(
@@ -63,7 +61,6 @@ export class BulkOperationsController {
   }
 
   @ApiOperation({ summary: 'Get entity counts' })
-  @Permissions('admin.read')
   @Get('entity-counts')
   @Permissions('admin.bulk-ops.read')
   async getEntityCounts(@Req() req: AuthenticatedRequest) {
@@ -71,7 +68,6 @@ export class BulkOperationsController {
   }
 
   @ApiOperation({ summary: 'Get by id' })
-  @Permissions('admin.read')
   @Get(':id')
   @Permissions('admin.bulk-ops.read')
   async getById(

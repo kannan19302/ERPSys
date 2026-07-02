@@ -26,7 +26,6 @@ export class NotificationsController {
   constructor(private readonly service: NotificationsService) {}
 
   @ApiOperation({ summary: 'Get channels' })
-  @Permissions('notifications.read')
   @Get('channels')
   @Permissions('communication.notification.read')
   async getChannels(@Req() req: AuthenticatedRequest) {
@@ -34,7 +33,6 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Update channel' })
-  @Permissions('notifications.update')
   @Put('channels')
   @Permissions('communication.notification.update')
   async updateChannel(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { name: string; isEnabled: boolean }) {
@@ -42,7 +40,6 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Get preferences' })
-  @Permissions('notifications.read')
   @Get('preferences')
   @Permissions('communication.notification.read')
   async getPreferences(@Req() req: AuthenticatedRequest) {
@@ -51,7 +48,6 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Save preference' })
-  @Permissions('notifications.create')
   @Post('preferences')
   @Permissions('communication.notification.update')
   async savePreference(

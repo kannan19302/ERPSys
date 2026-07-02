@@ -37,7 +37,6 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @ApiOperation({ summary: 'Get users' })
-  @Permissions('admin.read')
   @Get('users')
   @Permissions('admin.user.read')
   async getUsers(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -45,7 +44,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Create user' })
-  @Permissions('admin.create')
   @Post('users')
   @Permissions('admin.user.create')
   async createUser(
@@ -56,7 +54,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Update user' })
-  @Permissions('admin.update')
   @Patch('users/:id')
   @Permissions('admin.user.update')
   async updateUser(
@@ -68,7 +65,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Get roles' })
-  @Permissions('admin.read')
   @Get('roles')
   @Permissions('admin.role.read')
   async getRoles(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -76,7 +72,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Get settings' })
-  @Permissions('admin.read')
   @Get('settings')
   @Permissions('admin.setting.read')
   async getSettings(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -84,7 +79,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Update settings' })
-  @Permissions('admin.update')
   @Patch('settings')
   @Permissions('admin.setting.update')
   async updateSettings(
@@ -101,7 +95,6 @@ export class AdminController {
   // ── Demo Data ──
 
   @ApiOperation({ summary: 'Get demo status' })
-  @Permissions('admin.read')
   @Get('demo/status')
   @Permissions('admin.setting.read')
   async getDemoStatus(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -109,7 +102,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Load demo data' })
-  @Permissions('admin.create')
   @Post('demo/load')
   @Permissions('admin.demo.manage')
   async loadDemoData(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -117,7 +109,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Remove demo data' })
-  @Permissions('admin.delete')
   @Delete('demo/remove')
   @Permissions('admin.demo.manage')
   async removeDemoData(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -125,7 +116,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Remove demo data for module' })
-  @Permissions('admin.delete')
   @Delete('demo/remove/:module')
   @Permissions('admin.demo.manage')
   async removeDemoDataForModule(
@@ -138,7 +128,6 @@ export class AdminController {
   // ── Access Packages ──
 
   @ApiOperation({ summary: 'Get access packages' })
-  @Permissions('admin.read')
   @Get('access-packages')
   @Permissions('admin.access-package.read')
   async getAccessPackages(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -146,7 +135,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Create access package' })
-  @Permissions('admin.create')
   @Post('access-packages')
   @Permissions('admin.access-package.create')
   async createAccessPackage(
@@ -157,7 +145,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Update access package' })
-  @Permissions('admin.update')
   @Patch('access-packages/:id')
   @Permissions('admin.access-package.update')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -171,7 +158,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Delete access package' })
-  @Permissions('admin.delete')
   @Delete('access-packages/:id')
   @Permissions('admin.access-package.delete')
   async deleteAccessPackage(
@@ -182,7 +168,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Assign access package to role' })
-  @Permissions('admin.create')
   @Post('access-packages/:id/assign-role')
   @Permissions('admin.access-package.update')
   async assignAccessPackageToRole(
@@ -193,7 +178,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Unassign access package from role' })
-  @Permissions('admin.delete')
   @Delete('access-packages/:id/unassign-role/:roleId')
   @Permissions('admin.access-package.update')
   async unassignAccessPackageFromRole(
@@ -206,7 +190,6 @@ export class AdminController {
   // ── User Groups ──
 
   @ApiOperation({ summary: 'Get groups' })
-  @Permissions('admin.read')
   @Get('groups')
   @Permissions('admin.user-group.read')
   async getGroups(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -214,7 +197,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Create group' })
-  @Permissions('admin.create')
   @Post('groups')
   @Permissions('admin.user-group.create')
   async createGroup(
@@ -225,7 +207,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Update group' })
-  @Permissions('admin.update')
   @Patch('groups/:id')
   @Permissions('admin.user-group.update')
   async updateGroup(
@@ -237,7 +218,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Delete group' })
-  @Permissions('admin.delete')
   @Delete('groups/:id')
   @Permissions('admin.user-group.delete')
   async deleteGroup(
@@ -248,7 +228,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Get group members' })
-  @Permissions('admin.read')
   @Get('groups/:id/members')
   @Permissions('admin.user-group.read')
   async getGroupMembers(
@@ -259,7 +238,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Add group members' })
-  @Permissions('admin.create')
   @Post('groups/:id/members')
   @Permissions('admin.user-group.update')
   async addGroupMembers(
@@ -271,7 +249,6 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Remove group member' })
-  @Permissions('admin.delete')
   @Delete('groups/:id/members/:userId')
   @Permissions('admin.user-group.update')
   async removeGroupMember(

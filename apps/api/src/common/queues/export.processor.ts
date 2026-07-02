@@ -1,6 +1,7 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { pinoLogger } from '../services/logger.service';
+import { syncBackgroundJobStatus } from './job-tracking.util';
 
 interface ExportJobData {
   tenantId: string;
@@ -36,5 +37,29 @@ export class ExportProcessor extends WorkerHost {
     pinoLogger.info({ jobId: job.id, fileUrl, userId }, 'Export completed');
 
     return { fileUrl };
+  }
+
+  /**
+   * Keeps the `BackgroundJob` Prisma row (surfaced by the admin Background Jobs UI) in sync
+   * with real BullMQ lifecycle events, correlated by `bullJobId`. See P1-1 in
+   * .ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md — previously these were unconnected systems.
+   */
+  @OnWorkerEvent('active')
+  async onActive(job: Job<ExportJobData>) {
+    await syncBackgroundJobStatus('export', String(job.id), { status: 'ACTIVE' });
+  }
+
+  @OnWorkerEvent('completed')
+  async onCompleted(job: Job<ExportJobData>, result: { fileUrl: string }) {
+    await syncBackgroundJobStatus('export', String(job.id), { status: 'COMPLETED', result });
+  }
+
+  @OnWorkerEvent('failed')
+  async onFailed(job: Job<ExportJobData> | undefined, error: Error) {
+    if (!job) return;
+    await syncBackgroundJobStatus('export', String(job.id), {
+      status: 'FAILED',
+      error: error?.message ?? 'Unknown error',
+    });
   }
 }

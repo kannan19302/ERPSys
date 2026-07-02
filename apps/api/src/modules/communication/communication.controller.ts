@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Param, Put, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Put, Query, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
+import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
+import { TrackChanges } from '../../common/decorators/track-changes.decorator';
 import { CommunicationService, Presence } from './communication.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -30,7 +33,6 @@ export class CommunicationController {
   /* ── Workspace & directory ── */
 
   @ApiOperation({ summary: 'Get workspace' })
-  @Permissions('communication.read')
   @Get('workspace')
   @Permissions('communication.channel.read')
   async getWorkspace(@Req() req: AuthenticatedRequest) {
@@ -38,7 +40,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Get directory' })
-  @Permissions('communication.read')
   @Get('directory')
   @Permissions('communication.channel.read')
   async getDirectory(@Req() req: AuthenticatedRequest) {
@@ -48,7 +49,6 @@ export class CommunicationController {
   /* ── Spaces & channels ── */
 
   @ApiOperation({ summary: 'Create space' })
-  @Permissions('communication.create')
   @Post('spaces')
   @Permissions('communication.channel.create')
   async createSpace(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { name: string; emoji?: string }) {
@@ -56,7 +56,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create channel' })
-  @Permissions('communication.create')
   @Post('channels')
   @Permissions('communication.channel.create')
   async createChannel(
@@ -67,7 +66,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create d m' })
-  @Permissions('communication.create')
   @Post('channels/dm')
   @Permissions('communication.channel.create')
   async createDM(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { userId: string }) {
@@ -75,7 +73,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create group' })
-  @Permissions('communication.create')
   @Post('channels/group')
   @Permissions('communication.channel.create')
   async createGroup(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { name: string; memberIds: string[] }) {
@@ -83,17 +80,97 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Mark read' })
-  @Permissions('communication.create')
-  @Post('channels/:channelId/read')
   @Permissions('communication.message.read')
+  @Post('channels/:channelId/read')
   async markRead(@Req() req: AuthenticatedRequest, @Param('channelId') channelId: string) {
     return this.communicationService.markRead(req.user.tenantId, channelId, req.user.userId);
+  }
+
+  /* ── Channel management & roles (US-B1/B2/B3) ── */
+
+  @ApiOperation({ summary: 'Browse public channels not yet joined' })
+  @Permissions('communication.channel.read')
+  @Get('channels/browse')
+  async browseChannels(@Req() req: AuthenticatedRequest) {
+    return this.communicationService.browseChannels(req.user.tenantId, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'List channel members with their role' })
+  @Permissions('communication.channel.read')
+  @Get('channels/:id/members')
+  async getChannelMembers(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.communicationService.getChannelMembers(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Rename or archive a channel' })
+  @Permissions('communication.channel.manage')
+  @Patch('channels/:id')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Channel', 'id')
+  async updateChannel(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ name: z.string().optional(), archived: z.boolean().optional(), topic: z.string().optional(), description: z.string().optional() }))
+    dto: { name?: string; archived?: boolean; topic?: string; description?: string }
+  ) {
+    return this.communicationService.updateChannel(req.user.tenantId, id, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Join a public channel' })
+  @Permissions('communication.channel.join')
+  @Post('channels/:id/join')
+  async joinChannel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.communicationService.joinChannel(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Add a channel member' })
+  @Permissions('communication.channel.member.manage')
+  @Post('channels/:id/members')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Channel', 'id')
+  async addChannelMember(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ userId: z.string() })) dto: { userId: string }
+  ) {
+    return this.communicationService.addChannelMember(req.user.tenantId, id, req.user.userId, dto.userId);
+  }
+
+  @ApiOperation({ summary: 'Remove a channel member' })
+  @Permissions('communication.channel.member.manage')
+  @Delete('channels/:id/members/:userId')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Channel', 'id')
+  async removeChannelMember(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Param('userId') userId: string) {
+    return this.communicationService.removeChannelMember(req.user.tenantId, id, req.user.userId, userId);
+  }
+
+  /* ── Search (US-A6) ── */
+
+  @ApiOperation({ summary: 'Search messages across my channels' })
+  @Permissions('communication.message.search')
+  @Get('search')
+  async search(@Req() req: AuthenticatedRequest, @Query('q') q: string) {
+    return this.communicationService.searchMessages(req.user.tenantId, req.user.userId, q || '');
+  }
+
+  @ApiOperation({ summary: 'Get message read receipts (US-B4)' })
+  @Permissions('communication.message.read')
+  @Get('messages/:id/read-receipts')
+  async getReadReceipts(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.communicationService.getMessageReadReceipts(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Get link preview metadata (US-C2)' })
+  @Permissions('communication.message.read')
+  @Get('link-preview')
+  async getLinkPreview(@Query('url') url: string) {
+    return this.communicationService.getLinkPreview(url);
   }
 
   /* ── Messages ── */
 
   @ApiOperation({ summary: 'Get messages' })
-  @Permissions('communication.read')
   @Get('channels/:channelId/messages')
   @Permissions('communication.message.read')
   async getMessages(@Req() req: AuthenticatedRequest, @Param('channelId') channelId: string) {
@@ -101,7 +178,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create message' })
-  @Permissions('communication.create')
   @Post('channels/:channelId/messages')
   @Permissions('communication.message.create')
   async createMessage(
@@ -112,8 +188,20 @@ export class CommunicationController {
     return this.communicationService.createMessage(req.user.tenantId, channelId, req.user.userId, dto);
   }
 
+  @ApiOperation({ summary: 'Upload a real file attachment for a Connect message (US-A1/US-A2)' })
+  @ApiConsumes('multipart/form-data')
+  @Permissions('communication.message-attachment.upload')
+  @Post('channels/:channelId/attachments')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttachment(
+    @Req() req: AuthenticatedRequest,
+    @Param('channelId') channelId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.communicationService.uploadAttachment(req.user.tenantId, channelId, req.user.userId, file);
+  }
+
   @ApiOperation({ summary: 'Edit message' })
-  @Permissions('communication.update')
   @Patch('messages/:id')
   @Permissions('communication.message.create')
   async editMessage(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { content: string }) {
@@ -121,7 +209,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Delete message' })
-  @Permissions('communication.delete')
   @Delete('messages/:id')
   @Permissions('communication.message.create')
   async deleteMessage(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -129,7 +216,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Toggle pin' })
-  @Permissions('communication.create')
   @Post('messages/:id/pin')
   @Permissions('communication.message.create')
   async togglePin(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -137,7 +223,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Toggle reaction' })
-  @Permissions('communication.create')
   @Post('messages/:id/reactions')
   @Permissions('communication.message.create')
   async toggleReaction(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { emoji: string }) {
@@ -147,7 +232,6 @@ export class CommunicationController {
   /* ── Bookmarks ── */
 
   @ApiOperation({ summary: 'Get bookmarks' })
-  @Permissions('communication.read')
   @Get('bookmarks')
   @Permissions('communication.message.read')
   async getBookmarks(@Req() req: AuthenticatedRequest) {
@@ -155,7 +239,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Toggle bookmark' })
-  @Permissions('communication.create')
   @Post('messages/:id/bookmark')
   @Permissions('communication.message.create')
   async toggleBookmark(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -165,7 +248,6 @@ export class CommunicationController {
   /* ── Star / Mute ── */
 
   @ApiOperation({ summary: 'Toggle star' })
-  @Permissions('communication.create')
   @Post('channels/:channelId/star')
   @Permissions('communication.channel.read')
   async toggleStar(@Req() req: AuthenticatedRequest, @Param('channelId') channelId: string) {
@@ -173,17 +255,26 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Toggle mute' })
-  @Permissions('communication.create')
   @Post('channels/:channelId/mute')
   @Permissions('communication.channel.read')
   async toggleMute(@Req() req: AuthenticatedRequest, @Param('channelId') channelId: string) {
     return this.communicationService.toggleMute(req.user.tenantId, channelId, req.user.userId);
   }
 
+  @ApiOperation({ summary: 'Set my per-channel notification level (US-B5)' })
+  @Permissions('communication.channel.read')
+  @Put('channels/:channelId/notify-level')
+  async setNotifyLevel(
+    @Req() req: AuthenticatedRequest,
+    @Param('channelId') channelId: string,
+    @ZodBody(z.object({ notifyLevel: z.enum(['ALL', 'MENTIONS', 'NONE']) })) dto: { notifyLevel: 'ALL' | 'MENTIONS' | 'NONE' }
+  ) {
+    return this.communicationService.setNotifyLevel(req.user.tenantId, channelId, req.user.userId, dto.notifyLevel);
+  }
+
   /* ── Presence ── */
 
   @ApiOperation({ summary: 'Get presence' })
-  @Permissions('communication.read')
   @Get('presence')
   @Permissions('communication.channel.read')
   async getPresence(@Req() req: AuthenticatedRequest) {
@@ -191,7 +282,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Set presence' })
-  @Permissions('communication.update')
   @Put('presence')
   @Permissions('communication.channel.read')
   async setPresence(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { presence: Presence; statusText?: string; statusEmoji?: string }) {
@@ -201,7 +291,6 @@ export class CommunicationController {
   /* ── Meetings ── */
 
   @ApiOperation({ summary: 'Get meetings' })
-  @Permissions('communication.read')
   @Get('meetings')
   @Permissions('communication.channel.read')
   async getMeetings(@Req() req: AuthenticatedRequest) {
@@ -209,7 +298,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create meeting' })
-  @Permissions('communication.create')
   @Post('meetings')
   @Permissions('communication.channel.create')
   async createMeeting(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { title?: string; conversationId?: string }) {
@@ -217,7 +305,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'End meeting' })
-  @Permissions('communication.update')
   @Put('meetings/:id/end')
   @Permissions('communication.channel.create')
   async endMeeting(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -227,7 +314,6 @@ export class CommunicationController {
   /* ── Calendar ── */
 
   @ApiOperation({ summary: 'Get events' })
-  @Permissions('communication.read')
   @Get('events')
   @Permissions('communication.channel.read')
   async getEvents(@Req() req: AuthenticatedRequest) {
@@ -235,7 +321,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create event' })
-  @Permissions('communication.create')
   @Post('events')
   @Permissions('communication.channel.create')
   async createEvent(
@@ -249,7 +334,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Delete event' })
-  @Permissions('communication.delete')
   @Delete('events/:id')
   @Permissions('communication.channel.create')
   async deleteEvent(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -259,7 +343,6 @@ export class CommunicationController {
   /* ── Legacy: notifications & email templates ── */
 
   @ApiOperation({ summary: 'Get notifications' })
-  @Permissions('communication.read')
   @Get('notifications')
   @Permissions('communication.notification.read')
   async getNotifications(@Req() req: AuthenticatedRequest) {
@@ -267,7 +350,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create notification' })
-  @Permissions('communication.create')
   @Post('notifications')
   @Permissions('communication.notification.create')
   async createNotification(
@@ -278,7 +360,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Update notification status' })
-  @Permissions('communication.update')
   @Put('notifications/:id/status')
   @Permissions('communication.notification.update')
   async updateNotificationStatus(
@@ -290,7 +371,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Get email templates' })
-  @Permissions('communication.read')
   @Get('email-templates')
   @Permissions('communication.email-template.read')
   async getEmailTemplates(@Req() req: AuthenticatedRequest) {
@@ -298,7 +378,6 @@ export class CommunicationController {
   }
 
   @ApiOperation({ summary: 'Create email template' })
-  @Permissions('communication.create')
   @Post('email-templates')
   @Permissions('communication.email-template.create')
   async createEmailTemplate(

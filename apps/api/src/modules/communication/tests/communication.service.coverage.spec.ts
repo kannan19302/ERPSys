@@ -6124,7 +6124,10 @@ describe('CommunicationService coverage', () => {
   let service: CommunicationService;
 
   beforeEach(() => {
-    service = new CommunicationService();
+    service = new CommunicationService(
+      { createDocument: vi.fn() } as never,
+      { broadcastChatMessage: vi.fn(), broadcastPresenceUpdate: vi.fn() } as never
+    );
     vi.clearAllMocks();
   });
 

@@ -18,7 +18,6 @@ export class ContractsController {
   constructor(private readonly contracts: ContractsService) {}
 
   @ApiOperation({ summary: 'Get contracts' })
-  @Permissions('procurement.read')
   @Get()
   @Permissions('procurement.purchase-order.read')
   async getContracts(@Req() req: AuthReq, @Query('vendorId') vendorId?: string) {
@@ -26,7 +25,6 @@ export class ContractsController {
   }
 
   @ApiOperation({ summary: 'Get expiring' })
-  @Permissions('procurement.read')
   @Get('expiring')
   @Permissions('procurement.purchase-order.read')
   async getExpiring(@Req() req: AuthReq, @Query('days') days?: string) {
@@ -34,7 +32,6 @@ export class ContractsController {
   }
 
   @ApiOperation({ summary: 'Get compliance' })
-  @Permissions('procurement.read')
   @Get(':id/compliance')
   @Permissions('procurement.purchase-order.read')
   async getCompliance(@Req() req: AuthReq, @Param('id') id: string) {

@@ -27,7 +27,6 @@ export class SupplyChainController {
   constructor(private readonly supplyChainService: SupplyChainService) { }
 
   @ApiOperation({ summary: 'Get shipments' })
-  @Permissions('supply_chain.read')
   @Get('shipments')
   @Permissions('supply-chain.shipment.read')
   async getShipments(@Req() req: AuthenticatedRequest) {
@@ -35,7 +34,6 @@ export class SupplyChainController {
   }
 
   @ApiOperation({ summary: 'Get shipment by id' })
-  @Permissions('supply_chain.read')
   @Get('shipments/:id')
   @Permissions('supply-chain.shipment.read')
   async getShipmentById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -43,7 +41,6 @@ export class SupplyChainController {
   }
 
   @ApiOperation({ summary: 'Create shipment' })
-  @Permissions('supply_chain.create')
   @Post('shipments')
   @Permissions('supply-chain.shipment.create')
   async createShipment(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateShipmentInput): Promise<unknown> {
@@ -52,7 +49,6 @@ export class SupplyChainController {
   }
 
   @ApiOperation({ summary: 'Update shipment status' })
-  @Permissions('supply_chain.update')
   @Patch('shipments/:id/status')
   @Permissions('supply-chain.shipment.update')
   async updateShipmentStatus(
@@ -64,7 +60,6 @@ export class SupplyChainController {
   }
 
   @ApiOperation({ summary: 'Get demand forecast' })
-  @Permissions('supply_chain.read')
   @Get('forecast')
   @Permissions('supply-chain.forecast.read')
   async getDemandForecast(@Req() req: AuthenticatedRequest) {

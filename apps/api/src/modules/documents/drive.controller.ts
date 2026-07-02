@@ -27,7 +27,6 @@ export class DriveController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @ApiOperation({ summary: 'Get folders' })
-  @Permissions('documents.read')
   @Get('folders')
   @Permissions('documents.folder.read')
   async getFolders(
@@ -39,7 +38,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Create folder' })
-  @Permissions('documents.create')
   @Post('folders')
   @Permissions('documents.folder.create')
   async createFolder(
@@ -51,7 +49,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Toggle folder starred' })
-  @Permissions('documents.create')
   @Post('folders/:id/star')
   @Permissions('documents.folder.create')
   async toggleFolderStarred(
@@ -62,7 +59,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Share folder' })
-  @Permissions('documents.create')
   @Post('folders/:id/share')
   @Permissions('documents.folder.create')
   async shareFolder(
@@ -74,7 +70,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Toggle folder legal hold' })
-  @Permissions('documents.create')
   @Post('folders/:id/legal-hold')
   @Permissions('documents.folder.create')
   async toggleFolderLegalHold(
@@ -85,7 +80,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Trash folder' })
-  @Permissions('documents.delete')
   @Delete('folders/:id')
   @Permissions('documents.folder.create')
   async trashFolder(
@@ -96,7 +90,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Restore folder' })
-  @Permissions('documents.create')
   @Post('folders/:id/restore')
   @Permissions('documents.folder.create')
   async restoreFolder(
@@ -107,7 +100,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Permanently delete folder' })
-  @Permissions('documents.delete')
   @Delete('folders/:id/permanent')
   @Permissions('documents.folder.create')
   async permanentlyDeleteFolder(
@@ -118,7 +110,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Get documents' })
-  @Permissions('documents.read')
   @Get('documents')
   @Permissions('documents.document.read')
   async getDocuments(
@@ -130,7 +121,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Create document' })
-  @Permissions('documents.create')
   @Post('documents')
   @UseInterceptors(FileInterceptor('file'))
   @Permissions('documents.document.create')
@@ -152,7 +142,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Toggle document starred' })
-  @Permissions('documents.create')
   @Post('documents/:id/star')
   @Permissions('documents.document.create')
   async toggleDocumentStarred(
@@ -163,7 +152,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Share document' })
-  @Permissions('documents.create')
   @Post('documents/:id/share')
   @Permissions('documents.document.create')
   async shareDocument(
@@ -175,7 +163,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Toggle document legal hold' })
-  @Permissions('documents.create')
   @Post('documents/:id/legal-hold')
   @Permissions('documents.document.create')
   async toggleDocumentLegalHold(
@@ -186,7 +173,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Add version' })
-  @Permissions('documents.create')
   @Post('documents/:id/versions')
   @UseInterceptors(FileInterceptor('file'))
   @Permissions('documents.document.create')
@@ -199,7 +185,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Download version' })
-  @Permissions('documents.read')
   @Get('documents/versions/:versionId/download')
   @Permissions('documents.document.read')
   async downloadVersion(
@@ -214,7 +199,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Trash document' })
-  @Permissions('documents.delete')
   @Delete('documents/:id')
   @Permissions('documents.document.create')
   async trashDocument(
@@ -225,7 +209,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Restore document' })
-  @Permissions('documents.create')
   @Post('documents/:id/restore')
   @Permissions('documents.document.create')
   async restoreDocument(
@@ -236,7 +219,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Permanently delete document' })
-  @Permissions('documents.delete')
   @Delete('documents/:id/permanent')
   @Permissions('documents.document.create')
   async permanentlyDeleteDocument(
@@ -247,7 +229,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Get usage' })
-  @Permissions('documents.read')
   @Get('usage')
   @Permissions('documents.document.read')
   async getUsage(@Req() req: AuthenticatedRequest) {
@@ -255,7 +236,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Search' })
-  @Permissions('documents.read')
   @Get('search')
   @Permissions('documents.document.read')
   async search(@Req() req: AuthenticatedRequest, @Query('q') query: string) {
@@ -263,7 +243,6 @@ export class DriveController {
   }
 
   @ApiOperation({ summary: 'Get users' })
-  @Permissions('documents.read')
   @Get('users')
   @Permissions('documents.document.read')
   async getUsers(@Req() req: AuthenticatedRequest) {

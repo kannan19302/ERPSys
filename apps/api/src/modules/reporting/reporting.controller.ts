@@ -26,7 +26,6 @@ export class ReportingController {
   constructor(private readonly service: ReportingService) {}
 
   @ApiOperation({ summary: 'Get widgets' })
-  @Permissions('reporting.read')
   @Get('widgets')
   @Permissions('finance.report.read')
   async getWidgets(@Req() req: AuthenticatedRequest) {
@@ -34,7 +33,6 @@ export class ReportingController {
   }
 
   @ApiOperation({ summary: 'Create widget' })
-  @Permissions('reporting.create')
   @Post('widgets')
   @Permissions('finance.report.read')
   async createWidget(
@@ -45,7 +43,6 @@ export class ReportingController {
   }
 
   @ApiOperation({ summary: 'Get views' })
-  @Permissions('reporting.read')
   @Get('views')
   @Permissions('finance.report.read')
   async getViews(@Req() req: AuthenticatedRequest) {
@@ -53,7 +50,6 @@ export class ReportingController {
   }
 
   @ApiOperation({ summary: 'Create view' })
-  @Permissions('reporting.create')
   @Post('views')
   @Permissions('finance.report.read')
   async createView(

@@ -34,7 +34,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get terminals' })
-  @Permissions('pos.read')
   @Get('terminals')
   @Permissions('pos.terminal.read')
   async getTerminals(@Req() req: AuthenticatedRequest) {
@@ -42,7 +41,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get terminal' })
-  @Permissions('pos.read')
   @Get('terminals/:id')
   @Permissions('pos.terminal.read')
   async getTerminal(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -50,7 +48,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Create terminal' })
-  @Permissions('pos.create')
   @Post('terminals')
   @Permissions('pos.terminal.create')
   async createTerminal(
@@ -62,7 +59,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Update terminal' })
-  @Permissions('pos.update')
   @Put('terminals/:id')
   @Permissions('pos.terminal.create')
   async updateTerminal(
@@ -74,7 +70,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Delete terminal' })
-  @Permissions('pos.delete')
   @Delete('terminals/:id')
   @Permissions('pos.terminal.create')
   async deleteTerminal(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -86,7 +81,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get registers' })
-  @Permissions('pos.read')
   @Get('registers')
   @Permissions('pos.register.read')
   async getRegisters(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -94,7 +88,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Open register' })
-  @Permissions('pos.create')
   @Post('registers/open')
   @Permissions('pos.register.create')
   async openRegister(
@@ -105,7 +98,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Close register' })
-  @Permissions('pos.update')
   @Put('registers/:id/close')
   @Permissions('pos.register.create')
   async closeRegister(
@@ -121,7 +113,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get shifts' })
-  @Permissions('pos.read')
   @Get('registers/:registerId/shifts')
   @Permissions('pos.shift.read')
   async getShifts(@Req() req: AuthenticatedRequest, @Param('registerId') registerId: string) {
@@ -129,7 +120,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Start shift' })
-  @Permissions('pos.create')
   @Post('registers/:registerId/shifts/start')
   @Permissions('pos.shift.create')
   async startShift(
@@ -141,7 +131,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'End shift' })
-  @Permissions('pos.update')
   @Put('shifts/:shiftId/end')
   @Permissions('pos.shift.create')
   async endShift(@Req() req: AuthenticatedRequest, @Param('shiftId') shiftId: string) {
@@ -153,7 +142,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get cash entries' })
-  @Permissions('pos.read')
   @Get('registers/:registerId/cash-entries')
   @Permissions('pos.cash-entry.read')
   async getCashEntries(@Req() req: AuthenticatedRequest, @Param('registerId') registerId: string): Promise<unknown> {
@@ -161,7 +149,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Add cash entry' })
-  @Permissions('pos.create')
   @Post('registers/:registerId/cash-entries')
   @Permissions('pos.cash-entry.create')
   async addCashEntry(
@@ -177,7 +164,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create order' })
-  @Permissions('pos.create')
   @Post('orders')
   @Permissions('pos.order.create')
   async createOrder(
@@ -190,7 +176,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get orders' })
-  @Permissions('pos.read')
   @Get('orders')
   @Permissions('pos.order.read')
   async getOrders(
@@ -202,7 +187,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get order' })
-  @Permissions('pos.read')
   @Get('orders/:id')
   @Permissions('pos.order.read')
   async getOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -210,7 +194,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get order by number' })
-  @Permissions('pos.read')
   @Get('orders/number/:orderNumber')
   @Permissions('pos.order.read')
   async getOrderByNumber(@Req() req: AuthenticatedRequest, @Param('orderNumber') orderNumber: string) {
@@ -218,7 +201,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Void order' })
-  @Permissions('pos.create')
   @Post('orders/:id/void')
   @Permissions('pos.order.create')
   async voidOrder(
@@ -230,7 +212,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Generate receipt' })
-  @Permissions('pos.create')
   @Post('orders/:id/receipt')
   @Permissions('pos.order.read')
   async generateReceipt(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -242,7 +223,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Search products' })
-  @Permissions('pos.read')
   @Get('products/search')
   @Permissions('pos.product.search')
   async searchProducts(
@@ -258,7 +238,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create discount' })
-  @Permissions('pos.create')
   @Post('discounts')
   @Permissions('pos.discount.create')
   async createDiscount(
@@ -271,7 +250,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get discounts' })
-  @Permissions('pos.read')
   @Get('discounts')
   @Permissions('pos.discount.read')
   async getDiscounts(@Req() req: AuthenticatedRequest) {
@@ -279,7 +257,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get discount' })
-  @Permissions('pos.read')
   @Get('discounts/:id')
   @Permissions('pos.discount.read')
   async getDiscount(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -287,7 +264,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Validate coupon' })
-  @Permissions('pos.create')
   @Post('coupons/validate')
   @Permissions('pos.coupon.validate')
   async validateCoupon(
@@ -298,7 +274,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Create coupon' })
-  @Permissions('pos.create')
   @Post('coupons')
   @Permissions('pos.coupon.create')
   async createCoupon(
@@ -309,7 +284,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get coupons' })
-  @Permissions('pos.read')
   @Get('coupons')
   @Permissions('pos.coupon.read')
   async getCoupons(@Req() req: AuthenticatedRequest) {
@@ -321,7 +295,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create tax profile' })
-  @Permissions('pos.create')
   @Post('tax-profiles')
   @Permissions('pos.tax-profile.create')
   async createTaxProfile(
@@ -333,7 +306,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get tax profiles' })
-  @Permissions('pos.read')
   @Get('tax-profiles')
   @Permissions('pos.tax-profile.read')
   async getTaxProfiles(@Req() req: AuthenticatedRequest) {
@@ -345,7 +317,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get quick keys' })
-  @Permissions('pos.read')
   @Get('terminals/:id/quick-keys')
   @Permissions('pos.terminal.read')
   async getQuickKeys(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -353,7 +324,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Save quick keys' })
-  @Permissions('pos.update')
   @Put('terminals/:id/quick-keys')
   @Permissions('pos.terminal.create')
   async saveQuickKeys(
@@ -369,7 +339,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Search customers' })
-  @Permissions('pos.read')
   @Get('customers/search')
   @Permissions('pos.customer.read')
   async searchCustomers(
@@ -380,7 +349,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Create walk in customer' })
-  @Permissions('pos.create')
   @Post('customers/walk-in')
   @Permissions('pos.customer.create')
   async createWalkInCustomer(
@@ -392,7 +360,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Create loyalty program' })
-  @Permissions('pos.create')
   @Post('loyalty/programs')
   @Permissions('pos.loyalty.create')
   async createLoyaltyProgram(
@@ -405,7 +372,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get loyalty programs' })
-  @Permissions('pos.read')
   @Get('loyalty/programs')
   @Permissions('pos.loyalty.read')
   async getLoyaltyPrograms(@Req() req: AuthenticatedRequest) {
@@ -413,7 +379,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get loyalty members' })
-  @Permissions('pos.read')
   @Get('loyalty/programs/:programId/members')
   @Permissions('pos.loyalty.read')
   async getLoyaltyMembers(@Req() req: AuthenticatedRequest, @Param('programId') programId: string) {
@@ -421,7 +386,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get loyalty balance' })
-  @Permissions('pos.read')
   @Get('loyalty/:customerId/balance')
   @Permissions('pos.loyalty.read')
   async getLoyaltyBalance(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string) {
@@ -429,7 +393,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Redeem loyalty points' })
-  @Permissions('pos.create')
   @Post('loyalty/redeem')
   @Permissions('pos.loyalty.redeem')
   async redeemLoyaltyPoints(
@@ -440,7 +403,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Issue gift card' })
-  @Permissions('pos.create')
   @Post('gift-cards')
   @Permissions('pos.gift-card.create')
   async issueGiftCard(
@@ -452,7 +414,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Check gift card balance' })
-  @Permissions('pos.create')
   @Post('gift-cards/check-balance')
   @Permissions('pos.gift-card.read')
   async checkGiftCardBalance(
@@ -463,7 +424,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get gift cards' })
-  @Permissions('pos.read')
   @Get('gift-cards')
   @Permissions('pos.gift-card.read')
   async getGiftCards(@Req() req: AuthenticatedRequest) {
@@ -471,7 +431,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get store credit' })
-  @Permissions('pos.read')
   @Get('store-credits/:customerId')
   @Permissions('pos.store-credit.read')
   async getStoreCredit(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string) {
@@ -483,7 +442,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Process return' })
-  @Permissions('pos.create')
   @Post('returns')
   @Permissions('pos.return.create')
   async processReturn(
@@ -504,7 +462,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get returns' })
-  @Permissions('pos.read')
   @Get('returns')
   @Permissions('pos.return.read')
   async getReturns(@Req() req: AuthenticatedRequest) {
@@ -512,7 +469,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get return' })
-  @Permissions('pos.read')
   @Get('returns/:id')
   @Permissions('pos.return.read')
   async getReturn(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -520,7 +476,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Approve return' })
-  @Permissions('pos.create')
   @Post('returns/:id/approve')
   @Permissions('pos.return.create')
   async approveReturn(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -532,7 +487,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Hold order' })
-  @Permissions('pos.create')
   @Post('held-orders')
   @Permissions('pos.held-order.create')
   async holdOrder(
@@ -555,7 +509,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get held orders' })
-  @Permissions('pos.read')
   @Get('held-orders')
   @Permissions('pos.held-order.read')
   async getHeldOrders(
@@ -566,7 +519,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Resume held order' })
-  @Permissions('pos.update')
   @Put('held-orders/:id/resume')
   @Permissions('pos.held-order.create')
   async resumeHeldOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -574,7 +526,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Discard held order' })
-  @Permissions('pos.delete')
   @Delete('held-orders/:id')
   @Permissions('pos.held-order.create')
   async discardHeldOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -586,7 +537,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create price list' })
-  @Permissions('pos.create')
   @Post('price-lists')
   @Permissions('pos.price-list.create')
   async createPriceList(
@@ -598,7 +548,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get price lists' })
-  @Permissions('pos.read')
   @Get('price-lists')
   @Permissions('pos.price-list.read')
   async getPriceLists(@Req() req: AuthenticatedRequest) {
@@ -610,7 +559,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create promotion' })
-  @Permissions('pos.create')
   @Post('promotions')
   @Permissions('pos.promotion.create')
   async createPromotion(
@@ -622,7 +570,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get promotions' })
-  @Permissions('pos.read')
   @Get('promotions')
   @Permissions('pos.promotion.read')
   async getPromotions(@Req() req: AuthenticatedRequest) {
@@ -634,7 +581,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create open tab' })
-  @Permissions('pos.create')
   @Post('open-tabs')
   @Permissions('pos.open-tab.create')
   async createOpenTab(
@@ -654,7 +600,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get open tabs' })
-  @Permissions('pos.read')
   @Get('open-tabs')
   @Permissions('pos.open-tab.read')
   async getOpenTabs(@Req() req: AuthenticatedRequest) {
@@ -662,7 +607,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Close open tab' })
-  @Permissions('pos.update')
   @Put('open-tabs/:id/close')
   @Permissions('pos.open-tab.create')
   async closeOpenTab(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -674,7 +618,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Create layaway' })
-  @Permissions('pos.create')
   @Post('layaway')
   @Permissions('pos.layaway.create')
   async createLayaway(
@@ -686,7 +629,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get layaways' })
-  @Permissions('pos.read')
   @Get('layaway')
   @Permissions('pos.layaway.read')
   async getLayaways(@Req() req: AuthenticatedRequest) {
@@ -694,7 +636,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Record layaway payment' })
-  @Permissions('pos.create')
   @Post('layaway/:id/payment')
   @Permissions('pos.layaway.create')
   async recordLayawayPayment(
@@ -712,7 +653,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get customer display config' })
-  @Permissions('pos.read')
   @Get('customer-display/:terminalId')
   @Permissions('pos.terminal.read')
   async getCustomerDisplayConfig(@Req() req: AuthenticatedRequest, @Param('terminalId') terminalId: string) {
@@ -720,7 +660,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Update customer display config' })
-  @Permissions('pos.update')
   @Put('customer-display/:terminalId')
   @Permissions('pos.terminal.create')
   async updateCustomerDisplayConfig(
@@ -736,7 +675,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Get daily summary' })
-  @Permissions('pos.read')
   @Get('summary/daily')
   @Permissions('pos.report.read')
   async getDailySummary(
@@ -747,7 +685,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get shift report' })
-  @Permissions('pos.read')
   @Get('summary/shift/:shiftId')
   @Permissions('pos.report.read')
   async getShiftReport(@Req() req: AuthenticatedRequest, @Param('shiftId') shiftId: string) {
@@ -755,7 +692,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get sales by product' })
-  @Permissions('pos.read')
   @Get('reports/sales-by-product')
   @Permissions('pos.report.read')
   async getSalesByProduct(
@@ -767,7 +703,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get sales by cashier' })
-  @Permissions('pos.read')
   @Get('reports/sales-by-cashier')
   @Permissions('pos.report.read')
   async getSalesByCashier(
@@ -779,7 +714,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get sales by hour' })
-  @Permissions('pos.read')
   @Get('reports/sales-by-hour')
   @Permissions('pos.report.read')
   async getSalesByHour(
@@ -790,7 +724,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get sales by payment method' })
-  @Permissions('pos.read')
   @Get('reports/sales-by-payment')
   @Permissions('pos.report.read')
   async getSalesByPaymentMethod(
@@ -802,7 +735,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get discount usage' })
-  @Permissions('pos.read')
   @Get('reports/discount-usage')
   @Permissions('pos.report.read')
   async getDiscountUsage(
@@ -814,7 +746,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get customer insights' })
-  @Permissions('pos.read')
   @Get('reports/customer-insights')
   @Permissions('pos.report.read')
   async getCustomerInsights(@Req() req: AuthenticatedRequest) {
@@ -822,7 +753,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get register summary' })
-  @Permissions('pos.read')
   @Get('reports/register-summary')
   @Permissions('pos.report.read')
   async getRegisterSummary(
@@ -838,7 +768,6 @@ export class PosController {
   // ═══════════════════════════════════════════════════════════════
 
   @ApiOperation({ summary: 'Update terminal receipt template' })
-  @Permissions('pos.update')
   @Put('terminals/:id/receipt-template')
   @Permissions('pos.terminal.create')
   async updateTerminalReceiptTemplate(
@@ -850,7 +779,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Get terminal diagnostics' })
-  @Permissions('pos.read')
   @Get('terminals/:id/diagnostics')
   @Permissions('pos.terminal.read')
   async getTerminalDiagnostics(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -858,7 +786,6 @@ export class PosController {
   }
 
   @ApiOperation({ summary: 'Update terminal diagnostics' })
-  @Permissions('pos.update')
   @Put('terminals/:id/diagnostics')
   @Permissions('pos.terminal.create')
   async updateTerminalDiagnostics(

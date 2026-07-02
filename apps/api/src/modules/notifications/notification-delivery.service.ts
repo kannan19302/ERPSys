@@ -18,11 +18,26 @@ export class NotificationDeliveryService {
   async handleNotification(payload: NotificationPayload) {
     const channel = payload.channel || 'IN_APP';
 
+    // US-B6: Check user presence status and suppress email/push if status is DND
+    const presence = await prisma.userPresence.findFirst({
+      where: { tenantId: payload.tenantId, userId: payload.userId }
+    });
+    const isDnd = presence?.presence === 'DND';
+
     if (channel === 'ALL' || channel === 'IN_APP') {
       await this.deliverInApp(payload);
     }
-    if (channel === 'ALL' || channel === 'EMAIL') {
-      await this.deliverEmail(payload);
+    if (!isDnd) {
+      if (channel === 'ALL' || channel === 'EMAIL') {
+        await this.deliverEmail(payload);
+      }
+    } else {
+      const { pinoLogger } = await import('../../common/services/logger.service');
+      pinoLogger.info({
+        userId: payload.userId,
+        tenantId: payload.tenantId,
+        title: payload.title,
+      }, 'Notification delivery suppressed due to DND status');
     }
   }
 

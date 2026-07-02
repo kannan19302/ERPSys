@@ -42,7 +42,6 @@ export class ProcurementController {
   ) {}
 
   @ApiOperation({ summary: 'Get purchase orders' })
-  @Permissions('procurement.read')
   @Get('purchase-orders')
   @Permissions('procurement.purchase-order.read')
   async getPurchaseOrders(@Req() req: AuthenticatedRequest) {
@@ -50,7 +49,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Get purchase order by id' })
-  @Permissions('procurement.read')
   @Get('purchase-orders/:id')
   @Permissions('procurement.purchase-order.read')
   async getPurchaseOrderById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -58,7 +56,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create purchase order' })
-  @Permissions('procurement.create')
   @Post('purchase-orders')
   @Permissions('procurement.purchase-order.create')
   async createPurchaseOrder(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePurchaseOrderInput): Promise<unknown> {
@@ -67,7 +64,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Update purchase order status' })
-  @Permissions('procurement.update')
   @Patch('purchase-orders/:id/status')
   @Permissions('procurement.purchase-order.update')
   async updatePurchaseOrderStatus(
@@ -79,7 +75,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create purchase receipt' })
-  @Permissions('procurement.create')
   @Post('purchase-receipts')
   @Permissions('procurement.purchase-receipt.create')
   async createPurchaseReceipt(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePurchaseReceiptInput) {
@@ -87,7 +82,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Get purchase receipts' })
-  @Permissions('procurement.read')
   @Get('purchase-receipts')
   @Permissions('procurement.purchase-order.read')
   async getPurchaseReceipts(@Req() req: AuthenticatedRequest) {
@@ -97,7 +91,6 @@ export class ProcurementController {
   // ── REQUEST FOR QUOTATIONS (RFQ) ─────────────────
 
   @ApiOperation({ summary: 'Get r f qs' })
-  @Permissions('procurement.read')
   @Get('rfqs')
   @Permissions('procurement.purchase-order.read')
   async getRFQs(@Req() req: AuthenticatedRequest) {
@@ -105,7 +98,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Get r f q by id' })
-  @Permissions('procurement.read')
   @Get('rfqs/:id')
   @Permissions('procurement.purchase-order.read')
   async getRFQById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -113,7 +105,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create r f q' })
-  @Permissions('procurement.create')
   @Post('rfqs')
   @Permissions('procurement.purchase-order.create')
   async createRFQ(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateRFQInput) {
@@ -124,7 +115,6 @@ export class ProcurementController {
   // ── SUPPLIER QUOTATIONS ──────────────────────────
 
   @ApiOperation({ summary: 'Get supplier quotations' })
-  @Permissions('procurement.read')
   @Get('supplier-quotations')
   @Permissions('procurement.purchase-order.read')
   async getSupplierQuotations(@Req() req: AuthenticatedRequest) {
@@ -132,7 +122,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Get supplier quotation by id' })
-  @Permissions('procurement.read')
   @Get('supplier-quotations/:id')
   @Permissions('procurement.purchase-order.read')
   async getSupplierQuotationById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -140,7 +129,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create supplier quotation' })
-  @Permissions('procurement.create')
   @Post('supplier-quotations')
   @Permissions('procurement.purchase-order.create')
   async createSupplierQuotation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateSupplierQuotationInput) {
@@ -149,7 +137,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Update supplier quotation status' })
-  @Permissions('procurement.update')
   @Patch('supplier-quotations/:id/status')
   @Permissions('procurement.purchase-order.update')
   async updateSupplierQuotationStatus(
@@ -161,7 +148,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Convert supplier quotation to p o' })
-  @Permissions('procurement.create')
   @Post('supplier-quotations/:id/convert-po')
   @Permissions('procurement.purchase-order.create')
   async convertSupplierQuotationToPO(
@@ -174,7 +160,6 @@ export class ProcurementController {
   // ── PURCHASE RETURNS ──────────────────────────────
 
   @ApiOperation({ summary: 'Get purchase returns' })
-  @Permissions('procurement.read')
   @Get('returns')
   @Permissions('procurement.purchase-order.read')
   async getPurchaseReturns(@Req() req: AuthenticatedRequest) {
@@ -182,7 +167,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create purchase return' })
-  @Permissions('procurement.create')
   @Post('returns')
   @Permissions('procurement.purchase-order.create')
   async createPurchaseReturn(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePurchaseReturnInput): Promise<unknown> {
@@ -193,7 +177,6 @@ export class ProcurementController {
   // ── PURCHASE REQUISITIONS ─────────────────────────
 
   @ApiOperation({ summary: 'Get requisitions' })
-  @Permissions('procurement.read')
   @Get('requisitions')
   @Permissions('procurement.purchase-order.read')
   async getRequisitions(@Req() req: AuthenticatedRequest) {
@@ -201,7 +184,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Get requisition by id' })
-  @Permissions('procurement.read')
   @Get('requisitions/:id')
   @Permissions('procurement.purchase-order.read')
   async getRequisitionById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -209,7 +191,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create requisition' })
-  @Permissions('procurement.create')
   @Post('requisitions')
   @Permissions('procurement.purchase-order.create')
   async createRequisition(
@@ -221,7 +202,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Approve requisition' })
-  @Permissions('procurement.update')
   @Patch('requisitions/:id/approve')
   @Permissions('procurement.purchase-order.update')
   async approveRequisition(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -229,7 +209,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Reject requisition' })
-  @Permissions('procurement.update')
   @Patch('requisitions/:id/reject')
   @Permissions('procurement.purchase-order.update')
   async rejectRequisition(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -237,7 +216,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Convert requisition to p o' })
-  @Permissions('procurement.create')
   @Post('requisitions/:id/convert-po')
   @Permissions('procurement.purchase-order.create')
   async convertRequisitionToPO(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -247,7 +225,6 @@ export class ProcurementController {
   // ── BLANKET PURCHASE AGREEMENTS ───────────────────
 
   @ApiOperation({ summary: 'Get blanket agreements' })
-  @Permissions('procurement.read')
   @Get('blanket-agreements')
   @Permissions('procurement.purchase-order.read')
   async getBlanketAgreements(@Req() req: AuthenticatedRequest) {
@@ -255,7 +232,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Get blanket agreement by id' })
-  @Permissions('procurement.read')
   @Get('blanket-agreements/:id')
   @Permissions('procurement.purchase-order.read')
   async getBlanketAgreementById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -263,7 +239,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create blanket agreement' })
-  @Permissions('procurement.create')
   @Post('blanket-agreements')
   @Permissions('procurement.purchase-order.create')
   async createBlanketAgreement(
@@ -275,7 +250,6 @@ export class ProcurementController {
   }
 
   @ApiOperation({ summary: 'Create release order' })
-  @Permissions('procurement.create')
   @Post('blanket-agreements/:id/release')
   @Permissions('procurement.purchase-order.create')
   async createReleaseOrder(
@@ -289,7 +263,6 @@ export class ProcurementController {
   // ── SUPPLIER SCORECARD ─────────────────────────────
 
   @ApiOperation({ summary: 'Get vendor performance metrics' })
-  @Permissions('procurement.read')
   @Get('vendors/:id/scorecard')
   @Permissions('procurement.purchase-order.read')
   async getVendorPerformanceMetrics(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -299,7 +272,6 @@ export class ProcurementController {
   // ── 3-WAY MATCH CHECK ──────────────────────────────
 
   @ApiOperation({ summary: 'Get three way match report' })
-  @Permissions('procurement.read')
   @Get('purchase-orders/:id/three-way-match')
   @Permissions('procurement.purchase-order.read')
   async getThreeWayMatchReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

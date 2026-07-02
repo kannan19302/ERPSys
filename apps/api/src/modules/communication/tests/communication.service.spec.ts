@@ -17,6 +17,8 @@ vi.mock('@unerp/database', () => {
       notification: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), findFirst: vi.fn() },
       emailTemplate: { findMany: vi.fn(), create: vi.fn(), findFirst: vi.fn() },
       organization: { findFirst: vi.fn() },
+      employee: { findMany: vi.fn() },
+      department: { findMany: vi.fn() },
     },
   };
 });
@@ -25,7 +27,10 @@ describe('CommunicationService (Connect)', () => {
   let svc: CommunicationService;
 
   beforeEach(() => {
-    svc = new CommunicationService();
+    svc = new CommunicationService(
+      { uploadFile: vi.fn() } as never,
+      { broadcastChatMessage: vi.fn(), broadcastPresenceUpdate: vi.fn() } as never
+    );
     vi.clearAllMocks();
   });
 
@@ -37,6 +42,8 @@ describe('CommunicationService (Connect)', () => {
     vi.mocked(prisma.userPresence.findMany).mockResolvedValue([
       { userId: 'u1', presence: 'DND', statusText: 'Focus' },
     ] as never);
+    vi.mocked(prisma.employee.findMany).mockResolvedValue([] as never);
+    vi.mocked(prisma.department.findMany).mockResolvedValue([] as never);
 
     const res = await svc.getDirectory('t1');
     expect(res[0]?.name).toBe('Ada Lovelace');

@@ -27,7 +27,6 @@ export class RealEstateController {
   constructor(private readonly service: RealEstateService) {}
 
   @ApiOperation({ summary: 'Get properties' })
-  @Permissions('real_estate.read')
   @Get('properties')
   @Permissions('hr.employee.read')
   async getProperties(@Req() req: AuthenticatedRequest) {
@@ -35,7 +34,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Create property' })
-  @Permissions('real_estate.create')
   @Post('properties')
   @Permissions('hr.employee.read')
   async createProperty(
@@ -46,7 +44,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Get leases' })
-  @Permissions('real_estate.read')
   @Get('leases')
   @Permissions('hr.employee.read')
   async getLeases(@Req() req: AuthenticatedRequest) {
@@ -54,7 +51,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Create lease' })
-  @Permissions('real_estate.create')
   @Post('leases')
   @Permissions('hr.employee.read')
   async createLease(
@@ -65,7 +61,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Get property maintenances' })
-  @Permissions('real_estate.read')
   @Get('maintenances')
   @Permissions('hr.employee.read')
   async getPropertyMaintenances(@Req() req: AuthenticatedRequest) {
@@ -73,7 +68,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Create property maintenance' })
-  @Permissions('real_estate.create')
   @Post('maintenances')
   @Permissions('hr.employee.read')
   async createPropertyMaintenance(
@@ -84,7 +78,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Get agent commissions' })
-  @Permissions('real_estate.read')
   @Get('commissions')
   @Permissions('hr.employee.read')
   async getAgentCommissions(@Req() req: AuthenticatedRequest) {
@@ -92,7 +85,6 @@ export class RealEstateController {
   }
 
   @ApiOperation({ summary: 'Create agent commission' })
-  @Permissions('real_estate.create')
   @Post('commissions')
   @Permissions('hr.employee.read')
   async createAgentCommission(

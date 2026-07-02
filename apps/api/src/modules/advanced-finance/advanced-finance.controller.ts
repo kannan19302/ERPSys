@@ -26,41 +26,34 @@ export class AdvancedFinanceController {
   constructor(private readonly financeService: AdvancedFinanceService) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
-  @Permissions('advanced_finance.read')
   @Get('exchange-rates') @Permissions('finance.report.read')
   async getExchangeRates(@Req() req: AuthenticatedRequest) { return this.financeService.getExchangeRates(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Get accounts' })
-  @Permissions('advanced_finance.read')
   @Get('accounts') @Permissions('finance.invoice.read')
   async getAccounts(@Req() req: AuthenticatedRequest) { return this.financeService.getAccounts(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create account' })
-  @Permissions('advanced_finance.create')
   @Post('accounts') @Permissions('finance.invoice.create')
   async createAccount(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { code: string; name: string; type: string; parentId?: string }) {
     return this.financeService.createAccount(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
   @ApiOperation({ summary: 'Get cost centers' })
-  @Permissions('advanced_finance.read')
   @Get('cost-centers') @Permissions('finance.report.read')
   async getCostCenters(@Req() req: AuthenticatedRequest) { return this.financeService.getCostCenters(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create cost center' })
-  @Permissions('advanced_finance.create')
   @Post('cost-centers') @Permissions('finance.invoice.create')
   async createCostCenter(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { code: string; name: string; parentId?: string }) {
     return this.financeService.createCostCenter(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
   @ApiOperation({ summary: 'Get journals' })
-  @Permissions('advanced_finance.read')
   @Get('journals') @Permissions('finance.invoice.read')
   async getJournals(@Req() req: AuthenticatedRequest) { return this.financeService.getJournals(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create journal' })
-  @Permissions('advanced_finance.create')
   @Post('journals') @Permissions('finance.invoice.create')
   async createJournal(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: {
     entryNumber: string; notes?: string;
@@ -70,55 +63,46 @@ export class AdvancedFinanceController {
   }
 
   @ApiOperation({ summary: 'Get budgets' })
-  @Permissions('advanced_finance.read')
   @Get('budgets') @Permissions('finance.report.read')
   async getBudgets(@Req() req: AuthenticatedRequest) { return this.financeService.getBudgets(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create budget' })
-  @Permissions('advanced_finance.create')
   @Post('budgets') @Permissions('finance.invoice.create')
   async createBudget(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; amount: number; startDate: string; endDate: string }) {
     return this.financeService.createBudget(req.user.tenantId, req.user.orgId || 'org-system-default', { ...dto });
   }
 
   @ApiOperation({ summary: 'Get bank reconciliations' })
-  @Permissions('advanced_finance.read')
   @Get('bank-reconciliations') @Permissions('finance.report.read')
   async getBankReconciliations(@Req() req: AuthenticatedRequest) { return this.financeService.getBankReconciliations(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create bank reconciliation' })
-  @Permissions('advanced_finance.create')
   @Post('bank-reconciliations') @Permissions('finance.invoice.create')
   async createBankReconciliation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; statementDate: string; statementBalance: number }) {
     return this.financeService.createBankReconciliation(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Get financial periods' })
-  @Permissions('advanced_finance.read')
   @Get('financial-periods') @Permissions('finance.report.read')
   async getFinancialPeriods(@Req() req: AuthenticatedRequest) { return this.financeService.getFinancialPeriods(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create financial period' })
-  @Permissions('advanced_finance.create')
   @Post('financial-periods') @Permissions('finance.invoice.create')
   async createFinancialPeriod(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { name: string; startDate: string; endDate: string; status: string }) {
     return this.financeService.createFinancialPeriod(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
   @ApiOperation({ summary: 'Update financial period status' })
-  @Permissions('advanced_finance.create')
   @Post('financial-periods/:id/status') @Permissions('finance.invoice.create')
   async updateFinancialPeriodStatus(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { status: string }) {
     return this.financeService.updateFinancialPeriodStatus(req.user.tenantId, id, dto.status);
   }
 
   @ApiOperation({ summary: 'Get fixed assets' })
-  @Permissions('advanced_finance.read')
   @Get('fixed-assets') @Permissions('finance.report.read')
   async getFixedAssets(@Req() req: AuthenticatedRequest) { return this.financeService.getFixedAssets(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create fixed asset' })
-  @Permissions('advanced_finance.create')
   @Post('fixed-assets') @Permissions('finance.invoice.create')
   async createFixedAsset(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: {
     assetCode: string; name: string; purchaseDate: string; purchaseValue: number;
@@ -129,12 +113,10 @@ export class AdvancedFinanceController {
   }
 
   @ApiOperation({ summary: 'Get bank accounts' })
-  @Permissions('advanced_finance.read')
   @Get('bank-accounts') @Permissions('finance.report.read')
   async getBankAccounts(@Req() req: AuthenticatedRequest) { return this.financeService.getBankAccounts(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Create bank account' })
-  @Permissions('advanced_finance.create')
   @Post('bank-accounts') @Permissions('finance.invoice.create')
   async createBankAccount(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; bankName: string; accountNumber: string; currency: string }) {
     return this.financeService.createBankAccount(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
@@ -201,31 +183,26 @@ export class AdvancedFinanceController {
   // ── TIER 1: REPORTS ──
 
   @ApiOperation({ summary: 'Get profit and loss' })
-  @Permissions('advanced_finance.read')
   @Get('reports/pnl') @Permissions('finance.report.read')
   async getProfitAndLoss(@Req() req: AuthenticatedRequest, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
     return this.financeService.getProfitAndLoss(req.user.tenantId, req.user.orgId || '', startDate, endDate);
   }
   @ApiOperation({ summary: 'Get balance sheet' })
-  @Permissions('advanced_finance.read')
   @Get('reports/balance-sheet') @Permissions('finance.report.read')
   async getBalanceSheet(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
     return this.financeService.getBalanceSheet(req.user.tenantId, req.user.orgId || '', asOfDate);
   }
   @ApiOperation({ summary: 'Get cash flow' })
-  @Permissions('advanced_finance.read')
   @Get('reports/cash-flow') @Permissions('finance.report.read')
   async getCashFlow(@Req() req: AuthenticatedRequest, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
     return this.financeService.getCashFlow(req.user.tenantId, req.user.orgId || '', startDate, endDate);
   }
   @ApiOperation({ summary: 'Get trial balance' })
-  @Permissions('advanced_finance.read')
   @Get('reports/trial-balance') @Permissions('finance.report.read')
   async getTrialBalance(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
     return this.financeService.getTrialBalance(req.user.tenantId, req.user.orgId || '', asOfDate || new Date().toISOString());
   }
   @ApiOperation({ summary: 'Get aging report' })
-  @Permissions('advanced_finance.read')
   @Get('reports/aging') @Permissions('finance.report.read')
   async getAgingReport(@Req() req: AuthenticatedRequest, @Query('type') type: 'AR' | 'AP', @Query('asOfDate') asOfDate: string) {
     return this.financeService.getAgingReport(req.user.tenantId, req.user.orgId || '', type || 'AR', asOfDate || new Date().toISOString());
@@ -470,37 +447,31 @@ export class AdvancedFinanceController {
     return this.financeService.createTreasuryTransaction(req.user.tenantId, req.user.orgId || '', body);
   }
   @ApiOperation({ summary: 'Get currency revaluations' })
-  @Permissions('advanced_finance.read')
   @Get('inter-company-transfers') async getInterCompanyTransfers(@Req() req: AuthenticatedRequest) { return this.financeService.getInterCompanyTransfers(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Get currency revaluations' })
-  @Permissions('advanced_finance.read')
   @Get('currency-revaluations') @Permissions('finance.report.read')
   async getCurrencyRevaluations(@Req() req: AuthenticatedRequest) { return this.financeService.getCurrencyRevaluations(req.user.tenantId); }
 
   @ApiOperation({ summary: 'Run currency revaluation' })
-  @Permissions('advanced_finance.create')
   @Post('currency-revaluations/run') @Permissions('finance.invoice.create')
   async runCurrencyRevaluation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { asOfDate?: string; baseCurrency?: string }) {
     return this.financeService.runCurrencyRevaluation(req.user.tenantId, req.user.orgId || 'org-system-default', body.asOfDate || new Date().toISOString(), body.baseCurrency || 'USD');
   }
 
   @ApiOperation({ summary: 'Get e invoices' })
-  @Permissions('advanced_finance.read')
   @Get('e-invoices') @Permissions('finance.invoice.read')
   async getEInvoices(@Req() req: AuthenticatedRequest, @Query('invoiceId') invoiceId?: string) {
     return this.financeService.getEInvoices(req.user.tenantId, invoiceId);
   }
 
   @ApiOperation({ summary: 'Get e invoice by id' })
-  @Permissions('advanced_finance.read')
   @Get('e-invoices/:id') @Permissions('finance.invoice.read')
   async getEInvoiceById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.financeService.getEInvoiceById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Generate e invoice' })
-  @Permissions('advanced_finance.create')
   @Post('e-invoices/generate') @Permissions('finance.invoice.create')
   async generateEInvoice(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { invoiceId: string; format?: string }) {
     return this.financeService.generateEInvoice(req.user.tenantId, req.user.orgId || 'org-system-default', body.invoiceId, body.format || 'UBL');

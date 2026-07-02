@@ -30,7 +30,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get b o ms' })
-  @Permissions('manufacturing.read')
   @Get('boms')
   @Permissions('manufacturing.bom.read')
   async getBOMs(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -38,7 +37,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create b o m' })
-  @Permissions('manufacturing.create')
   @Post('boms')
   @Permissions('manufacturing.bom.create')
   async createBOM(
@@ -62,7 +60,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get workstations' })
-  @Permissions('manufacturing.read')
   @Get('workstations')
   @Permissions('manufacturing.work-order.read')
   async getWorkstations(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -70,7 +67,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create workstation' })
-  @Permissions('manufacturing.create')
   @Post('workstations')
   @Permissions('manufacturing.work-order.create')
   async createWorkstation(
@@ -82,7 +78,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get workstation load balancing' })
-  @Permissions('manufacturing.read')
   @Get('workstations/load-balancing')
   @Permissions('manufacturing.work-order.read')
   async getWorkstationLoadBalancing(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -94,7 +89,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get work orders' })
-  @Permissions('manufacturing.read')
   @Get('work-orders')
   @Permissions('manufacturing.work-order.read')
   async getWorkOrders(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -102,7 +96,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create work order' })
-  @Permissions('manufacturing.create')
   @Post('work-orders')
   @Permissions('manufacturing.work-order.create')
   async createWorkOrder(
@@ -113,7 +106,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Start work order' })
-  @Permissions('manufacturing.create')
   @Post('work-orders/:id/start')
   @Permissions('manufacturing.work-order.update')
   async startWorkOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -121,7 +113,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Update work order status' })
-  @Permissions('manufacturing.update')
   @Patch('work-orders/:id/status')
   @Permissions('manufacturing.work-order.update')
   async updateWorkOrderStatus(
@@ -133,7 +124,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Log scrap and oee' })
-  @Permissions('manufacturing.update')
   @Patch('work-orders/:id/oee')
   @Permissions('manufacturing.work-order.update')
   async logScrapAndOee(
@@ -149,7 +139,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get m r p runs' })
-  @Permissions('manufacturing.read')
   @Get('mrp/runs')
   @Permissions('manufacturing.work-order.read')
   async getMRPRuns(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -157,7 +146,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Run m r p' })
-  @Permissions('manufacturing.create')
   @Post('mrp/run')
   @Permissions('manufacturing.work-order.create')
   async runMRP(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -165,7 +153,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Process m r p planned item' })
-  @Permissions('manufacturing.create')
   @Post('mrp/planned-items/:id/process')
   @Permissions('manufacturing.work-order.create')
   async processMRPPlannedItem(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -177,7 +164,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get quality plans' })
-  @Permissions('manufacturing.read')
   @Get('quality/plans')
   @Permissions('manufacturing.bom.read')
   async getQualityPlans(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -185,7 +171,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create quality plan' })
-  @Permissions('manufacturing.create')
   @Post('quality/plans')
   @Permissions('manufacturing.bom.create')
   async createQualityPlan(
@@ -196,7 +181,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Log inspection' })
-  @Permissions('manufacturing.create')
   @Post('quality/inspections')
   @Permissions('manufacturing.work-order.update')
   async logInspection(
@@ -218,7 +202,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get n c rs' })
-  @Permissions('manufacturing.read')
   @Get('quality/ncr')
   @Permissions('manufacturing.work-order.read')
   async getNCRs(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -226,7 +209,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create n c r' })
-  @Permissions('manufacturing.create')
   @Post('quality/ncr')
   @Permissions('manufacturing.work-order.create')
   async createNCR(
@@ -244,7 +226,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Resolve n c r' })
-  @Permissions('manufacturing.update')
   @Patch('quality/ncr/:id')
   @Permissions('manufacturing.work-order.update')
   async resolveNCR(
@@ -260,7 +241,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get maintenance requests' })
-  @Permissions('manufacturing.read')
   @Get('maintenance')
   @Permissions('manufacturing.work-order.read')
   async getMaintenanceRequests(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -268,7 +248,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create maintenance request' })
-  @Permissions('manufacturing.create')
   @Post('maintenance')
   @Permissions('manufacturing.work-order.create')
   async createMaintenanceRequest(
@@ -279,7 +258,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get downtime logs' })
-  @Permissions('manufacturing.read')
   @Get('downtime')
   @Permissions('manufacturing.work-order.read')
   async getDowntimeLogs(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -287,7 +265,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Log downtime' })
-  @Permissions('manufacturing.create')
   @Post('downtime')
   @Permissions('manufacturing.work-order.create')
   async logDowntime(
@@ -302,7 +279,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get subcontracting orders' })
-  @Permissions('manufacturing.read')
   @Get('subcontracting')
   @Permissions('manufacturing.bom.read')
   async getSubcontractingOrders(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -310,7 +286,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create subcontracting order' })
-  @Permissions('manufacturing.create')
   @Post('subcontracting')
   @Permissions('manufacturing.bom.create')
   async createSubcontractingOrder(
@@ -321,7 +296,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Update subcontracting status' })
-  @Permissions('manufacturing.update')
   @Patch('subcontracting/:id')
   @Permissions('manufacturing.bom.update')
   async updateSubcontractingStatus(
@@ -337,7 +311,6 @@ export class ManufacturingController {
   // ==========================================
 
   @ApiOperation({ summary: 'Get b o m tree' })
-  @Permissions('manufacturing.read')
   @Get('boms/:id/tree')
   @Permissions('manufacturing.bom.read')
   async getBOMTree(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -345,7 +318,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get work order operations' })
-  @Permissions('manufacturing.read')
   @Get('work-orders/:id/operations')
   @Permissions('manufacturing.work-order.read')
   async getWorkOrderOperations(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -353,7 +325,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Start operation step' })
-  @Permissions('manufacturing.create')
   @Post('work-orders/:id/operations/:opId/start')
   @Permissions('manufacturing.work-order.update')
   async startOperationStep(
@@ -365,7 +336,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Complete operation step' })
-  @Permissions('manufacturing.create')
   @Post('work-orders/:id/operations/:opId/complete')
   @Permissions('manufacturing.work-order.update')
   async completeOperationStep(
@@ -378,7 +348,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get equipment tools' })
-  @Permissions('manufacturing.read')
   @Get('tools')
   @Permissions('manufacturing.work-order.read')
   async getEquipmentTools(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -386,7 +355,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get workstation shifts' })
-  @Permissions('manufacturing.read')
   @Get('shifts')
   @Permissions('manufacturing.work-order.read')
   async getWorkstationShifts(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -394,7 +362,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Create workstation shift' })
-  @Permissions('manufacturing.create')
   @Post('shifts')
   @Permissions('manufacturing.work-order.create')
   async createWorkstationShift(
@@ -405,7 +372,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get subcontracting materials' })
-  @Permissions('manufacturing.read')
   @Get('subcontracting/:id/materials')
   @Permissions('manufacturing.bom.read')
   async getSubcontractingMaterials(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -413,7 +379,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Issue subcontracting materials' })
-  @Permissions('manufacturing.create')
   @Post('subcontracting/:id/issue')
   @Permissions('manufacturing.bom.update')
   async issueSubcontractingMaterials(
@@ -425,7 +390,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Reconcile subcontracting materials' })
-  @Permissions('manufacturing.create')
   @Post('subcontracting/:id/reconcile')
   @Permissions('manufacturing.bom.update')
   async reconcileSubcontractingMaterials(
@@ -437,7 +401,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get e c os' })
-  @Permissions('manufacturing.read')
   @Get('ecos')
   @Permissions('manufacturing.bom.read')
   async getECOs(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -445,7 +408,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Submit e c o' })
-  @Permissions('manufacturing.create')
   @Post('ecos')
   @Permissions('manufacturing.bom.create')
   async submitECO(
@@ -456,7 +418,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Resolve e c o' })
-  @Permissions('manufacturing.create')
   @Post('ecos/:id/resolve')
   @Permissions('manufacturing.bom.update')
   async resolveECO(
@@ -468,7 +429,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get detailed o e e analytics' })
-  @Permissions('manufacturing.read')
   @Get('diagnostics/oee')
   @Permissions('manufacturing.work-order.read')
   async getDetailedOEEAnalytics(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -476,7 +436,6 @@ export class ManufacturingController {
   }
 
   @ApiOperation({ summary: 'Get lot genealogy' })
-  @Permissions('manufacturing.read')
   @Get('diagnostics/genealogy/:lotNumber')
   @Permissions('manufacturing.work-order.read')
   async getLotGenealogy(@Req() req: AuthenticatedRequest, @Param('lotNumber') lotNumber: string): Promise<unknown> {

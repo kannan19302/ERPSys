@@ -29,7 +29,6 @@ export class AutomationRulesController {
   constructor(private readonly automationRulesService: AutomationRulesService) {}
 
   @ApiOperation({ summary: 'Get rules' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.automation.read')
   async getRules(@Req() req: AuthenticatedRequest) {
@@ -37,7 +36,6 @@ export class AutomationRulesController {
   }
 
   @ApiOperation({ summary: 'Get execution history' })
-  @Permissions('admin.read')
   @Get('executions')
   @Permissions('admin.automation.read')
   async getExecutionHistory(
@@ -53,7 +51,6 @@ export class AutomationRulesController {
   }
 
   @ApiOperation({ summary: 'Get rule' })
-  @Permissions('admin.read')
   @Get(':id')
   @Permissions('admin.automation.read')
   async getRule(
@@ -64,7 +61,6 @@ export class AutomationRulesController {
   }
 
   @ApiOperation({ summary: 'Create rule' })
-  @Permissions('admin.create')
   @Post()
   @Permissions('admin.automation.create')
   async createRule(
@@ -84,7 +80,6 @@ export class AutomationRulesController {
   }
 
   @ApiOperation({ summary: 'Update rule' })
-  @Permissions('admin.update')
   @Patch(':id')
   @Permissions('admin.automation.update')
   async updateRule(
@@ -105,7 +100,6 @@ export class AutomationRulesController {
   }
 
   @ApiOperation({ summary: 'Delete rule' })
-  @Permissions('admin.delete')
   @Delete(':id')
   @Permissions('admin.automation.delete')
   async deleteRule(
@@ -116,7 +110,6 @@ export class AutomationRulesController {
   }
 
   @ApiOperation({ summary: 'Test rule' })
-  @Permissions('admin.create')
   @Post(':id/test')
   @Permissions('admin.automation.update')
   async testRule(

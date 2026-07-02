@@ -36,7 +36,6 @@ export class InventoryController {
   // ─── PRODUCTS ─────────────────────────────────────
 
   @ApiOperation({ summary: 'Get products' })
-  @Permissions('inventory.read')
   @Get('products')
   @Permissions('inventory.product.read')
   async getProducts(
@@ -56,7 +55,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get inventory stats' })
-  @Permissions('inventory.read')
   @Get('products/stats')
   @Permissions('inventory.product.read')
   async getInventoryStats(@Req() req: AuthenticatedRequest) {
@@ -64,7 +62,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get product by id' })
-  @Permissions('inventory.read')
   @Get('products/:id')
   @Permissions('inventory.product.read')
   async getProductById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -72,7 +69,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create product' })
-  @Permissions('inventory.create')
   @Post('products')
   @Permissions('inventory.product.create')
   async createProduct(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateProductInput) {
@@ -81,7 +77,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update product' })
-  @Permissions('inventory.update')
   @Patch('products/:id')
   @Permissions('inventory.product.update')
   async updateProduct(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateProductInput) {
@@ -89,7 +84,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete product' })
-  @Permissions('inventory.delete')
   @Delete('products/:id')
   @Permissions('inventory.product.delete')
   async deleteProduct(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -97,7 +91,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Bulk action' })
-  @Permissions('inventory.create')
   @Post('products/bulk')
   @Permissions('inventory.product.update')
   async bulkAction(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: BulkActionInput) {
@@ -107,7 +100,6 @@ export class InventoryController {
   // ─── WAREHOUSES ────────────────────────────────────
 
   @ApiOperation({ summary: 'Get warehouses' })
-  @Permissions('inventory.read')
   @Get('warehouses')
   @Permissions('inventory.warehouse.read')
   async getWarehouses(
@@ -122,7 +114,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get warehouse by id' })
-  @Permissions('inventory.read')
   @Get('warehouses/:id')
   @Permissions('inventory.warehouse.read')
   async getWarehouseById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -130,7 +121,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create warehouse' })
-  @Permissions('inventory.create')
   @Post('warehouses')
   @Permissions('inventory.warehouse.create')
   async createWarehouse(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateWarehouseInput) {
@@ -139,7 +129,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update warehouse' })
-  @Permissions('inventory.update')
   @Patch('warehouses/:id')
   @Permissions('inventory.warehouse.update')
   async updateWarehouse(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateWarehouseInput) {
@@ -147,7 +136,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete warehouse' })
-  @Permissions('inventory.delete')
   @Delete('warehouses/:id')
   @Permissions('inventory.warehouse.delete')
   async deleteWarehouse(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -157,7 +145,6 @@ export class InventoryController {
   // ─── STOCK LEVELS ──────────────────────────────────
 
   @ApiOperation({ summary: 'Get stock levels' })
-  @Permissions('inventory.read')
   @Get('stock-levels')
   @Permissions('inventory.stock.read')
   async getStockLevels(
@@ -177,7 +164,6 @@ export class InventoryController {
   // ─── CATEGORIES ────────────────────────────────────
 
   @ApiOperation({ summary: 'Get categories' })
-  @Permissions('inventory.read')
   @Get('categories')
   @Permissions('inventory.product.read')
   async getCategories(
@@ -192,7 +178,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get category by id' })
-  @Permissions('inventory.read')
   @Get('categories/:id')
   @Permissions('inventory.product.read')
   async getCategoryById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -200,7 +185,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create category' })
-  @Permissions('inventory.create')
   @Post('categories')
   @Permissions('inventory.product.create')
   async createCategory(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateCategoryInput) {
@@ -209,7 +193,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update category' })
-  @Permissions('inventory.update')
   @Patch('categories/:id')
   @Permissions('inventory.product.update')
   async updateCategory(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateCategoryInput) {
@@ -217,7 +200,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete category' })
-  @Permissions('inventory.delete')
   @Delete('categories/:id')
   @Permissions('inventory.product.delete')
   async deleteCategory(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -227,7 +209,6 @@ export class InventoryController {
   // ─── VARIANTS ──────────────────────────────────────
 
   @ApiOperation({ summary: 'Get product variants' })
-  @Permissions('inventory.read')
   @Get('products/:id/variants')
   @Permissions('inventory.product.read')
   async getProductVariants(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -235,7 +216,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create product variant' })
-  @Permissions('inventory.create')
   @Post('products/variants')
   @Permissions('inventory.product.create')
   async createProductVariant(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateVariantInput) {
@@ -243,7 +223,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update product variant' })
-  @Permissions('inventory.update')
   @Patch('variants/:id')
   @Permissions('inventory.product.update')
   async updateProductVariant(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: any) {
@@ -251,7 +230,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete product variant' })
-  @Permissions('inventory.delete')
   @Delete('variants/:id')
   @Permissions('inventory.product.delete')
   async deleteProductVariant(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -261,7 +239,6 @@ export class InventoryController {
   // ─── UNITS OF MEASURE ───────────────────────────────
 
   @ApiOperation({ summary: 'Get uo ms' })
-  @Permissions('inventory.read')
   @Get('uoms')
   @Permissions('inventory.product.read')
   async getUoMs(@Req() req: AuthenticatedRequest) {
@@ -269,7 +246,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create uo m' })
-  @Permissions('inventory.create')
   @Post('uoms')
   @Permissions('inventory.product.create')
   async createUoM(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: any) {
@@ -277,7 +253,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get uo m conversions' })
-  @Permissions('inventory.read')
   @Get('uom-conversions')
   @Permissions('inventory.product.read')
   async getUoMConversions(@Req() req: AuthenticatedRequest) {
@@ -285,7 +260,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create uo m conversion' })
-  @Permissions('inventory.create')
   @Post('uom-conversions')
   @Permissions('inventory.product.create')
   async createUoMConversion(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: any) {
@@ -295,7 +269,6 @@ export class InventoryController {
   // ─── BIN LOCATIONS ──────────────────────────────────
 
   @ApiOperation({ summary: 'Get bin locations' })
-  @Permissions('inventory.read')
   @Get('bin-locations')
   @Permissions('inventory.warehouse.read')
   async getBinLocations(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId?: string) {
@@ -303,7 +276,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get bin location by id' })
-  @Permissions('inventory.read')
   @Get('bin-locations/:id')
   @Permissions('inventory.warehouse.read')
   async getBinLocationById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -311,7 +283,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create bin location' })
-  @Permissions('inventory.create')
   @Post('bin-locations')
   @Permissions('inventory.warehouse.create')
   async createBinLocation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateBinLocationInput) {
@@ -319,7 +290,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update bin location' })
-  @Permissions('inventory.update')
   @Patch('bin-locations/:id')
   @Permissions('inventory.warehouse.update')
   async updateBinLocation(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: any) {
@@ -327,7 +297,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete bin location' })
-  @Permissions('inventory.delete')
   @Delete('bin-locations/:id')
   @Permissions('inventory.warehouse.delete')
   async deleteBinLocation(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -337,7 +306,6 @@ export class InventoryController {
   // ─── SERIAL NUMBERS ──────────────────────────────────
 
   @ApiOperation({ summary: 'Get serial numbers' })
-  @Permissions('inventory.read')
   @Get('serial-numbers')
   @Permissions('inventory.stock.read')
   async getSerialNumbers(
@@ -356,7 +324,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get serial number by id' })
-  @Permissions('inventory.read')
   @Get('serial-numbers/:id')
   @Permissions('inventory.stock.read')
   async getSerialNumberById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -364,7 +331,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create serial number' })
-  @Permissions('inventory.create')
   @Post('serial-numbers')
   @Permissions('inventory.stock.create')
   async createSerialNumber(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateSerialNumberInput) {
@@ -372,7 +338,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update serial number' })
-  @Permissions('inventory.update')
   @Patch('serial-numbers/:id')
   @Permissions('inventory.stock.update')
   async updateSerialNumber(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateSerialNumberInput) {
@@ -380,7 +345,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get serial number history' })
-  @Permissions('inventory.read')
   @Get('serial-numbers/:id/history')
   @Permissions('inventory.stock.read')
   async getSerialNumberHistory(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -390,7 +354,6 @@ export class InventoryController {
   // ─── BATCHES ────────────────────────────────────────
 
   @ApiOperation({ summary: 'Get batches' })
-  @Permissions('inventory.read')
   @Get('batches')
   @Permissions('inventory.stock.read')
   async getBatches(
@@ -409,7 +372,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get batch by id' })
-  @Permissions('inventory.read')
   @Get('batches/:id')
   @Permissions('inventory.stock.read')
   async getBatchById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -417,7 +379,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create batch' })
-  @Permissions('inventory.create')
   @Post('batches')
   @Permissions('inventory.stock.create')
   async createBatch(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateBatchInput) {
@@ -425,7 +386,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update batch' })
-  @Permissions('inventory.update')
   @Patch('batches/:id')
   @Permissions('inventory.stock.update')
   async updateBatch(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateBatchInput) {
@@ -435,7 +395,6 @@ export class InventoryController {
   // ─── STOCK ENTRIES ───────────────────────────────────
 
   @ApiOperation({ summary: 'Get stock entries' })
-  @Permissions('inventory.read')
   @Get('stock-entries')
   @Permissions('inventory.stock.read')
   async getStockEntries(
@@ -454,7 +413,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get stock entry by id' })
-  @Permissions('inventory.read')
   @Get('stock-entries/:id')
   @Permissions('inventory.stock.read')
   async getStockEntryById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -462,7 +420,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create stock entry' })
-  @Permissions('inventory.create')
   @Post('stock-entries')
   @Permissions('inventory.stock.create')
   async createStockEntry(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateStockEntryInput) {
@@ -471,7 +428,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Submit stock entry' })
-  @Permissions('inventory.create')
   @Post('stock-entries/:id/submit')
   @Permissions('inventory.stock.update')
   async submitStockEntry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -479,7 +435,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Cancel stock entry' })
-  @Permissions('inventory.create')
   @Post('stock-entries/:id/cancel')
   @Permissions('inventory.stock.update')
   async cancelStockEntry(
@@ -491,7 +446,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get stock ledger' })
-  @Permissions('inventory.read')
   @Get('stock-ledger')
   @Permissions('inventory.stock.read')
   async getStockLedger(
@@ -510,7 +464,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Transfer stock' })
-  @Permissions('inventory.create')
   @Post('transfers')
   @Permissions('inventory.stock.create')
   async transferStock(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: TransferStockInput) {
@@ -521,7 +474,6 @@ export class InventoryController {
   // ─── CYCLE COUNTS ───────────────────────────────────
 
   @ApiOperation({ summary: 'Get cycle counts' })
-  @Permissions('inventory.read')
   @Get('cycle-counts')
   @Permissions('inventory.stock.read')
   async getCycleCounts(
@@ -539,7 +491,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get cycle count by id' })
-  @Permissions('inventory.read')
   @Get('cycle-counts/:id')
   @Permissions('inventory.stock.read')
   async getCycleCountById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -547,7 +498,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create cycle count' })
-  @Permissions('inventory.create')
   @Post('cycle-counts')
   @Permissions('inventory.stock.create')
   async createCycleCount(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateCycleCountInput) {
@@ -556,7 +506,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Submit cycle count' })
-  @Permissions('inventory.create')
   @Post('cycle-counts/:id/submit')
   @Permissions('inventory.stock.update')
   async submitCycleCount(
@@ -568,7 +517,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Approve cycle count' })
-  @Permissions('inventory.create')
   @Post('cycle-counts/:id/approve')
   @Permissions('inventory.stock.update')
   async approveCycleCount(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -578,7 +526,6 @@ export class InventoryController {
   // ─── QA INSPECTIONS ─────────────────────────────────
 
   @ApiOperation({ summary: 'Get q a inspections' })
-  @Permissions('inventory.read')
   @Get('qa-inspections')
   @Permissions('inventory.stock.read')
   async getQAInspections(
@@ -596,7 +543,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get q a inspection by id' })
-  @Permissions('inventory.read')
   @Get('qa-inspections/:id')
   @Permissions('inventory.stock.read')
   async getQAInspectionById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -604,7 +550,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create q a inspection' })
-  @Permissions('inventory.create')
   @Post('qa-inspections')
   @Permissions('inventory.stock.create')
   async createQAInspection(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateQAInspectionInput) {
@@ -613,7 +558,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Submit q a inspection' })
-  @Permissions('inventory.create')
   @Post('qa-inspections/:id/submit')
   @Permissions('inventory.stock.update')
   async submitQAInspection(
@@ -627,7 +571,6 @@ export class InventoryController {
   // ─── REORDER RULES ──────────────────────────────────
 
   @ApiOperation({ summary: 'Get reorder rules' })
-  @Permissions('inventory.read')
   @Get('reorder-rules')
   @Permissions('inventory.product.read')
   async getReorderRules(
@@ -642,7 +585,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create reorder rule' })
-  @Permissions('inventory.create')
   @Post('reorder-rules')
   @Permissions('inventory.product.create')
   async createReorderRule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateReorderRuleInput) {
@@ -650,7 +592,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update reorder rule' })
-  @Permissions('inventory.update')
   @Patch('reorder-rules/:id')
   @Permissions('inventory.product.update')
   async updateReorderRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: any) {
@@ -658,7 +599,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete reorder rule' })
-  @Permissions('inventory.delete')
   @Delete('reorder-rules/:id')
   @Permissions('inventory.product.delete')
   async deleteReorderRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -668,7 +608,6 @@ export class InventoryController {
   // ─── STOCK ALERTS ───────────────────────────────────
 
   @ApiOperation({ summary: 'Get stock alerts' })
-  @Permissions('inventory.read')
   @Get('alerts')
   @Permissions('inventory.stock.read')
   async getStockAlerts(
@@ -686,7 +625,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Resolve stock alert' })
-  @Permissions('inventory.create')
   @Post('alerts/:id/resolve')
   @Permissions('inventory.stock.update')
   async resolveStockAlert(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -696,7 +634,6 @@ export class InventoryController {
   // ─── PRODUCT KITS ───────────────────────────────────
 
   @ApiOperation({ summary: 'Get product kits' })
-  @Permissions('inventory.read')
   @Get('kits')
   @Permissions('inventory.product.read')
   async getProductKits(
@@ -711,7 +648,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get product kit by id' })
-  @Permissions('inventory.read')
   @Get('kits/:id')
   @Permissions('inventory.product.read')
   async getProductKitById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -719,7 +655,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Create product kit' })
-  @Permissions('inventory.create')
   @Post('kits')
   @Permissions('inventory.product.create')
   async createProductKit(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateKitInput) {
@@ -728,7 +663,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Update product kit' })
-  @Permissions('inventory.update')
   @Patch('kits/:id')
   @Permissions('inventory.product.update')
   async updateProductKit(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: any) {
@@ -736,7 +670,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Delete product kit' })
-  @Permissions('inventory.delete')
   @Delete('kits/:id')
   @Permissions('inventory.product.delete')
   async deleteProductKit(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -746,7 +679,6 @@ export class InventoryController {
   // ─── VALUATION & REPORTS ────────────────────────────
 
   @ApiOperation({ summary: 'Get valuation report' })
-  @Permissions('inventory.read')
   @Get('valuations')
   @Permissions('inventory.stock.read')
   async getValuationReport(
@@ -758,7 +690,6 @@ export class InventoryController {
   }
 
   @ApiOperation({ summary: 'Get inventory aging' })
-  @Permissions('inventory.read')
   @Get('aging')
   @Permissions('inventory.stock.read')
   async getInventoryAging(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId?: string) {

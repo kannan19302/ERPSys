@@ -14,6 +14,9 @@ vi.mock('@unerp/database', () => {
         groupBy: vi.fn(() => Promise.resolve([{ queueName: 'default', status: 'COMPLETED', _count: 5 }])),
         updateMany: vi.fn(() => Promise.resolve({ count: 1 })),
         create: vi.fn(() => Promise.resolve({})),
+        findMany: vi.fn(() => Promise.resolve([])),
+        findFirst: vi.fn(() => Promise.resolve(null)),
+        update: vi.fn(() => Promise.resolve({})),
       },
       scheduledTask: {
         findMany: vi.fn(() => Promise.resolve([{ id: 'cron-1', name: 'Backup Task' }])),
@@ -30,9 +33,13 @@ vi.mock('@unerp/database', () => {
 
 describe('OperationsService', () => {
   let operationsService: OperationsService;
+  let fakeEmailQueue: { add: ReturnType<typeof vi.fn>; name: string };
+  let fakeExportQueue: { add: ReturnType<typeof vi.fn>; name: string };
 
   beforeEach(() => {
-    operationsService = new OperationsService();
+    fakeEmailQueue = { add: vi.fn().mockResolvedValue({ id: 'bull-email-1' }), name: 'email' };
+    fakeExportQueue = { add: vi.fn().mockResolvedValue({ id: 'bull-export-1' }), name: 'export' };
+    operationsService = new OperationsService(fakeEmailQueue as any, fakeExportQueue as any);
     vi.clearAllMocks();
   });
 
@@ -52,9 +59,58 @@ describe('OperationsService', () => {
     expect(result[0].name).toBeDefined();
   });
 
-  it('should trigger failed job retry', async () => {
+  it('should trigger failed job retry (no failed jobs)', async () => {
     const result = await operationsService.retryJobs('tenant-123');
     expect(result.success).toBe(true);
+    expect(result.retriedCount).toBe(0);
+  });
+
+  it('should re-enqueue a failed job into the real BullMQ queue by queueName, not just flip a DB flag', async () => {
+    const { prisma } = await import('@unerp/database');
+    vi.mocked(prisma.backgroundJob.findMany).mockResolvedValue([
+      {
+        id: 'job-1',
+        tenantId: 'tenant-123',
+        queueName: 'email',
+        jobType: 'send-invoice-email',
+        payload: { to: 'a@b.com' },
+        priority: 5,
+        status: 'FAILED',
+      } as any,
+    ]);
+
+    const result = await operationsService.retryJobs('tenant-123');
+
+    expect(fakeEmailQueue.add).toHaveBeenCalledWith('send-invoice-email', { to: 'a@b.com' }, { priority: 5 });
+    expect(prisma.backgroundJob.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'job-1' },
+        data: expect.objectContaining({ status: 'PENDING', bullJobId: 'bull-email-1' }),
+      }),
+    );
+    expect(result.retriedCount).toBe(1);
+    expect(result.skippedCount).toBe(0);
+  });
+
+  it('skips (does not fake-retry) a failed job whose queueName has no live Queue instance', async () => {
+    const { prisma } = await import('@unerp/database');
+    vi.mocked(prisma.backgroundJob.findMany).mockResolvedValue([
+      {
+        id: 'job-2',
+        tenantId: 'tenant-123',
+        queueName: 'scheduled-legacy-handler',
+        jobType: 'legacy',
+        payload: {},
+        priority: 0,
+        status: 'FAILED',
+      } as any,
+    ]);
+
+    const result = await operationsService.retryJobs('tenant-123');
+
+    expect(result.retriedCount).toBe(0);
+    expect(result.skippedCount).toBe(1);
+    expect(prisma.backgroundJob.update).not.toHaveBeenCalled();
   });
 
   it('should list scheduled cron tasks', async () => {
@@ -88,5 +144,35 @@ describe('OperationsService', () => {
     const result = await operationsService.createBackup('tenant-123', 'admin');
     expect(result.filename).toBeDefined();
     expect(prisma.setting.upsert).toHaveBeenCalled();
+  });
+
+  it('flags created backups as source: SIMULATED (no real pg_dump backs this pass — P1-1)', async () => {
+    const { prisma } = await import('@unerp/database');
+    vi.mocked(prisma.setting.findUnique).mockResolvedValue(null as any);
+    vi.mocked(prisma.setting.upsert).mockResolvedValue({} as any);
+
+    const result = await operationsService.createBackup('tenant-123', 'admin');
+    expect(result.source).toBe('SIMULATED');
+  });
+
+  it('flags backups returned from getBackups as source: SIMULATED, including the seeded fallback rows', async () => {
+    const { prisma } = await import('@unerp/database');
+    vi.mocked(prisma.setting.findUnique).mockResolvedValue(null as any);
+
+    const result = await operationsService.getBackups('tenant-123') as any[];
+    expect(result.length).toBeGreaterThan(0);
+    for (const backup of result) {
+      expect(backup.source).toBe('SIMULATED');
+    }
+  });
+
+  it('backfills source: SIMULATED onto pre-existing persisted backup records that predate the field', async () => {
+    const { prisma } = await import('@unerp/database');
+    vi.mocked(prisma.setting.findUnique).mockResolvedValue({
+      value: [{ id: 'old-bak', filename: 'old.sql', sizeBytes: 100, createdBy: 'x', createdAt: 'now' }],
+    } as any);
+
+    const result = await operationsService.getBackups('tenant-123') as any[];
+    expect(result[0].source).toBe('SIMULATED');
   });
 });

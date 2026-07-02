@@ -26,7 +26,6 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @ApiOperation({ summary: 'Get dashboards' })
-  @Permissions('analytics.read')
   @Get('dashboards')
   @Permissions('analytics.dashboard.read')
   async getDashboards(@Req() req: AuthenticatedRequest) {
@@ -34,7 +33,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Get dashboard by id' })
-  @Permissions('analytics.read')
   @Get('dashboards/:id')
   @Permissions('analytics.dashboard.read')
   async getDashboardById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -42,7 +40,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Create dashboard' })
-  @Permissions('analytics.create')
   @Post('dashboards')
   @Permissions('analytics.dashboard.create')
   async createDashboard(
@@ -54,7 +51,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Get reports' })
-  @Permissions('analytics.read')
   @Get('reports')
   @Permissions('analytics.report.read')
   async getReports(@Req() req: AuthenticatedRequest) {
@@ -62,7 +58,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Create report' })
-  @Permissions('analytics.create')
   @Post('reports')
   @Permissions('analytics.report.create')
   async createReport(
@@ -74,7 +69,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Get k p is' })
-  @Permissions('analytics.read')
   @Get('kpis')
   @Permissions('analytics.kpi.read')
   async getKPIs(@Req() req: AuthenticatedRequest) {
@@ -82,7 +76,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Get kpi drilldown' })
-  @Permissions('analytics.read')
   @Get('kpis/:code/drilldown')
   @Permissions('analytics.kpi.read')
   async getKpiDrilldown(@Req() req: AuthenticatedRequest, @Param('code') code: string) {
@@ -90,7 +83,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Get insights' })
-  @Permissions('analytics.read')
   @Get('insights')
   @Permissions('analytics.report.read')
   async getInsights(@Req() req: AuthenticatedRequest) {
@@ -98,7 +90,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Export dataset' })
-  @Permissions('analytics.read')
   @Get('export/:dataset')
   @Permissions('analytics.report.read')
   async exportDataset(@Req() req: AuthenticatedRequest, @Param('dataset') dataset: string) {
@@ -106,7 +97,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Update dashboard' })
-  @Permissions('analytics.update')
   @Patch('dashboards/:id')
   @Permissions('analytics.dashboard.create')
   async updateDashboard(
@@ -118,7 +108,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Execute pivot query' })
-  @Permissions('analytics.create')
   @Post('reports/:id/pivot')
   @Permissions('analytics.report.read')
   async executePivotQuery(
@@ -130,7 +119,6 @@ export class AnalyticsController {
   }
 
   @ApiOperation({ summary: 'Run secure visual query' })
-  @Permissions('analytics.create')
   @Post('query/visual')
   @Permissions('analytics.report.read')
   async runSecureVisualQuery(

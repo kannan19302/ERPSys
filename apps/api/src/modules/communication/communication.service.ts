@@ -1,8 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
+import { DocumentsService } from '../documents/documents.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 export type Presence = 'ACTIVE' | 'AWAY' | 'BRB' | 'DND' | 'OOO' | 'INACTIVE';
+export type ChannelMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 
 export interface AttachmentDto {
   id: string;
@@ -12,8 +15,18 @@ export interface AttachmentDto {
   url?: string;
 }
 
+/** Max attachment size for Connect uploads: 25MB. Drive itself enforces no size/type limits
+ *  today (verified by reading documents.service.ts/drive.controller.ts — bare FileInterceptor
+ *  with no `limits`/`fileFilter`), so this cap is enforced here rather than "reused" from Drive. */
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+
 @Injectable()
 export class CommunicationService {
+  constructor(
+    private readonly documentsService: DocumentsService,
+    private readonly notificationsGateway: NotificationsGateway
+  ) {}
+
   /* ─────────────────────────────────────────────────────────
      Helpers
      ───────────────────────────────────────────────────────── */
@@ -71,17 +84,30 @@ export class CommunicationService {
   }
 
   async getDirectory(tenantId: string) {
-    const [users, presence] = await Promise.all([
+    const [users, presence, employees, departments] = await Promise.all([
       prisma.user.findMany({
         where: { tenantId, deletedAt: null },
         select: { id: true, firstName: true, lastName: true, email: true, avatar: true },
         orderBy: { firstName: 'asc' },
       }),
       prisma.userPresence.findMany({ where: { tenantId } }),
+      prisma.employee.findMany({
+        where: { tenantId, deletedAt: null, userId: { not: null } },
+        select: { userId: true, designation: true, departmentId: true }
+      }),
+      prisma.department.findMany({
+        where: { tenantId },
+        select: { id: true, name: true }
+      })
     ]);
+
+    const deptMap = new Map(departments.map(d => [d.id, d.name]));
+    const employeeMap = new Map(employees.map(e => [e.userId!, { designation: e.designation, department: e.departmentId ? deptMap.get(e.departmentId) : null }]));
     const presenceByUser = new Map(presence.map((p) => [p.userId, p]));
+
     return users.map((u) => {
       const p = presenceByUser.get(u.id);
+      const emp = employeeMap.get(u.id);
       return {
         id: u.id,
         name: this.displayName(u),
@@ -90,6 +116,8 @@ export class CommunicationService {
         presence: (p?.presence ?? 'INACTIVE') as Presence,
         statusText: p?.statusText ?? null,
         statusEmoji: p?.statusEmoji ?? null,
+        designation: emp?.designation ?? null,
+        department: emp?.department ?? null,
       };
     });
   }
@@ -102,7 +130,7 @@ export class CommunicationService {
     const [spaces, directory, channels, memberships] = await Promise.all([
       prisma.connectSpace.findMany({ where: { tenantId }, orderBy: { createdAt: 'asc' } }),
       this.getDirectory(tenantId),
-      prisma.channel.findMany({ where: { tenantId, kind: 'CHANNEL' }, orderBy: { name: 'asc' } }),
+      prisma.channel.findMany({ where: { tenantId, kind: 'CHANNEL', archived: false }, orderBy: { name: 'asc' } }),
       prisma.channelMember.findMany({ where: { tenantId, userId }, select: { channelId: true, starred: true, muted: true } }),
     ]);
 
@@ -216,6 +244,9 @@ export class CommunicationService {
         tenantId, orgId: resolvedOrgId, name, kind: 'CHANNEL',
         spaceId: dto.spaceId || null, topic: dto.topic || null,
         description: dto.description || null, type: 'PUBLIC', createdBy: userId,
+        // Seed the creator as OWNER so self-service rename/archive/member-management (US-B1/B2)
+        // is immediately reachable — same pattern as getOrCreateDM/createGroup's member seeding.
+        members: { create: [{ tenantId, userId, role: 'OWNER' }] },
       },
     });
   }
@@ -256,6 +287,214 @@ export class CommunicationService {
   }
 
   /* ─────────────────────────────────────────────────────────
+     Channel management & roles (US-B1/B2/B3)
+     ───────────────────────────────────────────────────────── */
+
+  /** Fetch the requesting user's membership row for a tenant-scoped channel, or null. */
+  private async getMembership(tenantId: string, channelId: string, userId: string) {
+    const channel = await prisma.channel.findFirst({ where: { id: channelId, tenantId } });
+    if (!channel) throw new NotFoundException('Channel not found');
+    const membership = await prisma.channelMember.findFirst({ where: { tenantId, channelId, userId } });
+    return { channel, membership };
+  }
+
+  private assertRole(membership: { role: string } | null, allowed: ChannelMemberRole[]) {
+    if (!membership || !allowed.includes(membership.role as ChannelMemberRole)) {
+      throw new ForbiddenException('You do not have permission to manage this channel.');
+    }
+  }
+
+  /** Rename and/or archive a channel. Rename: OWNER/ADMIN. Archive: OWNER only. */
+  async updateChannel(
+    tenantId: string,
+    channelId: string,
+    userId: string,
+    dto: { name?: string; archived?: boolean; topic?: string; description?: string }
+  ) {
+    const { channel, membership } = await this.getMembership(tenantId, channelId, userId);
+    if (channel.kind !== 'CHANNEL') throw new BadRequestException('Only channels can be renamed/archived.');
+
+    if (dto.archived !== undefined) {
+      this.assertRole(membership, ['OWNER']);
+    } else {
+      this.assertRole(membership, ['OWNER', 'ADMIN']);
+    }
+
+    const data: Prisma.ChannelUpdateInput = {};
+    if (dto.name !== undefined) {
+      const name = dto.name.trim().replace(/^#/, '');
+      if (!name) throw new BadRequestException('Channel name required.');
+      const existing = await prisma.channel.findFirst({ where: { tenantId, orgId: channel.orgId, name, kind: 'CHANNEL', id: { not: channelId } } });
+      if (existing) throw new BadRequestException(`Channel #${name} already exists.`);
+      data.name = name;
+    }
+    if (dto.topic !== undefined) data.topic = dto.topic;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.archived !== undefined) data.archived = dto.archived;
+
+    return prisma.channel.update({ where: { id: channelId }, data });
+  }
+
+  /** Add a member to a channel. Gated to OWNER/ADMIN. Posts a SYSTEM join announcement. */
+  async addChannelMember(tenantId: string, channelId: string, userId: string, targetUserId: string) {
+    const { membership } = await this.getMembership(tenantId, channelId, userId);
+    this.assertRole(membership, ['OWNER', 'ADMIN']);
+
+    const target = await prisma.user.findFirst({ where: { id: targetUserId, tenantId } });
+    if (!target) throw new NotFoundException('User not found.');
+
+    const existing = await prisma.channelMember.findFirst({ where: { channelId, userId: targetUserId } });
+    if (existing) throw new BadRequestException('User is already a member of this channel.');
+
+    const created = await prisma.channelMember.create({ data: { tenantId, channelId, userId: targetUserId, role: 'MEMBER' } });
+    await prisma.message.create({
+      data: { tenantId, channelId, userId, kind: 'SYSTEM', content: `${this.displayName(target)} joined the channel` },
+    });
+    await prisma.channel.update({ where: { id: channelId }, data: { updatedAt: new Date() } });
+    return created;
+  }
+
+  /** Remove a member from a channel. Gated to OWNER/ADMIN. Posts a SYSTEM departure announcement.
+   *  History is retained for remaining members — no destructive delete of past messages. */
+  async removeChannelMember(tenantId: string, channelId: string, userId: string, targetUserId: string) {
+    const { membership } = await this.getMembership(tenantId, channelId, userId);
+    this.assertRole(membership, ['OWNER', 'ADMIN']);
+
+    const target = await prisma.user.findFirst({ where: { id: targetUserId, tenantId } });
+    const targetMembership = await prisma.channelMember.findFirst({ where: { channelId, userId: targetUserId } });
+    if (!targetMembership) throw new NotFoundException('User is not a member of this channel.');
+    if (targetMembership.role === 'OWNER' && targetUserId !== userId) {
+      throw new ForbiddenException('Cannot remove the channel owner.');
+    }
+
+    await prisma.channelMember.delete({ where: { id: targetMembership.id } });
+    await prisma.message.create({
+      data: { tenantId, channelId, userId, kind: 'SYSTEM', content: `${target ? this.displayName(target) : 'A member'} left the channel` },
+    });
+    return { ok: true };
+  }
+
+  /** List members of a channel with their role, for the Manage Channel drawer. Requires the
+   *  requester to be a member themselves — same visibility rule as every other channel read
+   *  path in this file (getMembership throws NotFoundException if the channel isn't tenant-scoped
+   *  to the caller; membership is checked explicitly here since read paths don't call assertRole). */
+  async getChannelMembers(tenantId: string, channelId: string, userId: string) {
+    const { membership } = await this.getMembership(tenantId, channelId, userId);
+    if (!membership) throw new ForbiddenException('You are not a member of this channel.');
+
+    const members = await prisma.channelMember.findMany({
+      where: { tenantId, channelId },
+      select: { userId: true, role: true },
+    });
+    return members.map((m) => ({ userId: m.userId, role: m.role as ChannelMemberRole }));
+  }
+
+  /** Browse PUBLIC channels the requesting user is not yet a member of (discovery). */
+  async browseChannels(tenantId: string, userId: string) {
+    const myMemberships = await prisma.channelMember.findMany({ where: { tenantId, userId }, select: { channelId: true } });
+    const myChannelIds = myMemberships.map((m) => m.channelId);
+    const channels = await prisma.channel.findMany({
+      where: { tenantId, kind: 'CHANNEL', type: 'PUBLIC', archived: false, id: { notIn: myChannelIds.length ? myChannelIds : ['_'] } },
+      include: { _count: { select: { members: true } } },
+      orderBy: { name: 'asc' },
+    });
+    return channels.map((c) => ({
+      id: c.id,
+      name: c.name,
+      topic: c.topic,
+      description: c.description,
+      memberCount: c._count.members,
+    }));
+  }
+
+  /** Join a PUBLIC channel directly, no invite required. */
+  async joinChannel(tenantId: string, channelId: string, userId: string) {
+    const channel = await prisma.channel.findFirst({ where: { id: channelId, tenantId } });
+    if (!channel) throw new NotFoundException('Channel not found');
+    if (channel.kind !== 'CHANNEL' || channel.type !== 'PUBLIC') {
+      throw new ForbiddenException('Only public channels can be joined directly.');
+    }
+    const existing = await prisma.channelMember.findFirst({ where: { channelId, userId } });
+    if (existing) return existing;
+
+    const member = await prisma.channelMember.create({ data: { tenantId, channelId, userId, role: 'MEMBER' } });
+    const user = await prisma.user.findFirst({ where: { id: userId, tenantId } });
+    await prisma.message.create({
+      data: { tenantId, channelId, userId, kind: 'SYSTEM', content: `${user ? this.displayName(user) : 'A member'} joined the channel` },
+    });
+    return member;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Message search (US-A6)
+     ───────────────────────────────────────────────────────── */
+
+  /**
+   * Search message content, tenant + membership-scoped: only channels/DMs the requesting
+   * user belongs to. Uses ILIKE (accelerated by the pg_trgm GIN index idx_messages_content_trgm
+   * on messages.content) rather than similarity()/% to keep substring matching predictable for
+   * short queries. Soft-deleted messages are excluded.
+   */
+  async searchMessages(tenantId: string, userId: string, query: string, limit = 50) {
+    const q = query.trim();
+    if (!q) return [];
+
+    const memberships = await prisma.channelMember.findMany({ where: { tenantId, userId }, select: { channelId: true } });
+    const channelIds = memberships.map((m) => m.channelId);
+    if (channelIds.length === 0) return [];
+
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        channelId: string;
+        userId: string;
+        content: string;
+        createdAt: Date;
+        channelName: string;
+        channelKind: string;
+        authorFirstName: string;
+        authorLastName: string;
+      }>
+    >`
+      SELECT
+        m.id,
+        m.channel_id AS "channelId",
+        m.user_id AS "userId",
+        m.content,
+        m.created_at AS "createdAt",
+        c.name AS "channelName",
+        c.kind AS "channelKind",
+        u.first_name AS "authorFirstName",
+        u.last_name AS "authorLastName"
+      FROM messages m
+      JOIN channels c ON c.id = m.channel_id
+      JOIN users u ON u.id = m.user_id
+      WHERE m.tenant_id = ${tenantId}
+        AND m.deleted_at IS NULL
+        AND m.channel_id IN (${Prisma.join(channelIds)})
+        AND m.content ILIKE ${`%${q}%`}
+      ORDER BY m.created_at DESC
+      LIMIT ${limit}
+    `;
+
+    return rows.map((r) => {
+      const authorName = `${r.authorFirstName} ${r.authorLastName}`.trim();
+      const idx = r.content.toLowerCase().indexOf(q.toLowerCase());
+      const start = Math.max(0, idx - 40);
+      const snippet = idx >= 0 ? `${start > 0 ? '…' : ''}${r.content.slice(start, idx + q.length + 40)}${idx + q.length + 40 < r.content.length ? '…' : ''}` : r.content.slice(0, 80);
+      return {
+        messageId: r.id,
+        channelId: r.channelId,
+        channelName: r.channelKind === 'CHANNEL' ? `#${r.channelName}` : r.channelName,
+        authorId: r.userId,
+        authorName,
+        snippet,
+        ts: r.createdAt.getTime(),
+      };
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────
      Messages, threads, reactions
      ───────────────────────────────────────────────────────── */
 
@@ -293,6 +532,47 @@ export class CommunicationService {
     return messages.map((m) => this.serializeMessage(m));
   }
 
+  /**
+   * US-A1/US-A2: Upload a real file attachment for a Connect message, replacing the client's
+   * previous `URL.createObjectURL(f)` blob-URL fake. Stores the file durably via Drive's
+   * DocumentsService (same S3/MinIO-backed storage `drive.controller.ts` uses for
+   * `POST /drive/documents`), scoped under this tenant, and returns a durable documentId +
+   * download URL to be embedded in the message's `attachments` JSON — never a blob URL.
+   *
+   * Validation: tenant membership on the channel + a size cap (Drive's own createDocument has
+   * no size/type limits today — verified by reading documents.service.ts, no `limits`/`fileFilter`
+   * on its FileInterceptor — so this cap is enforced here, not "reused", since there is nothing
+   * to reuse for size on the Drive side).
+   */
+  async uploadAttachment(tenantId: string, channelId: string, userId: string, file: Express.Multer.File) {
+    const channel = await prisma.channel.findFirst({ where: { id: channelId, tenantId } });
+    if (!channel) throw new NotFoundException('Conversation not found');
+
+    if (!file) throw new BadRequestException('No file provided.');
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      throw new BadRequestException(`File exceeds the ${MAX_ATTACHMENT_BYTES / (1024 * 1024)}MB attachment limit.`);
+    }
+
+    const orgId = await this.resolveOrgId(tenantId);
+    const document = await this.documentsService.createDocument(
+      tenantId,
+      orgId,
+      { name: file.originalname, folderId: undefined },
+      userId,
+      file
+    );
+    const versionId = document?.versions?.[0]?.id;
+
+    const attachment: AttachmentDto = {
+      id: document!.id,
+      name: file.originalname,
+      size: file.size,
+      mime: file.mimetype,
+      url: versionId ? `/drive/documents/versions/${versionId}/download` : undefined,
+    };
+    return { documentId: document!.id, attachment };
+  }
+
   async createMessage(
     tenantId: string,
     channelId: string,
@@ -318,7 +598,12 @@ export class CommunicationService {
     });
     await prisma.channel.update({ where: { id: channelId }, data: { updatedAt: new Date() } });
     await this.notifyMentions(tenantId, channelId, userId, content);
-    return this.serializeMessage(msg);
+    const serialized = this.serializeMessage(msg);
+    // US-A3: broadcast the persisted message (real id/createdAt) over the shared /ws gateway so
+    // other open clients in this channel's room see it within ~1s instead of the next 5s poll.
+    // Clients without a live socket keep working via the existing polling GET endpoints.
+    this.notificationsGateway.broadcastChatMessage(channelId, { ...serialized, tenantId });
+    return serialized;
   }
 
   /** Parse @mentions and create CHAT notifications for mentioned users. */
@@ -402,11 +687,21 @@ export class CommunicationService {
   }
 
   async setPresence(tenantId: string, userId: string, dto: { presence: Presence; statusText?: string; statusEmoji?: string }) {
-    return prisma.userPresence.upsert({
+    const updated = await prisma.userPresence.upsert({
       where: { tenantId_userId: { tenantId, userId } },
       create: { tenantId, userId, presence: dto.presence, statusText: dto.statusText ?? null, statusEmoji: dto.statusEmoji ?? null },
       update: { presence: dto.presence, statusText: dto.statusText ?? null, statusEmoji: dto.statusEmoji ?? null },
     });
+    // US-A5: broadcast the live presence change to other tenant members watching the directory,
+    // instead of making them wait for their next 15s poll of GET /communication/presence.
+    this.notificationsGateway.broadcastPresenceUpdate(tenantId, {
+      userId,
+      presence: updated.presence,
+      statusText: updated.statusText,
+      statusEmoji: updated.statusEmoji,
+      timestamp: new Date().toISOString(),
+    });
+    return updated;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -456,6 +751,19 @@ export class CommunicationService {
     }
     const updated = await prisma.channelMember.update({ where: { id: membership.id }, data: { muted: !membership.muted } });
     return { channelId, muted: updated.muted };
+  }
+
+  /** US-B5: set the caller's own per-channel notification preference (ALL/MENTIONS/NONE).
+   *  Personal preference on a channel the caller is already a member of — same pattern as
+   *  toggleStar/toggleMute, not a channel-management operation, so no OWNER/ADMIN role gating. */
+  async setNotifyLevel(tenantId: string, channelId: string, userId: string, notifyLevel: 'ALL' | 'MENTIONS' | 'NONE') {
+    const membership = await prisma.channelMember.findFirst({ where: { channelId, userId } });
+    if (!membership) {
+      await prisma.channelMember.create({ data: { tenantId, channelId, userId, notifyLevel } });
+      return { channelId, notifyLevel };
+    }
+    const updated = await prisma.channelMember.update({ where: { id: membership.id }, data: { notifyLevel } });
+    return { channelId, notifyLevel: updated.notifyLevel };
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -577,5 +885,118 @@ export class CommunicationService {
         body: dto.bodyHtml || dto.bodyText || '', variables: [] as Prisma.InputJsonValue,
       },
     });
+  }
+
+  /* ── Read receipts & link previews (US-B4 / US-C2) ── */
+
+  private previewCache = new Map<string, any>();
+
+  async getMessageReadReceipts(tenantId: string, messageId: string, userId: string) {
+    const message = await prisma.message.findFirst({ where: { id: messageId, tenantId } });
+    if (!message) throw new NotFoundException('Message not found');
+
+    const membership = await prisma.channelMember.findFirst({ where: { channelId: message.channelId, userId } });
+    if (!membership) throw new ForbiddenException('You are not a member of this channel');
+
+    const channel = await prisma.channel.findFirst({
+      where: { id: message.channelId },
+      include: { _count: { select: { members: true } } }
+    });
+    if (!channel) throw new NotFoundException('Channel not found');
+
+    // Bounded check: read receipts only for DMs/GROUPs or small channels (<= 8 members)
+    if (channel.kind !== 'DM' && channel.kind !== 'GROUP' && channel._count.members > 8) {
+      return [];
+    }
+
+    const members = await prisma.channelMember.findMany({
+      where: { channelId: message.channelId, userId: { not: message.userId } }
+    });
+
+    const memberUserIds = members.map(m => m.userId);
+    if (memberUserIds.length === 0) return [];
+
+    const [users, reads] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: memberUserIds }, tenantId, deletedAt: null },
+        select: { id: true, firstName: true, lastName: true, avatar: true }
+      }),
+      prisma.channelRead.findMany({
+        where: { channelId: message.channelId, userId: { in: memberUserIds } }
+      })
+    ]);
+
+    const readMap = new Map(reads.map(r => [r.userId, r.lastReadAt]));
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    const seenBy: Array<{ userId: string; name: string; avatar: string | null; seenAt: Date }> = [];
+    for (const memberId of memberUserIds) {
+      const readAt = readMap.get(memberId);
+      const user = userMap.get(memberId);
+      if (readAt && user && readAt.getTime() >= message.createdAt.getTime() - 1000) {
+        seenBy.push({
+          userId: memberId,
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          avatar: user.avatar,
+          seenAt: readAt
+        });
+      }
+    }
+
+    return seenBy;
+  }
+
+  async getLinkPreview(urlStr: string) {
+    if (!urlStr) throw new BadRequestException('URL parameter is required.');
+    let cleanUrl = urlStr.trim();
+    if (!/^https?:\/\//i.test(cleanUrl)) {
+      cleanUrl = `http://${cleanUrl}`;
+    }
+
+    if (this.previewCache.has(cleanUrl)) {
+      return this.previewCache.get(cleanUrl);
+    }
+
+    try {
+      const response = await fetch(cleanUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        signal: AbortSignal.timeout(4000)
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const html = await response.text();
+
+      const result = {
+        url: cleanUrl,
+        title: this.extractMeta(html, /<meta[^>]*property="og:title"[^>]*content="([^"]*)"/i) ||
+               this.extractMeta(html, /<meta[^>]*name="twitter:title"[^>]*content="([^"]*)"/i) ||
+               this.extractMeta(html, /<title>([^<]*)<\/title>/i) || undefined,
+        description: this.extractMeta(html, /<meta[^>]*property="og:description"[^>]*content="([^"]*)"/i) ||
+                     this.extractMeta(html, /<meta[^>]*name="twitter:description"[^>]*content="([^"]*)"/i) ||
+                     this.extractMeta(html, /<meta[^>]*name="description"[^>]*content="([^"]*)"/i) || undefined,
+        image: this.extractMeta(html, /<meta[^>]*property="og:image"[^>]*content="([^"]*)"/i) ||
+               this.extractMeta(html, /<meta[^>]*name="twitter:image"[^>]*content="([^"]*)"/i) || undefined,
+        siteName: this.extractMeta(html, /<meta[^>]*property="og:site_name"[^>]*content="([^"]*)"/i) || undefined
+      };
+
+      this.previewCache.set(cleanUrl, result);
+      return result;
+    } catch (err) {
+      return { url: cleanUrl };
+    }
+  }
+
+  private extractMeta(html: string, regex: RegExp): string | null {
+    const match = html.match(regex);
+    if (match && match[1]) {
+      return match[1]
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .trim();
+    }
+    return null;
   }
 }

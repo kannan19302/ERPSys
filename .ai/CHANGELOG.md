@@ -3,6 +3,290 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-02] Admin P0-2 + P1-1: Real automation-rule execution engine; honest backup labeling + real BullMQ↔BackgroundJob wiring (backend-developer)
+
+Closed the two confirmed gaps in `.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md` (P0-2, P1-1) and applied the RBAC
+boundary fix from `.ai/ADMIN_SECURITY_AUDIT.md` Section 3. P0-1 (RBAC decorator-stacking) was already fixed in a
+prior pass and untouched here.
+
+**P0-2 — Automation Rules real execution engine:**
+- Extracted the condition-evaluation logic previously private to `AutomationRulesService.testRule` into a shared
+  `static evaluateConditions()` method — both `testRule` (sample data) and the new real-event engine reuse it,
+  no duplication.
+- Added `apps/api/src/modules/admin/automation-rule-engine.service.ts`: real `@OnEvent` listeners for the domain
+  events already emitted elsewhere (confirmed via grep, no new events invented) — `sales.order.confirmed`,
+  `sales.delivery.created`, `sales.return.created`, `sales.return.processed`, `procurement.receipt.created`,
+  `procurement.return.created`, `finance.invoice.created`, `finance.invoice.sent`, `finance.payment.received`,
+  `hr.employee.onboarded`. On each event: loads ACTIVE `AutomationRule` rows for that tenant + trigger (DRAFT/
+  PAUSED rules never load, so they're inert by design), evaluates conditions, and for matching rules executes
+  `notify`/`notification` actions (emits `notification.send`, consumed by the existing
+  `NotificationDeliveryService`/`NotificationsGateway` — no cross-module import) and `email` actions (real
+  BullMQ job via the existing `email` queue, tracked through the new `BackgroundJob` correlation helper). Other
+  action types are recorded as not-executed rather than silently dropped (P2 follow-up). Records
+  `AutomationRuleExecution` rows with `status: 'SUCCESS'` / `'SKIPPED'` / `'FAILED'` for real triggers, leaving
+  `testRule`'s `'TEST'` status path untouched. Registered in `admin.module.ts`.
+- Added `apps/api/src/modules/admin/tests/automation-rule-engine.service.spec.ts`: emits real domain events
+  through a real `EventEmitter2` and asserts real side effects (notification.send emitted with correct payload,
+  execution rows created with the right status, BullMQ `queue.add` called for email actions, DRAFT/PAUSED
+  exclusion via the `status: 'ACTIVE'` query filter, tenant isolation, missing-tenantId guard) — not just another
+  `testRule` sample-data call.
+
+**P1-1 — Operations: honest backup labeling + real BullMQ↔BackgroundJob wiring:**
+- `OperationsService.getBackups`/`createBackup` now stamp every backup record (including the two seeded
+  fallback rows, backfilled on read) with `source: 'SIMULATED'`. No real `pg_dump` runs — that requires
+  devops-engineer sign-off on shelling out from the API container, which this pass doesn't have; per the task's
+  explicit guidance, relabeling honestly was chosen over building a false sense of real DR coverage. Frontend
+  copy update is a separate, already-spec'd pass (`.ai/ADMIN_UI_ACCESS_CONTROL_SPEC.md`).
+- Added `apps/api/src/common/queues/job-tracking.util.ts`: `enqueueTrackedJob()` adds a job to a real BullMQ
+  queue and creates a correlated `BackgroundJob` row with `bullJobId` set; `syncBackgroundJobStatus()` updates
+  that row by `queueName` + `bullJobId` from a processor's lifecycle hooks (safe no-op if no row correlates).
+- `EmailProcessor`/`ExportProcessor` (`apps/api/src/common/queues/*.processor.ts`) now implement
+  `@OnWorkerEvent('active'|'completed'|'failed')` to keep `BackgroundJob` rows in sync with real BullMQ state —
+  previously these were two fully unconnected systems (confirmed zero references from `common/queues/*` to the
+  `BackgroundJob` table).
+- `OperationsService.retryJobs` now actually re-enqueues each FAILED `BackgroundJob` row into the correct live
+  BullMQ `Queue` instance (by `queueName`, injected via `@InjectQueue`, all `@Optional()` so the service is still
+  constructible without a DI container in tests) using its stored `payload`/`jobType`, and re-links the row to
+  the new `bullJobId`. Rows whose `queueName` has no live processor (e.g. legacy `scheduled-*` rows from
+  `triggerTask` — a P2 item) are left `FAILED` and counted as `skippedCount` rather than silently faked.
+- RBAC boundary fix (security audit Section 3): `admin/operations/backups` (GET) and
+  `admin/operations/backups/create` (POST) now require the new `system.operations.backup` permission (never
+  seeded to a tenant role) and `@SkipTenantScope()`, following the `SuperAdminController`/`system.tenant.*`
+  precedent — a Postgres backup is instance-wide, so the old tenant-scoped `admin.operations.*` gate would have
+  let any Tenant Admin trigger what is effectively a platform-wide operation once a real `pg_dump` lands. Every
+  other `admin/operations/*` endpoint remains tenant-scoped as before. Registered
+  `system.operations.backup` in `packages/shared/src/permissions/registry.ts`.
+- Extended `apps/api/src/modules/admin/tests/operations.service.spec.ts` with real re-enqueue assertions
+  (BullMQ `queue.add` called with the row's `jobType`/`payload`/`priority`, `BackgroundJob.update` called with
+  the new `bullJobId`), a skip-path test for queues with no live instance, and `source: 'SIMULATED'` coverage
+  for both `createBackup` and `getBackups` (including backfill of pre-existing rows). Added
+  `apps/api/src/common/queues/tests/job-tracking.util.spec.ts` for the new helper.
+- Schema: `BackgroundJob.bullJobId` (nullable, indexed with `queueName`) was already added by a prior
+  data-architect pass (migration `20260702130000_admin_background_job_bull_correlation`); applied it to the dev
+  DB via `prisma migrate deploy` (idempotent SQL) and regenerated the Prisma client — no new migration needed.
+- Verified: `apps/api` full vitest suite (133 files / 1787 tests) green; `pnpm turbo run typecheck` clean for
+  `@unerp/api`, `@unerp/shared`, `@unerp/database`.
+- Deferred (explicitly out of scope, matching the task's stated boundaries): real `pg_dump`-backed backup/restore
+  pipeline (needs devops-engineer sign-off); `payroll`/`data-import` queue processors (queues are registered but
+  no processor exists for either — adding one is a separate, larger unit of work, not part of P1-1's "connect
+  the 4 existing queues" scope); scheduled-task → real handler dispatch (P2, tracked separately); action types
+  beyond `notify`/`email` for automation rules (webhooks, cross-module writes — P2).
+
+## [2026-07-02] Admin P0-1: Fixed dead fine-grained RBAC across all 19 Admin controllers (backend-developer)
+
+Fixed the confirmed P0 security bug documented in `.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md` (P0-1) and
+`.ai/ADMIN_SECURITY_AUDIT.md`: every admin controller handler stacked two `@Permissions(...)` decorators
+(coarse + fine-grained). Since `Permissions()` is `SetMetadata` on a single reflect-metadata key and
+`RbacGuard` reads it via `getAllAndOverride` (first-defined-wins, no merge), only the physically topmost
+(coarse) decorator was ever enforced — the fine-grained one was silently dead. Worst instance:
+`super-admin.controller.ts` — any role with plain `admin.read` could call `GET /super-admin/tenants` and
+enumerate every tenant on the platform.
+
+- Collapsed all 180 stacked pairs (360 decorators -> 180 single `@Permissions(fine)` calls) across all 19
+  `apps/api/src/modules/admin/*.controller.ts` files. No cross-module mismatches found (unlike the CRM
+  example in the audit) — every fine-grained code was already correctly scoped to admin/system.
+- Registered 32 missing fine-grained codes in `packages/shared/src/permissions/registry.ts`
+  (`admin.security.*`, `admin.user-group.*`, `admin.automation.*`, `admin.platform.*`, `admin.operations.*`,
+  `admin.org-hierarchy.*`, `admin.bulk-ops.*`, `admin.custom-fields.*`, `admin.data-quality.*`,
+  `admin.delegations.*`, `admin.recycle-bin.*`, `admin.subscription.*`, `admin.alerts.*`). `system.tenant.*`
+  and other `system.*` codes already existed. Some controllers (gdpr, import-export, announcements,
+  activity-feed, marketplace) intentionally reuse existing `admin.setting.*` / `admin.platform.*` codes
+  rather than declaring new ones — verified as intentional, not drift.
+- Added `apps/api/src/modules/admin/tests/permissions-drift.spec.ts` (US-P0-1b): parses all admin controller
+  source for `@Permissions(...)` literals, fails on any remaining stacked pair, fails on any code missing
+  from the registry, and diagnostically reports (non-failing) orphaned admin/system registry entries.
+  Verified red before the registry fix, green after.
+- Seed data: no changes needed. The only seeded role touching admin permissions (`ADMIN` in
+  `packages/database/prisma/seed.ts`) uses the wildcard `'admin.*'`, which already matches all newly-live
+  fine-grained `admin.x.y` codes per `hasPermission`'s prefix-match rule — non-breaking.
+- Verified: full `@unerp/api` vitest suite (131 files / 1772 tests) green; `pnpm turbo run typecheck`
+  (forced, no cache) clean for `@unerp/api` and dependencies.
+- Out of scope (per task): the same bug in the other 54 non-admin controller files (1,024 endpoints total
+  per the audit), P0-2 (automation engine runtime), P1-1 (backup/job queue reality).
+
+## [2026-07-02] Connect: UAT Sign-Off — Teams/GChat Parity Pass ACCEPTED (business-analyst-uat)
+
+Ran a full UAT pass covering both the QA-validated feature set (file attachments, WebSocket real-time,
+search, channel management/roles, notification levels, forwarding, emoji picker) and the newer additions
+from the same-day follow-up sprint (seen-by read receipts, DND-aware notification suppression, link-preview
+unfurling, workspace directory search, Saved Messages). Full script and evidence in
+`.ai/CONNECT_UAT_SIGNOFF.md`.
+
+**Decision: UAT ACCEPTED — Connect parity pass is ready for release.**
+
+### Independently re-verified (not just trusted from prior reports)
+- QA's two closed P0s (channel-owner seeding; `PermissionContext` provider wiring) re-spot-checked live
+  against the current dev DB — both still hold.
+- Re-ran the full communication+notifications automated suite myself: 9 files / 85 tests, all passing.
+  Re-ran `tsc --noEmit` for `apps/api`: clean.
+- Live end-to-end walkthrough on a freshly created channel: create → OWNER seeded → rename → archive, all
+  as the owner, no 403s.
+- Live-verified notification-level picker, link-preview unfurling (including graceful failure on a
+  malformed URL), forwarded-message marker persistence, seen-by read-receipts endpoint (membership gating,
+  self-exclusion, ≤8-member bound).
+
+### New defect found during this pass (not caught by requirements doc or QA report)
+- **DND-aware notification suppression (US-B6) does not actually apply to Connect `@mention` notifications.**
+  `NotificationDeliveryService`'s DND-suppression logic is correct and unit-tested in isolation, but
+  `CommunicationService.notifyMentions` writes notifications directly via `prisma.notification.create` and
+  never emits the `notification.send` event that logic listens for — confirmed by code read and by grepping
+  every emitter of that event across `apps/api/src` (5 files, `communication.service.ts` not among them).
+  Practical impact is low today (Connect mentions are in-app-only regardless of DND, so nothing is actively
+  un-suppressed), but the acceptance criterion as written is not demonstrable. Routed to `backend-developer`
+  as a non-blocking follow-up — not treated as a release blocker for this sign-off.
+
+### Other findings, routed to their owners (not blocking)
+- Link-preview endpoint (`GET /communication/link-preview`) performs a server-side fetch of a fully
+  user-supplied URL with no SSRF guard — routed to `security-auditor`.
+- Directory designation/department enrichment (US-D1) is correct in code but cannot be demonstrated with
+  real data — the seeded dev DB has zero `Employee` rows linked to a `User.id`. Routed to whoever owns
+  `packages/database/prisma/seed.ts` as a fixture-quality follow-up.
+- `PermissionContext` provider's actual rendered-browser confirmation remains outstanding (QA's own
+  carried-over recommendation) — no browser automation was run in this pass either, per `AGENTS.md` rule
+  #20.
+
+## [2026-07-02] Connect: Seen-by List, DND Suppression, Link Previews, Saved Messages, & Directory Search (US-B4, US-B6, US-C2, US-D1, US-D2)
+
+Completed the remaining gaps in the Connect module as specified in `.ai/CONNECT_MODULE_REQUIREMENTS.md`.
+
+### Added — Backend (Communication module)
+- **Seen-by read receipts (US-B4)**: Exposed `GET /communication/messages/:id/read-receipts` to fetch which small group/DM members have read a specific message. Gated to groups <= 8 members to respect performance limits.
+- **Link Previews (US-C2)**: Exposed `GET /communication/link-preview` to perform server-side fetching and parsing of OpenGraph metadata with an AbortSignal timeout and caching.
+- **DND Notification Suppression (US-B6)**: Updated `NotificationDeliveryService` event handler to check recipient presence status. Suppresses external push/email notification delivery if the status is `DND`, while keeping the in-app notification row.
+- **Directory Search Enrichment (US-D1)**: Enriched `getDirectory` database query to join `Employee` and `Department` tables to include job designation/title and department name.
+
+### Added — Frontend (Next.js web app)
+- **Workspace Directory Modal (US-D1)**: Added Workspace Directory search modal accessible via the sidebar status footer. Supports filtering by name, email, department, and designation. Added Message button shortcut to instantly start a DM.
+- **Profile Card Enrichment**: Updated user profiles and profile cards to render designation/title and department name resolved from the directory API.
+- **Saved Messages Panel (US-D2)**: Built right-side panel listing all bookmarked messages, complete with "Go to message" navigation jump/feed-flash, and "Unsave" button. Wired saved messages toggle button in the header.
+- **Seen-by Tooltip (US-B4)**: Integrated Seen receipts tooltip next to reactions on message rows, fetching read status dynamically on-hover.
+- **Link Previews (US-C2)**: Integrated OpenGraph preview cards rendering below message texts when urls are detected.
+
+### Tests
+- Added `apps/api/src/modules/notifications/tests/notification-delivery.service.spec.ts` asserting DND notification suppression.
+- Added test blocks in `communication.attachments-and-realtime.spec.ts` asserting `getMessageReadReceipts` and `getLinkPreview`.
+- Fixed mock signatures in `communication.service.spec.ts`.
+
+## [2026-07-02] Connect: Real File Attachments + WebSocket Real-Time Wiring (US-A1/A2/A3/A4/A5)
+
+Implemented the two P0 backend gaps called out in `.ai/CONNECT_MODULE_REQUIREMENTS.md` section 1.2
+("exists but is fake/broken"): attachments that were never actually uploaded anywhere, and a real
+Socket.IO gateway (`notifications.gateway.ts`) that Connect never used.
+
+### Added — Backend (Communication module)
+- **Real file attachments (US-A1/US-A2)**: `POST /communication/channels/:channelId/attachments`
+  (multipart, `FileInterceptor('file')`, same pattern as `drive.controller.ts`). Validates the
+  channel is tenant-scoped, enforces a 25MB cap (Drive's own `createDocument` has no size/type
+  limits to "reuse" — verified by reading `documents.service.ts`, so the cap is new, not reused),
+  then calls Drive's `DocumentsService.createDocument(...)` — a public service method, not Drive's
+  S3 client/repository directly — to store the file durably under `drive/<tenantId>/<documentId>/...`
+  in MinIO/S3. Returns `{ documentId, attachment: { id, name, size, mime, url } }` where `url` is
+  Drive's existing `/drive/documents/versions/:versionId/download` route, to be stored in the
+  message's existing `attachments` Json field — replacing the client's `URL.createObjectURL(f)`
+  blob URLs entirely (frontend wiring is a separate frontend-developer task).
+- **WebSocket wiring (US-A3/US-A4/US-A5)**: `NotificationsGateway` gained two server-initiated
+  broadcast methods — `broadcastChatMessage(channelId, payload)` (emits `chat:message` into
+  `channel:<id>`) and `broadcastPresenceUpdate(tenantId, payload)` (emits `presence` into
+  `tenant:<id>`). `CommunicationService.createMessage` now calls `broadcastChatMessage` with the
+  fully persisted message (real id/createdAt from Postgres, not an ephemeral guess) immediately
+  after `prisma.message.create`. `CommunicationService.setPresence` now calls
+  `broadcastPresenceUpdate` after `prisma.userPresence.upsert`. The existing `typing`
+  `@SubscribeMessage` handler was confirmed correct as-is (uses `client.to(...)`, which already
+  excludes the sender) — no change needed there, only documented. Clients without a live socket
+  keep working via the existing polling endpoints (`GET .../messages` every 5s, presence every
+  15s) — no breaking change to the polling path.
+- **Cross-module wiring**: `CommunicationModule` now imports `DocumentsModule` and
+  `NotificationsModule` and injects `DocumentsService`/`NotificationsGateway` into
+  `CommunicationService`'s constructor. This follows the precedent already established elsewhere
+  in this codebase (`ai.module.ts` imports `ReportingModule`; `builder.module.ts` imports
+  `AiModule`) for shared-infrastructure services, not a domain-boundary violation — per
+  `.ai/CONNECT_MODULE_REQUIREMENTS.md` section 4: "the gateway wiring in Phase A is a legitimate
+  exception since notifications.gateway.ts is explicitly the shared real-time transport."
+- **RBAC**: registered `communication.message-attachment.upload` permission, applied via
+  `@Permissions('communication.message-attachment.upload')` on the new endpoint.
+
+### Tests
+- `apps/api/src/modules/communication/tests/communication.attachments-and-realtime.spec.ts` (new,
+  11 tests): tenant isolation on upload, missing-file rejection, size-cap rejection before Drive is
+  ever called, durable documentId/download-URL assertion (never a blob: URL), gateway broadcast
+  triggered with the real persisted message id/timestamp on `createMessage`, no broadcast on
+  validation failure, presence broadcast on `setPresence`.
+- `apps/api/src/modules/notifications/tests/notifications.gateway.spec.ts` (new, 4 tests):
+  `broadcastChatMessage`/`broadcastPresenceUpdate` target the correct Socket.IO rooms, defensive
+  no-throw when `server` isn't yet attached, `typing` handler excludes the sender.
+- Updated existing `CommunicationService` constructor call sites in
+  `communication.service.spec.ts`, `communication.service.coverage.spec.ts`, and
+  `communication.channel-management.spec.ts` to pass mocked `DocumentsService`/
+  `NotificationsGateway` args (constructor signature changed).
+
+### Verified
+- `pnpm --filter api typecheck` — clean, no errors.
+- `communication` + `notifications` module test suites: 8 files, 76 tests, all passing.
+- `documents` + `admin` module suites re-run as a regression check (cross-module import risk):
+  25 files, 237 tests, all passing.
+
+### Fixed — registry code drift (found during verification of this pass)
+- The four "legacy coarse" `communication.*` registry entries were declared via the `p()` helper,
+  which always emits a 3-segment `module.resource.action` code — so they registered as
+  `communication.general.read/create/update/delete`. The controller's actual runtime strings for
+  these routes are the bare 2-segment `communication.read/create/update/delete` (confirmed by
+  grepping every `@Permissions(...)` call in `communication.controller.ts`), so the registered
+  codes never matched and these four permissions were still invisible to the Access Control admin
+  UI despite "existing" in the file. Replaced with literal `PermissionDefinition` objects whose
+  `code` exactly matches the runtime string. Verified zero drift: all 18 distinct
+  `@Permissions(...)` strings used in the controller now have an exact-match registry entry.
+
+### Note on scope
+This same working tree already contained a prior, separately-changelogged pass (see the entry
+immediately below) implementing Phase B (channel management/roles) and message search — that work
+was not part of this task and is documented separately.
+
+## [2026-07-02] Connect: Message Search + Channel Management & Roles (US-A6, US-B1/B2/B3)
+
+Implemented the message-search and channel/space-management-with-roles phases from
+`.ai/CONNECT_MODULE_REQUIREMENTS.md` in `apps/api/src/modules/communication`. Schema additions
+(`ChannelMember.role`, `ChannelMember.notifyLevel`, `Channel.archived`, `pg_trgm` GIN index on
+`messages.content`) were applied by a data-architect pass ahead of/during this work.
+
+### Added — Backend (Communication module)
+- **Message search**: `GET /communication/search?q=...` — tenant-scoped and membership-scoped
+  (only searches channels/DMs the requester belongs to), via `prisma.$queryRaw` `ILIKE` against
+  `messages.content` (accelerated by `idx_messages_content_trgm`), excludes soft-deleted messages,
+  returns channel name, author, timestamp, and a highlighted snippet for jump-to-message.
+- **Channel rename/archive**: `PATCH /communication/channels/:id` — rename gated to OWNER/ADMIN,
+  archive gated to OWNER only; archived channels are excluded from the default workspace channel
+  list and the browse/join discovery list but remain readable via history.
+- **Member management**: `POST /communication/channels/:id/members` and
+  `DELETE /communication/channels/:id/members/:userId` — gated to OWNER/ADMIN, post a SYSTEM
+  message announcing join/departure, retain full message history for remaining members, and block
+  removing the channel OWNER.
+- **Channel discovery**: `GET /communication/channels/browse` (PUBLIC, non-archived, not-yet-joined
+  channels with topic + member count) and `POST /communication/channels/:id/join` (direct join, no
+  invite needed, for PUBLIC channels only).
+- **Schema**: `Channel.archived` (Boolean, default false) added additively via migration
+  `20260702002940_communication_channel_archived`.
+- **RBAC**: registered `communication.channel.manage`, `communication.channel.join`,
+  `communication.channel.member.manage`, and `communication.message.search` in
+  `packages/shared/src/permissions/registry.ts`, alongside the module's existing
+  `communication.channel.*`/`communication.message.*`/`communication.notification.*`/
+  `communication.email-template.*` permissions (previously unregistered — now all visible/assignable
+  in the Access Control admin UI).
+- **Change history**: `@TrackChanges('Channel')` + `ChangeHistoryInterceptor` on rename/archive and
+  member add/remove endpoints.
+
+### Tests
+- `apps/api/src/modules/communication/tests/communication.channel-management.spec.ts` (14 tests):
+  tenant isolation for updateChannel/search, RBAC gating (MEMBER blocked, ADMIN vs OWNER-only
+  archive), member add/remove with SYSTEM announcements and owner-removal protection, browse/join
+  discovery scoping.
+- Fixed a pre-existing constructor-signature break in `communication.service.spec.ts` caused by
+  `CommunicationService` picking up new constructor dependencies (`DocumentsService`,
+  `NotificationsGateway`) from concurrent attachment-upload work in the same module.
+
+### Verified
+- `pnpm --filter api exec vitest run` — 127 test files, 1748 tests passing.
+- `pnpm --filter api typecheck` — clean, exit 0.
+
 ## [2026-07-01] Layout Navbar Revamp & Floating AI Chatbot Companion
 
 Overhauled the main ERP top header navigation panel with modern, premium glassmorphism styling and integrated a floating AI chatbot companion at the bottom of all dashboard pages.

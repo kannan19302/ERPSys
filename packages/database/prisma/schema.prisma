@@ -1568,6 +1568,7 @@ model Channel {
   kind        String   @default("CHANNEL") // CHANNEL, DM, GROUP
   spaceId     String?  @map("space_id")
   topic       String?
+  archived    Boolean  @default(false) @map("archived")
   createdBy   String?  @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -1581,6 +1582,10 @@ model Channel {
   @@map("channels")
 }
 
+/// Search: `content` is covered by a `pg_trgm` GIN index (idx_messages_content_trgm) created
+/// via raw SQL in migration 20260702120000_connect_roles_notify_search — not modeled here because
+/// Prisma has no native index-ops syntax without the `postgresqlExtensions` preview feature.
+/// Do not drop/recreate this index via `prisma migrate dev` schema diffing.
 model Message {
   id          String    @id @default(cuid())
   tenantId    String    @map("tenant_id")
@@ -1606,6 +1611,7 @@ model Message {
 
   @@index([tenantId])
   @@index([channelId, parentId])
+  @@index([tenantId, deletedAt])
   @@map("messages")
 }
 
@@ -1626,18 +1632,21 @@ model ConnectSpace {
 }
 
 model ChannelMember {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  channelId String   @map("channel_id")
-  userId    String   @map("user_id")
-  starred   Boolean  @default(false)
-  muted     Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  channelId   String   @map("channel_id")
+  userId      String   @map("user_id")
+  starred     Boolean  @default(false)
+  muted       Boolean  @default(false)
+  role        String   @default("MEMBER") // OWNER, ADMIN, MEMBER — see ChannelMemberRole in @unerp/shared
+  notifyLevel String   @default("ALL") @map("notify_level") // ALL, MENTIONS, NONE
+  createdAt   DateTime @default(now()) @map("created_at")
 
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
   @@unique([channelId, userId])
   @@index([tenantId, userId])
+  @@index([channelId, role])
   @@map("channel_members")
 }
 
@@ -7045,6 +7054,7 @@ model BackgroundJob {
   tenantId    String    @map("tenant_id")
   queueName   String    @map("queue_name")
   jobType     String    @map("job_type")
+  bullJobId   String?   @map("bull_job_id") // correlates this row with the real BullMQ Job.id in `queueName`; null for legacy/unlinked rows
   payload     Json      @default("{}")
   status      String    @default("PENDING")
   result      Json?
@@ -7058,6 +7068,7 @@ model BackgroundJob {
 
   @@index([tenantId, queueName])
   @@index([status])
+  @@index([queueName, bullJobId])
   @@map("background_jobs")
 }
 

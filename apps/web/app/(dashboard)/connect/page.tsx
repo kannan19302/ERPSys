@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { io, type Socket } from 'socket.io-client';
 import {
   Hash, Send, Smile, Reply, Pencil, Trash2, Pin, Paperclip, Search, Video,
   Calendar, Plus, X, ChevronDown, ChevronRight, MessageSquare, Users, Download,
@@ -14,10 +15,16 @@ import {
   MessageCircle, Disc, MoreVertical, LogOut, PanelRightOpen, UserCheck,
 } from 'lucide-react';
 import {
+  Modal as UiModal, ConfirmDialog, Drawer, Tabs, Badge, FormField, Input, Select,
+  useToast, ProtectedComponent, EmptyState, Skeleton, Spinner, Button,
+} from '@unerp/ui';
+import {
   Workspace, Member, Conversation, ConnectMessage, Attachment, Meeting, CalendarEvent, Presence,
-  PRESENCE_META, PRESENCE_ORDER, EMOJI_PALETTE, STATUS_SUGGESTIONS, SHORTCUTS,
+  StagedAttachment, ChannelMemberInfo, ChannelMemberRole, NotifyLevel, BrowseChannel, SearchResult,
+  PRESENCE_META, PRESENCE_ORDER, EMOJI_CATEGORIES, ALL_EMOJIS, STATUS_SUGGESTIONS, SHORTCUTS,
+  NOTIFY_LEVEL_LABELS, MAX_ATTACHMENT_BYTES, WS_BASE,
   api, uid, initials, avatarColor, formatBytes, formatTime, formatDateSmart, formatDateDivider,
-  parseMarkdown, isImageMime,
+  parseMarkdown, isImageMime, attachmentUrl, uploadAttachment, parseForwarded,
 } from './connectData';
 import ConnectCalendar from './Calendar';
 
@@ -62,6 +69,21 @@ function renderContent(text: string) {
   );
 }
 
+/** Bold the matched substring in a search snippet using <mark> (semantically "this matched"),
+ *  styled to inherit the app's own bold/primary treatment rather than the browser's yellow default. */
+function highlightSnippet(snippet: string, query: string) {
+  if (!query.trim()) return snippet;
+  const idx = snippet.toLowerCase().indexOf(query.toLowerCase());
+  if (idx < 0) return snippet;
+  return (
+    <>
+      {snippet.slice(0, idx)}
+      <mark style={{ background: 'transparent', color: 'var(--color-primary)', fontWeight: 700 }}>{snippet.slice(idx, idx + query.length)}</mark>
+      {snippet.slice(idx + query.length)}
+    </>
+  );
+}
+
 const UNKNOWN: Member = { id: '?', name: 'Unknown', email: '', presence: 'INACTIVE' };
 
 function Unread({ n }: { n: number }) {
@@ -95,7 +117,7 @@ export default function ConnectPage() {
 
   // Compose
   const [composer, setComposer] = useState('');
-  const [staged, setStaged] = useState<Attachment[]>([]);
+  const [staged, setStaged] = useState<StagedAttachment[]>([]);
   const [threadParent, setThreadParent] = useState<string | null>(null);
   const [threadComposer, setThreadComposer] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -129,6 +151,10 @@ export default function ConnectPage() {
   const [channelInfo, setChannelInfo] = useState(false);
   const [profileCard, setProfileCard] = useState<Member | null>(null);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+  const [savedMessagesOpen, setSavedMessagesOpen] = useState(false);
+  const [savedMessages, setSavedMessages] = useState<ConnectMessage[]>([]);
+  const [directoryModalOpen, setDirectoryModalOpen] = useState(false);
+  const [dirSearchQuery, setDirSearchQuery] = useState('');
   const [mutedConvs, setMutedConvs] = useState<Set<string>>(new Set());
   const [starredConvs, setStarredConvs] = useState<Set<string>>(new Set());
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
@@ -136,11 +162,50 @@ export default function ConnectPage() {
   const [pinnedView, setPinnedView] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
+  // Real-time (Socket.IO)
+  const [typingUsers, setTypingUsers] = useState<Map<string, number>>(new Map()); // userId -> last-typing timestamp, per active channel
+  const socketRef = useRef<Socket | null>(null);
+  const currentRoomRef = useRef<string | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Search (US-A6 / spec §4)
+  const [searchResults, setSearchResults] = useState<SearchResult[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchErr, setSearchErr] = useState<string | null>(null);
+  const [flashMessageId, setFlashMessageId] = useState<string | null>(null);
+  const [switcherMessages, setSwitcherMessages] = useState<SearchResult[]>([]);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const switcherDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Channel management drawer (spec §2)
+  const [manageChannelOpen, setManageChannelOpen] = useState(false);
+  const [manageTab, setManageTab] = useState<'general' | 'members'>('general');
+  const [manageMembers, setManageMembers] = useState<ChannelMemberInfo[] | null>(null);
+  const [manageName, setManageName] = useState('');
+  const [manageTopic, setManageTopic] = useState('');
+  const [archiveConfirm, setArchiveConfirm] = useState(false);
+  const [memberSearch, setMemberSearch] = useState('');
+  const [removeConfirm, setRemoveConfirm] = useState<Member | null>(null);
+
+  // Browse channels modal (spec §3)
+  const [browseOpen, setBrowseOpen] = useState(false);
+  const [browseList, setBrowseList] = useState<BrowseChannel[] | null>(null);
+  const [browseErr, setBrowseErr] = useState<string | null>(null);
+  const [browseSearch, setBrowseSearch] = useState('');
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  // Forward dialog (spec §7a)
+  const [forwardMsg, setForwardMsg] = useState<ConnectMessage | null>(null);
+  const [forwardTarget, setForwardTarget] = useState<string | null>(null);
+  const [forwardSearch, setForwardSearch] = useState('');
+  const [forwarding, setForwarding] = useState(false);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const lastActivityRef = useRef(Date.now());
   const autoAwayRef = useRef(false);
+  const toast = useToast();
 
   const loadWorkspace = useCallback(async () => {
     try {
@@ -157,11 +222,19 @@ export default function ConnectPage() {
     }
   }, []);
 
+  const loadBookmarks = useCallback(async () => {
+    try {
+      const bms = await api.getBookmarks();
+      setSavedMessages(bms);
+      setBookmarks(new Set(bms.map((b) => b.id)));
+    } catch {}
+  }, []);
+
   const loadMessages = useCallback(async (id: string) => {
     try { setMessages(await api.messages(id)); } catch { /* keep prior */ }
   }, []);
 
-  useEffect(() => { loadWorkspace(); }, [loadWorkspace]);
+  useEffect(() => { loadWorkspace(); loadBookmarks(); }, [loadWorkspace, loadBookmarks]);
 
   useEffect(() => {
     if (!activeId) return;
@@ -180,6 +253,89 @@ export default function ConnectPage() {
     const t = setInterval(() => { loadWorkspace(); if (activeId) api.markRead(activeId).catch(() => {}); }, 15000);
     return () => clearInterval(t);
   }, [loadWorkspace, activeId]);
+
+  /* ── Socket.IO (US-A3/A4/A5): connect once on mount, graceful fallback to existing polling ── */
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('token') : null;
+    if (!token) return;
+    const socket = io(`${WS_BASE}/ws`, { auth: { token }, transports: ['websocket', 'polling'] });
+    socketRef.current = socket;
+
+    socket.on('chat:message', (payload: any) => {
+      const channelId = payload?.channelId;
+      if (!channelId) return;
+      // Live presence/typing come through separate events; this handles persisted messages only.
+      const incoming: ConnectMessage | null = payload?.id
+        ? {
+            id: payload.id,
+            conversationId: channelId,
+            authorId: payload.userId ?? payload.authorId,
+            content: payload.content ?? '',
+            kind: payload.kind ?? 'USER',
+            parentId: payload.parentId ?? undefined,
+            pinned: !!payload.pinned,
+            attachments: payload.attachments ?? [],
+            meetingId: payload.meetingId ?? undefined,
+            ts: payload.ts ?? (payload.createdAt ? new Date(payload.createdAt).getTime() : Date.now()),
+            editedTs: payload.editedTs,
+            deleted: !!payload.deleted,
+            reactions: payload.reactions ?? [],
+          }
+        : null;
+      if (!incoming) return;
+      setMessages((prev) => {
+        if (currentRoomRef.current !== channelId) return prev; // not the active conversation
+        if (prev.some((m) => m.id === incoming.id)) return prev; // dedupe vs. optimistic/poll
+        return [...prev, incoming].sort((a, b) => a.ts - b.ts);
+      });
+      // Bump unread/last-message preview for non-active conversations via a light workspace refresh.
+      if (currentRoomRef.current !== channelId) loadWorkspace();
+    });
+
+    socket.on('typing', (payload: { userId: string; channelId: string }) => {
+      if (!payload?.userId || payload.channelId !== currentRoomRef.current) return;
+      setTypingUsers((prev) => { const next = new Map(prev); next.set(payload.userId, Date.now()); return next; });
+    });
+
+    socket.on('presence', (payload: { userId: string; status?: string; presence?: string; timestamp?: string }) => {
+      const userId = payload?.userId;
+      if (!userId) return;
+      setWs((prev) => {
+        if (!prev) return prev;
+        // Connection-liveness ONLINE/OFFLINE events map to ACTIVE/INACTIVE; explicit `presence`
+        // field (from setPresence's broadcastPresenceUpdate) carries the real chosen status.
+        const mapped = (payload.presence as Presence | undefined)
+          ?? (payload.status === 'ONLINE' ? 'ACTIVE' : payload.status === 'OFFLINE' ? 'INACTIVE' : undefined);
+        if (!mapped) return prev;
+        return { ...prev, directory: prev.directory.map((d) => d.id === userId ? { ...d, presence: mapped } : d) };
+      });
+    });
+
+    return () => { socket.disconnect(); socketRef.current = null; };
+  }, [loadWorkspace]);
+
+  // Join/leave channel rooms on conversation switch; leave the previous room first.
+  useEffect(() => {
+    const socket = socketRef.current;
+    currentRoomRef.current = activeId;
+    if (!socket || !activeId) return;
+    socket.emit('join:channel', { channelId: activeId });
+    return () => { socket.emit('leave:channel', { channelId: activeId }); };
+  }, [activeId, socketRef.current]);
+
+  // Typing indicator: prune entries older than 3s of inactivity, tick every second.
+  useEffect(() => {
+    const t = setInterval(() => {
+      setTypingUsers((prev) => {
+        const now = Date.now();
+        let changed = false;
+        const next = new Map(prev);
+        for (const [uid_, ts] of prev) { if (now - ts > 3000) { next.delete(uid_); changed = true; } }
+        return changed ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => { if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight; }, [messages.length, activeId]);
 
@@ -250,15 +406,102 @@ export default function ConnectPage() {
     return groups;
   }, [topLevel]);
 
+  // Channel-scoped search (spec §4a): debounced 300ms, calls the real search endpoint.
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (!convSearch.trim() || !activeId) { setSearchResults(null); setSearchErr(null); return; }
+    setSearchLoading(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const all = await api.search(convSearch.trim());
+        setSearchResults(all.filter((r) => r.channelId === activeId));
+        setSearchErr(null);
+      } catch (e) {
+        setSearchErr(e instanceof Error ? e.message : 'Search failed. Try again.');
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [convSearch, activeId]);
+
+  // Global switcher (Ctrl+K) message results (spec §4b), debounced.
+  useEffect(() => {
+    if (switcherDebounceRef.current) clearTimeout(switcherDebounceRef.current);
+    if (switcher === null || !switcher.trim()) { setSwitcherMessages([]); return; }
+    switcherDebounceRef.current = setTimeout(async () => {
+      try { setSwitcherMessages(await api.search(switcher.trim())); } catch { setSwitcherMessages([]); }
+    }, 300);
+    return () => { if (switcherDebounceRef.current) clearTimeout(switcherDebounceRef.current); };
+  }, [switcher]);
+
+  /** Jump to a message: switch conversation if needed, then flash-highlight the row once loaded. */
+  const jumpToMessage = async (channelId: string, messageId: string) => {
+    if (activeId !== channelId) {
+      setActiveId(channelId);
+      setThreadParent(null); setConvSearch(''); setChannelInfo(false); setPinnedView(false);
+      try { setMessages(await api.messages(channelId)); } catch { /* keep prior */ }
+    }
+    setFlashMessageId(messageId);
+    setTimeout(() => {
+      document.getElementById(`msg-${messageId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+    setTimeout(() => setFlashMessageId(null), 1200);
+  };
+
   /* ── message mutations ── */
   const replaceMsg = (m: ConnectMessage) => setMessages((prev) => prev.map((x) => (x.id === m.id ? m : x)));
 
   const handleSend = async () => {
     if (!activeId || (!composer.trim() && staged.length === 0)) return;
-    const content = composer; const attachments = staged;
+    if (staged.some((a) => a.status === 'uploading')) return; // block send while an upload is in flight
+    const content = composer;
+    const attachments: Attachment[] = staged.filter((a) => a.status === 'done' && a.documentId).map((a) => ({
+      id: a.documentId!, name: a.name, size: a.size, mime: a.mime, url: a.url,
+    }));
     setComposer(''); setStaged([]); setMentionQuery(null);
-    try { await api.send(activeId, { content, attachments }); await loadMessages(activeId); }
-    catch (e) { alert(e instanceof Error ? e.message : 'Send failed'); setComposer(content); setStaged(attachments); }
+    try {
+      await api.send(activeId, { content, attachments });
+      await loadMessages(activeId);
+      if (socketRef.current) socketRef.current.emit('leave:channel', { channelId: activeId }); // no-op placeholder to keep room fresh; server also broadcasts chat:message
+    }
+    catch (e) { alert(e instanceof Error ? e.message : 'Send failed'); setComposer(content); }
+  };
+
+  const onFiles = (files: FileList | null) => {
+    if (!files || !activeId) return;
+    const channelId = activeId;
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        const mb = Math.round(MAX_ATTACHMENT_BYTES / (1024 * 1024));
+        const errItem: StagedAttachment = {
+          localId: uid('a'), file, name: file.name, size: file.size, mime: file.type || 'application/octet-stream',
+          status: 'error', progress: 0, errorMessage: `Exceeds ${mb} MB limit`,
+        };
+        setStaged((prev) => [...prev, errItem]);
+        toast.error('Attachment rejected', `${file.name} exceeds the ${mb} MB limit.`);
+        continue;
+      }
+      const localId = uid('a');
+      const previewUrl = isImageMime(file.type) ? URL.createObjectURL(file) : undefined;
+      const item: StagedAttachment = {
+        localId, file, name: file.name, size: file.size, mime: file.type || 'application/octet-stream',
+        status: 'uploading', progress: 0, previewUrl,
+      };
+      setStaged((prev) => [...prev, item]);
+      const { promise } = uploadAttachment(channelId, file, (pct) => {
+        setStaged((prev) => prev.map((a) => (a.localId === localId ? { ...a, progress: pct } : a)));
+      });
+      promise.then((res) => {
+        setStaged((prev) => prev.map((a) => (a.localId === localId
+          ? { ...a, status: 'done', progress: 100, documentId: res.documentId ?? res.attachment?.id, url: attachmentUrl(res.attachment?.url) }
+          : a)));
+      }).catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Upload failed';
+        setStaged((prev) => prev.map((a) => (a.localId === localId ? { ...a, status: 'error', errorMessage: msg } : a)));
+        toast.error('Upload failed', `${file.name}: ${msg}`);
+      });
+    }
   };
 
   const handleThreadSend = async () => {
@@ -282,10 +525,14 @@ export default function ConnectPage() {
   const pin = async (id: string) => { try { replaceMsg(await api.pin(id)); } catch { /* ignore */ } };
 
   const toggleBookmark = async (id: string) => {
+    const isBookmarked = bookmarks.has(id);
+    setBookmarks((prev) => { const next = new Set(prev); isBookmarked ? next.delete(id) : next.add(id); return next; });
     try {
-      const res = await api.bookmark(id);
-      setBookmarks((prev) => { const next = new Set(prev); res.bookmarked ? next.add(id) : next.delete(id); return next; });
-    } catch { setBookmarks((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); }
+      await api.bookmark(id);
+      await loadBookmarks();
+    } catch {
+      setBookmarks((prev) => { const next = new Set(prev); isBookmarked ? next.add(id) : next.delete(id); return next; });
+    }
   };
   const toggleMute = async (convId: string) => {
     try {
@@ -302,11 +549,6 @@ export default function ConnectPage() {
     } catch { setStarredConvs((prev) => { const next = new Set(prev); next.has(convId) ? next.delete(convId) : next.add(convId); return next; }); }
   };
   const toggleSection = (id: string) => setCollapsedSections((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
-
-  const onFiles = (files: FileList | null) => {
-    if (!files) return;
-    setStaged((prev) => [...prev, ...Array.from(files).map((f) => ({ id: uid('a'), name: f.name, size: f.size, mime: f.type || 'application/octet-stream', url: URL.createObjectURL(f) }))]);
-  };
 
   const insertMention = (m: Member) => {
     const first = m.name.split(' ')[0];
@@ -394,6 +636,105 @@ export default function ConnectPage() {
   };
 
   const switchConv = (id: string) => { setActiveId(id); setThreadParent(null); setConvSearch(''); setChannelInfo(false); setPinnedView(false); };
+
+  /* ── Notification level (US-B5, spec §5) ── */
+  const changeNotifyLevel = async (channelId: string, level: NotifyLevel) => {
+    const prevLevel = allConvs.find((c) => c.id === channelId)?.notifyLevel ?? 'ALL';
+    setWs((prev) => prev ? {
+      ...prev,
+      channels: prev.channels.map((c) => c.id === channelId ? { ...c, notifyLevel: level } : c),
+      conversations: prev.conversations.map((c) => c.id === channelId ? { ...c, notifyLevel: level } : c),
+    } : prev);
+    try { await api.setNotifyLevel(channelId, level); }
+    catch (e) {
+      setWs((prev) => prev ? {
+        ...prev,
+        channels: prev.channels.map((c) => c.id === channelId ? { ...c, notifyLevel: prevLevel } : c),
+        conversations: prev.conversations.map((c) => c.id === channelId ? { ...c, notifyLevel: prevLevel } : c),
+      } : prev);
+      toast.error('Could not update notifications', e instanceof Error ? e.message : undefined);
+    }
+  };
+
+  /* ── Channel management drawer (spec §2) ── */
+  const openManageChannel = async () => {
+    if (!activeConv) return;
+    setManageName(activeConv.name); setManageTopic(activeConv.topic ?? ''); setManageTab('general');
+    setManageChannelOpen(true); setManageMembers(null); setMemberSearch('');
+    try { setManageMembers(await api.channelMembers(activeConv.id)); }
+    catch { setManageMembers([]); } // gap-fill endpoint may not be deployed everywhere yet — degrade to empty roster
+  };
+  const saveChannelName = async () => {
+    if (!activeConv || !manageName.trim() || manageName.trim() === activeConv.name) return;
+    try { await api.updateChannel(activeConv.id, { name: manageName.trim() }); await loadWorkspace(); toast.success('Saved'); }
+    catch (e) { toast.error('Could not rename channel', e instanceof Error ? e.message : undefined); setManageName(activeConv.name); }
+  };
+  const saveChannelTopic = async () => {
+    if (!activeConv || manageTopic === (activeConv.topic ?? '')) return;
+    try { await api.updateChannel(activeConv.id, { topic: manageTopic }); await loadWorkspace(); toast.success('Saved'); }
+    catch (e) { toast.error('Could not update topic', e instanceof Error ? e.message : undefined); setManageTopic(activeConv.topic ?? ''); }
+  };
+  const archiveChannel = async () => {
+    if (!activeConv) return;
+    try {
+      await api.updateChannel(activeConv.id, { archived: true });
+      setArchiveConfirm(false); setManageChannelOpen(false);
+      await loadWorkspace();
+      setActiveId(null);
+      toast.success(`#${activeConv.name} archived`);
+    } catch (e) { toast.error('Could not archive channel', e instanceof Error ? e.message : undefined); }
+  };
+  const addMemberToChannel = async (userId: string) => {
+    if (!activeConv) return;
+    try {
+      await api.addChannelMember(activeConv.id, userId);
+      setManageMembers((prev) => [...(prev ?? []), { userId, role: 'MEMBER' }]);
+      setMemberSearch('');
+    } catch (e) { toast.error('Could not add member', e instanceof Error ? e.message : undefined); }
+  };
+  const removeMemberFromChannel = async (userId: string) => {
+    if (!activeConv) return;
+    try {
+      await api.removeChannelMember(activeConv.id, userId);
+      setManageMembers((prev) => (prev ?? []).filter((m) => m.userId !== userId));
+      setRemoveConfirm(null);
+    } catch (e) { toast.error('Could not remove member', e instanceof Error ? e.message : undefined); }
+  };
+
+  /* ── Browse channels modal (spec §3) ── */
+  const openBrowseChannels = async () => {
+    setBrowseOpen(true); setBrowseList(null); setBrowseErr(null); setBrowseSearch('');
+    try { setBrowseList(await api.browseChannels()); }
+    catch (e) { setBrowseErr(e instanceof Error ? e.message : 'Could not load channels'); }
+  };
+  const joinBrowsedChannel = async (channel: BrowseChannel) => {
+    setJoiningId(channel.id);
+    try {
+      await api.joinChannel(channel.id);
+      await loadWorkspace();
+      setActiveId(channel.id);
+      setBrowseOpen(false);
+      toast.success(`Joined #${channel.name}`);
+    } catch (e) { toast.error('Could not join channel', e instanceof Error ? e.message : undefined); }
+    finally { setJoiningId(null); }
+  };
+
+  /* ── Forward dialog (spec §7a) ── */
+  const openForward = (m: ConnectMessage) => { setForwardMsg(m); setForwardTarget(null); setForwardSearch(''); };
+  const sendForward = async () => {
+    if (!forwardMsg || !forwardTarget) return;
+    setForwarding(true);
+    try {
+      const sourceConv = allConvs.find((c) => c.id === forwardMsg.conversationId);
+      const originAuthor = memberById(forwardMsg.authorId).name;
+      const marker = `[[forwarded:${forwardMsg.id}:${sourceConv?.kind === 'CHANNEL' ? `#${sourceConv.name}` : sourceConv?.name ?? 'a conversation'}:${originAuthor}:${forwardMsg.ts}]]`;
+      await api.send(forwardTarget, { content: `${marker}\n${forwardMsg.content}` });
+      if (activeId === forwardTarget) await loadMessages(forwardTarget);
+      toast.success('Message forwarded');
+      setForwardMsg(null);
+    } catch (e) { toast.error('Could not forward message', e instanceof Error ? e.message : undefined); }
+    finally { setForwarding(false); }
+  };
 
   const mentionMatches = mentionQuery !== null ? directory.filter((m) => m.name.toLowerCase().includes(mentionQuery.toLowerCase())).slice(0, 6) : [];
   const switcherResults = switcher !== null
@@ -562,6 +903,7 @@ export default function ConnectPage() {
                     <Unread n={unreadOf(c)} />
                   </button>
                 ))}
+                <button onClick={openBrowseChannels} style={{ ...pill(false), color: 'var(--color-text-tertiary)', fontSize: 12 }}><Search size={13} /> Browse channels</button>
               </div>
             )}
 
@@ -591,10 +933,11 @@ export default function ConnectPage() {
           </div>
 
           {/* Sidebar footer: online count */}
-          <div style={{ padding: '8px 14px', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
-            {onlineCount} online of {directory.length} members
-          </div>
+          {/* Sidebar footer: online count (US-D1) */}
+          <button onClick={() => setDirectoryModalOpen(true)} style={{ width: '100%', border: 'none', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-text-secondary)', background: 'transparent', padding: '8px 14px', cursor: 'pointer', textAlign: 'left', outline: 'none' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
+            <span style={{ textDecoration: 'underline' }}>{onlineCount} online of {directory.length} members</span>
+          </button>
         </div>
 
         {/* ─── Main conversation ─── */}
@@ -648,7 +991,30 @@ export default function ConnectPage() {
 
                   <div style={{ position: 'relative' }}>
                     <Search size={13} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
-                    <input value={convSearch} onChange={(e) => setConvSearch(e.target.value)} placeholder="Search in chat" style={{ padding: '5px 8px 5px 26px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 12, width: 140 }} />
+                    <input value={convSearch} onChange={(e) => setConvSearch(e.target.value)} placeholder="Search in chat" aria-label="Search in chat" style={{ padding: '5px 8px 5px 26px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 12, width: 140 }} />
+                    {convSearch.trim() && (
+                      <div role="region" aria-live="polite" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, width: 320, maxHeight: 360, overflowY: 'auto', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 10, boxShadow: '0 12px 32px rgba(0,0,0,.15)', zIndex: 30 }}>
+                        <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border)', fontSize: 12, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {searchLoading ? (<><Spinner size="sm" /> Searching…</>) : searchErr ? (
+                            <span style={{ color: 'var(--color-danger)' }}>Search failed. Try again.</span>
+                          ) : (
+                            <span>{searchResults?.length ?? 0} result{(searchResults?.length ?? 0) === 1 ? '' : 's'} in {activeConv.kind === 'CHANNEL' ? `#${activeConv.name}` : activeConv.name}</span>
+                          )}
+                        </div>
+                        {!searchLoading && !searchErr && (searchResults?.length ?? 0) === 0 && (
+                          <div style={{ padding: '16px 12px', textAlign: 'center', fontSize: 13, color: 'var(--color-text-tertiary)' }}>No messages match &quot;{convSearch}&quot;</div>
+                        )}
+                        {!searchLoading && searchResults?.map((r) => (
+                          <button key={r.messageId} onClick={() => { jumpToMessage(r.channelId, r.messageId); setConvSearch(''); }} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', border: 'none', borderBottom: '1px solid var(--color-border)', background: 'transparent', cursor: 'pointer' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12 }}>
+                              <strong style={{ color: 'var(--color-text)' }}>{r.authorName}</strong>
+                              <span style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}>{formatDateSmart(r.ts)}</span>
+                            </div>
+                            <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 2 }}>{highlightSnippet(r.snippet, convSearch)}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {pinned.length > 0 && (
@@ -657,11 +1023,21 @@ export default function ConnectPage() {
                     </button>
                   )}
 
-                  <button onClick={() => toggleMute(activeConv.id)} title={mutedConvs.has(activeConv.id) ? 'Unmute' : 'Mute'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 6 }}>
-                    {mutedConvs.has(activeConv.id) ? <BellOff size={16} /> : <Bell size={16} />}
-                  </button>
+                  <Select
+                    aria-label={`Notification level for ${activeConv.kind === 'CHANNEL' ? '#' : ''}${activeConv.name}`}
+                    value={activeConv.notifyLevel ?? 'ALL'}
+                    onChange={(e) => changeNotifyLevel(activeConv.id, e.target.value as NotifyLevel)}
+                    style={{ width: 140, minHeight: 30, fontSize: 12, padding: '0 6px' }}
+                  >
+                    {(['ALL', 'MENTIONS', 'NONE'] as NotifyLevel[]).map((lvl) => (
+                      <option key={lvl} value={lvl}>{NOTIFY_LEVEL_LABELS[lvl]}</option>
+                    ))}
+                  </Select>
                   <button onClick={startMeeting} title="Start meeting" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)', padding: 6 }}><Video size={16} /></button>
-                  <button onClick={() => setChannelInfo(!channelInfo)} title="Channel info" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 6 }}>
+                  <button onClick={() => { setSavedMessagesOpen(!savedMessagesOpen); setChannelInfo(false); setThreadParent(null); }} title="Saved messages" style={{ background: 'none', border: 'none', cursor: 'pointer', color: savedMessagesOpen ? 'var(--color-primary)' : 'var(--color-text-tertiary)', padding: 6 }}>
+                    <BookmarkCheck size={16} />
+                  </button>
+                  <button onClick={() => { setChannelInfo(!channelInfo); setSavedMessagesOpen(false); setThreadParent(null); }} title="Channel info" style={{ background: 'none', border: 'none', cursor: 'pointer', color: channelInfo ? 'var(--color-primary)' : 'var(--color-text-tertiary)', padding: 6 }}>
                     <Info size={16} />
                   </button>
                 </div>
@@ -692,7 +1068,9 @@ export default function ConnectPage() {
                           editing={editingId === m.id} editText={editText} setEditText={setEditText} onSaveEdit={saveEdit} onCancelEdit={() => setEditingId(null)}
                           onJoinMeeting={() => api.meetings().then((ms) => { const mt = ms.find((x) => x.id === m.meetingId); if (mt) setActiveMeeting(mt); })}
                           isBookmarked={bookmarks.has(m.id)} onToggleBookmark={() => toggleBookmark(m.id)}
-                          onProfileClick={(member) => setProfileCard(member)} memberById={memberById} />
+                          onProfileClick={(member) => setProfileCard(member)} memberById={memberById}
+                          onForward={() => openForward(m)} flashing={flashMessageId === m.id}
+                          isSmallGroup={!!activeConv && (activeConv.kind === 'DM' || activeConv.kind === 'GROUP' || headerMembers.length <= 8)} />
                       );
                     })}
                   </React.Fragment>
@@ -727,16 +1105,21 @@ export default function ConnectPage() {
                 )}
                 {staged.length > 0 && (
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 0' }}>
-                    {staged.map((a) => (
-                      <span key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, background: 'var(--color-bg)', border: '1px solid var(--color-border)', fontSize: 12 }}>
-                        {isImageMime(a.mime) ? <Image size={14} style={{ color: 'var(--color-primary)' }} /> : <FileText size={14} style={{ color: 'var(--color-text-secondary)' }} />}
-                        <span style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
-                        <span style={{ color: 'var(--color-text-tertiary)' }}>{formatBytes(a.size)}</span>
-                        <button onClick={() => setStaged((p) => p.filter((x) => x.id !== a.id))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 0 }}><X size={14} /></button>
-                      </span>
-                    ))}
+                    {staged.map((a) => <StagedChip key={a.localId} a={a} onRemove={() => setStaged((p) => p.filter((x) => x.localId !== a.localId))} />)}
                   </div>
                 )}
+
+                {/* Typing indicator strip — fixed-height slot, never shifts the composer */}
+                <div style={{ height: 20, padding: '0 16px', display: 'flex', alignItems: 'center', fontSize: 12, fontStyle: 'italic', color: 'var(--color-text-tertiary)' }}>
+                  {(() => {
+                    const names = [...typingUsers.keys()].filter((uid_) => uid_ !== me.id).map((uid_) => memberById(uid_).name);
+                    if (names.length === 0) return null;
+                    const label = names.length === 1 ? `${names[0]} is typing…`
+                      : names.length === 2 ? `${names[0]} and ${names[1]} are typing…`
+                      : `${names[0]}, ${names[1]}, and ${names.length - 2} others are typing…`;
+                    return <span>{label}</span>;
+                  })()}
+                </div>
 
                 {/* Format bar */}
                 {showFormatBar && (
@@ -761,16 +1144,20 @@ export default function ConnectPage() {
                     <button onClick={() => fileRef.current?.click()} title="Attach" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 6 }}><Paperclip size={16} /></button>
                     <input ref={fileRef} type="file" multiple hidden onChange={(e) => { onFiles(e.target.files); if (fileRef.current) fileRef.current.value = ''; }} />
                     <textarea ref={composerRef} value={composer}
-                      onChange={(e) => { setComposer(e.target.value); const mt = /(?:^|\s)@(\w*)$/.exec(e.target.value); setMentionQuery(mt ? (mt[1] ?? '') : null); }}
+                      onChange={(e) => {
+                        setComposer(e.target.value);
+                        const mt = /(?:^|\s)@(\w*)$/.exec(e.target.value); setMentionQuery(mt ? (mt[1] ?? '') : null);
+                        if (socketRef.current && activeId) socketRef.current.emit('typing', { channelId: activeId });
+                      }}
                       onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                       placeholder={`Message ${activeConv.kind === 'CHANNEL' ? '#' + activeConv.name : activeConv.name}...`}
                       rows={1} style={{ flex: 1, resize: 'none', padding: '7px 4px', border: 'none', outline: 'none', background: 'transparent', color: 'var(--color-text)', fontSize: 13, fontFamily: 'inherit', maxHeight: 120, lineHeight: 1.5 }} />
-                    <button onClick={() => setEmojiFor('composer')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 6 }}><Smile size={16} /></button>
-                    <button onClick={handleSend} disabled={!composer.trim() && staged.length === 0} style={{ background: (composer.trim() || staged.length) ? 'var(--color-primary)' : 'var(--color-border)', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: 8, cursor: 'pointer', transition: 'background .15s' }}><Send size={16} /></button>
+                    <button onClick={() => setEmojiFor('composer')} aria-label="Add emoji" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 6 }}><Smile size={16} /></button>
+                    <button onClick={handleSend} disabled={(!composer.trim() && staged.length === 0) || staged.some((a) => a.status === 'uploading')} aria-label="Send message" style={{ background: (composer.trim() || staged.length) ? 'var(--color-primary)' : 'var(--color-border)', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: 8, cursor: 'pointer', transition: 'background .15s' }}><Send size={16} /></button>
                   </div>
                   {emojiFor === 'composer' && (
-                    <div style={{ position: 'absolute', bottom: '100%', right: 16, marginBottom: 4, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 12, padding: 8, boxShadow: '0 -4px 16px rgba(0,0,0,.1)', display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 2, zIndex: 20 }}>
-                      {EMOJI_PALETTE.map((e) => <button key={e} onClick={() => { setComposer((p) => p + e); setEmojiFor(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, padding: 4, borderRadius: 6 }}>{e}</button>)}
+                    <div style={{ position: 'absolute', bottom: '100%', right: 16, marginBottom: 4, zIndex: 20 }}>
+                      <EmojiPicker onPick={(e) => { setComposer((p) => p + e); setEmojiFor(null); }} />
                     </div>
                   )}
                 </div>
@@ -778,6 +1165,37 @@ export default function ConnectPage() {
             </>
           )}
         </div>
+
+        {/* ─── Saved messages panel (repurposed bookmarks, US-D2) ─── */}
+        {savedMessagesOpen && (() => {
+          return (
+            <div style={{ width: 360, flexShrink: 0, borderLeft: '1px solid var(--color-border)', background: 'var(--color-bg-elevated)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><BookmarkCheck size={15} /> Saved messages</h3>
+                <button onClick={() => setSavedMessagesOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 4 }}><X size={16} /></button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {savedMessages.length === 0 ? (
+                  <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13, textAlign: 'center', padding: 20 }}>No saved messages yet.</p>
+                ) : (
+                  savedMessages.map((m) => (
+                    <div key={m.id} style={{ border: '1px solid var(--color-border)', borderRadius: 8, padding: 10, background: 'var(--color-bg)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{memberById(m.authorId).name}</span>
+                        <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{formatDateSmart(m.ts)}</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--color-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{renderContent(m.content)}</div>
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', borderTop: '1px solid var(--color-border)', paddingTop: 6, marginTop: 2 }}>
+                        <button onClick={() => jumpToMessage(m.conversationId, m.id)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontSize: 11, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Eye size={12} /> Go to message</button>
+                        <button onClick={() => toggleBookmark(m.id)} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><Trash2 size={12} /> Unsave</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ─── Thread panel ─── */}
         {threadParent && (() => {
@@ -823,11 +1241,15 @@ export default function ConnectPage() {
                 {activeConv.topic && <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-secondary)' }}>{activeConv.topic}</p>}
               </div>
 
+              {activeConv.kind === 'CHANNEL' && (
+                <ProtectedComponent permission="communication.channel.manage">
+                  <Button variant="secondary" onClick={openManageChannel} style={{ width: '100%', justifyContent: 'center' }}>
+                    <Settings size={14} /> Manage channel
+                  </Button>
+                </ProtectedComponent>
+              )}
+
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => toggleMute(activeConv.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-bg)', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: 11 }}>
-                  {mutedConvs.has(activeConv.id) ? <BellOff size={18} /> : <Bell size={18} />}
-                  {mutedConvs.has(activeConv.id) ? 'Unmute' : 'Mute'}
-                </button>
                 <button onClick={() => toggleStar(activeConv.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-bg)', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: 11 }}>
                   <Star size={18} fill={starredConvs.has(activeConv.id) ? '#f6bf26' : 'none'} style={{ color: starredConvs.has(activeConv.id) ? '#f6bf26' : 'var(--color-text-secondary)' }} />
                   {starredConvs.has(activeConv.id) ? 'Unstar' : 'Star'}
@@ -1351,7 +1773,24 @@ export default function ConnectPage() {
                   ))}
                 </>
               )}
-              {switcher && switcherResults.length === 0 && <p style={{ color: 'var(--color-text-tertiary)', fontSize: 14, textAlign: 'center', padding: 20 }}>No results found</p>}
+              {switcherMessages.length > 0 && (
+                <>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', padding: '6px 10px', textTransform: 'uppercase' }}>Messages</div>
+                  {switcherMessages.map((r) => (
+                    <button key={`m-${r.messageId}`} onClick={() => { setSwitcher(null); jumpToMessage(r.channelId, r.messageId); }} style={{ textAlign: 'left', padding: '8px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 10, color: 'var(--color-text)', width: '100%' }}>
+                      <MessageSquare size={16} style={{ color: 'var(--color-text-secondary)', flexShrink: 0, marginTop: 2 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, display: 'flex', gap: 6 }}>
+                          <span>{r.channelName} › {r.authorName}</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0 }}>{formatDateSmart(r.ts)}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{highlightSnippet(r.snippet, switcher)}</div>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+              {switcher && switcherResults.length === 0 && switcherMessages.length === 0 && <p style={{ color: 'var(--color-text-tertiary)', fontSize: 14, textAlign: 'center', padding: 20 }}>No results found</p>}
             </div>
           </div>
         </Modal>
@@ -1373,6 +1812,11 @@ export default function ConnectPage() {
                 <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{PRESENCE_META[profileCard.presence].label}</span>
               </div>
               {profileCard.statusText && <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-tertiary)' }}>{profileCard.statusText}</p>}
+              {(profileCard.designation || profileCard.department) && (
+                <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
+                  {profileCard.designation || 'Staff'} {profileCard.department ? `(${profileCard.department})` : ''}
+                </p>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setProfileCard(null); startDM(profileCard.id); }} style={{ flex: 1, ...tbtn({ justifyContent: 'center' }) }}><MessageSquare size={15} /> Message</button>
@@ -1381,6 +1825,80 @@ export default function ConnectPage() {
           </div>
         </Modal>
       )}
+
+      {/* Directory Modal (US-D1) */}
+      {directoryModalOpen && (() => {
+        const filteredDir = directory.filter((d) => {
+          const q = dirSearchQuery.trim().toLowerCase();
+          if (!q) return true;
+          return d.name.toLowerCase().includes(q) ||
+                 d.email.toLowerCase().includes(q) ||
+                 (d.designation && d.designation.toLowerCase().includes(q)) ||
+                 (d.department && d.department.toLowerCase().includes(q));
+        });
+        return (
+          <Modal onClose={() => setDirectoryModalOpen(false)} width={500}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Workspace Directory</h3>
+                <button onClick={() => setDirectoryModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}><X size={18} /></button>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                <input
+                  value={dirSearchQuery}
+                  onChange={(e) => setDirSearchQuery(e.target.value)}
+                  placeholder="Search by name, department, or designation/title..."
+                  style={{ width: '100%', padding: '8px 10px 8px 30px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 13 }}
+                />
+              </div>
+              <div style={{ maxHeight: 360, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {filteredDir.length === 0 ? (
+                  <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13, textAlign: 'center', padding: 20 }}>No matches found</p>
+                ) : (
+                  filteredDir.map((d) => (
+                    <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>
+                      <Avatar member={d} size={36} showPresence />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span>{d.email}</span>
+                          {(d.designation || d.department) && <span>•</span>}
+                          {d.designation && <span style={{ fontWeight: 600 }}>{d.designation}</span>}
+                          {d.department && <span>({d.department})</span>}
+                        </div>
+                      </div>
+                      {d.id !== me.id && (
+                        <button
+                          onClick={() => {
+                            setDirectoryModalOpen(false);
+                            startDM(d.id);
+                          }}
+                          style={{
+                            background: 'var(--color-primary-light)',
+                            color: 'var(--color-primary)',
+                            border: 'none',
+                            borderRadius: 6,
+                            padding: '4px 10px',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4
+                          }}
+                        >
+                          <MessageSquare size={13} /> Message
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </Modal>
+        );
+      })()}
 
       {/* Keyboard shortcuts */}
       {showKeyboardShortcuts && (
@@ -1402,6 +1920,209 @@ export default function ConnectPage() {
           </div>
         </Modal>
       )}
+
+      {/* ═══ Manage channel drawer (spec §2) ═══ */}
+      <Drawer open={manageChannelOpen} onClose={() => setManageChannelOpen(false)} title={activeConv ? `Manage #${activeConv.name}` : 'Manage channel'} width={440}>
+        <ProtectedComponent permission="communication.channel.manage" fallback={<p style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>You don&apos;t have permission to manage this channel.</p>}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Tabs tabs={[{ key: 'general', label: 'General' }, { key: 'members', label: `Members (${manageMembers?.length ?? 0})` }]} value={manageTab} onChange={(k) => setManageTab(k as 'general' | 'members')} />
+
+            {manageTab === 'general' && activeConv && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <FormField label="Channel name">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Hash size={14} style={{ color: 'var(--color-text-tertiary)' }} />
+                    <Input value={manageName} onChange={(e) => setManageName(e.target.value)} onBlur={saveChannelName} />
+                  </div>
+                </FormField>
+                <FormField label="Topic" hint="Optional">
+                  <Input value={manageTopic} onChange={(e) => setManageTopic(e.target.value)} onBlur={saveChannelTopic} placeholder="What's this channel about?" />
+                </FormField>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>Danger zone</div>
+                  <Button variant="danger" onClick={() => setArchiveConfirm(true)} style={{ width: '100%', justifyContent: 'center' }}>
+                    <Archive size={14} /> Archive this channel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {manageTab === 'members' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <ProtectedComponent permission="communication.channel.member.manage">
+                  <div style={{ position: 'relative' }}>
+                    <Input value={memberSearch} onChange={(e) => setMemberSearch(e.target.value)} placeholder="Add people…" aria-label="Add people to channel" />
+                    {memberSearch.trim() && (() => {
+                      const existingIds = new Set(manageMembers?.map((m) => m.userId) ?? []);
+                      const results = directory.filter((d) => !existingIds.has(d.id) && d.name.toLowerCase().includes(memberSearch.trim().toLowerCase()));
+                      return (
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 220, overflowY: 'auto', zIndex: 10 }}>
+                          {results.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: 'var(--space-4)', color: 'var(--color-text-tertiary)', fontSize: 'var(--text-sm)' }}>No matching people</div>
+                          )}
+                          {results.map((d) => (
+                            <button key={d.id} onClick={() => addMemberToChannel(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 10px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+                              <Avatar member={d} size={24} /> <span style={{ fontSize: 13 }}>{d.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </ProtectedComponent>
+
+                {manageMembers === null ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Skeleton width={28} height={28} radius="var(--radius-lg)" />
+                        <Skeleton width={120} height={12} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {manageMembers.map((mem) => {
+                      const person = memberById(mem.userId);
+                      const soleOwner = mem.role === 'OWNER' && manageMembers.filter((x) => x.role === 'OWNER').length <= 1;
+                      return (
+                        <div key={mem.userId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                          <Avatar member={person} size={28} showPresence />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500 }}>{person.name} {person.id === me.id && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>(you)</span>}</div>
+                          </div>
+                          {mem.role === 'OWNER' && <Badge variant="primary" size="sm">Owner</Badge>}
+                          {mem.role === 'ADMIN' && <Badge variant="default" size="sm">Admin</Badge>}
+                          <ProtectedComponent permission="communication.channel.member.manage">
+                            {!soleOwner && (
+                              <button onClick={() => setRemoveConfirm(person)} aria-label={`Remove ${person.name} from channel`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}>
+                                <X size={15} />
+                              </button>
+                            )}
+                          </ProtectedComponent>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </ProtectedComponent>
+      </Drawer>
+
+      <ConfirmDialog
+        open={archiveConfirm}
+        onClose={() => setArchiveConfirm(false)}
+        onConfirm={archiveChannel}
+        title={`Archive #${activeConv?.name ?? ''}?`}
+        message="Members will no longer see this channel in their sidebar. Message history is kept and remains searchable. This can be undone by an owner later."
+        confirmLabel="Archive channel"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={!!removeConfirm}
+        onClose={() => setRemoveConfirm(null)}
+        onConfirm={() => removeConfirm && removeMemberFromChannel(removeConfirm.id)}
+        title={`Remove ${removeConfirm?.name ?? ''} from #${activeConv?.name ?? ''}?`}
+        confirmLabel="Remove"
+        variant="primary"
+      />
+
+      {/* ═══ Browse channels modal (spec §3) ═══ */}
+      <UiModal open={browseOpen} onClose={() => setBrowseOpen(false)} title="Browse channels" size="lg">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Input value={browseSearch} onChange={(e) => setBrowseSearch(e.target.value)} placeholder="Search channels by name or topic…" aria-label="Search public channels" />
+          {browseList === null && !browseErr && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Skeleton width={28} height={28} radius="var(--radius-md)" />
+                  <Skeleton width={200} height={14} />
+                </div>
+              ))}
+            </div>
+          )}
+          {browseErr && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, color: 'var(--color-danger)', fontSize: 13 }}>
+              <AlertCircle size={16} /> {browseErr}
+              <button onClick={openBrowseChannels} style={{ marginLeft: 'auto', background: 'none', border: '1px solid var(--color-border)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}>Retry</button>
+            </div>
+          )}
+          {browseList && (() => {
+            const filtered = browseList.filter((c) => !browseSearch.trim()
+              || c.name.toLowerCase().includes(browseSearch.trim().toLowerCase())
+              || (c.topic ?? '').toLowerCase().includes(browseSearch.trim().toLowerCase()));
+            if (filtered.length === 0) {
+              return (
+                <EmptyState
+                  icon={<Hash size={40} />}
+                  title={browseSearch.trim() ? 'No channels match your search' : 'No channels to join'}
+                  description="You're already in every public channel, or none exist yet."
+                  action={<Button variant="secondary" onClick={() => { setBrowseOpen(false); newChannel(); }}>Create a channel instead</Button>}
+                />
+              );
+            }
+            return (
+              <div style={{ maxHeight: 420, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {filtered.map((c) => (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 8px', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+                    <Hash size={18} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{c.name}</div>
+                      {c.topic && <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.topic}</div>}
+                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{c.memberCount} member{c.memberCount === 1 ? '' : 's'} · Public</div>
+                    </div>
+                    <Button variant="secondary" size="sm" disabled={joiningId === c.id} onClick={() => joinBrowsedChannel(c)}>
+                      {joiningId === c.id ? <Spinner size="sm" /> : 'Join'}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      </UiModal>
+
+      {/* ═══ Forward message dialog (spec §7a) ═══ */}
+      <UiModal
+        open={!!forwardMsg}
+        onClose={() => setForwardMsg(null)}
+        title="Forward message"
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setForwardMsg(null)}>Cancel</Button>
+            <Button variant="primary" disabled={!forwardTarget || forwarding} onClick={sendForward}>
+              {forwarding ? <Spinner size="sm" /> : 'Forward'}
+            </Button>
+          </>
+        }
+      >
+        {forwardMsg && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: 8, padding: 10, background: 'var(--color-bg)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <Avatar member={memberById(forwardMsg.authorId)} size={24} />
+                <strong style={{ fontSize: 13 }}>{memberById(forwardMsg.authorId).name}</strong>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{formatDateSmart(forwardMsg.ts)}</span>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{forwardMsg.content}</div>
+            </div>
+            <div style={{ borderTop: '1px solid var(--color-border)' }} />
+            <Input value={forwardSearch} onChange={(e) => setForwardSearch(e.target.value)} placeholder="Search conversations or people…" aria-label="Search conversations or people" />
+            <div style={{ maxHeight: 280, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {allConvs.filter((c) => !forwardSearch.trim() || c.name.toLowerCase().includes(forwardSearch.trim().toLowerCase())).map((c) => (
+                <button key={c.id} onClick={() => setForwardTarget(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, border: 'none', background: forwardTarget === c.id ? 'var(--color-primary-light)' : 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+                  {c.kind === 'CHANNEL' ? <Hash size={16} /> : c.kind === 'GROUP' ? <Users size={16} /> : <MessageSquare size={16} />}
+                  <span style={{ fontSize: 13 }}>{c.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </UiModal>
     </div>
   );
 }
@@ -1440,11 +2161,24 @@ interface RowProps {
   onJoinMeeting: () => void;
   isBookmarked: boolean; onToggleBookmark: () => void;
   onProfileClick: (m: Member) => void; memberById: (id: string) => Member;
+  onForward: () => void; flashing: boolean;
+  isSmallGroup: boolean;
+}
+
+function AttachmentImage({ url, name }: { url: string; name: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div style={{ position: 'relative', minHeight: loaded ? undefined : 120, minWidth: loaded ? undefined : 160 }}>
+      {!loaded && <Skeleton width={160} height={120} radius="8px" />}
+      <img src={url} alt={name} onLoad={() => setLoaded(true)} style={{ maxWidth: '100%', maxHeight: 200, display: loaded ? 'block' : 'none' }} />
+    </div>
+  );
 }
 
 function MessageRow(p: RowProps) {
-  const { m, author } = p;
+  const { m, author, isSmallGroup } = p;
   const [hover, setHover] = useState(false);
+  const forwardedInfo = m.deleted ? null : parseForwarded(m.content);
 
   if (m.kind === 'SYSTEM') {
     return (
@@ -1457,8 +2191,8 @@ function MessageRow(p: RowProps) {
   }
 
   return (
-    <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ display: 'flex', gap: p.compact ? 0 : 10, padding: p.compact ? '1px 8px 1px 54px' : '6px 8px', borderRadius: 8, position: 'relative', background: hover ? 'var(--color-bg-hover)' : 'transparent', transition: 'background .1s' }}>
+    <div id={`msg-${m.id}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ display: 'flex', gap: p.compact ? 0 : 10, padding: p.compact ? '1px 8px 1px 54px' : '6px 8px', borderRadius: 8, position: 'relative', background: p.flashing ? 'var(--color-primary-light)' : hover ? 'var(--color-bg-hover)' : 'transparent', transition: p.flashing ? 'background 1.2s ease-out' : 'background .1s' }}>
       {!p.compact && <Avatar member={author} size={36} showPresence onClick={() => p.onProfileClick(author)} />}
       <div style={{ flex: 1, minWidth: 0 }}>
         {!p.compact && (
@@ -1479,6 +2213,19 @@ function MessageRow(p: RowProps) {
             <button onClick={p.onSaveEdit} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 6, padding: '0 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Save</button>
             <button onClick={p.onCancelEdit} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 6, padding: '0 12px', cursor: 'pointer', fontSize: 12, color: 'var(--color-text-secondary)' }}>Cancel</button>
           </div>
+        ) : forwardedInfo ? (
+          <div>
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-3)', background: 'var(--color-bg)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>
+                <Forward size={12} /> Forwarded from {forwardedInfo.sourceLabel}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
+                <strong style={{ fontSize: 13 }}>{forwardedInfo.originAuthor}</strong>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{formatDateSmart(forwardedInfo.originTs)}</span>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--color-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{renderContent(forwardedInfo.body)}</div>
+            </div>
+          </div>
         ) : (
           <div style={{ fontSize: 13, color: 'var(--color-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>{renderContent(m.content)}</div>
         )}
@@ -1488,8 +2235,7 @@ function MessageRow(p: RowProps) {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {m.attachments.filter((a) => isImageMime(a.mime) && a.url).map((a) => (
               <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)', maxWidth: 300 }}>
-                {/* eslint-disable-next-line */}
-                <img src={a.url} alt={a.name} style={{ maxWidth: '100%', maxHeight: 200, display: 'block' }} />
+                <AttachmentImage url={a.url!} name={a.name} />
               </a>
             ))}
           </div>
@@ -1499,13 +2245,13 @@ function MessageRow(p: RowProps) {
         {!m.deleted && m.attachments.filter((a) => !isImageMime(a.mime)).length > 0 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
             {m.attachments.filter((a) => !isImageMime(a.mime)).map((a) => (
-              <a key={a.id} href={a.url ?? '#'} download={a.name} onClick={(e) => { if (!a.url) e.preventDefault(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'var(--color-bg)', border: '1px solid var(--color-border)', fontSize: 12, textDecoration: 'none', color: 'var(--color-text)', maxWidth: 280 }}>
-                <FileText size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+              <a key={a.id} href={a.url ?? '#'} download={a.name} onClick={(e) => { if (!a.url) e.preventDefault(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'var(--color-bg)', border: '1px solid var(--color-border)', fontSize: 12, textDecoration: 'none', color: 'var(--color-text)', maxWidth: 280, opacity: a.url ? 1 : 0.6 }}>
+                {a.url ? <FileText size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} /> : <Spinner size="sm" />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{a.name}</div>
                   <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{formatBytes(a.size)}</div>
                 </div>
-                <Download size={14} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />
+                {a.url && <Download size={14} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />}
               </a>
             ))}
           </div>
@@ -1529,6 +2275,18 @@ function MessageRow(p: RowProps) {
             )}
           </div>
         )}
+
+        {/* Link previews (US-C2) */}
+        {!m.deleted && extractUrls(m.content).map((url, idx) => (
+          <LinkPreview key={idx} url={url} />
+        ))}
+
+        {/* Read receipts seen by indicators (US-B4) */}
+        {!m.deleted && isSmallGroup && m.authorId === p.me && (
+          <div style={{ marginTop: 2 }}>
+            <SeenReceipts messageId={m.id} memberById={p.memberById} />
+          </div>
+        )}
       </div>
 
       {/* Hover actions */}
@@ -1536,13 +2294,14 @@ function MessageRow(p: RowProps) {
         <div style={{ position: 'absolute', top: -6, right: 8, display: 'flex', gap: 1, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 2, boxShadow: '0 2px 8px rgba(0,0,0,.1)', zIndex: 10 }}>
           <IconBtn title="React" onClick={p.onEmojiToggle}><Smile size={15} /></IconBtn>
           <IconBtn title="Reply" onClick={p.onOpenThread}><Reply size={15} /></IconBtn>
+          <IconBtn title="Forward" onClick={p.onForward}><Forward size={15} /></IconBtn>
           <IconBtn title={m.pinned ? 'Unpin' : 'Pin'} onClick={p.onPin}><Pin size={15} /></IconBtn>
           <IconBtn title={p.isBookmarked ? 'Remove bookmark' : 'Bookmark'} onClick={p.onToggleBookmark}>{p.isBookmarked ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}</IconBtn>
           {m.authorId === p.me && <IconBtn title="Edit" onClick={p.onEdit}><Pencil size={15} /></IconBtn>}
           {m.authorId === p.me && <IconBtn title="Delete" onClick={p.onDelete}><Trash2 size={15} /></IconBtn>}
           {p.emojiOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 12, padding: 8, display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 2, boxShadow: '0 4px 16px rgba(0,0,0,.1)', zIndex: 20 }}>
-              {EMOJI_PALETTE.map((e) => <button key={e} onClick={() => p.onReact(e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, padding: 4, borderRadius: 6 }}>{e}</button>)}
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 20 }}>
+              <EmojiPicker onPick={p.onReact} />
             </div>
           )}
         </div>
@@ -1555,12 +2314,229 @@ function IconBtn({ children, onClick, title }: { children: React.ReactNode; onCl
   return <button onClick={onClick} title={title} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 5, borderRadius: 6, display: 'flex' }}>{children}</button>;
 }
 
+/** Staged-attachment chip (spec §1) — 2-line card while uploading, single-line pill when done,
+ *  red-bordered card with a reason on error. */
+function StagedChip({ a, onRemove }: { a: StagedAttachment; onRemove: () => void }) {
+  if (a.status === 'uploading') {
+    return (
+      <span style={{ display: 'flex', flexDirection: 'column', gap: 4, width: 168, padding: '6px 10px', borderRadius: 8, background: 'var(--color-bg)', border: '1px solid var(--color-border)', fontSize: 12 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {isImageMime(a.mime) ? <Image size={14} style={{ color: 'var(--color-primary)' }} /> : <FileText size={14} style={{ color: 'var(--color-text-secondary)' }} />}
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
+          <button disabled aria-label={`Remove ${a.name}`} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', padding: 0, cursor: 'default', opacity: 0.4 }}><X size={13} /></button>
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            role="progressbar" aria-valuenow={a.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`Uploading ${a.name}`}
+            style={{ flex: 1, height: 3, borderRadius: 999, background: 'var(--color-border)', overflow: 'hidden' }}
+          >
+            <span style={{ display: 'block', height: '100%', width: `${a.progress}%`, background: 'var(--color-primary)', transition: 'width var(--duration-fast) var(--ease-default)' }} />
+          </span>
+          <span style={{ color: 'var(--color-text-tertiary)', fontSize: 11 }}>{a.progress}%</span>
+        </span>
+      </span>
+    );
+  }
+  if (a.status === 'error') {
+    return (
+      <span aria-label={`${a.name}: ${a.errorMessage}`} style={{ display: 'flex', flexDirection: 'column', gap: 4, width: 168, padding: '6px 10px', borderRadius: 8, background: 'var(--color-bg)', border: '1px solid var(--color-danger)', fontSize: 12 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <AlertCircle size={14} style={{ color: 'var(--color-danger)' }} />
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
+          <button onClick={onRemove} aria-label={`Remove ${a.name}`} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', padding: 0, cursor: 'pointer' }}><X size={13} /></button>
+        </span>
+        <span style={{ color: 'var(--color-danger)', fontSize: 11 }}>{a.errorMessage}</span>
+      </span>
+    );
+  }
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, background: 'var(--color-bg)', border: '1px solid var(--color-border)', fontSize: 12, animation: 'toastSlideIn var(--duration-fast) var(--ease-out)' }}>
+      {isImageMime(a.mime) ? <Image size={14} style={{ color: 'var(--color-primary)' }} /> : <FileText size={14} style={{ color: 'var(--color-text-secondary)' }} />}
+      <span style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
+      <span style={{ color: 'var(--color-text-tertiary)' }}>{formatBytes(a.size)}</span>
+      <button onClick={onRemove} aria-label={`Remove ${a.name}`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 0 }}><X size={14} /></button>
+    </span>
+  );
+}
+
+const RECENT_EMOJI_KEY = 'connect:recentEmoji';
+
+/** Shared emoji picker (spec §7c) — consolidates the 3 duplicated inline EMOJI_PALETTE grids into
+ *  one component: search + category tabs + a localStorage-backed "Recent" category. */
+function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('recent');
+  const [recent, setRecent] = useState<string[]>([]);
+
+  useEffect(() => {
+    try { setRecent(JSON.parse(window.localStorage.getItem(RECENT_EMOJI_KEY) || '[]')); } catch { setRecent([]); }
+  }, []);
+
+  const pick = (emoji: string) => {
+    try {
+      const next = [emoji, ...recent.filter((e) => e !== emoji)].slice(0, 24);
+      window.localStorage.setItem(RECENT_EMOJI_KEY, JSON.stringify(next));
+    } catch { /* ignore */ }
+    onPick(emoji);
+  };
+
+  const results = query.trim()
+    ? ALL_EMOJIS.filter((e) => e.name.toLowerCase().includes(query.trim().toLowerCase()))
+    : category === 'recent'
+      ? recent.map((emoji) => ALL_EMOJIS.find((e) => e.emoji === emoji) ?? { emoji, name: 'recently used' })
+      : (EMOJI_CATEGORIES.find((c) => c.key === category)?.emojis ?? []);
+
+  return (
+    <div style={{ width: 260, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,.1)', overflow: 'hidden' }}>
+      <div style={{ padding: 8, borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ position: 'relative' }}>
+          <Search size={13} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+          <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search emoji…" aria-label="Search emoji"
+            style={{ width: '100%', padding: '6px 8px 6px 26px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 12 }} />
+        </div>
+      </div>
+      {!query.trim() && (
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', padding: '4px 6px', gap: 2, overflowX: 'auto' }}>
+          {[{ key: 'recent', icon: '🕐', label: 'Recently used' }, ...EMOJI_CATEGORIES.map((c) => ({ key: c.key, icon: c.icon, label: c.label }))].map((c) => (
+            <button key={c.key} onClick={() => setCategory(c.key)} aria-label={`${c.label} category`} title={c.label}
+              style={{ background: category === c.key ? 'var(--color-primary-light)' : 'none', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 16, padding: '4px 6px' }}>
+              {c.icon}
+            </button>
+          ))}
+        </div>
+      )}
+      <div style={{ maxHeight: 220, overflowY: 'auto', padding: 8, display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 2 }}>
+        {results.length === 0 && <span style={{ gridColumn: 'span 6', textAlign: 'center', fontSize: 12, color: 'var(--color-text-tertiary)', padding: '12px 0' }}>
+          {category === 'recent' && !query.trim() ? 'No recently used emoji yet' : 'No emoji found'}
+        </span>}
+        {results.map((e) => (
+          <button key={e.emoji} onClick={() => pick(e.emoji)} aria-label={e.name} title={e.name}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, padding: 4, borderRadius: 6 }}>{e.emoji}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Modal({ children, onClose, width = 480 }: { children: React.ReactNode; onClose: () => void; width?: number }) {
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 14, padding: 20, width: `min(${width}px, 100%)`, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,.2)' }}>
         {children}
       </div>
+    </div>
+  );
+}
+
+/* ── Additional helper utilities & components (US-B4 / US-C2) ── */
+
+function extractUrls(text: string): string[] {
+  const regex = /https?:\/\/[^\s$.?#].[^\s]*/gi;
+  const matches = text.match(regex);
+  return matches ? Array.from(new Set(matches)) : [];
+}
+
+function LinkPreview({ url }: { url: string }) {
+  const [preview, setPreview] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    api.getLinkPreview(url)
+      .then((res) => {
+        if (active) {
+          setPreview(res);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [url]);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', border: '1px solid var(--color-border)', borderRadius: 8, marginTop: 6, background: 'var(--color-bg)', maxWidth: 420 }}>
+        <Spinner size="sm" />
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Fetching preview…</span>
+      </div>
+    );
+  }
+
+  if (!preview || (!preview.title && !preview.description)) {
+    return null;
+  }
+
+  return (
+    <a href={preview.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', border: '1px solid var(--color-border)', borderRadius: 8, overflow: 'hidden', marginTop: 6, background: 'var(--color-bg)', textDecoration: 'none', color: 'inherit', maxWidth: 480, transition: 'border-color .15s' }}>
+      {preview.image && (
+        <div style={{ width: 100, minWidth: 100, height: 100, position: 'relative', borderRight: '1px solid var(--color-border)' }}>
+          <img src={preview.image} alt={preview.title || 'Preview'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      )}
+      <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0, flex: 1 }}>
+        {preview.siteName && <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--color-primary)', fontWeight: 700, marginBottom: 2 }}>{preview.siteName}</div>}
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{preview.title}</div>
+        {preview.description && <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: 2, lineHeight: '14px' }}>{preview.description}</div>}
+        <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 4 }}>{preview.url}</div>
+      </div>
+    </a>
+  );
+}
+
+function SeenReceipts({ messageId, memberById }: { messageId: string; memberById: (id: string) => Member }) {
+  const [seenList, setSeenList] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const fetchSeen = async () => {
+    if (seenList !== null) return;
+    setLoading(true);
+    try {
+      const res = await api.getReadReceipts(messageId);
+      setSeenList(res);
+    } catch {
+      setSeenList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initials = (nameStr: string) => {
+    return nameStr.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  };
+
+  return (
+    <div
+      onMouseEnter={() => { setShowTooltip(true); fetchSeen(); }}
+      onMouseLeave={() => setShowTooltip(false)}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, position: 'relative', cursor: 'pointer', userSelect: 'none' }}
+    >
+      <Eye size={12} style={{ color: 'var(--color-text-tertiary)' }} />
+      {seenList && seenList.length > 0 ? (
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+          Seen by {seenList.length}
+        </span>
+      ) : (
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+          {loading ? '...' : 'Sent'}
+        </span>
+      )}
+
+      {showTooltip && seenList && seenList.length > 0 && (
+        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, padding: '8px 10px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,.15)', zIndex: 10, display: 'flex', flexDirection: 'column', gap: 6, width: 150 }}>
+          <strong style={{ fontSize: 9, textTransform: 'uppercase', color: 'var(--color-text-tertiary)', letterSpacing: '0.5px' }}>Seen by</strong>
+          {seenList.map((s) => (
+            <div key={s.userId} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-text)' }}>
+              <span style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                {initials(s.name)}
+              </span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

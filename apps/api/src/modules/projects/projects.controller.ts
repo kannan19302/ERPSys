@@ -26,7 +26,6 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @ApiOperation({ summary: 'Get projects' })
-  @Permissions('projects.read')
   @Get()
   @Permissions('projects.project.read')
   async getProjects(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -34,7 +33,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get resource workload for a week (defaults to the current week)' })
-  @Permissions('projects.read')
   @Get('resource-workload')
   @Permissions('projects.project.read')
   async getResourceWorkload(@Req() req: AuthenticatedRequest, @Query('weekStart') weekStart?: string): Promise<unknown> {
@@ -42,7 +40,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get project revenue recognition schedule (time-based percentage-of-completion)' })
-  @Permissions('projects.read')
   @Get('revenue-recognition')
   @Permissions('projects.project.read')
   async getRevenueRecognition(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -50,7 +47,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get portfolios' })
-  @Permissions('projects.read')
   @Get('portfolios')
   @Permissions('projects.project.read')
   async getPortfolios(@Req() req: AuthenticatedRequest): Promise<unknown> {
@@ -58,7 +54,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Create portfolio' })
-  @Permissions('projects.create')
   @Post('portfolios')
   @Permissions('projects.project.create')
   async createPortfolio(
@@ -70,7 +65,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get project by id' })
-  @Permissions('projects.read')
   @Get(':id')
   @Permissions('projects.project.read')
   async getProjectById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -78,7 +72,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Create project' })
-  @Permissions('projects.create')
   @Post()
   @Permissions('projects.project.create')
   async createProject(
@@ -90,7 +83,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get tasks' })
-  @Permissions('projects.read')
   @Get(':id/tasks')
   @Permissions('projects.project.read')
   async getTasks(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -98,7 +90,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Create task' })
-  @Permissions('projects.create')
   @Post(':id/tasks')
   @Permissions('projects.task.create')
   async createTask(
@@ -110,7 +101,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Log time' })
-  @Permissions('projects.create')
   @Post('tasks/:taskId/timesheets')
   @Permissions('projects.timesheet.create')
   async logTime(
@@ -122,7 +112,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Save baseline' })
-  @Permissions('projects.create')
   @Post(':id/baseline')
   @Permissions('projects.project.create')
   async saveBaseline(
@@ -134,7 +123,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Compute critical path' })
-  @Permissions('projects.create')
   @Post(':id/critical-path')
   @Permissions('projects.project.read')
   async computeCriticalPath(
@@ -146,7 +134,6 @@ export class ProjectsController {
 
   // --- Risks endpoints ---
   @ApiOperation({ summary: 'Get risks' })
-  @Permissions('projects.read')
   @Get(':projectId/risks')
   @Permissions('projects.project.read')
   async getRisks(@Req() req: AuthenticatedRequest, @Param('projectId') projectId: string): Promise<unknown> {
@@ -154,7 +141,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Create risk' })
-  @Permissions('projects.create')
   @Post(':projectId/risks')
   @Permissions('projects.project.create')
   async createRisk(
@@ -166,7 +152,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Update risk' })
-  @Permissions('projects.update')
   @Put('risks/:riskId')
   @Permissions('projects.project.create')
   async updateRisk(
@@ -179,7 +164,6 @@ export class ProjectsController {
 
   // --- Change Requests endpoints ---
   @ApiOperation({ summary: 'Get change requests' })
-  @Permissions('projects.read')
   @Get(':projectId/change-requests')
   @Permissions('projects.project.read')
   async getChangeRequests(@Req() req: AuthenticatedRequest, @Param('projectId') projectId: string): Promise<unknown> {
@@ -187,7 +171,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Create change request' })
-  @Permissions('projects.create')
   @Post(':projectId/change-requests')
   @Permissions('projects.project.create')
   async createChangeRequest(
@@ -199,7 +182,6 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Approve change request' })
-  @Permissions('projects.update')
   @Put('change-requests/:changeRequestId/approve')
   @Permissions('projects.project.create')
   async approveChangeRequest(
@@ -211,7 +193,6 @@ export class ProjectsController {
 
   // --- EVM calculator endpoint ---
   @ApiOperation({ summary: 'Get project e v m' })
-  @Permissions('projects.read')
   @Get(':id/evm')
   @Permissions('projects.project.read')
   async getProjectEVM(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
@@ -220,7 +201,6 @@ export class ProjectsController {
 
   // --- Finance Integration Auto-billing endpoint ---
   @ApiOperation({ summary: 'Generate project invoice' })
-  @Permissions('projects.create')
   @Post(':id/invoice')
   @Permissions('finance.invoice.create')
   async generateProjectInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {

@@ -46,7 +46,6 @@ export class SalesController {
 
   // ─── Quotations ────────────────────────────────────
 
-  @Permissions('sales.read')
   @Get('quotations')
   @Permissions('sales.quotation.read')
   @ApiOperation({ summary: 'List quotations' })
@@ -54,7 +53,6 @@ export class SalesController {
     return this.salesService.getQuotations(req.user.tenantId);
   }
 
-  @Permissions('sales.create')
   @Post('quotations')
   @Permissions('sales.quotation.create')
   @ApiOperation({ summary: 'Create a quotation' })
@@ -68,7 +66,6 @@ export class SalesController {
 
   // ─── Sales Orders ──────────────────────────────────
 
-  @Permissions('sales.read')
   @Get('orders')
   @Permissions('sales.order.read')
   @ApiOperation({ summary: 'List sales orders' })
@@ -80,7 +77,6 @@ export class SalesController {
     return this.salesService.getSalesOrders(req.user.tenantId, channel, status);
   }
 
-  @Permissions('sales.read')
   @Get('orders/:id')
   @Permissions('sales.order.read')
   @ApiOperation({ summary: 'Get a sales order by id' })
@@ -88,7 +84,6 @@ export class SalesController {
     return this.salesService.getSalesOrderById(req.user.tenantId, id);
   }
 
-  @Permissions('sales.create')
   @Post('orders')
   @Permissions('sales.order.create')
   @ApiOperation({ summary: 'Create a sales order' })
@@ -100,7 +95,6 @@ export class SalesController {
     return this.salesService.createSalesOrder(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 
-  @Permissions('sales.update')
   @Patch('orders/:id/status')
   @Permissions('sales.order.update')
   @ApiOperation({ summary: 'Update sales order status' })
@@ -112,7 +106,6 @@ export class SalesController {
     return this.salesService.updateSalesOrderStatus(req.user.tenantId, id, dto.status);
   }
 
-  @Permissions('sales.create')
   @Post('orders/:id/convert')
   @Permissions('sales.order.create')
   @ApiOperation({ summary: 'Convert a quotation to a sales order' })
@@ -123,7 +116,6 @@ export class SalesController {
     return this.salesService.convertQuotationToOrder(req.user.tenantId, id, req.user.userId || 'system');
   }
 
-  @Permissions('sales.update')
   @Patch('orders/:id/approve-credit')
   @Permissions('sales.order.update')
   @ApiOperation({ summary: 'Approve a credit hold on a sales order' })
@@ -134,7 +126,6 @@ export class SalesController {
     return this.salesService.approveCreditHold(req.user.tenantId, id, req.user.userId || 'system');
   }
 
-  @Permissions('sales.create')
   @Post('orders/:id/payment')
   @Permissions('sales.order.update')
   @ApiOperation({ summary: 'Record a payment against a sales order' })
@@ -154,7 +145,6 @@ export class SalesController {
 
   // ─── Quotation Detail ───────────────────────────────
 
-  @Permissions('sales.read')
   @Get('quotations/:id')
   @Permissions('sales.quotation.read')
   @ApiOperation({ summary: 'Get a quotation by id' })
@@ -162,7 +152,6 @@ export class SalesController {
     return this.salesService.getQuotationById(req.user.tenantId, id);
   }
 
-  @Permissions('sales.update')
   @Patch('quotations/:id/status')
   @Permissions('sales.quotation.update')
   @ApiOperation({ summary: 'Update quotation status' })
@@ -176,7 +165,6 @@ export class SalesController {
 
   // ─── Delivery Notes ────────────────────────────────
 
-  @Permissions('sales.read')
   @Get('delivery-notes')
   @Permissions('sales.delivery-note.read')
   @ApiOperation({ summary: 'List delivery notes' })
@@ -184,7 +172,6 @@ export class SalesController {
     return this.salesService.getDeliveryNotes(req.user.tenantId, orderId);
   }
 
-  @Permissions('sales.read')
   @Get('delivery-notes/:id')
   @Permissions('sales.delivery-note.read')
   @ApiOperation({ summary: 'Get a delivery note by id' })
@@ -192,7 +179,6 @@ export class SalesController {
     return this.salesService.getDeliveryNoteById(req.user.tenantId, id);
   }
 
-  @Permissions('sales.create')
   @Post('delivery-notes')
   @Permissions('sales.delivery-note.create')
   @ApiOperation({ summary: 'Create a delivery note' })
@@ -203,7 +189,6 @@ export class SalesController {
     return this.salesService.createDeliveryNote(req.user.tenantId, dto, req.user.userId || 'system');
   }
 
-  @Permissions('sales.update')
   @Patch('delivery-notes/:id/ship')
   @Permissions('sales.delivery-note.update')
   @ApiOperation({ summary: 'Mark a delivery note as shipped' })
@@ -217,7 +202,6 @@ export class SalesController {
 
   // ─── Sales Returns (RMA) ───────────────────────────
 
-  @Permissions('sales.read')
   @Get('returns')
   @Permissions('sales.return.read')
   @ApiOperation({ summary: 'List sales returns' })
@@ -225,7 +209,6 @@ export class SalesController {
     return this.salesService.getSalesReturns(req.user.tenantId, status);
   }
 
-  @Permissions('sales.read')
   @Get('returns/:id')
   @Permissions('sales.return.read')
   @ApiOperation({ summary: 'Get a sales return by id' })
@@ -233,7 +216,6 @@ export class SalesController {
     return this.salesService.getSalesReturnById(req.user.tenantId, id);
   }
 
-  @Permissions('sales.create')
   @Post('returns')
   @Permissions('sales.return.create')
   @ApiOperation({ summary: 'Create a sales return (RMA)' })
@@ -245,7 +227,6 @@ export class SalesController {
     return this.salesService.createSalesReturn(req.user.tenantId, orgId, dto, req.user.userId || 'system');
   }
 
-  @Permissions('sales.update')
   @Patch('returns/:id/process')
   @Permissions('sales.return.update')
   @ApiOperation({ summary: 'Process a sales return (approve/reject/receive/refund)' })
@@ -259,7 +240,6 @@ export class SalesController {
 
   // ─── Dashboard Stats ───────────────────────────────
 
-  @Permissions('sales.read')
   @Get('stats')
   @Permissions('sales.order.read')
   @ApiOperation({ summary: 'Sales dashboard statistics' })

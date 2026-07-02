@@ -29,7 +29,6 @@ export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
   @ApiOperation({ summary: 'Get current plan' })
-  @Permissions('admin.read')
   @Get('current')
   @Permissions('admin.subscription.read')
   async getCurrentPlan(@Req() req: AuthenticatedRequest) {
@@ -37,7 +36,6 @@ export class SubscriptionController {
   }
 
   @ApiOperation({ summary: 'Get available plans' })
-  @Permissions('admin.read')
   @Get('plans')
   @Permissions('admin.subscription.read')
   async getAvailablePlans() {
@@ -45,7 +43,6 @@ export class SubscriptionController {
   }
 
   @ApiOperation({ summary: 'Change plan' })
-  @Permissions('admin.create')
   @Post('change-plan')
   @Permissions('admin.subscription.update')
   async changePlan(
@@ -56,7 +53,6 @@ export class SubscriptionController {
   }
 
   @ApiOperation({ summary: 'Update seats' })
-  @Permissions('admin.create')
   @Post('seats')
   @Permissions('admin.subscription.update')
   async updateSeats(
@@ -67,7 +63,6 @@ export class SubscriptionController {
   }
 
   @ApiOperation({ summary: 'Get billing history' })
-  @Permissions('admin.read')
   @Get('billing-history')
   @Permissions('admin.subscription.read')
   async getBillingHistory(

@@ -19,7 +19,6 @@ interface AuthReq extends Request { user: { tenantId: string; userId: string } }
 export class PricingController {
   constructor(private readonly pricingService: PricingService) {}
 
-  @Permissions('sales.create')
   @Post('calculate')
   @Permissions('sales.quotation.create')
   @ApiOperation({ summary: 'Calculate price for a product/quantity/customer' })
@@ -27,7 +26,6 @@ export class PricingController {
     return this.pricingService.calculatePrice(req.user.tenantId, body.productId, body.quantity, body.customerId);
   }
 
-  @Permissions('sales.read')
   @Get('availability/:productId')
   @Permissions('inventory.stock.read')
   @ApiOperation({ summary: 'Check stock availability for a product' })

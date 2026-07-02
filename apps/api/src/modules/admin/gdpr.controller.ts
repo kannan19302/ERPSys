@@ -33,7 +33,6 @@ export class GdprController {
   /* ── Retention Policies ─────────────────────── */
 
   @ApiOperation({ summary: 'Get retention policies' })
-  @Permissions('admin.read')
   @Get('retention-policies')
   @Permissions('admin.setting.read')
   async getRetentionPolicies(@Req() req: AuthenticatedRequest) {
@@ -41,7 +40,6 @@ export class GdprController {
   }
 
   @ApiOperation({ summary: 'Upsert retention policy' })
-  @Permissions('admin.create')
   @Post('retention-policies')
   @Permissions('admin.setting.read')
   async upsertRetentionPolicy(
@@ -54,7 +52,6 @@ export class GdprController {
   /* ── Erasure Requests ───────────────────────── */
 
   @ApiOperation({ summary: 'Get erasure requests' })
-  @Permissions('admin.read')
   @Get('erasure-requests')
   @Permissions('admin.setting.read')
   async getErasureRequests(@Req() req: AuthenticatedRequest) {
@@ -62,7 +59,6 @@ export class GdprController {
   }
 
   @ApiOperation({ summary: 'Create erasure request' })
-  @Permissions('admin.create')
   @Post('erasure-requests')
   @Permissions('admin.setting.read')
   async createErasureRequest(
@@ -73,7 +69,6 @@ export class GdprController {
   }
 
   @ApiOperation({ summary: 'Execute erasure' })
-  @Permissions('admin.create')
   @Post('erasure-requests/:id/execute')
   @Permissions('admin.setting.read')
   async executeErasure(
@@ -86,7 +81,6 @@ export class GdprController {
   /* ── Data Export (Right of Access) ──────────── */
 
   @ApiOperation({ summary: 'Export subject data' })
-  @Permissions('admin.create')
   @Post('data-export/:email')
   @Permissions('admin.setting.read')
   async exportSubjectData(

@@ -29,7 +29,6 @@ export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 
   @ApiOperation({ summary: 'Get announcements' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.setting.read')
   async getAnnouncements(@Req() req: AuthenticatedRequest) {
@@ -37,7 +36,6 @@ export class AnnouncementsController {
   }
 
   @ApiOperation({ summary: 'Create announcement' })
-  @Permissions('admin.create')
   @Post()
   @Permissions('admin.setting.update')
   async createAnnouncement(
@@ -48,7 +46,6 @@ export class AnnouncementsController {
   }
 
   @ApiOperation({ summary: 'Update announcement' })
-  @Permissions('admin.update')
   @Patch(':id')
   @Permissions('admin.setting.update')
   async updateAnnouncement(
@@ -60,7 +57,6 @@ export class AnnouncementsController {
   }
 
   @ApiOperation({ summary: 'Delete announcement' })
-  @Permissions('admin.delete')
   @Delete(':id')
   @Permissions('admin.setting.update')
   async deleteAnnouncement(

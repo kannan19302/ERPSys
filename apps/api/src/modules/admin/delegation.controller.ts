@@ -31,7 +31,6 @@ export class DelegationController {
   constructor(private readonly delegationService: DelegationService) {}
 
   @ApiOperation({ summary: 'List' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.delegations.read')
   async list(@Req() req: AuthenticatedRequest) {
@@ -39,7 +38,6 @@ export class DelegationController {
   }
 
   @ApiOperation({ summary: 'Create' })
-  @Permissions('admin.create')
   @Post()
   @Permissions('admin.delegations.create')
   async create(
@@ -58,7 +56,6 @@ export class DelegationController {
   }
 
   @ApiOperation({ summary: 'Update' })
-  @Permissions('admin.update')
   @Patch(':id')
   @Permissions('admin.delegations.update')
   async update(
@@ -70,7 +67,6 @@ export class DelegationController {
   }
 
   @ApiOperation({ summary: 'Revoke' })
-  @Permissions('admin.create')
   @Post(':id/revoke')
   @Permissions('admin.delegations.update')
   async revoke(

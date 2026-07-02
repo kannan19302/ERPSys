@@ -86,6 +86,13 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     client.leave(`channel:${data.channelId}`);
   }
 
+  /**
+   * Legacy client-originated event: a connected client asks the server to broadcast an ephemeral
+   * (non-persisted) chat payload to its room. Kept for backward compatibility, but Connect's
+   * actual message-send path does NOT go through this — persisted messages are broadcast via
+   * `broadcastChatMessage()` below, called from CommunicationService.createMessage after the
+   * message has a real id/timestamp from Postgres. Do not use this handler as the persistence path.
+   */
   @SubscribeMessage('chat:message')
   handleChatMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string; content: string }) {
     const userId = (client as any).userId;
@@ -103,7 +110,29 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   @SubscribeMessage('typing')
   handleTyping(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string }) {
     const userId = (client as any).userId;
+    // Ephemeral only — no persistence. Broadcast to everyone else in the room; the sender's own
+    // client already knows it's typing, so `client.to(...)` (not `this.server.to(...)`) is used
+    // to exclude the sender, matching Slack/Teams typing-indicator semantics.
     client.to(`channel:${data.channelId}`).emit('typing', { userId, channelId: data.channelId });
+  }
+
+  /**
+   * Server-initiated broadcast of a persisted Connect message into its channel room.
+   * Called from CommunicationService.createMessage (US-A3) after the message is durably
+   * written to Postgres, so `payload` carries the real id/createdAt, not an ephemeral guess.
+   */
+  broadcastChatMessage(channelId: string, payload: Record<string, unknown>) {
+    this.server?.to(`channel:${channelId}`).emit('chat:message', payload);
+  }
+
+  /**
+   * Server-initiated presence broadcast (US-A5), called from CommunicationService.setPresence
+   * so other tenant members watching the directory see the change live instead of on their next
+   * 15s poll. Distinct from the connect/disconnect ONLINE/OFFLINE emits above, which only reflect
+   * socket liveness, not the user's chosen presence status (ACTIVE/AWAY/BRB/DND/OOO).
+   */
+  broadcastPresenceUpdate(tenantId: string, payload: Record<string, unknown>) {
+    this.server?.to(`tenant:${tenantId}`).emit('presence', payload);
   }
 
   @OnEvent('notification.send')

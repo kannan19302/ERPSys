@@ -31,7 +31,6 @@ export class OrgHierarchyController {
   // ── Tree ─────────────────────────────────────────────────
 
   @ApiOperation({ summary: 'Get org tree' })
-  @Permissions('admin.read')
   @Get('tree')
   @Permissions('admin.org-hierarchy.read')
   async getOrgTree(@Req() req: AuthenticatedRequest) {
@@ -41,7 +40,6 @@ export class OrgHierarchyController {
   // ── Departments ──────────────────────────────────────────
 
   @ApiOperation({ summary: 'Get departments' })
-  @Permissions('admin.read')
   @Get('departments')
   @Permissions('admin.org-hierarchy.read')
   async getDepartments(@Req() req: AuthenticatedRequest) {
@@ -49,7 +47,6 @@ export class OrgHierarchyController {
   }
 
   @ApiOperation({ summary: 'Create department' })
-  @Permissions('admin.create')
   @Post('departments')
   @Permissions('admin.org-hierarchy.create')
   async createDepartment(
@@ -60,7 +57,6 @@ export class OrgHierarchyController {
   }
 
   @ApiOperation({ summary: 'Update department' })
-  @Permissions('admin.update')
   @Patch('departments/:id')
   @Permissions('admin.org-hierarchy.update')
   async updateDepartment(
@@ -72,7 +68,6 @@ export class OrgHierarchyController {
   }
 
   @ApiOperation({ summary: 'Delete department' })
-  @Permissions('admin.delete')
   @Delete('departments/:id')
   @Permissions('admin.org-hierarchy.delete')
   async deleteDepartment(
@@ -85,7 +80,6 @@ export class OrgHierarchyController {
   // ── Cost Centers ─────────────────────────────────────────
 
   @ApiOperation({ summary: 'Get cost centers' })
-  @Permissions('admin.read')
   @Get('cost-centers/:orgId')
   @Permissions('admin.org-hierarchy.read')
   async getCostCenters(
@@ -96,7 +90,6 @@ export class OrgHierarchyController {
   }
 
   @ApiOperation({ summary: 'Create cost center' })
-  @Permissions('admin.create')
   @Post('cost-centers')
   @Permissions('admin.org-hierarchy.create')
   async createCostCenter(
@@ -107,7 +100,6 @@ export class OrgHierarchyController {
   }
 
   @ApiOperation({ summary: 'Update cost center' })
-  @Permissions('admin.update')
   @Patch('cost-centers/:id')
   @Permissions('admin.org-hierarchy.update')
   async updateCostCenter(
@@ -119,7 +111,6 @@ export class OrgHierarchyController {
   }
 
   @ApiOperation({ summary: 'Delete cost center' })
-  @Permissions('admin.delete')
   @Delete('cost-centers/:id')
   @Permissions('admin.org-hierarchy.delete')
   async deleteCostCenter(

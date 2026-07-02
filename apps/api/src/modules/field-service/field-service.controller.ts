@@ -27,7 +27,6 @@ export class FieldServiceController {
   constructor(private readonly service: FieldServiceService) {}
 
   @ApiOperation({ summary: 'Get tickets' })
-  @Permissions('field_service.read')
   @Get('tickets')
   @Permissions('hr.employee.read')
   async getTickets(@Req() req: AuthenticatedRequest) {
@@ -35,7 +34,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Create ticket' })
-  @Permissions('field_service.create')
   @Post('tickets')
   @Permissions('hr.employee.read')
   async createTicket(
@@ -46,7 +44,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Get dispatches' })
-  @Permissions('field_service.read')
   @Get('dispatches')
   @Permissions('hr.employee.read')
   async getDispatches(@Req() req: AuthenticatedRequest) {
@@ -54,7 +51,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Create dispatch' })
-  @Permissions('field_service.create')
   @Post('dispatches')
   @Permissions('hr.employee.read')
   async createDispatch(
@@ -65,7 +61,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Get checklists' })
-  @Permissions('field_service.read')
   @Get('checklists')
   @Permissions('hr.employee.read')
   async getChecklists(@Req() req: AuthenticatedRequest) {
@@ -73,7 +68,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Create checklist' })
-  @Permissions('field_service.create')
   @Post('checklists')
   @Permissions('hr.employee.read')
   async createChecklist(
@@ -84,7 +78,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Get preventative maintenances' })
-  @Permissions('field_service.read')
   @Get('preventative')
   @Permissions('hr.employee.read')
   async getPreventativeMaintenances(@Req() req: AuthenticatedRequest) {
@@ -92,7 +85,6 @@ export class FieldServiceController {
   }
 
   @ApiOperation({ summary: 'Create preventative maintenance' })
-  @Permissions('field_service.create')
   @Post('preventative')
   @Permissions('hr.employee.read')
   async createPreventativeMaintenance(

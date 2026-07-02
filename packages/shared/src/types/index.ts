@@ -236,6 +236,14 @@ export interface PermissionDefinition {
   action: string;
   level: PermissionLevel;
   description: string;
+  /**
+   * Optional sub-resource grouping label for UI display (Access Control matrix
+   * drill-in, role editor category sections). Only populated for modules whose
+   * permission count is large enough that flat module-level grouping becomes
+   * unreadable — currently only `admin` (21 resources, ~53 codes). Every other
+   * module stays `undefined` and renders with the existing flat module grouping.
+   */
+  category?: string;
 }
 
 export type FieldAccessLevel = 'hidden' | 'readonly' | 'editable';

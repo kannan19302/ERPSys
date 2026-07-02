@@ -25,7 +25,6 @@ export class ApiPlatformController {
   constructor(private readonly apiPlatformService: ApiPlatformService) {}
 
   @ApiOperation({ summary: 'Get api keys' })
-  @Permissions('api_platform.read')
   @Get('keys')
   @Permissions('admin.api-keys.read')
   async getApiKeys(@Req() req: AuthenticatedRequest) {
@@ -33,7 +32,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Create api key' })
-  @Permissions('api_platform.create')
   @Post('keys')
   @Permissions('admin.api-keys.create')
   async createApiKey(
@@ -44,7 +42,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Revoke api key' })
-  @Permissions('api_platform.delete')
   @Delete('keys/:id')
   @Permissions('admin.api-keys.delete')
   async revokeApiKey(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -52,7 +49,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Get webhook subscriptions' })
-  @Permissions('api_platform.read')
   @Get('webhooks')
   @Permissions('admin.webhooks.read')
   async getWebhookSubscriptions(@Req() req: AuthenticatedRequest) {
@@ -60,7 +56,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Create webhook subscription' })
-  @Permissions('api_platform.create')
   @Post('webhooks')
   @Permissions('admin.webhooks.create')
   async createWebhookSubscription(
@@ -71,7 +66,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Delete webhook subscription' })
-  @Permissions('api_platform.delete')
   @Delete('webhooks/:id')
   @Permissions('admin.webhooks.delete')
   async deleteWebhookSubscription(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -79,7 +73,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Get webhook delivery logs' })
-  @Permissions('api_platform.read')
   @Get('webhooks/logs')
   @Permissions('admin.webhooks.read')
   async getWebhookDeliveryLogs(@Req() req: AuthenticatedRequest) {
@@ -87,7 +80,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Update api key scopes' })
-  @Permissions('api_platform.create')
   @Post('keys/:id/scopes')
   @Permissions('admin.api-keys.create')
   async updateApiKeyScopes(
@@ -99,7 +91,6 @@ export class ApiPlatformController {
   }
 
   @ApiOperation({ summary: 'Retry webhook delivery' })
-  @Permissions('api_platform.create')
   @Post('webhooks/logs/:id/retry')
   @Permissions('admin.webhooks.create')
   async retryWebhookDelivery(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

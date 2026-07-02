@@ -96,6 +96,7 @@ interface SidebarItem {
 import { getAppSpecificNavigation, SEGMENT_NAMES, formatSegment, allApplications, switcherFolders, KERNEL_APP_IDS } from '@/navigation';
 import type { ModuleNav } from '@/navigation';
 import { useResolvedNav } from '@/navigation/useResolvedNav';
+import { PermissionProvider } from '@/components/PermissionProvider';
 
 const GLOBAL_SEARCH_ITEMS = [
   { name: 'Dashboard', href: '/dashboard', icon: Home, type: 'App' },
@@ -632,6 +633,7 @@ export default function DashboardLayout({
   }
 
   return (
+    <PermissionProvider>
     <div
       style={{
         display: 'flex',
@@ -1651,5 +1653,6 @@ export default function DashboardLayout({
         }
       `}</style>
     </div>
+    </PermissionProvider>
   );
 }

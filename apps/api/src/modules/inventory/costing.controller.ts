@@ -20,7 +20,6 @@ export class CostingController {
   constructor(private readonly costingService: CostingService) {}
 
   @ApiOperation({ summary: 'Get product valuation' })
-  @Permissions('inventory.read')
   @Get('valuation/:productId')
   @Permissions('inventory.stock.read')
   async getProductValuation(@Req() req: AuthReq, @Param('productId') productId: string, @Query('method') method?: string) {
@@ -28,7 +27,6 @@ export class CostingController {
   }
 
   @ApiOperation({ summary: 'Get valuation report' })
-  @Permissions('inventory.read')
   @Get('valuation-report')
   @Permissions('inventory.stock.read')
   async getValuationReport(@Req() req: AuthReq, @Query('method') method?: string) {
@@ -36,7 +34,6 @@ export class CostingController {
   }
 
   @ApiOperation({ summary: 'Calculate landed cost' })
-  @Permissions('inventory.create')
   @Post('landed-cost')
   @Permissions('inventory.stock.adjust')
   async calculateLandedCost(@Req() req: AuthReq, @ZodBody(z.any()) body: { receiptId: string; additionalCosts: Array<{ description: string; amount: number; allocateBy: 'QUANTITY' | 'VALUE' | 'WEIGHT' }> }) {
@@ -44,7 +41,6 @@ export class CostingController {
   }
 
   @ApiOperation({ summary: 'Lookup barcode' })
-  @Permissions('inventory.read')
   @Get('barcode/:barcode')
   @Permissions('inventory.product.read')
   async lookupBarcode(@Req() req: AuthReq, @Param('barcode') barcode: string) {

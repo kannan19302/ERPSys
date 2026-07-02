@@ -27,7 +27,6 @@ export class EducationController {
   constructor(private readonly service: EducationService) {}
 
   @ApiOperation({ summary: 'Get students' })
-  @Permissions('education.read')
   @Get('students')
   @Permissions('hr.employee.read')
   async getStudents(@Req() req: AuthenticatedRequest) {
@@ -35,7 +34,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Create student' })
-  @Permissions('education.create')
   @Post('students')
   @Permissions('hr.employee.read')
   async createStudent(
@@ -46,7 +44,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Get courses' })
-  @Permissions('education.read')
   @Get('courses')
   @Permissions('hr.employee.read')
   async getCourses(@Req() req: AuthenticatedRequest) {
@@ -54,7 +51,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Create course' })
-  @Permissions('education.create')
   @Post('courses')
   @Permissions('hr.employee.read')
   async createCourse(
@@ -65,7 +61,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Get timetables' })
-  @Permissions('education.read')
   @Get('timetables')
   @Permissions('hr.employee.read')
   async getTimetables(@Req() req: AuthenticatedRequest) {
@@ -73,7 +68,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Create timetable' })
-  @Permissions('education.create')
   @Post('timetables')
   @Permissions('hr.employee.read')
   async createTimetable(
@@ -84,7 +78,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Get fee structures' })
-  @Permissions('education.read')
   @Get('fee-structures')
   @Permissions('hr.employee.read')
   async getFeeStructures(@Req() req: AuthenticatedRequest) {
@@ -92,7 +85,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Create fee structure' })
-  @Permissions('education.create')
   @Post('fee-structures')
   @Permissions('hr.employee.read')
   async createFeeStructure(
@@ -103,7 +95,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Get student fees' })
-  @Permissions('education.read')
   @Get('student-fees')
   @Permissions('hr.employee.read')
   async getStudentFees(@Req() req: AuthenticatedRequest) {
@@ -111,7 +102,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Pay student fee' })
-  @Permissions('education.create')
   @Post('student-fees/pay')
   @Permissions('hr.employee.read')
   async payStudentFee(
@@ -122,7 +112,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Get book register' })
-  @Permissions('education.read')
   @Get('books')
   @Permissions('hr.employee.read')
   async getBookRegister(@Req() req: AuthenticatedRequest) {
@@ -130,7 +119,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Create book' })
-  @Permissions('education.create')
   @Post('books')
   @Permissions('hr.employee.read')
   async createBook(
@@ -141,7 +129,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Get book transactions' })
-  @Permissions('education.read')
   @Get('book-transactions')
   @Permissions('hr.employee.read')
   async getBookTransactions(@Req() req: AuthenticatedRequest) {
@@ -149,7 +136,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Checkout book' })
-  @Permissions('education.create')
   @Post('books/checkout')
   @Permissions('hr.employee.read')
   async checkoutBook(
@@ -160,7 +146,6 @@ export class EducationController {
   }
 
   @ApiOperation({ summary: 'Return book' })
-  @Permissions('education.create')
   @Post('books/return')
   @Permissions('hr.employee.read')
   async returnBook(

@@ -104,7 +104,6 @@ export class BuilderController {
 
   // ─── Stats ──────────────────────────────────────
   @ApiOperation({ summary: 'Get stats' })
-  @Permissions('builder.read')
   @Get('stats')
   @Permissions('builder.read')
   async getStats(@Req() req: AuthenticatedRequest) {
@@ -112,7 +111,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get recent items' })
-  @Permissions('builder.read')
   @Get('recent-items')
   @Permissions('builder.read')
   async getRecentItems(@Req() req: AuthenticatedRequest) {
@@ -121,7 +119,6 @@ export class BuilderController {
 
   // ─── Forms ──────────────────────────────────────
   @ApiOperation({ summary: 'Get forms' })
-  @Permissions('builder.read')
   @Get('forms')
   @Permissions('builder.form.read')
   async getForms(
@@ -133,7 +130,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get form stats' })
-  @Permissions('builder.read')
   @Get('forms/stats')
   @Permissions('builder.form.read')
   async getFormStats(@Req() req: AuthenticatedRequest) {
@@ -141,7 +137,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get form by id' })
-  @Permissions('builder.read')
   @Get('forms/:id')
   @Permissions('builder.form.read')
   async getFormById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -149,7 +144,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create form' })
-  @Permissions('builder.create')
   @Post('forms')
   @Permissions('builder.form.create')
   async createForm(
@@ -160,7 +154,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update form' })
-  @Permissions('builder.update')
   @Patch('forms/:id')
   @Permissions('builder.form.update')
   async updateForm(
@@ -172,7 +165,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete form' })
-  @Permissions('builder.delete')
   @Delete('forms/:id')
   @Permissions('builder.form.delete')
   async deleteForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -180,7 +172,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Publish builder form' })
-  @Permissions('builder.create')
   @Post('forms/:id/publish')
   @Permissions('builder.form.update')
   async publishBuilderForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -189,7 +180,6 @@ export class BuilderController {
 
   // ─── Workflows ──────────────────────────────────
   @ApiOperation({ summary: 'Get workflows' })
-  @Permissions('builder.read')
   @Get('workflows')
   @Permissions('builder.workflow.read')
   async getWorkflows(@Req() req: AuthenticatedRequest) {
@@ -197,7 +187,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get workflow by id' })
-  @Permissions('builder.read')
   @Get('workflows/:id')
   @Permissions('builder.workflow.read')
   async getWorkflowById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -205,7 +194,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create workflow' })
-  @Permissions('builder.create')
   @Post('workflows')
   @Permissions('builder.workflow.create')
   async createWorkflow(
@@ -216,7 +204,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update workflow' })
-  @Permissions('builder.update')
   @Patch('workflows/:id')
   @Permissions('builder.workflow.update')
   async updateWorkflow(
@@ -228,7 +215,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete workflow' })
-  @Permissions('builder.delete')
   @Delete('workflows/:id')
   @Permissions('builder.workflow.delete')
   async deleteWorkflow(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -236,7 +222,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Execute workflow' })
-  @Permissions('builder.create')
   @Post('workflows/:id/execute')
   @Permissions('builder.workflow.update')
   async executeWorkflow(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -244,7 +229,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get workflow executions' })
-  @Permissions('builder.read')
   @Get('workflows/:id/executions')
   @Permissions('builder.workflow.read')
   async getWorkflowExecutions(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -253,7 +237,6 @@ export class BuilderController {
 
   // ─── Dashboards ─────────────────────────────────
   @ApiOperation({ summary: 'Get global performance stats' })
-  @Permissions('builder.read')
   @Get('dashboards/global-stats')
   @Permissions('builder.dashboard.read')
   async getGlobalPerformanceStats(@Req() req: AuthenticatedRequest) {
@@ -261,7 +244,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get dashboards' })
-  @Permissions('builder.read')
   @Get('dashboards')
   @Permissions('builder.dashboard.read')
   async getDashboards(@Req() req: AuthenticatedRequest) {
@@ -269,7 +251,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get dashboard by id' })
-  @Permissions('builder.read')
   @Get('dashboards/:id')
   @Permissions('builder.dashboard.read')
   async getDashboardById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -277,7 +258,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create dashboard' })
-  @Permissions('builder.create')
   @Post('dashboards')
   @Permissions('builder.dashboard.create')
   async createDashboard(
@@ -288,7 +268,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update dashboard' })
-  @Permissions('builder.update')
   @Patch('dashboards/:id')
   @Permissions('builder.dashboard.update')
   async updateDashboard(
@@ -300,7 +279,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete dashboard' })
-  @Permissions('builder.delete')
   @Delete('dashboards/:id')
   @Permissions('builder.dashboard.delete')
   async deleteDashboard(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -309,7 +287,6 @@ export class BuilderController {
 
   // ─── Custom Modules ─────────────────────────────
   @ApiOperation({ summary: 'Get modules' })
-  @Permissions('builder.read')
   @Get('modules')
   @Permissions('builder.module.read')
   async getModules(@Req() req: AuthenticatedRequest) {
@@ -317,7 +294,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get module by id' })
-  @Permissions('builder.read')
   @Get('modules/:id')
   @Permissions('builder.module.read')
   async getModuleById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -325,7 +301,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Generate module via AI' })
-  @Permissions('builder.create')
   @Post('modules/generate')
   @Permissions('builder.module.create')
   async generateModule(@Req() req: AuthenticatedRequest, @Body() body: { prompt: string }) {
@@ -365,7 +340,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Suggest fields inside components via AI' })
-  @Permissions('builder.update')
   @Post('components/:id/generate')
   @Permissions('builder.module.update')
   async suggestFields(@Req() req: AuthenticatedRequest, @Param('id') _id: string, @Body() body: { prompt: string }) {
@@ -373,7 +347,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create module' })
-  @Permissions('builder.create')
   @Post('modules')
   @Permissions('builder.module.create')
   async createModule(
@@ -384,7 +357,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update module' })
-  @Permissions('builder.update')
   @Patch('modules/:id')
   @Permissions('builder.module.update')
   async updateModule(
@@ -396,7 +368,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete module' })
-  @Permissions('builder.delete')
   @Delete('modules/:id')
   @Permissions('builder.module.delete')
   async deleteModule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -405,7 +376,6 @@ export class BuilderController {
 
   // ─── Custom App Builder ─────────────────────────
   @ApiOperation({ summary: 'Get module with components' })
-  @Permissions('builder.read')
   @Get('modules/:id/full')
   @Permissions('builder.module.read')
   async getModuleWithComponents(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -413,7 +383,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get module stats' })
-  @Permissions('builder.read')
   @Get('modules/:id/stats')
   @Permissions('builder.module.read')
   async getModuleStats(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -421,7 +390,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Add component to module' })
-  @Permissions('builder.create')
   @Post('modules/:id/components')
   @Permissions('builder.module.update')
   async addComponentToModule(
@@ -433,7 +401,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Remove component from module' })
-  @Permissions('builder.delete')
   @Delete('modules/:id/components/:componentId')
   @Permissions('builder.module.update')
   async removeComponentFromModule(
@@ -445,7 +412,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Add page to module' })
-  @Permissions('builder.create')
   @Post('modules/:id/pages')
   @Permissions('builder.module.update')
   async addPageToModule(
@@ -457,7 +423,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Remove page from module' })
-  @Permissions('builder.delete')
   @Delete('modules/:id/pages/:pageId')
   @Permissions('builder.module.update')
   async removePageFromModule(
@@ -469,7 +434,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update page in module' })
-  @Permissions('builder.update')
   @Patch('modules/:id/pages/:pageId')
   @Permissions('builder.module.update')
   async updatePageInModule(
@@ -482,7 +446,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Add data model to module' })
-  @Permissions('builder.create')
   @Post('modules/:id/data-models')
   @Permissions('builder.module.update')
   async addDataModelToModule(
@@ -494,7 +457,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Remove data model from module' })
-  @Permissions('builder.delete')
   @Delete('modules/:id/data-models/:dataModelId')
   @Permissions('builder.module.update')
   async removeDataModelFromModule(
@@ -506,7 +468,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Run app tests' })
-  @Permissions('builder.create')
   @Post('modules/:id/test')
   @Permissions('builder.module.update')
   async runAppTests(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -514,7 +475,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Publish module' })
-  @Permissions('builder.create')
   @Post('modules/:id/publish')
   @Permissions('builder.module.update')
   async publishModule(
@@ -526,7 +486,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Unpublish module' })
-  @Permissions('builder.create')
   @Post('modules/:id/unpublish')
   @Permissions('builder.module.update')
   async unpublishModule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -534,7 +493,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get module releases' })
-  @Permissions('builder.read')
   @Get('modules/:id/releases')
   @Permissions('builder.module.read')
   async getModuleReleases(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -542,7 +500,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Compare release snapshot' })
-  @Permissions('builder.read')
   @Get('modules/:id/releases/:releaseId/diff')
   @Permissions('builder.module.read')
   async compareReleaseSnapshot(
@@ -554,7 +511,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Rollback module' })
-  @Permissions('builder.create')
   @Post('modules/:id/rollback')
   @Permissions('builder.module.update')
   async rollbackModule(
@@ -567,7 +523,6 @@ export class BuilderController {
 
   // ─── App Marketplace ────────────────────────────
   @ApiOperation({ summary: 'Get marketplace' })
-  @Permissions('builder.read')
   @Get('marketplace')
   @Permissions('builder.module.read')
   async getMarketplace(@Req() req: AuthenticatedRequest) {
@@ -575,7 +530,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Install builder app' })
-  @Permissions('builder.create')
   @Post('marketplace/install')
   @Permissions('builder.module.read')
   async installBuilderApp(
@@ -586,7 +540,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Uninstall builder app' })
-  @Permissions('builder.create')
   @Post('marketplace/uninstall')
   @Permissions('builder.module.read')
   async uninstallBuilderApp(
@@ -598,7 +551,6 @@ export class BuilderController {
 
   // ─── Automation Rules ───────────────────────────
   @ApiOperation({ summary: 'Get automation rules' })
-  @Permissions('builder.read')
   @Get('automation-rules')
   @Permissions('builder.automation.read')
   async getAutomationRules(@Req() req: AuthenticatedRequest) {
@@ -606,7 +558,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get automation rule by id' })
-  @Permissions('builder.read')
   @Get('automation-rules/:id')
   @Permissions('builder.automation.read')
   async getAutomationRuleById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -614,7 +565,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create automation rule' })
-  @Permissions('builder.create')
   @Post('automation-rules')
   @Permissions('builder.automation.create')
   async createAutomationRule(
@@ -625,7 +575,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update automation rule' })
-  @Permissions('builder.update')
   @Patch('automation-rules/:id')
   @Permissions('builder.automation.update')
   async updateAutomationRule(
@@ -637,7 +586,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete automation rule' })
-  @Permissions('builder.delete')
   @Delete('automation-rules/:id')
   @Permissions('builder.automation.delete')
   async deleteAutomationRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -645,7 +593,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Test run automation rule' })
-  @Permissions('builder.create')
   @Post('automation-rules/:id/test')
   @Permissions('builder.automation.update')
   async testRunAutomationRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -654,7 +601,6 @@ export class BuilderController {
 
   // ─── Data Imports ───────────────────────────────
   @ApiOperation({ summary: 'Get data imports' })
-  @Permissions('builder.read')
   @Get('data-imports')
   @Permissions('builder.import.read')
   async getDataImports(@Req() req: AuthenticatedRequest) {
@@ -662,7 +608,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create data import' })
-  @Permissions('builder.create')
   @Post('data-imports')
   @Permissions('builder.import.create')
   async createDataImport(
@@ -673,7 +618,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Execute data import' })
-  @Permissions('builder.create')
   @Post('data-imports/:id/execute')
   @Permissions('builder.import.create')
   async executeDataImport(
@@ -686,7 +630,6 @@ export class BuilderController {
 
   // ─── Web Pages ──────────────────────────────────
   @ApiOperation({ summary: 'Get web pages' })
-  @Permissions('builder.read')
   @Get('web-pages')
   @Permissions('builder.web.read')
   async getWebPages(@Req() req: AuthenticatedRequest) {
@@ -694,7 +637,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get web page by id' })
-  @Permissions('builder.read')
   @Get('web-pages/:id')
   @Permissions('builder.web.read')
   async getWebPageById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -702,7 +644,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create web page' })
-  @Permissions('builder.create')
   @Post('web-pages')
   @Permissions('builder.web.create')
   async createWebPage(
@@ -713,7 +654,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update web page' })
-  @Permissions('builder.update')
   @Patch('web-pages/:id')
   @Permissions('builder.web.update')
   async updateWebPage(
@@ -725,7 +665,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete web page' })
-  @Permissions('builder.delete')
   @Delete('web-pages/:id')
   @Permissions('builder.web.delete')
   async deleteWebPage(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -734,7 +673,6 @@ export class BuilderController {
 
   // ─── Blog Posts ─────────────────────────────────
   @ApiOperation({ summary: 'Get blog posts' })
-  @Permissions('builder.read')
   @Get('blog-posts')
   @Permissions('builder.blog.read')
   async getBlogPosts(@Req() req: AuthenticatedRequest) {
@@ -742,7 +680,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get blog post by id' })
-  @Permissions('builder.read')
   @Get('blog-posts/:id')
   @Permissions('builder.blog.read')
   async getBlogPostById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -750,7 +687,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create blog post' })
-  @Permissions('builder.create')
   @Post('blog-posts')
   @Permissions('builder.blog.create')
   async createBlogPost(
@@ -761,7 +697,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update blog post' })
-  @Permissions('builder.update')
   @Patch('blog-posts/:id')
   @Permissions('builder.blog.update')
   async updateBlogPost(
@@ -773,7 +708,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete blog post' })
-  @Permissions('builder.delete')
   @Delete('blog-posts/:id')
   @Permissions('builder.blog.delete')
   async deleteBlogPost(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -784,7 +718,6 @@ export class BuilderController {
   // WEB ASSETS
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get web assets' })
-  @Permissions('builder.read')
   @Get('web-assets')
   @Permissions('builder.web.read')
   async getWebAssets(@Req() req: AuthenticatedRequest) {
@@ -792,7 +725,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create web asset' })
-  @Permissions('builder.create')
   @Post('web-assets')
   @Permissions('builder.web.create')
   async createWebAsset(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebAssetSchema)) dto: any) {
@@ -800,7 +732,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update web asset' })
-  @Permissions('builder.update')
   @Patch('web-assets/:id')
   @Permissions('builder.web.update')
   async updateWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebAssetSchema)) dto: any) {
@@ -808,7 +739,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete web asset' })
-  @Permissions('builder.delete')
   @Delete('web-assets/:id')
   @Permissions('builder.web.delete')
   async deleteWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -819,7 +749,6 @@ export class BuilderController {
   // WEB TEMPLATES
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get web templates' })
-  @Permissions('builder.read')
   @Get('web-templates')
   @Permissions('builder.web.read')
   async getWebTemplates(@Req() req: AuthenticatedRequest) {
@@ -827,7 +756,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create web template' })
-  @Permissions('builder.create')
   @Post('web-templates')
   @Permissions('builder.web.create')
   async createWebTemplate(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebTemplateSchema)) dto: any) {
@@ -835,7 +763,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update web template' })
-  @Permissions('builder.update')
   @Patch('web-templates/:id')
   @Permissions('builder.web.update')
   async updateWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebTemplateSchema)) dto: any) {
@@ -843,7 +770,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete web template' })
-  @Permissions('builder.delete')
   @Delete('web-templates/:id')
   @Permissions('builder.web.delete')
   async deleteWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -854,7 +780,6 @@ export class BuilderController {
   // WEB MENUS
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get web menus' })
-  @Permissions('builder.read')
   @Get('web-menus')
   @Permissions('builder.web.read')
   async getWebMenus(@Req() req: AuthenticatedRequest) {
@@ -862,7 +787,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create web menu' })
-  @Permissions('builder.create')
   @Post('web-menus')
   @Permissions('builder.web.create')
   async createWebMenu(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebMenuSchema)) dto: any) {
@@ -870,7 +794,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update web menu' })
-  @Permissions('builder.update')
   @Patch('web-menus/:id')
   @Permissions('builder.web.update')
   async updateWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebMenuSchema)) dto: any) {
@@ -878,7 +801,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete web menu' })
-  @Permissions('builder.delete')
   @Delete('web-menus/:id')
   @Permissions('builder.web.delete')
   async deleteWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -889,7 +811,6 @@ export class BuilderController {
   // WEB SEO
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get web seo' })
-  @Permissions('builder.read')
   @Get('web-seo')
   @Permissions('builder.web.read')
   async getWebSeo(@Req() req: AuthenticatedRequest) {
@@ -897,7 +818,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create web seo' })
-  @Permissions('builder.create')
   @Post('web-seo')
   @Permissions('builder.web.create')
   async createWebSeo(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebSeoSchema)) dto: any) {
@@ -905,7 +825,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update web seo' })
-  @Permissions('builder.update')
   @Patch('web-seo/:id')
   @Permissions('builder.web.update')
   async updateWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebSeoSchema)) dto: any) {
@@ -913,7 +832,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete web seo' })
-  @Permissions('builder.delete')
   @Delete('web-seo/:id')
   @Permissions('builder.web.delete')
   async deleteWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -923,7 +841,6 @@ export class BuilderController {
 
 
   @ApiOperation({ summary: 'Log analytics' })
-  @Permissions('builder.create')
   @Post('analytics')
   @Permissions('builder.read')
   async logAnalytics(
@@ -934,7 +851,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Generate schema' })
-  @Permissions('builder.create')
   @Post('ai-generate')
   @Permissions('builder.form.create')
   async generateSchema(
@@ -948,7 +864,6 @@ export class BuilderController {
   // SCHEMA REGISTRIES
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get schema registries' })
-  @Permissions('builder.read')
   @Get('schema-registries')
   @Permissions('builder.schema.read')
   async getSchemaRegistries(@Req() req: AuthenticatedRequest) {
@@ -956,7 +871,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get schema registry by slug' })
-  @Permissions('builder.read')
   @Get('schema-registries/:slug')
   @Permissions('builder.schema.read')
   async getSchemaRegistryBySlug(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
@@ -964,7 +878,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create schema registry' })
-  @Permissions('builder.create')
   @Post('schema-registries')
   @Permissions('builder.schema.create')
   async createSchemaRegistry(
@@ -975,7 +888,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update schema registry' })
-  @Permissions('builder.update')
   @Patch('schema-registries/:id')
   @Permissions('builder.schema.update')
   async updateSchemaRegistry(
@@ -987,7 +899,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete schema registry' })
-  @Permissions('builder.delete')
   @Delete('schema-registries/:id')
   @Permissions('builder.schema.delete')
   async deleteSchemaRegistry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -998,7 +909,6 @@ export class BuilderController {
   // PAGE REGISTRIES
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get page registries' })
-  @Permissions('builder.read')
   @Get('page-registries')
   @Permissions('builder.page.read')
   async getPageRegistries(@Req() req: AuthenticatedRequest) {
@@ -1006,7 +916,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get page registry by id' })
-  @Permissions('builder.read')
   @Get('page-registries/:id')
   @Permissions('builder.page.read')
   async getPageRegistryById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -1014,7 +923,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get page registry by slug' })
-  @Permissions('builder.read')
   @Get('page-registries/:module/:slug')
   @Permissions('builder.page.read')
   async getPageRegistryBySlug(
@@ -1026,7 +934,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create page registry' })
-  @Permissions('builder.create')
   @Post('page-registries')
   @Permissions('builder.page.create')
   async createPageRegistry(
@@ -1037,7 +944,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update page registry' })
-  @Permissions('builder.update')
   @Patch('page-registries/:id')
   @Permissions('builder.page.update')
   async updatePageRegistry(
@@ -1049,7 +955,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete page registry' })
-  @Permissions('builder.delete')
   @Delete('page-registries/:id')
   @Permissions('builder.page.delete')
   async deletePageRegistry(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -1057,7 +962,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Restore page registry history' })
-  @Permissions('builder.create')
   @Post('page-registries/:id/restore')
   @Permissions('builder.page.update')
   async restorePageRegistryHistory(
@@ -1073,7 +977,6 @@ export class BuilderController {
    * Generates / syncs the backing SchemaRegistry so submissions persist.
    */
   @ApiOperation({ summary: 'Publish form' })
-  @Permissions('builder.create')
   @Post('page-registries/:id/publish')
   @Permissions('builder.page.update')
   async publishForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -1084,7 +987,6 @@ export class BuilderController {
   // CUSTOM RECORDS (DYNAMIC DATA)
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get custom records' })
-  @Permissions('builder.read')
   @Get('custom-records/:schemaId')
   @Permissions('builder.record.read')
   async getCustomRecords(
@@ -1106,7 +1008,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get custom record by id' })
-  @Permissions('builder.read')
   @Get('custom-records/:schemaId/:id')
   @Permissions('builder.record.read')
   async getCustomRecordById(
@@ -1118,7 +1019,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create custom record' })
-  @Permissions('builder.create')
   @Post('custom-records/:schemaId')
   @Permissions('builder.record.create')
   async createCustomRecord(
@@ -1130,7 +1030,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update custom record' })
-  @Permissions('builder.update')
   @Patch('custom-records/:schemaId/:id')
   @Permissions('builder.record.update')
   async updateCustomRecord(
@@ -1143,7 +1042,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete custom record' })
-  @Permissions('builder.delete')
   @Delete('custom-records/:schemaId/:id')
   @Permissions('builder.record.delete')
   async deleteCustomRecord(
@@ -1158,7 +1056,6 @@ export class BuilderController {
   // WEBSITE BUILDER SETTINGS & TEMPLATES
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get web settings' })
-  @Permissions('builder.read')
   @Get('web-settings')
   @Permissions('builder.page.read')
   async getWebSettings(@Req() req: AuthenticatedRequest) {
@@ -1166,7 +1063,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update web settings' })
-  @Permissions('builder.update')
   @Patch('web-settings')
   @Permissions('builder.page.update')
   async updateWebSettings(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) data: any) {
@@ -1177,7 +1073,6 @@ export class BuilderController {
   // WEB STUDIO — CMS COLLECTIONS
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'List collection presets' })
-  @Permissions('builder.read')
   @Get('web-collections/presets')
   @Permissions('builder.web.read')
   async listCollectionPresets() {
@@ -1185,7 +1080,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get collections' })
-  @Permissions('builder.read')
   @Get('web-collections')
   @Permissions('builder.web.read')
   async getCollections(@Req() req: AuthenticatedRequest) {
@@ -1193,7 +1087,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get collection' })
-  @Permissions('builder.read')
   @Get('web-collections/:id')
   @Permissions('builder.web.read')
   async getCollection(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -1201,7 +1094,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create collection' })
-  @Permissions('builder.create')
   @Post('web-collections')
   @Permissions('builder.web.create')
   async createCollection(
@@ -1212,7 +1104,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Seed collection' })
-  @Permissions('builder.create')
   @Post('web-collections/seed')
   @Permissions('builder.web.create')
   async seedCollection(
@@ -1223,7 +1114,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update collection' })
-  @Permissions('builder.update')
   @Patch('web-collections/:id')
   @Permissions('builder.web.update')
   async updateCollection(
@@ -1235,7 +1125,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete collection' })
-  @Permissions('builder.delete')
   @Delete('web-collections/:id')
   @Permissions('builder.web.delete')
   async deleteCollection(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -1244,7 +1133,6 @@ export class BuilderController {
 
   // ─── Collection items ───
   @ApiOperation({ summary: 'Get collection items' })
-  @Permissions('builder.read')
   @Get('web-collections/:id/items')
   @Permissions('builder.web.read')
   async getCollectionItems(
@@ -1264,7 +1152,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get collection item' })
-  @Permissions('builder.read')
   @Get('web-collections/:id/items/:itemId')
   @Permissions('builder.web.read')
   async getCollectionItem(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Param('itemId') itemId: string) {
@@ -1272,7 +1159,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Create collection item' })
-  @Permissions('builder.create')
   @Post('web-collections/:id/items')
   @Permissions('builder.web.create')
   async createCollectionItem(
@@ -1284,7 +1170,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update collection item' })
-  @Permissions('builder.update')
   @Patch('web-collections/:id/items/:itemId')
   @Permissions('builder.web.update')
   async updateCollectionItem(
@@ -1297,7 +1182,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete collection item' })
-  @Permissions('builder.delete')
   @Delete('web-collections/:id/items/:itemId')
   @Permissions('builder.web.delete')
   async deleteCollectionItem(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Param('itemId') itemId: string) {
@@ -1306,7 +1190,6 @@ export class BuilderController {
 
   // ─── Form submissions (inbox) ───
   @ApiOperation({ summary: 'Get form submissions' })
-  @Permissions('builder.read')
   @Get('web-form-submissions')
   @Permissions('builder.web.read')
   async getFormSubmissions(
@@ -1318,7 +1201,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update form submission' })
-  @Permissions('builder.update')
   @Patch('web-form-submissions/:id')
   @Permissions('builder.web.update')
   async updateFormSubmission(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) body: { status: string }) {
@@ -1326,7 +1208,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete form submission' })
-  @Permissions('builder.delete')
   @Delete('web-form-submissions/:id')
   @Permissions('builder.web.delete')
   async deleteFormSubmission(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -1335,7 +1216,6 @@ export class BuilderController {
 
   // ─── Storefront orders ───
   @ApiOperation({ summary: 'Get orders' })
-  @Permissions('builder.read')
   @Get('web-orders')
   @Permissions('builder.web.read')
   async getOrders(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
@@ -1343,7 +1223,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Get order stats' })
-  @Permissions('builder.read')
   @Get('web-orders/stats')
   @Permissions('builder.web.read')
   async getOrderStats(@Req() req: AuthenticatedRequest) {
@@ -1351,7 +1230,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Update order' })
-  @Permissions('builder.update')
   @Patch('web-orders/:id')
   @Permissions('builder.web.update')
   async updateOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) body: { status: string }) {
@@ -1359,7 +1237,6 @@ export class BuilderController {
   }
 
   @ApiOperation({ summary: 'Delete order' })
-  @Permissions('builder.delete')
   @Delete('web-orders/:id')
   @Permissions('builder.web.delete')
   async deleteOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

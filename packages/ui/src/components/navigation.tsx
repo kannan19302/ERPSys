@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, type FC, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useEffect, useId, useState, type FC, type ReactNode } from 'react';
+import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 
 // ── Tabs ──────────────────────────────────────────────
 export interface TabItem { key: string; label: ReactNode; icon?: ReactNode; }
@@ -132,6 +132,58 @@ export const Drawer: FC<DrawerProps> = ({ open, onClose, title, width = 460, chi
         <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-6)' }}>{children}</div>
         {footer && <div style={{ padding: 'var(--space-4) var(--space-6)', borderTop: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>{footer}</div>}
       </div>
+    </div>
+  );
+};
+
+// ── Disclosure ────────────────────────────────────────
+export interface DisclosureProps {
+  /** Header content — typically a label + count/progress indicator. */
+  summary: ReactNode;
+  children?: ReactNode;
+  /** Uncontrolled initial state. Ignored if `open`/`onToggle` are provided. */
+  defaultOpen?: boolean;
+  /** Controlled open state. */
+  open?: boolean;
+  onToggle?: (open: boolean) => void;
+}
+/**
+ * Minimal collapsible section — a real `<button>` toggle (not a `<div onClick>`)
+ * with `aria-expanded`/`aria-controls`, for one extra level of grouping beneath
+ * an existing header+list pattern (e.g. category groups inside a module section).
+ * Not a full accordion system: no single-open-at-a-time coordination, no
+ * animation — kept intentionally small per the Access Control UI spec
+ * (.ai/ADMIN_UI_ACCESS_CONTROL_SPEC.md Section 2.4), extend only if a second
+ * real caller needs more.
+ */
+export const Disclosure: FC<DisclosureProps> = ({ summary, children, defaultOpen = false, open: openProp, onToggle }) => {
+  const [openState, setOpenState] = useState(defaultOpen);
+  const open = openProp !== undefined ? openProp : openState;
+  const panelId = useId();
+
+  const toggle = () => {
+    const next = !open;
+    if (onToggle) onToggle(next);
+    if (openProp === undefined) setOpenState(next);
+  };
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-expanded={open}
+        aria-controls={panelId}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+          gap: 'var(--space-2)', padding: 0, border: 'none', background: 'none', cursor: 'pointer',
+          font: 'inherit', color: 'inherit', textAlign: 'left',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1, minWidth: 0 }}>{summary}</span>
+        <ChevronDown size={14} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0, transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform var(--duration-fast) var(--ease-default)' }} />
+      </button>
+      {open && <div id={panelId}>{children}</div>}
     </div>
   );
 };

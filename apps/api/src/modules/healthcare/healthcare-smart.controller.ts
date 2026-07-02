@@ -25,7 +25,6 @@ export class HealthcareSmartController {
   constructor(private readonly smart: HealthcareSmartService) {}
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.create')
   @Post('eligibility/check')
   @Permissions('hr.employee.read')
   eligibility(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { patient_mrn: string }) {
@@ -33,7 +32,6 @@ export class HealthcareSmartController {
   }
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.create')
   @Post('claims/scrub')
   @Permissions('hr.employee.read')
   scrub(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: any) {
@@ -41,7 +39,6 @@ export class HealthcareSmartController {
   }
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.create')
   @Post('rx/interactions')
   @Permissions('hr.employee.read')
   interactions(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { patient_mrn?: string; meds?: string[] }) {
@@ -49,7 +46,6 @@ export class HealthcareSmartController {
   }
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.create')
   @Post('cds/evaluate')
   @Permissions('hr.employee.read')
   cds(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { patient_mrn: string; order_drug?: string }) {
@@ -57,7 +53,6 @@ export class HealthcareSmartController {
   }
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.read')
   @Get('quality/measures')
   @Permissions('hr.employee.read')
   quality(@Req() req: AuthenticatedRequest) {
@@ -65,7 +60,6 @@ export class HealthcareSmartController {
   }
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.read')
   @Get('fhir/Patient')
   @Permissions('hr.employee.read')
   fhirPatient(@Req() req: AuthenticatedRequest, @Query('mrn') mrn?: string) {
@@ -73,7 +67,6 @@ export class HealthcareSmartController {
   }
 
   @ApiOperation({ summary: 'Handle request' })
-  @Permissions('healthcare.read')
   @Get('fhir/Observation')
   @Permissions('hr.employee.read')
   fhirObservation(@Req() req: AuthenticatedRequest, @Query('mrn') mrn?: string) {

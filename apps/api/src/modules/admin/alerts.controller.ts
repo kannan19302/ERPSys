@@ -29,7 +29,6 @@ export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
   @ApiOperation({ summary: 'Get alerts' })
-  @Permissions('admin.read')
   @Get()
   @Permissions('admin.alerts.read')
   async getAlerts(
@@ -40,7 +39,6 @@ export class AlertsController {
   }
 
   @ApiOperation({ summary: 'Mark read' })
-  @Permissions('admin.create')
   @Post(':id/read')
   @Permissions('admin.alerts.update')
   async markRead(
@@ -51,7 +49,6 @@ export class AlertsController {
   }
 
   @ApiOperation({ summary: 'Dismiss alert' })
-  @Permissions('admin.create')
   @Post(':id/dismiss')
   @Permissions('admin.alerts.update')
   async dismissAlert(
@@ -62,7 +59,6 @@ export class AlertsController {
   }
 
   @ApiOperation({ summary: 'Mark all read' })
-  @Permissions('admin.create')
   @Post('mark-all-read')
   @Permissions('admin.alerts.update')
   async markAllRead(@Req() req: AuthenticatedRequest) {
@@ -70,7 +66,6 @@ export class AlertsController {
   }
 
   @ApiOperation({ summary: 'Get thresholds' })
-  @Permissions('admin.read')
   @Get('thresholds')
   @Permissions('admin.alerts.read')
   async getThresholds(@Req() req: AuthenticatedRequest) {
@@ -78,7 +73,6 @@ export class AlertsController {
   }
 
   @ApiOperation({ summary: 'Upsert threshold' })
-  @Permissions('admin.create')
   @Post('thresholds')
   @Permissions('admin.alerts.update')
   async upsertThreshold(
@@ -97,7 +91,6 @@ export class AlertsController {
   }
 
   @ApiOperation({ summary: 'Delete threshold' })
-  @Permissions('admin.delete')
   @Delete('thresholds/:id')
   @Permissions('admin.alerts.update')
   async deleteThreshold(

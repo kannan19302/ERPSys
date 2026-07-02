@@ -25,7 +25,6 @@ export class NotificationPreferencesController {
   constructor(private readonly service: NotificationsService) {}
 
   @ApiOperation({ summary: 'Get user preferences' })
-  @Permissions('notifications.read')
   @Get('preferences')
   @Permissions('communication.notification.read')
   async getUserPreferences(@Req() req: AuthenticatedRequest) {
@@ -33,7 +32,6 @@ export class NotificationPreferencesController {
   }
 
   @ApiOperation({ summary: 'Update user preferences' })
-  @Permissions('notifications.update')
   @Patch('preferences')
   @Permissions('communication.notification.update')
   async updateUserPreferences(

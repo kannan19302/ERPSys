@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
+import { SkipTenantScope } from '../../common/decorators/skip-tenant-scope.decorator';
 import { OperationsService } from './operations.service';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -25,7 +26,6 @@ export class OperationsController {
   constructor(private readonly operationsService: OperationsService) {}
 
   @ApiOperation({ summary: 'Get system health' })
-  @Permissions('admin.read')
   @Get('health')
   @Permissions('admin.operations.read')
   async getSystemHealth() {
@@ -33,7 +33,6 @@ export class OperationsController {
   }
 
   @ApiOperation({ summary: 'Get background jobs' })
-  @Permissions('admin.read')
   @Get('jobs')
   @Permissions('admin.operations.read')
   async getBackgroundJobs(@Req() req: AuthenticatedRequest) {
@@ -41,7 +40,6 @@ export class OperationsController {
   }
 
   @ApiOperation({ summary: 'Retry jobs' })
-  @Permissions('admin.create')
   @Post('jobs/retry')
   @Permissions('admin.operations.update')
   async retryJobs(@Req() req: AuthenticatedRequest) {
@@ -49,7 +47,6 @@ export class OperationsController {
   }
 
   @ApiOperation({ summary: 'Get scheduled tasks' })
-  @Permissions('admin.read')
   @Get('tasks')
   @Permissions('admin.operations.read')
   async getScheduledTasks(@Req() req: AuthenticatedRequest) {
@@ -57,7 +54,6 @@ export class OperationsController {
   }
 
   @ApiOperation({ summary: 'Trigger task' })
-  @Permissions('admin.create')
   @Post('tasks/:id/trigger')
   @Permissions('admin.operations.update')
   async triggerTask(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
@@ -65,7 +61,6 @@ export class OperationsController {
   }
 
   @ApiOperation({ summary: 'Get error logs' })
-  @Permissions('admin.read')
   @Get('logs')
   @Permissions('admin.operations.read')
   async getErrorLogs(
@@ -81,31 +76,38 @@ export class OperationsController {
   }
 
   @ApiOperation({ summary: 'Resolve error log' })
-  @Permissions('admin.create')
   @Post('logs/:id/resolve')
   @Permissions('admin.operations.update')
   async resolveErrorLog(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.operationsService.resolveErrorLog(id, req.user.email);
   }
 
-  @ApiOperation({ summary: 'Get backups' })
-  @Permissions('admin.read')
+  // A full Postgres backup is instance-wide, not per-tenant (row-level multi-tenancy means
+  // there is no way to pg_dump "just this tenant's rows" — see
+  // .ai/ADMIN_SECURITY_AUDIT.md Section 3). Gating these two endpoints behind the coarse
+  // tenant-scoped `admin.operations.*` would let any Tenant Admin trigger/read what is
+  // effectively a platform-wide operation. They require the new `system.operations.backup`
+  // permission (Super Admin / Platform Operator only, never seeded to a tenant role) and
+  // `@SkipTenantScope()`, following the same precedent as `SuperAdminController`'s
+  // `system.tenant.*` permissions. Every other endpoint in this controller remains
+  // tenant-scoped under `admin.operations.*` as before.
+  @ApiOperation({ summary: 'Get backups (platform-wide, Super Admin only)' })
   @Get('backups')
-  @Permissions('admin.operations.read')
+  @Permissions('system.operations.backup')
+  @SkipTenantScope()
   async getBackups(@Req() req: AuthenticatedRequest) {
     return this.operationsService.getBackups(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Create backup' })
-  @Permissions('admin.create')
+  @ApiOperation({ summary: 'Create backup (platform-wide, Super Admin only)' })
   @Post('backups/create')
-  @Permissions('admin.operations.update')
+  @Permissions('system.operations.backup')
+  @SkipTenantScope()
   async createBackup(@Req() req: AuthenticatedRequest) {
     return this.operationsService.createBackup(req.user.tenantId, req.user.email);
   }
 
   @ApiOperation({ summary: 'Get db schema' })
-  @Permissions('admin.read')
   @Get('db-schema')
   @Permissions('admin.operations.read')
   async getDbSchema() {

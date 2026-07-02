@@ -31,7 +31,6 @@ export class DataQualityController {
   constructor(private readonly dataQualityService: DataQualityService) {}
 
   @ApiOperation({ summary: 'Scan for duplicates' })
-  @Permissions('admin.create')
   @Post('scan/:entityType')
   @Permissions('admin.data-quality.update')
   async scanForDuplicates(
@@ -42,7 +41,6 @@ export class DataQualityController {
   }
 
   @ApiOperation({ summary: 'Get duplicate sets' })
-  @Permissions('admin.read')
   @Get('duplicates')
   @Permissions('admin.data-quality.read')
   async getDuplicateSets(
@@ -58,7 +56,6 @@ export class DataQualityController {
   }
 
   @ApiOperation({ summary: 'Merge records' })
-  @Permissions('admin.create')
   @Post('merge')
   @Permissions('admin.data-quality.update')
   async mergeRecords(
@@ -69,7 +66,6 @@ export class DataQualityController {
   }
 
   @ApiOperation({ summary: 'Dismiss set' })
-  @Permissions('admin.create')
   @Post(':id/dismiss')
   @Permissions('admin.data-quality.update')
   async dismissSet(

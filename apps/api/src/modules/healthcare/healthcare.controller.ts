@@ -42,7 +42,6 @@ export class HealthcareController {
   constructor(private readonly service: HealthcareService) {}
 
   @ApiOperation({ summary: 'Get patients' })
-  @Permissions('healthcare.read')
   @Get('patients')
   @Permissions('hr.employee.read')
   async getPatients(
@@ -61,7 +60,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Create patient' })
-  @Permissions('healthcare.create')
   @Post('patients')
   @Permissions('hr.employee.read')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -74,7 +72,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Get practitioners' })
-  @Permissions('healthcare.read')
   @Get('practitioners')
   @Permissions('hr.employee.read')
   async getPractitioners(
@@ -91,7 +88,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Create practitioner' })
-  @Permissions('healthcare.create')
   @Post('practitioners')
   @Permissions('hr.employee.read')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -104,7 +100,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Get appointments' })
-  @Permissions('healthcare.read')
   @Get('appointments')
   @Permissions('hr.employee.read')
   async getAppointments(@Req() req: AuthenticatedRequest) {
@@ -112,7 +107,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Create appointment' })
-  @Permissions('healthcare.create')
   @Post('appointments')
   @Permissions('hr.employee.read')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -125,7 +119,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Get prescriptions' })
-  @Permissions('healthcare.read')
   @Get('prescriptions')
   @Permissions('hr.employee.read')
   async getPrescriptions(@Req() req: AuthenticatedRequest) {
@@ -133,7 +126,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Create prescription' })
-  @Permissions('healthcare.create')
   @Post('prescriptions')
   @Permissions('hr.employee.read')
   @UseInterceptors(ChangeHistoryInterceptor)
@@ -146,7 +138,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Get drug register' })
-  @Permissions('healthcare.read')
   @Get('drugs')
   @Permissions('hr.employee.read')
   async getDrugRegister(@Req() req: AuthenticatedRequest) {
@@ -154,7 +145,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Log drug register' })
-  @Permissions('healthcare.create')
   @Post('drugs')
   @Permissions('hr.employee.read')
   async logDrugRegister(
@@ -165,7 +155,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Get medical encounters' })
-  @Permissions('healthcare.read')
   @Get('encounters')
   @Permissions('hr.employee.read')
   async getMedicalEncounters(@Req() req: AuthenticatedRequest) {
@@ -173,7 +162,6 @@ export class HealthcareController {
   }
 
   @ApiOperation({ summary: 'Create medical encounter' })
-  @Permissions('healthcare.create')
   @Post('encounters')
   @Permissions('hr.employee.read')
   async createMedicalEncounter(

@@ -31,7 +31,6 @@ export class SaasController {
   }
 
   @ApiOperation({ summary: 'Get subscription' })
-  @Permissions('saas.read')
   @Get('subscription')
   @UseGuards(JwtAuthGuard, RbacGuard)
   @Permissions('finance.invoice.read') // Mapping to base billing permissions
@@ -40,7 +39,6 @@ export class SaasController {
   }
 
   @ApiOperation({ summary: 'Get usage' })
-  @Permissions('saas.read')
   @Get('usage')
   @UseGuards(JwtAuthGuard, RbacGuard)
   @Permissions('finance.invoice.read')
