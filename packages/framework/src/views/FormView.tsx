@@ -21,21 +21,25 @@ export interface FormViewProps {
   onCancel?: () => void;
   /** Rendered below the fields, above the action row */
   footer?: ReactNode;
+  /** Context values merged into the initial form state (e.g. a parent record id) */
+  initial?: FieldValues;
+  /** Last-chance payload rewrite before submission (e.g. fold fields into a JSON attribute) */
+  transform?: (payload: FieldValues) => FieldValues;
 }
 
-export function FormView({ resource, id, onSuccess, onCancel, footer }: FormViewProps) {
+export function FormView({ resource, id, onSuccess, onCancel, footer, initial, transform }: FormViewProps) {
   const isEdit = !!id;
   const { data: record, isLoading } = useResourceDoc(resource, id);
   const create = useCreateResource(resource);
   const update = useUpdateResource(resource);
   const { toast } = useToast();
 
-  const [values, setValues] = useState<FieldValues>(() => initialValues(resource));
+  const [values, setValues] = useState<FieldValues>(() => initialValues(resource, initial));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    if (record) setValues(initialValues(resource, record as FieldValues));
+    if (record) setValues(initialValues(resource, { ...initial, ...(record as FieldValues) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [record]);
 
@@ -60,12 +64,13 @@ export function FormView({ resource, id, onSuccess, onCancel, footer }: FormView
     if (Object.values(nextErrors).some(Boolean)) return;
 
     // Only submit visible, editable fields
-    const payload: FieldValues = {};
+    let payload: FieldValues = {};
     for (const field of resource.fields) {
       if (field.readOnly) continue;
       if (field.visibleIf && !field.visibleIf(values)) continue;
       payload[field.name] = values[field.name];
     }
+    if (transform) payload = transform(payload);
 
     try {
       const saved = isEdit

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
-import { Badge, Button, DataTable, Input, Pagination, type Column } from '@unerp/ui';
+import { Badge, Button, DataTable, EmptyState, Input, Pagination, type Column } from '@unerp/ui';
 import { useResourceList } from '../data';
 import { Guarded } from '../permissions';
 import { formatCellValue } from './format';
@@ -38,7 +38,7 @@ export function ListView({ resource, onRowClick, onCreate, filters, toolbar }: L
     sortDirection: sort?.direction,
     filters,
   };
-  const { data: result, isLoading } = useResourceList(resource, params);
+  const { data: result, isLoading, isError, error, refetch } = useResourceList(resource, params);
 
   const columnNames = listConfig.columns ?? resource.fields.slice(0, 5).map((f) => f.name);
   const columns = useMemo<Column<FieldValues>[]>(
@@ -48,24 +48,28 @@ export function ListView({ resource, onRowClick, onCreate, filters, toolbar }: L
         const custom = listConfig.render?.[name];
         const isStatus = resource.status?.field === name;
         const align = field && ['number', 'currency', 'percent'].includes(field.type) ? 'right' : 'left';
+        // Virtual columns (no field def) are render-only and not sortable
+        const header = field ? (
+          <span
+            role="button"
+            style={{ cursor: 'pointer', userSelect: 'none' }}
+            onClick={() =>
+              setSort((prev) => {
+                const direction: SortDirection = prev?.field === name && prev.direction === 'asc' ? 'desc' : 'asc';
+                return { field: name, direction };
+              })
+            }
+          >
+            {field.label}
+            {sort?.field === name ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}
+          </span>
+        ) : (
+          name.replace(/^\w/, (c) => c.toUpperCase())
+        );
         return {
           key: name,
           align,
-          header: (
-            <span
-              role="button"
-              style={{ cursor: 'pointer', userSelect: 'none' }}
-              onClick={() =>
-                setSort((prev) => {
-                  const direction: SortDirection = prev?.field === name && prev.direction === 'asc' ? 'desc' : 'asc';
-                  return { field: name, direction };
-                })
-              }
-            >
-              {field?.label ?? name}
-              {sort?.field === name ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}
-            </span>
-          ),
+          header,
           render: (row: FieldValues) => {
             if (custom) return custom(row);
             const value = row[name];
@@ -84,6 +88,16 @@ export function ListView({ resource, onRowClick, onCreate, filters, toolbar }: L
   const total = result?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const primaryKey = resource.primaryKey ?? 'id';
+
+  if (isError) {
+    return (
+      <EmptyState
+        title={`Couldn't load ${resource.labelPlural.toLowerCase()}`}
+        description={error instanceof Error ? error.message : 'An unexpected error occurred.'}
+        action={<Button onClick={() => void refetch()}>Retry</Button>}
+      />
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>

@@ -4,6 +4,7 @@ import '@unerp/ui/styles';
 import { ToastProvider } from '@unerp/ui';
 import { CommandPalette } from '@/components/CommandPalette';
 import { QueryProvider } from '@/lib/query-provider';
+import { AppFrameworkProvider } from '@/lib/framework-provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,10 +31,12 @@ export default function RootLayout({
     <html lang="en" className={inter.variable} data-theme="light" suppressHydrationWarning>
       <body>
         <QueryProvider>
-          <ToastProvider>
-            <CommandPalette />
-            {children}
-          </ToastProvider>
+          <AppFrameworkProvider>
+            <ToastProvider>
+              <CommandPalette />
+              {children}
+            </ToastProvider>
+          </AppFrameworkProvider>
         </QueryProvider>
       </body>
     </html>

@@ -101,11 +101,15 @@ export class ApiClient {
     const pageSize = params.pageSize ?? 20;
     const qs = new URLSearchParams();
     qs.set('page', String(page));
+    // Emit both dialects — `pageSize`/`sortField` and the NestJS convention
+    // `limit`/`sort` ("-field" for desc); servers ignore what they don't read.
     qs.set('pageSize', String(pageSize));
+    qs.set('limit', String(pageSize));
     if (params.search) qs.set('search', params.search);
     if (params.sortField) {
       qs.set('sortField', params.sortField);
       qs.set('sortDirection', params.sortDirection ?? 'asc');
+      qs.set('sort', `${params.sortDirection === 'desc' ? '-' : ''}${params.sortField}`);
     }
     for (const [key, value] of Object.entries(params.filters ?? {})) {
       if (value !== undefined && value !== '') qs.set(key, String(value));
@@ -116,8 +120,8 @@ export class ApiClient {
     if (Array.isArray(raw)) {
       return { data: raw as T[], total: raw.length, page, pageSize };
     }
-    const envelope = raw as { data?: T[]; items?: T[]; total?: number };
+    const envelope = raw as { data?: T[]; items?: T[]; total?: number; meta?: { total?: number } };
     const data = envelope.data ?? envelope.items ?? [];
-    return { data, total: envelope.total ?? data.length, page, pageSize };
+    return { data, total: envelope.total ?? envelope.meta?.total ?? data.length, page, pageSize };
   }
 }
