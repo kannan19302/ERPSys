@@ -11,7 +11,12 @@ RUN pnpm install --frozen-lockfile
 
 # Prisma client is a transitive dep of shared types used by the web app.
 RUN pnpm --filter @unerp/database exec prisma generate \
- && pnpm --filter @unerp/web build
+ && pnpm --filter @unerp/database build \
+ && pnpm --filter @unerp/shared build \
+ && pnpm --filter @unerp/auth build \
+ && pnpm --filter @unerp/ui build \
+ && pnpm --filter @unerp/framework build \
+ && API_URL=http://api:3001 pnpm --filter @unerp/web build
 
 FROM node:22-alpine AS runner
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate

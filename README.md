@@ -114,23 +114,33 @@ pnpm install
 # Configure environment
 cp .env.example .env.local
 
-# Start services and dev servers (Windows PowerShell)
+# Option A: Start entire project containerized (Recommended)
+# Automatically builds code, starts Postgres, Redis, MinIO, and local Ollama,
+# runs database migrations, and seeds mock data.
+.\scripts\docker-start.ps1
+
+# Option B: Start local dev servers on host (with Docker backing services)
 .\scripts\dev-start.ps1
 ```
 
-The startup script handles Docker services, database migrations, seeding, and launches both API and web dev servers.
+The containerized startup handles the entire stack including the AI local model downloader. Once started, you can access the apps at:
+- **Web App**: http://localhost:3000
+- **API Backend**: http://localhost:3001/api/v1
+- **Swagger Docs**: http://localhost:3001/swagger
+- **MinIO Console**: http://localhost:9001
+- **Ollama Engine**: http://localhost:11434
 
-#### Manual Setup
+#### Manual/Docker Setup
 
+If you prefer to run raw commands:
 ```bash
-# Start infrastructure
-docker compose up -d
+# Start containerized stack
+docker compose up -d --build
 
-# Run migrations and seed
+# Or run with local Node.js on host
+docker compose -f docker/docker-compose.yml up -d postgres redis minio
 pnpm db:migrate
 pnpm db:seed
-
-# Start development
 pnpm dev
 ```
 
@@ -141,6 +151,8 @@ pnpm dev
 | `pnpm dev` | Start all apps in development mode |
 | `pnpm dev:web` | Start only the web frontend |
 | `pnpm dev:api` | Start only the API backend |
+| `pnpm docker:up` | Build and start the entire stack as Docker containers |
+| `pnpm docker:down` | Stop and tear down all Docker containers |
 | `pnpm build` | Build all packages and apps |
 | `pnpm test` | Run all tests |
 | `pnpm test:coverage` | Run tests with coverage report |

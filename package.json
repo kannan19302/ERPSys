@@ -7,6 +7,8 @@
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=@unerp/web",
     "dev:api": "turbo run dev --filter=@unerp/api",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",

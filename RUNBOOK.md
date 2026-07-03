@@ -26,12 +26,29 @@ Set via your orchestrator's secret store (never bake into images). See
 
 ## Deploy
 
-```bash
-# Build + run the full stack (reference / staging)
-docker compose -f deploy/docker-compose.prod.yml up -d --build
+To build and run the complete containerized stack locally (including NestJS API, Next.js frontend, PostgreSQL, Redis, MinIO, and Ollama) with automated migrations and seed data, run:
 
-# Apply database migrations (run once per release, before traffic)
-pnpm --filter @unerp/database exec prisma migrate deploy
+```bash
+# Option 1: Start everything with a helper script
+.\scripts\docker-start.ps1
+
+# Option 2: Using npm/pnpm convenience scripts
+pnpm docker:up
+
+# Option 3: Standard Docker Compose CLI
+docker compose up -d --build
+```
+
+To stop the entire environment:
+```bash
+pnpm docker:down
+# or
+docker compose down
+```
+
+For staging/production deployments using custom orchestrators, you can continue to use the reference production compose config:
+```bash
+docker compose -f deploy/docker-compose.prod.yml up -d --build
 ```
 
 CI builds the same images; production deploy is gated on `main` via a GitHub
