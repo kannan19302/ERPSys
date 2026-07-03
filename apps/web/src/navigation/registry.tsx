@@ -20,7 +20,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   connect: 'Connect',
   drive: 'Drive',
   analytics: 'Analytics',
-  admin: 'Admin',
+  admin: 'Settings',
   settings: 'Settings',
   profile: 'Profile',
   builder: 'Studio',
@@ -228,7 +228,6 @@ export const allApplications: AppDefinition[] = [
   { id: 'field-service', name: 'Field Service Module', href: '/field-service', icon: Wrench, installed: false },
   { id: 'api-keys', name: 'API Platform', href: '/admin/api-keys', icon: Key, installed: true },
   { id: 'saas', name: 'SaaS Portal', href: '/saas/portal', icon: Cloud, installed: true },
-  { id: 'admin', name: 'Admin', href: '/admin', icon: ShieldAlert, installed: true },
   { id: 'app-store', name: 'App Store', href: '/apps/store', icon: ShoppingBag, installed: true },
   { id: 'builder', name: 'Studio', href: '/builder', icon: Cpu, installed: true },
 ];
@@ -246,4 +245,4 @@ export const switcherFolders: SwitcherFolder[] = [
  * Kernel apps are always present (never uninstallable); every other app shows
  * only when it's installed for the tenant.
  */
-export const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'admin', 'app-store', 'builder', 'ai']);
+export const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'app-store', 'builder', 'ai']);

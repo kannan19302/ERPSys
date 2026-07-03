@@ -70,7 +70,6 @@ const applications: AppDefinition[] = [
   { id: 'field-service', name: 'Field Service Module', description: 'Tickets, dispatch, and technician management', href: '/field-service', icon: Wrench, color: '#78716c', category: 'Industry', installed: false },
   { id: 'api-keys', name: 'API Platform', description: 'API keys, webhooks, and developer console', href: '/admin/api-keys', icon: Key, color: '#334155', category: 'Developer', installed: true },
   { id: 'saas', name: 'SaaS Portal', description: 'Subscription plans, billing, and usage meters', href: '/saas/portal', icon: Cloud, color: '#9333ea', category: 'Platform', installed: true },
-  { id: 'admin', name: 'Admin', description: 'User management, workflows, security and system settings', href: '/admin', icon: ShieldAlert, color: '#dc2626', category: 'Platform', installed: true },
   { id: 'app-store', name: 'App Store', description: 'Browse additional apps and modules', href: '/apps/store', icon: ShoppingBag, color: '#7c3aed', category: 'Developer', installed: true },
   { id: 'builder', name: 'Studio', description: 'Low-code App Studio and Web Studio for custom ERP apps and website management', href: '/builder', icon: Cpu, color: '#0ea5e9', category: 'Developer', installed: true },
 ];
@@ -230,7 +229,7 @@ export default function AppsHubPage() {
   // Kernel apps are always shown on the Desk; every other app (core business module
   // or industry app) appears only while installed for the tenant — so uninstalling
   // one hides its icon here.
-  const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'admin', 'app-store', 'builder']);
+  const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'app-store', 'builder']);
   const activeApps = [
     ...applications.filter(app => (KERNEL_APP_IDS.has(app.id) || installedApps.has(app.id)) && app.category !== 'Industry'),
     ...marketplaceApps,

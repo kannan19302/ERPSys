@@ -823,8 +823,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
     }
 
     return {
-      title: 'Admin Control Center',
-      icon: ShieldAlert,
+      title: 'Settings',
+      icon: Settings,
       items
     };
   }

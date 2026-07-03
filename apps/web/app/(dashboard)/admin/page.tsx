@@ -114,7 +114,6 @@ export default function AdminDashboardPage() {
       setEvents(FALLBACK_EVENTS);
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const s = stats || FALLBACK_STATS;
@@ -193,9 +192,9 @@ export default function AdminDashboardPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       <PageHeader
-        title="Admin Control Center"
+        title="Settings"
         description="System overview, user management, security monitoring, and configuration"
-        breadcrumbs={[{ label: 'Administration' }]}
+        breadcrumbs={[{ label: 'Settings' }]}
       />
 
       {/* KPI Cards Row */}
@@ -259,7 +258,7 @@ export default function AdminDashboardPage() {
           {/* Quick Actions Grid */}
           <div>
             <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>
-              Administration
+              Settings
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 'var(--space-3)' }}>
               {quickLinks.map((link) => (

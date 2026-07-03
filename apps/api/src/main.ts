@@ -18,7 +18,7 @@ function loadEnv() {
           if (index !== -1) {
             const key = trimmed.substring(0, index).trim();
             const value = trimmed.substring(index + 1).trim().replace(/^['"]|['"]$/g, '');
-            if (key) {
+            if (key && process.env[key] === undefined) {
               process.env[key] = value;
             }
           }
