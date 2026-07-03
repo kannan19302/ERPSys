@@ -26,11 +26,6 @@ export const prisma = basePrisma.$extends({
         operation,
         args,
         query,
-      }: {
-        model: string;
-        operation: string;
-        args: unknown;
-        query: (args: unknown) => Promise<unknown>;
       }) {
         const session = getTenantSession();
         if (!session || MODELS_WITHOUT_TENANT.has(model)) {
@@ -41,7 +36,7 @@ export const prisma = basePrisma.$extends({
       },
     },
   },
-});
+}) as unknown as PrismaClient;
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;

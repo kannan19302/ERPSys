@@ -378,7 +378,7 @@ export class InventoryService {
         parentSkuId: dto.parentSkuId,
         sku: dto.sku,
         name: dto.name,
-        attributes: dto.attributes || {},
+        attributes: (dto.attributes || {}) as any,
         costPrice: new Prisma.Decimal(dto.costPrice),
         sellPrice: new Prisma.Decimal(dto.sellPrice),
         barcode: dto.barcode,
@@ -574,7 +574,7 @@ export class InventoryService {
         purchaseOrderId: dto.purchaseOrderId,
         salesOrderId: dto.salesOrderId,
         notes: dto.notes,
-        customFields: dto.customFields || {},
+        customFields: (dto.customFields || {}) as any,
       },
     });
   }

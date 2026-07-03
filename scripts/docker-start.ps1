@@ -1,16 +1,26 @@
 # ============================================================
-# UniERP Docker Compose Environment Startup Script (Windows PowerShell)
+# UniERP Docker Dev Environment Startup Script (Windows PowerShell)
 # ============================================================
 # Usage (from project root): .\scripts\docker-start.ps1
 #
 # This script:
-#   1. Starts Docker Desktop (if not running)
-#   2. Loads or copies the root .env file
-#   3. Generates NEXTAUTH_SECRET & PII_ENCRYPTION_KEY if missing
-#   4. Starts all services via Docker Compose (docker compose up -d --build)
-#   5. Monitors container startup and waits for the API to be healthy
-#   6. Displays connection details and credentials
+#   1. Kills stale Node.js processes & clears Next.js cache
+#   2. Starts Docker Desktop (if not running)
+#   3. Loads or creates the root .env file (auto-generates secrets)
+#   4. Cleans stale containers & volumes if requested
+#   5. Starts all services via docker-compose.dev.yml
+#   6. Monitors container startup and waits for health
+#   7. Displays connection details and credentials
+#
+# Flags:
+#   -Clean    Removes existing containers and volumes (fresh start)
+#   -NoBuild  Skip rebuilding the dev container image
 # ============================================================
+
+param(
+    [switch]$Clean,
+    [switch]$NoBuild
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -21,6 +31,7 @@ $env:PATH    = "$userPath;$machinePath"
 
 # Resolve project root
 $ROOT = (Get-Item $PSScriptRoot).Parent.FullName
+$COMPOSE_FILE = "$ROOT\docker-compose.dev.yml"
 
 function Write-Step   { param([string]$msg) Write-Host "" ; Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Ok     { param([string]$msg) Write-Host "  [OK] $msg" -ForegroundColor Green }
@@ -36,13 +47,19 @@ function Generate-SecureHexKey {
     return ([System.BitConverter]::ToString($bytes) -replace '-').ToLower()
 }
 
+Write-Host ""
+Write-Host "============================================" -ForegroundColor Magenta
+Write-Host "  UniERP Docker Dev Environment" -ForegroundColor Magenta
+Write-Host "============================================" -ForegroundColor Magenta
+Write-Host ""
+
 # --------------------------------------------------------
 # Step 1: Terminate stale node processes & clear cache
 # --------------------------------------------------------
 Write-Step "Step 1/6 - Releasing active file locks & clearing cache..."
 $nodeProcs = Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID }
 if ($nodeProcs) {
-    Write-Warn "Stale Node.js processes detected on host. Terminating servers to release file ports..."
+    Write-Warn "Stale Node.js processes detected on host. Terminating to release ports..."
     Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
     Write-Ok "Stale servers terminated."
@@ -96,7 +113,7 @@ if (-not $dockerOk) {
 Write-Ok "Docker is running."
 
 # --------------------------------------------------------
-# Step 2: Load/Verify Environment Variables (.env)
+# Step 3: Load/Verify Environment Variables (.env)
 # --------------------------------------------------------
 Write-Step "Step 3/6 - Configuring Environment Variables (.env)..."
 $envFile = "$ROOT\.env"
@@ -152,7 +169,7 @@ Get-Content $envFile | ForEach-Object {
     if ($line -and -not $line.StartsWith("#")) {
         if ($line -match '^\s*([^#\s=]+)\s*=\s*(.*)$') {
             $name = $Matches[1]
-            $val = $Matches[2].Trim("'`"")
+            $val = $Matches[2].Trim().Trim("'").Trim([char]34)
             [System.Environment]::SetEnvironmentVariable($name, $val, "Process")
             Set-Item "env:$name" $val
         }
@@ -160,12 +177,40 @@ Get-Content $envFile | ForEach-Object {
 }
 
 # --------------------------------------------------------
-# Step 4: Launch Docker Compose Services
+# Step 4: Clean up (if -Clean flag is set)
 # --------------------------------------------------------
-Write-Step "Step 4/6 - Launching containerized stack (docker compose up -d --build)..."
+if ($Clean) {
+    Write-Step "Step 4/6 - Cleaning up old containers and volumes..."
+    Push-Location $ROOT
+    try {
+        & docker compose -f $COMPOSE_FILE down -v --remove-orphans 2>&1 | Out-Null
+    } catch { }
+    Pop-Location
+    Write-Ok "Old containers and volumes removed."
+} else {
+    Write-Step "Step 4/6 - Checking for existing containers..."
+    # Stop any running dev container to avoid conflicts
+    Push-Location $ROOT
+    try {
+        & docker compose -f $COMPOSE_FILE down --remove-orphans 2>&1 | Out-Null
+    } catch { }
+    Pop-Location
+    Write-Ok "Ready for fresh start."
+}
+
+# --------------------------------------------------------
+# Step 5: Launch Docker Compose Dev Stack
+# --------------------------------------------------------
+Write-Step "Step 5/6 - Launching containerized dev stack..."
 Push-Location $ROOT
 try {
-    & docker compose up -d --build
+    $buildFlag = ""
+    if (-not $NoBuild) { $buildFlag = "--build" }
+    if ($NoBuild) {
+        & docker compose -f $COMPOSE_FILE up -d
+    } else {
+        & docker compose -f $COMPOSE_FILE up -d --build
+    }
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Docker Compose failed to start the containers."
         Pop-Location
@@ -179,58 +224,72 @@ Pop-Location
 Write-Ok "All containers launched."
 
 # --------------------------------------------------------
-# Step 5: Wait for services to be ready
+# Step 6: Wait for services to be ready
 # --------------------------------------------------------
-Write-Step "Step 5/6 - Waiting for API and Web services to be healthy..."
+Write-Step "Step 6/6 - Waiting for dev servers to start..."
+Write-Host "  This may take 1-2 minutes on first boot (installing dependencies)." -ForegroundColor DarkGray
+Write-Host "  Subsequent starts are much faster (cached node_modules)." -ForegroundColor DarkGray
+Write-Host ""
+
 $apiHealthy = $false
 $webHealthy = $false
 
-Write-Host "  Note: Database migration and seeding run inside the API container first." -ForegroundColor DarkGray
-Write-Host "  Monitoring health endpoints (up to 3 minutes)..." -ForegroundColor DarkGray
-
-for ($i = 0; $i -lt 36; $i++) {
+for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep -Seconds 5
-    
+
+    # Check if the dev container is still running
+    $containerStatus = (& docker inspect --format '{{.State.Status}}' unerp-dev 2>&1)
+    if ($containerStatus -ne "running") {
+        Write-Warn "Dev container is not running (status: $containerStatus). Checking logs..."
+        & docker logs --tail 30 unerp-dev
+        break
+    }
+
     if (-not $apiHealthy) {
-        $apiStatus = (& docker inspect --format "{{.State.Health.Status}}" unerp-api 2>&1)
-        if ($apiStatus -eq "healthy") {
-            $apiHealthy = $true
-            Write-Ok "API backend is healthy."
-        } else {
-            Write-Host "  [API status]: $apiStatus" -ForegroundColor DarkGray
+        try {
+            $response = Invoke-WebRequest -Uri "http://localhost:3001/api/v1/health" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+            if ($response.StatusCode -eq 200) {
+                $apiHealthy = $true
+                Write-Ok "API backend is healthy (port 3001)."
+            }
+        } catch {
+            $elapsed = ($i + 1) * 5
+            if ($elapsed % 15 -eq 0) {
+                Write-Host "  ...$($elapsed)s - API not ready yet (installing deps / building...)" -ForegroundColor DarkGray
+            }
         }
     }
-    
+
     if ($apiHealthy -and -not $webHealthy) {
-        # Check if Next.js app port 3000 responds with 200 OK
         try {
             $response = Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
             if ($response.StatusCode -eq 200) {
                 $webHealthy = $true
-                Write-Ok "Next.js Web frontend is ready."
+                Write-Ok "Next.js Web frontend is ready (port 3000)."
             }
         } catch { }
     }
-    
+
     if ($apiHealthy -and $webHealthy) {
         break
     }
 }
 
 if (-not $apiHealthy) {
-    Write-Warn "API did not report healthy. Checking api logs:"
-    & docker logs --tail 30 unerp-api
-}
-if (-not $webHealthy) {
-    Write-Warn "Web port 3000 is not responding yet. Checking web logs:"
-    & docker logs --tail 30 unerp-web
+    Write-Warn "API did not respond within timeout. Showing recent logs:"
+    & docker logs --tail 40 unerp-dev
+    Write-Host ""
+    Write-Warn "The server may still be starting. Run: docker logs -f unerp-dev"
 }
 
 # --------------------------------------------------------
-# Step 6: Complete & Summary
+# Done - Summary
 # --------------------------------------------------------
-Write-Step "Step 6/6 - Environment is up!"
-
+Write-Host ""
+Write-Host "============================================" -ForegroundColor Green
+Write-Host "  UniERP Docker Dev Stack is Running!" -ForegroundColor Green
+Write-Host "============================================" -ForegroundColor Green
+Write-Host ""
 Write-Host "  +-------------------------------------+" -ForegroundColor DarkCyan
 Write-Host "  |      Default Login Credentials      |" -ForegroundColor DarkCyan
 Write-Host "  |  URL:      http://localhost:3000    |" -ForegroundColor DarkCyan
@@ -238,16 +297,16 @@ Write-Host "  |  Email:    admin@unerp.dev          |" -ForegroundColor DarkCyan
 Write-Host "  |  Password: admin123                 |" -ForegroundColor DarkCyan
 Write-Host "  +-------------------------------------+" -ForegroundColor DarkCyan
 Write-Host ""
-Write-Host "============================================" -ForegroundColor Green
-Write-Host "  UniERP Containerized Dev Stack is Running!" -ForegroundColor Green
-Write-Host "============================================" -ForegroundColor Green
-Write-Host ""
 Write-Host "  Web App:       http://localhost:3000" -ForegroundColor Cyan
 Write-Host "  API Backend:   http://localhost:3001/api/v1" -ForegroundColor Cyan
 Write-Host "  Swagger Docs:  http://localhost:3001/swagger" -ForegroundColor Cyan
 Write-Host "  MinIO Console: http://localhost:9001" -ForegroundColor Cyan
-Write-Host "  Ollama Local:  http://localhost:11434" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  To view logs:   docker compose logs -f" -ForegroundColor DarkGray
-Write-Host "  To stop stack:  docker compose down" -ForegroundColor DarkGray
+Write-Host "  Code changes on your host are live-reloaded!" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  Useful commands:" -ForegroundColor White
+Write-Host "    View logs:    docker compose -f docker-compose.dev.yml logs -f dev" -ForegroundColor DarkGray
+Write-Host "    Shell:        docker exec -it unerp-dev sh" -ForegroundColor DarkGray
+Write-Host "    Stop stack:   docker compose -f docker-compose.dev.yml down" -ForegroundColor DarkGray
+Write-Host "    Fresh start:  .\scripts\docker-start.ps1 -Clean" -ForegroundColor DarkGray
 Write-Host ""

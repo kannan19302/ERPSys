@@ -103,8 +103,8 @@ export class ChangeHistoryInterceptor implements NestInterceptor {
 
   private async getEntitySnapshot(entityType: string, entityId: string): Promise<Record<string, unknown> | null> {
     const modelName = entityType.charAt(0).toLowerCase() + entityType.slice(1);
-    const model = (prisma as Record<string, unknown>)[modelName];
-    if (model && typeof (model as Record<string, unknown>).findUnique === 'function') {
+    const model = (prisma as any)[modelName];
+    if (model && typeof (model as any).findUnique === 'function') {
       try {
         return await (model as { findUnique: (args: { where: { id: string } }) => Promise<Record<string, unknown> | null> }).findUnique({ where: { id: entityId } });
       } catch {

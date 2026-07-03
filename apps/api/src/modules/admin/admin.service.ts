@@ -226,7 +226,7 @@ export class AdminService {
       const updatedTenant = await tx.tenant.update({
         where: { id: tenantId },
         data: {
-          settings: updatedSettings,
+          settings: updatedSettings as any,
         },
       });
 
@@ -283,8 +283,8 @@ export class AdminService {
 
     for (const record of records) {
       const modelName = record.entityType.charAt(0).toLowerCase() + record.entityType.slice(1);
-      const model = (prisma as Record<string, unknown>)[modelName];
-      if (model && typeof (model as Record<string, unknown>).delete === 'function') {
+      const model = (prisma as any)[modelName];
+      if (model && typeof (model as any).delete === 'function') {
         try {
           await (model as { delete: (args: { where: { id: string } }) => Promise<unknown> }).delete({
             where: { id: record.entityId },

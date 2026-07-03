@@ -114,34 +114,24 @@ pnpm install
 # Configure environment
 cp .env.example .env.local
 
-# Option A: Start entire project containerized (Recommended)
-# Automatically builds code, starts Postgres, Redis, MinIO, and local Ollama,
-# runs database migrations, and seeds mock data.
+# Start project containerized (Recommended)
+# Automatically builds code, starts Postgres, Redis, MinIO,
+# runs database migrations, and seeds mock data in a single dev container.
 .\scripts\docker-start.ps1
-
-# Option B: Start local dev servers on host (with Docker backing services)
-.\scripts\dev-start.ps1
 ```
 
-The containerized startup handles the entire stack including the AI local model downloader. Once started, you can access the apps at:
+The containerized startup handles the entire stack. Once started, you can access the apps at:
 - **Web App**: http://localhost:3000
 - **API Backend**: http://localhost:3001/api/v1
 - **Swagger Docs**: http://localhost:3001/swagger
 - **MinIO Console**: http://localhost:9001
-- **Ollama Engine**: http://localhost:11434
 
 #### Manual/Docker Setup
 
 If you prefer to run raw commands:
 ```bash
-# Start containerized stack
-docker compose up -d --build
-
-# Or run with local Node.js on host
-docker compose -f docker/docker-compose.yml up -d postgres redis minio
-pnpm db:migrate
-pnpm db:seed
-pnpm dev
+# Start containerized dev stack
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
 ### Available Scripts

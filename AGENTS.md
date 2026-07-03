@@ -94,15 +94,11 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 
 ### Dev Environment Startup (MANDATORY BEFORE ANY DEV WORK)
 18. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
-    - **One-command start**: `.\scripts\dev-start.ps1` (from the project root in PowerShell)
-    - This script automatically: starts Docker, runs Postgres + Redis, applies migrations, seeds data, and opens the API + Web dev servers.
+    - **One-command start**: `.\scripts\docker-start.ps1` (from the project root in PowerShell)
+    - This script automatically: starts Docker, launches the containerized dev stack (Postgres, Redis, MinIO, and the API/Web app inside a single development container), runs database migrations, seeds data, and waits for health checks.
     - **Manual steps** (if the script cannot be run):
       1. Start Docker Desktop
-      2. `cd docker && docker compose up -d postgres redis`
-      3. `pnpm db:migrate` (from project root)
-      4. `pnpm db:seed` (from project root)
-      5. `pnpm dev:api` (opens NestJS on port 3001)
-      6. `pnpm dev:web` (opens Next.js on port 3000)
+      2. `docker compose -f docker-compose.dev.yml up -d --build`
     - **Default test credentials** (after seeding):
       - URL: `http://localhost:3000`
       - Email: `admin@unerp.dev`

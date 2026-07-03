@@ -1,3 +1,5 @@
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const apiBaseUrl = process.env.API_URL || 'http://localhost:3001';
 

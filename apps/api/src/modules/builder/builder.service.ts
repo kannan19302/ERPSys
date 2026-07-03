@@ -145,8 +145,8 @@ export class BuilderService {
         description: dto.description || null,
         icon: dto.icon || null,
         module: dto.module || 'Sales',
-        fields: dto.fields || [],
-        settings: dto.settings || {},
+        fields: (dto.fields || []) as any,
+        settings: (dto.settings || {}) as any,
       },
     });
   }
@@ -163,8 +163,8 @@ export class BuilderService {
         ...(dto.icon !== undefined && { icon: dto.icon }),
         ...(dto.module !== undefined && { module: dto.module }),
         ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.fields !== undefined && { fields: dto.fields }),
-        ...(dto.settings !== undefined && { settings: dto.settings }),
+        ...(dto.fields !== undefined && { fields: dto.fields as any }),
+        ...(dto.settings !== undefined && { settings: dto.settings as any }),
       },
     });
   }
@@ -372,7 +372,7 @@ export class BuilderService {
         settings: {
           ...settings,
           executions: [execution, ...executions].slice(0, 25),
-        },
+        } as any,
       },
     });
 
@@ -2286,7 +2286,7 @@ export class BuilderService {
 
   async createSchemaRegistry(tenantId: string, data: CreateSchemaRegistryInput) {
     return prisma.schemaRegistry.create({
-      data: { ...data, tenantId },
+      data: { ...data, tenantId } as any,
     });
   }
 
@@ -2296,7 +2296,7 @@ export class BuilderService {
     if (!existing) throw new NotFoundException('Schema not found');
     return prisma.schemaRegistry.update({
       where: { id },
-      data,
+      data: data as any,
     });
   }
 
@@ -2336,7 +2336,7 @@ export class BuilderService {
 
   async createPageRegistry(tenantId: string, data: CreatePageRegistryInput) {
     return prisma.pageRegistry.create({
-      data: { ...data, tenantId },
+      data: { ...data, tenantId } as any,
     });
   }
 
@@ -2356,7 +2356,7 @@ export class BuilderService {
 
     return prisma.pageRegistry.update({
       where: { id },
-      data: updateData,
+      data: updateData as any,
     });
   }
 
@@ -2574,7 +2574,7 @@ export class BuilderService {
     secureData = await this.executeScripts(tenantId, schemaId, 'record.created', secureData);
 
     const record = await prisma.customRecord.create({
-      data: { tenantId, schemaId, data: secureData, createdBy },
+      data: { tenantId, schemaId, data: secureData as any, createdBy },
     });
 
     this.triggerWebhooks(tenantId, schemaId, 'record.created', record);

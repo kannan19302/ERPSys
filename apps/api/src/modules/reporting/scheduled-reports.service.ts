@@ -30,7 +30,7 @@ export class ScheduledReportsService {
         reportType: dto.reportType,
         schedule: dto.schedule,
         recipients: dto.recipients ?? [],
-        filters: dto.filters ?? {},
+        filters: (dto.filters ?? {}) as any,
         format: dto.format ?? 'pdf',
       },
     });
@@ -56,7 +56,7 @@ export class ScheduledReportsService {
         ...(dto.reportType !== undefined && { reportType: dto.reportType }),
         ...(dto.schedule !== undefined && { schedule: dto.schedule }),
         ...(dto.recipients !== undefined && { recipients: dto.recipients }),
-        ...(dto.filters !== undefined && { filters: dto.filters }),
+        ...(dto.filters !== undefined && { filters: dto.filters as any }),
         ...(dto.format !== undefined && { format: dto.format }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
