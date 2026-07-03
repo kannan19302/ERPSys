@@ -474,6 +474,17 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
       ]
     };
   }
+  if (pathname.startsWith('/ecommerce')) {
+    return {
+      title: 'E-Commerce',
+      icon: Store,
+      items: [
+        { name: 'Storefront Settings', href: '/ecommerce', icon: Settings },
+        { name: 'Categories', href: '/ecommerce/categories', icon: Layers },
+        { name: 'Product Listings', href: '/ecommerce/listings', icon: Package },
+      ]
+    };
+  }
   if (pathname.startsWith('/workflows')) {
     return {
       title: 'Workflows',

@@ -114,6 +114,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Drive', href: '/drive', icon: FolderOpen, type: 'App' },
   { name: 'Connect', href: '/connect', icon: MessageSquare, type: 'App' },
   { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
+  { name: 'E-Commerce', href: '/ecommerce', icon: Globe, type: 'App' },
   { name: 'Admin', href: '/admin', icon: ShieldAlert, type: 'App' },
   { name: 'Studio', href: '/builder', icon: Cpu, type: 'App' },
   // Actions — General

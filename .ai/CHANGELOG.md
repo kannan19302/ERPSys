@@ -3,6 +3,117 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-03] E-Commerce Storefront: frontend — admin config/categories/listings, public store/cart/checkout (frontend-developer)
+
+Frontend build for module #33, completing the vertical slice on top of the backend landed
+earlier the same day (see the entry directly below). Wired end-to-end to the real, already-running
+NestJS API — no mocked data.
+
+- **Admin** `apps/web/app/(dashboard)/ecommerce/{page.tsx,categories/page.tsx,listings/page.tsx}` —
+  storefront config (enable/disable, slug, currency, branding) with an empty-state "Get started" flow
+  when `GET /ecommerce/config` returns `null`; a `DataTable`-driven Categories CRUD screen (Modal +
+  ConfirmDialog); a Listings screen with a searchable Inventory-product picker, category assign,
+  publish toggle, price override, and inline Publish/Unpublish action, all gated per-action by the
+  registered `ecommerce.storefront.*`/`ecommerce.category.*`/`ecommerce.listing.*` permissions via
+  `<ProtectedComponent>`. Fixed a pre-existing bug in these two files where `useToast()` was
+  destructured as `{ showToast }` (an API that doesn't exist — the hook returns
+  `{ toast, success, error, warning, info, dismiss }`) and toast `variant: 'danger'` was passed (the
+  real `ToastVariant` union is `'success'|'error'|'warning'|'info'`); both pages now call
+  `toast.success(...)`/`toast.error(...)` directly.
+- **Public storefront** `apps/web/app/(storefront)/` — new route group, plain wrapper layout (no
+  nested `<html>`/`<body>`, no dashboard chrome, no auth guard), `lib/storefront-api.ts` (unauthenticated
+  fetch helper, deliberately omits the Bearer/CSRF headers `@/lib/api` attaches for the dashboard) and
+  `lib/cart-session.ts` (localStorage-backed `sessionToken` persistence keyed
+  `storefront_cart_{tenantSlug}`, with transparent create-on-404 re-issue). Pages: `store/[tenantSlug]`
+  (branding, category filter, paginated product grid, "store not available" empty state on 404/disabled),
+  `products/[listingId]` (detail + quantity + add-to-cart), `cart` (line items, quantity edit, remove,
+  subtotal, empty-cart state), `checkout` (shipping form, order summary, mock "Test Payment" banner,
+  inline decline-error with retry, order confirmation showing `orderNumber`/total, clears the cart
+  token on success).
+- **Bug found and fixed in the backend** (file lives outside the `ecommerce`/`sales`/`database`
+  boundaries this task was scoped to, so treated as in-scope cross-cutting glue):
+  `apps/api/src/common/middleware/csrf.middleware.ts` rejected every non-GET `/store/:tenantSlug/*`
+  request with 403 `"Invalid or missing CSRF token"` — the global CSRF middleware's skip-list only
+  exempted `/auth/login`, `/auth/register`, and paths containing `/public/`, but never the storefront's
+  public routes, even though those routes are documented (Section 7 of
+  `.ai/ECOMMERCE_MODULE_REQUIREMENTS.md`, and the `PublicTenantResolverGuard` header comment) as
+  intentionally unauthenticated with no session/CSRF cookie ever issued to the anonymous customer.
+  This 403'd cart creation, add-to-cart, quantity updates, and checkout end-to-end. Added a
+  `path.startsWith('/api/v1/store/') || path.startsWith('/store/')` bypass alongside the existing
+  `/public/` bypass, matching the same documented-exception pattern.
+- Navigation: `apps/web/src/navigation/registry.tsx` (`SEGMENT_NAMES.ecommerce`/`.listings`,
+  new `E-Commerce` app entry using the `Globe` icon aliased `StorefrontIcon` to avoid colliding with
+  `Store` already used by POS) and `apps/web/src/navigation/moduleNav.tsx` (`/ecommerce/*` sidebar:
+  Storefront Settings / Categories / Product Listings) were already registered from the prior session
+  and verified correct — breadcrumbs render `Apps / E-Commerce / [Settings|Categories|Listings]`.
+- **Verified in the browser end-to-end**: enabled the storefront (slug `system`), confirmed two
+  pre-published listings (UltraBook Laptop Pro, 4K IPS Curved Monitor) render on `/store/system` with
+  currency-formatted prices, category filter works, add-to-cart creates a `Cart`/`CartItem` via the
+  public API, cart page shows correct quantity/line totals/subtotal, checkout with a valid shipping
+  address returns `201` and an order confirmation with a real `orderNumber` (`ONL-...`), and the
+  `sessionToken` is cleared from localStorage after conversion. Verified the decline path via a direct
+  API call with `simulateDecline: true` — returns `400` with the exact `"Payment was declined. Please
+  try again."` message, creates no `SalesOrder`, and leaves the cart `ACTIVE` for retry (matches
+  Flow C's acceptance criteria and the `StorefrontOrderPayment` FK constraint's documented deviation).
+- `pnpm --filter web typecheck` and `pnpm --filter @unerp/api typecheck` both clean.
+
+## [2026-07-03] E-Commerce Storefront: backend API — admin CRUD, public storefront, mock checkout (backend-developer)
+
+Backend build for module #33 (data layer landed earlier this session). See
+`.ai/ECOMMERCE_MODULE_REQUIREMENTS.md` for the full MVP spec and
+`.ai/MODULE_REGISTRY.md` #33 for the up-to-date module description.
+
+- **New module** `apps/api/src/modules/ecommerce/`: `EcommerceAdminController`/`EcommerceAdminService`
+  (JWT+RBAC, `ecommerce.*` permissions) for StorefrontConfig upsert, StorefrontCategory CRUD, and
+  ProductListing CRUD — validates `productId` belongs to the tenant's own `Product` before linking,
+  joins Product+Category for the admin list view, all mutations carry `@TrackChanges`+
+  `ChangeHistoryInterceptor`.
+- **New `PublicTenantResolverGuard`** (`guards/public-tenant-resolver.guard.ts`): resolves
+  `:tenantSlug` → `StorefrontConfig.storeSlug` (404 if missing/disabled) and stamps a synthetic
+  `request.user = { tenantId, userId: 'storefront-guest' }` so the existing global
+  `TenantInterceptor`/`AsyncLocalStorage` tenant-scoping mechanism (`packages/database/src/tenant-context.ts`)
+  activates unmodified — no parallel tenant-scoping mechanism was built.
+- **New `EcommercePublicController`** (`store/:tenantSlug/*`) — deliberately unauthenticated, no
+  `@Permissions()`, guarded only by `PublicTenantResolverGuard`. Covers public config/categories/
+  products (published-only, paginated, category filter)/cart CRUD (server-persisted, price
+  snapshotted at add-time, quantity merges on repeat add-to-cart)/checkout. This is the one
+  documented exception to AGENTS.md Rule 15 — flagged in both `.ai/DATA_MODEL.md` §3.4 and
+  code comments so it isn't mistaken for an oversight in review.
+- **New `PaymentGatewayAdapter` interface + `MockPaymentGatewayService`**
+  (`payments/`) — Stripe-PaymentIntent-shaped (`createIntent`/`confirmIntent`/`refund`), unmistakably
+  labeled MOCK in class name, every log line, and `provider: 'mock_gateway'` on every record. Supports
+  a `simulateDecline` test-mode lever for the decline-path acceptance test.
+- **`apps/api/src/modules/sales/sales.service.ts`**: added `createConfirmedOnlineOrder()` — the
+  sanctioned "variant entry point" called for by the spec, since `createSalesOrder` assumes an
+  authenticated internal user/existing dashboard flow and never emits `sales.order.confirmed`
+  synchronously even for auto-confirmed B2C/D2C orders (that event only fires later from
+  `updateSalesOrderStatus`/`approveCreditHold`/`recordOrderPayment`). Extracted the shared
+  transactional write into a private `persistSalesOrderTransaction()` helper reused by both methods,
+  rather than duplicating the SalesOrder+SalesOrderItem creation logic.
+- **Checkout flow** (`EcommerceCheckoutService`): validates the cart is `ACTIVE` and non-empty,
+  finds-or-creates a guest `Customer` by tenant+email, runs the mock payment intent
+  (create→confirm), and on success calls `SalesService.createConfirmedOnlineOrder()` (never a direct
+  `prisma.salesOrder.create` in this module) to create a real `SalesOrder`
+  (`salesChannel = 'ONLINE'`, `status = 'CONFIRMED'`, `paymentStatus = 'PAID'`) which synchronously
+  emits `sales.order.confirmed` — triggering Finance's existing Invoice-creation listener with zero
+  Finance-module changes. Records a `StorefrontOrderPayment` (`SUCCEEDED`) and marks the `Cart`
+  `CONVERTED`. On decline: zero `SalesOrder`s created, cart stays `ACTIVE` for retry; the failed
+  attempt is logged rather than persisted as a `StorefrontOrderPayment` row, because that model's
+  `salesOrderId` FK is required/non-null and no order exists yet to attach it to — a deliberate,
+  documented deviation from a literal "record a FAILED payment row on decline" reading.
+- **Permissions**: added `ecommerce.storefront.{read,manage}`, `ecommerce.category.{read,create,update,delete}`,
+  `ecommerce.listing.{read,create,update,delete}`, `ecommerce.order.read` to
+  `packages/shared/src/permissions/registry.ts`.
+- **Tests**: `apps/api/src/modules/ecommerce/tests/*.coverage.spec.ts` — 30 tests across admin CRUD
+  (incl. cross-tenant Product rejection), public catalog/cart (incl. cross-tenant cart-isolation and
+  published-only filtering), checkout (happy path, decline path, empty-cart, existing-vs-new
+  Customer), the guard's 404 behavior, and a metadata-level proof the public controller carries
+  neither `JwtAuthGuard`/`RbacGuard` nor any `@Permissions()`. `pnpm --filter @unerp/api typecheck`
+  and the full `sales`+`ecommerce` Vitest suites pass (47 + 30 tests respectively, no regressions).
+- **Not yet built** (next agents): frontend admin pages (`apps/web/app/(dashboard)/ecommerce/*`),
+  public storefront pages (`apps/web/app/(storefront)/store/*`), Sales Orders list channel filter
+  (Flow D), real payment gateway wiring.
+
 ## [2026-07-03] AI: dedicated admin console + tenant kill switch (fullstack-developer)
 
 Additive vertical slice, scoped by product-manager this session. Gives tenant admins a single place to

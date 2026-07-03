@@ -2377,6 +2377,64 @@ async function main() {
     }
   }
 
+  // 20. E-Commerce Storefront (module #33) — StorefrontConfig, StorefrontCategory, ProductListing
+  let storefrontConfig = await prisma.storefrontConfig.findFirst({
+    where: { tenantId: tenant.id },
+  });
+  if (!storefrontConfig) {
+    storefrontConfig = await prisma.storefrontConfig.create({
+      data: {
+        tenantId: tenant.id,
+        storeName: 'Acme Online Store',
+        storeSlug: tenant.slug,
+        isEnabled: true,
+        currency: 'USD',
+        contactEmail: 'store@unerp.dev',
+      },
+    });
+  }
+  console.log(`Storefront config verified: ${storefrontConfig.storeSlug}`);
+
+  let electronicsCategory = await prisma.storefrontCategory.findFirst({
+    where: { tenantId: tenant.id, slug: 'electronics' },
+  });
+  if (!electronicsCategory) {
+    electronicsCategory = await prisma.storefrontCategory.create({
+      data: {
+        tenantId: tenant.id,
+        name: 'Electronics',
+        slug: 'electronics',
+        description: 'Laptops, monitors, and accessories',
+        sortOrder: 0,
+      },
+    });
+  }
+
+  const laptopProductId = productMap['SKU-LAP-001'];
+  const monitorProductId = productMap['SKU-MON-002'];
+  const storefrontListingSeeds = [
+    { productId: laptopProductId, sortOrder: 0 },
+    { productId: monitorProductId, sortOrder: 1 },
+  ].filter((item): item is { productId: string; sortOrder: number } => Boolean(item.productId));
+
+  for (const item of storefrontListingSeeds) {
+    const existingListing = await prisma.productListing.findFirst({
+      where: { tenantId: tenant.id, productId: item.productId },
+    });
+    if (!existingListing) {
+      await prisma.productListing.create({
+        data: {
+          tenantId: tenant.id,
+          productId: item.productId,
+          categoryId: electronicsCategory.id,
+          isPublished: true,
+          sortOrder: item.sortOrder,
+        },
+      });
+    }
+  }
+  console.log('Storefront categories and product listings seeded.');
+
   console.log('🚀 Database seeding complete!');
 }
 

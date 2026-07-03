@@ -3,6 +3,7 @@ import {
   Briefcase, Hammer, PieChart, FolderOpen, MessageSquare, Store, GraduationCap,
   Building2, Wrench, Key, Cloud, ShieldAlert, ShoppingBag, Cpu, Sparkles,
 } from 'lucide-react';
+import { Globe as StorefrontIcon } from 'lucide-react';
 import type { AppDefinition, SwitcherFolder } from './types';
 
 export const SEGMENT_NAMES: Record<string, string> = {
@@ -186,6 +187,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   roles: 'User Roles',
   packages: 'Access Packages',
   matrix: 'Permissions Matrix',
+  ecommerce: 'E-Commerce',
+  listings: 'Listings',
 };
 
 export const formatSegment = (segment: string): string => {
@@ -219,6 +222,7 @@ export const allApplications: AppDefinition[] = [
   { id: 'drive', name: 'Drive', href: '/drive', icon: FolderOpen, installed: true },
   { id: 'communication', name: 'Connect', href: '/connect', icon: MessageSquare, installed: true },
   { id: 'pos', name: 'POS & Retail', href: '/pos', icon: Store, installed: true },
+  { id: 'ecommerce', name: 'E-Commerce', href: '/ecommerce', icon: StorefrontIcon, installed: true },
   { id: 'education', name: 'Education Module', href: '/education', icon: GraduationCap, installed: false },
   { id: 'real-estate', name: 'Real Estate Module', href: '/real-estate', icon: Building2, installed: false },
   { id: 'field-service', name: 'Field Service Module', href: '/field-service', icon: Wrench, installed: false },

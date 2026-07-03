@@ -4,6 +4,19 @@ import { CreateQuotationInput, CreateSalesOrderInput, CreateDeliveryNoteInput, C
 import { Quotation, QuotationItem, SalesOrder, SalesOrderItem, Prisma } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+/**
+ * Input shape for `createConfirmedOnlineOrder` — identical to
+ * `CreateSalesOrderInput` except `salesChannel` is fixed to the storefront's
+ * `'ONLINE'` channel value (not one of the dashboard-facing `'B2B'|'B2C'|'D2C'`
+ * choices in `createSalesOrderSchema`), and `paymentStatus`/`paymentMethod`
+ * are required since a storefront checkout always pays up front.
+ */
+export type CreateOnlineOrderInput = Omit<CreateSalesOrderInput, 'salesChannel' | 'paymentStatus' | 'paymentMethod'> & {
+  salesChannel: 'ONLINE';
+  paymentStatus: 'PAID';
+  paymentMethod?: string;
+};
+
 @Injectable()
 export class SalesService {
   constructor(private readonly eventEmitter?: EventEmitter2) { }
@@ -224,6 +237,28 @@ export class SalesService {
       initialStatus = 'CONFIRMED';
     }
 
+    return this.persistSalesOrderTransaction(tenantId, resolvedOrgId, dto, createdBy, initialStatus, salesChannel, paymentMethod, paymentStatus, orderSubtotal, orderTax, orderTotal);
+  }
+
+  /**
+   * Shared transactional write path for creating a SalesOrder + its SalesOrderItems.
+   * Extracted from `createSalesOrder` so the storefront checkout entry point
+   * (`createConfirmedOnlineOrder` below) reuses the exact same persistence logic
+   * instead of hand-rolling a second order-creation code path.
+   */
+  private async persistSalesOrderTransaction(
+    tenantId: string,
+    resolvedOrgId: string,
+    dto: Pick<CreateSalesOrderInput, 'customerId' | 'orderNumber' | 'deliveryDate' | 'shippingAddress' | 'notes' | 'quotationId' | 'lineItems'>,
+    createdBy: string,
+    initialStatus: string,
+    salesChannel: string,
+    paymentMethod: string | null,
+    paymentStatus: string,
+    orderSubtotal: number,
+    orderTax: number,
+    orderTotal: number,
+  ) {
     return prisma.$transaction(async (tx) => {
       const linesData = dto.lineItems.map((item, index) => {
         const lineSubtotal = item.quantity * item.unitPrice;
@@ -271,6 +306,74 @@ export class SalesService {
 
       return salesOrder;
     });
+  }
+
+  /**
+   * Storefront/e-commerce checkout entry point (`salesChannel = 'ONLINE'`).
+   *
+   * `createSalesOrder` above assumes an internal, authenticated staff user and
+   * an existing tenant `Customer` selected from a dropdown — it never fires
+   * `sales.order.confirmed` at creation time (that event is only emitted later
+   * from `updateSalesOrderStatus`/`approveCreditHold`/`recordOrderPayment`).
+   * The e-commerce module's mock-payment checkout flow needs a paid, confirmed
+   * order created and the confirmation event fired in the SAME request — a
+   * guest customer has no follow-up "confirm" or "record payment" step to
+   * trigger it later. Per `.ai/ECOMMERCE_MODULE_REQUIREMENTS.md` Section 6
+   * ("add a variant entry point, NOT bypass tenant scoping or duplicate the
+   * model"), this method reuses `persistSalesOrderTransaction` for the actual
+   * write and only adds the synchronous CONFIRMED/PAID status + event emit.
+   *
+   * `createdBy` has no internal User id for a guest checkout; callers should
+   * pass a sentinel (the ecommerce module uses `'storefront-guest'`).
+   */
+  async createConfirmedOnlineOrder(tenantId: string, orgId: string, dto: CreateOnlineOrderInput, createdBy: string) {
+    let resolvedOrgId = orgId;
+    if (!orgId || orgId === 'org-system-default') {
+      const org = await prisma.organization.findFirst({ where: { tenantId } });
+      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      resolvedOrgId = org.id;
+    }
+
+    const existing = await prisma.salesOrder.findFirst({
+      where: { tenantId, orgId: resolvedOrgId, orderNumber: dto.orderNumber },
+    });
+    if (existing) throw new BadRequestException(`Order number ${dto.orderNumber} already exists.`);
+
+    const customer = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    let orderSubtotal = 0;
+    let orderTax = 0;
+    dto.lineItems.forEach((item) => {
+      const lineSubtotal = item.quantity * item.unitPrice;
+      orderSubtotal += lineSubtotal;
+      orderTax += lineSubtotal * (item.taxRate / 100);
+    });
+    const orderTotal = orderSubtotal + orderTax;
+
+    const salesOrder = await this.persistSalesOrderTransaction(
+      tenantId,
+      resolvedOrgId,
+      dto,
+      createdBy,
+      'CONFIRMED',
+      'ONLINE',
+      dto.paymentMethod || 'CARD',
+      'PAID',
+      orderSubtotal,
+      orderTax,
+      orderTotal,
+    );
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit('sales.order.confirmed', {
+        tenantId,
+        salesOrderId: salesOrder.id,
+        orderNumber: salesOrder.orderNumber,
+      });
+    }
+
+    return salesOrder;
   }
 
   /**

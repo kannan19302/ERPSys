@@ -565,6 +565,7 @@ model Product {
   purchaseRequisitionItems      PurchaseRequisitionItem[]
   blanketPurchaseAgreementItems BlanketPurchaseAgreementItem[]
   channelInventory              ChannelInventory[]
+  storefrontListings            ProductListing[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -1032,10 +1033,11 @@ model SalesOrder {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
-  customer      Customer         @relation(fields: [customerId], references: [id])
-  lineItems     SalesOrderItem[]
-  deliveryNotes DeliveryNote[]
-  returns       SalesReturn[]
+  customer         Customer                 @relation(fields: [customerId], references: [id])
+  lineItems        SalesOrderItem[]
+  deliveryNotes    DeliveryNote[]
+  returns          SalesReturn[]
+  storefrontPayments StorefrontOrderPayment[]
 
   @@unique([tenantId, orgId, orderNumber])
   @@index([tenantId])
@@ -7854,5 +7856,125 @@ model AccountingBook {
   @@unique([tenantId, orgId, name])
   @@index([tenantId])
   @@map("accounting_books")
+}
+
+// ════════════════════════════════════════════════
+// E-COMMERCE STOREFRONT MODULE (module #33)
+// See .ai/ECOMMERCE_MODULE_REQUIREMENTS.md — public catalog/cart/checkout layer
+// built on top of existing Product / SalesOrder / Invoice. No parallel product
+// or order model: ProductListing is a thin publish/price-override layer over
+// Product, and checkout writes a real SalesOrder (salesChannel = "ONLINE").
+// ════════════════════════════════════════════════
+
+model StorefrontConfig {
+  id         String   @id @default(cuid())
+  tenantId   String   @unique @map("tenant_id")
+  storeName  String   @map("store_name")
+  storeSlug  String   @unique @map("store_slug") // public URL routing: /store/[storeSlug]
+  isEnabled  Boolean  @default(false) @map("is_enabled")
+  currency   String   @default("USD")
+  contactEmail String? @map("contact_email")
+  logoUrl    String?  @map("logo_url")
+  primaryColor String? @map("primary_color")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("storefront_configs")
+}
+
+model StorefrontCategory {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  slug        String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  listings ProductListing[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("storefront_categories")
+}
+
+model ProductListing {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  productId       String    @map("product_id")
+  categoryId      String?   @map("category_id")
+  isPublished     Boolean   @default(false) @map("is_published")
+  displayName     String?   @map("display_name") // optional override of Product.name
+  description     String?   // optional override of Product.description
+  priceOverride   Decimal?  @map("price_override") @db.Decimal(15, 2) // null = use Product.sellPrice
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  product  Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category StorefrontCategory? @relation(fields: [categoryId], references: [id])
+  cartItems CartItem[]
+
+  @@unique([tenantId, productId])
+  @@index([tenantId, isPublished])
+  @@index([tenantId, categoryId])
+  @@map("product_listings")
+}
+
+model Cart {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  sessionToken String    @unique @map("session_token") // opaque random token, no customer auth
+  status       String    @default("ACTIVE") @map("status") // ACTIVE, CONVERTED, ABANDONED
+  currency     String    @default("USD")
+  expiresAt    DateTime  @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  items CartItem[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("carts")
+}
+
+model CartItem {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  cartId              String   @map("cart_id")
+  productListingId    String   @map("product_listing_id")
+  quantity            Int
+  unitPriceSnapshot   Decimal  @map("unit_price_snapshot") @db.Decimal(15, 2) // captured at add-time
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  cart           Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productListing ProductListing @relation(fields: [productListingId], references: [id])
+
+  @@index([tenantId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model StorefrontOrderPayment {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  salesOrderId    String   @map("sales_order_id")
+  provider        String   @default("mock_gateway") // "mock_gateway" for MVP; real gateways are a drop-in swap
+  providerIntentId String  @map("provider_intent_id")
+  status          String   @default("PENDING") // PENDING, SUCCEEDED, FAILED, REFUNDED
+  amount          Decimal  @db.Decimal(15, 2)
+  currency        String   @default("USD")
+  rawResponse     Json?    @map("raw_response") // whatever the gateway adapter returns, for reconciliation
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, salesOrderId])
+  @@map("storefront_order_payments")
 }
 

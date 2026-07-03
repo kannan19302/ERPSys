@@ -122,6 +122,21 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'case', 'create', 'endpoint', 'Create customer service cases'),
   p('crm', 'case', 'update', 'endpoint', 'Update customer service cases'),
 
+  // E-Commerce Storefront (module #33) — admin-side only. Public `/store/:tenantSlug/*`
+  // routes are an intentional, documented exception to Rule 15 (no @Permissions) —
+  // see .ai/ECOMMERCE_MODULE_REQUIREMENTS.md Section 7 and .ai/DATA_MODEL.md Section 3.4.
+  p('ecommerce', 'storefront', 'read', 'endpoint', 'View storefront configuration'),
+  p('ecommerce', 'storefront', 'manage', 'endpoint', 'Enable/disable storefront and edit settings'),
+  p('ecommerce', 'listing', 'read', 'endpoint', 'View product listings'),
+  p('ecommerce', 'listing', 'create', 'endpoint', 'Publish products to storefront'),
+  p('ecommerce', 'listing', 'update', 'endpoint', 'Update storefront listing (price override, sort, category)'),
+  p('ecommerce', 'listing', 'delete', 'endpoint', 'Unpublish a storefront listing'),
+  p('ecommerce', 'category', 'read', 'endpoint', 'View storefront categories'),
+  p('ecommerce', 'category', 'create', 'endpoint', 'Create storefront categories'),
+  p('ecommerce', 'category', 'update', 'endpoint', 'Update storefront categories'),
+  p('ecommerce', 'category', 'delete', 'endpoint', 'Delete storefront categories'),
+  p('ecommerce', 'order', 'read', 'endpoint', 'View storefront (online-channel) orders'),
+
   // Inventory
   p('inventory', 'product', 'read', 'endpoint', 'View products'),
   p('inventory', 'product', 'create', 'endpoint', 'Create products'),

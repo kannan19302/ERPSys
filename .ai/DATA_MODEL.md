@@ -286,6 +286,86 @@ model Product {
 
 ---
 
+## 3.4 E-Commerce Storefront (module #33)
+
+Public catalog/cart/checkout layer built on top of existing `Product` / `SalesOrder` / `Invoice` —
+see `.ai/ECOMMERCE_MODULE_REQUIREMENTS.md` for the full MVP spec. No parallel product or order
+model was created: `ProductListing` is a thin publish/price-override layer over `Product`, and
+checkout writes a real `SalesOrder` (`salesChannel = "ONLINE"`, reusing the existing field's
+`@default("B2B")` column — no schema change needed there).
+
+```prisma
+model StorefrontConfig {
+  id           String   @id @default(cuid())
+  tenantId     String   @unique @map("tenant_id") // one config row per tenant
+  storeName    String   @map("store_name")
+  storeSlug    String   @unique @map("store_slug") // public URL routing: /store/[storeSlug]
+  isEnabled    Boolean  @default(false) @map("is_enabled")
+  currency     String   @default("USD")
+  contactEmail String?  @map("contact_email")
+  logoUrl      String?  @map("logo_url")
+  primaryColor String?  @map("primary_color")
+  // ...timestamps
+}
+
+model StorefrontCategory {
+  // flat list only in MVP — no nested category trees
+  id       String @id @default(cuid())
+  tenantId String @map("tenant_id")
+  name     String
+  slug     String
+  // @@unique([tenantId, slug])
+}
+
+model ProductListing {
+  // publish/price-override layer over Product — NOT a parallel catalog
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  productId     String   @map("product_id") // FK -> Product
+  categoryId    String?  @map("category_id") // FK -> StorefrontCategory
+  isPublished   Boolean  @default(false) @map("is_published")
+  priceOverride Decimal? @map("price_override") @db.Decimal(15, 2) // null = use Product.sellPrice
+  // @@unique([tenantId, productId]); @@index([tenantId, isPublished]) — hottest public read path
+}
+
+model Cart {
+  // anonymous/session-based — no Customer/User FK by design (guest checkout, no login)
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  sessionToken String   @unique @map("session_token")
+  status       String   @default("ACTIVE") // ACTIVE, CONVERTED, ABANDONED
+}
+
+model CartItem {
+  id                String  @id @default(cuid())
+  tenantId          String  @map("tenant_id")
+  cartId            String  @map("cart_id")
+  productListingId  String  @map("product_listing_id")
+  unitPriceSnapshot Decimal @map("unit_price_snapshot") @db.Decimal(15, 2) // captured at add-time
+}
+
+model StorefrontOrderPayment {
+  // thin per-attempt payment ledger row; does not replace Finance's Payment model
+  id               String  @id @default(cuid())
+  tenantId         String  @map("tenant_id")
+  salesOrderId     String  @map("sales_order_id") // FK -> SalesOrder
+  provider         String  @default("mock_gateway") // MVP: mock only, real gateways are a drop-in swap
+  status           String  @default("PENDING") // PENDING, SUCCEEDED, FAILED, REFUNDED
+  rawResponse      Json?   @map("raw_response") // gateway adapter's raw payload, for reconciliation
+}
+```
+
+**Tenant-resolution note**: public `/store/[tenantSlug]` routes resolve tenant via `StorefrontConfig.storeSlug`
+(URL-based), not JWT — a distinct, non-standard tenant-resolution path flagged for security-auditor
+review. All six models still carry a direct `tenantId` column and are auto-scoped by the same Prisma
+tenant-scoping extension (`packages/database/src/tenant-scope.ts`) as every other table; the slug-based
+public guard is only responsible for resolving *which* `tenantId` to inject before the extension runs,
+never for bypassing the extension itself.
+
+**Status field convention**: `Cart.status` and `StorefrontOrderPayment.status` follow this repo's
+enum strategy (Section 1.4) — plain `String` columns with app-level Zod validation, not Postgres
+enums, matching every other status field in the schema.
+
 ## 4. Money & Currency Handling
 
 ### 4.1 Rules

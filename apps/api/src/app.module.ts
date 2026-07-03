@@ -40,6 +40,7 @@ import { BuilderModule } from './modules/builder/builder.module';
 import { CommonModule } from './common/common.module';
 import { QueueModule } from './common/queues/queue.module';
 import { AiModule } from './modules/ai/ai.module';
+import { EcommerceModule } from './modules/ecommerce/ecommerce.module';
 
 @Module({
   imports: [
@@ -145,6 +146,9 @@ import { AiModule } from './modules/ai/ai.module';
 
     // AI Layer
     AiModule,
+
+    // Module #33 — E-Commerce Storefront (depends on Sales for checkout order creation)
+    EcommerceModule,
   ],
   controllers: [HealthController, MetricsController],
   providers: [
