@@ -3,6 +3,112 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-03] AI: dedicated admin console + tenant kill switch (fullstack-developer)
+
+Additive vertical slice, scoped by product-manager this session. Gives tenant admins a single place to
+turn the AI assistant off org-wide and control the local Ollama engine, without touching the floating
+widget's chat logic or `/ai/converse`'s agent-loop internals.
+
+- `apps/api/src/modules/ai/ai-config.service.ts` (new): `AiConfigService` — tenant-scoped kill switch backed
+  by the generic `Setting` model (`key = 'ai.config'`, same JSON-blob pattern as `PlatformService`'s feature
+  flags — no new migration). `getConfig()` returns `{ enabled, model, baseUrl }` where `model`/`baseUrl` are
+  always live-read from `AiService` (env-configured, not persisted — no per-tenant model override yet).
+  `setEnabled()` upserts just the `enabled` field. `isEnabled()` is a cheap boolean helper, defaulting to
+  `true` when unset so existing tenants aren't silently broken.
+- `apps/api/src/modules/ai/ai.controller.ts`: injected `AiConfigService`; every AI-invoking handler (`ask`,
+  `summarize/:entityType/:entityId`, `draft-email`, `generate-form`, `generate-workflow`, `process-invoice`,
+  `converse`) now calls a private `assertAiEnabled()` helper first, throwing a 503
+  `ServiceUnavailableException` if the tenant disabled AI. `GET /ai/status` (unguarded by the check, since
+  it's just a config read) now also returns `enabled` so any authenticated user (not just admins) can learn
+  whether AI is on, needed by the floating widget.
+- `apps/api/src/modules/ai/ai-admin.controller.ts` (new): `AiAdminController` at `admin/ai/*`, every route
+  (including reads) gated by the new `ai.admin.manage` permission. `GET/POST admin/ai/config` for the kill
+  switch; `GET/POST admin/ai/engine/{status,start,stop}` relocated from `OperationsController`'s
+  `admin/operations/ai-engine/*` (removed there, along with its now-unused `OllamaProcessService`
+  constructor param). `AdminModule` no longer imports `AiModule` — nothing else in it depended on AI.
+- `packages/shared/src/permissions/registry.ts`: added `ai.admin.manage` permission.
+- `apps/web/app/(dashboard)/admin/ai/page.tsx` (new): AI admin console — kill-switch card (toggle +
+  disabled-state warning), read-only model/base-URL info card, and the engine start/stop/status card
+  relocated from the admin dashboard sidebar (API paths updated to `admin/ai/engine/*`).
+- `apps/web/app/(dashboard)/admin/page.tsx`: removed the AI Engine sidebar card and its state/handlers;
+  replaced with an "AI Assistant" link-out card plus a matching `quickLinks` entry pointing to `/admin/ai`.
+- `apps/web/app/(dashboard)/layout.tsx`: floating chat widget now fetches `/ai/status` on mount and hides
+  itself entirely when `enabled === false`; fails open (widget stays visible) on fetch error so a transient
+  outage never silently hides AI for everyone.
+
+## [2026-07-02] AI: switched provider from Anthropic (paid API) to self-hosted Ollama (free, open-source) (backend-developer)
+
+Deliberate cost decision: the AI copilot module was calling the paid Anthropic API for every chat/summarize/
+classify/extract/agent call. The user chose to eliminate that cost entirely by running models locally via
+Ollama (https://ollama.com) instead, accepting a quality/reliability tradeoff (local models are weaker and a
+local server can be down) in exchange for zero per-token spend. This reverses the direction of the entry
+directly below (which had *added* the Anthropic SDK); that work is fully superseded.
+
+- `apps/api/package.json`: removed `@anthropic-ai/sdk` dependency; `pnpm install` re-run to prune it from
+  `pnpm-lock.yaml`. No package replaces it — Ollama is called via plain `fetch()`, no SDK needed.
+- `apps/api/src/modules/ai/ai.service.ts`: rewritten to call `POST {OLLAMA_BASE_URL}/api/chat` directly.
+  `OLLAMA_BASE_URL` defaults to `http://localhost:11434`, `OLLAMA_MODEL` defaults to `llama3.1`. `isConfigured()`
+  now always returns `true` (no API-key gate for a self-hosted server); connection/HTTP failures throw a
+  friendly `BadRequestException` at request time instead of blocking startup. Public signatures unchanged:
+  `chat()`, `summarize()`, `classify()`, `extractFields()`. Added `rawChat()` (returns the raw Ollama assistant
+  message, including `tool_calls`, for callers that need function-calling) plus `getBaseUrl()`/`getDefaultModel()`,
+  replacing the old `getClient()`/Anthropic-SDK-specific accessors. `classify`/`extractFields` now pass
+  `format: 'json'` to request structured output per Ollama's documented JSON-mode option.
+- `apps/api/src/modules/ai/ai-agent.service.ts`: tool-use loop rewritten from Anthropic's content-block format
+  (`response.content` blocks, `stop_reason: 'tool_use'`, `tool_result` blocks) to Ollama's OpenAI-style function
+  calling (`tools: [{type:'function', function:{...}}]` request field, `message.tool_calls` response field,
+  `role: 'tool'` result messages). Same 6-iteration cap, same 6 tools (`query_erp_data`, `summarize_record`,
+  `draft_email`, `generate_form`, `generate_workflow`, `process_invoice_text`), same `executeTool()` business
+  logic delegating 1:1 to tenant-scoped `AiCopilotService` methods — tenant scoping unchanged. Same public
+  `converse(tenantId, userId, history, context) -> { reply, actions }` signature.
+- `apps/api/src/modules/ai/ai-copilot.service.ts`: only change is the not-configured fallback message in
+  `askData()` no longer references `ANTHROPIC_API_KEY`.
+- `.env.example`: replaced `ANTHROPIC_API_KEY`/`AI_MODEL` with `OLLAMA_BASE_URL`/`OLLAMA_MODEL`, with a comment
+  that Ollama must be installed and the model pulled (`ollama pull llama3.1`) before the API can use AI features.
+- Tests: `apps/api/src/modules/ai/tests/ai-agent.service.spec.ts` and `ai.service.coverage.spec.ts` rewritten to
+  mock `global.fetch` against the Ollama endpoint instead of the Anthropic SDK client — covering unreachable-
+  server short-circuit, non-OK HTTP status, and a full tool-call → tool-result → final-answer loop. All 4 spec
+  files under `apps/api/src/modules/ai/tests/` pass (22 tests): `pnpm --filter @unerp/api test -- src/modules/ai`.
+  `pnpm --filter @unerp/api typecheck` passes clean.
+- **Known gap, explicitly out of scope for this change:** `apps/api/src/modules/workflow/workflow-engine.service.ts`
+  and `apps/api/src/modules/builder/web-studio.service.ts` both call `https://api.anthropic.com/v1/messages`
+  directly via raw `fetch`, bypassing `AiService` entirely (also a cross-module architecture smell — they should
+  go through `AiService` rather than hardcoding a provider). They still incur Anthropic API cost after this
+  change. Flagged for a follow-up task; not touched here per the task's explicit scope.
+- Not touched (per task spec): `apps/web/app/(dashboard)/layout.tsx`, the separate `/ai` full page, and the
+  Studio-only `AiCopilotSidebar` — the frontend only consumes `{ reply, actions }` JSON and needed no changes.
+
+## [2026-07-02] AI: real Anthropic SDK integration + tool-use agentic loop wired to the global Copilot widget (fullstack-developer)
+
+Replaced the raw `fetch()` call in `AiService.chat()` with the official `@anthropic-ai/sdk` client, and gave the
+global floating "AI Copilot" widget a real backend instead of canned keyword-matched replies.
+
+- `apps/api/package.json`: added `@anthropic-ai/sdk` (`^0.32.1`).
+- `apps/api/src/modules/ai/ai.service.ts`: `chat()` now calls `client.messages.create(...)` via the SDK instead of
+  raw `fetch`; same public method signature and return shape, so `AiCopilotService` needed no changes. Added
+  `getClient(): Anthropic` (throws `BadRequestException` if unconfigured) and `getDefaultModel()` as the single
+  source of truth for API key/model config, for `AiAgentService` to reuse. Default model bumped to
+  `claude-sonnet-5` (still overridable via `AI_MODEL`).
+- `apps/api/src/modules/ai/ai-agent.service.ts` (new): `AiAgentService.converse()` runs a manual Anthropic
+  tool-use loop (capped at 6 iterations) exposing `query_erp_data`, `summarize_record`, `draft_email`,
+  `generate_form`, `generate_workflow`, `process_invoice_text` as tools that delegate 1:1 to the existing
+  tenant-scoped `AiCopilotService` methods. Unknown tool names and tool execution errors are fed back to the
+  model as `tool_result`/`is_error` blocks instead of crashing the request. Returns `{ reply, actions }`.
+- `apps/api/src/modules/ai/ai.controller.ts` / `ai.module.ts`: new `POST /ai/converse` endpoint
+  (`ai.create` permission, same guard stack as siblings); `AiAgentService` registered as a provider/export.
+- `apps/api/src/modules/ai/tests/ai-agent.service.spec.ts` (new): not-configured short-circuit (no SDK call),
+  and a happy-path tool_use → end_turn loop asserting `actions` and `reply`. All 4 spec files in
+  `apps/api/src/modules/ai/tests/` pass (17 tests).
+- `apps/web/app/(dashboard)/layout.tsx`: `handleChatSubmit` is now async and calls `POST /api/v1/ai/converse`
+  with the full message history and `{ context: { path: pathname } }`, using the same
+  `Authorization: Bearer <token>` + `credentials: 'include'` pattern used elsewhere in this file. Removed the
+  entire fake `query.includes(...)` keyword-branching block and `setTimeout` delay. Errors show a friendly
+  inline bubble; `chatTyping` is always reset in a `finally`. No JSX/styling changes.
+- `.ai/MODULE_REGISTRY.md`: row 32 (AI module) updated to describe the real SDK integration and `AiAgentService`.
+
+Left out of scope (per task spec): the separate `/ai` full page, Studio's `AiCopilotSidebar`, streaming/SSE,
+and any new DB tables/permissions.
+
 ## [2026-07-02] Admin P0-2 + P1-1: Real automation-rule execution engine; honest backup labeling + real BullMQ↔BackgroundJob wiring (backend-developer)
 
 Closed the two confirmed gaps in `.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md` (P0-2, P1-1) and applied the RBAC

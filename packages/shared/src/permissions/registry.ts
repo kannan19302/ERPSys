@@ -228,6 +228,7 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   { code: 'advanced_finance.read', module: 'advanced_finance', resource: 'general', action: 'read', level: 'endpoint', description: 'Coarse legacy permission: advanced_finance read' },
   { code: 'ai.create', module: 'ai', resource: 'general', action: 'create', level: 'endpoint', description: 'Coarse legacy permission: ai create' },
   { code: 'ai.read', module: 'ai', resource: 'general', action: 'read', level: 'endpoint', description: 'Coarse legacy permission: ai read' },
+  p('ai', 'admin', 'manage', 'endpoint', 'Manage the AI assistant kill switch and engine control (dedicated AI admin console, admin-only)'),
   p('analytics', 'dashboard', 'create', 'endpoint', 'Access analytics dashboard create'),
   p('analytics', 'dashboard', 'read', 'endpoint', 'Access analytics dashboard read'),
   p('analytics', 'kpi', 'read', 'endpoint', 'Access analytics kpi read'),

@@ -113,4 +113,9 @@ export class OperationsController {
   async getDbSchema() {
     return this.operationsService.getDbSchema();
   }
+
+  // Ollama (AI engine) process control moved to AiAdminController
+  // (`admin/ai/engine/*`) — see that controller. This keeps AI-specific
+  // control on the dedicated AI admin surface, gated by `ai.admin.manage`,
+  // instead of the coarser `admin.operations.*` permissions.
 }

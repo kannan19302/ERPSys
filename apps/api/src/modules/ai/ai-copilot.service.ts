@@ -35,7 +35,7 @@ export class AiCopilotService {
    */
   async askData(tenantId: string, question: string) {
     if (!this.ai.isConfigured()) {
-      return { answer: 'AI is not configured. Set ANTHROPIC_API_KEY.', query: null, data: [] };
+      return { answer: 'AI is not configured.', query: null, data: [] };
     }
 
     const semanticLayer = this.reportingEngine.getSemanticLayer();

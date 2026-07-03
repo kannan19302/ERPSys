@@ -3,15 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   PageHeader, Card, KPICard, Sparkline, MiniDonutChart, Badge, Tabs, Spinner,
-  DataTable, type Column,
+  DataTable, Button, type Column,
 } from '@unerp/ui';
 import {
   Users, Shield, Clock, Activity, Key, Globe, Settings, ArrowRight,
   AlertTriangle, CheckCircle, Server, Database, HardDrive, Cpu,
   FileText, UserPlus, LogIn, Trash2, Edit, Lock, Unlock,
-  Bell, Workflow, Import, Zap, BarChart3, MonitorSmartphone,
+  Bell, Workflow, Import, Zap, BarChart3, MonitorSmartphone, Bot,
 } from 'lucide-react';
 import Link from 'next/link';
+import { apiGet } from '@/lib/api';
 
 interface AdminStats {
   activeUsers: number;
@@ -113,6 +114,7 @@ export default function AdminDashboardPage() {
       setEvents(FALLBACK_EVENTS);
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const s = stats || FALLBACK_STATS;
@@ -129,6 +131,7 @@ export default function AdminDashboardPage() {
     { title: 'Import / Export', href: '/admin/import', icon: Import, desc: 'Bulk data operations', color: '#84cc16' },
     { title: 'API Platform', href: '/admin/api-platform', icon: Zap, desc: 'Keys, webhooks, OAuth', color: '#ec4899' },
     { title: 'Analytics', href: '/admin/tenant-analytics', icon: BarChart3, desc: 'Tenant usage analytics', color: '#14b8a6' },
+    { title: 'AI Assistant', href: '/admin/ai', icon: Bot, desc: 'Kill switch, model info & engine control', color: '#6366f1' },
     { title: 'General Settings', href: '/admin/settings/general', icon: Settings, desc: 'Organization profile', color: 'var(--color-text-secondary)' },
   ];
 
@@ -330,6 +333,26 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
           </Card>
+
+          {/* AI Assistant (link-out to dedicated admin console) */}
+          <Link href="/admin/ai" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Card>
+              <div style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 'var(--radius-md)',
+                  background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <Bot size={18} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>AI Assistant</h3>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Configure kill switch & engine</span>
+                </div>
+                <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
+              </div>
+            </Card>
+          </Link>
 
           {/* User Distribution */}
           <Card>

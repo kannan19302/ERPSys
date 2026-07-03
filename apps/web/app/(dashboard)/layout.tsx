@@ -97,6 +97,7 @@ import { getAppSpecificNavigation, SEGMENT_NAMES, formatSegment, allApplications
 import type { ModuleNav } from '@/navigation';
 import { useResolvedNav } from '@/navigation/useResolvedNav';
 import { PermissionProvider } from '@/components/PermissionProvider';
+import { apiGet, apiPost } from '@/lib/api';
 
 const GLOBAL_SEARCH_ITEMS = [
   { name: 'Dashboard', href: '/dashboard', icon: Home, type: 'App' },
@@ -527,6 +528,28 @@ export default function DashboardLayout({
   const [chatTyping, setChatTyping] = useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
+  // Whether the tenant admin has disabled the AI assistant (kill switch). Uses
+  // `/ai/status` (gated by the coarse `ai.read` permission every authenticated
+  // user has) rather than the admin-only `/admin/ai/config` endpoint, since a
+  // regular non-admin user would get a 403 from the latter. Defaults to
+  // showing the widget while the check is in flight or if it fails, so a
+  // transient error never silently breaks existing behavior for tenants who
+  // never touched this setting.
+  const [aiWidgetEnabled, setAiWidgetEnabled] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const status = await apiGet<{ configured: boolean; enabled: boolean }>('/ai/status');
+        if (mounted) setAiWidgetEnabled(status.enabled !== false);
+      } catch {
+        // Best-effort: leave the widget visible if the status check fails.
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   // Auto-scroll chat to bottom
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -534,40 +557,42 @@ export default function DashboardLayout({
     }
   }, [chatMessages, chatTyping]);
 
-  const handleChatSubmit = (e: React.FormEvent) => {
+  const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
     const userMsg = chatInput.trim();
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     // Add user message
-    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg, time: timeStr }]);
+    const updatedMessages = [...chatMessages, { sender: 'user' as const, text: userMsg, time: timeStr }];
+    setChatMessages(updatedMessages);
     setChatInput('');
     setChatTyping(true);
 
-    // Simulate AI response after 1.2s delay
-    setTimeout(() => {
-      let replyText = '';
-      const query = userMsg.toLowerCase();
+    try {
+      const messages = updatedMessages.map(m => ({
+        role: m.sender === 'user' ? 'user' as const : 'assistant' as const,
+        content: m.text,
+      }));
 
-      if (query.includes('finance') || query.includes('ledger') || query.includes('revenue') || query.includes('profit') || query.includes('invoice')) {
-        replyText = "Ledger systems are fully integrated! Real-time double-entry logs verify that all debit and credit statements balance. Net profit margin is holding steady at 12.4% with a 98.6% compliance rate.";
-      } else if (query.includes('warehouse') || query.includes('inventory') || query.includes('stock') || query.includes('sku')) {
-        replyText = "Inventory telemetry status: Active. Warehouse WH-MAIN is running at 72% capacity. Reorder thresholds have automatically updated to prevent shortages for critical brackets and cores.";
-      } else if (query.includes('user') || query.includes('admin') || query.includes('employee') || query.includes('role')) {
-        replyText = "Access directories report 1,280 active tenant identities. Role-based configurations are enforced JIT. You can review user matrix logs under Admin -> Access Control.";
-      } else if (query.includes('workflow') || query.includes('approve') || query.includes('builder')) {
-        replyText = "Workflow Engine is operational. You have 3 pending purchase approval requests (> $10k threshold) routing to VP. You can customize form canvasses in the visual Zero-Code Studio.";
-      } else if (query.includes('hello') || query.includes('hi') || query.includes('help')) {
-        replyText = "I can query warehouse listings, audit double-entry accounts, verify Active Directory sessions, or inspect workflow routing rules. What would you like to build or check?";
-      } else {
-        replyText = "I've scanned the UniERP schema registry. Sandbox databases are isolated and synchronized. Let me know if you would like me to draft an email template, generate a custom form module, or check audit logs.";
-      }
+      const data = await apiPost<{ reply: string; actions?: Array<{ tool: string }> }>(
+        '/ai/converse',
+        { messages, context: { path: pathname } },
+      );
 
-      setChatMessages(prev => [...prev, { sender: 'ai', text: replyText, time: timeStr }]);
+      const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const actionSuffix = data.actions?.length
+        ? `\n\n_Action taken: ${data.actions.map((a) => a.tool).join(', ')}_`
+        : '';
+
+      setChatMessages(prev => [...prev, { sender: 'ai', text: `${data.reply}${actionSuffix}`, time: replyTime }]);
+    } catch (err) {
+      const errorTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, I could not reach the AI assistant right now. Please try again in a moment.', time: errorTime }]);
+    } finally {
       setChatTyping(false);
-    }, 1200);
+    }
   };
 
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
@@ -1417,6 +1442,7 @@ export default function DashboardLayout({
         </div>
       )}
       {/* ── Floating AI Chatbot Companion ── */}
+      {aiWidgetEnabled && (
       <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>
         {/* Chat Toggle Button */}
         <button
@@ -1644,6 +1670,7 @@ export default function DashboardLayout({
           </div>
         )}
       </div>
+      )}
 
       {/* AI Chat CSS Overrides */}
       <style>{`
