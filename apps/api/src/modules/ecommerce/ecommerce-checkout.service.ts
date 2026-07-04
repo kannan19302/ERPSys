@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import * as crypto from 'crypto';
 import { SalesService, CreateOnlineOrderInput } from '../sales/sales.service';
-import { MockPaymentGatewayService } from './payments/mock-payment-gateway.service';
+import { PaymentGatewayAdapter } from './payments/payment-gateway.interface';
 import { CheckoutDto } from './dto/ecommerce.dto';
 import { AppLogger } from '../../common/services/logger.service';
 
@@ -14,15 +15,6 @@ const STOREFRONT_GUEST_CREATED_BY = 'storefront-guest';
  * Checkout/payment orchestration for the storefront's public
  * `POST store/:tenantSlug/checkout` route. See
  * .ai/ECOMMERCE_MODULE_REQUIREMENTS.md Flow C.
- *
- * Deliberately does NOT write to `SalesOrder`/`SalesOrderItem` directly —
- * that write path belongs to the Sales module (`SalesService`), consistent
- * with "no cross-module Prisma reach-through for models this module doesn't
- * own." This service only owns `Cart`/`CartItem`/`StorefrontOrderPayment`,
- * and reads/creates `Customer` directly (an established, existing pattern —
- * `sales.service.ts` itself reads/writes `Customer` via plain Prisma calls,
- * since `Customer` is a shared core entity, not a CRM-module implementation
- * detail hidden behind a service boundary).
  */
 @Injectable()
 export class EcommerceCheckoutService {
@@ -30,7 +22,7 @@ export class EcommerceCheckoutService {
 
   constructor(
     private readonly salesService: SalesService,
-    private readonly paymentGateway: MockPaymentGatewayService,
+    @Inject('PAYMENT_GATEWAY') private readonly paymentGateway: PaymentGatewayAdapter,
   ) {
     this.logger.setContext('EcommerceCheckoutService');
   }
@@ -62,6 +54,15 @@ export class EcommerceCheckoutService {
       tenantId,
       cartId: cart.id,
       sessionToken: cart.sessionToken,
+      customerName: dto.customerName,
+      customerEmail: dto.customerEmail,
+      customerPhone: dto.customerPhone || '',
+      shippingStreet: dto.shippingAddress.street,
+      shippingCity: dto.shippingAddress.city,
+      shippingState: dto.shippingAddress.state,
+      shippingZip: dto.shippingAddress.zip,
+      shippingCountry: dto.shippingAddress.country,
+      notes: dto.notes || '',
     });
 
     // 2. "Confirm" the mock intent — this is the only step that can decline.
@@ -107,7 +108,7 @@ export class EcommerceCheckoutService {
       data: {
         tenantId,
         salesOrderId: salesOrder.id,
-        provider: 'mock_gateway',
+        provider: this.paymentGateway.constructor.name === 'StripePaymentGatewayService' ? 'stripe' : 'mock_gateway',
         providerIntentId: intent.id,
         status: 'SUCCEEDED',
         amount: subtotal,
@@ -151,5 +152,162 @@ export class EcommerceCheckoutService {
         status: 'ACTIVE',
       },
     });
+  }
+
+  async handleStripeWebhook(rawBody: Buffer, signature: string): Promise<any> {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+    if (!webhookSecret) {
+      this.logger.warn('Stripe webhook signature verification skipped: STRIPE_WEBHOOK_SECRET is not configured.');
+    } else {
+      const verified = this.verifyStripeSignature(rawBody, signature, webhookSecret);
+      if (!verified) {
+        this.logger.error('Stripe webhook signature verification failed.');
+        throw new BadRequestException('Invalid webhook signature.');
+      }
+    }
+
+    const event = JSON.parse(rawBody.toString('utf8'));
+    this.logger.log(`Received Stripe Webhook event: ${event.type}`);
+
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object;
+      return this.completePaymentFromIntent(paymentIntent);
+    }
+
+    return { received: true };
+  }
+
+  private verifyStripeSignature(rawBody: Buffer, signature: string, secret: string): boolean {
+    try {
+      const parts = signature.split(',');
+      const tPart = parts.find((p) => p.startsWith('t='));
+      const v1Part = parts.find((p) => p.startsWith('v1='));
+      if (!tPart || !v1Part) return false;
+      const t = tPart.split('=')[1];
+      const v1 = v1Part.split('=')[1];
+      if (!t || !v1) return false;
+
+      const signedPayload = `${t}.${rawBody.toString('utf8')}`;
+      const computedHmac = crypto
+        .createHmac('sha256', secret)
+        .update(signedPayload)
+        .digest('hex');
+
+      return crypto.timingSafeEqual(
+        Buffer.from(computedHmac, 'hex'),
+        Buffer.from(v1, 'hex'),
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  private async completePaymentFromIntent(paymentIntent: any) {
+    const intentId = paymentIntent.id;
+
+    // Check for existing payment to prevent duplicate processing (idempotency)
+    const existingPayment = await prisma.storefrontOrderPayment.findFirst({
+      where: { providerIntentId: intentId },
+    });
+    if (existingPayment) {
+      this.logger.log(`Stripe PaymentIntent ${intentId} was already processed. Skipping.`);
+      return { success: true, duplicate: true };
+    }
+
+    const metadata = paymentIntent.metadata || {};
+    const cartId = metadata.cartId;
+    if (!cartId) {
+      this.logger.warn(`Stripe PaymentIntent ${intentId} has no cartId in metadata. Skipping order creation.`);
+      return { success: true, skipped: true };
+    }
+
+    const cart = await prisma.cart.findFirst({
+      where: { id: cartId },
+      include: { items: { include: { productListing: { include: { product: true } } } } },
+    });
+    if (!cart) {
+      throw new NotFoundException(`Cart ${cartId} associated with PaymentIntent ${intentId} not found.`);
+    }
+
+    if (cart.status === 'CONVERTED') {
+      this.logger.log(`Cart ${cartId} is already converted. Skipping.`);
+      return { success: true, duplicate: true };
+    }
+
+    const tenantId = cart.tenantId;
+    const org = await prisma.organization.findFirst({ where: { tenantId } });
+    if (!org) {
+      throw new BadRequestException(`No Organization found for Tenant ${tenantId}`);
+    }
+
+    // Extract checkout details from metadata or defaults
+    const customerName = metadata.customerName || 'Guest Customer';
+    const customerEmail = metadata.customerEmail || paymentIntent.receipt_email || 'guest@example.com';
+    const customerPhone = metadata.customerPhone || null;
+    const street = metadata.shippingStreet || 'N/A';
+    const city = metadata.shippingCity || 'N/A';
+    const state = metadata.shippingState || 'N/A';
+    const zip = metadata.shippingZip || 'N/A';
+    const country = metadata.shippingCountry || 'US';
+    const notes = metadata.notes || null;
+
+    const checkoutDto: CheckoutDto = {
+      sessionToken: cart.sessionToken,
+      customerName,
+      customerEmail,
+      customerPhone,
+      shippingAddress: { street, city, state, zip, country },
+      notes,
+    };
+
+    const customer = await this.findOrCreateGuestCustomer(tenantId, org.id, checkoutDto);
+    const subtotal = cart.items.reduce((sum, item) => sum + Number(item.unitPriceSnapshot) * item.quantity, 0);
+    const orderNumber = `ONL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    const onlineOrderInput: CreateOnlineOrderInput = {
+      customerId: customer.id,
+      orderNumber,
+      salesChannel: 'ONLINE',
+      paymentStatus: 'PAID',
+      notes,
+      shippingAddress: checkoutDto.shippingAddress,
+      lineItems: cart.items.map((item) => ({
+        productId: item.productListing.productId,
+        description: item.productListing.displayName || item.productListing.product.name,
+        quantity: item.quantity,
+        unitPrice: Number(item.unitPriceSnapshot),
+        taxRate: 0,
+      })),
+    };
+
+    const salesOrder = await this.salesService.createConfirmedOnlineOrder(
+      tenantId,
+      org.id,
+      onlineOrderInput,
+      STOREFRONT_GUEST_CREATED_BY,
+    );
+
+    await prisma.storefrontOrderPayment.create({
+      data: {
+        tenantId,
+        salesOrderId: salesOrder.id,
+        provider: 'stripe',
+        providerIntentId: intentId,
+        status: 'SUCCEEDED',
+        amount: subtotal,
+        currency: cart.currency,
+        rawResponse: paymentIntent,
+      },
+    });
+
+    await prisma.cart.update({ where: { id: cart.id }, data: { status: 'CONVERTED' } });
+
+    this.logger.log(`Asynchronously converted cart ${cartId} to order ${salesOrder.id} via webhook.`);
+
+    return {
+      success: true,
+      orderId: salesOrder.id,
+      orderNumber: salesOrder.orderNumber,
+    };
   }
 }

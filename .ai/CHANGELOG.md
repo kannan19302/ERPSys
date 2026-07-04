@@ -3,6 +3,29 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] Stripe E-Commerce Payment Gateway Integration
+
+Implemented a production-grade Stripe card payment processing pipeline for storefront checkouts, featuring a zero-dependency API adapter service, a dynamic provider factory, native cryptographic webhook signature verification, and Next.js admin channel filters.
+
+1. **Stripe API Adapter Service**:
+   - Created `StripePaymentGatewayService` implementing `PaymentGatewayAdapter` using Node's native `fetch` client to communicate directly with Stripe's REST API.
+   - Converts transaction amounts to cents, maps metadata, and creates and confirms test tokens (like `tok_visa` or `tok_chargeDeclined` for decline simulation) completely on the backend.
+
+2. **Dynamic Provider Resolution**:
+   - Configured a `'PAYMENT_GATEWAY'` factory provider in `apps/api/src/modules/ecommerce/ecommerce.module.ts`. Resolves `StripePaymentGatewayService` if `STRIPE_SECRET_KEY` is present in the environment, falling back transparently to `MockPaymentGatewayService` otherwise.
+   - Refactored `EcommerceCheckoutService` to inject this token and log either `stripe` or `mock_gateway` dynamically in the transaction ledger.
+
+3. **Stripe Webhook Receiver & Security**:
+   - Configured the Express JSON body parser in `apps/api/src/main.ts` to capture the raw request body buffer on Stripe webhooks as `req.rawBody`.
+   - Exposed `POST store/:tenantSlug/webhooks/stripe` inside `EcommercePublicController`. It bypasses CSRF/JWT guards, resolves the tenant via `PublicTenantResolverGuard`, and cryptographically validates webhook signatures using an HMAC-SHA256 verification algorithm with constant-time buffer comparison (`crypto.timingSafeEqual`).
+   - Listens for `payment_intent.succeeded` to complete guest checkouts and mark carts converted asynchronously, matching the synchronous payment intent ID to prevent duplicate executions (idempotency).
+
+4. **Admin UI Sales Channel Filtering**:
+   - Added an "ONLINE" filter tab to the Next.js Sales Orders registry UI (`apps/web/app/(dashboard)/sales/orders/page.tsx`) to allow administrators to filter storefront checkouts directly.
+
+5. **Tests & Compilation**:
+   - Created `stripe-payment.spec.ts` asserting dynamic resolution, API requests, cryptographic signature validation, and duplicate webhook protection. All 5 tests passed successfully, and the workspace compiles cleanly without errors.
+
 ## [2026-07-04] Fixed Asset Management Module (Module #35) Implementation
 
 Scaffolded and implemented the full vertical slice (Database → API backend → Web frontend) for the Fixed Asset Management module (Module #35) to manage asset register compliance, custody/location transfers, maintenance tracking, and periodic depreciation GL ledger integrations.

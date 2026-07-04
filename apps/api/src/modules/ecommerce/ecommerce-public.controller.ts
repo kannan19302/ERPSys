@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, Req, Headers, BadRequestException } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PublicTenantResolverGuard, StorefrontRequest } from './guards/public-tenant-resolver.guard';
@@ -129,5 +129,17 @@ export class EcommercePublicController {
   })
   async checkout(@Req() req: Request & StorefrontRequest, @ZodBody(checkoutSchema) dto: CheckoutDto) {
     return this.checkoutService.checkout(req.storefrontConfig!.tenantId, dto);
+  }
+
+  @Post('webhooks/stripe')
+  @ApiOperation({ summary: '[PUBLIC] Stripe Webhook receiver for order payment completions' })
+  async stripeWebhook(
+    @Req() req: Request & { rawBody?: Buffer },
+    @Headers('stripe-signature') signature: string,
+  ) {
+    if (!req.rawBody) {
+      throw new BadRequestException('Missing raw request body buffer.');
+    }
+    return this.checkoutService.handleStripeWebhook(req.rawBody, signature || '');
   }
 }

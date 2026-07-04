@@ -18,7 +18,7 @@ export interface PaymentGatewayAdapter {
     metadata: Record<string, unknown>,
   ): Promise<PaymentIntentResult>;
 
-  confirmIntent(intentId: string): Promise<PaymentIntentResult>;
+  confirmIntent(intentId: string, simulateDecline?: boolean): Promise<PaymentIntentResult>;
 
   refund(intentId: string, amount: number): Promise<PaymentIntentResult>;
 }

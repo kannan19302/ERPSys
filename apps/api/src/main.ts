@@ -61,7 +61,16 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger });
 
-  app.use(json({ limit: '50mb' }));
+  app.use(
+    json({
+      limit: '50mb',
+      verify: (req: any, _res: any, buf: any) => {
+        if (req.originalUrl && req.originalUrl.includes('/webhooks/stripe')) {
+          req.rawBody = buf;
+        }
+      },
+    }),
+  );
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
   // Observability — before all other middleware

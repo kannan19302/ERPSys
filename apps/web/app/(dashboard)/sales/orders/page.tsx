@@ -78,7 +78,7 @@ export default function SalesOrdersHub() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Tabs and Filters
-  const [activeChannel, setActiveChannel] = useState<'ALL' | 'B2B' | 'B2C' | 'D2C'>('ALL');
+  const [activeChannel, setActiveChannel] = useState<'ALL' | 'B2B' | 'B2C' | 'D2C' | 'ONLINE'>('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
   // Detail View Drawer
@@ -428,7 +428,7 @@ export default function SalesOrdersHub() {
 
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
             <div style={{ display: 'flex', background: 'var(--color-bg-sunken)', padding: '2px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-              {(['ALL', 'B2B', 'B2C', 'D2C'] as const).map(channel => (
+              {(['ALL', 'B2B', 'B2C', 'D2C', 'ONLINE'] as const).map(channel => (
                 <button
                   key={channel}
                   onClick={() => setActiveChannel(channel)}

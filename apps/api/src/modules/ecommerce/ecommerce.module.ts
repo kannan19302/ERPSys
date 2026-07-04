@@ -6,21 +6,34 @@ import { EcommercePublicController } from './ecommerce-public.controller';
 import { EcommercePublicService } from './ecommerce-public.service';
 import { EcommerceCheckoutService } from './ecommerce-checkout.service';
 import { MockPaymentGatewayService } from './payments/mock-payment-gateway.service';
+import { StripePaymentGatewayService } from './payments/stripe-payment-gateway.service';
 
 /**
  * E-Commerce Storefront module (module #33). See
  * .ai/ECOMMERCE_MODULE_REQUIREMENTS.md and .ai/DATA_MODEL.md Section 3.4.
- *
- * Imports `SalesModule` to inject the exported `SalesService` for the
- * checkout write path (`createConfirmedOnlineOrder`) — an in-process service
- * call within the same Nest app, the same established cross-module pattern
- * other modules use (e.g. `procurement` injecting `inventory`/`finance`
- * services), not a Prisma-model reach-through.
  */
 @Module({
   imports: [SalesModule],
   controllers: [EcommerceAdminController, EcommercePublicController],
-  providers: [EcommerceAdminService, EcommercePublicService, EcommerceCheckoutService, MockPaymentGatewayService],
-  exports: [EcommerceAdminService, EcommercePublicService],
+  providers: [
+    EcommerceAdminService,
+    EcommercePublicService,
+    EcommerceCheckoutService,
+    MockPaymentGatewayService,
+    StripePaymentGatewayService,
+    {
+      provide: 'PAYMENT_GATEWAY',
+      useFactory: (
+        stripeService: StripePaymentGatewayService,
+        mockService: MockPaymentGatewayService,
+      ) => {
+        // Transparent fallback to Mock gateway if Stripe variables are missing
+        const hasStripeKey = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim().length > 0;
+        return hasStripeKey ? stripeService : mockService;
+      },
+      inject: [StripePaymentGatewayService, MockPaymentGatewayService],
+    },
+  ],
+  exports: [EcommerceAdminService, EcommercePublicService, 'PAYMENT_GATEWAY'],
 })
 export class EcommerceModule {}
