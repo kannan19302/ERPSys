@@ -14,6 +14,7 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:---|
+| 2026-07-04 | 414,724 | +2,437 | Advanced Finance module refactoring and hardening (decoupled god-class into 10 services, corrected revaluation & P&L algorithms, fixed mock leaks and spec bugs) |
 | 2026-07-04 | 412,287 | +555 | Stripe E-Commerce Payment Gateway Integration (Stripe service, webhook signature validation, admin channel filter) |
 | 2026-07-04 | 411,732 | +2,790 | Fixed Asset Management vertical slice (Prisma models, GL mappings, transfers, maintenance, automated SLM/WDV depreciation postings, UI pages) |
 | 2026-07-04 | 408,942 | +642 | Type hardening, baseline compilation fixes, and dev container volumes resolution |
@@ -63,6 +64,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks). D
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-04 | antigravity-ide | Decomposed Advanced Finance god-class (1,716 LOC) into 10 services, resolved all 194 service and controller test failures, isolated mocks using manual beforeEach reset loop | (local verification) |
 | 2026-07-04 | antigravity-ide | Stripe E-Commerce Payment Gateway Integration (Stripe service, webhook signature validation, admin channel filter) | (local verification) |
 | 2026-07-04 | antigravity-ide | Fixed Asset Management vertical slice (Prisma DB, NestJS API, Vitest tests, Next.js UI) | (local verification) |
 | 2026-07-04 | claude-code | CRM advanced features: lead scoring, duplicate detection/merge, configurable pipeline stages, customer segmentation, SLA policies (schema + RLS + 5 services/controllers + settings UI) | (uncommitted) |
@@ -123,7 +125,7 @@ _(none yet)_
 | 13 | **Connect** (Communication) | `apps/api/src/modules/communication` | 🟢 ACTIVE | 4 | admin, documents (Drive), notifications | Message, Channel, Notification, EmailTemplate, Presence, Meeting — Teams & Google Chat feature parity completed. **Features**: real file attachments (25MB cap, Drive storage), WebSocket real-time gateway broadcasts (live chat/presence), channel management (OWNER/ADMIN rename/archive/members drawer), notification-level settings, search popover, consolidated emoji picker, seen-by read receipts (groups <= 8), DND-aware notification suppression, server-side OpenGraph link preview unfurling, workspace directory search modal (filtered by department/designation), and Saved Messages view. |
 | 14 | **POS & Retail** | `apps/api/src/modules/pos` | 🟢 ACTIVE | 5 | inventory, sales, finance | POSTerminal, Register, Receipt, Shift, CashEntry |
 | 15 | **Advanced Inventory** | `apps/api/src/modules/inventory` (ext) | 🟢 ACTIVE | 5 | inventory | SerialNumber, Batch, BinLocation, CycleCount, Valuation |
-| 16 | **Advanced Finance** | `apps/api/src/modules/finance` (ext) | 🟢 ACTIVE | 6 | finance, sales, procurement | ChartOfAccounts, GeneralLedger, BankRecon, Budget, TaxReturn |
+| 16 | **Advanced Finance** | `apps/api/src/modules/advanced-finance` | 🟢 ENHANCED | 6 | finance, sales, procurement | ChartOfAccounts, GeneralLedger, BankRecon, Budget, TaxReturn |
 | 17 | **Advanced HR** | `apps/api/src/modules/hr` (ext) | 🟢 ACTIVE | 7 | hr, finance | PayrollRun, LeavePolicy, ShiftSchedule, Appraisal, Training |
 | 18 | **Workflow Engine** | `apps/api/src/modules/workflow` (registered directly in `app.module.ts`, NOT consolidated into Admin — prior doc was stale) | 🟢 ACTIVE | 8 | admin, database | `WorkflowController` (`/workflows`) — CRUD workflows, approval-chain listing/action submission, SLA-breach check, workflow simulation. `WorkflowEngineController` (`/workflows/engine`) + `WorkflowEngineService` (227 LOC) — real execute/event-trigger runtime (`executeWorkflow`, `processEventTrigger`), tenant-scoped via `TenantInterceptor`. Distinct from the Admin app's own frontend Workflow Builder UI hub (`settings/workflow-builder`) and the `AutomationRuleEngineService` in the Admin module (row 1) — three related-but-separate systems, not one consolidated engine; do not assume this directory is dead. **Known gap** (see AI module row 32 and CHANGELOG 2026-07-02): `workflow-engine.service.ts` calls `https://api.anthropic.com/v1/messages` directly via raw `fetch`, bypassing the self-hosted-Ollama `AiService` — still incurring Anthropic API cost. |
 | 19 | **Notifications** | `apps/api/src/modules/notifications` | 🟢 ACTIVE | 9 | communication, workflow | NotificationChannel, Preference, Digest, WebSocketEvent |
