@@ -6,9 +6,11 @@ import {
   TrendingUp, TrendingDown, DollarSign, Target, BarChart3,
   ArrowUp, ArrowDown, Users, Clock, Award
 } from 'lucide-react';
+import { apiGet } from '../_components/api';
 
 interface Forecast { bestCase: number; commit: number; worstCase: number; pipelineDeals: number; }
 interface RepPerformance { id: string; name: string; dealsWon: number; revenue: number; avgDealSize: number; avgCycleTimeDays: number; }
+interface RepForecast { userId: string; name: string; pipelineAmount: number; weightedAmount: number; openDeals: number; }
 interface FunnelStage { label: string; value: number; percentage: number; }
 interface SalesTarget { id: string; name: string; period: string; target: number; achieved: number; }
 
@@ -16,6 +18,7 @@ export default function ForecastingPage() {
   const [loading, setLoading] = useState(true);
   const [forecast, setForecast] = useState<Forecast | null>(null);
   const [reps, setReps] = useState<RepPerformance[]>([]);
+  const [repForecasts, setRepForecasts] = useState<RepForecast[]>([]);
   const [funnel, setFunnel] = useState<FunnelStage[]>([]);
   const [targets, setTargets] = useState<SalesTarget[]>([]);
   const [sortField, setSortField] = useState<keyof RepPerformance>('revenue');
@@ -24,19 +27,19 @@ export default function ForecastingPage() {
 
   useEffect(() => {
     const load = async () => {
-      const token = localStorage.getItem('token');
-      const h = { Authorization: `Bearer ${token || ''}` };
       try {
-        const [fc, rp, fn, tg] = await Promise.all([
-          fetch('/api/v1/crm/analytics/forecast', { headers: h }).then(r => r.ok ? r.json() : null),
-          fetch('/api/v1/crm/analytics/rep-performance', { headers: h }).then(r => r.ok ? r.json() : null),
-          fetch('/api/v1/crm/analytics/conversion-funnel', { headers: h }).then(r => r.ok ? r.json() : null),
-          fetch('/api/v1/crm/targets', { headers: h }).then(r => r.ok ? r.json() : null),
+        const [fc, rp, fn, tg, rf] = await Promise.all([
+          apiGet<Forecast>('/crm/analytics/forecast'),
+          apiGet<RepPerformance[]>('/crm/analytics/rep-performance'),
+          apiGet<FunnelStage[]>('/crm/analytics/conversion-funnel'),
+          apiGet<SalesTarget[]>('/crm/targets'),
+          apiGet<RepForecast[]>('/crm/analytics/forecast-by-rep'),
         ]);
         setForecast(fc || { bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
-        setReps(Array.isArray(rp) ? rp : (rp?.data || []));
-        setFunnel(Array.isArray(fn) ? fn : (fn?.data || []));
-        setTargets(Array.isArray(tg) ? tg : (tg?.data || []));
+        setReps(Array.isArray(rp) ? rp : []);
+        setFunnel(Array.isArray(fn) ? fn : []);
+        setTargets(Array.isArray(tg) ? tg : []);
+        setRepForecasts(Array.isArray(rf) ? rf : []);
       } catch (err) {
         toast.error('Could not load forecasting data', err instanceof Error ? err.message : 'Please try again.');
         setForecast({ bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
@@ -149,6 +152,39 @@ export default function ForecastingPage() {
           </div>
         </Card>
       </div>
+
+      {/* Pipeline-Weighted Forecast by Rep */}
+      <Card>
+        <div style={{ padding: 'var(--space-6)' }}>
+          <h3 style={{ margin: 0, marginBottom: 'var(--space-5)', fontSize: 'var(--font-size-lg)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <BarChart3 size={18} /> Pipeline-Weighted Forecast by Rep
+          </h3>
+          {repForecasts.length === 0 ? (
+            <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>No open pipeline assigned to reps.</div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--font-size-sm)' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
+                  <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Rep</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Open Deals</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Pipeline Amount</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Weighted Forecast</th>
+                </tr>
+              </thead>
+              <tbody>
+                {repForecasts.map(rf => (
+                  <tr key={rf.userId} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: 'var(--space-3)', fontWeight: 500 }}>{rf.name}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>{rf.openDeals}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>{fmtCurrency(rf.pipelineAmount)}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600 }}>{fmtCurrency(rf.weightedAmount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </Card>
 
       {/* Rep Leaderboard */}
       <Card>

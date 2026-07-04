@@ -175,6 +175,7 @@ export class CrmService {
   getStageDuration(tenantId: string) { return this.dealsService.getStageDuration(tenantId); }
   getPipelineHealth(tenantId: string) { return this.dealsService.getPipelineHealth(tenantId); }
   getForecast(tenantId: string) { return this.dealsService.getForecast(tenantId); }
+  getWeightedForecastByRep(tenantId: string) { return this.dealsService.getWeightedForecastByRep(tenantId); }
   getRepPerformance(tenantId: string) { return this.dealsService.getRepPerformance(tenantId); }
   getConversionFunnel(tenantId: string) { return this.dealsService.getConversionFunnel(tenantId); }
   getCohortAnalysis(tenantId: string) { return this.dealsService.getCohortAnalysis(tenantId); }

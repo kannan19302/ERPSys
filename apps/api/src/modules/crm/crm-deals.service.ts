@@ -523,7 +523,30 @@ export class CrmDealsService {
     const bestCase = opps.reduce((s, o) => s + Number(o.amount || 0), 0);
     const commit = opps.filter((o) => o.probability >= 70).reduce((s, o) => s + Number(o.amount || 0), 0);
     const worstCase = opps.filter((o) => o.probability >= 90).reduce((s, o) => s + Number(o.amount || 0), 0);
-    return { bestCase, commit, worstCase, dealCount: opps.length };
+    return { bestCase, commit, worstCase, dealCount: opps.length, pipelineDeals: opps.length };
+  }
+
+  /** Pipeline-weighted forecast (sum of open Opportunity amount * stage probability), grouped by rep. */
+  async getWeightedForecastByRep(tenantId: string) {
+    const opps = await prisma.opportunity.findMany({
+      where: { tenantId, deletedAt: null, stage: { notIn: ['CLOSED_WON', 'CLOSED_LOST'] }, assignedToId: { not: null } },
+      select: { assignedToId: true, amount: true, probability: true },
+    });
+    const userIds = [...new Set(opps.map((o) => o.assignedToId!))];
+    const users = await prisma.user.findMany({ where: { tenantId, id: { in: userIds } }, select: { id: true, firstName: true, lastName: true } });
+    const nameById = new Map(users.map((u) => [u.id, `${u.firstName} ${u.lastName}`.trim()]));
+    const byRep: Record<string, { pipelineAmount: number; weightedAmount: number; openDeals: number }> = {};
+    for (const opp of opps) {
+      const rep = opp.assignedToId!;
+      if (!byRep[rep]) byRep[rep] = { pipelineAmount: 0, weightedAmount: 0, openDeals: 0 };
+      byRep[rep].pipelineAmount += Number(opp.amount || 0);
+      byRep[rep].weightedAmount += Number(opp.amount || 0) * (opp.probability / 100);
+      byRep[rep].openDeals++;
+    }
+    return Object.entries(byRep).map(([userId, d]) => ({
+      userId, name: nameById.get(userId) || 'Unknown',
+      pipelineAmount: d.pipelineAmount, weightedAmount: Math.round(d.weightedAmount), openDeals: d.openDeals,
+    })).sort((a, b) => b.weightedAmount - a.weightedAmount);
   }
 
   async getRepPerformance(tenantId: string) {
@@ -540,11 +563,15 @@ export class CrmDealsService {
       const days = (opp.actualCloseDate || new Date()).getTime() - opp.createdAt.getTime();
       byRep[rep].totalDays += days / 86400000;
     }
+    const userIds = Object.keys(byRep);
+    const users = await prisma.user.findMany({ where: { tenantId, id: { in: userIds } }, select: { id: true, firstName: true, lastName: true } });
+    const nameById = new Map(users.map((u) => [u.id, `${u.firstName} ${u.lastName}`.trim()]));
     return Object.entries(byRep).map(([userId, d]) => ({
-      userId, dealsWon: d.deals, totalRevenue: d.revenue,
+      id: userId, userId, name: nameById.get(userId) || 'Unknown',
+      dealsWon: d.deals, revenue: d.revenue, totalRevenue: d.revenue,
       avgDealSize: Math.round(d.revenue / d.deals),
       avgCycleTimeDays: Math.round(d.totalDays / d.deals),
-    })).sort((a, b) => b.totalRevenue - a.totalRevenue);
+    })).sort((a, b) => b.revenue - a.revenue);
   }
 
   async getConversionFunnel(tenantId: string) {
@@ -552,12 +579,14 @@ export class CrmDealsService {
     const convertedLeads = await prisma.lead.count({ where: { tenantId, deletedAt: null, status: 'CONVERTED' } });
     const totalOpps = await prisma.opportunity.count({ where: { tenantId, deletedAt: null } });
     const wonOpps = await prisma.opportunity.count({ where: { tenantId, deletedAt: null, stage: 'CLOSED_WON' } });
-    return {
-      totalLeads, convertedLeads,
-      leadToOppRate: totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0,
-      totalOpportunities: totalOpps, wonOpportunities: wonOpps,
-      oppToWinRate: totalOpps > 0 ? Math.round((wonOpps / totalOpps) * 100) : 0,
-    };
+    const stages = [
+      { label: 'Leads', value: totalLeads },
+      { label: 'Converted Leads', value: convertedLeads },
+      { label: 'Opportunities', value: totalOpps },
+      { label: 'Closed Won', value: wonOpps },
+    ];
+    const max = Math.max(totalLeads, 1);
+    return stages.map((s) => ({ ...s, percentage: Math.round((s.value / max) * 100) }));
   }
 
   async getCohortAnalysis(tenantId: string) {

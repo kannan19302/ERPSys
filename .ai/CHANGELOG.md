@@ -3,6 +3,53 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] CRM: Forecasting/quota-attainment end-to-end audit and fix
+
+Audited `apps/web/app/(dashboard)/crm/forecasting/page.tsx` against the API — the page and its
+three consumed endpoints (`analytics/forecast`, `analytics/rep-performance`,
+`analytics/conversion-funnel`, plus `crm/targets`) already existed and were genuinely DB-backed
+(`prisma.opportunity` / `prisma.salesTarget` aggregations in `crm-deals.service.ts` /
+`crm-salesops.service.ts`) — not stubs or mock arrays as initially suspected. However, three of
+the four endpoints returned a response shape the frontend didn't actually consume correctly:
+
+- **Bug**: `getForecast()` returned `dealCount`, but the UI reads `forecast.pipelineDeals` — always
+  showed as blank/undefined. Added `pipelineDeals` to the response (`crm-deals.service.ts`).
+- **Bug**: `getRepPerformance()` returned `{ userId, totalRevenue, ... }`, but the UI's
+  `RepPerformance` interface expects `{ id, name, revenue }` — the leaderboard would have rendered
+  raw internal user IDs instead of names and `undefined` for revenue. Now resolves `User.firstName
+  + lastName` and returns both the legacy and UI-facing field names.
+- **Bug**: `getConversionFunnel()` returned a single aggregate object
+  (`{totalLeads, convertedLeads, ...}`), but the UI calls `.map()` over it expecting
+  `FunnelStage[]` (`{label, value, percentage}[]`) — this would throw a runtime TypeError on
+  render. Reshaped into the array the UI needs.
+- **Gap**: `SalesTarget.achieved` was a static value written at target-creation time — quota
+  attainment was never actually reconciled against real Opportunity data, so it could drift
+  arbitrarily from what reps actually closed. `CrmSalesOpsService.getSalesTargets()` now computes
+  `achieved` live per request: sums (or counts, for `targetType: 'DEALS'`) `CLOSED_WON`
+  Opportunity amounts whose `actualCloseDate` falls inside the target's `period` (parsed as
+  `YYYY-MM`, `YYYY-Qn`, or `YYYY`), scoped to the target's `userId` when set. Also synthesizes a
+  human-readable `name` field the UI expects but the Prisma model doesn't store.
+- **New feature**: added `GET /crm/analytics/forecast-by-rep` — the pipeline-weighted forecast
+  (`sum(open Opportunity.amount * probability)`) grouped by rep, which didn't exist before. Wired
+  through `CrmDealsService.getWeightedForecastByRep` → `CrmService` → `CrmController`, same
+  `@Permissions('crm.report.read')` guard and tenant-scoping pattern as the other analytics routes.
+  Added a matching "Pipeline-Weighted Forecast by Rep" table on the forecasting page.
+- Migrated the forecasting page off raw `fetch()` + manual `localStorage` token handling onto the
+  `apps/web/app/(dashboard)/crm/_components/api.ts` `apiGet` helper, matching the convention used
+  by sibling CRM pages (e.g. `crm/segments/page.tsx`).
+
+No Prisma schema changes — `Opportunity` and `SalesTarget` already had every field needed
+(`amount`, `probability`, `stage`, `actualCloseDate`, `assignedToId`; `target`, `period`,
+`targetType`, `userId`). Confirmed via `git stash` diff that the pre-existing `tsc --noEmit`
+failures in `crm-customers.service.ts` / `crm.controller.ts` (`VendorNoteInput`/`CustomerNoteInput`
+schema drift) are unrelated to this change and predate it — this change introduces zero new
+typecheck errors.
+
+Files touched: `apps/api/src/modules/crm/crm-deals.service.ts`,
+`apps/api/src/modules/crm/crm-salesops.service.ts`, `apps/api/src/modules/crm/crm.service.ts`,
+`apps/api/src/modules/crm/crm.controller.ts`,
+`apps/web/app/(dashboard)/crm/forecasting/page.tsx`.
+
 ## [2026-07-04] CRM: Account duplicate-merge soft-delete fix + Customer Tags controller wiring
 
 Additive work alongside another agent's concurrent CRM session (large uncommitted diff already

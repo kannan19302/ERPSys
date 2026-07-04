@@ -960,6 +960,13 @@ export class CrmController {
     return this.crmService.getRepPerformance(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Get pipeline-weighted forecast grouped by rep' })
+  @Get('analytics/forecast-by-rep')
+  @Permissions('crm.report.read')
+  async getWeightedForecastByRep(@Req() req: AuthenticatedRequest) {
+    return this.crmService.getWeightedForecastByRep(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Get conversion funnel' })
   @Get('analytics/conversion-funnel')
   @Permissions('crm.report.read')

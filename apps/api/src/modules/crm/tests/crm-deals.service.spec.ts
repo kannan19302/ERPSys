@@ -48,6 +48,9 @@ vi.mock('@unerp/database', () => ({
     leadSource: {
       findMany: vi.fn(),
     },
+    user: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -277,6 +280,76 @@ describe('CrmDealsService', () => {
       const result = await service.getOpportunitySummary(TENANT, 'opp-3');
       expect(result.metrics.agingBucket).toBe('stale'); // 31-60 days
       expect(result.metrics.isRotting).toBe(true);
+    });
+  });
+
+  describe('getForecast', () => {
+    it('returns pipelineDeals alongside dealCount so the UI KPI card renders', async () => {
+      (prisma.opportunity.findMany as any).mockResolvedValue([
+        { amount: 1000, probability: 95, expectedCloseDate: new Date() },
+        { amount: 2000, probability: 75, expectedCloseDate: new Date() },
+        { amount: 3000, probability: 10, expectedCloseDate: new Date() },
+      ]);
+
+      const result = await service.getForecast(TENANT);
+
+      expect(result.bestCase).toBe(6000);
+      expect(result.commit).toBe(3000); // >= 70
+      expect(result.worstCase).toBe(1000); // >= 90
+      expect(result.dealCount).toBe(3);
+      expect(result.pipelineDeals).toBe(3);
+    });
+  });
+
+  describe('getRepPerformance', () => {
+    it('resolves rep id/name/revenue fields the UI leaderboard consumes', async () => {
+      (prisma.opportunity.findMany as any).mockResolvedValue([
+        { assignedToId: 'user-1', amount: 5000, createdAt: new Date('2026-01-01'), actualCloseDate: new Date('2026-01-11') },
+        { assignedToId: 'user-1', amount: 3000, createdAt: new Date('2026-01-01'), actualCloseDate: new Date('2026-01-06') },
+      ]);
+      (prisma.user.findMany as any).mockResolvedValue([
+        { id: 'user-1', firstName: 'Ada', lastName: 'Lovelace' },
+      ]);
+
+      const [rep] = await service.getRepPerformance(TENANT);
+
+      expect(rep.id).toBe('user-1');
+      expect(rep.name).toBe('Ada Lovelace');
+      expect(rep.revenue).toBe(8000);
+      expect(rep.dealsWon).toBe(2);
+      expect(rep.avgDealSize).toBe(4000);
+    });
+  });
+
+  describe('getConversionFunnel', () => {
+    it('returns a FunnelStage[] the UI can .map() over, not a flat aggregate object', async () => {
+      (prisma.lead.count as any).mockResolvedValueOnce(100).mockResolvedValueOnce(40);
+      (prisma.opportunity.count as any).mockResolvedValueOnce(40).mockResolvedValueOnce(10);
+
+      const result = await service.getConversionFunnel(TENANT);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.map((s: any) => s.label)).toEqual(['Leads', 'Converted Leads', 'Opportunities', 'Closed Won']);
+      expect(result.every((s: any) => typeof s.percentage === 'number')).toBe(true);
+    });
+  });
+
+  describe('getWeightedForecastByRep', () => {
+    it('sums open-Opportunity amount * probability grouped by rep', async () => {
+      (prisma.opportunity.findMany as any).mockResolvedValue([
+        { assignedToId: 'user-1', amount: 10000, probability: 50 },
+        { assignedToId: 'user-1', amount: 20000, probability: 25 },
+      ]);
+      (prisma.user.findMany as any).mockResolvedValue([
+        { id: 'user-1', firstName: 'Ada', lastName: 'Lovelace' },
+      ]);
+
+      const [rep] = await service.getWeightedForecastByRep(TENANT);
+
+      expect(rep.name).toBe('Ada Lovelace');
+      expect(rep.pipelineAmount).toBe(30000);
+      expect(rep.weightedAmount).toBe(10000); // 10000*0.5 + 20000*0.25
+      expect(rep.openDeals).toBe(2);
     });
   });
 });

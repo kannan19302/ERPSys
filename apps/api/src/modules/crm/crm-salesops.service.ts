@@ -8,6 +8,29 @@ import {
 } from '@unerp/shared';
 import { resolveOrgId } from './crm-shared';
 
+/** Resolves a target's `period` string (e.g. "2026-01", "2026-Q1", "2026") into a closed date range. */
+function periodToDateRange(period: string): { start: Date; end: Date } | null {
+  const monthMatch = period.match(/^(\d{4})-(\d{2})$/);
+  if (monthMatch) {
+    const year = Number(monthMatch[1]);
+    const month = Number(monthMatch[2]) - 1;
+    return { start: new Date(Date.UTC(year, month, 1)), end: new Date(Date.UTC(year, month + 1, 1)) };
+  }
+  const quarterMatch = period.match(/^(\d{4})-Q([1-4])$/i);
+  if (quarterMatch) {
+    const year = Number(quarterMatch[1]);
+    const q = Number(quarterMatch[2]);
+    const startMonth = (q - 1) * 3;
+    return { start: new Date(Date.UTC(year, startMonth, 1)), end: new Date(Date.UTC(year, startMonth + 3, 1)) };
+  }
+  const yearMatch = period.match(/^(\d{4})$/);
+  if (yearMatch) {
+    const year = Number(yearMatch[1]);
+    return { start: new Date(Date.UTC(year, 0, 1)), end: new Date(Date.UTC(year + 1, 0, 1)) };
+  }
+  return null;
+}
+
 /**
  * Sales operations: quota/targets, territories & team assignments, and
  * commission rules plus their periodic calculation.
@@ -16,8 +39,34 @@ import { resolveOrgId } from './crm-shared';
 export class CrmSalesOpsService {
   // ── SALES TARGETS ─────────────────────────────
 
+  /**
+   * Sales targets with quota attainment computed live from closed-won
+   * Opportunity amounts (or deal counts for DEALS targetType) that closed
+   * within the target's period, scoped to the target's rep when userId is set.
+   */
   async getSalesTargets(tenantId: string) {
-    return prisma.salesTarget.findMany({ where: { tenantId }, orderBy: { period: 'desc' } });
+    const targets = await prisma.salesTarget.findMany({ where: { tenantId }, orderBy: { period: 'desc' } });
+    return Promise.all(
+      targets.map(async (t) => {
+        const range = periodToDateRange(t.period);
+        const where: Prisma.OpportunityWhereInput = {
+          tenantId,
+          deletedAt: null,
+          stage: 'CLOSED_WON',
+          ...(range ? { actualCloseDate: { gte: range.start, lt: range.end } } : {}),
+          ...(t.userId ? { assignedToId: t.userId } : {}),
+        };
+        let achieved: number;
+        if (t.targetType === 'DEALS') {
+          achieved = await prisma.opportunity.count({ where });
+        } else {
+          const agg = await prisma.opportunity.aggregate({ where, _sum: { amount: true } });
+          achieved = Number(agg._sum.amount || 0);
+        }
+        const name = `${t.targetType === 'DEALS' ? 'Deals' : t.targetType === 'UNITS' ? 'Units' : 'Revenue'} Target${t.userId ? '' : ' (Team)'} — ${t.period}`;
+        return { ...t, achieved: new Prisma.Decimal(achieved), name };
+      }),
+    );
   }
 
   async createSalesTarget(tenantId: string, orgId: string, dto: CreateSalesTargetInput) {
