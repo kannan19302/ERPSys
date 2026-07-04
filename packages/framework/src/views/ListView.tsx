@@ -81,7 +81,6 @@ export function ListView({ resource, onRowClick, onCreate, filters, toolbar }: L
           },
         };
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [resource, sort, columnNames.join('|')],
   );
 

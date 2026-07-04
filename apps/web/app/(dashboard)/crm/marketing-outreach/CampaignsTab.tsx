@@ -42,7 +42,6 @@ export default function CampaignsTab() {
       .then((r) => (r.ok ? r.json() : { data: [] }))
       .then((d) => setSegments(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => setSegments([]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const authHeaders = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''}` });

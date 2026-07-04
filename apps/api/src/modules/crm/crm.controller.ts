@@ -9,7 +9,7 @@ import { CrmService } from './crm.service';
 import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
 import { TrackChanges } from '../../common/decorators/track-changes.decorator';
 import {
-  CreateCustomerInput, UpdateCustomerInput,
+  CreateCustomerInput, UpdateCustomerInput, CustomerNoteInput,
   CreateVendorInput, UpdateVendorInput, VendorNoteInput,
   CreateContactInput, UpdateContactInput,
   CreateLeadInput, UpdateLeadInput,
@@ -1270,12 +1270,7 @@ export class CrmController {
     return this.crmService.importLeads(req.user.tenantId, req.user.orgId || 'org-system-default', body.rows);
   }
 
-  @ApiOperation({ summary: 'Export leads' })
-  @Get('leads/export')
-  @Permissions('crm.lead.read')
-  async exportLeads(@Req() req: AuthenticatedRequest) {
-    return this.crmService.exportLeads(req.user.tenantId);
-  }
+
 
   // ── PHASE 7: CUSTOM FIELDS ──────────────────
 

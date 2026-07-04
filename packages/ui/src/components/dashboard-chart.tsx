@@ -220,7 +220,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 outerRadius={height * 0.35}
                 innerRadius={chartType === 'donut' ? height * 0.2 : 0}
                 paddingAngle={2}
-                label={(props: any) => {
+                label={(props: { name?: string; percent?: number }) => {
                   const name = props?.name ?? '';
                   const percent = props?.percent ? ` ${(props.percent * 100).toFixed(0)}%` : '';
                   return `${name}${percent}`;

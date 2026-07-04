@@ -327,7 +327,7 @@ export class CrmCustomersService {
         orderBy: { orderDate: 'desc' },
         take: 5,
         select: {
-          id: true, orderNumber: true, totalAmount: true,
+          id: true, poNumber: true, totalAmount: true,
           status: true, orderDate: true, expectedDate: true,
         },
       }),
@@ -353,7 +353,7 @@ export class CrmCustomersService {
       orderBy: { issueDate: 'desc' },
       take: 5,
       select: {
-        id: true, noteNumber: true, totalAmount: true,
+        id: true, noteNumber: true, amount: true,
         status: true, issueDate: true, reason: true,
       },
     });
@@ -375,8 +375,8 @@ export class CrmCustomersService {
       orderBy: { startDate: 'desc' },
       take: 5,
       select: {
-        id: true, agreementNumber: true, totalValue: true,
-        status: true, startDate: true, endDate: true,
+        id: true, agreementNumber: true, title: true, agreementLimit: true,
+        startDate: true, endDate: true, status: true,
       },
     });
 
@@ -505,7 +505,6 @@ export class CrmCustomersService {
         type: dto.type || 'NOTE',
         subject: `[VENDOR:${vendorId}] ${dto.content.substring(0, 100)}`,
         description: dto.content,
-        status: 'COMPLETED',
       },
     });
   }

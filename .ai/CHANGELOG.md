@@ -2257,4 +2257,7 @@ not centrally.
   origin point for most of what is now documented across the DevOps/Monitoring (row 29), Auth, and PWA
   (row 28) module entries.
 
----
+---- **Fixed**: CRM API compiler errors and DTO missing types for Customer/Vendor Notes and bulk status schemas.
+- **Fixed**: CRM Customer Service Prisma select fields for Purchase Orders, Debit Notes, and Blanket Purchase Agreements.
+- **Fixed**: Removed duplicate exportLeads endpoint in crm.controller.ts.
+- **Tested**: Verified end-to-end Lead-to-Invoice flow (Lead, Convert, Deal, Sales Order, Invoice) using integration test script.

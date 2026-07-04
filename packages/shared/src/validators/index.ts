@@ -279,6 +279,9 @@ export const createVendorSchema = z.object({
   taxId: z.string().max(50).optional(),
   paymentTerms: z.number().int().min(0).max(365).default(30),
   notes: z.string().max(2000).optional(),
+  type: z.string().optional(),
+  status: z.string().optional(),
+  address: z.any().optional(),
 });
 export type CreateVendorInput = z.infer<typeof createVendorSchema>;
 
@@ -2070,3 +2073,5 @@ export type LogFixedAssetMaintenanceInput = z.infer<typeof logFixedAssetMaintena
 // apps/api/src/modules/crm/crm-contracts.service.ts rather than here, matching
 // how that service file is consumed directly by crm-contracts.controller.ts.
 
+export const customerNoteSchema = z.object({ content: z.string(), type: z.string().optional() }); export type CustomerNoteInput = z.infer<typeof customerNoteSchema>; export const vendorNoteSchema = z.object({ content: z.string(), type: z.string().optional() }); export type VendorNoteInput = z.infer<typeof vendorNoteSchema>;
+export const customerBulkStatusSchema = z.object({ ids: z.array(z.string()), status: z.string() }); export const vendorBulkStatusSchema = z.object({ ids: z.array(z.string()), status: z.string() });

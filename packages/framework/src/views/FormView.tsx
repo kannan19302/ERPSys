@@ -40,7 +40,6 @@ export function FormView({ resource, id, onSuccess, onCancel, footer, initial, t
 
   useEffect(() => {
     if (record) setValues(initialValues(resource, { ...initial, ...(record as FieldValues) }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [record]);
 
   if (isEdit && isLoading) {

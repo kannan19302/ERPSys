@@ -70,7 +70,6 @@ export default function EmailIntegrationSettingsPage() {
         window.history.replaceState({}, '', CALLBACK_PATH);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const connect = async (provider: Provider) => {

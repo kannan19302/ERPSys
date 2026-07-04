@@ -43,13 +43,11 @@ export function FrameworkProvider({
   const value = useMemo<FrameworkContextValue>(
     () => ({ client: new ApiClient(api), registry: createRegistry(modules) }),
     // Hosts pass stable literals; re-instantiating per render would nuke the cache.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
   const ownClient = useMemo(
     () => (queryClient ?? (createQueryClient ? new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } }) : null)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
