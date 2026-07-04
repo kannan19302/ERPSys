@@ -297,7 +297,9 @@ export default function ChartOfAccountsPage() {
                 {account.name}
               </span>
               {account.isActive === false && (
-                <Badge variant="secondary" style={{ marginLeft: 8, fontSize: 10 }}>Inactive</Badge>
+                <span style={{ marginLeft: 8, fontSize: 10 }}>
+                  <Badge variant="default">Inactive</Badge>
+                </span>
               )}
             </div>
 

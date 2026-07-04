@@ -22,6 +22,19 @@ const mockPrisma = vi.hoisted(() => ({
     findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    count: vi.fn(),
+  },
+  salesOrder: {
+    findMany: vi.fn(),
+    aggregate: vi.fn(),
+  },
+  invoice: {
+    findMany: vi.fn(),
+    aggregate: vi.fn(),
+  },
+  case: {
+    findMany: vi.fn(),
+    groupBy: vi.fn(),
   },
   vendor: {
     findMany: vi.fn(),
@@ -124,6 +137,91 @@ describe('CrmService', () => {
         include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
         orderBy: { name: 'asc' },
       });
+    });
+
+    it('getCustomers should return paginated list when query params are provided', async () => {
+      const mockCustomers = [
+        { id: 'c1', name: 'Test Corp', tenantId, deletedAt: null, _count: { invoices: 0, quotations: 0, salesOrders: 0 } },
+      ];
+      mockPrisma.customer.findMany.mockResolvedValue(mockCustomers);
+      mockPrisma.customer.count.mockResolvedValue(1);
+
+      const result = await service.getCustomers(tenantId, {
+        page: 2,
+        limit: 5,
+        search: 'test',
+        type: 'COMPANY',
+        status: 'ACTIVE',
+        sortBy: 'creditLimit',
+        sortOrder: 'desc',
+      });
+
+      expect(result).toEqual({
+        data: mockCustomers,
+        totalCount: 1,
+        page: 2,
+        limit: 5,
+        totalPages: 1,
+      });
+
+      expect(mockPrisma.customer.findMany).toHaveBeenCalledWith({
+        where: {
+          tenantId,
+          deletedAt: null,
+          type: 'COMPANY',
+          status: 'ACTIVE',
+          OR: [
+            { name: { contains: 'test', mode: 'insensitive' } },
+            { email: { contains: 'test', mode: 'insensitive' } },
+            { phone: { contains: 'test', mode: 'insensitive' } },
+          ],
+        },
+        skip: 5,
+        take: 5,
+        orderBy: {
+          creditLimit: 'desc',
+        },
+        include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
+      });
+    });
+
+    it('getCustomerSummary should return metrics and lists', async () => {
+      const mockCustomer = { id: 'c1', name: 'Test Corp', tenantId, deletedAt: null, creditLimit: 10000 };
+      mockPrisma.customer.findFirst.mockResolvedValue(mockCustomer);
+
+      mockPrisma.salesOrder.findMany.mockResolvedValue([
+        { id: 'so1', orderNumber: 'SO-001', totalAmount: 5000, status: 'CONFIRMED', orderDate: new Date() },
+      ]);
+      mockPrisma.salesOrder.aggregate.mockResolvedValue({ _sum: { totalAmount: 5000 } });
+
+      mockPrisma.invoice.findMany.mockResolvedValue([
+        { id: 'inv1', invoiceNumber: 'INV-001', totalAmount: 3000, status: 'UNPAID', issueDate: new Date(), dueDate: new Date() },
+      ]);
+      mockPrisma.invoice.aggregate.mockResolvedValue({ _sum: { totalAmount: 3000, paidAmount: 1000 } });
+
+      mockPrisma.case.findMany.mockResolvedValue([
+        { id: 'case1', caseNumber: 'CASE-001', subject: 'Billing question', status: 'OPEN', priority: 'HIGH', createdAt: new Date() },
+      ]);
+      mockPrisma.case.groupBy.mockResolvedValue([
+        { status: 'OPEN', _count: { id: 1 } },
+      ]);
+
+      const result = await service.getCustomerSummary(tenantId, 'c1');
+
+      expect(result).toBeDefined();
+      expect(result.customer).toEqual(mockCustomer);
+      expect(result.metrics).toEqual({
+        ltv: 5000,
+        unpaidBalance: 2000,
+        creditLimit: 10000,
+        availableCredit: 8000,
+        isCreditLimitExceeded: false,
+        openCases: 1,
+        resolvedCases: 0,
+      });
+      expect(result.recentSalesOrders).toHaveLength(1);
+      expect(result.recentInvoices).toHaveLength(1);
+      expect(result.recentCases).toHaveLength(1);
     });
 
     it('getCustomerById should return single customer', async () => {

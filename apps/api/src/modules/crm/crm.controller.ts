@@ -63,8 +63,25 @@ export class CrmController {
   @ApiOperation({ summary: 'Get customers' })
   @Get('customers')
   @Permissions('crm.contact.read')
-  async getCustomers(@Req() req: AuthenticatedRequest) {
-    return this.crmService.getCustomers(req.user.tenantId);
+  async getCustomers(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('type') type?: string,
+    @Query('status') status?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getCustomers(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      type,
+      status,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Get customer by id' })
@@ -72,6 +89,13 @@ export class CrmController {
   @Permissions('crm.contact.read')
   async getCustomerById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.crmService.getCustomerById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get customer summary / 360 view' })
+  @Get('customers/:id/summary')
+  @Permissions('crm.contact.read')
+  async getCustomerSummary(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getCustomerSummary(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create customer' })

@@ -63,6 +63,11 @@ function getToken() {
   return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 }
 
+function fmtBalance(b: string | number) {
+  const val = typeof b === 'string' ? parseFloat(b) : b;
+  return `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 export default function BudgetingPage() {
   const [budgets, setBudgets] = useState<BudgetAllocation[]>([]);
   const [scenarios, setScenarios] = useState<BudgetScenario[]>([]);

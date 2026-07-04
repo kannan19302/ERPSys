@@ -3,6 +3,24 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] CRM Customers Advanced Features and 360 Details Dashboard
+
+Developed advanced capabilities for the CRM customer endpoint and implemented a premium Customer 360 details view.
+
+- **Backend Query Params & Pagination**: Upgraded `GET /crm/customers` to support offset-based pagination (`page`, `limit`), search queries (`search` against name, email, phone), filters (`type`, `status`), and sorting configurations (`sortBy`, `sortOrder`). Responses are wrapped in a paginated envelope `{ data, totalCount, page, limit, totalPages }`.
+- **Customer 360 Stats & Metrics**: Implemented `GET /crm/customers/:id/summary` endpoint returning customer lifetime value (LTV), total unpaid invoice balances, remaining credit limits, active support case counts, and lists of recent sales orders, invoices, and support tickets.
+- **Frontend Customer List Refactor**: Rebuilt the list screen in `app/(dashboard)/crm/customers/page.tsx` to support server-side pagination, search debounce, status/type filters, sorting, and cursor-pointer row click routing.
+- **Customer 360 Details Page**: Created `app/(dashboard)/crm/customers/[id]/page.tsx` displaying LTV, balance, credit limit progress utilization bar, open/resolved ticket counts, credit warning alerts, and a tabbed layout for profile details, sales orders, invoices, and cases.
+- **Test Suite**: Added unit tests to `crm.service.spec.ts` covering the paginated query parameters and metrics aggregation logic.
+
+## [2026-07-04] Frontend compilation and typecheck fixes for Advanced Finance pages
+
+Resolved Next.js web app compilation blocks on the budgeting, journal-entries, and chart-of-accounts pages.
+
+- **Missing Helpers**: Added the missing local `fmtBalance` helper function to `budgeting/page.tsx` and `journal-entries/page.tsx` to resolve `Cannot find name 'fmtBalance'` type errors.
+- **Component Prop Constraints**: Wrapped the `Badge` component in `chart-of-accounts/page.tsx` with a styled `span` to resolve `Property 'style' does not exist on type 'IntrinsicAttributes & BadgeProps'`.
+- **Docker Stack Boot**: Launched a clean dev stack in Docker, seeded all databases successfully, and verified that both API (3001) and Web (3000) servers are healthy and listening.
+
 ## [2026-07-04] Advanced Finance module refactoring and hardening
 
 Resolved advanced-finance module unit and integration test failures due to service contract mismatches, mock leaks, and algorithm discrepancies.

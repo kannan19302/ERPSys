@@ -69,8 +69,9 @@ export class CrmService {
   getCaseSlaStatus(tenantId: string) { return this.casesService.getSlaStatus(tenantId); }
 
   // ── CUSTOMERS & VENDORS ───────────────────────
-  getCustomers(tenantId: string) { return this.customersService.getCustomers(tenantId); }
+  getCustomers(tenantId: string, query?: any) { return this.customersService.getCustomers(tenantId, query); }
   getCustomerById(tenantId: string, id: string) { return this.customersService.getCustomerById(tenantId, id); }
+  getCustomerSummary(tenantId: string, id: string) { return this.customersService.getCustomerSummary(tenantId, id); }
   createCustomer(tenantId: string, orgId: string, dto: CreateCustomerInput) { return this.customersService.createCustomer(tenantId, orgId, dto); }
   updateCustomer(tenantId: string, id: string, dto: UpdateCustomerInput) { return this.customersService.updateCustomer(tenantId, id, dto); }
   deleteCustomer(tenantId: string, id: string) { return this.customersService.deleteCustomer(tenantId, id); }
