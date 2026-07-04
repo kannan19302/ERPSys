@@ -63,6 +63,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   customers: 'Customers',
   vendors: 'Vendors',
   contacts: 'Contacts',
+  contracts: 'Contracts',
   cases: 'Cases & SLA',
   leads: 'Leads',
   opportunities: 'Opportunities',

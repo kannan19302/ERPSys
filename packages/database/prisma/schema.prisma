@@ -177,6 +177,7 @@ model Organization {
   cases                     Case[]
   salesChannels             SalesChannel[]
   accountingBooks           AccountingBook[]
+  contracts                 Contract[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -278,6 +279,7 @@ model Customer {
   projects      Project[]
   cases         Case[]
   tags          CustomerTagLink[]
+  contracts     Contract[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -311,6 +313,7 @@ model Vendor {
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
   portalUsers               VendorPortalUser[]
   auctionBids               RFQAuctionBid[]
+  contracts                 Contract[]
 
   @@index([tenantId])
   @@map("vendors")
@@ -7819,6 +7822,50 @@ model CaseComment {
   @@index([tenantId])
   @@index([caseId])
   @@map("crm_case_comments")
+}
+
+// ════════════════════════════════════════════════
+// CRM — CONTRACT / RENEWAL MANAGEMENT
+// ════════════════════════════════════════════════
+
+model Contract {
+  id                 String    @id @default(cuid())
+  tenantId           String    @map("tenant_id")
+  orgId              String    @map("org_id")
+  contractNumber     String    @map("contract_number")
+  title              String
+  customerId         String?   @map("customer_id")
+  vendorId           String?   @map("vendor_id")
+  type               String    @default("SALES") // SALES, PURCHASE, SERVICE, NDA, OTHER
+  value              Decimal   @db.Decimal(15, 2)
+  currency           String    @default("USD")
+  startDate          DateTime  @map("start_date")
+  endDate            DateTime  @map("end_date")
+  renewalDate        DateTime  @map("renewal_date")
+  autoRenew          Boolean   @default(false) @map("auto_renew")
+  renewalTermMonths  Int?      @map("renewal_term_months")
+  status             String    @default("DRAFT") // DRAFT, ACTIVE, EXPIRING_SOON, EXPIRED, TERMINATED, RENEWED
+  terms              String?
+  ownerId            String?   @map("owner_id")
+  renewedFromId      String?   @map("renewed_from_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  deletedAt          DateTime? @map("deleted_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  customer     Customer?    @relation(fields: [customerId], references: [id])
+  vendor       Vendor?      @relation(fields: [vendorId], references: [id])
+  renewedFrom  Contract?    @relation("ContractRenewal", fields: [renewedFromId], references: [id])
+  renewals     Contract[]   @relation("ContractRenewal")
+
+  @@unique([tenantId, contractNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([customerId])
+  @@index([vendorId])
+  @@index([renewalDate])
+  @@index([ownerId])
+  @@map("crm_contracts")
 }
 
 // ════════════════════════════════════════════════

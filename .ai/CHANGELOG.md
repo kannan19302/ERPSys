@@ -3,6 +3,53 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] CRM: New Contract/Renewal management feature (end-to-end)
+
+Closed a confirmed gap — no Contract entity existed anywhere in CRM. Built the full vertical
+slice: schema, backend, frontend, and tests.
+
+- **Schema**: New `Contract` model (`crm_contracts` table) — `tenantId`/`orgId` scoped like
+  Customer/Vendor, nullable `customerId`/`vendorId` (at least one required, enforced in the
+  service layer, not a DB constraint), `type`/`status` as plain strings with an inline comment
+  enumerating valid values (matching the Customer/Vendor/Lead convention rather than Prisma
+  `enum`), `value`/`currency`, `startDate`/`endDate`/`renewalDate`, `autoRenew`/
+  `renewalTermMonths`, `terms`, `ownerId` (plain field, no relation — matches the
+  `assignedToId` convention used by Lead/Opportunity/Case), soft-delete via `deletedAt`, and a
+  self-relation (`renewedFromId` / `renewals`) so each renewal term is its own auditable row.
+  Added `contracts` back-relations on `Customer` and `Vendor`. Migration
+  `20260704180000_crm_add_contract` applied via `prisma migrate deploy` after generating an
+  additive-only SQL diff with `prisma migrate diff` (the dev DB has pre-existing, unrelated
+  drift that made a fresh `prisma migrate dev` demand a full reset — worked around per the
+  documented gotcha rather than resetting the dev database).
+- **Backend**: `apps/api/src/modules/crm/crm-contracts.service.ts` +
+  `crm-contracts.controller.ts`, following the `crm-pipeline-stages` pattern (its own
+  `@Controller('crm/contracts')` rather than folding into the `crm.controller.ts` facade). Full
+  CRUD with pagination/search/sort/filter, `GET /crm/contracts/stats` (KPI rollup: active,
+  expiring-soon, expired, total active value), `PATCH /crm/contracts/:id/status` with an
+  explicit transition-guard map mirroring `Lead`/`Case` (RENEWED is reachable only via the
+  dedicated renew action, matching how Lead blocks CONVERTED via bare status PATCH), and
+  `POST /crm/contracts/:id/renew` which by default creates a follow-on Contract row linked via
+  `renewedFromId` (preserving full per-term history) and marks the original RENEWED, with an
+  `extendInPlace` option for simple in-place date extension. All endpoints use
+  `@Permissions('crm.contracts.*')` + tenant scoping + `@TrackChanges('Contract')`. Registered
+  4 new permissions (`crm.contracts.{read,create,update,delete}`) in
+  `packages/shared/src/permissions/registry.ts`. Wired into `crm.module.ts`. 15 new Vitest
+  cases in `tests/crm-contracts.service.spec.ts` covering CRUD, invalid status transitions,
+  renewal (both modes), tenant isolation, and soft-delete — full CRM suite now 345/345 passing.
+- **Frontend**: `apps/web/app/(dashboard)/crm/contracts/page.tsx` (list — search/filter/sort,
+  create modal, KPI cards for Active/Expiring Soon/Total Contract Value) and
+  `contracts/[id]/page.tsx` (detail — contract info, linked customer/vendor, status-transition
+  buttons, renew modal, edit, soft-delete), both using `apiGet`/`apiPost`/`apiPut`/`apiPatch`/
+  `apiDelete` from `src/lib/api.ts` and `@unerp/ui` primitives. Added a "Contracts" nav entry
+  under CRM → Account Management in `src/navigation/moduleNav.tsx` and registered the
+  `contracts` breadcrumb segment in `src/navigation/registry.tsx`.
+- Deviation: the task brief described the CRM backend as `apps/api/src/modules/crm/vendors`
+  (a per-entity subfolder with its own DTOs); the actual established CRM module is a flat
+  facade — one shared `crm.controller.ts`/`crm.service.ts` for the original entities, plus
+  standalone sibling controllers (`crm-pipeline-stages`, `crm-segments`, `crm-sla`, etc.) for
+  newer additions, with Zod DTOs colocated in the service file rather than a separate `dto/`
+  folder. Followed the established sibling-controller pattern instead.
+
 ## [2026-07-04] CRM: Forecasting/quota-attainment end-to-end audit and fix
 
 Audited `apps/web/app/(dashboard)/crm/forecasting/page.tsx` against the API — the page and its

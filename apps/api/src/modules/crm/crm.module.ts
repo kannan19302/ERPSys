@@ -25,6 +25,8 @@ import { CrmSlaService } from './crm-sla.service';
 import { CrmSlaController } from './crm-sla.controller';
 import { CrmIntelligenceService } from './crm-intelligence.service';
 import { CrmIntelligenceController } from './crm-intelligence.controller';
+import { CrmContractsService } from './crm-contracts.service';
+import { CrmContractsController } from './crm-contracts.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -46,6 +48,7 @@ const CRM_SERVICES = [
   CrmPipelineStagesService,
   CrmSegmentsService,
   CrmSlaService,
+  CrmContractsService,
 ];
 
 @Module({
@@ -57,6 +60,7 @@ const CRM_SERVICES = [
     CrmPipelineStagesController,
     CrmSegmentsController,
     CrmSlaController,
+    CrmContractsController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

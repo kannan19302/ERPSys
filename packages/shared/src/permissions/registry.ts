@@ -155,6 +155,9 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'case', 'read', 'endpoint', 'View customer service cases'),
   p('crm', 'case', 'create', 'endpoint', 'Create customer service cases'),
   p('crm', 'case', 'update', 'endpoint', 'Update customer service cases'),
+  // Contract permissions: see `p('crm', 'contracts', ...)` further down
+  // (resource is plural `contracts` there, matching the actual
+  // `@Permissions('crm.contracts.*')` codes used by crm-contracts.controller.ts).
 
   // E-Commerce Storefront (module #33) — admin-side only. Public `/store/:tenantSlug/*`
   // routes are an intentional, documented exception to Rule 15 (no @Permissions) —
@@ -371,6 +374,10 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'sla-policies', 'create', 'endpoint', 'Create SLA policies'),
   p('crm', 'sla-policies', 'update', 'endpoint', 'Update SLA policies, detect breaches'),
   p('crm', 'sla-policies', 'delete', 'endpoint', 'Delete SLA policies'),
+  p('crm', 'contracts', 'read', 'endpoint', 'View contracts and renewals'),
+  p('crm', 'contracts', 'create', 'endpoint', 'Create contracts'),
+  p('crm', 'contracts', 'update', 'endpoint', 'Update contracts, change status, renew'),
+  p('crm', 'contracts', 'delete', 'endpoint', 'Delete (soft) contracts'),
   p('documents', 'document', 'create', 'endpoint', 'Access documents document create'),
   p('documents', 'document', 'read', 'endpoint', 'Access documents document read'),
   p('documents', 'folder', 'create', 'endpoint', 'Access documents folder create'),

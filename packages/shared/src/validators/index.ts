@@ -2065,5 +2065,8 @@ export const logFixedAssetMaintenanceSchema = z.object({
 });
 export type LogFixedAssetMaintenanceInput = z.infer<typeof logFixedAssetMaintenanceSchema>;
 
-
+// Note: CRM Contract Zod schemas (createContractSchema, updateContractSchema,
+// contractStatusSchema, renewContractSchema) are colocated in
+// apps/api/src/modules/crm/crm-contracts.service.ts rather than here, matching
+// how that service file is consumed directly by crm-contracts.controller.ts.
 
