@@ -277,6 +277,7 @@ model Customer {
   salesReturns  SalesReturn[]
   projects      Project[]
   cases         Case[]
+  tags          CustomerTagLink[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -5901,6 +5902,32 @@ model ContactTagLink {
 
   @@unique([contactId, tagId])
   @@map("contact_tag_links")
+}
+
+model CustomerTag {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  color     String   @default("#3b82f6")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  customers CustomerTagLink[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("customer_tags")
+}
+
+model CustomerTagLink {
+  id         String @id @default(cuid())
+  customerId String @map("customer_id")
+  tagId      String @map("tag_id")
+
+  customer Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tag      CustomerTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, tagId])
+  @@map("customer_tag_links")
 }
 
 // ════════════════════════════════════════════════

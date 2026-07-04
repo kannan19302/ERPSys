@@ -5,10 +5,30 @@ import { CreateContactInput, UpdateContactInput, CreateContactTagInput, MergeCon
 
 @Injectable()
 export class CrmContactsService {
-  async getContacts(tenantId: string, customerId?: string) {
+  async getContacts(tenantId: string, query?: { customerId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
     const where: Prisma.ContactWhereInput = { tenantId, deletedAt: null };
-    if (customerId) where.customerId = customerId;
-    return prisma.contact.findMany({ where, orderBy: { firstName: 'asc' } });
+    if (query?.customerId) where.customerId = query.customerId;
+    if (query?.search) {
+      where.OR = [
+        { firstName: { contains: query.search, mode: 'insensitive' } },
+        { lastName: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+        { phone: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const page = query?.page || 1;
+    const limit = query?.limit || 20;
+    const skip = (page - 1) * limit;
+    const orderBy: Prisma.ContactOrderByWithRelationInput = {};
+    if (query?.sortBy === 'firstName') orderBy.firstName = query.sortOrder || 'asc';
+    else if (query?.sortBy === 'lastName') orderBy.lastName = query.sortOrder || 'asc';
+    else if (query?.sortBy === 'createdAt') orderBy.createdAt = query.sortOrder || 'desc';
+    else orderBy.firstName = 'asc';
+    const [data, totalCount] = await Promise.all([
+      prisma.contact.findMany({ where, skip, take: limit, orderBy }),
+      prisma.contact.count({ where }),
+    ]);
+    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
   }
 
   async createContact(tenantId: string, orgId: string, dto: CreateContactInput) {

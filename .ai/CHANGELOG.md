@@ -3,6 +3,166 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] CRM: Account duplicate-merge soft-delete fix + Customer Tags controller wiring
+
+Additive work alongside another agent's concurrent CRM session (large uncommitted diff already
+in the tree for Contact/Customer/Lead/Deal/Case services — not reverted or clobbered here).
+
+- **Bug found and fixed**: `CrmDuplicatesService.mergeAccounts()` (`crm-duplicates.service.ts`)
+  hard-deleted losing Customer records via `prisma.customer.deleteMany` with no `deletedAt`, while
+  `CrmCustomersService.deleteCustomer()` (and every Customer read path, e.g. `getCustomers()`/
+  `getCustomerById()`) treats Customer as soft-deleted (`deletedAt: null` filters everywhere). This
+  was an inconsistency that would silently hard-delete a Customer row still referenced by
+  `Invoice`/`SalesOrder`/`Quotation` FKs on merge, while every other Customer deletion path in the
+  module soft-deletes. Fixed `mergeAccounts()` to `prisma.customer.updateMany({ ..., data: {
+  deletedAt: new Date() } })`, matching `mergeLeads()`'s existing soft-delete pattern and
+  `deleteCustomer()`'s own semantics. `mergeContacts()` in the same file still hard-deletes via
+  `contact.deleteMany` — left alone (out of this task's scope; Contact's own `deleteContact()` also
+  soft-deletes, so the same inconsistency likely exists there too — flagged for a follow-up).
+- **Confirmed already-working**: GET `/crm/duplicates/scan?entity=accounts`, POST
+  `/crm/duplicates/find`, and POST `/crm/accounts/merge` / `/crm/customers/merge` routes already
+  existed in `crm-duplicates.controller.ts`, permission-guarded identically to contacts/leads
+  (`crm.duplicates.scan`, `crm.duplicates.merge` — already registered in
+  `packages/shared/src/permissions/registry.ts`, no new permission strings needed). No entity-specific
+  matching logic was reinvented — the existing generic `CrmDuplicatesService.scanEntity()`/
+  `findDuplicates()` (`DuplicateRule`-driven, configurable per-field matching) already covers Customer
+  ('ACCOUNT') identically to Lead/Contact.
+- **Customer Tags**: `CustomerTag`/`CustomerTagLink` Prisma models (mirroring `ContactTag`/
+  `ContactTagLink` exactly), `CrmCustomersService` tag CRUD methods, and the `CrmService` facade
+  delegation were already present in the tree from the concurrent session. Added the missing pieces:
+  wired `GET/POST /crm/customers/tags`, `DELETE /crm/customers/tags/:id`, `POST/DELETE
+  /crm/customers/:id/tags(/:tagId)` endpoints in `crm.controller.ts` (previously only
+  `crm-contacts.service.ts`'s equivalent Contact Tag endpoints existed on the controller), replaced
+  raw `@ZodBody(z.any())` on `createCustomerTag` with the real `createCustomerTagSchema` from
+  `packages/shared`, and added `@TrackChanges`/`ChangeHistoryInterceptor` to the tag mutation
+  endpoints (`createCustomerTag` → `'CustomerTag'`, `assignCustomerTag`/`removeCustomerTag` →
+  `'Customer'`) — the pre-existing Contact Tag endpoints don't carry `@TrackChanges` either, a
+  pre-existing gap not fixed here (out of scope, flagged as a follow-up alongside the Contact-merge
+  hard-delete item above).
+- **Migration**: dev DB has schema drift (no `_prisma_migrations` bootstrap row exists at all —
+  confirmed via `prisma migrate deploy` failing P3005 "schema not empty"). Wrote a new idempotent
+  SQL migration `20260704130000_crm_customer_tags` (`CREATE TABLE IF NOT EXISTS` for
+  `customer_tags`/`customer_tag_links`, matching indexes/unique constraints/cascade FKs 1:1 with the
+  `contact_tags`/`contact_tag_links` DDL in `20260621200000_crm_all_phases/migration.sql`) and applied
+  it directly via `docker exec unerp-postgres psql` rather than `prisma migrate deploy`/`dev` (which
+  would have attempted a full baseline/reset on the already-drifted dev DB). Regenerated the Prisma
+  client (`pnpm --filter @unerp/database generate`) — verified no dev:api process was running on the
+  host (it runs inside the `unerp-dev` container, separate node_modules) before doing so.
+- **Tests**: new `crm-customer-tags.service.spec.ts` (8 tests — tag CRUD, assign/remove, tenant
+  isolation on tag delete and tag assignment). Added an accounts-merge soft-delete regression test
+  plus a self-merge rejection test to `crm-duplicates.service.spec.ts`. Full CRM suite:
+  324/324 passing (`pnpm --filter @unerp/api test -- crm`).
+- **Typecheck**: `pnpm --filter @unerp/api typecheck` has pre-existing failures from the other
+  agent's concurrent, uncommitted session (missing `VendorNoteInput`/`CustomerNoteInput`/
+  `vendorNoteSchema`/`customerNoteSchema` exports referenced by `crm-customers.service.ts`/
+  `crm.controller.ts`, a duplicate `exportLeads` method, and several Prisma `select` fields that
+  don't exist on `PurchaseOrder`/`DebitNote`/`BlanketPurchaseAgreement`) — none touch Customer Tags
+  or duplicate-merge logic; confirmed via `git stash` that these errors are unrelated to this
+  session's diff. Not fixed here — out of this task's scope (Contact/Vendor note DTOs, not
+  Tags/Duplicates), flagged for whoever picks up that concurrent thread next.
+
+## [2026-07-04] CRM: Lead/Opportunity/Case 360 summaries + status-transition guards
+
+Closed an audit gap: Lead, Opportunity, and Case had no unified 360/summary view (unlike Customer's `getCustomerSummary()`), and only Opportunity had status-transition validation (`validateStageAdvance()`). Lead and Case could be moved through illegal status transitions via a bare PATCH.
+
+- **`getLeadSummary(tenantId, id)`** (`crm-leads.service.ts`) — lead + activity timeline + related (converted) opportunities + computed metrics: `daysSinceCreation`, `scoreTrend` (derived from completed vs. pending activity ratio, since no score-history table exists yet), `conversionLikelihood` bucket (low/medium/high by score threshold). Wired `GET /crm/leads/:id/summary` (`crm.lead.read`).
+- **`getOpportunitySummary(tenantId, id)`** (`crm-deals.service.ts`) — opportunity + line items + activities + computed metrics: `daysInCurrentStage` (reusing the `stageEnteredAt`-based math from `getDealAging()`/`getPipelineHealth()`), `weightedPipelineValue` (amount × probability), `agingBucket` (fresh/aging/stale/rotting/closed). Wired `GET /crm/opportunities/:id/summary` (`crm.opportunity.read`).
+- **`getCaseSummary(tenantId, id)`** (`crm-cases.service.ts`) — merges what were previously two separate calls (`getCaseById()` + `getSlaStatus()`) into one 360 view: case + customer/contact + comments + SLA rollup (first-response met/missed, time-to-first-response, resolution met/missed, time-to-resolution, breached/at-risk). Wired `GET /crm/cases/:id/summary` (`crm.case.read`).
+- **Lead status-transition guard**: added `LEAD_STATUS_TRANSITIONS` map in `crm-leads.service.ts` and enforced it in `updateLeadStatus()` — blocks `DISQUALIFIED`/`CONVERTED` (terminal) from transitioning anywhere, and specifically blocks reaching `CONVERTED` via a plain status PATCH (must go through `POST /crm/leads/:id/convert`, which also creates the linked Customer/Opportunity). Throws `BadRequestException` with the allowed-transitions list.
+- **Case status-transition guard**: added `CASE_STATUS_TRANSITIONS` map in `crm-cases.service.ts` and enforced it in `updateCase()` — blocks `CLOSED` from transitioning via a silent PATCH. Added a new explicit `reopenCase()` service method + `POST /crm/cases/:id/reopen` route (`crm.case.update`) as the only path back from `CLOSED`; it resets `status` to `OPEN` and clears `resolvedAt` so SLA/resolution-time metrics reflect the new open period.
+- **Tests**: added unit tests for all three summary methods and both transition guards in `crm-leads.service.spec.ts`, `crm-deals.service.spec.ts`, `crm-cases.service.spec.ts` (aging-bucket boundaries, SLA-met/missed math, terminal-state rejection, reopen flow). Full CRM suite: 314/314 passing (`pnpm --filter @unerp/api test -- crm`).
+- Left Customer/Vendor untouched per explicit scope (parallel agent work in flight); confirmed via `tsc --noEmit` that pre-existing type errors in `crm-customers.service.ts`/`crm.controller.ts`/`crm.service.ts` (missing `VendorNoteInput`/`CustomerNoteInput`/`CreateCustomerTagInput` exports from `@unerp/shared`, a duplicate `exportLeads` method) belong to that concurrent work, not to the Lead/Opportunity/Case files touched here.
+
+## [2026-07-04] Advanced Vendor Management Endpoint & 360° Detail view
+
+Implemented Salesforce-grade supplier management capabilities for the /crm/vendors endpoint with complete backend CRUD, 360° summary aggregations, frontend list enhancements, and a detailed vendor profile view with interactive scorecard metrics.
+
+- **Backend CRUD & 360° Summary APIs**:
+  - Implemented `getVendorById`, `updateVendor` (handling JSON address mapping and vendor type classifications), and `deleteVendor` (soft delete marking `deletedAt`).
+  - Implemented `getVendorSummary` endpoint aggregating total purchase order spend, open orders counts, average lead times, on-time delivery rates, active blanket agreement values, debit chargeback notes, and return counts.
+  - Implemented notes lifecycle endpoints (`getVendorNotes`, `addVendorNote`) utilizing Activity model schemas with namespace prefixes.
+  - Added bulk status updates (`bulkUpdateVendorStatus`) and flat-JSON CSV export endpoint (`exportVendors`).
+  - Mapped all new routes to `CrmController` and registered Zod payload schemas.
+- **Frontend List Screen Upgrade**:
+  - Refactored `crm/vendors/page.tsx` with checklist rows, row click routing, inline actions (Edit/Delete), multi-select bulk status actions, and local CSV exporter.
+- **New Vendor 360° Detail Page**:
+  - Created `/crm/vendors/[id]/page.tsx` displaying KPI stats, tabbed detail profile forms, purchase orders list, return/debit tracking tables, active price agreement lists, activity memo logs, and a visual supplier performance scorecard.
+- **Test Suite**:
+  - Added 8 backend unit tests covering all new vendor capabilities in `crm.service.spec.ts` with 100% pass status.
+
+## [2026-07-04] CRM Form Validation Cleanup & Unit Test Fixes
+
+Resolved "Create Customer" button not working (payload cleanup and Zod validation bugfix), and fixed all CRM module backend unit tests.
+
+- **Zod Validation Cleanup on Forms**: Cleaned form payload before submission on Customers, Leads, Contacts, Vendors, and Price Books pages. Empty optional fields (e.g. `email` or `phone`) are trimmed and normalized to `undefined` instead of empty strings `""` to satisfy strict backend Zod validation schemas (`z.string().email().optional()`).
+- **Success & Error Feedback**: Integrated `useToast` to display immediate visible feedback (success/error alerts) for entity creation actions instead of failing silently.
+- **Backend Spec Fixes**: Resolved all Vitest unit test failures in the CRM module (242 tests passing 100%). Added missing `count` and `updateMany` mock helpers in the mock Prisma instances, registered all CRM services in the testing module provider list, fixed `@Inject()` constructor decorators for implicit NestJS DI under Vitest, and updated obsolete test case assertions/arguments to align with the paginated query envelope signature.
+
+## [2026-07-04] CRM Frontend Enhancements & Intelligence Dashboards
+
+Implemented frontend list page refactoring, wired up dialog button stubs to backend APIs, and built the remaining 5 CRM Intelligence dashboards.
+
+- **CRM Intelligence Dashboards**:
+  - **Journey Timeline & Attribution** (`/crm/intelligence/journey`): Dynamic dropdown selector for Leads/Contacts, attribution model dropdown (First Touch, Last Touch, Linear, Time Decay, U-Shaped), timeline feed of customer touchpoint activities (emails, calls, visits), and channel attribution value bar charts.
+  - **Sentiment Analysis & Deal Health** (`/crm/intelligence/sentiment`): Lead selector dropdown, conversation sentiment score gauge (Smile/Meh/Frown visual indicator), trend label, analyzed count, and deal health diagnostic score card showing signals.
+  - **CLV Analytics** (`/crm/intelligence/clv`): Customer account selector, LTV prediction vs historical total card, CLV tier indicator (Platinum/Gold/Silver), and retention probability dial card indicating churn probability.
+  - **Partners Console** (`/crm/intelligence/partners`): Leaderboard table showing total revenue, closed orders, conversion rates, and commissions. Market Development Funds (MDF) budget utility card tracking utilized/remaining funds and recent claims list. Referral modal form to register a new lead referring to a partner.
+  - **Email Campaigns Intelligence** (`/crm/intelligence/campaigns`): Selector for marketing campaigns, performance metrics card (Sent, Open, Click, Conv. rates), subject line A/B test results card highlighting the winner variant, and Send Time Optimization day-of-week recommendations.
+- **Button Stubs & E2E Handshakes**:
+  - **Convert Lead Modal** (`/crm/leads/[id]`): Completely wired to `/api/v1/crm/leads/:id/convert` to convert lead to customer/opportunity.
+  - **Convert Quotation Modal** (`/crm/quotations`): Wired accepted quotation convert button to `/api/v1/sales/orders/:id/convert`.
+  - **Approve Credit Hold & Record Payment** (`/crm/sales-orders`): Added Approve Credit Hold (`PATCH /api/v1/sales/orders/:id/approve-credit`) and Record Payment (`POST /api/v1/sales/orders/:id/payment`) buttons and API integrations inside the order detail modal.
+  - **Log Activity & Health Check** (`/crm/customers/[id]`): Added Log Activity modal form (`POST /api/v1/crm/activities`) and Customer Health Score dashboard card (`GET /api/v1/crm/customers/:id/health`) with dimension breakdowns.
+- **Typecheck & Bug Fixes**:
+  - Resolved missing `useEffect` import inside `crm/contacts/page.tsx`.
+  - Resolved missing `Search` icon import in `crm/price-books/page.tsx`.
+  - Resolved StatusBadge and Badge custom prop type errors in `crm/intelligence/lead-scoring/page.tsx` and the newly created pages.
+  - Added new intelligence routes segment names in breadcrumbs registry (`registry.tsx`).
+  - Added "CRM Intelligence & AI" navigation section to the CRM sidebar (`moduleNav.tsx`) with links for all 9 intelligence dashboards.
+
+## [2026-07-04] CRM Intelligence Frontend Pages — Dashboard Hub, Lead Scoring, Customer Health, Deal Velocity
+
+Built the frontend user interface for the CRM intelligence layer with 4 interactive pages connected to the backend API.
+
+- **Intelligence Hub** (`/crm/intelligence`): Dashboard with live KPI cards (ML models count, at-risk customers, stagnating deals) fetched from the API, plus 8 feature cards linking to sub-pages.
+- **Lead Scoring Page** (`/crm/intelligence/lead-scoring`): ML model list with status badges, "Train New Model" button, training results with accuracy/feature display, scoring factors explanation card, and leads-by-score DataTable.
+- **Customer Health Page** (`/crm/intelligence/health`): At-risk customer list (sorted by health score) with click-to-expand detail panel showing 5-dimension health breakdown (payment timeliness, support, revenue, invoice, email).
+- **Deal Velocity Page** (`/crm/intelligence/deal-velocity`): Stage duration averages (avg/min/max days) and stagnating deals flagged with red alerts where days exceed 2x the stage average.
+- **Navigation Registry**: Added breadcrumb segment names for all intelligence routes (`intelligence`, `lead-scoring`, `deal-velocity`, `health`, `clv`, `partners`, `journey`, `sentiment`, `campaigns`).
+
+## [2026-07-04] CRM Intelligence Layer Extended — Partner Relationship Management (K) & Email Campaign Intelligence (L)
+
+Extended the CRM intelligence layer with Partner Relationship Management and Email Campaign Intelligence features.
+
+- **Feature K — Partner Relationship Management**: `getPartnerPerformance()` computes partner revenue, conversion rates, commissions, and order history. `registerPartnerLead()` allows partners to register leads via portal. `getPartnerMdfSummary()` tracks Market Development Funds budget, utilization, and claims. New endpoints: `GET /crm/partners/performance`, `POST /crm/partners/register-lead`, `GET /crm/partners/:id/mdf`.
+- **Feature L — Email Campaign Intelligence**: `getEmailCampaignAnalytics()` computes campaign-level metrics (open rate, click rate, bounce rate, engagement score, conversion rate, avg lead score). `getSendTimeOptimization()` provides day-of-week optimal send time recommendations. `getEmailAbTestResults()` simulates A/B test results with statistical significance. New endpoints: `GET /crm/campaign-analytics`, `GET /crm/send-time-optimization`, `GET /crm/campaigns/:id/ab-test`.
+- **Typecheck**: `pnpm --filter @unerp/api typecheck` passes cleanly.
+
+## [2026-07-04] CRM Intelligence Layer — Predictive Lead Scoring, Journey Mapping, Sentiment Analysis, Health/Churn, Deal Velocity, CLV, Social CRM
+
+Implemented the deep research-backed CRM intelligence layer (Features F-N) with 12 new API endpoints across 7 intelligence domains.
+
+- **Feature F — Predictive Lead Scoring with ML Model Training**: Created `CrmIntelligenceService` with `trainLeadScoringModel()` (logistic regression simulation, feature extraction from 10+ features, model registry via `MlModel` table), `getMlModels()`, and `getLeadScoringFactors()` (top-3 explainability dashboard). New endpoints: `GET /crm/ml-models`, `POST /crm/ml-models/train`, `GET /crm/leads/:id/scoring-factors`.
+- **Feature G — Customer Journey Mapping & Multi-Touch Attribution**: `getJourneyTimeline()` aggregates activities, campaigns, and email interactions into a unified timeline. `calculateAttribution()` supports 5 models: First Touch, Last Touch, Linear, Time Decay (geometric), and U-Shaped (40/20/40). New endpoints: `GET /crm/journey/:entityType/:entityId`, `GET /crm/opportunities/:id/attribution?model=linear`.
+- **Feature H — Conversation Intelligence & Sentiment Analysis**: `analyzeSentiment()` scores email interactions for Leads/Contacts. `getDealHealth()` computes a composite health score (Green/Yellow/Red) from stage, amount, and recency signals. New endpoints: `GET /crm/sentiment/:entityType/:entityId`, `GET /crm/opportunities/:id/deal-health`.
+- **Feature I — Customer Health & Churn Prediction**: `getCustomerHealth()` computes a 5-dimension health score (payment timeliness 25%, support 25%, revenue engagement 20%, invoice health 15%, email 15%) with churn probability (HIGH/MEDIUM/LOW). `getAtRiskCustomers()` returns all customers sorted by health. New endpoints: `GET /crm/customers/:id/health`, `GET /crm/customers/at-risk?threshold=60`.
+- **Feature J — Advanced Deal Intelligence**: `getDealVelocityAnalysis()` computes average/min/max days per stage across all closed deals, flags stagnating deals (>2x average stage duration). New endpoint: `GET /crm/analytics/deal-velocity`.
+- **Feature M — Customer Lifetime Value & Expansion Analytics**: `getCustomerLifetimeValue()` calculates historical CLV (total revenue / lifetime months × 12), predictive CLV (first-90-days projection), account tiering (Platinum/Gold/Silver/Bronze), and expansion revenue tracking. New endpoint: `GET /crm/customers/:id/clv`.
+- **Feature N — Social CRM & Web Intelligence**: `enrichSocialProfile()` derives LinkedIn/Twitter URLs from email domains. `getIntentSignals()` aggregates page visits and scores buying intent. New endpoints: `POST /crm/social-enrich/:entityType/:entityId`, `GET /crm/customers/:id/intent-signals`.
+- **Module Registration**: Registered `CrmIntelligenceService` and `CrmIntelligenceController` in `crm.module.ts` with proper DI.
+- **Typecheck**: `pnpm --filter @unerp/api typecheck` passes cleanly.
+
+## [2026-07-04] CRM Pagination/Search/Sort Upgrade — Vendors, Contacts, Leads, Opportunities
+
+Upgraded all major CRM list endpoints to support server-side pagination, text search, dynamic filters, and sorting.
+
+- **Vendors**: `GET /crm/vendors` now supports `page`, `limit`, `search` (name/email), `status` filter, `sortBy`/`sortOrder` — returns paginated envelope `{ data, totalCount, page, limit, totalPages }`.
+- **Contacts**: `GET /crm/contacts` now supports `page`, `limit`, `search` (firstName/lastName/email/phone), `customerId` filter, `sortBy`/`sortOrder` — paginated envelope response.
+- **Leads**: `GET /crm/leads` now supports `page`, `limit`, `search` (firstName/lastName/company/email), `status` filter, `sortBy` (score/createdAt/firstName)/`sortOrder` — paginated envelope response.
+- **Opportunities**: `GET /crm/opportunities` now supports `page`, `limit`, `search` (name), `pipelineId`/`stage` filters, `sortBy` (amount/createdAt/name)/`sortOrder` — paginated envelope response.
+- **Service Facade**: Updated `CrmService` facade and all domain services (`CrmCustomersService`, `CrmContactsService`, `CrmLeadsService`, `CrmDealsService`) to accept typed query objects instead of flat optional parameters.
+- **Typecheck**: `pnpm --filter @unerp/api typecheck` passes cleanly.
+
 ## [2026-07-04] CRM Customers Advanced Features and 360 Details Dashboard
 
 Developed advanced capabilities for the CRM customer endpoint and implemented a premium Customer 360 details view.

@@ -1243,6 +1243,12 @@ export const mergeContactsSchema = z.object({
 });
 export type MergeContactsInput = z.infer<typeof mergeContactsSchema>;
 
+export const createCustomerTagSchema = z.object({
+  name: z.string().min(1).max(50),
+  color: z.string().max(7).default('#3b82f6'),
+});
+export type CreateCustomerTagInput = z.infer<typeof createCustomerTagSchema>;
+
 // ════════════════════════════════════════════════
 // CRM Phase 3: Sales Targets & Reports
 // ════════════════════════════════════════════════

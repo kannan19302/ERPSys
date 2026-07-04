@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent } from '@unerp/ui';
+import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent, useToast } from '@unerp/ui';
 import { Search, Plus, Mail, Building, X, Users, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { DuplicatesFinder } from '../_components/DuplicatesFinder';
 
@@ -21,6 +21,7 @@ interface Customer {
 
 export default function CustomersPage() {
     const router = useRouter();
+    const { success, error } = useToast();
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -127,22 +128,30 @@ export default function CustomersPage() {
         setSubmitting(true);
         const token = localStorage.getItem('token');
         try {
+            const payload = {
+                ...form,
+                email: form.email.trim() || undefined,
+                phone: form.phone.trim() || undefined,
+                creditLimit: form.creditLimit ? Number(form.creditLimit) : undefined,
+                paymentTerms: Number(form.paymentTerms)
+            };
             const res = await fetch('/api/v1/crm/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
-                body: JSON.stringify({
-                    ...form,
-                    creditLimit: form.creditLimit ? Number(form.creditLimit) : undefined,
-                    paymentTerms: Number(form.paymentTerms)
-                }),
+                body: JSON.stringify(payload),
             });
             if (res.ok) {
                 setShowCreate(false);
                 setForm({ name: '', type: 'COMPANY', email: '', phone: '', creditLimit: '5000', paymentTerms: '30' });
+                success('Customer created successfully.');
                 fetchData();
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                const errMsg = errData.message || 'Failed to create customer.';
+                error(errMsg);
             }
-        } catch {
-            // fallback
+        } catch (err: any) {
+            error(err.message || 'An error occurred while creating customer.');
         } finally {
             setSubmitting(false);
         }

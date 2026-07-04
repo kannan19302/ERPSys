@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import {
-  CreateCustomerInput, CreateVendorInput,
+  CreateCustomerInput, CreateVendorInput, UpdateVendorInput, VendorNoteInput, CustomerNoteInput,
   CreateContactInput, CreateLeadInput, CreateOpportunityInput,
   CreateActivityInput, CreateEmailTemplateInput, CreateSalesPipelineInput,
   UpdateCustomerInput, UpdateContactInput, UpdateLeadInput,
@@ -8,7 +8,7 @@ import {
   CreateCampaignInput,
   CreateOpportunityLineItemInput, UpdateOpportunityLineItemInput,
   CreatePriceBookInput, UpdatePriceBookInput, CreatePriceBookEntryInput,
-  CreateContactTagInput, MergeContactsInput,
+  CreateContactTagInput, MergeContactsInput, CreateCustomerTagInput,
   CreateSalesTargetInput, UpdateSalesTargetInput,
   CreateSavedReportInput,
   CreateCrmWorkflowRuleInput, UpdateCrmWorkflowRuleInput,
@@ -58,15 +58,19 @@ export class CrmService {
     @Inject(CrmCollaborationService) private readonly collaborationService: CrmCollaborationService,
     @Inject(CrmDashboardsService) private readonly dashboardsService: CrmDashboardsService,
     @Inject(CrmCasesService) private readonly casesService: CrmCasesService,
-  ) {}
+  ) { }
 
   // ── CASES & SLA ───────────────────────────────
-  getCases(tenantId: string, filters?: { status?: string; priority?: string; customerId?: string }) { return this.casesService.getCases(tenantId, filters); }
+  getCases(tenantId: string, filters?: { status?: string; priority?: string; customerId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.casesService.getCases(tenantId, filters); }
   getCaseById(tenantId: string, id: string) { return this.casesService.getCaseById(tenantId, id); }
+  getCaseSummary(tenantId: string, id: string) { return this.casesService.getCaseSummary(tenantId, id); }
   createCase(tenantId: string, orgId: string, dto: CreateCaseInput) { return this.casesService.createCase(tenantId, orgId, dto); }
   updateCase(tenantId: string, id: string, dto: UpdateCaseInput) { return this.casesService.updateCase(tenantId, id, dto); }
+  reopenCase(tenantId: string, id: string) { return this.casesService.reopenCase(tenantId, id); }
   addCaseComment(tenantId: string, caseId: string, dto: { body: string; authorId?: string; isInternal?: boolean }) { return this.casesService.addComment(tenantId, caseId, dto); }
   getCaseSlaStatus(tenantId: string) { return this.casesService.getSlaStatus(tenantId); }
+  bulkUpdateCaseStatus(tenantId: string, ids: string[], status: string) { return this.casesService.bulkUpdateCaseStatus(tenantId, ids, status); }
+  exportCases(tenantId: string, query?: { search?: string; status?: string; priority?: string }) { return this.casesService.exportCases(tenantId, query); }
 
   // ── CUSTOMERS & VENDORS ───────────────────────
   getCustomers(tenantId: string, query?: any) { return this.customersService.getCustomers(tenantId, query); }
@@ -75,11 +79,25 @@ export class CrmService {
   createCustomer(tenantId: string, orgId: string, dto: CreateCustomerInput) { return this.customersService.createCustomer(tenantId, orgId, dto); }
   updateCustomer(tenantId: string, id: string, dto: UpdateCustomerInput) { return this.customersService.updateCustomer(tenantId, id, dto); }
   deleteCustomer(tenantId: string, id: string) { return this.customersService.deleteCustomer(tenantId, id); }
-  getVendors(tenantId: string) { return this.customersService.getVendors(tenantId); }
+  getVendors(tenantId: string, query?: any) { return this.customersService.getVendors(tenantId, query); }
+  getVendorById(tenantId: string, id: string) { return this.customersService.getVendorById(tenantId, id); }
+  getVendorSummary(tenantId: string, id: string) { return this.customersService.getVendorSummary(tenantId, id); }
   createVendor(tenantId: string, orgId: string, dto: CreateVendorInput) { return this.customersService.createVendor(tenantId, orgId, dto); }
+  updateVendor(tenantId: string, id: string, dto: UpdateVendorInput) { return this.customersService.updateVendor(tenantId, id, dto); }
+  deleteVendor(tenantId: string, id: string) { return this.customersService.deleteVendor(tenantId, id); }
+  updateVendorStatus(tenantId: string, id: string, status: string) { return this.customersService.updateVendorStatus(tenantId, id, status); }
+  getVendorNotes(tenantId: string, vendorId: string) { return this.customersService.getVendorNotes(tenantId, vendorId); }
+  addVendorNote(tenantId: string, orgId: string, vendorId: string, dto: VendorNoteInput) { return this.customersService.addVendorNote(tenantId, orgId, vendorId, dto); }
+  bulkUpdateVendorStatus(tenantId: string, ids: string[], status: string) { return this.customersService.bulkUpdateVendorStatus(tenantId, ids, status); }
+  exportVendors(tenantId: string, query?: { search?: string; status?: string }) { return this.customersService.exportVendors(tenantId, query); }
+  updateCustomerStatus(tenantId: string, id: string, status: string) { return this.customersService.updateCustomerStatus(tenantId, id, status); }
+  getCustomerNotes(tenantId: string, customerId: string) { return this.customersService.getCustomerNotes(tenantId, customerId); }
+  addCustomerNote(tenantId: string, orgId: string, customerId: string, dto: CustomerNoteInput) { return this.customersService.addCustomerNote(tenantId, orgId, customerId, dto); }
+  bulkUpdateCustomerStatus(tenantId: string, ids: string[], status: string) { return this.customersService.bulkUpdateCustomerStatus(tenantId, ids, status); }
+  exportCustomers(tenantId: string, query?: { search?: string; status?: string }) { return this.customersService.exportCustomers(tenantId, query); }
 
   // ── CONTACTS ──────────────────────────────────
-  getContacts(tenantId: string, customerId?: string) { return this.contactsService.getContacts(tenantId, customerId); }
+  getContacts(tenantId: string, query?: { customerId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.contactsService.getContacts(tenantId, query); }
   createContact(tenantId: string, orgId: string, dto: CreateContactInput) { return this.contactsService.createContact(tenantId, orgId, dto); }
   updateContact(tenantId: string, id: string, dto: UpdateContactInput) { return this.contactsService.updateContact(tenantId, id, dto); }
   deleteContact(tenantId: string, id: string) { return this.contactsService.deleteContact(tenantId, id); }
@@ -88,26 +106,36 @@ export class CrmService {
   deleteContactTag(tenantId: string, id: string) { return this.contactsService.deleteContactTag(tenantId, id); }
   assignContactTag(tenantId: string, contactId: string, tagId: string) { return this.contactsService.assignContactTag(tenantId, contactId, tagId); }
   removeContactTag(contactId: string, tagId: string) { return this.contactsService.removeContactTag(contactId, tagId); }
+
+  getCustomerTags(tenantId: string) { return this.customersService.getCustomerTags(tenantId); }
+  createCustomerTag(tenantId: string, dto: CreateCustomerTagInput) { return this.customersService.createCustomerTag(tenantId, dto); }
+  deleteCustomerTag(tenantId: string, id: string) { return this.customersService.deleteCustomerTag(tenantId, id); }
+  assignCustomerTag(tenantId: string, customerId: string, tagId: string) { return this.customersService.assignCustomerTag(tenantId, customerId, tagId); }
+  removeCustomerTag(customerId: string, tagId: string) { return this.customersService.removeCustomerTag(customerId, tagId); }
   getContactTimeline(tenantId: string, contactId: string) { return this.contactsService.getContactTimeline(tenantId, contactId); }
   findDuplicateContacts(tenantId: string) { return this.contactsService.findDuplicateContacts(tenantId); }
   mergeContacts(tenantId: string, dto: MergeContactsInput) { return this.contactsService.mergeContacts(tenantId, dto); }
 
   // ── LEADS ─────────────────────────────────────
   getLeadSources(tenantId: string) { return this.leadsService.getLeadSources(tenantId); }
-  getLeads(tenantId: string, status?: string) { return this.leadsService.getLeads(tenantId, status); }
+  getLeads(tenantId: string, query?: { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.leadsService.getLeads(tenantId, query); }
   getLeadById(tenantId: string, id: string) { return this.leadsService.getLeadById(tenantId, id); }
+  getLeadSummary(tenantId: string, id: string) { return this.leadsService.getLeadSummary(tenantId, id); }
   recalculateLeadScore(tenantId: string, leadId: string) { return this.leadsService.recalculateLeadScore(tenantId, leadId); }
   createLead(tenantId: string, orgId: string, dto: CreateLeadInput) { return this.leadsService.createLead(tenantId, orgId, dto); }
   updateLead(tenantId: string, id: string, dto: UpdateLeadInput) { return this.leadsService.updateLead(tenantId, id, dto); }
   updateLeadStatus(tenantId: string, id: string, status: string) { return this.leadsService.updateLeadStatus(tenantId, id, status); }
   convertLead(tenantId: string, orgId: string, leadId: string, customerName?: string, opportunityName?: string, opportunityAmount?: number) { return this.leadsService.convertLead(tenantId, orgId, leadId, customerName, opportunityName, opportunityAmount); }
   deleteLead(tenantId: string, id: string) { return this.leadsService.deleteLead(tenantId, id); }
+  bulkUpdateLeadStatus(tenantId: string, ids: string[], status: string) { return this.leadsService.bulkUpdateLeadStatus(tenantId, ids, status); }
+  exportLeadsData(tenantId: string, query?: { search?: string; status?: string }) { return this.leadsService.exportLeads(tenantId, query); }
 
   // ── PIPELINES & OPPORTUNITIES ─────────────────
   getPipelines(tenantId: string) { return this.dealsService.getPipelines(tenantId); }
   createPipeline(tenantId: string, dto: CreateSalesPipelineInput) { return this.dealsService.createPipeline(tenantId, dto); }
-  getOpportunities(tenantId: string, pipelineId?: string, stage?: string) { return this.dealsService.getOpportunities(tenantId, pipelineId, stage); }
+  getOpportunities(tenantId: string, query?: { pipelineId?: string; stage?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.dealsService.getOpportunities(tenantId, query); }
   getOpportunityById(tenantId: string, id: string) { return this.dealsService.getOpportunityById(tenantId, id); }
+  getOpportunitySummary(tenantId: string, id: string) { return this.dealsService.getOpportunitySummary(tenantId, id); }
   createOpportunity(tenantId: string, orgId: string, dto: CreateOpportunityInput) { return this.dealsService.createOpportunity(tenantId, orgId, dto); }
   updateOpportunity(tenantId: string, id: string, dto: UpdateOpportunityInput) { return this.dealsService.updateOpportunity(tenantId, id, dto); }
   updateOpportunityStage(tenantId: string, id: string, stage: string, probability?: number, actualCloseDate?: string, lossReason?: string) { return this.dealsService.updateOpportunityStage(tenantId, id, stage, probability, actualCloseDate, lossReason); }
@@ -116,16 +144,18 @@ export class CrmService {
   addOpportunityLineItem(tenantId: string, opportunityId: string, dto: CreateOpportunityLineItemInput) { return this.dealsService.addOpportunityLineItem(tenantId, opportunityId, dto); }
   updateOpportunityLineItem(tenantId: string, opportunityId: string, itemId: string, dto: UpdateOpportunityLineItemInput) { return this.dealsService.updateOpportunityLineItem(tenantId, opportunityId, itemId, dto); }
   deleteOpportunityLineItem(tenantId: string, opportunityId: string, itemId: string) { return this.dealsService.deleteOpportunityLineItem(tenantId, opportunityId, itemId); }
+  exportOpportunities(tenantId: string, query?: { pipelineId?: string; stage?: string; search?: string }) { return this.dealsService.exportOpportunities(tenantId, query); }
+  bulkUpdateOpportunityStage(tenantId: string, ids: string[], stage: string) { return this.dealsService.bulkUpdateOpportunityStage(tenantId, ids, stage); }
 
   // ── PRICE BOOKS & PRODUCTS ────────────────────
-  getPriceBooks(tenantId: string) { return this.dealsService.getPriceBooks(tenantId); }
+  getPriceBooks(tenantId: string, query?: { isActive?: boolean; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.dealsService.getPriceBooks(tenantId, query); }
   createPriceBook(tenantId: string, orgId: string, dto: CreatePriceBookInput) { return this.dealsService.createPriceBook(tenantId, orgId, dto); }
   updatePriceBook(tenantId: string, id: string, dto: UpdatePriceBookInput) { return this.dealsService.updatePriceBook(tenantId, id, dto); }
   deletePriceBook(tenantId: string, id: string) { return this.dealsService.deletePriceBook(tenantId, id); }
   getPriceBookEntries(tenantId: string, priceBookId: string) { return this.dealsService.getPriceBookEntries(tenantId, priceBookId); }
   addPriceBookEntry(tenantId: string, priceBookId: string, dto: CreatePriceBookEntryInput) { return this.dealsService.addPriceBookEntry(tenantId, priceBookId, dto); }
   deletePriceBookEntry(tenantId: string, entryId: string) { return this.dealsService.deletePriceBookEntry(tenantId, entryId); }
-  getCrmProducts(tenantId: string) { return this.dealsService.getCrmProducts(tenantId); }
+  getCrmProducts(tenantId: string, query?: { categoryId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.dealsService.getCrmProducts(tenantId, query); }
 
   // ── ACTIVITIES & EMAIL TEMPLATES ──────────────
   getActivities(tenantId: string, leadId?: string, opportunityId?: string, customerId?: string) { return this.activitiesService.getActivities(tenantId, leadId, opportunityId, customerId); }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent } from '@unerp/ui';
+import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent, useToast } from '@unerp/ui';
 import {
     Search, Plus, X, AlertCircle,
     TrendingUp, Building, Users
@@ -38,23 +38,62 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function LeadsPage() {
+    const { success, error: showToastError } = useToast();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [totalCount, setTotalCount] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
     const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
     const [showCreate, setShowCreate] = useState(false);
     const [formData, setFormData] = useState({ firstName: '', lastName: '', company: '', email: '', phone: '', notes: '' });
     const [submitting, setSubmitting] = useState(false);
     const [showDuplicates, setShowDuplicates] = useState(false);
 
+    // Debounce search input
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to page 1 on new search
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [search]);
+
     const fetchLeads = async () => {
+        setLoading(true);
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch('/api/v1/crm/leads', { headers: { Authorization: `Bearer ${token || ''}` } });
+            const queryParams = new URLSearchParams({
+                page: String(page),
+                limit: viewMode === 'kanban' ? '100' : String(limit), // Kanban needs larger limit to show stages
+                search: debouncedSearch,
+                sortBy,
+                sortOrder,
+            });
+            if (status && viewMode !== 'kanban') {
+                queryParams.append('status', status);
+            }
+            const res = await fetch(`/api/v1/crm/leads?${queryParams.toString()}`, { headers: { Authorization: `Bearer ${token || ''}` } });
             if (!res.ok) throw new Error();
             const data = await res.json();
-      setLeads(Array.isArray(data) ? data : (data?.data || []));
+            if (data && typeof data === 'object' && 'data' in data) {
+                setLeads(data.data || []);
+                setTotalCount(data.totalCount || 0);
+                setTotalPages(data.totalPages || 0);
+            } else {
+                const list = Array.isArray(data) ? data : [];
+                setLeads(list);
+                setTotalCount(list.length);
+                setTotalPages(Math.ceil(list.length / limit));
+            }
         } catch {
             setError('Could not load data. Please try again.');
             setLeads([]);
@@ -63,7 +102,9 @@ export default function LeadsPage() {
         }
     };
 
-    useEffect(() => { fetchLeads(); }, []);
+    useEffect(() => {
+        fetchLeads();
+    }, [page, debouncedSearch, status, sortBy, sortOrder, viewMode]);
 
     const handleStatusChange = async (leadId: string, newStatus: string) => {
         const token = localStorage.getItem('token');
@@ -82,25 +123,37 @@ export default function LeadsPage() {
         setSubmitting(true);
         const token = localStorage.getItem('token');
         try {
+            const payload = {
+                ...formData,
+                email: formData.email.trim() || undefined,
+                phone: formData.phone.trim() || undefined,
+                company: formData.company.trim() || undefined,
+                notes: formData.notes.trim() || undefined,
+            };
             const res = await fetch('/api/v1/crm/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
             if (res.ok) {
                 setShowCreate(false);
                 setFormData({ firstName: '', lastName: '', company: '', email: '', phone: '', notes: '' });
+                success('Lead created successfully.');
                 fetchLeads();
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                const errMsg = errData.message || 'Failed to create lead.';
+                showToastError(errMsg);
             }
-        } catch { /* demo */ } finally { setSubmitting(false); }
+        } catch (err: any) {
+            showToastError(err.message || 'An error occurred while creating lead.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    const filteredLeads = leads.filter(l =>
-        `${l.firstName} ${l.lastName} ${l.company || ''} ${l.email || ''}`.toLowerCase().includes(search.toLowerCase())
-    );
-
     const groupedLeads = LEAD_STATUSES.reduce((acc, status) => {
-        acc[status] = filteredLeads.filter(l => l.status === status);
+        acc[status] = leads.filter(l => l.status === status);
         return acc;
     }, {} as Record<string, Lead[]>);
 
@@ -136,13 +189,32 @@ export default function LeadsPage() {
                 </div>
             )}
 
-            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 250, maxWidth: '400px' }}>
                     <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
                     <input type="text" placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none' }} />
                 </div>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{filteredLeads.length} leads</span>
+                {viewMode === 'table' && (
+                    <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}
+                        style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+                        <option value="">All Statuses</option>
+                        {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                )}
+                <select value={`${sortBy}:${sortOrder}`} onChange={e => {
+                    const parts = e.target.value.split(':');
+                    if (parts[0] && parts[1]) {
+                        setSortBy(parts[0]);
+                        setSortOrder(parts[1] as 'asc' | 'desc');
+                    }
+                }}
+                    style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+                    <option value="createdAt:desc">Newest First</option>
+                    <option value="score:desc">Lead Score (Highest)</option>
+                    <option value="firstName:asc">Name (A-Z)</option>
+                </select>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginLeft: 'auto' }}>{totalCount} leads found</span>
             </div>
 
             {viewMode === 'kanban' ? (
@@ -164,7 +236,7 @@ export default function LeadsPage() {
                                                     <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
                                                         {lead.firstName} {lead.lastName}
                                                     </span>
-                                                                    <ScoreChip score={lead.score} />
+                                                    <ScoreChip score={lead.score} />
                                                 </div>
                                                 {lead.company && (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
@@ -205,7 +277,7 @@ export default function LeadsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredLeads.map(lead => (
+                            {leads.map(lead => (
                                 <tr key={lead.id} style={{ borderBottom: '1px solid var(--color-border)', cursor: 'pointer' }} onClick={() => window.location.href = `/crm/leads/${lead.id}`}>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{lead.firstName} {lead.lastName}</td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{lead.company || '-'}</td>
@@ -219,6 +291,21 @@ export default function LeadsPage() {
                             ))}
                         </tbody>
                     </table>
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                                Showing Page {page} of {totalPages} ({totalCount} total)
+                            </span>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                                    Previous
+                                </Button>
+                                <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </Card>
             )}
 

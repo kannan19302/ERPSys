@@ -73,7 +73,6 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'email-templates': 'Email Templates',
   advanced: 'Advanced',
   segments: 'Segments',
-  'lead-scoring': 'Lead Scoring',
   'duplicate-rules': 'Duplicate Rules',
   pipelines: 'Pipelines',
   'sla-policies': 'SLA Policies',
@@ -205,6 +204,14 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'identity-access': 'Identity & Access',
   ecommerce: 'E-Commerce',
   listings: 'Listings',
+  intelligence: 'Intelligence',
+  'lead-scoring': 'Lead Scoring',
+  'deal-velocity': 'Deal Velocity',
+  clv: 'CLV Analytics',
+  partners: 'Partner Management',
+  journey: 'Attribution & Journey',
+  sentiment: 'Sentiment & Health',
+  campaigns: 'Campaign Analytics',
 };
 
 export const formatSegment = (segment: string): string => {

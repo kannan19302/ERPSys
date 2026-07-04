@@ -14,9 +14,10 @@ vi.mock('@unerp/database', () => ({
       findFirst: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     contact: { findFirst: vi.fn(), findMany: vi.fn() },
-    customer: { findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    customer: { findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn(), delete: vi.fn() },
   },
 }));
 
@@ -52,25 +53,60 @@ describe('CrmDuplicatesService', () => {
       { id: 'l2', email: 'A@B.com  ' },
       { id: 'l3', email: 'x@y.com' },
     ]);
-    const result = await service.scanEntity(TENANT, 'LEAD');
-    expect(result.groups.length).toBe(1);
-    expect(result.groups[0].ids.sort()).toEqual(['l1', 'l2']);
+    const result = await service.scanEntity(TENANT, 'leads');
+    expect(result.length).toBe(1);
+    expect(result[0].records.map((r: any) => r.id).sort()).toEqual(['l1', 'l2']);
   });
 
   it('merges a source lead into a target, filling missing fields and soft-deleting source', async () => {
-    (prisma.lead.findFirst as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ id: 's', tenantId: TENANT, company: 'Acme', phone: '123' })
-      .mockResolvedValueOnce({ id: 't', tenantId: TENANT, company: null, phone: '999' });
+    (prisma.lead.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 's', tenantId: TENANT, company: 'Acme', phone: '123' },
+      { id: 't', tenantId: TENANT, company: null, phone: '999' },
+    ]);
     (prisma.lead.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (prisma.lead.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({});
 
-    const result = await service.mergeLeads(TENANT, { sourceId: 's', targetId: 't' });
+    const result = await service.mergeLeads(TENANT, { winnerId: 't', loserIds: ['s'], fieldChoices: { company: 's' } });
     expect(result.merged).toBe(true);
     const firstUpdate = (prisma.lead.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
     expect(firstUpdate.where.id).toBe('t');
     expect(firstUpdate.data.company).toBe('Acme');
-    // target already had phone → not overwritten
+    // target already had phone → not in fieldChoices and not overwritten
     expect(firstUpdate.data.phone).toBeUndefined();
-    const secondUpdate = (prisma.lead.update as ReturnType<typeof vi.fn>).mock.calls[1][0];
+    const secondUpdate = (prisma.lead.updateMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(secondUpdate.where.id.in).toContain('s');
     expect(secondUpdate.data.deletedAt).toBeInstanceOf(Date);
+  });
+
+  it('merges accounts (customers) and SOFT-deletes losers via updateMany + deletedAt, consistent with CrmCustomersService.deleteCustomer', async () => {
+    (prisma.customer.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'winner', tenantId: TENANT, name: 'Acme Inc', email: null },
+      { id: 'loser', tenantId: TENANT, name: 'Acme Incorporated', email: 'contact@acme.com' },
+    ]);
+    (prisma.customer.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (prisma.customer.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+
+    const result = await service.mergeAccounts(TENANT, {
+      winnerId: 'winner',
+      loserIds: ['loser'],
+      fieldChoices: { email: 'loser' },
+    });
+
+    expect(result.merged).toBe(true);
+    // Never hard-deletes — deleteMany must not be called for customer
+    expect(prisma.customer.delete).not.toHaveBeenCalled();
+    expect(prisma.customer.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['loser'] }, tenantId: TENANT },
+      data: { deletedAt: expect.any(Date) },
+    });
+    const patchCall = (prisma.customer.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(patchCall.where.id).toBe('winner');
+    expect(patchCall.data.email).toBe('contact@acme.com');
+  });
+
+  it('rejects merging an account into itself', async () => {
+    await expect(
+      service.mergeAccounts(TENANT, { winnerId: 'a', loserIds: ['a'] }),
+    ).rejects.toThrow('winnerId cannot be in loserIds');
   });
 });

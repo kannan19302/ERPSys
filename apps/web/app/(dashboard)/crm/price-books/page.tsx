@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PageHeader, Card, Button, Spinner, Badge } from '@unerp/ui';
-import { BookOpen, Plus, X, DollarSign, CheckCircle } from 'lucide-react';
+import { PageHeader, Card, Button, Spinner, Badge, useToast } from '@unerp/ui';
+import { BookOpen, Plus, X, DollarSign, CheckCircle, Search } from 'lucide-react';
 
 interface PriceBook {
   id: string;
@@ -17,59 +17,115 @@ interface PriceBook {
 }
 
 export default function PriceBooksPage() {
+  const { success, error } = useToast();
   const [priceBooks, setPriceBooks] = useState<PriceBook[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [isActive, setIsActive] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(6);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   const [showCreate, setShowCreate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', currency: 'USD', isDefault: false, validFrom: '', validTo: '' });
 
+  // Debounce search input
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
-    fetchPriceBooks();
-  }, []);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset to page 1 on new search
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   const fetchPriceBooks = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/crm/price-books', { headers: { Authorization: `Bearer ${token || ''}` } });
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        search: debouncedSearch,
+        sortBy,
+        sortOrder,
+      });
+      if (isActive) queryParams.append('isActive', isActive);
+
+      const res = await fetch(`/api/v1/crm/price-books?${queryParams.toString()}`, { headers: { Authorization: `Bearer ${token || ''}` } });
       if (res.ok) {
-        const data = await res.json();
-        setPriceBooks(Array.isArray(data) ? data : data?.data || []);
+        const d = await res.json();
+        if (d && typeof d === 'object' && 'data' in d) {
+          setPriceBooks(d.data || []);
+          setTotalCount(d.totalCount || 0);
+          setTotalPages(d.totalPages || 0);
+        } else {
+          const list = Array.isArray(d) ? d : [];
+          setPriceBooks(list);
+          setTotalCount(list.length);
+          setTotalPages(Math.ceil(list.length / limit));
+        }
       } else {
         setPriceBooks([
           { id: '1', name: 'Standard Price List', description: 'Default pricing', currency: 'USD', isDefault: true, isActive: true, validFrom: null, validTo: null, _count: { entries: 12 } },
           { id: '2', name: 'Enterprise Discount', description: 'Enterprise tier pricing', currency: 'USD', isDefault: false, isActive: true, validFrom: null, validTo: null, _count: { entries: 8 } },
         ]);
+        setTotalCount(2);
+        setTotalPages(1);
       }
     } catch {
       setPriceBooks([
         { id: '1', name: 'Standard Price List', description: 'Default pricing', currency: 'USD', isDefault: true, isActive: true, validFrom: null, validTo: null, _count: { entries: 12 } },
       ]);
+      setTotalCount(1);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchPriceBooks();
+  }, [page, debouncedSearch, isActive, sortBy, sortOrder]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    const token = localStorage.getItem('token');
     try {
-      const token = localStorage.getItem('token');
+      const payload = {
+        ...formData,
+        description: formData.description.trim() || undefined,
+        validFrom: formData.validFrom || undefined,
+        validTo: formData.validTo || undefined,
+      };
       const res = await fetch('/api/v1/crm/price-books', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setShowCreate(false);
         setFormData({ name: '', description: '', currency: 'USD', isDefault: false, validFrom: '', validTo: '' });
+        success('Price book created successfully.');
         fetchPriceBooks();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.message || 'Failed to create price book.';
+        error(errMsg);
       }
-    } catch { /* fallback */ } finally {
+    } catch (err: any) {
+      error(err.message || 'An error occurred while creating price book.');
+    } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-10)' }}><Spinner size="lg" /></div>;
+  if (loading && priceBooks.length === 0) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-10)' }}><Spinner size="lg" /></div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -79,6 +135,33 @@ export default function PriceBooksPage() {
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Price Books' }]}
         actions={<Button variant="primary" size="sm" onClick={() => setShowCreate(true)}><Plus size={14} /> New Price Book</Button>}
       />
+
+      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 250, maxWidth: 400 }}>
+          <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+          <input
+            type="text" placeholder="Search price books..." value={search} onChange={(e) => setSearch(e.target.value)}
+            style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-elevated)', color: 'var(--color-text)' }}
+          />
+        </div>
+        <select value={isActive} onChange={e => { setIsActive(e.target.value); setPage(1); }}
+          style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+          <option value="">All Statuses</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <select value={`${sortBy}:${sortOrder}`} onChange={e => {
+          const parts = e.target.value.split(':');
+          if (parts[0] && parts[1]) {
+            setSortBy(parts[0]);
+            setSortOrder(parts[1] as 'asc' | 'desc');
+          }
+        }}
+          style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+          <option value="createdAt:desc">Newest First</option>
+          <option value="name:asc">Name (A-Z)</option>
+        </select>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
         {priceBooks.map((pb) => (
@@ -93,12 +176,28 @@ export default function PriceBooksPage() {
             {pb.description && <p style={{ margin: '0 0 var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{pb.description}</p>}
             <div style={{ display: 'flex', gap: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
               <span><DollarSign size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> {pb.currency}</span>
-              <span>{pb._count.entries} products</span>
+              <span>{pb._count?.entries || 0} products</span>
               <Badge variant={pb.isActive ? 'success' : 'default'}>{pb.isActive ? 'Active' : 'Inactive'}</Badge>
             </div>
           </Card>
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+            Showing Page {page} of {totalPages} ({totalCount} total)
+          </span>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+              Previous
+            </Button>
+            <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
 
       {priceBooks.length === 0 && (
         <Card padding="lg">

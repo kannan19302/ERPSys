@@ -1,8 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { CreateLeadInput, UpdateLeadInput } from '@unerp/shared';
 import { CrmLeadScoringService } from './crm-lead-scoring.service';
+
+// Lead status lifecycle (schema.prisma `Lead.status` comment): NEW, CONTACTED,
+// QUALIFIED, DISQUALIFIED, CONVERTED. DISQUALIFIED and CONVERTED are terminal —
+// CONVERTED must only be reached via convertLead() (which also stamps
+// convertedCustomerId/convertedOpportunityId), never a bare status PATCH, and
+// neither terminal state should silently re-open via updateLeadStatus.
+const LEAD_STATUS_TRANSITIONS: Record<string, string[]> = {
+  NEW: ['CONTACTED', 'QUALIFIED', 'DISQUALIFIED'],
+  CONTACTED: ['NEW', 'QUALIFIED', 'DISQUALIFIED'],
+  QUALIFIED: ['CONTACTED', 'DISQUALIFIED', 'CONVERTED'],
+  DISQUALIFIED: [],
+  CONVERTED: [],
+};
 
 /**
  * Leads bounded context: lead sources, the lead lifecycle (create → score →
@@ -12,20 +25,42 @@ import { CrmLeadScoringService } from './crm-lead-scoring.service';
  */
 @Injectable()
 export class CrmLeadsService {
-  constructor(private readonly leadScoring: CrmLeadScoringService) {}
+  constructor(@Inject(CrmLeadScoringService) private readonly leadScoring: CrmLeadScoringService) { }
 
   async getLeadSources(tenantId: string) {
     return prisma.leadSource.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
   }
 
-  async getLeads(tenantId: string, status?: string) {
+  async getLeads(tenantId: string, query?: { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
     const where: Prisma.LeadWhereInput = { tenantId, deletedAt: null };
-    if (status) where.status = status;
-    return prisma.lead.findMany({
-      where,
-      include: { source: true, _count: { select: { activities: true, opportunities: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (query?.status) where.status = query.status;
+    if (query?.search) {
+      where.OR = [
+        { firstName: { contains: query.search, mode: 'insensitive' } },
+        { lastName: { contains: query.search, mode: 'insensitive' } },
+        { company: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const page = query?.page || 1;
+    const limit = query?.limit || 20;
+    const skip = (page - 1) * limit;
+    const orderBy: Prisma.LeadOrderByWithRelationInput = {};
+    if (query?.sortBy === 'score') orderBy.score = query.sortOrder || 'desc';
+    else if (query?.sortBy === 'createdAt') orderBy.createdAt = query.sortOrder || 'desc';
+    else if (query?.sortBy === 'firstName') orderBy.firstName = query.sortOrder || 'asc';
+    else orderBy.createdAt = 'desc';
+    const [data, totalCount] = await Promise.all([
+      prisma.lead.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: { source: true, _count: { select: { activities: true, opportunities: true } } },
+      }),
+      prisma.lead.count({ where }),
+    ]);
+    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
   }
 
   async getLeadById(tenantId: string, id: string) {
@@ -121,9 +156,84 @@ export class CrmLeadsService {
   async updateLeadStatus(tenantId: string, id: string, status: string) {
     const existing = await prisma.lead.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Lead not found');
+
+    if (existing.status !== status) {
+      const allowed = LEAD_STATUS_TRANSITIONS[existing.status] ?? [];
+      if (!allowed.includes(status)) {
+        if (status === 'CONVERTED') {
+          throw new BadRequestException(
+            'Leads cannot be marked CONVERTED via a status update — use POST /crm/leads/:id/convert, which also creates the linked Customer/Opportunity.',
+          );
+        }
+        throw new BadRequestException(
+          `Cannot transition lead from ${existing.status} to ${status}. Allowed transitions from ${existing.status}: ${allowed.length ? allowed.join(', ') : 'none (terminal status)'}.`,
+        );
+      }
+    }
+
     const updated = await prisma.lead.update({ where: { id }, data: { status } });
     await this.recalculateLeadScore(tenantId, id);
     return updated;
+  }
+
+  /**
+   * Lead 360 view: the lead record, its activity timeline, any opportunities
+   * created from converting it, and computed metrics (age, score trend,
+   * conversion-likelihood bucket). Mirrors the pattern in
+   * CrmCustomersService.getCustomerSummary().
+   */
+  async getLeadSummary(tenantId: string, id: string) {
+    const lead = await prisma.lead.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: {
+        source: true,
+        activities: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+    if (!lead) throw new NotFoundException('Lead not found');
+
+    const relatedOpportunities = await prisma.opportunity.findMany({
+      where: { tenantId, leadId: id, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, name: true, stage: true, amount: true,
+        probability: true, expectedCloseDate: true, createdAt: true,
+      },
+    });
+
+    const now = new Date();
+    const daysSinceCreation = Math.floor((now.getTime() - lead.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+    // recalculateLeadScore() does not persist a score-history table (only the
+    // current `score` field), so a true trend line isn't available yet — we
+    // derive a directional signal instead: activities logged after the lead
+    // was created generally push score upward (see the scoring rules), so a
+    // completed-activity-heavy timeline implies an upward trend.
+    const completedActivities = lead.activities.filter((a) => a.completedAt).length;
+    const pendingActivities = lead.activities.length - completedActivities;
+    const scoreTrend: 'up' | 'down' | 'flat' =
+      completedActivities > pendingActivities ? 'up' : lead.activities.length === 0 ? 'flat' : 'down';
+
+    let conversionLikelihood: 'low' | 'medium' | 'high';
+    if (lead.score >= 70) conversionLikelihood = 'high';
+    else if (lead.score >= 40) conversionLikelihood = 'medium';
+    else conversionLikelihood = 'low';
+
+    return {
+      lead,
+      recentActivities: lead.activities.slice(0, 10),
+      relatedOpportunities,
+      metrics: {
+        daysSinceCreation,
+        score: lead.score,
+        scoreTrend,
+        conversionLikelihood,
+        totalActivities: lead.activities.length,
+        completedActivities,
+        pendingActivities,
+        isConverted: lead.status === 'CONVERTED',
+      },
+    };
   }
 
   async convertLead(tenantId: string, orgId: string, leadId: string, customerName?: string, opportunityName?: string, opportunityAmount?: number) {
@@ -180,5 +290,39 @@ export class CrmLeadsService {
     const existing = await prisma.lead.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Lead not found');
     return prisma.lead.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  async bulkUpdateLeadStatus(tenantId: string, ids: string[], status: string) {
+    const validStatuses = ['NEW', 'CONTACTED', 'QUALIFIED', 'DISQUALIFIED', 'CONVERTED'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+    }
+    const result = await prisma.lead.updateMany({
+      where: { id: { in: ids }, tenantId, deletedAt: null },
+      data: { status },
+    });
+    return { updated: result.count, status };
+  }
+
+  async exportLeads(tenantId: string, query?: { search?: string; status?: string }) {
+    const where: Prisma.LeadWhereInput = { tenantId, deletedAt: null };
+    if (query?.status) where.status = query.status;
+    if (query?.search) {
+      where.OR = [
+        { firstName: { contains: query.search, mode: 'insensitive' } },
+        { lastName: { contains: query.search, mode: 'insensitive' } },
+        { company: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.lead.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, firstName: true, lastName: true, company: true, email: true,
+        phone: true, mobile: true, status: true, score: true, industry: true,
+        annualRevenue: true, employeeCount: true, notes: true, createdAt: true, updatedAt: true,
+      },
+    });
   }
 }

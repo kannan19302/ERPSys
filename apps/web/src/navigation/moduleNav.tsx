@@ -1,13 +1,13 @@
 import React from 'react';
 import {
-  Activity, Award, BarChart3, Bell, BookOpen, Box, Briefcase, Building, Building2,
+  Activity, Award, BarChart3, Bell, BookOpen, Box, Brain, Briefcase, Building, Building2,
   Calendar, CalendarDays, CheckSquare, ClipboardCheck, ClipboardList, Clock, Cloud,
   Code2, Coffee, Cpu, CreditCard, Database, DollarSign, Download, ExternalLink, Eye,
   FileCode2, FileSliders, FileText, FolderOpen, GitFork, Globe, GraduationCap, Hammer,
   HardDrive, HelpCircle, History, Home, Image, Inbox, Key, Layers, LayoutDashboard,
   LayoutGrid, Mail, MapPin, MessageSquare, Monitor, Package, Percent, PieChart, Play,
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
-  ShieldCheck, ShoppingCart, Smartphone, Star, Store, Target, Trash2, TrendingUp, Truck,
+  ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
   Workflow, Wrench, Zap, Link, GitBranch,
 } from 'lucide-react';
@@ -206,6 +206,21 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Reports', href: '/crm/reports', icon: PieChart },
             { name: 'Dashboards', href: '/crm/dashboards', icon: Layers },
             { name: 'Advanced', href: '/crm/advanced', icon: Settings },
+          ]
+        },
+        {
+          name: 'CRM Intelligence & AI',
+          isHeader: true,
+          items: [
+            { name: 'Intelligence Hub', href: '/crm/intelligence', icon: Brain },
+            { name: 'Predictive Lead Scoring', href: '/crm/intelligence/lead-scoring', icon: Target },
+            { name: 'Customer Health & Churn', href: '/crm/intelligence/health', icon: ShieldAlert },
+            { name: 'Deal Velocity', href: '/crm/intelligence/deal-velocity', icon: Clock },
+            { name: 'Attribution & Journey', href: '/crm/intelligence/journey', icon: Workflow },
+            { name: 'Sentiment & Health', href: '/crm/intelligence/sentiment', icon: Smile },
+            { name: 'CLV Analytics', href: '/crm/intelligence/clv', icon: DollarSign },
+            { name: 'Partner Management', href: '/crm/intelligence/partners', icon: Users },
+            { name: 'Campaign Analytics', href: '/crm/intelligence/campaigns', icon: Target },
           ]
         },
         {

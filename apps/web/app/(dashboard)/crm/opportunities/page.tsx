@@ -43,12 +43,22 @@ export default function OpportunitiesPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
+    const [stage, setStage] = useState('');
+    const [pipelineId, setPipelineId] = useState('');
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [totalCount, setTotalCount] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
     const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
     const [showCreate, setShowCreate] = useState(false);
     const [formData, setFormData] = useState({ name: '', customerId: '', amount: '', probability: '10', stage: 'PROSPECTING' });
     const [submitting, setSubmitting] = useState(false);
     const [customers, setCustomers] = useState<Array<{ id: string; name: string }>>([]);
     const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([]);
+    const [pipelines, setPipelines] = useState<Array<{ id: string; name: string }>>([]);
 
     const stageKeys = pipelineStages.length > 0 ? pipelineStages.map(s => s.key) : DEFAULT_STAGES;
     const stageLabel = (k: string) => pipelineStages.find(s => s.key === k)?.name || DEFAULT_STAGE_LABELS[k] || k;
@@ -56,21 +66,57 @@ export default function OpportunitiesPage() {
     const isLostStage = (k: string) => pipelineStages.find(s => s.key === k)?.isLost ?? (k === 'CLOSED_LOST');
     const isWonStage = (k: string) => pipelineStages.find(s => s.key === k)?.isWon ?? (k === 'CLOSED_WON');
 
+    // Debounce search input
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to page 1 on new search
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [search]);
+
     const fetchData = async () => {
+        setLoading(true);
         const token = localStorage.getItem('token');
         try {
+            const queryParams = new URLSearchParams({
+                page: String(page),
+                limit: viewMode === 'kanban' ? '100' : String(limit),
+                search: debouncedSearch,
+                sortBy,
+                sortOrder,
+            });
+            if (stage && viewMode !== 'kanban') queryParams.append('stage', stage);
+            if (pipelineId) queryParams.append('pipelineId', pipelineId);
+
             const [oppsRes, customersRes, pipelinesRes] = await Promise.all([
-                fetch('/api/v1/crm/opportunities', { headers: { Authorization: `Bearer ${token || ''}` } }),
+                fetch(`/api/v1/crm/opportunities?${queryParams.toString()}`, { headers: { Authorization: `Bearer ${token || ''}` } }),
                 fetch('/api/v1/crm/customers', { headers: { Authorization: `Bearer ${token || ''}` } }),
                 fetch('/api/v1/crm/pipelines', { headers: { Authorization: `Bearer ${token || ''}` } }),
             ]);
-            if (oppsRes.ok) setOpportunities(await oppsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
+
+            if (oppsRes.ok) {
+                const oppsJson = await oppsRes.json();
+                if (oppsJson && typeof oppsJson === 'object' && 'data' in oppsJson) {
+                    setOpportunities(oppsJson.data || []);
+                    setTotalCount(oppsJson.totalCount || 0);
+                    setTotalPages(oppsJson.totalPages || 0);
+                } else {
+                    const list = Array.isArray(oppsJson) ? oppsJson : [];
+                    setOpportunities(list);
+                    setTotalCount(list.length);
+                    setTotalPages(Math.ceil(list.length / limit));
+                }
+            }
             if (customersRes.ok) setCustomers((await customersRes.json()).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
             if (pipelinesRes.ok) {
                 const pipelinesJson = await pipelinesRes.json();
                 const pipelinesList = Array.isArray(pipelinesJson) ? pipelinesJson : (pipelinesJson?.data || []);
+                setPipelines(pipelinesList);
                 const defaultPipeline = pipelinesList.find((p: { isDefault?: boolean }) => p.isDefault) || pipelinesList[0];
-                if (defaultPipeline?.id) {
+                if (defaultPipeline?.id && pipelineStages.length === 0) {
+                    setPipelineId(defaultPipeline.id);
                     const stagesRes = await fetch(`/api/v1/crm/pipelines/${defaultPipeline.id}/stages`, { headers: { Authorization: `Bearer ${token || ''}` } });
                     if (stagesRes.ok) {
                         const sj = await stagesRes.json();
@@ -94,7 +140,9 @@ export default function OpportunitiesPage() {
         } finally { setLoading(false); }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => {
+        fetchData();
+    }, [page, debouncedSearch, stage, pipelineId, sortBy, sortOrder, viewMode]);
 
     const handleStageChange = async (id: string, newStage: string) => {
         const token = localStorage.getItem('token');
@@ -122,20 +170,16 @@ export default function OpportunitiesPage() {
         } catch { /* demo */ } finally { setSubmitting(false); }
     };
 
-    const filtered = opportunities.filter(o =>
-        `${o.name} ${o.customer?.name || ''}`.toLowerCase().includes(search.toLowerCase())
-    );
+    // Calculate totals based on currently loaded page/view
+    const totalPipeline = opportunities.filter(o => !isLostStage(o.stage)).reduce((sum, o) => sum + Number(o.amount || 0), 0);
+    const totalWon = opportunities.filter(o => isWonStage(o.stage)).reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
     const grouped = stageKeys.reduce((acc, stage) => {
-        acc[stage] = filtered.filter(o => o.stage === stage);
+        acc[stage] = opportunities.filter(o => o.stage === stage);
         return acc;
     }, {} as Record<string, Opportunity[]>);
 
-    // Calculate totals
-    const totalPipeline = filtered.filter(o => !isLostStage(o.stage)).reduce((sum, o) => sum + Number(o.amount || 0), 0);
-    const totalWon = filtered.filter(o => isWonStage(o.stage)).reduce((sum, o) => sum + Number(o.amount || 0), 0);
-
-    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
+    if (loading && opportunities.length === 0) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
@@ -166,12 +210,12 @@ export default function OpportunitiesPage() {
                 </Card>
                 <Card>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Open Deals</div>
-                    <h3 style={{ margin: 'var(--space-1) 0', fontSize: 'var(--text-xl)' }}>{filtered.filter(o => !isWonStage(o.stage) && !isLostStage(o.stage)).length}</h3>
+                    <h3 style={{ margin: 'var(--space-1) 0', fontSize: 'var(--text-xl)' }}>{opportunities.filter(o => !isWonStage(o.stage) && !isLostStage(o.stage)).length}</h3>
                 </Card>
                 <Card>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Avg Deal Size</div>
                     <h3 style={{ margin: 'var(--space-1) 0', fontSize: 'var(--text-xl)' }}>
-                        ${filtered.length > 0 ? Math.round(totalPipeline / filtered.filter(o => !isLostStage(o.stage)).length || 1).toLocaleString() : 0}
+                        ${opportunities.length > 0 ? Math.round(totalPipeline / (opportunities.filter(o => !isLostStage(o.stage)).length || 1)).toLocaleString() : 0}
                     </h3>
                 </Card>
             </div>
@@ -179,13 +223,38 @@ export default function OpportunitiesPage() {
             {error && <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}><AlertCircle size={16} /> <span>{error}</span></div>}
 
             {/* Search */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 250, maxWidth: '400px' }}>
                     <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
                     <input type="text" placeholder="Search opportunities..." value={search} onChange={e => setSearch(e.target.value)}
                         style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) var(--space-9)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', outline: 'none' }} />
                 </div>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{filtered.length} deals</span>
+                {pipelines.length > 1 && (
+                    <select value={pipelineId} onChange={e => { setPipelineId(e.target.value); setPage(1); }}
+                        style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+                        {pipelines.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                )}
+                {viewMode === 'table' && (
+                    <select value={stage} onChange={e => { setStage(e.target.value); setPage(1); }}
+                        style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+                        <option value="">All Stages</option>
+                        {stageKeys.map(s => <option key={s} value={s}>{stageLabel(s)}</option>)}
+                    </select>
+                )}
+                <select value={`${sortBy}:${sortOrder}`} onChange={e => {
+                    const parts = e.target.value.split(':');
+                    if (parts[0] && parts[1]) {
+                        setSortBy(parts[0]);
+                        setSortOrder(parts[1] as 'asc' | 'desc');
+                    }
+                }}
+                    style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+                    <option value="createdAt:desc">Newest First</option>
+                    <option value="amount:desc">Amount (Highest)</option>
+                    <option value="name:asc">Name (A-Z)</option>
+                </select>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginLeft: 'auto' }}>{totalCount} deals found</span>
             </div>
 
             {viewMode === 'kanban' ? (
@@ -243,7 +312,7 @@ export default function OpportunitiesPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filtered.map(opp => (
+                            {opportunities.map(opp => (
                                 <tr key={opp.id} style={{ borderBottom: '1px solid var(--color-border)', cursor: 'pointer' }} onClick={() => window.location.href = `/crm/opportunities/${opp.id}`}>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{opp.name}</td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{opp.customer?.name || '-'}</td>
@@ -255,6 +324,21 @@ export default function OpportunitiesPage() {
                             ))}
                         </tbody>
                     </table>
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                                Showing Page {page} of {totalPages} ({totalCount} total)
+                            </span>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                                    Previous
+                                </Button>
+                                <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </Card>
             )}
 

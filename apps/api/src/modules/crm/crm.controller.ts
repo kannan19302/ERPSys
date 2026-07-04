@@ -10,7 +10,7 @@ import { ChangeHistoryInterceptor } from '../../common/interceptors/change-histo
 import { TrackChanges } from '../../common/decorators/track-changes.decorator';
 import {
   CreateCustomerInput, UpdateCustomerInput,
-  CreateVendorInput,
+  CreateVendorInput, UpdateVendorInput, VendorNoteInput,
   CreateContactInput, UpdateContactInput,
   CreateLeadInput, UpdateLeadInput,
   CreateOpportunityInput, UpdateOpportunityInput,
@@ -20,7 +20,7 @@ import {
   CreateCampaignInput,
   CreateOpportunityLineItemInput, UpdateOpportunityLineItemInput,
   CreatePriceBookInput, UpdatePriceBookInput, CreatePriceBookEntryInput,
-  CreateContactTagInput,
+  CreateContactTagInput, CreateCustomerTagInput,
   CreateSalesTargetInput, UpdateSalesTargetInput,
   CreateSavedReportInput,
   CreateCrmWorkflowRuleInput, UpdateCrmWorkflowRuleInput,
@@ -36,8 +36,10 @@ import {
   CreatePlaybookInput, UpdatePlaybookInput, CreateBattlecardInput, UpdateBattlecardInput,
   CreateCrmDashboardInput, UpdateCrmDashboardInput, CreateDashboardWidgetInput, UpdateDashboardWidgetInput,
   createCustomerSchema, updateCustomerSchema,
-  createVendorSchema,
-  createContactSchema, updateContactSchema
+  createVendorSchema, updateVendorSchema, vendorNoteSchema, vendorBulkStatusSchema,
+  customerNoteSchema, customerBulkStatusSchema,
+  createContactSchema, updateContactSchema,
+  createCustomerTagSchema,
 } from '@unerp/shared';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -84,6 +86,47 @@ export class CrmController {
     });
   }
 
+  @ApiOperation({ summary: 'Get customer tags' })
+  @Get('customers/tags')
+  @Permissions('crm.contact.read')
+  async getCustomerTags(@Req() req: AuthenticatedRequest) {
+    return this.crmService.getCustomerTags(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create customer tag' })
+  @Post('customers/tags')
+  @Permissions('crm.contact.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CustomerTag')
+  async createCustomerTag(@Req() req: AuthenticatedRequest, @ZodBody(createCustomerTagSchema) dto: CreateCustomerTagInput) {
+    return this.crmService.createCustomerTag(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete customer tag' })
+  @Delete('customers/tags/:id')
+  @Permissions('crm.contact.delete')
+  async deleteCustomerTag(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.deleteCustomerTag(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Assign customer tag' })
+  @Post('customers/:id/tags')
+  @Permissions('crm.contact.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer', 'id')
+  async assignCustomerTag(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.object({ tagId: z.string().min(1) })) body: { tagId: string }) {
+    return this.crmService.assignCustomerTag(req.user.tenantId, id, body.tagId);
+  }
+
+  @ApiOperation({ summary: 'Remove customer tag' })
+  @Delete('customers/:id/tags/:tagId')
+  @Permissions('crm.contact.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer', 'id')
+  async removeCustomerTag(@Param('id') id: string, @Param('tagId') tagId: string) {
+    return this.crmService.removeCustomerTag(id, tagId);
+  }
+
   @ApiOperation({ summary: 'Get customer by id' })
   @Get('customers/:id')
   @Permissions('crm.contact.read')
@@ -123,13 +166,80 @@ export class CrmController {
     return this.crmService.deleteCustomer(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Change customer status' })
+  @Patch('customers/:id/status')
+  @Permissions('crm.contact.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer', 'id')
+  async updateCustomerStatus(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ status: z.enum(['ACTIVE', 'INACTIVE', 'ON_HOLD', 'BLOCKED', 'PREFERRED']) })) body: { status: string },
+  ) {
+    return this.crmService.updateCustomerStatus(req.user.tenantId, id, body.status);
+  }
+
+  @ApiOperation({ summary: 'Get customer notes/activities' })
+  @Get('customers/:id/notes')
+  @Permissions('crm.contact.read')
+  async getCustomerNotes(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getCustomerNotes(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Add customer note/activity' })
+  @Post('customers/:id/notes')
+  @Permissions('crm.contact.update')
+  async addCustomerNote(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(customerNoteSchema) dto: CustomerNoteInput,
+  ) {
+    return this.crmService.addCustomerNote(req.user.tenantId, req.user.orgId || 'org-system-default', id, dto);
+  }
+
+  @ApiOperation({ summary: 'Bulk update customer status' })
+  @Post('customers/bulk-status')
+  @Permissions('crm.contact.update')
+  async bulkUpdateCustomerStatus(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(customerBulkStatusSchema) body: { ids: string[]; status: string },
+  ) {
+    return this.crmService.bulkUpdateCustomerStatus(req.user.tenantId, body.ids, body.status);
+  }
+
+  @ApiOperation({ summary: 'Export customers (CSV-ready JSON)' })
+  @Get('customers-export')
+  @Permissions('crm.contact.read')
+  async exportCustomers(
+    @Req() req: AuthenticatedRequest,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.crmService.exportCustomers(req.user.tenantId, { search, status });
+  }
+
   // ── VENDORS ────────────────────────────────────
 
-  @ApiOperation({ summary: 'Get vendors' })
+  @ApiOperation({ summary: 'Get vendors (paginated, searchable, sortable)' })
   @Get('vendors')
   @Permissions('procurement.vendor.read')
-  async getVendors(@Req() req: AuthenticatedRequest) {
-    return this.crmService.getVendors(req.user.tenantId);
+  async getVendors(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getVendors(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      status,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Create vendor' })
@@ -141,13 +251,110 @@ export class CrmController {
     return this.crmService.createVendor(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
+  @ApiOperation({ summary: 'Get vendor by ID' })
+  @Get('vendors/:id')
+  @Permissions('procurement.vendor.read')
+  async getVendorById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getVendorById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get vendor 360° summary' })
+  @Get('vendors/:id/summary')
+  @Permissions('procurement.vendor.read')
+  async getVendorSummary(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getVendorSummary(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Update vendor' })
+  @Put('vendors/:id')
+  @Permissions('procurement.vendor.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Vendor', 'id')
+  async updateVendor(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateVendorSchema) dto: UpdateVendorInput) {
+    return this.crmService.updateVendor(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete vendor (soft)' })
+  @Delete('vendors/:id')
+  @Permissions('procurement.vendor.delete')
+  async deleteVendor(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.deleteVendor(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Change vendor status' })
+  @Patch('vendors/:id/status')
+  @Permissions('procurement.vendor.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Vendor', 'id')
+  async updateVendorStatus(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ status: z.enum(['ACTIVE', 'INACTIVE', 'ON_HOLD', 'BLOCKED', 'PREFERRED']) })) body: { status: string },
+  ) {
+    return this.crmService.updateVendorStatus(req.user.tenantId, id, body.status);
+  }
+
+  @ApiOperation({ summary: 'Get vendor notes/activities' })
+  @Get('vendors/:id/notes')
+  @Permissions('procurement.vendor.read')
+  async getVendorNotes(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getVendorNotes(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Add vendor note/activity' })
+  @Post('vendors/:id/notes')
+  @Permissions('procurement.vendor.update')
+  async addVendorNote(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(vendorNoteSchema) dto: VendorNoteInput,
+  ) {
+    return this.crmService.addVendorNote(req.user.tenantId, req.user.orgId || 'org-system-default', id, dto);
+  }
+
+  @ApiOperation({ summary: 'Bulk update vendor status' })
+  @Post('vendors/bulk-status')
+  @Permissions('procurement.vendor.update')
+  async bulkUpdateVendorStatus(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(vendorBulkStatusSchema) body: { ids: string[]; status: string },
+  ) {
+    return this.crmService.bulkUpdateVendorStatus(req.user.tenantId, body.ids, body.status);
+  }
+
+  @ApiOperation({ summary: 'Export vendors (CSV-ready JSON)' })
+  @Get('vendors-export')
+  @Permissions('procurement.vendor.read')
+  async exportVendors(
+    @Req() req: AuthenticatedRequest,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.crmService.exportVendors(req.user.tenantId, { search, status });
+  }
+
   // ── CONTACTS ──────────────────────────────────
 
-  @ApiOperation({ summary: 'Get contacts' })
+  @ApiOperation({ summary: 'Get contacts (paginated, searchable, sortable)' })
   @Get('contacts')
   @Permissions('crm.contact.read')
-  async getContacts(@Req() req: AuthenticatedRequest, @Query('customerId') customerId?: string) {
-    return this.crmService.getContacts(req.user.tenantId, customerId);
+  async getContacts(
+    @Req() req: AuthenticatedRequest,
+    @Query('customerId') customerId?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getContacts(req.user.tenantId, {
+      customerId,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Create contact' })
@@ -186,11 +393,26 @@ export class CrmController {
 
   // ── LEADS ─────────────────────────────────────
 
-  @ApiOperation({ summary: 'Get leads' })
+  @ApiOperation({ summary: 'Get leads (paginated, searchable, sortable)' })
   @Get('leads')
   @Permissions('crm.lead.read')
-  async getLeads(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
-    return this.crmService.getLeads(req.user.tenantId, status);
+  async getLeads(
+    @Req() req: AuthenticatedRequest,
+    @Query('status') status?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getLeads(req.user.tenantId, {
+      status,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Get lead by id' })
@@ -198,6 +420,13 @@ export class CrmController {
   @Permissions('crm.lead.read')
   async getLeadById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.crmService.getLeadById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get lead 360 summary (activities, converted opportunities, scoring metrics)' })
+  @Get('leads/:id/summary')
+  @Permissions('crm.lead.read')
+  async getLeadSummary(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getLeadSummary(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create lead' })
@@ -246,6 +475,27 @@ export class CrmController {
     return this.crmService.deleteLead(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Bulk update lead status' })
+  @Post('leads/bulk-status')
+  @Permissions('crm.lead.update')
+  async bulkUpdateLeadStatus(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ ids: z.array(z.string()), status: z.enum(['NEW', 'CONTACTED', 'QUALIFIED', 'DISQUALIFIED', 'CONVERTED']) })) body: { ids: string[]; status: string },
+  ) {
+    return this.crmService.bulkUpdateLeadStatus(req.user.tenantId, body.ids, body.status);
+  }
+
+  @ApiOperation({ summary: 'Export leads (CSV-ready JSON)' })
+  @Get('leads-export')
+  @Permissions('crm.lead.read')
+  async exportLeads(
+    @Req() req: AuthenticatedRequest,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.crmService.exportLeadsData(req.user.tenantId, { search, status });
+  }
+
   // ── SALES PIPELINES ───────────────────────────
 
   @ApiOperation({ summary: 'Get pipelines' })
@@ -266,15 +516,28 @@ export class CrmController {
 
   // ── OPPORTUNITIES ─────────────────────────────
 
-  @ApiOperation({ summary: 'Get opportunities' })
+  @ApiOperation({ summary: 'Get opportunities (paginated, searchable, sortable)' })
   @Get('opportunities')
   @Permissions('crm.opportunity.read')
   async getOpportunities(
     @Req() req: AuthenticatedRequest,
     @Query('pipelineId') pipelineId?: string,
-    @Query('stage') stage?: string
+    @Query('stage') stage?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
-    return this.crmService.getOpportunities(req.user.tenantId, pipelineId, stage);
+    return this.crmService.getOpportunities(req.user.tenantId, {
+      pipelineId,
+      stage,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Get opportunity by id' })
@@ -282,6 +545,13 @@ export class CrmController {
   @Permissions('crm.opportunity.read')
   async getOpportunityById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.crmService.getOpportunityById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get opportunity 360 summary (line items, activities, weighted value, aging)' })
+  @Get('opportunities/:id/summary')
+  @Permissions('crm.opportunity.read')
+  async getOpportunitySummary(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getOpportunitySummary(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create opportunity' })
@@ -314,6 +584,28 @@ export class CrmController {
   @Permissions('crm.opportunity.delete')
   async deleteOpportunity(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.crmService.deleteOpportunity(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Export opportunities (CSV-ready JSON)' })
+  @Get('opportunities-export')
+  @Permissions('crm.opportunity.read')
+  async exportOpportunities(
+    @Req() req: AuthenticatedRequest,
+    @Query('pipelineId') pipelineId?: string,
+    @Query('stage') stage?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.crmService.exportOpportunities(req.user.tenantId, { pipelineId, stage, search });
+  }
+
+  @ApiOperation({ summary: 'Bulk update opportunity stage' })
+  @Post('opportunities/bulk-stage')
+  @Permissions('crm.opportunity.update')
+  async bulkUpdateOpportunityStage(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ ids: z.array(z.string()), stage: z.string() })) body: { ids: string[]; stage: string },
+  ) {
+    return this.crmService.bulkUpdateOpportunityStage(req.user.tenantId, body.ids, body.stage);
   }
 
   // ── ACTIVITIES ────────────────────────────────
@@ -446,18 +738,48 @@ export class CrmController {
 
   // ── PHASE 1: PRICE BOOKS ─────────────────────
 
-  @ApiOperation({ summary: 'Get crm products' })
+  @ApiOperation({ summary: 'Get crm products (paginated, searchable, sortable)' })
   @Get('products')
   @Permissions('crm.product.read')
-  async getCrmProducts(@Req() req: AuthenticatedRequest) {
-    return this.crmService.getCrmProducts(req.user.tenantId);
+  async getCrmProducts(
+    @Req() req: AuthenticatedRequest,
+    @Query('categoryId') categoryId?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getCrmProducts(req.user.tenantId, {
+      categoryId,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
-  @ApiOperation({ summary: 'Get price books' })
+  @ApiOperation({ summary: 'Get price books (paginated, searchable, sortable)' })
   @Get('price-books')
   @Permissions('crm.product.read')
-  async getPriceBooks(@Req() req: AuthenticatedRequest) {
-    return this.crmService.getPriceBooks(req.user.tenantId);
+  async getPriceBooks(
+    @Req() req: AuthenticatedRequest,
+    @Query('isActive') isActive?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getPriceBooks(req.user.tenantId, {
+      isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Create price book' })
@@ -1448,8 +1770,27 @@ export class CrmController {
   @ApiOperation({ summary: 'Get customer service cases' })
   @Permissions('crm.case.read')
   @Get('cases')
-  async getCases(@Req() req: AuthenticatedRequest, @Query('status') status?: string, @Query('priority') priority?: string, @Query('customerId') customerId?: string) {
-    return this.crmService.getCases(req.user.tenantId, { status, priority, customerId });
+  async getCases(
+    @Req() req: AuthenticatedRequest,
+    @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('customerId') customerId?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.crmService.getCases(req.user.tenantId, {
+      status,
+      priority,
+      customerId,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @ApiOperation({ summary: 'Get case SLA compliance status' })
@@ -1464,6 +1805,13 @@ export class CrmController {
   @Get('cases/:id')
   async getCaseById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.crmService.getCaseById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get case 360 summary (SLA rollup + comments + customer/contact)' })
+  @Permissions('crm.case.read')
+  @Get('cases/:id/summary')
+  async getCaseSummary(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getCaseSummary(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create case' })
@@ -1492,10 +1840,41 @@ export class CrmController {
     return this.crmService.updateCase(req.user.tenantId, id, dto);
   }
 
+  @ApiOperation({ summary: 'Reopen a CLOSED case' })
+  @Permissions('crm.case.update')
+  @Post('cases/:id/reopen')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Case', 'id')
+  async reopenCase(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.reopenCase(req.user.tenantId, id);
+  }
+
   @ApiOperation({ summary: 'Add a comment to a case' })
   @Permissions('crm.case.update')
   @Post('cases/:id/comments')
   async addCaseComment(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { body: string; isInternal?: boolean }) {
     return this.crmService.addCaseComment(req.user.tenantId, id, { ...dto, authorId: req.user.userId });
+  }
+
+  @ApiOperation({ summary: 'Bulk update case status' })
+  @Post('cases/bulk-status')
+  @Permissions('crm.case.update')
+  async bulkUpdateCaseStatus(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ ids: z.array(z.string()), status: z.enum(['OPEN', 'IN_PROGRESS', 'WAITING_ON_CUSTOMER', 'RESOLVED', 'CLOSED']) })) body: { ids: string[]; status: string },
+  ) {
+    return this.crmService.bulkUpdateCaseStatus(req.user.tenantId, body.ids, body.status);
+  }
+
+  @ApiOperation({ summary: 'Export cases (CSV-ready JSON)' })
+  @Get('cases-export')
+  @Permissions('crm.case.read')
+  async exportCases(
+    @Req() req: AuthenticatedRequest,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('priority') priority?: string,
+  ) {
+    return this.crmService.exportCases(req.user.tenantId, { search, status, priority });
   }
 }

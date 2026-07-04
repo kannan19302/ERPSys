@@ -45,7 +45,11 @@ describe('CrmPipelineStagesService', () => {
       ]);
     (prisma.pipelineStage.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
 
-    const result = await service.reorder(TENANT, 'p1', ['c', 'a', 'b']);
+    const result = await service.reorder(TENANT, 'p1', [
+      { id: 'c', name: 'Stage C', position: 0, probability: 50 },
+      { id: 'a', name: 'Stage A', position: 1, probability: 10 },
+      { id: 'b', name: 'Stage B', position: 2, probability: 30 },
+    ]);
     expect(result.length).toBe(3);
     expect((prisma.pipelineStage.update as ReturnType<typeof vi.fn>).mock.calls.length).toBe(3);
   });

@@ -49,6 +49,13 @@ export default function CrmQuotationsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<Quotation | null>(null);
@@ -60,20 +67,79 @@ export default function CrmQuotationsPage() {
   ]);
   const [creating, setCreating] = useState(false);
 
+  // Debounce search input
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/v1/sales/quotations', {
-          headers: { Authorization: `Bearer ${getToken() || ''}` },
-        });
-        if (res.ok) {
-          const d = await res.json();
-          setData(Array.isArray(d) ? d : d?.data || FALLBACK);
-        } else { setData(FALLBACK); }
-      } catch { setData(FALLBACK); }
-      finally { setLoading(false); }
-    })();
-  }, []);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset to page 1 on new search
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchQuotations = async () => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        search: debouncedSearch,
+        sortBy,
+        sortOrder,
+      });
+      if (statusFilter !== 'ALL') queryParams.append('status', statusFilter);
+
+      const res = await fetch(`/api/v1/sales/quotations?${queryParams.toString()}`, {
+        headers: { Authorization: `Bearer ${getToken() || ''}` },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        if (d && typeof d === 'object' && 'data' in d) {
+          setData(d.data || []);
+          setTotalCount(d.totalCount || 0);
+          setTotalPages(d.totalPages || 0);
+        } else {
+          const list = Array.isArray(d) ? d : [];
+          setData(list);
+          setTotalCount(list.length);
+          setTotalPages(Math.ceil(list.length / limit));
+        }
+      } else {
+        setData(FALLBACK);
+        setTotalCount(FALLBACK.length);
+        setTotalPages(1);
+      }
+    } catch {
+      setData(FALLBACK);
+      setTotalCount(FALLBACK.length);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuotations();
+  }, [page, debouncedSearch, statusFilter, sortBy, sortOrder]);
+
+  const convertToOrder = async (id: string) => {
+    const token = getToken();
+    try {
+      const res = await fetch(`/api/v1/sales/orders/${id}/convert`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token || ''}` }
+      });
+      if (res.ok) {
+        setDetailOpen(false);
+        setSelected(null);
+        fetchQuotations();
+      } else {
+        alert('Failed to convert quotation');
+      }
+    } catch {
+      alert('Failed to convert quotation');
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +159,6 @@ export default function CrmQuotationsPage() {
     } catch { /* handled */ }
     finally { setCreating(false); }
   };
-
-  const filtered = data.filter((q) => {
-    const matchesSearch = !search || `${q.quotationNumber} ${q.customerName}`.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const totalValue = data.reduce((a, q) => a + Number(q.totalAmount), 0);
   const draftCount = data.filter(q => q.status === 'DRAFT').length;
@@ -176,9 +236,21 @@ export default function CrmQuotationsPage() {
             <input type="text" placeholder="Search quotations..." value={search} onChange={(e) => setSearch(e.target.value)}
               style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }} />
           </div>
+          <select value={`${sortBy}:${sortOrder}`} onChange={e => {
+            const parts = e.target.value.split(':');
+            if (parts[0] && parts[1]) {
+              setSortBy(parts[0]);
+              setSortOrder(parts[1] as 'asc' | 'desc');
+            }
+          }}
+            style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}>
+            <option value="createdAt:desc">Newest First</option>
+            <option value="totalAmount:desc">Amount (Highest)</option>
+            <option value="quotationNumber:asc">Quote No. (A-Z)</option>
+          </select>
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
             {['ALL', 'DRAFT', 'SENT', 'ACCEPTED', 'EXPIRED'].map((s) => (
-              <button key={s} onClick={() => setStatusFilter(s)} style={{
+              <button key={s} onClick={() => { setStatusFilter(s); setPage(1); }} style={{
                 padding: '6px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)',
                 border: '1px solid', borderColor: statusFilter === s ? 'var(--color-primary)' : 'var(--color-border)',
                 background: statusFilter === s ? 'var(--color-primary-light)' : 'var(--color-bg)',
@@ -192,9 +264,25 @@ export default function CrmQuotationsPage() {
       </Card>
 
       <Card padding="none">
-        <DataTable columns={columns} data={filtered} loading={loading} rowKey={(r) => r.id}
+        <DataTable columns={columns} data={data} loading={loading} rowKey={(r) => r.id}
           onRowClick={(r) => { setSelected(r); setDetailOpen(true); }}
           emptyTitle="No quotations" emptyMessage="Create your first quotation to start quoting customers." emptyIcon={<FileText size={48} />} />
+        
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+              Showing Page {page} of {totalPages} ({totalCount} total)
+            </span>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                Previous
+              </Button>
+              <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Create Modal */}
@@ -246,6 +334,7 @@ export default function CrmQuotationsPage() {
       <Modal open={detailOpen} onClose={() => { setDetailOpen(false); setSelected(null); }} title={selected?.quotationNumber || 'Quotation'} size="md"
         footer={
           selected ? <>
+            {selected.status === 'ACCEPTED' && <Button variant="primary" onClick={() => convertToOrder(selected.id)}>Convert to Sales Order</Button>}
             {selected.status === 'DRAFT' && <Button variant="primary" onClick={() => {}}><Send size={14} style={{ marginRight: 6 }} /> Send to Customer</Button>}
             <Button variant="secondary" onClick={() => { setDetailOpen(false); setSelected(null); }}>Close</Button>
           </> : undefined

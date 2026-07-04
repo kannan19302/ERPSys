@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { resolveOrgId } from './crm-shared';
@@ -32,19 +32,90 @@ const DEFAULT_SLA_HOURS: Record<string, number> = {
   LOW: 72,
 };
 
+// Case status lifecycle (schema.prisma `Case.status` comment): OPEN,
+// IN_PROGRESS, WAITING_ON_CUSTOMER, RESOLVED, CLOSED. CLOSED is terminal via
+// the ordinary status PATCH — reopening a closed case is treated as a
+// distinct business action (it should be explicit, not a silent status flip),
+// so CLOSED -> anything is only reachable via reopenCase().
+const CASE_STATUS_TRANSITIONS: Record<string, string[]> = {
+  OPEN: ['IN_PROGRESS', 'WAITING_ON_CUSTOMER', 'RESOLVED', 'CLOSED'],
+  IN_PROGRESS: ['OPEN', 'WAITING_ON_CUSTOMER', 'RESOLVED', 'CLOSED'],
+  WAITING_ON_CUSTOMER: ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'],
+  RESOLVED: ['CLOSED', 'IN_PROGRESS'],
+  CLOSED: [],
+};
+
 /**
  * Customer service cases (support tickets) with SLA deadline tracking.
  * Cases are optionally linked to a Customer/Contact for full CRM context.
  */
 @Injectable()
 export class CrmCasesService {
-  constructor(private readonly sla: CrmSlaService) {}
+  constructor(@Inject(CrmSlaService) private readonly sla: CrmSlaService) {}
 
-  async getCases(tenantId: string, filters: { status?: string; priority?: string; customerId?: string } = {}) {
+  async getCases(
+    tenantId: string,
+    filters: {
+      status?: string;
+      priority?: string;
+      customerId?: string;
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+    } = {},
+  ) {
     const where: Prisma.CaseWhereInput = { tenantId };
     if (filters.status) where.status = filters.status;
     if (filters.priority) where.priority = filters.priority;
     if (filters.customerId) where.customerId = filters.customerId;
+    if (filters.search) {
+      where.OR = [
+        { subject: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+        { caseNumber: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const validSortFields = ['caseNumber', 'subject', 'priority', 'createdAt', 'slaDeadline'];
+    const sortBy = filters.sortBy && validSortFields.includes(filters.sortBy) ? filters.sortBy : 'priority';
+    const sortOrder = filters.sortOrder === 'asc' ? 'asc' : 'desc';
+
+    const orderBy: Prisma.CaseOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
+
+    if (filters && (filters.page !== undefined || filters.limit !== undefined)) {
+      const page = filters.page ? Math.max(1, filters.page) : 1;
+      const limit = filters.limit ? Math.max(1, filters.limit) : 20;
+      const skip = (page - 1) * limit;
+
+      const [data, totalCount] = await Promise.all([
+        prisma.case.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy,
+          include: {
+            customer: { select: { id: true, name: true } },
+            contact: { select: { id: true, firstName: true, lastName: true } },
+            comments: { orderBy: { createdAt: 'desc' }, take: 1 },
+          },
+        }),
+        prisma.case.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        data,
+        totalCount,
+        page,
+        limit,
+        totalPages,
+      };
+    }
 
     return prisma.case.findMany({
       where,
@@ -53,7 +124,7 @@ export class CrmCasesService {
         contact: { select: { id: true, firstName: true, lastName: true } },
         comments: { orderBy: { createdAt: 'desc' }, take: 1 },
       },
-      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+      orderBy: filters.sortBy ? orderBy : [{ priority: 'desc' }, { createdAt: 'desc' }],
     });
   }
 
@@ -104,11 +175,42 @@ export class CrmCasesService {
     const existing = await prisma.case.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Case not found');
 
+    if (dto.status && dto.status !== existing.status) {
+      const allowed = CASE_STATUS_TRANSITIONS[existing.status] ?? [];
+      if (!allowed.includes(dto.status)) {
+        if (existing.status === 'CLOSED') {
+          throw new BadRequestException(
+            'Cannot change the status of a CLOSED case via a plain update — use POST /crm/cases/:id/reopen to explicitly reopen it.',
+          );
+        }
+        throw new BadRequestException(
+          `Cannot transition case from ${existing.status} to ${dto.status}. Allowed transitions from ${existing.status}: ${allowed.length ? allowed.join(', ') : 'none (terminal status)'}.`,
+        );
+      }
+    }
+
     const data: Prisma.CaseUpdateInput = { ...dto };
     if (dto.status === 'RESOLVED' || dto.status === 'CLOSED') {
       if (!existing.resolvedAt) data.resolvedAt = new Date();
     }
     return prisma.case.update({ where: { id }, data });
+  }
+
+  /**
+   * Explicit reopen action for a CLOSED case — the only path back to OPEN
+   * from a terminal state. Clears resolvedAt so SLA/resolution-time metrics
+   * reflect the new open period rather than the original (now-invalid) close.
+   */
+  async reopenCase(tenantId: string, id: string) {
+    const existing = await prisma.case.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Case not found');
+    if (existing.status !== 'CLOSED') {
+      throw new BadRequestException('Only a CLOSED case can be reopened');
+    }
+    return prisma.case.update({
+      where: { id },
+      data: { status: 'OPEN', resolvedAt: null },
+    });
   }
 
   async addComment(tenantId: string, caseId: string, dto: { body: string; authorId?: string; isInternal?: boolean }) {
@@ -158,5 +260,107 @@ export class CrmCasesService {
       breachedCases: breached,
       atRiskCases: atRisk,
     };
+  }
+
+  /**
+   * Case 360 view: the case + customer/contact context + comments, merged
+   * with SLA rollup metrics (first-response and resolution vs. deadline).
+   * Replaces having to separately call getCaseById() + getSlaStatus() to
+   * understand a single case's SLA posture.
+   */
+  async getCaseSummary(tenantId: string, id: string) {
+    const found = await prisma.case.findFirst({
+      where: { id, tenantId },
+      include: {
+        customer: { select: { id: true, name: true, email: true, phone: true } },
+        contact: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+        comments: { orderBy: { createdAt: 'asc' } },
+      },
+    });
+    if (!found) throw new NotFoundException('Case not found');
+
+    const now = new Date();
+    const isOpen = !['RESOLVED', 'CLOSED'].includes(found.status);
+
+    const firstResponseDeadline = found.slaFirstResponseAt ?? found.slaDeadline;
+    const firstResponseMet = found.firstResponseAt && firstResponseDeadline
+      ? found.firstResponseAt <= firstResponseDeadline
+      : null;
+    const timeToFirstResponseMs = found.firstResponseAt
+      ? found.firstResponseAt.getTime() - found.createdAt.getTime()
+      : null;
+
+    const resolveDeadline = found.slaResolveBy ?? found.slaDeadline;
+    const resolutionMet = found.resolvedAt && resolveDeadline
+      ? found.resolvedAt <= resolveDeadline
+      : null;
+    const timeToResolutionMs = found.resolvedAt
+      ? found.resolvedAt.getTime() - found.createdAt.getTime()
+      : null;
+
+    const isBreached = isOpen && !!found.slaDeadline && found.slaDeadline < now;
+    const isAtRisk = isOpen && !isBreached && !!found.slaDeadline
+      && found.slaDeadline.getTime() - now.getTime() < 2 * 60 * 60 * 1000;
+
+    return {
+      case: found,
+      comments: found.comments,
+      sla: {
+        slaDeadline: found.slaDeadline,
+        slaFirstResponseAt: found.slaFirstResponseAt,
+        slaResolveBy: found.slaResolveBy,
+        slaBreached: found.slaBreached || isBreached,
+        isOpen,
+        isAtRisk,
+        firstResponseAt: found.firstResponseAt,
+        firstResponseMet,
+        timeToFirstResponseMs,
+        resolvedAt: found.resolvedAt,
+        resolutionMet,
+        timeToResolutionMs,
+      },
+      metrics: {
+        commentCount: found.comments.length,
+        internalCommentCount: found.comments.filter((c) => c.isInternal).length,
+        daysSinceCreation: Math.floor((now.getTime() - found.createdAt.getTime()) / (1000 * 60 * 60 * 24)),
+      },
+    };
+  }
+
+  async bulkUpdateCaseStatus(tenantId: string, ids: string[], status: string) {
+    const validStatuses = ['OPEN', 'IN_PROGRESS', 'WAITING_ON_CUSTOMER', 'RESOLVED', 'CLOSED'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+    }
+    const result = await prisma.case.updateMany({
+      where: { id: { in: ids }, tenantId },
+      data: { status },
+    });
+    return { updated: result.count, status };
+  }
+
+  async exportCases(
+    tenantId: string,
+    query?: { search?: string; status?: string; priority?: string },
+  ) {
+    const where: Prisma.CaseWhereInput = { tenantId };
+    if (query?.status) where.status = query.status;
+    if (query?.priority) where.priority = query.priority;
+    if (query?.search) {
+      where.OR = [
+        { subject: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+        { caseNumber: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.case.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, caseNumber: true, subject: true, description: true,
+        priority: true, status: true, channel: true, createdAt: true, updatedAt: true,
+        slaDeadline: true, resolvedAt: true,
+      },
+    });
   }
 }

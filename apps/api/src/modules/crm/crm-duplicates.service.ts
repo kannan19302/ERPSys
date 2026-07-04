@@ -205,7 +205,7 @@ export class CrmDuplicatesService {
       dto,
       (ids) => prisma.customer.findMany({ where: { id: { in: ids }, tenantId } }) as unknown as Promise<Array<Record<string, unknown>>>,
       (winnerId, patch) => prisma.customer.update({ where: { id: winnerId }, data: patch }),
-      (loserIds) => prisma.customer.deleteMany({ where: { id: { in: loserIds }, tenantId } }),
+      (loserIds) => prisma.customer.updateMany({ where: { id: { in: loserIds }, tenantId }, data: { deletedAt: new Date() } }),
     );
   }
 }

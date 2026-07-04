@@ -11,6 +11,13 @@ import { CrmConfigService } from '../crm-config.service';
 import { CrmCollaborationService } from '../crm-collaboration.service';
 import { CrmDashboardsService } from '../crm-dashboards.service';
 import { CrmCasesService } from '../crm-cases.service';
+import { CrmLeadScoringService } from '../crm-lead-scoring.service';
+import { CrmDuplicatesService } from '../crm-duplicates.service';
+import { CrmPipelineStagesService } from '../crm-pipeline-stages.service';
+import { CrmSegmentsService } from '../crm-segments.service';
+import { CrmSlaService } from '../crm-sla.service';
+import { CrmIntelligenceService } from '../crm-intelligence.service';
+import { CrmIntegrationsService } from '../crm-integrations.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Prisma } from '@prisma/client';
@@ -22,6 +29,7 @@ const mockPrisma = vi.hoisted(() => ({
     findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     count: vi.fn(),
   },
   salesOrder: {
@@ -38,13 +46,32 @@ const mockPrisma = vi.hoisted(() => ({
   },
   vendor: {
     findMany: vi.fn(),
+    findFirst: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
+    updateMany: vi.fn(),
+    count: vi.fn(),
+  },
+  purchaseOrder: {
+    findMany: vi.fn(),
+    aggregate: vi.fn(),
+    count: vi.fn(),
+  },
+  debitNote: {
+    findMany: vi.fn(),
+  },
+  purchaseReturn: {
+    findMany: vi.fn(),
+  },
+  blanketPurchaseAgreement: {
+    findMany: vi.fn(),
   },
   contact: {
     findMany: vi.fn(),
     findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    count: vi.fn(),
   },
   leadSource: {
     findMany: vi.fn(),
@@ -55,6 +82,14 @@ const mockPrisma = vi.hoisted(() => ({
     create: vi.fn(),
     update: vi.fn(),
     groupBy: vi.fn(),
+    count: vi.fn(),
+  },
+  leadScoringRule: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
   campaign: {
     findMany: vi.fn(),
@@ -106,6 +141,8 @@ describe('CrmService', () => {
         CrmService, CrmCustomersService, CrmContactsService, CrmLeadsService,
         CrmDealsService, CrmActivitiesService, CrmMarketingService, CrmSalesOpsService,
         CrmConfigService, CrmCollaborationService, CrmDashboardsService, CrmCasesService,
+        CrmLeadScoringService, CrmDuplicatesService, CrmPipelineStagesService,
+        CrmSegmentsService, CrmSlaService, CrmIntelligenceService, CrmIntegrationsService,
       ],
     }).compile();
 
@@ -114,6 +151,7 @@ describe('CrmService', () => {
 
     // Default org mock
     mockPrisma.organization.findFirst.mockResolvedValue({ id: 'org-1', tenantId: 'tenant-1', name: 'Test Org' });
+    mockPrisma.leadScoringRule.findMany.mockResolvedValue([]);
   });
 
   const tenantId = 'tenant-1';
@@ -261,6 +299,159 @@ describe('CrmService', () => {
       const result = await service.deleteCustomer(tenantId, 'c1');
       expect(result.deletedAt).toBeDefined();
     });
+
+    // ── Customer Mechanical Features ──
+
+    it('updateCustomerStatus should update status with valid value', async () => {
+      mockPrisma.customer.findFirst.mockResolvedValue({ id: 'c1', tenantId, deletedAt: null });
+      mockPrisma.customer.update.mockResolvedValue({ id: 'c1', status: 'INACTIVE' });
+
+      const result = await service.updateCustomerStatus(tenantId, 'c1', 'INACTIVE');
+      expect(result.status).toBe('INACTIVE');
+      expect(mockPrisma.customer.update).toHaveBeenCalledWith({
+        where: { id: 'c1' },
+        data: { status: 'INACTIVE' },
+      });
+    });
+
+    it('updateCustomerStatus should throw on invalid status', async () => {
+      await expect(service.updateCustomerStatus(tenantId, 'c1', 'INVALID')).rejects.toThrow(BadRequestException);
+    });
+
+    it('updateCustomerStatus should throw if customer not found', async () => {
+      mockPrisma.customer.findFirst.mockResolvedValue(null);
+      await expect(service.updateCustomerStatus(tenantId, 'c1', 'ACTIVE')).rejects.toThrow(NotFoundException);
+    });
+
+    it('getCustomerNotes should return filtered activities with [CUSTOMER:id] prefix', async () => {
+      const mockNotes = [
+        { id: 'n1', type: 'NOTE', subject: '[CUSTOMER:c1] First note', description: 'Full text', createdAt: new Date() },
+        { id: 'n2', type: 'CALL', subject: '[CUSTOMER:c1] Called client', description: 'Discussion', createdAt: new Date() },
+      ];
+      mockPrisma.activity.findMany.mockResolvedValue(mockNotes);
+
+      const result = await service.getCustomerNotes(tenantId, 'c1');
+      expect(result).toHaveLength(2);
+      expect(result[0].subject).toBe('First note'); // Prefix stripped
+      expect(result[1].subject).toBe('Called client');
+      expect(mockPrisma.activity.findMany).toHaveBeenCalledWith({
+        where: {
+          tenantId,
+          type: { in: ['NOTE', 'CALL', 'EMAIL', 'MEETING'] },
+          subject: { startsWith: '[CUSTOMER:c1]' },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, type: true, subject: true, description: true, createdAt: true },
+      });
+    });
+
+    it('addCustomerNote should create activity with [CUSTOMER:id] prefix', async () => {
+      mockPrisma.customer.findFirst.mockResolvedValue({ id: 'c1', tenantId, deletedAt: null });
+      const createdNote = {
+        id: 'n-new',
+        tenantId,
+        orgId,
+        type: 'NOTE',
+        subject: '[CUSTOMER:c1] Test note for customer',
+        description: 'Full test note content',
+        customerId: 'c1',
+      };
+      mockPrisma.activity.create.mockResolvedValue(createdNote);
+
+      const dto = { content: 'Test note for customer', type: 'NOTE' as const };
+      const result = await service.addCustomerNote(tenantId, orgId, 'c1', dto);
+
+      expect(result.subject).toContain('[CUSTOMER:c1]');
+      expect(mockPrisma.activity.create).toHaveBeenCalledWith({
+        data: {
+          tenantId,
+          orgId,
+          type: 'NOTE',
+          subject: '[CUSTOMER:c1] Test note for customer',
+          description: 'Test note for customer',
+          customerId: 'c1',
+        },
+      });
+    });
+
+    it('addCustomerNote should throw if customer not found', async () => {
+      mockPrisma.customer.findFirst.mockResolvedValue(null);
+      const dto = { content: 'Test note', type: 'NOTE' as const };
+
+      await expect(service.addCustomerNote(tenantId, orgId, 'nonexistent', dto)).rejects.toThrow(NotFoundException);
+    });
+
+    it('bulkUpdateCustomerStatus should update multiple customers', async () => {
+      mockPrisma.customer.updateMany.mockResolvedValue({ count: 2 });
+
+      const result = await service.bulkUpdateCustomerStatus(tenantId, ['c1', 'c2'], 'ON_HOLD');
+
+      expect(result.updated).toBe(2);
+      expect(result.status).toBe('ON_HOLD');
+      expect(mockPrisma.customer.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['c1', 'c2'] }, tenantId, deletedAt: null },
+        data: { status: 'ON_HOLD' },
+      });
+    });
+
+    it('bulkUpdateCustomerStatus should throw on invalid status', async () => {
+      await expect(service.bulkUpdateCustomerStatus(tenantId, ['c1'], 'INVALID')).rejects.toThrow(BadRequestException);
+    });
+
+    it('exportCustomers should return CSV-ready data', async () => {
+      const mockExportData = [
+        {
+          id: 'c1',
+          name: 'Test Corp',
+          email: 'test@corp.com',
+          phone: '+1-555-0001',
+          taxId: 'TAX123',
+          type: 'COMPANY',
+          status: 'ACTIVE',
+          creditLimit: 10000,
+          paymentTerms: 30,
+          notes: 'VIP customer',
+          billingAddress: { city: 'NYC' },
+          shippingAddress: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+      mockPrisma.customer.findMany.mockResolvedValue(mockExportData);
+
+      const result = await service.exportCustomers(tenantId, { status: 'ACTIVE', search: 'Test' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Test Corp');
+      expect(mockPrisma.customer.findMany).toHaveBeenCalledWith({
+        where: {
+          tenantId,
+          deletedAt: null,
+          status: 'ACTIVE',
+          OR: [
+            { name: { contains: 'Test', mode: 'insensitive' } },
+            { email: { contains: 'Test', mode: 'insensitive' } },
+          ],
+        },
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          taxId: true,
+          type: true,
+          status: true,
+          creditLimit: true,
+          paymentTerms: true,
+          notes: true,
+          billingAddress: true,
+          shippingAddress: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    });
   });
 
   // ═══════════════════════════════════════
@@ -273,7 +464,7 @@ describe('CrmService', () => {
       mockPrisma.contact.findMany.mockResolvedValue(mockContacts);
 
       const result = await service.getContacts(tenantId);
-      expect(result).toEqual(mockContacts);
+      expect(result.data).toEqual(mockContacts);
     });
 
     it('createContact should create with valid data', async () => {
@@ -300,8 +491,8 @@ describe('CrmService', () => {
   describe('Leads', () => {
     it('getLeads should return leads with status filter', async () => {
       mockPrisma.lead.findMany.mockResolvedValue([{ id: 'l1', firstName: 'Tony', lastName: 'Stark', status: 'NEW', tenantId, deletedAt: null }]);
-      const result = await service.getLeads(tenantId, 'NEW');
-      expect(result).toHaveLength(1);
+      const result = await service.getLeads(tenantId, { status: 'NEW' });
+      expect(result.data).toHaveLength(1);
       expect(mockPrisma.lead.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { tenantId, deletedAt: null, status: 'NEW' } })
       );
@@ -378,7 +569,7 @@ describe('CrmService', () => {
   describe('Opportunities', () => {
     it('getOpportunities should filter by pipeline', async () => {
       mockPrisma.opportunity.findMany.mockResolvedValue([{ id: 'o1', name: 'Test Deal', tenantId, deletedAt: null }]);
-      const result = await service.getOpportunities(tenantId, 'p1');
+      const result = await service.getOpportunities(tenantId, { pipelineId: 'p1' });
       expect(result).toBeDefined();
       expect(mockPrisma.opportunity.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { tenantId, deletedAt: null, pipelineId: 'p1' } })
@@ -547,12 +738,86 @@ describe('CrmService', () => {
     it('should create and list vendors', async () => {
       mockPrisma.vendor.findMany.mockResolvedValue([{ id: 'v1', name: 'Test Vendor', tenantId, deletedAt: null }]);
       const list = await service.getVendors(tenantId);
-      expect(list).toHaveLength(1);
+      expect(list.data).toHaveLength(1);
 
       const dto = { name: 'New Vendor', email: 'vendor@test.com', paymentTerms: 30 };
       mockPrisma.vendor.create.mockResolvedValue({ id: 'v-new', ...dto, tenantId, orgId });
       const created = await service.createVendor(tenantId, orgId, dto);
       expect(created).toBeDefined();
+    });
+
+    it('should get vendor by id', async () => {
+      const mockVendor = { id: 'v1', name: 'Vendor 1', tenantId, deletedAt: null };
+      mockPrisma.vendor.findFirst.mockResolvedValue(mockVendor);
+      const result = await service.getVendorById(tenantId, 'v1');
+      expect(result).toBeDefined();
+      expect(result.id).toBe('v1');
+    });
+
+    it('should get vendor summary', async () => {
+      const mockVendor = { id: 'v1', name: 'Vendor 1', tenantId, deletedAt: null };
+      mockPrisma.vendor.findFirst.mockResolvedValue(mockVendor);
+      mockPrisma.purchaseOrder.findMany.mockResolvedValue([]);
+      mockPrisma.purchaseOrder.aggregate.mockResolvedValue({ _sum: { totalAmount: null }, _count: { id: 0 } });
+      mockPrisma.purchaseOrder.count.mockResolvedValue(0);
+      mockPrisma.debitNote.findMany.mockResolvedValue([]);
+      mockPrisma.purchaseReturn.findMany.mockResolvedValue([]);
+      mockPrisma.blanketPurchaseAgreement.findMany.mockResolvedValue([]);
+      mockPrisma.activity.findMany.mockResolvedValue([]);
+
+      const result = await service.getVendorSummary(tenantId, 'v1');
+      expect(result).toBeDefined();
+      expect(result.vendor).toEqual(mockVendor);
+      expect(result.metrics.totalSpend).toBe(0);
+    });
+
+    it('should update vendor details', async () => {
+      mockPrisma.vendor.findFirst.mockResolvedValue({ id: 'v1', tenantId });
+      mockPrisma.vendor.update.mockResolvedValue({ id: 'v1', name: 'Updated Vendor' });
+      const result = await service.updateVendor(tenantId, 'v1', { name: 'Updated Vendor' });
+      expect(result.name).toBe('Updated Vendor');
+    });
+
+    it('should soft delete vendor', async () => {
+      mockPrisma.vendor.findFirst.mockResolvedValue({ id: 'v1', tenantId });
+      mockPrisma.vendor.update.mockResolvedValue({ id: 'v1', deletedAt: new Date() });
+      const result = await service.deleteVendor(tenantId, 'v1');
+      expect(result.deletedAt).toBeDefined();
+    });
+
+    it('should update vendor status', async () => {
+      mockPrisma.vendor.findFirst.mockResolvedValue({ id: 'v1', tenantId });
+      mockPrisma.vendor.update.mockResolvedValue({ id: 'v1', status: 'PREFERRED' });
+      const result = await service.updateVendorStatus(tenantId, 'v1', 'PREFERRED');
+      expect(result.status).toBe('PREFERRED');
+    });
+
+    it('should get and add vendor notes', async () => {
+      mockPrisma.vendor.findFirst.mockResolvedValue({ id: 'v1', tenantId });
+      mockPrisma.activity.findMany.mockResolvedValue([
+        { id: 'a1', type: 'NOTE', subject: '[VENDOR:v1] Log entry', description: 'Log entry', createdAt: new Date() }
+      ]);
+      mockPrisma.activity.create.mockResolvedValue({ id: 'a2' });
+
+      const notes = await service.getVendorNotes(tenantId, 'v1');
+      expect(notes).toHaveLength(1);
+      expect(notes[0].subject).toBe('Log entry');
+
+      const createdNote = await service.addVendorNote(tenantId, orgId, 'v1', { content: 'Log entry', type: 'NOTE' });
+      expect(createdNote).toBeDefined();
+    });
+
+    it('should bulk update vendor statuses', async () => {
+      mockPrisma.vendor.updateMany.mockResolvedValue({ count: 2 });
+      const result = await service.bulkUpdateVendorStatus(tenantId, ['v1', 'v2'], 'PREFERRED');
+      expect(result.updated).toBe(2);
+      expect(result.status).toBe('PREFERRED');
+    });
+
+    it('should export vendors', async () => {
+      mockPrisma.vendor.findMany.mockResolvedValue([{ id: 'v1', name: 'Vendor 1' }]);
+      const list = await service.exportVendors(tenantId);
+      expect(list).toHaveLength(1);
     });
   });
 });

@@ -44,19 +44,38 @@ export class CrmDealsService {
 
   // ── OPPORTUNITIES ─────────────────────────────
 
-  async getOpportunities(tenantId: string, pipelineId?: string, stage?: string) {
+  async getOpportunities(tenantId: string, query?: { pipelineId?: string; stage?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
     const where: Prisma.OpportunityWhereInput = { tenantId, deletedAt: null };
-    if (pipelineId) where.pipelineId = pipelineId;
-    if (stage) where.stage = stage;
-    return prisma.opportunity.findMany({
-      where,
-      include: {
-        customer: { select: { id: true, name: true } },
-        pipeline: { select: { id: true, name: true } },
-        _count: { select: { activities: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (query?.pipelineId) where.pipelineId = query.pipelineId;
+    if (query?.stage) where.stage = query.stage;
+    if (query?.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const page = query?.page || 1;
+    const limit = query?.limit || 20;
+    const skip = (page - 1) * limit;
+    const orderBy: Prisma.OpportunityOrderByWithRelationInput = {};
+    if (query?.sortBy === 'amount') orderBy.amount = query.sortOrder || 'desc';
+    else if (query?.sortBy === 'createdAt') orderBy.createdAt = query.sortOrder || 'desc';
+    else if (query?.sortBy === 'name') orderBy.name = query.sortOrder || 'asc';
+    else orderBy.createdAt = 'desc';
+    const [data, totalCount] = await Promise.all([
+      prisma.opportunity.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          customer: { select: { id: true, name: true } },
+          pipeline: { select: { id: true, name: true } },
+          _count: { select: { activities: true } },
+        },
+      }),
+      prisma.opportunity.count({ where }),
+    ]);
+    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
   }
 
   async getOpportunityById(tenantId: string, id: string) {
@@ -127,6 +146,65 @@ export class CrmDealsService {
     const existing = await prisma.opportunity.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Opportunity not found');
     return prisma.opportunity.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  /**
+   * Opportunity 360 view: the opportunity, its line items and activity
+   * timeline, plus computed metrics (days in current stage, weighted pipeline
+   * value, aging bucket). Mirrors CrmCustomersService.getCustomerSummary()
+   * and reuses the day-in-stage math from getDealAging()/getPipelineHealth().
+   */
+  async getOpportunitySummary(tenantId: string, id: string) {
+    const opp = await prisma.opportunity.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: {
+        customer: { select: { id: true, name: true } },
+        lead: { select: { id: true, firstName: true, lastName: true, company: true } },
+        pipeline: { select: { id: true, name: true, stages: true } },
+        activities: { orderBy: { createdAt: 'desc' } },
+        lineItems: {
+          include: { product: { select: { id: true, name: true, sku: true } } },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+    if (!opp) throw new NotFoundException('Opportunity not found');
+
+    const now = new Date();
+    const isClosed = ['CLOSED_WON', 'CLOSED_LOST'].includes(opp.stage);
+    const stageEnteredRef = opp.stageEnteredAt || opp.updatedAt;
+    const daysInCurrentStage = Math.floor((now.getTime() - stageEnteredRef.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceCreation = Math.floor((now.getTime() - opp.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+    const amount = Number(opp.amount || 0);
+    const weightedPipelineValue = amount * (opp.probability / 100);
+
+    let agingBucket: 'fresh' | 'aging' | 'stale' | 'rotting' | 'closed';
+    if (isClosed) agingBucket = 'closed';
+    else if (daysInCurrentStage <= 7) agingBucket = 'fresh';
+    else if (daysInCurrentStage <= 30) agingBucket = 'aging';
+    else if (daysInCurrentStage <= 60) agingBucket = 'stale';
+    else agingBucket = 'rotting';
+
+    const lineItemsTotal = opp.lineItems.reduce((sum, li) => sum + Number(li.totalAmount), 0);
+
+    return {
+      opportunity: opp,
+      lineItems: opp.lineItems,
+      recentActivities: opp.activities.slice(0, 10),
+      metrics: {
+        daysInCurrentStage,
+        daysSinceCreation,
+        weightedPipelineValue,
+        agingBucket,
+        isRotting: !isClosed && daysInCurrentStage > 30,
+        lineItemsTotal,
+        lineItemsCount: opp.lineItems.length,
+        totalActivities: opp.activities.length,
+        isClosed,
+        isWon: opp.stage === 'CLOSED_WON',
+      },
+    };
   }
 
   // ── OPPORTUNITY LINE ITEMS ────────────────────
@@ -203,12 +281,32 @@ export class CrmDealsService {
 
   // ── PRICE BOOKS & PRODUCTS ────────────────────
 
-  async getPriceBooks(tenantId: string) {
-    return prisma.priceBook.findMany({
-      where: { tenantId, deletedAt: null },
-      include: { _count: { select: { entries: true } } },
-      orderBy: { name: 'asc' },
-    });
+  async getPriceBooks(tenantId: string, query?: { isActive?: boolean; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
+    const where: Prisma.PriceBookWhereInput = { tenantId, deletedAt: null };
+    if (query?.isActive !== undefined) where.isDefault = query.isActive;
+    if (query?.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const page = query?.page || 1;
+    const limit = query?.limit || 20;
+    const skip = (page - 1) * limit;
+    const orderBy: Prisma.PriceBookOrderByWithRelationInput = {};
+    if (query?.sortBy === 'name') orderBy.name = query.sortOrder || 'asc';
+    else if (query?.sortBy === 'createdAt') orderBy.createdAt = query.sortOrder || 'desc';
+    else orderBy.name = 'asc';
+    const [data, totalCount] = await Promise.all([
+      prisma.priceBook.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: { _count: { select: { entries: true } } },
+      }),
+      prisma.priceBook.count({ where }),
+    ]);
+    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
   }
 
   async createPriceBook(tenantId: string, orgId: string, dto: CreatePriceBookInput) {
@@ -279,12 +377,33 @@ export class CrmDealsService {
     return prisma.priceBookEntry.delete({ where: { id: entryId } });
   }
 
-  async getCrmProducts(tenantId: string) {
-    return prisma.product.findMany({
-      where: { tenantId, isActive: true, deletedAt: null },
-      select: { id: true, name: true, sku: true, sellPrice: true, category: true, type: true, unit: true },
-      orderBy: { name: 'asc' },
-    });
+  async getCrmProducts(tenantId: string, query?: { categoryId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
+    const where: Prisma.ProductWhereInput = { tenantId, isActive: true, deletedAt: null };
+    if (query?.categoryId) where.categoryId = query.categoryId;
+    if (query?.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { sku: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const page = query?.page || 1;
+    const limit = query?.limit || 20;
+    const skip = (page - 1) * limit;
+    const orderBy: Prisma.ProductOrderByWithRelationInput = {};
+    if (query?.sortBy === 'name') orderBy.name = query.sortOrder || 'asc';
+    else if (query?.sortBy === 'sellPrice') orderBy.sellPrice = query.sortOrder || 'asc';
+    else orderBy.name = 'asc';
+    const [data, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        select: { id: true, name: true, sku: true, sellPrice: true, category: true, type: true, unit: true },
+      }),
+      prisma.product.count({ where }),
+    ]);
+    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
   }
 
   // ── PIPELINE & REVENUE ANALYTICS ──────────────
@@ -651,5 +770,44 @@ export class CrmDealsService {
       }
     }
     return { canAdvance: blockers.length === 0, blockers };
+  }
+
+  // ── OPPORTUNITY EXPORT & BULK ACTIONS ──────────
+
+  async exportOpportunities(tenantId: string, query?: { pipelineId?: string; stage?: string; search?: string }) {
+    const where: Prisma.OpportunityWhereInput = { tenantId, deletedAt: null };
+    if (query?.pipelineId) where.pipelineId = query.pipelineId;
+    if (query?.stage) where.stage = query.stage;
+    if (query?.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.opportunity.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      select: {
+        id: true, name: true, amount: true, stage: true, pipelineId: true,
+        expectedCloseDate: true, actualCloseDate: true, probability: true,
+        createdAt: true, updatedAt: true,
+      },
+    });
+  }
+
+  async bulkUpdateOpportunityStage(tenantId: string, ids: string[], stage: string) {
+    if (!ids || ids.length === 0) {
+      throw new BadRequestException('At least one opportunity ID is required');
+    }
+    // Validate that the stage is a non-empty string
+    if (!stage || typeof stage !== 'string' || stage.trim().length === 0) {
+      throw new BadRequestException('Stage must be a non-empty string');
+    }
+    // Note: Bulk updates bypass the single-opportunity stage validation (checklist/required fields).
+    // This is intentional for performance: use single updateOpportunityStage for full validation.
+    const result = await prisma.opportunity.updateMany({
+      where: { id: { in: ids }, tenantId, deletedAt: null },
+      data: { stage, stageEnteredAt: new Date() },
+    });
+    return { updated: result.count, stage };
   }
 }

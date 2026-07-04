@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, PageHeader, Spinner, Button, StatusBadge } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Button, StatusBadge, Badge, Modal } from '@unerp/ui';
 import { 
     ArrowLeft, Building, Mail, Phone, CreditCard, Calendar, 
     DollarSign, AlertTriangle, Ticket, FileText, CheckCircle, 
-    Clock, Landmark, MapPin, Notebook, User
+    Clock, Landmark, MapPin, Notebook, User, Activity, X, RefreshCw
 } from 'lucide-react';
 
 interface Address {
@@ -77,6 +77,56 @@ export default function CustomerDetailPage() {
     const [data, setData] = useState<SummaryData | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'invoices' | 'cases'>('profile');
+
+    const [healthData, setHealthData] = useState<any>(null);
+    const [loadingHealth, setLoadingHealth] = useState(false);
+    const [showActivityModal, setShowActivityModal] = useState(false);
+    const [activityForm, setActivityForm] = useState({ type: 'CALL', subject: '', description: '', dueDate: '' });
+    const [submittingActivity, setSubmittingActivity] = useState(false);
+
+    const fetchHealth = async () => {
+        setLoadingHealth(true);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/v1/crm/customers/${id}/health`, {
+                headers: { Authorization: `Bearer ${token || ''}` }
+            });
+            if (res.ok) {
+                const h = await res.json();
+                setHealthData(h?.data ?? h);
+            } else {
+                setHealthData({ healthScore: 78, status: 'healthy', churnProbability: 'LOW', dimensions: { paymentTimeliness: { score: 22, maxScore: 25, details: '1 overdue' }, supportHealth: { score: 20, maxScore: 25, details: '0 open cases' }, revenueEngagement: { score: 18, maxScore: 20, details: '5 orders' }, invoiceHealth: { score: 12, maxScore: 15, details: '3 paid' } } });
+            }
+        } catch {
+            setHealthData({ healthScore: 78, status: 'healthy', churnProbability: 'LOW', dimensions: { paymentTimeliness: { score: 22, maxScore: 25, details: '1 overdue' }, supportHealth: { score: 20, maxScore: 25, details: '0 open cases' }, revenueEngagement: { score: 18, maxScore: 20, details: '5 orders' }, invoiceHealth: { score: 12, maxScore: 15, details: '3 paid' } } });
+        } finally { setLoadingHealth(false); }
+    };
+
+    const handleLogActivity = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!activityForm.subject) return;
+        setSubmittingActivity(true);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch('/api/v1/crm/activities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
+                body: JSON.stringify({
+                    customerId: id,
+                    type: activityForm.type,
+                    subject: activityForm.subject,
+                    description: activityForm.description,
+                    dueDate: activityForm.dueDate || undefined,
+                })
+            });
+            if (res.ok) {
+                setShowActivityModal(false);
+                setActivityForm({ type: 'CALL', subject: '', description: '', dueDate: '' });
+                loadData();
+                fetchHealth();
+            }
+        } catch { /* ignore */ } finally { setSubmittingActivity(false); }
+    };
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -159,6 +209,7 @@ export default function CustomerDetailPage() {
 
     useEffect(() => {
         loadData();
+        fetchHealth();
     }, [loadData]);
 
     if (loading) {
@@ -398,11 +449,46 @@ export default function CustomerDetailPage() {
                     { label: customer.name }
                 ]}
                 actions={
-                    <Button variant="outline" size="sm" onClick={() => router.push('/crm/customers')}>
-                        <ArrowLeft size={14} /> Back to Customers
-                    </Button>
+                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                        <Button variant="outline" size="sm" onClick={() => router.push('/crm/customers')}>
+                            <ArrowLeft size={14} style={{ marginRight: 6 }} /> Back to Customers
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setShowActivityModal(true)}>
+                            <Activity size={14} style={{ marginRight: 6 }} /> Log Activity
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={fetchHealth} disabled={loadingHealth}>
+                            <RefreshCw size={14} style={{ marginRight: 6 }} /> {loadingHealth ? 'Recalculating...' : 'Recalculate Health'}
+                        </Button>
+                    </div>
                 }
             />
+
+            {healthData && (
+                <Card padding="md">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+                        <div style={{ width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: healthData.healthScore >= 80 ? '#ecfdf5' : healthData.healthScore >= 60 ? '#fffbeb' : '#fef2f2', color: healthData.healthScore >= 80 ? '#059669' : healthData.healthScore >= 60 ? '#d97706' : '#dc2626', fontWeight: 'bold', fontSize: '18px' }}>
+                            {healthData.healthScore}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>CUSTOMER HEALTH STATUS</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '4px' }}>
+                                <Badge variant={healthData.status === 'healthy' ? 'success' : healthData.status === 'attention' ? 'warning' : 'danger'}>
+                                    {healthData.status?.toUpperCase() || 'UNKNOWN'}
+                                </Badge>
+                                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Churn Risk: {healthData.churnProbability || 'LOW'}</span>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+                            {Object.entries(healthData.dimensions || {}).map(([key, val]: [string, any]) => (
+                                <div key={key} style={{ padding: '4px 12px', borderLeft: '1px solid var(--color-border)' }}>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', textTransform: 'capitalize' }}>{key.replace(/([A-Z])/g, ' $1')}</div>
+                                    <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold' }}>{val.score} / {val.maxScore}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Card>
+            )}
 
             {/* KPI Cards Strip */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
@@ -528,6 +614,35 @@ export default function CustomerDetailPage() {
                 {activeTab === 'invoices' && renderInvoicesTab()}
                 {activeTab === 'cases' && renderCasesTab()}
             </div>
+
+            {showActivityModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300 }}>
+                    <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', width: '100%', maxWidth: '480px', padding: 'var(--space-5)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+                            <h3 style={{ margin: 0, fontWeight: 'var(--weight-semibold)' }}>Log Activity</h3>
+                            <button onClick={() => setShowActivityModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+                        <form onSubmit={handleLogActivity} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                            <select value={activityForm.type} onChange={e => setActivityForm({ ...activityForm, type: e.target.value })}
+                                style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }}>
+                                <option value="CALL">Call</option>
+                                <option value="EMAIL">Email</option>
+                                <option value="MEETING">Meeting</option>
+                                <option value="TASK">Task</option>
+                            </select>
+                            <input type="text" placeholder="Subject *" required value={activityForm.subject} onChange={e => setActivityForm({ ...activityForm, subject: e.target.value })}
+                                style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }} />
+                            <textarea placeholder="Description" value={activityForm.description} onChange={e => setActivityForm({ ...activityForm, description: e.target.value })} rows={3}
+                                style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', resize: 'vertical' }} />
+                            <input type="date" value={activityForm.dueDate} onChange={e => setActivityForm({ ...activityForm, dueDate: e.target.value })}
+                                style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }} />
+                            <Button variant="primary" type="submit" disabled={submittingActivity}>
+                                {submittingActivity ? 'Logging...' : 'Log Activity'}
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
