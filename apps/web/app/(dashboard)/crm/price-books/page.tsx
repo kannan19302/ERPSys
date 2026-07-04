@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PageHeader, Card, Button, Spinner, Badge, useToast } from '@unerp/ui';
-import { BookOpen, Plus, X, DollarSign, CheckCircle, Search } from 'lucide-react';
+import { PageHeader, Card, Button, Spinner, Badge, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
+import { BookOpen, Plus, X, DollarSign, CheckCircle, Search, Trash2 } from 'lucide-react';
+import { apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface PriceBook {
   id: string;
@@ -125,6 +126,48 @@ export default function PriceBooksPage() {
     }
   };
 
+  const handleSortChange = (key: string, order: SortOrder) => {
+    setSortBy(key);
+    setSortOrder(order);
+  };
+
+  const handleDelete = async (pb: PriceBook) => {
+    if (!window.confirm(`Delete price book "${pb.name}"? This cannot be undone.`)) return;
+    try {
+      await apiDelete(`/crm/price-books/${pb.id}`);
+      success('Price book deleted.');
+      fetchPriceBooks();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'Failed to delete price book.';
+      error(message);
+    }
+  };
+
+  const columns: Column<PriceBook>[] = [
+    {
+      key: 'name', header: 'Name', sortable: true,
+      render: (pb) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <BookOpen size={14} style={{ color: 'var(--color-primary)' }} />
+          <span style={{ fontWeight: 'var(--weight-semibold)' }}>{pb.name}</span>
+          {pb.isDefault && <Badge variant="success">Default</Badge>}
+        </div>
+      ),
+    },
+    { key: 'description', header: 'Description', render: (pb) => pb.description || '-' },
+    { key: 'currency', header: 'Currency', render: (pb) => <span><DollarSign size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> {pb.currency}</span> },
+    { key: 'entries', header: 'Products', align: 'center', render: (pb) => pb._count?.entries || 0 },
+    { key: 'isActive', header: 'Status', align: 'center', sortable: true, render: (pb) => <Badge variant={pb.isActive ? 'success' : 'default'}>{pb.isActive ? 'Active' : 'Inactive'}</Badge> },
+    {
+      key: 'actions', header: 'Actions', align: 'center', width: '90px',
+      render: (pb) => (
+        <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'center' }}>
+          <button title="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(pb); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger, #dc2626)', padding: 'var(--space-1)' }}><Trash2 size={15} /></button>
+        </div>
+      ),
+    },
+  ];
+
   if (loading && priceBooks.length === 0) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-10)' }}><Spinner size="lg" /></div>;
 
   return (
@@ -163,50 +206,35 @@ export default function PriceBooksPage() {
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
-        {priceBooks.map((pb) => (
-          <Card key={pb.id} padding="md" hover>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <BookOpen size={18} style={{ color: 'var(--color-primary)' }} />
-                <h3 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{pb.name}</h3>
-              </div>
-              {pb.isDefault && <Badge variant="success">Default</Badge>}
+      <Card padding="none">
+        <DataTable<PriceBook>
+          columns={columns}
+          data={priceBooks}
+          loading={loading}
+          rowKey={(pb) => pb.id}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+          emptyTitle="No price books yet"
+          emptyMessage="Create one to manage product pricing."
+          emptyIcon={<BookOpen size={48} />}
+        />
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+              Showing Page {page} of {totalPages} ({totalCount} total)
+            </span>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                Previous
+              </Button>
+              <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                Next
+              </Button>
             </div>
-            {pb.description && <p style={{ margin: '0 0 var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{pb.description}</p>}
-            <div style={{ display: 'flex', gap: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-              <span><DollarSign size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> {pb.currency}</span>
-              <span>{pb._count?.entries || 0} products</span>
-              <Badge variant={pb.isActive ? 'success' : 'default'}>{pb.isActive ? 'Active' : 'Inactive'}</Badge>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-            Showing Page {page} of {totalPages} ({totalCount} total)
-          </span>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
-              Previous
-            </Button>
-            <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
-              Next
-            </Button>
           </div>
-        </div>
-      )}
-
-      {priceBooks.length === 0 && (
-        <Card padding="lg">
-          <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            <BookOpen size={48} style={{ margin: '0 auto var(--space-4)', opacity: 0.3 }} />
-            <p>No price books yet. Create one to manage product pricing.</p>
-          </div>
-        </Card>
-      )}
+        )}
+      </Card>
 
       {showCreate && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>

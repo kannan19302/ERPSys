@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  PageHeader, Card, Button, Spinner, StatusBadge, DataTable, type Column,
+  PageHeader, Card, Button, Spinner, StatusBadge, DataTable, type Column, type SortOrder,
   KPICard, Badge, Modal,
 } from '@unerp/ui';
 import {
@@ -36,7 +36,7 @@ const FALLBACK: SalesOrder[] = [
 ];
 
 export default function CrmSalesOrdersPage() {
-  const [data, setData] = useState<SalesOrder[]>([]);
+  const [allOrders, setAllOrders] = useState<SalesOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -44,8 +44,6 @@ export default function CrmSalesOrdersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<SalesOrder | null>(null);
@@ -60,16 +58,14 @@ export default function CrmSalesOrdersPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
+  // NOTE: GET /sales/orders does not support server-side pagination/sorting yet
+  // (only `channel`/`status` filters) — see apps/api/src/modules/sales/sales.controller.ts.
+  // We fetch the full list once per status filter and sort/paginate client-side below.
+  // Backend follow-up: add page/limit/sortBy/sortOrder/search support to getSalesOrders.
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const queryParams = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        search: debouncedSearch,
-        sortBy,
-        sortOrder,
-      });
+      const queryParams = new URLSearchParams();
       if (statusFilter !== 'ALL') queryParams.append('status', statusFilter);
 
       const res = await fetch(`/api/v1/sales/orders?${queryParams.toString()}`, {
@@ -77,25 +73,13 @@ export default function CrmSalesOrdersPage() {
       });
       if (res.ok) {
         const d = await res.json();
-        if (d && typeof d === 'object' && 'data' in d) {
-          setData(d.data || []);
-          setTotalCount(d.totalCount || 0);
-          setTotalPages(d.totalPages || 0);
-        } else {
-          const list = Array.isArray(d) ? d : [];
-          setData(list);
-          setTotalCount(list.length);
-          setTotalPages(Math.ceil(list.length / limit));
-        }
+        const list: SalesOrder[] = Array.isArray(d) ? d : (d?.data || []);
+        setAllOrders(list);
       } else {
-        setData(FALLBACK);
-        setTotalCount(FALLBACK.length);
-        setTotalPages(1);
+        setAllOrders(FALLBACK);
       }
     } catch {
-      setData(FALLBACK);
-      setTotalCount(FALLBACK.length);
-      setTotalPages(1);
+      setAllOrders(FALLBACK);
     } finally {
       setLoading(false);
     }
@@ -103,7 +87,30 @@ export default function CrmSalesOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, debouncedSearch, statusFilter, sortBy, sortOrder]);
+  }, [statusFilter]);
+
+  // Client-side search + sort + pagination (backend does not support these params yet)
+  const filteredOrders = allOrders.filter((o) => {
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
+    return o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q);
+  });
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    let cmp = 0;
+    if (sortBy === 'totalAmount') cmp = Number(a.totalAmount) - Number(b.totalAmount);
+    else if (sortBy === 'orderNumber') cmp = a.orderNumber.localeCompare(b.orderNumber);
+    else if (sortBy === 'orderDate' || sortBy === 'createdAt') cmp = new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
+    else if (sortBy === 'status') cmp = a.status.localeCompare(b.status);
+    return sortOrder === 'desc' ? -cmp : cmp;
+  });
+  const totalCount = sortedOrders.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+  const data = sortedOrders.slice((page - 1) * limit, page * limit);
+
+  const handleSortChange = (key: string, order: SortOrder) => {
+    setSortBy(key);
+    setSortOrder(order);
+  };
 
   const approveCredit = async (id: string) => {
     const token = getToken();
@@ -144,9 +151,35 @@ export default function CrmSalesOrdersPage() {
     }
   };
 
-  const totalValue = data.reduce((a, o) => a + Number(o.totalAmount), 0);
-  const confirmedCount = data.filter(o => o.status === 'CONFIRMED').length;
-  const deliveredCount = data.filter(o => o.status === 'DELIVERED').length;
+  const [convertingPO, setConvertingPO] = useState(false);
+
+  const convertToPurchaseOrder = async (id: string) => {
+    setConvertingPO(true);
+    const token = getToken();
+    try {
+      const res = await fetch(`/api/v1/sales/orders/${id}/purchase-order`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token || ''}` }
+      });
+      if (res.ok) {
+        alert('Purchase Order draft(s) created successfully!');
+        setDetailOpen(false);
+        setSelected(null);
+        fetchOrders();
+      } else {
+        const errorData = await res.json();
+        alert(errorData?.message || 'Failed to convert to purchase order');
+      }
+    } catch {
+      alert('Failed to convert to purchase order');
+    } finally {
+      setConvertingPO(false);
+    }
+  };
+
+  const totalValue = sortedOrders.reduce((a, o) => a + Number(o.totalAmount), 0);
+  const confirmedCount = sortedOrders.filter(o => o.status === 'CONFIRMED').length;
+  const deliveredCount = sortedOrders.filter(o => o.status === 'DELIVERED').length;
 
   const columns: Column<SalesOrder>[] = [
     {
@@ -164,9 +197,9 @@ export default function CrmSalesOrdersPage() {
       ),
     },
     { key: 'items', header: 'Items', render: (row) => <span style={{ fontSize: 'var(--text-sm)' }}>{row.items || '—'}</span> },
-    { key: 'totalAmount', header: 'Amount', align: 'right' as const, render: (row) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{fmtCurrency(row.totalAmount)}</span> },
-    { key: 'orderDate', header: 'Order Date', render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{new Date(row.orderDate).toLocaleDateString()}</span> },
-    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    { key: 'totalAmount', header: 'Amount', align: 'right' as const, sortable: true, render: (row) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{fmtCurrency(row.totalAmount)}</span> },
+    { key: 'orderDate', header: 'Order Date', sortable: true, render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{new Date(row.orderDate).toLocaleDateString()}</span> },
+    { key: 'status', header: 'Status', sortable: true, render: (row) => <StatusBadge status={row.status} /> },
     {
       key: 'actions', header: '', align: 'right' as const, width: '60px',
       render: (row) => (
@@ -233,6 +266,7 @@ export default function CrmSalesOrdersPage() {
       <Card padding="none">
         <DataTable columns={columns} data={data} loading={loading} rowKey={(r) => r.id}
           onRowClick={(r) => { setSelected(r); setDetailOpen(true); }}
+          sortBy={sortBy} sortOrder={sortOrder} onSortChange={handleSortChange}
           emptyTitle="No sales orders" emptyMessage="Create your first sales order." emptyIcon={<ClipboardList size={48} />} />
         
         {totalPages > 1 && (
@@ -255,6 +289,11 @@ export default function CrmSalesOrdersPage() {
       <Modal open={detailOpen} onClose={() => { setDetailOpen(false); setSelected(null); }} title={selected?.orderNumber || 'Order'} size="sm"
         footer={
           selected ? <>
+            {selected.status === 'CONFIRMED' && (
+              <Button variant="primary" onClick={() => convertToPurchaseOrder(selected.id)} disabled={convertingPO}>
+                {convertingPO ? 'Converting...' : 'Generate Purchase Order'}
+              </Button>
+            )}
             {selected.status === 'CREDIT_HOLD' && (
               <Button variant="primary" onClick={() => approveCredit(selected.id)}>Approve Credit Hold</Button>
             )}

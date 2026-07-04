@@ -30,6 +30,10 @@ interface Customer {
     paymentTerms: number;
     status: string;
     notes: string | null;
+    customerType?: string;
+    creditHold?: boolean;
+    creditHoldReason?: string | null;
+    riskRating?: string;
     createdAt: string;
 }
 
@@ -76,7 +80,34 @@ export default function CustomerDetailPage() {
     
     const [data, setData] = useState<SummaryData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'invoices' | 'cases'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'invoices' | 'cases' | 'contracts'>('profile');
+
+    const [contracts, setContracts] = useState<any[]>([]);
+    const [loadingContracts, setLoadingContracts] = useState(false);
+
+    const fetchContracts = useCallback(async () => {
+        setLoadingContracts(true);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/v1/crm/contracts?customerId=${id}`, {
+                headers: { Authorization: `Bearer ${token || ''}` }
+            });
+            if (res.ok) {
+                const resData = await res.json();
+                setContracts(resData?.data || resData || []);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingContracts(false);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (activeTab === 'contracts') {
+            fetchContracts();
+        }
+    }, [activeTab, fetchContracts]);
 
     const [healthData, setHealthData] = useState<any>(null);
     const [loadingHealth, setLoadingHealth] = useState(false);
@@ -126,6 +157,28 @@ export default function CustomerDetailPage() {
                 fetchHealth();
             }
         } catch { /* ignore */ } finally { setSubmittingActivity(false); }
+    };
+
+    const handleToggleCreditHold = async (hold: boolean, reason?: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const url = `/api/v1/crm/customers/${id}/credit-${hold ? 'hold' : 'release'}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token || ''}`,
+                },
+                body: hold ? JSON.stringify({ reason }) : undefined,
+            });
+            if (res.ok) {
+                loadData();
+            } else {
+                alert('Failed to update credit hold status');
+            }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     const loadData = useCallback(async () => {
@@ -239,8 +292,117 @@ export default function CustomerDetailPage() {
         ? Math.min(100, Math.round((metrics.unpaidBalance / metrics.creditLimit) * 100)) 
         : 0;
 
+    const renderContractsTab = () => {
+        return (
+            <Card padding="none">
+                <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Customer Contracts</h4>
+                    <Button size="sm" variant="primary" onClick={() => router.push(`/crm/contracts?customerId=${id}&customerName=${encodeURIComponent(customer.name)}`)}>
+                        Create Contract
+                    </Button>
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--color-bg-sunken)', borderBottom: '1px solid var(--color-border)' }}>
+                            <th style={{ padding: 'var(--space-2) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-muted)' }}>Contract Number</th>
+                            <th style={{ padding: 'var(--space-2) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-muted)' }}>Title</th>
+                            <th style={{ padding: 'var(--space-2) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-muted)' }}>Type</th>
+                            <th style={{ padding: 'var(--space-2) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-muted)' }}>Value</th>
+                            <th style={{ padding: 'var(--space-2) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-muted)' }}>Status</th>
+                            <th style={{ padding: 'var(--space-2) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-muted)' }}>End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loadingContracts ? (
+                            <tr>
+                                <td colSpan={6} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
+                                    Loading contracts...
+                                </td>
+                            </tr>
+                        ) : contracts.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                                    No contracts found for this customer.
+                                </td>
+                            </tr>
+                        ) : (
+                            contracts.map((c) => (
+                                <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                                        <a onClick={() => router.push(`/crm/contracts/${c.id}`)} style={{ cursor: 'pointer', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                            {c.contractNumber}
+                                        </a>
+                                    </td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{c.title}</td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{c.contractType || 'ONE_TIME'}</td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>{c.currency} {Number(c.value).toLocaleString()}</td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                                        <Badge variant={c.status === 'ACTIVE' ? 'success' : c.status === 'DRAFT' ? 'default' : 'warning'}>
+                                            {c.status}
+                                        </Badge>
+                                    </td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>{new Date(c.endDate).toLocaleDateString()}</td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </Card>
+        );
+    };
+
     const renderProfileTab = () => (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
+            {/* B2B Credit & Risk Management Card */}
+            <Card padding="md">
+                <h4 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CreditCard size={16} /> B2B Credit & Risk Profile
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+                    <div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Customer Account Type</div>
+                        <div style={{ marginTop: '4px' }}>
+                            <Badge variant="primary">{customer.customerType || 'RECURRING'}</Badge>
+                        </div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Financial Risk Rating</div>
+                        <div style={{ marginTop: '4px' }}>
+                            <Badge variant={customer.riskRating === 'HIGH' ? 'danger' : customer.riskRating === 'MEDIUM' ? 'warning' : 'success'}>
+                                {customer.riskRating || 'LOW'}
+                            </Badge>
+                        </div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Credit Hold/Freeze Status</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <Badge variant={customer.creditHold ? 'danger' : 'success'}>
+                                {customer.creditHold ? 'FROZEN / HOLD' : 'ACTIVE / CLEAR'}
+                            </Badge>
+                            {customer.creditHold && customer.creditHoldReason && (
+                                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+                                    ({customer.creditHoldReason})
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {customer.creditHold ? (
+                            <Button variant="primary" size="sm" onClick={() => handleToggleCreditHold(false)}>
+                                Release Credit Hold
+                            </Button>
+                        ) : (
+                            <Button variant="danger" size="sm" onClick={() => {
+                                const reason = prompt('Enter reason for credit freeze:');
+                                if (reason !== null) handleToggleCreditHold(true, reason);
+                            }}>
+                                Place Credit Hold
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </Card>
+
             {/* Contact Details Card */}
             <Card padding="md">
                 <h4 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -585,7 +747,7 @@ export default function CustomerDetailPage() {
 
             {/* Tab Navigation */}
             <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-1)' }}>
-                {(['profile', 'orders', 'invoices', 'cases'] as const).map(tab => (
+                {(['profile', 'orders', 'invoices', 'contracts', 'cases'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -602,7 +764,7 @@ export default function CustomerDetailPage() {
                             textTransform: 'capitalize'
                         }}
                     >
-                        {tab === 'profile' ? 'Profile & Details' : tab === 'orders' ? 'Sales Orders' : tab === 'invoices' ? 'Invoices' : 'Support Tickets'}
+                        {tab === 'profile' ? 'Profile & Details' : tab === 'orders' ? 'Sales Orders' : tab === 'invoices' ? 'Invoices' : tab === 'contracts' ? 'Contracts' : 'Support Tickets'}
                     </button>
                 ))}
             </div>
@@ -612,6 +774,7 @@ export default function CustomerDetailPage() {
                 {activeTab === 'profile' && renderProfileTab()}
                 {activeTab === 'orders' && renderOrdersTab()}
                 {activeTab === 'invoices' && renderInvoicesTab()}
+                {activeTab === 'contracts' && renderContractsTab()}
                 {activeTab === 'cases' && renderCasesTab()}
             </div>
 

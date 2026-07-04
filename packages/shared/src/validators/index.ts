@@ -160,6 +160,10 @@ export const createCustomerSchema = z.object({
   creditLimit: z.number().positive().optional(),
   paymentTerms: z.number().int().min(0).max(365).default(30),
   notes: z.string().max(2000).optional(),
+  customerType: z.enum(['ONE_TIME', 'RECURRING', 'GUEST', 'PARTNER']).default('RECURRING'),
+  creditHold: z.boolean().default(false).optional(),
+  creditHoldReason: z.string().max(500).optional(),
+  riskRating: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('LOW').optional(),
 });
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 
@@ -178,6 +182,7 @@ export const createProductSchema = z.object({
   costPrice: z.number().nonnegative('Cost price must be non-negative'),
   sellPrice: z.number().nonnegative('Sell price must be non-negative'),
   taxCategory: z.string().max(50).optional(),
+  requiresApproval: z.boolean().default(false),
 });
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 
@@ -282,6 +287,12 @@ export const createVendorSchema = z.object({
   type: z.string().optional(),
   status: z.string().optional(),
   address: z.any().optional(),
+  onboardingStatus: z.enum(['PENDING', 'IN_PROGRESS', 'QUALIFIED']).default('PENDING').optional(),
+  checklistTaxVerified: z.boolean().default(false).optional(),
+  checklistBankVerified: z.boolean().default(false).optional(),
+  checklistNdaSigned: z.boolean().default(false).optional(),
+  averageLeadTimeDays: z.number().nonnegative().default(0).optional(),
+  qualityScore: z.number().min(0).max(100).default(100).optional(),
 });
 export type CreateVendorInput = z.infer<typeof createVendorSchema>;
 
@@ -684,6 +695,14 @@ export const createContactSchema = z.object({
   department: z.string().max(100).optional(),
   isPrimary: z.boolean().default(false),
   notes: z.string().max(2000).optional(),
+  secondaryEmail: z.string().email().optional(),
+  preferredContactMethod: z.string().optional(),
+  engagementScore: z.number().int().optional(),
+  socialProfiles: z.any().optional(),
+  lifecycleStatus: z.string().optional(),
+  buyingRole: z.enum(['BUYER', 'DECISION_MAKER', 'INFLUENCER', 'GATEKEEPER', 'TECHNICAL', 'BILLING']).default('INFLUENCER').optional(),
+  lastContactedAt: z.string().datetime().optional().nullable(),
+  interactionVelocity: z.number().int().default(0).optional(),
 });
 export type CreateContactInput = z.infer<typeof createContactSchema>;
 

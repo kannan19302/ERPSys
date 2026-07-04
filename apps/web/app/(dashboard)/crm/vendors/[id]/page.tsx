@@ -34,6 +34,12 @@ interface Vendor {
   status: string;
   notes: string | null;
   address: Address | null;
+  onboardingStatus?: string;
+  checklistTaxVerified?: boolean;
+  checklistBankVerified?: boolean;
+  checklistNdaSigned?: boolean;
+  averageLeadTimeDays?: number;
+  qualityScore?: number;
   createdAt: string;
 }
 
@@ -125,6 +131,10 @@ export default function VendorDetailPage() {
     name: '', email: '', phone: '', taxId: '', type: 'COMPANY',
     paymentTerms: '30', notes: '', status: 'ACTIVE',
     street: '', city: '', state: '', postalCode: '', country: '',
+    onboardingStatus: 'PENDING',
+    checklistTaxVerified: false,
+    checklistBankVerified: false,
+    checklistNdaSigned: false,
   });
 
   // Delete modal states
@@ -255,6 +265,10 @@ export default function VendorDetailPage() {
       state: v.address?.state || '',
       postalCode: v.address?.postalCode || '',
       country: v.address?.country || '',
+      onboardingStatus: v.onboardingStatus || 'PENDING',
+      checklistTaxVerified: v.checklistTaxVerified || false,
+      checklistBankVerified: v.checklistBankVerified || false,
+      checklistNdaSigned: v.checklistNdaSigned || false,
     });
     setEditOpen(true);
   };
@@ -280,6 +294,10 @@ export default function VendorDetailPage() {
           postalCode: editForm.postalCode.trim() || undefined,
           country: editForm.country.trim() || undefined,
         } : null,
+        onboardingStatus: editForm.onboardingStatus,
+        checklistTaxVerified: editForm.checklistTaxVerified,
+        checklistBankVerified: editForm.checklistBankVerified,
+        checklistNdaSigned: editForm.checklistNdaSigned,
       };
 
       await apiPut(`/crm/vendors/${id}`, payload);
@@ -457,6 +475,66 @@ export default function VendorDetailPage() {
             <p style={{ fontSize: 'var(--text-xs)', lineHeight: '1.5', color: 'var(--color-text-secondary)', margin: 0 }}>{vendor.notes}</p>
           </Card>
         )}
+
+        {/* Onboarding Compliance Checklist Card */}
+        <Card padding="md">
+          <h4 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle size={16} /> Onboarding Compliance
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Onboarding Status</span>
+              <div style={{ marginTop: '4px' }}>
+                <Badge variant={vendor.onboardingStatus === 'QUALIFIED' ? 'success' : vendor.onboardingStatus === 'IN_PROGRESS' ? 'warning' : 'default'}>
+                  {vendor.onboardingStatus || 'PENDING'}
+                </Badge>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                {vendor.checklistTaxVerified ? <CheckCircle size={14} style={{ color: 'var(--color-success)' }} /> : <Clock size={14} style={{ color: 'var(--color-text-tertiary)' }} />}
+                Tax Document Verification
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                {vendor.checklistBankVerified ? <CheckCircle size={14} style={{ color: 'var(--color-success)' }} /> : <Clock size={14} style={{ color: 'var(--color-text-tertiary)' }} />}
+                Bank Detail Verification
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                {vendor.checklistNdaSigned ? <CheckCircle size={14} style={{ color: 'var(--color-success)' }} /> : <Clock size={14} style={{ color: 'var(--color-text-tertiary)' }} />}
+                Non-Disclosure Agreement (NDA)
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Performance SLA Scorecard */}
+        <Card padding="md">
+          <h4 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Award size={16} /> Performance SLA Scorecard
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Supplier Quality Score</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                <Badge variant={vendor.qualityScore && vendor.qualityScore >= 80 ? 'success' : vendor.qualityScore && vendor.qualityScore >= 50 ? 'warning' : 'danger'}>
+                  {vendor.qualityScore || 100} / 100
+                </Badge>
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>On-Time Delivery Rate</span>
+              <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                {data.metrics.onTimeDeliveryRate}%
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Average Lead Time</span>
+              <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                {data.metrics.avgLeadTimeDays} days
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
@@ -580,6 +658,12 @@ export default function VendorDetailPage() {
 
   const renderAgreementsTab = () => (
     <Card padding="none">
+      <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Blanket Purchase Contracts & Price Agreements</h4>
+        <Button size="sm" variant="primary" onClick={() => router.push(`/crm/contracts?vendorId=${id}&vendorName=${encodeURIComponent(vendor.name)}`)}>
+          Create Contract
+        </Button>
+      </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
         <thead>
           <tr style={{ background: 'var(--color-bg-sunken)', borderBottom: '1px solid var(--color-border)', textAlign: 'left' }}>
@@ -852,6 +936,32 @@ export default function VendorDetailPage() {
               <TextField label="Country" placeholder="United States" value={editForm.country} onChange={(e) => setEditForm({ ...editForm, country: e.target.value })} />
             </div>
           </fieldset>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)', margin: 'var(--space-3) 0' }}>
+            <FormField label="Onboarding Status">
+              <Select value={editForm.onboardingStatus} onChange={(e) => setEditForm({ ...editForm, onboardingStatus: e.target.value })}>
+                <option value="PENDING">Pending Compliance</option>
+                <option value="IN_PROGRESS">Under Evaluation</option>
+                <option value="QUALIFIED">Qualified Partner</option>
+              </Select>
+            </FormField>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '20px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 'var(--text-sm)' }}>
+                <input type="checkbox" checked={editForm.checklistTaxVerified} onChange={(e) => setEditForm({ ...editForm, checklistTaxVerified: e.target.checked })} />
+                Tax Document Verified
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 'var(--text-sm)' }}>
+                <input type="checkbox" checked={editForm.checklistBankVerified} onChange={(e) => setEditForm({ ...editForm, checklistBankVerified: e.target.checked })} />
+                Bank details Verified
+              </label>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '20px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 'var(--text-sm)' }}>
+                <input type="checkbox" checked={editForm.checklistNdaSigned} onChange={(e) => setEditForm({ ...editForm, checklistNdaSigned: e.target.checked })} />
+                NDA Form Signed
+              </label>
+            </div>
+          </div>
 
           <TextField label="Private Supplier Memo / Evaluation Notes" placeholder="Special pricing agreements, shipping constraints..." value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
         </form>

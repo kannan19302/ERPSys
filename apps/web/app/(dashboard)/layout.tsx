@@ -703,6 +703,7 @@ export default function DashboardLayout({
   return (
     <PermissionProvider>
     <div
+      suppressHydrationWarning
       style={{
         display: 'flex',
         minHeight: '100vh',
@@ -711,7 +712,6 @@ export default function DashboardLayout({
         fontFamily: 'var(--font-sans)',
       }}
     >
-      <a href="#main-content" style={{ position: 'absolute', left: '-9999px', top: 'var(--space-2)', zIndex: 9999, padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: '#fff', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', textDecoration: 'none' }} onFocus={(e) => { e.currentTarget.style.left = 'var(--space-2)'; }} onBlur={(e) => { e.currentTarget.style.left = '-9999px'; }}>Skip to main content</a>
       {/* Sidebar Section */}
       {!hideSidebar && (
         <aside

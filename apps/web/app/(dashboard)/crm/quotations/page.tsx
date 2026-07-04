@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  PageHeader, Card, Button, Spinner, Badge, StatusBadge, DataTable, type Column,
+  PageHeader, Card, Button, Spinner, Badge, StatusBadge, DataTable, type Column, type SortOrder,
   Modal, TextField, FormField, Select, KPICard, Tabs,
 } from '@unerp/ui';
 import {
@@ -45,7 +45,7 @@ const FALLBACK: Quotation[] = [
 ];
 
 export default function CrmQuotationsPage() {
-  const [data, setData] = useState<Quotation[]>([]);
+  const [allQuotations, setAllQuotations] = useState<Quotation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -53,8 +53,6 @@ export default function CrmQuotationsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -77,42 +75,25 @@ export default function CrmQuotationsPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
+  // NOTE: GET /sales/quotations accepts no query params at all (no search/page/limit/sort
+  // support server-side) — see apps/api/src/modules/sales/sales.controller.ts. We fetch the
+  // full list once and filter/sort/paginate client-side below.
+  // Backend follow-up: add page/limit/sortBy/sortOrder/search/status support to getQuotations.
   const fetchQuotations = async () => {
     setLoading(true);
     try {
-      const queryParams = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        search: debouncedSearch,
-        sortBy,
-        sortOrder,
-      });
-      if (statusFilter !== 'ALL') queryParams.append('status', statusFilter);
-
-      const res = await fetch(`/api/v1/sales/quotations?${queryParams.toString()}`, {
+      const res = await fetch(`/api/v1/sales/quotations`, {
         headers: { Authorization: `Bearer ${getToken() || ''}` },
       });
       if (res.ok) {
         const d = await res.json();
-        if (d && typeof d === 'object' && 'data' in d) {
-          setData(d.data || []);
-          setTotalCount(d.totalCount || 0);
-          setTotalPages(d.totalPages || 0);
-        } else {
-          const list = Array.isArray(d) ? d : [];
-          setData(list);
-          setTotalCount(list.length);
-          setTotalPages(Math.ceil(list.length / limit));
-        }
+        const list: Quotation[] = Array.isArray(d) ? d : (d?.data || []);
+        setAllQuotations(list);
       } else {
-        setData(FALLBACK);
-        setTotalCount(FALLBACK.length);
-        setTotalPages(1);
+        setAllQuotations(FALLBACK);
       }
     } catch {
-      setData(FALLBACK);
-      setTotalCount(FALLBACK.length);
-      setTotalPages(1);
+      setAllQuotations(FALLBACK);
     } finally {
       setLoading(false);
     }
@@ -120,7 +101,31 @@ export default function CrmQuotationsPage() {
 
   useEffect(() => {
     fetchQuotations();
-  }, [page, debouncedSearch, statusFilter, sortBy, sortOrder]);
+  }, []);
+
+  // Client-side filter + sort + pagination (backend does not support these params yet)
+  const filteredQuotations = allQuotations.filter((q) => {
+    if (statusFilter !== 'ALL' && q.status !== statusFilter) return false;
+    if (!debouncedSearch) return true;
+    const query = debouncedSearch.toLowerCase();
+    return q.quotationNumber.toLowerCase().includes(query) || q.customerName.toLowerCase().includes(query);
+  });
+  const sortedQuotations = [...filteredQuotations].sort((a, b) => {
+    let cmp = 0;
+    if (sortBy === 'totalAmount') cmp = Number(a.totalAmount) - Number(b.totalAmount);
+    else if (sortBy === 'quotationNumber') cmp = a.quotationNumber.localeCompare(b.quotationNumber);
+    else if (sortBy === 'issueDate' || sortBy === 'createdAt') cmp = new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime();
+    else if (sortBy === 'status') cmp = a.status.localeCompare(b.status);
+    return sortOrder === 'desc' ? -cmp : cmp;
+  });
+  const totalCount = sortedQuotations.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+  const data = sortedQuotations.slice((page - 1) * limit, page * limit);
+
+  const handleSortChange = (key: string, order: SortOrder) => {
+    setSortBy(key);
+    setSortOrder(order);
+  };
 
   const convertToOrder = async (id: string) => {
     const token = getToken();
@@ -152,7 +157,7 @@ export default function CrmQuotationsPage() {
         issueDate: new Date().toISOString().split('T')[0]!, validUntil: form.validUntil,
         lineItems, notes: form.notes,
       };
-      setData((prev) => [newQ, ...prev]);
+      setAllQuotations((prev) => [newQ, ...prev]);
       setCreateOpen(false);
       setForm({ quotationNumber: '', customerName: '', validUntil: '', notes: '' });
       setLineItems([{ description: 'Professional Services', quantity: 1, unitPrice: 5000, taxRate: 0 }]);
@@ -160,10 +165,10 @@ export default function CrmQuotationsPage() {
     finally { setCreating(false); }
   };
 
-  const totalValue = data.reduce((a, q) => a + Number(q.totalAmount), 0);
-  const draftCount = data.filter(q => q.status === 'DRAFT').length;
-  const sentCount = data.filter(q => q.status === 'SENT').length;
-  const acceptedValue = data.filter(q => q.status === 'ACCEPTED').reduce((a, q) => a + Number(q.totalAmount), 0);
+  const totalValue = sortedQuotations.reduce((a, q) => a + Number(q.totalAmount), 0);
+  const draftCount = sortedQuotations.filter(q => q.status === 'DRAFT').length;
+  const sentCount = sortedQuotations.filter(q => q.status === 'SENT').length;
+  const acceptedValue = sortedQuotations.filter(q => q.status === 'ACCEPTED').reduce((a, q) => a + Number(q.totalAmount), 0);
 
   const columns: Column<Quotation>[] = [
     {
@@ -181,18 +186,18 @@ export default function CrmQuotationsPage() {
       ),
     },
     {
-      key: 'totalAmount', header: 'Amount', align: 'right' as const,
+      key: 'totalAmount', header: 'Amount', align: 'right' as const, sortable: true,
       render: (row) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{fmtCurrency(row.totalAmount)}</span>,
     },
     {
-      key: 'issueDate', header: 'Issued',
+      key: 'issueDate', header: 'Issued', sortable: true,
       render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{new Date(row.issueDate).toLocaleDateString()}</span>,
     },
     {
-      key: 'validUntil', header: 'Valid Until',
+      key: 'validUntil', header: 'Valid Until', sortable: true,
       render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{row.validUntil ? new Date(row.validUntil).toLocaleDateString() : '—'}</span>,
     },
-    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    { key: 'status', header: 'Status', sortable: true, render: (row) => <StatusBadge status={row.status} /> },
     {
       key: 'actions', header: '', align: 'right' as const, width: '120px',
       render: (row) => (
@@ -266,6 +271,7 @@ export default function CrmQuotationsPage() {
       <Card padding="none">
         <DataTable columns={columns} data={data} loading={loading} rowKey={(r) => r.id}
           onRowClick={(r) => { setSelected(r); setDetailOpen(true); }}
+          sortBy={sortBy} sortOrder={sortOrder} onSortChange={handleSortChange}
           emptyTitle="No quotations" emptyMessage="Create your first quotation to start quoting customers." emptyIcon={<FileText size={48} />} />
         
         {totalPages > 1 && (

@@ -14,8 +14,23 @@ import { resolveOrgId } from './crm-shared';
  * price books/products, pipeline & revenue analytics, and the sales
  * methodology layer (playbooks, battlecards, stage-gate checklists).
  */
+// Structured loss-reason taxonomy — the `lossReason` column stays a free-text
+// String on Opportunity (no migration needed), but CLOSED_LOST transitions
+// are validated in the service layer against this fixed list so forecasting
+// analytics (getWinRate/getRevenueForecast) can be sliced by a consistent
+// reason set instead of arbitrary rep-entered text.
+export const WIN_LOSS_REASONS = [
+  'PRICE_TOO_HIGH', 'COMPETITOR_CHOSEN', 'NO_BUDGET', 'NO_DECISION_MAKER_BUYIN',
+  'FEATURE_GAP', 'TIMING_NOT_RIGHT', 'LOST_CONTACT', 'PROJECT_CANCELLED', 'OTHER',
+] as const;
+export type WinLossReason = typeof WIN_LOSS_REASONS[number];
+
 @Injectable()
 export class CrmDealsService {
+  getWinLossReasons() {
+    return WIN_LOSS_REASONS;
+  }
+
   // ── PIPELINES ─────────────────────────────────
 
   async getPipelines(tenantId: string) {
@@ -377,8 +392,11 @@ export class CrmDealsService {
     return prisma.priceBookEntry.delete({ where: { id: entryId } });
   }
 
-  async getCrmProducts(tenantId: string, query?: { categoryId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
-    const where: Prisma.ProductWhereInput = { tenantId, isActive: true, deletedAt: null };
+  async getCrmProducts(tenantId: string, query?: { categoryId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc'; status?: string }) {
+    const where: Prisma.ProductWhereInput = { tenantId, deletedAt: null };
+    if (query?.status) {
+      where.status = query.status;
+    }
     if (query?.categoryId) where.categoryId = query.categoryId;
     if (query?.search) {
       where.OR = [
@@ -399,11 +417,58 @@ export class CrmDealsService {
         skip,
         take: limit,
         orderBy,
-        select: { id: true, name: true, sku: true, sellPrice: true, category: true, type: true, unit: true },
+        select: { id: true, name: true, sku: true, sellPrice: true, category: true, type: true, unit: true, status: true, isActive: true, discontinuedAt: true },
       }),
       prisma.product.count({ where }),
     ]);
     return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
+  }
+
+  async createCrmProduct(tenantId: string, orgId: string, dto: { name: string; sku: string; sellPrice: number; costPrice?: number; type?: string; category?: string; status?: string }) {
+    let resolvedOrgId = orgId;
+    if (!orgId || orgId === 'org-system-default') {
+      const org = await prisma.organization.findFirst({ where: { tenantId } });
+      if (!org) throw new BadRequestException('No Organization registered');
+      resolvedOrgId = org.id;
+    }
+    return prisma.product.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        name: dto.name,
+        sku: dto.sku,
+        sellPrice: dto.sellPrice,
+        costPrice: dto.costPrice ?? 0,
+        type: dto.type || 'GOODS',
+        category: dto.category || null,
+        status: dto.status || 'ACTIVE',
+        isActive: dto.status !== 'DISCONTINUED',
+        discontinuedAt: dto.status === 'DISCONTINUED' ? new Date() : null,
+      },
+    });
+  }
+
+  async updateCrmProduct(tenantId: string, id: string, dto: { name?: string; sku?: string; sellPrice?: number; costPrice?: number; type?: string; category?: string; status?: string }) {
+    const existing = await prisma.product.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Product not found');
+    const updateData: any = { ...dto };
+    if (dto.status) {
+      updateData.isActive = dto.status !== 'DISCONTINUED';
+      updateData.discontinuedAt = dto.status === 'DISCONTINUED' ? new Date() : null;
+    }
+    return prisma.product.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  async deleteCrmProduct(tenantId: string, id: string) {
+    const existing = await prisma.product.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Product not found');
+    return prisma.product.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   // ── PIPELINE & REVENUE ANALYTICS ──────────────

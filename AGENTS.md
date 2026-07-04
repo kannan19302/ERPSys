@@ -112,6 +112,11 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 15. **Every new endpoint MUST use `@Permissions('module.resource.action')` decorator.** Register new permissions in `packages/shared/src/permissions/registry.ts`.
 16. **Every UI component that controls a privileged action MUST be wrapped in `<ProtectedComponent permission="x">`** to conditionally render based on user permissions. Import from `@unerp/ui`.
 
+### Data Tables (Global Policy)
+16a. **Every entity list page MUST use the shared `DataTable` component** (`@unerp/ui`, `packages/ui/src/components/table.tsx`) instead of hand-rolled `<table>` markup. Column sorting is a single global CSS convention — set `sortable: true` on a `Column` and wire `sortBy`/`sortOrder`/`onSortChange` on `<DataTable>`; the up/down arrow indicators render via the shared `.dt-sort-th` / `.dt-sort-arrow` classes in `packages/ui/src/styles/globals.css`. Do not hand-roll per-page sort-arrow CSS.
+16b. **Any list that can exceed 20 records MUST paginate**, server-side by default (`page`/`limit`/`sortBy`/`sortOrder` query params handled by the backend's `findAll`) — client-side sort/paginate only when the backend endpoint genuinely doesn't support these params yet, and note that gap in the code and `.ai/CHANGELOG.md` as a backend follow-up.
+16c. **Every entity list `DataTable` MUST include an Actions column** (View/Edit/Delete as applicable) using `lucide-react` icons, each handler wrapped with `e.stopPropagation()` so it doesn't trigger the row's `onRowClick`. Omit an action only when the corresponding backend route genuinely doesn't exist (e.g. immutable audit records) — note why in the PR/changelog rather than guessing an endpoint.
+
 ### Process
 17. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules. See § Mandatory Tracking Convention above — this is non-negotiable.
 18. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work. See § Mandatory Tracking Convention above.

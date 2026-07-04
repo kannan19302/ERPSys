@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, Card, Button, Badge, DataTable, type Column, KPICard, Spinner } from '@unerp/ui';
+import { PageHeader, Card, Button, Badge, DataTable, type Column, type SortOrder, KPICard, Spinner } from '@unerp/ui';
 import { HelpCircle, Plus, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 
 interface CaseRow {
@@ -57,25 +57,55 @@ export default function CrmCasesPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ subject: '', description: '', priority: 'MEDIUM', channel: 'EMAIL' });
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sortBy,
+        sortOrder,
+      });
       const [casesRes, slaRes] = await Promise.all([
-        fetch(`${API_BASE}/crm/cases`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/crm/cases?${queryParams.toString()}`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API_BASE}/crm/cases/sla-status`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      if (casesRes.ok) setCases(await casesRes.json());
+      if (casesRes.ok) {
+        const d = await casesRes.json();
+        if (d && typeof d === 'object' && 'data' in d) {
+          setCases(d.data || []);
+          setTotalCount(d.totalCount || 0);
+          setTotalPages(d.totalPages || 0);
+        } else {
+          const list = Array.isArray(d) ? d : [];
+          setCases(list);
+          setTotalCount(list.length);
+          setTotalPages(Math.ceil(list.length / limit));
+        }
+      }
       if (slaRes.ok) setSlaStatus(await slaRes.json());
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, page, limit, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleSortChange = (key: string, order: SortOrder) => {
+    setSortBy(key);
+    setSortOrder(order);
+  };
 
   const createCase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +133,7 @@ export default function CrmCasesPage() {
 
   const columns: Column<CaseRow>[] = [
     {
-      key: 'caseNumber', header: 'Case',
+      key: 'subject', header: 'Case', sortable: true,
       render: (row) => (
         <div>
           <div style={{ fontWeight: 'var(--weight-semibold)' }}>{row.subject}</div>
@@ -111,12 +141,12 @@ export default function CrmCasesPage() {
         </div>
       ),
     },
-    { key: 'priority', header: 'Priority', render: (row) => <Badge variant={row.priority === 'URGENT' || row.priority === 'HIGH' ? 'danger' : 'default'}>{row.priority}</Badge> },
-    { key: 'status', header: 'Status', render: (row) => <Badge variant={row.status === 'RESOLVED' || row.status === 'CLOSED' ? 'success' : 'info'}>{row.status}</Badge> },
+    { key: 'priority', header: 'Priority', sortable: true, render: (row) => <Badge variant={row.priority === 'URGENT' || row.priority === 'HIGH' ? 'danger' : 'default'}>{row.priority}</Badge> },
+    { key: 'status', header: 'Status', sortable: true, render: (row) => <Badge variant={row.status === 'RESOLVED' || row.status === 'CLOSED' ? 'success' : 'info'}>{row.status}</Badge> },
     { key: 'channel', header: 'Channel' },
     { key: 'sla-countdown', header: 'SLA', render: (row) => <SlaCountdownBadge resolveBy={row.slaResolveBy ?? row.slaDeadline} status={row.status} /> },
     {
-      key: 'slaDeadline', header: 'SLA Deadline',
+      key: 'slaDeadline', header: 'SLA Deadline', sortable: true,
       render: (row) => row.slaDeadline ? (
         <span style={{ color: isBreached(row.slaDeadline, row.status) ? 'var(--color-danger)' : 'var(--color-text)', fontWeight: isBreached(row.slaDeadline, row.status) ? 'var(--weight-bold)' : 'normal' }}>
           {isBreached(row.slaDeadline, row.status) && <AlertTriangle size={12} style={{ marginRight: 4, display: 'inline' }} />}
@@ -126,7 +156,7 @@ export default function CrmCasesPage() {
     },
   ];
 
-  if (loading) {
+  if (loading && cases.length === 0) {
     return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
   }
 
@@ -181,7 +211,33 @@ export default function CrmCasesPage() {
       )}
 
       <Card padding="none">
-        <DataTable columns={columns} data={cases} rowKey={(r) => r.id} emptyTitle="No cases" emptyMessage="Log a customer service case to start tracking SLA compliance." emptyIcon={<HelpCircle size={48} />} />
+        <DataTable
+          columns={columns}
+          data={cases}
+          loading={loading}
+          rowKey={(r) => r.id}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+          emptyTitle="No cases"
+          emptyMessage="Log a customer service case to start tracking SLA compliance."
+          emptyIcon={<HelpCircle size={48} />}
+        />
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+              Showing Page {page} of {totalPages} ({totalCount} total)
+            </span>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
+                Previous
+              </Button>
+              <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

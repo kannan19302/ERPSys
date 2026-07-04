@@ -950,3 +950,33 @@ img {
   font-size: 0.95em;
   margin: 0 var(--space-1);
 }
+
+/* Global sortable-table-header convention (DataTable, all modules) */
+.dt-sort-th {
+  transition: background var(--duration-fast) var(--ease-default);
+}
+.dt-sort-th:hover {
+  background: var(--color-bg-hover);
+}
+.dt-sort-arrow {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  color: var(--color-text-tertiary);
+  opacity: 0.5;
+}
+.dt-sort-arrow[data-active="true"] {
+  opacity: 1;
+  color: var(--color-primary);
+}
+.dt-sort-arrow-up,
+.dt-sort-arrow-down {
+  display: block;
+  opacity: 0.45;
+}
+.dt-sort-arrow[data-order="asc"] .dt-sort-arrow-up {
+  opacity: 1;
+}
+.dt-sort-arrow[data-order="desc"] .dt-sort-arrow-down {
+  opacity: 1;
+}

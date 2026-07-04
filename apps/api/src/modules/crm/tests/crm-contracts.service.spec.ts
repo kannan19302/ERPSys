@@ -13,9 +13,27 @@ vi.mock('@unerp/database', () => ({
       updateMany: vi.fn(),
       aggregate: vi.fn(),
     },
+    contractBillingMilestone: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      delete: vi.fn(),
+      update: vi.fn(),
+    },
+    invoice: {
+      count: vi.fn(),
+      create: vi.fn(),
+    },
     customer: { findFirst: vi.fn() },
     vendor: { findFirst: vi.fn() },
     organization: { findFirst: vi.fn() },
+    salesOrder: {
+      count: vi.fn(),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    salesOrderItem: {
+      createMany: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }));
@@ -32,6 +50,32 @@ describe('CrmContractsService', () => {
     vi.clearAllMocks();
     service = new CrmContractsService();
     (prisma.organization.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: ORG });
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementation(async (callback) => {
+      if (typeof callback === 'function') {
+        const tx = {
+          contract: prisma.contract,
+          contractLineItem: {
+            createMany: vi.fn().mockResolvedValue({ count: 1 }),
+            deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+          },
+          salesOrder: {
+            create: vi.fn().mockImplementation((args) => Promise.resolve({ id: 'so-1', ...args.data })),
+          },
+          salesOrderItem: {
+            createMany: vi.fn().mockResolvedValue({ count: 1 }),
+          },
+          invoice: {
+            count: vi.fn().mockResolvedValue(0),
+            create: vi.fn().mockImplementation((args) => Promise.resolve({ id: 'inv-1', invoiceNumber: 'INV-2026-00001', ...args.data })),
+          },
+          contractBillingMilestone: {
+            update: vi.fn().mockImplementation((args) => Promise.resolve({ id: 'ms-1', ...args.data })),
+          },
+        };
+        return callback(tx);
+      }
+      return callback;
+    });
   });
 
   describe('createContract', () => {
@@ -213,6 +257,221 @@ describe('CrmContractsService', () => {
 
       const result = await service.scanRenewals(TENANT);
       expect(result).toEqual({ markedExpiringSoon: 2, markedExpired: 1 });
+    });
+  });
+
+  describe('approval flows', () => {
+    it('submits a contract for approval', async () => {
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'con-1', tenantId: TENANT, approvalStatus: 'DRAFT', value: 15000, lineItems: [] });
+      (prisma.contract.update as ReturnType<typeof vi.fn>).mockImplementation(({ data }) => Promise.resolve({ id: 'con-1', ...data }));
+
+      const result = await service.submitForApproval(TENANT, 'con-1');
+      expect(result.approvalStatus).toBe('PENDING_APPROVAL');
+    });
+
+    it('approves a pending contract', async () => {
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'con-1', tenantId: TENANT, approvalStatus: 'PENDING_APPROVAL' });
+      (prisma.contract.update as ReturnType<typeof vi.fn>).mockImplementation(({ data }) => Promise.resolve({ id: 'con-1', ...data }));
+
+      const result = await service.approveContract(TENANT, 'con-1', 'user-1');
+      expect(result.approvalStatus).toBe('APPROVED');
+      expect(result.signatureStatus).toBe('UNSIGNED');
+    });
+
+    it('rejects a pending contract', async () => {
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'con-1', tenantId: TENANT, approvalStatus: 'PENDING_APPROVAL' });
+      (prisma.contract.update as ReturnType<typeof vi.fn>).mockImplementation(({ data }) => Promise.resolve({ id: 'con-1', ...data }));
+
+      const result = await service.rejectContract(TENANT, 'con-1', 'user-1');
+      expect(result.approvalStatus).toBe('REJECTED');
+    });
+  });
+
+  describe('signature flows', () => {
+    it('invites a signer to sign', async () => {
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'con-1', tenantId: TENANT, approvalStatus: 'APPROVED', signatureStatus: 'UNSIGNED' });
+      (prisma.contract.update as ReturnType<typeof vi.fn>).mockImplementation(({ data }) => Promise.resolve({ id: 'con-1', ...data }));
+
+      const result = await service.inviteToSign(TENANT, 'con-1', 'Alice', 'alice@company.com');
+      expect(result.signatureStatus).toBe('PENDING_SIGNATURE');
+      expect(result.signerName).toBe('Alice');
+      expect(result.signerEmail).toBe('alice@company.com');
+    });
+
+    it('signs a pending signature contract and transitions it to ACTIVE status', async () => {
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'con-1', tenantId: TENANT, approvalStatus: 'APPROVED', signatureStatus: 'PENDING_SIGNATURE' });
+      (prisma.contract.update as ReturnType<typeof vi.fn>).mockImplementation(({ data }) => Promise.resolve({ id: 'con-1', ...data }));
+
+      const result = await service.signContract(TENANT, 'con-1');
+      expect(result.signatureStatus).toBe('SIGNED');
+      expect(result.status).toBe('ACTIVE');
+    });
+  });
+
+  describe('reviseContract', () => {
+    it('clones a contract into a new draft revision', async () => {
+      const mockLineItems = [{ id: 'li-1', productId: 'prod-1', quantity: 2, unitPrice: 100, discount: 0 }];
+      const mockContract = {
+        id: 'con-1',
+        tenantId: TENANT,
+        orgId: 'org-1',
+        contractNumber: 'CON-00001',
+        title: 'Original Contract',
+        customerId: 'cust-1',
+        vendorId: null,
+        type: 'SALES',
+        contractType: 'ONE_TIME',
+        value: 200,
+        currency: 'USD',
+        startDate: new Date(),
+        endDate: new Date(),
+        renewalDate: null,
+        autoRenew: false,
+        renewalTermMonths: null,
+        terms: null,
+        ownerId: 'user-1',
+        status: 'ACTIVE',
+        lineItems: mockLineItems,
+      };
+
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockContract);
+      (prisma.contract.count as ReturnType<typeof vi.fn>).mockResolvedValue(1);
+
+      const result = await service.reviseContract(TENANT, 'org-1', 'con-1');
+      expect(result.title).toBe('Original Contract (Amended)');
+      expect(result.status).toBe('DRAFT');
+      expect(result.approvalStatus).toBe('DRAFT');
+      expect(result.revisedFromId).toBe('con-1');
+    });
+  });
+
+  describe('convertToSalesOrder', () => {
+    it('converts an approved contract into a draft SalesOrder', async () => {
+      const mockLineItems = [{ id: 'li-1', productId: 'prod-1', quantity: 2, unitPrice: 100, discount: 0, product: { name: 'Widget' } }];
+      const mockContract = {
+        id: 'con-1',
+        tenantId: TENANT,
+        orgId: 'org-1',
+        contractNumber: 'CON-00001',
+        title: 'Approved Contract',
+        customerId: 'cust-1',
+        vendorId: null,
+        type: 'SALES',
+        contractType: 'ONE_TIME',
+        value: 200,
+        currency: 'USD',
+        startDate: new Date(),
+        endDate: new Date(),
+        status: 'ACTIVE',
+        approvalStatus: 'APPROVED',
+        lineItems: mockLineItems,
+      };
+
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockContract);
+      (prisma.salesOrder.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (prisma.salesOrder.count as ReturnType<typeof vi.fn>).mockResolvedValue(0);
+
+      const result = await service.convertToSalesOrder(TENANT, 'org-1', 'con-1', 'user-1');
+      expect(result.customerId).toBe('cust-1');
+      expect(result.status).toBe('DRAFT');
+      expect(result.notes).toContain('CON-00001');
+    });
+
+    it('throws BadRequestException if contract is already converted to a sales order', async () => {
+      const mockContract = {
+        id: 'con-1',
+        tenantId: TENANT,
+        orgId: 'org-1',
+        contractNumber: 'CON-00001',
+        type: 'SALES',
+        status: 'ACTIVE',
+        approvalStatus: 'APPROVED',
+      };
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockContract);
+      (prisma.salesOrder.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'so-existing' });
+
+      await expect(
+        service.convertToSalesOrder(TENANT, 'org-1', 'con-1', 'user-1')
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('billingMilestones', () => {
+    const mockContract = {
+      id: 'con-1',
+      tenantId: TENANT,
+      orgId: 'org-1',
+      contractNumber: 'CON-00001',
+      customerId: 'cust-1',
+      value: 10000,
+      currency: 'USD',
+      status: 'ACTIVE',
+      approvalStatus: 'APPROVED',
+    };
+
+    it('adds a billing milestone and computes the amount', async () => {
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockContract);
+      (prisma.contractBillingMilestone.create as ReturnType<typeof vi.fn>).mockImplementation(({ data }) =>
+        Promise.resolve({ id: 'ms-1', ...data }),
+      );
+
+      const result = await service.addBillingMilestone(TENANT, 'con-1', {
+        title: 'Initial Milestone',
+        percentage: 30,
+        dueDate: '2026-06-01',
+      });
+
+      expect(result.contractId).toBe('con-1');
+      expect(result.title).toBe('Initial Milestone');
+      expect(result.percentage).toBe(30);
+      expect(result.amount).toBe(3000);
+    });
+
+    it('deletes a billing milestone if status is pending', async () => {
+      const mockMilestone = {
+        id: 'ms-1',
+        contractId: 'con-1',
+        tenantId: TENANT,
+        status: 'PENDING',
+      };
+      (prisma.contractBillingMilestone.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockMilestone);
+      (prisma.contractBillingMilestone.delete as ReturnType<typeof vi.fn>).mockResolvedValue(mockMilestone);
+
+      const result = await service.deleteBillingMilestone(TENANT, 'con-1', 'ms-1');
+      expect(result.id).toBe('ms-1');
+    });
+
+    it('throws BadRequestException when deleting an invoiced milestone', async () => {
+      const mockMilestone = {
+        id: 'ms-1',
+        contractId: 'con-1',
+        tenantId: TENANT,
+        status: 'INVOICED',
+      };
+      (prisma.contractBillingMilestone.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockMilestone);
+
+      await expect(
+        service.deleteBillingMilestone(TENANT, 'con-1', 'ms-1'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('triggers a draft invoice generation from a milestone', async () => {
+      const mockMilestone = {
+        id: 'ms-1',
+        contractId: 'con-1',
+        tenantId: TENANT,
+        title: 'Initial Milestone',
+        percentage: 30,
+        amount: 3000,
+        status: 'PENDING',
+      };
+      (prisma.contract.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockContract);
+      (prisma.contractBillingMilestone.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockMilestone);
+
+      const invoice = await service.triggerMilestoneInvoice(TENANT, 'org-1', 'con-1', 'ms-1', 'user-1');
+      expect(invoice.id).toBe('inv-1');
+      expect(invoice.totalAmount).toBe(3000);
+      expect(invoice.notes).toContain('Initial Milestone');
     });
   });
 });

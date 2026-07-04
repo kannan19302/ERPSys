@@ -527,6 +527,7 @@ describe('CrmService', () => {
       mockPrisma.$transaction.mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) => {
         const tx = {
           customer: { create: vi.fn().mockResolvedValue({ id: 'c-new', name: 'Stark Industries' }) },
+          contact: { create: vi.fn().mockResolvedValue({ id: 'ct-new', firstName: 'Tony', lastName: 'Stark' }) },
           opportunity: { create: vi.fn().mockResolvedValue({ id: 'o-new', name: 'Test Opp' }) },
           lead: { update: vi.fn().mockResolvedValue({ id: 'l1', status: 'CONVERTED' }) },
         };

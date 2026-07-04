@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
 import {
   Plus, X, FileText, Upload, Trash2, AlertCircle,
   Award, File, FileImage, FileCode, Filter
@@ -122,6 +122,41 @@ export default function DocumentsPage() {
   const entityTabs = ['ALL', 'LEAD', 'OPPORTUNITY', 'CUSTOMER', 'CONTACT', 'QUOTATION'] as const;
   const filtered = entityFilter === 'ALL' ? documents : documents.filter(d => d.entityType === entityFilter);
 
+  const [docSortBy, setDocSortBy] = useState<string>('createdAt');
+  const [docSortOrder, setDocSortOrder] = useState<SortOrder>('desc');
+  const sortedDocs = [...filtered].sort((a, b) => {
+    let cmp = 0;
+    if (docSortBy === 'name') cmp = a.name.localeCompare(b.name);
+    else if (docSortBy === 'fileSize') cmp = a.fileSize - b.fileSize;
+    else if (docSortBy === 'createdAt') cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    return docSortOrder === 'desc' ? -cmp : cmp;
+  });
+
+  const docColumns: Column<CrmDocument>[] = [
+    { key: 'name', header: 'Name', sortable: true, render: (d) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{d.name}</span> },
+    { key: 'type', header: 'Type', render: (d) => getTypeBadge(d.type) },
+    {
+      key: 'entityType', header: 'Entity',
+      render: (d) => (
+        <div>
+          <Badge variant="default">{d.entityType}</Badge>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{d.entityId}</div>
+        </div>
+      ),
+    },
+    { key: 'fileSize', header: 'Size', align: 'right', sortable: true, render: (d) => formatSize(d.fileSize) },
+    { key: 'uploadedBy', header: 'Uploaded By', render: (d) => d.uploadedBy?.name || 'Unknown' },
+    { key: 'createdAt', header: 'Date', sortable: true, render: (d) => new Date(d.createdAt).toLocaleDateString() },
+    {
+      key: 'actions', header: 'Actions', align: 'center', width: '80px',
+      render: (d) => (
+        <button onClick={(e) => { e.stopPropagation(); handleDelete(d.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: '4px' }} title="Delete">
+          <Trash2 size={16} />
+        </button>
+      ),
+    },
+  ];
+
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-1.5)' };
   const inputStyle: React.CSSProperties = { width: '100%', height: '38px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0 var(--space-3)' };
   const thStyle: React.CSSProperties = { textAlign: 'left', padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' };
@@ -183,41 +218,14 @@ export default function DocumentsPage() {
             <div style={{ fontSize: 'var(--text-sm)' }}>Upload a document to get started.</div>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={thStyle}>Name</th>
-                  <th style={thStyle}>Type</th>
-                  <th style={thStyle}>Entity</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Size</th>
-                  <th style={thStyle}>Uploaded By</th>
-                  <th style={thStyle}>Date</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(d => (
-                  <tr key={d.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ ...tdStyle, fontWeight: 'var(--weight-semibold)', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</td>
-                    <td style={tdStyle}>{getTypeBadge(d.type)}</td>
-                    <td style={tdStyle}>
-                      <Badge variant="default">{d.entityType}</Badge>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{d.entityId}</div>
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--color-text-secondary)' }}>{formatSize(d.fileSize)}</td>
-                    <td style={{ ...tdStyle, color: 'var(--color-text-secondary)' }}>{d.uploadedBy?.name || 'Unknown'}</td>
-                    <td style={{ ...tdStyle, color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>{new Date(d.createdAt).toLocaleDateString()}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      <button onClick={() => handleDelete(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: '4px' }} title="Delete">
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<CrmDocument>
+            columns={docColumns}
+            data={sortedDocs}
+            rowKey={(d) => d.id}
+            sortBy={docSortBy}
+            sortOrder={docSortOrder}
+            onSortChange={(key, order) => { setDocSortBy(key); setDocSortOrder(order); }}
+          />
         )}
       </Card>
 

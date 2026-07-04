@@ -93,11 +93,13 @@ export class CrmService {
   updateCustomerStatus(tenantId: string, id: string, status: string) { return this.customersService.updateCustomerStatus(tenantId, id, status); }
   getCustomerNotes(tenantId: string, customerId: string) { return this.customersService.getCustomerNotes(tenantId, customerId); }
   addCustomerNote(tenantId: string, orgId: string, customerId: string, dto: CustomerNoteInput) { return this.customersService.addCustomerNote(tenantId, orgId, customerId, dto); }
+  toggleCustomerCreditHold(tenantId: string, id: string, creditHold: boolean, reason?: string) { return this.customersService.toggleCustomerCreditHold(tenantId, id, creditHold, reason); }
   bulkUpdateCustomerStatus(tenantId: string, ids: string[], status: string) { return this.customersService.bulkUpdateCustomerStatus(tenantId, ids, status); }
   exportCustomers(tenantId: string, query?: { search?: string; status?: string }) { return this.customersService.exportCustomers(tenantId, query); }
 
   // ── CONTACTS ──────────────────────────────────
   getContacts(tenantId: string, query?: { customerId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.contactsService.getContacts(tenantId, query); }
+  getContactById(tenantId: string, id: string) { return this.contactsService.getContactById(tenantId, id); }
   createContact(tenantId: string, orgId: string, dto: CreateContactInput) { return this.contactsService.createContact(tenantId, orgId, dto); }
   updateContact(tenantId: string, id: string, dto: UpdateContactInput) { return this.contactsService.updateContact(tenantId, id, dto); }
   deleteContact(tenantId: string, id: string) { return this.contactsService.deleteContact(tenantId, id); }
@@ -129,6 +131,8 @@ export class CrmService {
   deleteLead(tenantId: string, id: string) { return this.leadsService.deleteLead(tenantId, id); }
   bulkUpdateLeadStatus(tenantId: string, ids: string[], status: string) { return this.leadsService.bulkUpdateLeadStatus(tenantId, ids, status); }
   exportLeadsData(tenantId: string, query?: { search?: string; status?: string }) { return this.leadsService.exportLeads(tenantId, query); }
+  reactivateLead(tenantId: string, id: string, reason?: string) { return this.leadsService.reactivateLead(tenantId, id, reason); }
+  getStalledLeads(tenantId: string, staleDays?: number) { return this.leadsService.getStalledLeads(tenantId, staleDays); }
 
   // ── PIPELINES & OPPORTUNITIES ─────────────────
   getPipelines(tenantId: string) { return this.dealsService.getPipelines(tenantId); }
@@ -155,7 +159,10 @@ export class CrmService {
   getPriceBookEntries(tenantId: string, priceBookId: string) { return this.dealsService.getPriceBookEntries(tenantId, priceBookId); }
   addPriceBookEntry(tenantId: string, priceBookId: string, dto: CreatePriceBookEntryInput) { return this.dealsService.addPriceBookEntry(tenantId, priceBookId, dto); }
   deletePriceBookEntry(tenantId: string, entryId: string) { return this.dealsService.deletePriceBookEntry(tenantId, entryId); }
-  getCrmProducts(tenantId: string, query?: { categoryId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) { return this.dealsService.getCrmProducts(tenantId, query); }
+  getCrmProducts(tenantId: string, query?: { categoryId?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc'; status?: string }) { return this.dealsService.getCrmProducts(tenantId, query); }
+  createCrmProduct(tenantId: string, orgId: string, dto: { name: string; sku: string; sellPrice: number; costPrice?: number; type?: string; category?: string; status?: string }) { return this.dealsService.createCrmProduct(tenantId, orgId, dto); }
+  updateCrmProduct(tenantId: string, id: string, dto: { name?: string; sku?: string; sellPrice?: number; costPrice?: number; type?: string; category?: string; status?: string }) { return this.dealsService.updateCrmProduct(tenantId, id, dto); }
+  deleteCrmProduct(tenantId: string, id: string) { return this.dealsService.deleteCrmProduct(tenantId, id); }
 
   // ── ACTIVITIES & EMAIL TEMPLATES ──────────────
   getActivities(tenantId: string, leadId?: string, opportunityId?: string, customerId?: string) { return this.activitiesService.getActivities(tenantId, leadId, opportunityId, customerId); }

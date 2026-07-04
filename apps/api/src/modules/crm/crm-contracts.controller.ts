@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Put, Patch, Delete, Param, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { z } from 'zod';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,10 +14,12 @@ import {
   updateContractSchema,
   contractStatusSchema,
   renewContractSchema,
+  inviteSignSchema,
   CreateContractInput,
   UpdateContractInput,
   ContractStatusInput,
   RenewContractInput,
+  InviteSignInput,
 } from './crm-contracts.service';
 
 interface AuthenticatedRequest extends Request {
@@ -122,5 +125,103 @@ export class CrmContractsController {
   @UseInterceptors(ChangeHistoryInterceptor)
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.svc.deleteContract(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Submit contract for approval' })
+  @Post(':id/submit-approval')
+  @Permissions('crm.contracts.update')
+  @TrackChanges('Contract')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  async submitApproval(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.svc.submitForApproval(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Approve contract' })
+  @Post(':id/approve')
+  @Permissions('crm.contracts.update')
+  @TrackChanges('Contract')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  async approve(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.svc.approveContract(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Reject contract' })
+  @Post(':id/reject')
+  @Permissions('crm.contracts.update')
+  @TrackChanges('Contract')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  async reject(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.svc.rejectContract(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Invite signer to sign contract' })
+  @Post(':id/invite-sign')
+  @Permissions('crm.contracts.update')
+  @TrackChanges('Contract')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  async inviteSign(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(inviteSignSchema) dto: InviteSignInput,
+  ) {
+    return this.svc.inviteToSign(req.user.tenantId, id, dto.signerName, dto.signerEmail);
+  }
+
+  @ApiOperation({ summary: 'Sign contract' })
+  @Post(':id/sign')
+  @Permissions('crm.contracts.update')
+  @TrackChanges('Contract')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  async sign(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.svc.signContract(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Revise contract (creates a new draft copy of an active contract)' })
+  @Post(':id/revise')
+  @Permissions('crm.contracts.update')
+  @TrackChanges('Contract')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  async revise(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.svc.reviseContract(req.user.tenantId, req.user.orgId || '', id);
+  }
+
+  @ApiOperation({ summary: 'Convert contract to a Sales Order' })
+  @Post(':id/sales-order')
+  @Permissions('crm.contracts.update')
+  async convertSalesOrder(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.svc.convertToSalesOrder(req.user.tenantId, req.user.orgId || '', id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Add a billing milestone to a contract' })
+  @Post(':contractId/milestones')
+  @Permissions('crm.contracts.update')
+  async addBillingMilestone(
+    @Req() req: AuthenticatedRequest,
+    @Param('contractId') contractId: string,
+    @ZodBody(z.object({ title: z.string().min(1).max(200), percentage: z.number().min(0.01).max(100), dueDate: z.string().optional() })) dto: { title: string; percentage: number; dueDate?: string },
+  ) {
+    return this.svc.addBillingMilestone(req.user.tenantId, contractId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete a billing milestone' })
+  @Delete(':contractId/milestones/:id')
+  @Permissions('crm.contracts.update')
+  async deleteBillingMilestone(
+    @Req() req: AuthenticatedRequest,
+    @Param('contractId') contractId: string,
+    @Param('id') id: string,
+  ) {
+    return this.svc.deleteBillingMilestone(req.user.tenantId, contractId, id);
+  }
+
+  @ApiOperation({ summary: 'Trigger milestone invoicing (generates a draft Invoice in Finance module)' })
+  @Post(':contractId/milestones/:id/invoice')
+  @Permissions('crm.contracts.update')
+  async triggerMilestoneInvoice(
+    @Req() req: AuthenticatedRequest,
+    @Param('contractId') contractId: string,
+    @Param('id') id: string,
+  ) {
+    return this.svc.triggerMilestoneInvoice(req.user.tenantId, req.user.orgId || '', contractId, id, req.user.userId);
   }
 }

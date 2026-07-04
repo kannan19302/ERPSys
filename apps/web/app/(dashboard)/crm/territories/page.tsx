@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
 import {
   Plus, X, MapPin, Users, DollarSign, TrendingUp,
-  ChevronRight, AlertCircle, Award, Layers
+  ChevronRight, AlertCircle, Award, Layers, Trash2
 } from 'lucide-react';
+import { apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface Territory {
   id: string;
@@ -99,9 +100,42 @@ export default function TerritoriesPage() {
 
   const resetForm = () => { setName(''); setDescription(''); setParentId(''); setManagerId(''); setModalSuccess(false); };
 
+  const handleDeleteTerritory = async (t: Territory) => {
+    if (!window.confirm(`Delete territory "${t.name}"? This cannot be undone.`)) return;
+    try {
+      await apiDelete(`/crm/territories/${t.id}`);
+      toast.success('Territory deleted.');
+      loadData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'Failed to delete territory.';
+      toast.error(message);
+    }
+  };
+
+  const [perfSortBy, setPerfSortBy] = useState<string>('revenue');
+  const [perfSortOrder, setPerfSortOrder] = useState<SortOrder>('desc');
+  const handlePerfSortChange = (key: string, order: SortOrder) => {
+    setPerfSortBy(key);
+    setPerfSortOrder(order);
+  };
+
   const totalMembers = territories.reduce((a, t) => a + (t._count?.members || 0), 0);
-  const sortedPerf = [...performance].sort((a, b) => b.revenue - a.revenue);
-  const topTerritory = sortedPerf[0];
+  const sortedPerf = [...performance].sort((a, b) => {
+    const key = perfSortBy as keyof TerritoryPerformance;
+    const av = a[key], bv = b[key];
+    let cmp = 0;
+    if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+    else cmp = String(av).localeCompare(String(bv));
+    return perfSortOrder === 'desc' ? -cmp : cmp;
+  });
+  const topTerritory = [...performance].sort((a, b) => b.revenue - a.revenue)[0];
+
+  const perfColumns: Column<TerritoryPerformance>[] = [
+    { key: 'territoryName', header: 'Territory', sortable: true, render: (p) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{p.territoryName}</span> },
+    { key: 'memberCount', header: 'Members', align: 'right', sortable: true },
+    { key: 'dealCount', header: 'Deals', align: 'right', sortable: true },
+    { key: 'revenue', header: 'Revenue', align: 'right', sortable: true, render: (p) => <span style={{ fontWeight: 'var(--weight-bold)', color: 'var(--color-success-text)' }}>${p.revenue.toLocaleString()}</span> },
+  ];
 
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-1.5)' };
   const inputStyle: React.CSSProperties = { width: '100%', height: '38px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0 var(--space-3)' };
@@ -169,7 +203,10 @@ export default function TerritoriesPage() {
               <div key={t.id} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', background: 'var(--color-bg-sunken)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
                   <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)' }}>{t.name}</div>
-                  <Badge variant="default">{t._count?.members || 0} members</Badge>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <Badge variant="default">{t._count?.members || 0} members</Badge>
+                    <button title="Delete" onClick={() => handleDeleteTerritory(t)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger, #dc2626)', padding: '2px' }}><Trash2 size={14} /></button>
+                  </div>
                 </div>
                 {t.description && <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>{t.description}</div>}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1.5)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
@@ -189,28 +226,14 @@ export default function TerritoriesPage() {
           <div style={{ padding: 'var(--space-4) var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
             <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>Territory Performance</h3>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={thStyle}>Territory</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Members</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Deals</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Revenue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedPerf.map(p => (
-                  <tr key={p.territoryId} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ ...tdStyle, fontWeight: 'var(--weight-semibold)' }}>{p.territoryName}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{p.memberCount}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{p.dealCount}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 'var(--weight-bold)', color: 'var(--color-success-text)' }}>${p.revenue.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<TerritoryPerformance>
+            columns={perfColumns}
+            data={sortedPerf}
+            rowKey={(p) => p.territoryId}
+            sortBy={perfSortBy}
+            sortOrder={perfSortOrder}
+            onSortChange={handlePerfSortChange}
+          />
         </Card>
       )}
 

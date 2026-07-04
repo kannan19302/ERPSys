@@ -260,6 +260,24 @@ export class CrmLeadsService {
         },
       });
 
+      const contact = await tx.contact.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          customerId: customer.id,
+          salutation: lead.salutation,
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          email: lead.email,
+          phone: lead.phone,
+          mobile: lead.mobile,
+          title: lead.title,
+          isPrimary: true,
+          isActive: true,
+          notes: `Created automatically from Lead conversion.`,
+        },
+      });
+
       const oppName = opportunityName || `Opportunity from ${lead.firstName} ${lead.lastName}`;
       const opportunity = await tx.opportunity.create({
         data: {
@@ -282,8 +300,51 @@ export class CrmLeadsService {
         },
       });
 
-      return { customer, opportunity };
+      return { customer, contact, opportunity };
     });
+  }
+
+  /**
+   * Win-back reactivation for a previously DISQUALIFIED lead. DISQUALIFIED is
+   * terminal under normal status transitions (see LEAD_STATUS_TRANSITIONS) —
+   * this dedicated endpoint is the only sanctioned way back to NEW, mirroring
+   * how CONVERTED can only be reached via convertLead().
+   */
+  async reactivateLead(tenantId: string, id: string, reason?: string) {
+    const existing = await prisma.lead.findFirst({ where: { id, tenantId, deletedAt: null } });
+    if (!existing) throw new NotFoundException('Lead not found');
+    if (existing.status !== 'DISQUALIFIED') {
+      throw new BadRequestException('Only DISQUALIFIED leads can be reactivated.');
+    }
+    const notes = reason
+      ? `${existing.notes ? existing.notes + '\n' : ''}[Reactivated] ${reason}`
+      : existing.notes;
+    const updated = await prisma.lead.update({ where: { id }, data: { status: 'NEW', notes } });
+    await this.recalculateLeadScore(tenantId, id);
+    return updated;
+  }
+
+  /**
+   * Leads with no activity logged in `staleDays` (default 7) that are still
+   * in an open (non-terminal) status — surfaces leads at risk of going cold
+   * so reps can prioritize follow-up before they'd otherwise be disqualified.
+   */
+  async getStalledLeads(tenantId: string, staleDays = 7) {
+    const cutoff = new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000);
+    const leads = await prisma.lead.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: { in: ['NEW', 'CONTACTED', 'QUALIFIED'] },
+        activities: { none: { createdAt: { gte: cutoff } } },
+      },
+      include: { source: true, _count: { select: { activities: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+    return leads.map((l) => ({
+      ...l,
+      daysSinceCreation: Math.floor((Date.now() - l.createdAt.getTime()) / (1000 * 60 * 60 * 24)),
+    }));
   }
 
   async deleteLead(tenantId: string, id: string) {

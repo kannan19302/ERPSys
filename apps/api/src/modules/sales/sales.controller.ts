@@ -143,6 +143,16 @@ export class SalesController {
     );
   }
 
+  @Post('orders/:id/purchase-order')
+  @Permissions('sales.order.update')
+  @ApiOperation({ summary: 'Convert a sales order to a purchase order' })
+  async convertToPurchaseOrders(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    return this.salesService.convertToPurchaseOrders(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
   // ─── Quotation Detail ───────────────────────────────
 
   @Get('quotations/:id')

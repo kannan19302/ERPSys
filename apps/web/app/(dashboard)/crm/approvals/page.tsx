@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner, Button, Badge, useToast } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Button, Badge, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
 import { CheckCircle, XCircle, Clock, X, AlertTriangle, Inbox, Search, Filter } from 'lucide-react';
 
 interface ApprovalRequest {
@@ -91,9 +91,44 @@ export default function ApprovalsPage() {
     { label: 'Rejected Today', value: rejectedToday, icon: XCircle, color: 'var(--color-danger, #ef4444)' },
   ];
 
-  const cellStyle: React.CSSProperties = { padding: '12px 16px', fontSize: '14px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-primary)' };
-  const headStyle: React.CSSProperties = { ...cellStyle, fontWeight: 600, color: 'var(--text-secondary)', fontSize: '12px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
   const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-primary)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px' };
+
+  const [sortBy, setSortBy] = useState('submittedAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  const filteredRequests = requests.filter(r => {
+    const matchesSearch = !searchQuery || r.entityId.toLowerCase().includes(searchQuery.toLowerCase()) || r.processName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesEntity = filterEntity === 'ALL' || r.entityType === filterEntity;
+    return matchesSearch && matchesEntity;
+  }).sort((a, b) => {
+    let cmp = 0;
+    if (sortBy === 'submittedAt') cmp = new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+    else if (sortBy === 'processName') cmp = a.processName.localeCompare(b.processName);
+    else if (sortBy === 'entityType') cmp = a.entityType.localeCompare(b.entityType);
+    return sortOrder === 'desc' ? -cmp : cmp;
+  });
+
+  const columns: Column<ApprovalRequest>[] = [
+    { key: 'entityType', header: 'Entity Type', sortable: true, render: (r) => <Badge>{r.entityType}</Badge> },
+    { key: 'entityId', header: 'Entity ID', render: (r) => <span style={{ fontWeight: 500, fontFamily: 'monospace' }}>{r.entityId}</span> },
+    { key: 'processName', header: 'Process', sortable: true, render: (r) => r.processName },
+    { key: 'submittedBy', header: 'Submitted By', render: (r) => r.submittedBy },
+    { key: 'submittedAt', header: 'Submitted At', sortable: true, render: (r) => new Date(r.submittedAt).toLocaleString() },
+    { key: 'step', header: 'Step', align: 'center', render: (r) => <Badge variant="info">{r.currentStep}/{r.totalSteps}</Badge> },
+    {
+      key: 'actions', header: 'Actions',
+      render: (r) => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={(e) => { e.stopPropagation(); setActionModal({ type: 'approve', request: r }); setComments(''); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: 'var(--color-success, #10b981)', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+            <CheckCircle size={14} /> Approve
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setActionModal({ type: 'reject', request: r }); setComments(''); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: 'var(--color-danger, #ef4444)', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+            <XCircle size={14} /> Reject
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}><Spinner size="lg" /></div>;
 
@@ -137,46 +172,17 @@ export default function ApprovalsPage() {
             </select>
           </div>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>{['Entity Type', 'Entity ID', 'Process', 'Submitted By', 'Submitted At', 'Step', 'Actions'].map(h => <th key={h} style={headStyle}>{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {(() => {
-              const filteredRequests = requests.filter(r => {
-                const matchesSearch = !searchQuery || r.entityId.toLowerCase().includes(searchQuery.toLowerCase()) || r.processName.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesEntity = filterEntity === 'ALL' || r.entityType === filterEntity;
-                return matchesSearch && matchesEntity;
-              });
-              if (filteredRequests.length === 0) return (
-                <tr><td colSpan={7} style={{ ...cellStyle, textAlign: 'center', color: 'var(--text-tertiary)', padding: '48px' }}>
-                  <CheckCircle size={32} style={{ color: 'var(--color-success)', marginBottom: '8px' }} /><br />
-                  {requests.length === 0 ? 'All caught up. No pending approvals.' : 'No approvals match the current filters.'}
-                </td></tr>
-              );
-              return filteredRequests.map(r => (
-              <tr key={r.id}>
-                <td style={cellStyle}><Badge>{r.entityType}</Badge></td>
-                <td style={cellStyle}><span style={{ fontWeight: 500, fontFamily: 'monospace' }}>{r.entityId}</span></td>
-                <td style={cellStyle}>{r.processName}</td>
-                <td style={cellStyle}>{r.submittedBy}</td>
-                <td style={cellStyle}>{new Date(r.submittedAt).toLocaleString()}</td>
-                <td style={cellStyle}><Badge variant="info">{r.currentStep}/{r.totalSteps}</Badge></td>
-                <td style={cellStyle}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => { setActionModal({ type: 'approve', request: r }); setComments(''); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: 'var(--color-success, #10b981)', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
-                      <CheckCircle size={14} /> Approve
-                    </button>
-                    <button onClick={() => { setActionModal({ type: 'reject', request: r }); setComments(''); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: 'var(--color-danger, #ef4444)', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
-                      <XCircle size={14} /> Reject
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ));
-            })()}
-          </tbody>
-        </table>
+        <DataTable<ApprovalRequest>
+          columns={columns}
+          data={filteredRequests}
+          rowKey={(r) => r.id}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={(key, order) => { setSortBy(key); setSortOrder(order); }}
+          emptyIcon={<CheckCircle size={32} style={{ color: 'var(--color-success)' }} />}
+          emptyTitle={requests.length === 0 ? 'All caught up' : 'No matches'}
+          emptyMessage={requests.length === 0 ? 'No pending approvals.' : 'No approvals match the current filters.'}
+        />
       </Card>
 
       {actionModal && (

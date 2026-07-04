@@ -155,6 +155,10 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'case', 'read', 'endpoint', 'View customer service cases'),
   p('crm', 'case', 'create', 'endpoint', 'Create customer service cases'),
   p('crm', 'case', 'update', 'endpoint', 'Update customer service cases'),
+  p('crm', 'mailbox', 'read', 'endpoint', 'Read crm mailbox'),
+  p('crm', 'mailbox', 'create', 'endpoint', 'Create crm mailbox items'),
+  p('crm', 'mailbox', 'delete', 'endpoint', 'Delete crm mailbox items'),
+  p('crm', 'mailbox', 'update', 'endpoint', 'Update crm mailbox items'),
   // Contract permissions: see `p('crm', 'contracts', ...)` further down
   // (resource is plural `contracts` there, matching the actual
   // `@Permissions('crm.contracts.*')` codes used by crm-contracts.controller.ts).
@@ -188,6 +192,8 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   // Procurement
   p('procurement', 'vendor', 'read', 'endpoint', 'View vendors'),
   p('procurement', 'vendor', 'create', 'endpoint', 'Create vendors'),
+  p('procurement', 'vendor', 'update', 'endpoint', 'Update vendors'),
+  p('procurement', 'vendor', 'delete', 'endpoint', 'Delete vendors'),
   p('procurement', 'purchase-order', 'read', 'endpoint', 'View purchase orders'),
   p('procurement', 'purchase-order', 'create', 'endpoint', 'Create purchase orders'),
   p('procurement', 'purchase-order', 'approve', 'endpoint', 'Approve purchase orders'),

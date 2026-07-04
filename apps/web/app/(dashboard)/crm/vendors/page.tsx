@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  PageHeader, Card, Button, Spinner, StatusBadge, DataTable, type Column,
+  PageHeader, Card, Button, Spinner, StatusBadge, DataTable, type Column, type SortOrder,
   Modal, TextField, FormField, Select, KPICard, Badge, useToast,
 } from '@unerp/ui';
 import {
@@ -157,6 +157,11 @@ export default function VendorsPage() {
   useEffect(() => {
     fetchData();
   }, [page, limit, debouncedSearch, status, type, sortBy, sortOrder]);
+
+  const handleSortChange = (key: string, order: SortOrder) => {
+    setSortBy(key);
+    setSortOrder(order);
+  };
 
   // Bulk operation handlers
   const handleToggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -403,7 +408,7 @@ export default function VendorsPage() {
       ),
     },
     {
-      key: 'name', header: 'Vendor / Company',
+      key: 'name', header: 'Vendor / Company', sortable: true,
       render: (row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -421,8 +426,8 @@ export default function VendorsPage() {
     },
     { key: 'phone', header: 'Phone', render: (row) => <span style={{ fontSize: 'var(--text-sm)' }}>{row.phone || '—'}</span> },
     { key: 'taxId', header: 'Tax ID', render: (row) => <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>{row.taxId || '—'}</span> },
-    { key: 'paymentTerms', header: 'Terms', render: (row) => <Badge variant="info">Net {row.paymentTerms}</Badge> },
-    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    { key: 'paymentTerms', header: 'Terms', sortable: true, render: (row) => <Badge variant="info">Net {row.paymentTerms}</Badge> },
+    { key: 'status', header: 'Status', sortable: true, render: (row) => <StatusBadge status={row.status} /> },
     {
       key: 'actions',
       header: 'Actions',
@@ -512,15 +517,18 @@ export default function VendorsPage() {
       </Card>
 
       <Card padding="none">
-        <DataTable 
-          columns={columns} 
-          data={vendors} 
-          loading={loading} 
+        <DataTable
+          columns={columns}
+          data={vendors}
+          loading={loading}
           rowKey={(r) => r.id}
           onRowClick={(row) => router.push(`/crm/vendors/${row.id}`)}
-          emptyTitle="No Suppliers Onboarded" 
-          emptyMessage="Add your first supplier partner to start managing purchase contracts and debit audits." 
-          emptyIcon={<Building size={48} />} 
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+          emptyTitle="No Suppliers Onboarded"
+          emptyMessage="Add your first supplier partner to start managing purchase contracts and debit audits."
+          emptyIcon={<Building size={48} />}
         />
         
         {totalPages > 1 && (

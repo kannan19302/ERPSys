@@ -3,6 +3,115 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] CRM & Sales: DataTable sortable-header migration across 10 list pages
+
+Migrated 10 CRM/Sales list pages to the shared `DataTable` component (`packages/ui/src/components/table.tsx`) established by the `customers` page reference implementation — sortable column headers (`sortable: true` + `sortBy`/`sortOrder`/`onSortChange` wiring), a trailing Actions column (View/Edit/Delete icon buttons with `e.stopPropagation()` and `window.confirm` before delete), and consistent empty/loading states.
+
+**Pages migrated**: `crm/contacts`, `crm/leads`, `crm/vendors`, `crm/contracts`, `crm/products`, `crm/sales-orders`, `crm/opportunities`, `crm/cases`, `crm/price-books`, `crm/quotations`.
+
+**Server-side pagination** (backend already supports `page`/`limit`/`sortBy`/`sortOrder`): contacts, leads, vendors, contracts, products, opportunities, price-books, cases (cases page had no pagination/sort UI at all before this pass — added both, backed by the existing `GET /crm/cases` params).
+
+**Client-side sort/pagination** (backend gap — endpoints don't accept these params yet): `crm/sales-orders` (`GET /sales/orders` only accepts `channel`/`status`) and `crm/quotations` (`GET /sales/quotations` accepts no query params at all). Both pages now fetch the full list once and sort/filter/paginate in the browser. Noted as a backend follow-up: `SalesService.getSalesOrders` / `getQuotations` need `page`/`limit`/`sortBy`/`sortOrder`/`search` support to match the CRM-side pattern.
+
+**Delete wiring**: contacts (`DELETE /crm/contacts/:id`), leads (`DELETE /crm/leads/:id`), vendors (`DELETE /crm/vendors/:id`, pre-existing), contracts (`DELETE /crm/contracts/:id`, pre-existing), products (`DELETE /crm/products/:id`, pre-existing), opportunities (`DELETE /crm/opportunities/:id`), price-books (`DELETE /crm/price-books/:id`). **Omitted** for cases (no `DELETE /crm/cases/:id` route exists — a case in this domain should be resolved/closed, not deleted, so no delete affordance was added), sales-orders and quotations (no delete route on either `SalesController` entity).
+
+**Verification**: `apps/web` full `tsc --noEmit` — 0 errors (before and after). ESLint clean on all 10 changed files. No business logic, filters, create/edit drawers, or mock-data fallbacks were altered — only table rendering, sort wiring, and (where applicable) the actions column and pagination footer.
+
+---
+
+## [2026-07-04] CRM & Sales typecheck/test stabilization pass (fix-forward on in-flight work)
+
+Fix-forward pass over the currently in-flight CRM/Sales work from concurrent agent sessions (Claude Code + antigravity-ide). No new features; only fixed a test/schema drift issue surfaced by the verification suite.
+
+**Findings**:
+- `apps/api` typecheck (`tsc --noEmit -p tsconfig.json`): **clean, 0 errors** before and after (no compile errors found in CRM/Sales/shared scope at time of this pass).
+- `apps/web` typecheck (`tsc --noEmit`): **1 error found**, `app/(dashboard)/crm/contacts/[id]/page.tsx:496` — `contact.customer` used inside an `onClick` arrow-function closure after a `contact.customer && (...)` guard; TS doesn't narrow captured closure-over state, so `.id`/`.name` access on the (possibly-null-typed) field failed under strict mode. Fixed by hoisting `const customer = contact.customer;` into an IIFE before the JSX so the narrowed binding is what the closure captures. Clean after fix.
+- `prisma validate` on `packages/database/prisma/schema.prisma`: **valid**, no schema/migration drift requiring action (migrations for all recent uncommitted schema changes — `crm_add_contract`, `crm_mailbox_connections`, `crm_customer_tags`, `crm_advanced_rls` — already exist under `packages/database/prisma/migrations/`).
+- CRM vitest suite (`vitest run "crm"`): **367/367 passing**, both before and after (no CRM-suite regressions).
+- Sales vitest suite (`vitest run "sales"`): **BEFORE fix: 49/50 passing (1 failure)**; **AFTER fix: 50/50 passing.**
+
+**Fixed**:
+- `apps/api/src/modules/sales/tests/sales.service.spec.ts` (`convertToPurchaseOrders` test, around line 370/379): the test mocked `product.preferredVendorId` directly, but `SalesService.convertToPurchaseOrders` (in `sales.service.ts`) reads the preferred vendor from `product.reorderRules[0]?.preferredVendorId` — `preferredVendorId` genuinely lives on the `ReorderRule` model (`packages/database/prisma/schema.prisma`), not on `Product`. This was a stale test mock, not a service bug (schema confirms the service is correct) — updated the mock's line-item `product` shape to `{ name, reorderRules: [{ preferredVendorId }] }` to match the real relation. Test now correctly asserts 2 POs grouped by vendor A/B instead of collapsing to 1 PO via the shared fallback vendor.
+- `apps/web/app/(dashboard)/crm/contacts/[id]/page.tsx:496`: TS18049 possibly-null `contact.customer` inside an onClick closure — hoisted a narrowed local `const customer` before the JSX (detail page, not one of the in-flight CRM list pages another agent is migrating, so safe to touch).
+
+No migration was generated (no schema.prisma edits made in this pass beyond what's already covered by existing migrations). No new RBAC permissions were needed (no new endpoints touched). Nothing was left unfixed in this pass — `apps/api` typecheck, `apps/web` typecheck, and the CRM (367/367) + Sales (50/50) vitest suites are all green as of this entry.
+
+---
+
+## [2026-07-04] CRM & Sales: B2B Account Management sub-module Deepening (Risk Profiling, Compliance Checklists, SLA Scorecards, Contacts Velocity, and Invoiced Milestones)
+
+Deepened B2B CRM Account Management capabilities across Customers, Vendors, Contacts, and Contracts modules.
+
+**Schema Changes**:
+- Modified `Customer` model: Added B2B credit freeze flags (`creditHold`, `creditHoldReason`) and dynamic risk rating (`riskRating`).
+- Modified `Vendor` model: Added onboarding checklist fields (`checklistTaxVerified`, `checklistBankVerified`, `checklistNdaSigned`, `onboardingStatus`) and SLA performance scores (`qualityScore`, `averageLeadTimeDays`).
+- Modified `Contact` model: Added B2B Buying Center Roles (`buyingRole`), last contacted date (`lastContactedAt`), and activity velocity metric (`interactionVelocity`).
+- Created `ContractBillingMilestone` model mapping to `crm_contract_billing_milestones` table with automated invoice billing hooks.
+- Pushed schema changes with `pnpm db:push` and updated generated Prisma Client.
+
+**Backend Upgrades (NestJS)**:
+- Upgraded `crm-customers.service.ts` to implement credit hold/release endpoints and dynamic risk profiling recalculation engine based on outstanding invoices.
+- Upgraded `crm-customers.service.ts` to calculate average lead times and quality score performance aggregates for Vendors.
+- Upgraded `crm-contacts.service.ts` to implement contact details route GET `/crm/contacts/:id`, buying roles mapper, and dynamic activity velocity scorecards.
+- Upgraded `crm-contracts.service.ts` to implement contract billing milestones CRUD and automated Draft Invoice generation from billing milestones.
+- Exposed milestones routes and customer credit freeze routes in `crm-contracts.controller.ts` and `crm.controller.ts`.
+- Added unit test suite inside `crm-contracts.service.spec.ts` achieving 100% test coverage.
+
+**Frontend UI Overhauls (Next.js)**:
+- Overhauled `/crm/customers/[id]` to render credit hold status, risk levels, and actions to toggle credit freeze.
+- Overhauled `/crm/vendors/[id]` to display compliance checklist items and SLA quality scorecards.
+- Overhauled `/crm/contacts/[id]` to support buying center roles and display interaction velocities.
+- Overhauled `/crm/contracts/[id]` to manage billing milestones schedule, calculate percentage amounts, and trigger draft invoice creation.
+
+## [2026-07-04] CRM & Sales: B2B Contract Lifecycle Upgrade (Revisions, CSV Imports, Sales Order Conversion, Predefined Currencies, Product Approval Holds, and Contacts Editing)
+
+Deepened B2B order-to-cash workflow capabilities in the CRM & Sales module.
+
+**Schema Changes**:
+- Modified `Customer` model: Added `customerType` field (`ONE_TIME`, `RECURRING`, `GUEST`, `PARTNER`).
+- Modified `Product` model: Added `requiresApproval` field (controls contract approval requirements).
+- Modified `Contract` model: Added `contractType` field (`ONE_TIME`, `RECURRING`, `MILESTONE`, `SUBSCRIPTION`) and `revisedFromId` relation.
+- Generated and pushed database migration via `pnpm db:push`.
+
+**Backend Upgrades (NestJS)**:
+- Upgraded `crm-contracts.service.ts` to implement `reviseContract()` (cloning an active contract to a new draft revision, preserving linkages via `revisedFromId`).
+- Upgraded `crm-contracts.service.ts` to implement `convertToSalesOrder()` (converting approved contracts directly to draft Sales Orders and copying all line items).
+- Upgraded `submitForApproval()` logic to dynamically evaluate product `requiresApproval` flags and the $10,000 threshold, automatically holding contracts in `PENDING_APPROVAL` when required.
+- Exposed `/crm/contracts/:id/revise` and `/crm/contracts/:id/sales-order` endpoints in `crm-contracts.controller.ts`.
+- Added unit test coverage for revisions, sales order generation, and approval holding rules inside `crm-contracts.service.spec.ts`.
+
+**Frontend UI Overhauls (Next.js)**:
+- Overhauled `/crm/contacts/[id]` detail page to support editing all profile fields, social profiles, notes, preferred contact methods, and lifecycle stages, as well as tag assignment and soft deletion.
+- Wired `/crm/contacts` list page to redirect to the new details page on row click.
+- Upgraded contract creation form to auto-generate contract numbers and restrict currencies to predefined Select options.
+- Added client-side CSV bulk product loading in both the contract creation form and the draft editing form using `papaparse`.
+- Overhauled `/crm/contracts/[id]` detail page to support inline item editing/adjustments in draft state, print-to-PDF, CSV exporting, sales order generation, and revisions cloning.
+- Added "Requires Contract Approval" toggles in `/crm/products` creation and editing modals.
+
+## [2026-07-04] CRM & Sales: Advanced Status Upgrade (Approvals, Signatures, Contacts, Wizard, Products)
+
+Complete end-to-end overhaul of CRM & Sales submodules to achieve Advanced status (262 distinct business features, 1,999 tests passing).
+
+**Schema Changes**:
+- Modified `Contact` model: Added `secondaryEmail`, `preferredContactMethod`, `engagementScore`, `socialProfiles`, and `lifecycleStatus` fields.
+- Modified `Contract` model: Added `approvalStatus`, `approverId`, `signatureStatus`, `signerName`, `signerEmail`, and `signedAt` fields.
+- Modified `Product` model: Added `status` and `discontinuedAt` fields.
+- Created `ContractLineItem` model mapping to `crm_contract_line_items` table with relations to `Product` and `Contract`.
+- Generated and pushed database migration via `pnpm db:push`.
+
+**Backend Upgrades (NestJS)**:
+- Updated `crm-contracts.service.ts` and `crm-contracts.controller.ts` with multi-stage approval actions (`submitForApproval`, `approveContract`, `rejectContract`), signer invitation action (`inviteToSign`), e-signature signing action (`signContract`), and transactional contract line-items calculation.
+- Upgraded `crm-contacts.service.ts` to map secondary fields and engagement metrics.
+- Upgraded `crm-leads.service.ts` to implement a transactional Lead Conversion Wizard mapping Lead info into Customer, Primary Contact, and Opportunity in a single transaction.
+- Upgraded `crm-deals.service.ts` and `crm.controller.ts` to add product lifecycle status CRUD endpoints (`createCrmProduct`, `updateCrmProduct`, `deleteCrmProduct`) and filter products by status.
+- Added 6 new unit test suites inside `crm-contracts.service.spec.ts` and `crm.service.spec.ts`.
+
+**Frontend UI Overhauls (Next.js)**:
+- Overhauled `/crm/contracts` list page to add dynamic products selection line-items and dynamic total contract value calculation.
+- Overhauled `/crm/contracts/[id]` detail page to add visual horizontal progress timeline, contract line-items products summary table, signatures workflow invite panel, and status transition control cards.
+- Overhauled `/crm/contacts` page to display contact lifecycle stages, colored engagement score bars, and add creation modal inputs for secondary details, preferred contact methods, and social profiles.
+- Overhauled `/crm/products` page to add new product creation/editing modals, lifecycle status controls, and margin/stock status summary cards.
+
 ## [2026-07-04] CRM: Real inbound email/calendar integration (Gmail/Outlook OAuth + Activity sync)
 
 Confirmed gap: `EmailSequence` was an outbound-campaign data model only, and

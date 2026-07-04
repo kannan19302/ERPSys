@@ -263,6 +263,10 @@ model Customer {
   paymentTerms    Int       @default(30) @map("payment_terms")
   status          String    @default("ACTIVE")
   notes           String?
+  customerType    String    @default("RECURRING") @map("customer_type")
+  creditHold      Boolean   @default(false) @map("credit_hold")
+  creditHoldReason String?  @map("credit_hold_reason")
+  riskRating      String    @default("LOW") @map("risk_rating")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
@@ -299,6 +303,12 @@ model Vendor {
   paymentTerms Int       @default(30) @map("payment_terms")
   status       String    @default("ACTIVE")
   notes        String?
+  onboardingStatus      String    @default("PENDING") @map("onboarding_status")
+  checklistTaxVerified  Boolean   @default(false) @map("checklist_tax_verified")
+  checklistBankVerified Boolean   @default(false) @map("checklist_bank_verified")
+  checklistNdaSigned     Boolean   @default(false) @map("checklist_nda_signed")
+  averageLeadTimeDays   Float     @default(0.0) @map("average_lead_time_days")
+  qualityScore          Float     @default(100.0) @map("quality_score")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
@@ -336,6 +346,14 @@ model Contact {
   isActive   Boolean   @default(true) @map("is_active")
   score      Int       @default(0)
   notes      String?
+  secondaryEmail          String?   @map("secondary_email")
+  preferredContactMethod  String?   @map("preferred_contact_method")
+  engagementScore         Int       @default(0) @map("engagement_score")
+  socialProfiles          Json?     @map("social_profiles")
+  lifecycleStatus         String    @default("ACTIVE") @map("lifecycle_status")
+  buyingRole            String    @default("INFLUENCER") @map("buying_role")
+  lastContactedAt       DateTime? @map("last_contacted_at")
+  interactionVelocity   Int       @default(0) @map("interaction_velocity")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
   deletedAt  DateTime? @map("deleted_at")
@@ -539,6 +557,9 @@ model Product {
   dimensions        Json?     @default("{}")
   images            Json      @default("[]")
   attributes        Json      @default("{}")
+  status            String    @default("ACTIVE")
+  discontinuedAt    DateTime? @map("discontinued_at")
+  requiresApproval  Boolean   @default(false) @map("requires_approval")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
@@ -577,6 +598,7 @@ model Product {
   blanketPurchaseAgreementItems BlanketPurchaseAgreementItem[]
   channelInventory              ChannelInventory[]
   storefrontListings            ProductListing[]
+  contractLineItems             ContractLineItem[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -780,6 +802,7 @@ model PurchaseOrder {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
+  contractId      String?   @map("contract_id")
 
   rfqId               String? @map("rfq_id")
   supplierQuotationId String? @map("supplier_quotation_id")
@@ -787,6 +810,7 @@ model PurchaseOrder {
   blanketAgreementId  String? @map("blanket_agreement_id")
 
   vendor            Vendor                    @relation(fields: [vendorId], references: [id])
+  contract          Contract?                 @relation(fields: [contractId], references: [id])
   rfq               RFQ?                      @relation(fields: [rfqId], references: [id])
   supplierQuotation SupplierQuotation?        @relation(fields: [supplierQuotationId], references: [id])
   requisition       PurchaseRequisition?      @relation(fields: [requisitionId], references: [id], onDelete: SetNull)
@@ -801,6 +825,7 @@ model PurchaseOrder {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, vendorId])
+  @@index([contractId])
   @@map("purchase_orders")
 }
 
@@ -1040,12 +1065,16 @@ model SalesOrder {
   internalNotes   String?   @map("internal_notes")
   quotationId     String?   @map("quotation_id")
   invoiceId       String?   @map("invoice_id")
+  contractId      String?   @map("contract_id")
+  shippingHandlingCharges Decimal @default(0) @db.Decimal(15, 2) @map("shipping_handling_charges")
+  priceAdjustment         Decimal @default(0) @db.Decimal(15, 2) @map("price_adjustment")
   createdBy       String?   @map("created_by")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
   customer         Customer                 @relation(fields: [customerId], references: [id])
+  contract         Contract?                @relation(fields: [contractId], references: [id])
   lineItems        SalesOrderItem[]
   deliveryNotes    DeliveryNote[]
   returns          SalesReturn[]
@@ -1055,6 +1084,7 @@ model SalesOrder {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, customerId])
+  @@index([contractId])
   @@map("sales_orders")
 }
 
@@ -7845,9 +7875,25 @@ model Contract {
   autoRenew          Boolean   @default(false) @map("auto_renew")
   renewalTermMonths  Int?      @map("renewal_term_months")
   status             String    @default("DRAFT") // DRAFT, ACTIVE, EXPIRING_SOON, EXPIRED, TERMINATED, RENEWED
+  contractType       String    @default("ONE_TIME") @map("contract_type")
   terms              String?
   ownerId            String?   @map("owner_id")
   renewedFromId      String?   @map("renewed_from_id")
+  revisedFromId      String?   @map("revised_from_id")
+  approvalStatus     String    @default("DRAFT") @map("approval_status")
+  approverId         String?   @map("approver_id")
+  signatureStatus    String    @default("UNSIGNED") @map("signature_status")
+  signerName         String?   @map("signer_name")
+  signerEmail        String?   @map("signer_email")
+  signedAt           DateTime? @map("signed_at")
+  shippingHandlingCharges Decimal @default(0) @db.Decimal(15, 2) @map("shipping_handling_charges")
+  priceAdjustment         Decimal @default(0) @db.Decimal(15, 2) @map("price_adjustment")
+  taxRate                 Decimal @default(0) @db.Decimal(5, 2) @map("tax_rate")
+  billingAddress          String? @map("billing_address")
+  shippingAddress         String? @map("shipping_address")
+  deliveryNotes           String? @map("delivery_notes")
+  shippingCarrier         String? @map("shipping_carrier")
+  trackingNumber          String? @map("tracking_number")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
@@ -7857,6 +7903,12 @@ model Contract {
   vendor       Vendor?      @relation(fields: [vendorId], references: [id])
   renewedFrom  Contract?    @relation("ContractRenewal", fields: [renewedFromId], references: [id])
   renewals     Contract[]   @relation("ContractRenewal")
+  revisedFrom  Contract?    @relation("ContractRevision", fields: [revisedFromId], references: [id])
+  revisions    Contract[]   @relation("ContractRevision")
+  lineItems    ContractLineItem[]
+  billingMilestones ContractBillingMilestone[]
+  salesOrders       SalesOrder[]
+  purchaseOrders    PurchaseOrder[]
 
   @@unique([tenantId, contractNumber])
   @@index([tenantId])
@@ -7866,6 +7918,26 @@ model Contract {
   @@index([renewalDate])
   @@index([ownerId])
   @@map("crm_contracts")
+}
+
+model ContractBillingMilestone {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  contractId  String    @map("contract_id")
+  title       String
+  percentage  Decimal   @db.Decimal(5, 2)
+  amount      Decimal   @db.Decimal(15, 2)
+  dueDate     DateTime? @map("due_date")
+  status      String    @default("PENDING") // PENDING, INVOICED, PAID
+  invoiceId   String?   @map("invoice_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([contractId])
+  @@map("crm_contract_billing_milestones")
 }
 
 model MailboxConnection {
@@ -8298,5 +8370,24 @@ model SlaBreach {
   @@index([tenantId, entity, entityId])
   @@index([tenantId, policyId])
   @@map("crm_sla_breaches")
+}
+
+model ContractLineItem {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  contractId String   @map("contract_id")
+  productId  String   @map("product_id")
+  quantity   Int      @default(1)
+  unitPrice  Decimal  @map("unit_price") @db.Decimal(15, 2)
+  discount   Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([contractId])
+  @@map("crm_contract_line_items")
 }
 

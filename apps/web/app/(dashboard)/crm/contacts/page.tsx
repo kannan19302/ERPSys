@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner, Button, DataTable, Modal, type Column, ProtectedComponent, useToast } from '@unerp/ui';
-import { Search, Plus, Mail, Phone, Building, Users, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Card, PageHeader, Spinner, Button, DataTable, Modal, type Column, type SortOrder, ProtectedComponent, useToast, Badge } from '@unerp/ui';
+import { Search, Plus, Mail, Phone, Building, Users, CheckCircle, Eye, Pencil, Trash2 } from 'lucide-react';
 import { DuplicatesFinder } from '../_components/DuplicatesFinder';
 import { useContacts, useCustomers } from '../../../../src/lib/hooks/useModuleData';
-import { apiPost } from '../../../../src/lib/api';
+import { apiPost, apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface Contact {
   id: string;
@@ -17,9 +18,15 @@ interface Contact {
   title: string | null;
   isPrimary: boolean;
   customer?: { id: string; name: string } | null;
+  secondaryEmail: string | null;
+  preferredContactMethod: string | null;
+  engagementScore: number;
+  socialProfiles: string | null;
+  lifecycleStatus: string | null;
 }
 
 export default function ContactsPage() {
+  const router = useRouter();
   const { success, error } = useToast();
   const { data: customers = [] } = useCustomers();
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -34,7 +41,10 @@ export default function ContactsPage() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', mobile: '', title: '', customerId: '' });
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', email: '', phone: '', mobile: '', title: '', customerId: '',
+    secondaryEmail: '', preferredContactMethod: 'EMAIL', socialProfiles: '', lifecycleStatus: 'LEAD'
+  });
   const [submitting, setSubmitting] = useState(false);
   const [showDuplicates, setShowDuplicates] = useState(false);
 
@@ -87,6 +97,23 @@ export default function ContactsPage() {
     fetchContactsData();
   }, [page, debouncedSearch, customerId, sortBy, sortOrder]);
 
+  const handleSortChange = (key: string, order: SortOrder) => {
+    setSortBy(key);
+    setSortOrder(order);
+  };
+
+  const handleDelete = async (c: Contact) => {
+    if (!window.confirm(`Delete contact "${c.firstName} ${c.lastName}"? This cannot be undone.`)) return;
+    try {
+      await apiDelete(`/crm/contacts/${c.id}`);
+      success('Contact deleted.');
+      fetchContactsData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'Failed to delete contact.';
+      error(message);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -98,10 +125,17 @@ export default function ContactsPage() {
         mobile: form.mobile.trim() || undefined,
         title: form.title.trim() || undefined,
         customerId: form.customerId || undefined,
+        secondaryEmail: form.secondaryEmail.trim() || undefined,
+        preferredContactMethod: form.preferredContactMethod || undefined,
+        socialProfiles: form.socialProfiles.trim() || undefined,
+        lifecycleStatus: form.lifecycleStatus || undefined,
       };
       await apiPost('/crm/contacts', payload);
       setShowCreate(false);
-      setForm({ firstName: '', lastName: '', email: '', phone: '', mobile: '', title: '', customerId: '' });
+      setForm({
+        firstName: '', lastName: '', email: '', phone: '', mobile: '', title: '', customerId: '',
+        secondaryEmail: '', preferredContactMethod: 'EMAIL', socialProfiles: '', lifecycleStatus: 'LEAD'
+      });
       success('Contact created successfully.');
       fetchContactsData();
     } catch (err: any) {
@@ -113,8 +147,9 @@ export default function ContactsPage() {
 
   const columns: Column<Contact>[] = [
     {
-      key: 'name',
+      key: 'firstName',
       header: 'Name',
+      sortable: true,
       render: (c) => (
         <span style={{ fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <Users size={14} />
@@ -159,9 +194,26 @@ export default function ContactsPage() {
       ),
     },
     {
-      key: 'title',
-      header: 'Title',
-      render: (c) => c.title || '-',
+      key: 'lifecycleStatus',
+      header: 'Stage',
+      sortable: true,
+      render: (c) => (
+        <Badge variant={c.lifecycleStatus === 'ACTIVE_CUSTOMER' ? 'success' : c.lifecycleStatus === 'LEAD' ? 'info' : 'default'}>
+          {c.lifecycleStatus || 'LEAD'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'engagementScore',
+      header: 'Engagement',
+      render: (c) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ flex: 1, height: '6px', background: 'var(--color-bg-sunken)', borderRadius: '3px', minWidth: '60px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${c.engagementScore || 0}%`, background: (c.engagementScore || 0) > 70 ? 'var(--color-success)' : (c.engagementScore || 0) > 40 ? 'var(--color-warning)' : 'var(--color-danger)' }} />
+          </div>
+          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{c.engagementScore || 0}%</span>
+        </div>
+      ),
     },
     {
       key: 'isPrimary',
@@ -169,6 +221,28 @@ export default function ContactsPage() {
       align: 'center',
       render: (c) => (
         c.isPrimary ? <CheckCircle size={14} style={{ color: 'var(--color-success)' }} /> : '-'
+      ),
+    },
+    {
+      key: 'actions', header: 'Actions', align: 'center', width: '120px',
+      render: (c) => (
+        <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'center' }}>
+          <button
+            title="View"
+            onClick={(e) => { e.stopPropagation(); router.push(`/crm/contacts/${c.id}`); }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 'var(--space-1)' }}
+          ><Eye size={15} /></button>
+          <button
+            title="Edit"
+            onClick={(e) => { e.stopPropagation(); router.push(`/crm/contacts/${c.id}?edit=1`); }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 'var(--space-1)' }}
+          ><Pencil size={15} /></button>
+          <button
+            title="Delete"
+            onClick={(e) => { e.stopPropagation(); handleDelete(c); }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger, #dc2626)', padding: 'var(--space-1)' }}
+          ><Trash2 size={15} /></button>
+        </div>
       ),
     },
   ];
@@ -231,8 +305,13 @@ export default function ContactsPage() {
         <DataTable
           columns={columns}
           data={contacts}
+          rowKey={(c) => c.id}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
           emptyTitle="No contacts found"
           emptyMessage="Create a contact to get started."
+          onRowClick={(row) => router.push(`/crm/contacts/${row.id}`)}
         />
         
         {totalPages > 1 && (
@@ -328,6 +407,59 @@ export default function ContactsPage() {
               <option value="">Select Customer</option>
               {(customers as Array<{ id: string; name: string }>).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </div>
+
+          <div className="frappe-grid-2">
+            <div className="frappe-form-group">
+              <label className="frappe-label">Secondary Email</label>
+              <input
+                type="email"
+                placeholder="Secondary Email"
+                value={form.secondaryEmail}
+                onChange={e => setForm({ ...form, secondaryEmail: e.target.value })}
+                className="frappe-input"
+              />
+            </div>
+            <div className="frappe-form-group">
+              <label className="frappe-label">Preferred Contact Method</label>
+              <select
+                value={form.preferredContactMethod}
+                onChange={e => setForm({ ...form, preferredContactMethod: e.target.value })}
+                className="frappe-input"
+              >
+                <option value="EMAIL">Email</option>
+                <option value="PHONE">Phone</option>
+                <option value="MOBILE">Mobile</option>
+                <option value="SMS">SMS</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="frappe-grid-2">
+            <div className="frappe-form-group">
+              <label className="frappe-label">Lifecycle Status</label>
+              <select
+                value={form.lifecycleStatus}
+                onChange={e => setForm({ ...form, lifecycleStatus: e.target.value })}
+                className="frappe-input"
+              >
+                <option value="PROSPECT">Prospect</option>
+                <option value="LEAD">Lead</option>
+                <option value="ACTIVE_CUSTOMER">Active Customer</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="DORMANT">Dormant</option>
+              </select>
+            </div>
+            <div className="frappe-form-group">
+              <label className="frappe-label">Social Profile Link</label>
+              <input
+                type="text"
+                placeholder="https://linkedin.com/in/username"
+                value={form.socialProfiles}
+                onChange={e => setForm({ ...form, socialProfiles: e.target.value })}
+                className="frappe-input"
+              />
+            </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>

@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge, useToast } from '@unerp/ui';
+import { Card, PageHeader, Button, Spinner, Badge, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
 import {
   Plus, X, DollarSign, Percent, Calculator, AlertCircle,
-  Award, FileText, CheckCircle, Clock, CreditCard
+  Award, FileText, CheckCircle, Clock, CreditCard, Trash2
 } from 'lucide-react';
+import { apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface CommissionRule {
   id: string;
@@ -153,6 +154,58 @@ export default function CommissionsPage() {
     }
   };
 
+  const [ruleSortBy, setRuleSortBy] = useState('name');
+  const [ruleSortOrder, setRuleSortOrder] = useState<SortOrder>('asc');
+  const sortedRules = [...rules].sort((a, b) => {
+    let cmp = 0;
+    if (ruleSortBy === 'name') cmp = a.name.localeCompare(b.name);
+    else if (ruleSortBy === 'rate') cmp = a.rate - b.rate;
+    return ruleSortOrder === 'desc' ? -cmp : cmp;
+  });
+
+  const [entrySortBy, setEntrySortBy] = useState('createdAt');
+  const [entrySortOrder, setEntrySortOrder] = useState<SortOrder>('desc');
+  const sortedEntries = [...entries].sort((a, b) => {
+    let cmp = 0;
+    if (entrySortBy === 'amount') cmp = a.amount - b.amount;
+    else if (entrySortBy === 'createdAt') cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    return entrySortOrder === 'desc' ? -cmp : cmp;
+  });
+
+  const handleDeleteRule = async (r: CommissionRule) => {
+    if (!window.confirm(`Delete commission rule "${r.name}"? This cannot be undone.`)) return;
+    try {
+      await apiDelete(`/crm/commissions/rules/${r.id}`);
+      toast.success('Commission rule deleted.');
+      loadData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'Failed to delete commission rule.';
+      toast.error(message);
+    }
+  };
+
+  const ruleColumns: Column<CommissionRule>[] = [
+    { key: 'name', header: 'Name', sortable: true, render: (r) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{r.name}</span> },
+    { key: 'type', header: 'Type', render: (r) => getTypeBadge(r.type) },
+    { key: 'rate', header: 'Rate', align: 'right', sortable: true, render: (r) => r.type === 'PERCENTAGE' ? `${r.rate}%` : `$${r.rate.toLocaleString()}` },
+    { key: 'appliesTo', header: 'Applies To', render: (r) => r.appliesTo },
+    { key: 'isActive', header: 'Active', align: 'center', render: (r) => r.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="danger">Inactive</Badge> },
+    { key: 'entries', header: 'Entries', align: 'right', render: (r) => r._count?.entries || 0 },
+    {
+      key: 'actions', header: 'Actions', align: 'center', width: '80px',
+      render: (r) => <button onClick={(e) => { e.stopPropagation(); handleDeleteRule(r); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: '4px' }} title="Delete"><Trash2 size={16} /></button>,
+    },
+  ];
+
+  const entryColumns: Column<CommissionEntry>[] = [
+    { key: 'userName', header: 'User', render: (e) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{e.userName || e.userId}</span> },
+    { key: 'opportunityName', header: 'Opportunity', render: (e) => e.opportunityName || e.opportunityId },
+    { key: 'ruleName', header: 'Rule', render: (e) => e.ruleName || e.ruleId },
+    { key: 'amount', header: 'Amount', align: 'right', sortable: true, render: (e) => <span style={{ fontWeight: 'var(--weight-bold)', color: 'var(--color-success-text)' }}>${e.amount.toLocaleString()}</span> },
+    { key: 'status', header: 'Status', align: 'center', render: (e) => getStatusBadge(e.status) },
+    { key: 'period', header: 'Period', render: (e) => <span style={{ fontSize: 'var(--text-xs)' }}>{e.periodStart} - {e.periodEnd}</span> },
+  ];
+
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-1.5)' };
   const inputStyle: React.CSSProperties = { width: '100%', height: '38px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0 var(--space-3)' };
   const thStyle: React.CSSProperties = { textAlign: 'left', padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' };
@@ -205,69 +258,29 @@ export default function CommissionsPage() {
         <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>
       ) : activeTab === 'rules' ? (
         <Card>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={thStyle}>Name</th>
-                  <th style={thStyle}>Type</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Rate</th>
-                  <th style={thStyle}>Applies To</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>Active</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Entries</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rules.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-secondary)' }}>No commission rules configured.</td></tr>
-                ) : rules.map(r => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ ...tdStyle, fontWeight: 'var(--weight-semibold)' }}>{r.name}</td>
-                    <td style={tdStyle}>{getTypeBadge(r.type)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 'var(--weight-bold)' }}>
-                      {r.type === 'PERCENTAGE' ? `${r.rate}%` : `$${r.rate.toLocaleString()}`}
-                    </td>
-                    <td style={{ ...tdStyle, color: 'var(--color-text-secondary)' }}>{r.appliesTo}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      {r.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="danger">Inactive</Badge>}
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: 'right' }}>{r._count?.entries || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<CommissionRule>
+            columns={ruleColumns}
+            data={sortedRules}
+            rowKey={(r) => r.id}
+            sortBy={ruleSortBy}
+            sortOrder={ruleSortOrder}
+            onSortChange={(key, order) => { setRuleSortBy(key); setRuleSortOrder(order); }}
+            emptyTitle="No commission rules"
+            emptyMessage="Configure a commission rule to get started."
+          />
         </Card>
       ) : (
         <Card>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={thStyle}>User</th>
-                  <th style={thStyle}>Opportunity</th>
-                  <th style={thStyle}>Rule</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Amount</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>Status</th>
-                  <th style={thStyle}>Period</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-secondary)' }}>No commission entries found.</td></tr>
-                ) : entries.map(e => (
-                  <tr key={e.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ ...tdStyle, fontWeight: 'var(--weight-semibold)' }}>{e.userName || e.userId}</td>
-                    <td style={{ ...tdStyle, color: 'var(--color-text-secondary)' }}>{e.opportunityName || e.opportunityId}</td>
-                    <td style={{ ...tdStyle, color: 'var(--color-text-secondary)' }}>{e.ruleName || e.ruleId}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 'var(--weight-bold)', color: 'var(--color-success-text)' }}>${e.amount.toLocaleString()}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center' }}>{getStatusBadge(e.status)}</td>
-                    <td style={{ ...tdStyle, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{e.periodStart} - {e.periodEnd}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<CommissionEntry>
+            columns={entryColumns}
+            data={sortedEntries}
+            rowKey={(e) => e.id}
+            sortBy={entrySortBy}
+            sortOrder={entrySortOrder}
+            onSortChange={(key, order) => { setEntrySortBy(key); setEntrySortOrder(order); }}
+            emptyTitle="No commission entries"
+            emptyMessage="Commission entries appear once opportunities close."
+          />
         </Card>
       )}
 

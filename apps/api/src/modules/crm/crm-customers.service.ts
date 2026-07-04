@@ -133,6 +133,7 @@ export class CrmCustomersService {
           id: true,
           invoiceNumber: true,
           totalAmount: true,
+          paidAmount: true,
           status: true,
           issueDate: true,
           dueDate: true,
@@ -189,6 +190,26 @@ export class CrmCustomersService {
     const availableCredit = customer.creditLimit ? Math.max(0, creditLimit - unpaidBalance) : 0;
     const isCreditLimitExceeded = customer.creditLimit ? unpaidBalance > creditLimit : false;
 
+    // Recalculate Risk Rating
+    const now = new Date();
+    const overdueInvoices = invoices.filter(
+      (inv) => new Date(inv.dueDate) < now && Number(inv.totalAmount) - Number(inv.paidAmount) > 0
+    );
+    let risk = 'LOW';
+    if (overdueInvoices.length > 3 || isCreditLimitExceeded) {
+      risk = 'HIGH';
+    } else if (overdueInvoices.length > 0) {
+      risk = 'MEDIUM';
+    }
+
+    if (customer.riskRating !== risk) {
+      await prisma.customer.update({
+        where: { id },
+        data: { riskRating: risk },
+      });
+      customer.riskRating = risk;
+    }
+
     return {
       customer,
       metrics: {
@@ -221,6 +242,10 @@ export class CrmCustomersService {
         billingAddress: dto.billingAddress ? (dto.billingAddress as Prisma.InputJsonValue) : Prisma.DbNull,
         shippingAddress: dto.shippingAddress ? (dto.shippingAddress as Prisma.InputJsonValue) : Prisma.DbNull,
         creditLimit: dto.creditLimit || null, paymentTerms: dto.paymentTerms, notes: dto.notes || null,
+        customerType: dto.customerType || 'RECURRING',
+        creditHold: dto.creditHold || false,
+        creditHoldReason: dto.creditHoldReason || null,
+        riskRating: dto.riskRating || 'LOW',
       },
     });
   }
@@ -239,6 +264,10 @@ export class CrmCustomersService {
         ...(dto.paymentTerms !== undefined && { paymentTerms: dto.paymentTerms }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
         ...(dto.type !== undefined && { type: dto.type }),
+        ...(dto.customerType !== undefined && { customerType: dto.customerType }),
+        ...(dto.creditHold !== undefined && { creditHold: dto.creditHold }),
+        ...(dto.creditHoldReason !== undefined && { creditHoldReason: dto.creditHoldReason }),
+        ...(dto.riskRating !== undefined && { riskRating: dto.riskRating }),
         ...(dto.billingAddress && { billingAddress: dto.billingAddress as Prisma.InputJsonValue }),
         ...(dto.shippingAddress && { shippingAddress: dto.shippingAddress as Prisma.InputJsonValue }),
       },
@@ -249,6 +278,18 @@ export class CrmCustomersService {
     const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Customer not found');
     return prisma.customer.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  async toggleCustomerCreditHold(tenantId: string, id: string, creditHold: boolean, reason?: string) {
+    const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Customer not found');
+    return prisma.customer.update({
+      where: { id },
+      data: {
+        creditHold,
+        creditHoldReason: creditHold ? (reason || 'Manual Credit Freeze') : null,
+      },
+    });
   }
 
   async getVendors(tenantId: string, query?: { page?: number; limit?: number; search?: string; status?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
@@ -408,6 +449,19 @@ export class CrmCustomersService {
     const deliveredPOs = onTimeCount + lateCount;
     const onTimeDeliveryRate = deliveredPOs > 0 ? Math.round((onTimeCount / deliveredPOs) * 1000) / 10 : 100;
     const avgLeadTimeDays = leadTimeEntries > 0 ? Math.round((totalLeadTimeDays / leadTimeEntries) * 10) / 10 : 0;
+    const computedQualityScore = Math.max(0, 100 - (recentReturns.length * 10));
+
+    if (vendor.averageLeadTimeDays !== avgLeadTimeDays || vendor.qualityScore !== computedQualityScore) {
+      await prisma.vendor.update({
+        where: { id },
+        data: {
+          averageLeadTimeDays: avgLeadTimeDays,
+          qualityScore: computedQualityScore,
+        },
+      });
+      vendor.averageLeadTimeDays = avgLeadTimeDays;
+      vendor.qualityScore = computedQualityScore;
+    }
 
     // Vendor notes
     const recentNotes = await this.getVendorNotes(tenantId, id);
@@ -447,6 +501,10 @@ export class CrmCustomersService {
     if (dto.address !== undefined) {
       updateData.address = dto.address ? (dto.address as Prisma.InputJsonValue) : Prisma.DbNull;
     }
+    if (dto.onboardingStatus !== undefined) updateData.onboardingStatus = dto.onboardingStatus;
+    if (dto.checklistTaxVerified !== undefined) updateData.checklistTaxVerified = dto.checklistTaxVerified;
+    if (dto.checklistBankVerified !== undefined) updateData.checklistBankVerified = dto.checklistBankVerified;
+    if (dto.checklistNdaSigned !== undefined) updateData.checklistNdaSigned = dto.checklistNdaSigned;
 
     return prisma.vendor.update({ where: { id }, data: updateData });
   }

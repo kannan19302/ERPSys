@@ -179,6 +179,31 @@ export class CrmController {
     return this.crmService.updateCustomerStatus(req.user.tenantId, id, body.status);
   }
 
+  @ApiOperation({ summary: 'Place customer on credit hold' })
+  @Post('customers/:id/credit-hold')
+  @Permissions('crm.contact.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer', 'id')
+  async placeCreditHold(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ reason: z.string().max(500).optional() })) body: { reason?: string },
+  ) {
+    return this.crmService.toggleCustomerCreditHold(req.user.tenantId, id, true, body.reason);
+  }
+
+  @ApiOperation({ summary: 'Release credit hold for customer' })
+  @Post('customers/:id/credit-release')
+  @Permissions('crm.contact.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer', 'id')
+  async releaseCreditHold(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.crmService.toggleCustomerCreditHold(req.user.tenantId, id, false);
+  }
+
   @ApiOperation({ summary: 'Get customer notes/activities' })
   @Get('customers/:id/notes')
   @Permissions('crm.contact.read')
@@ -357,6 +382,13 @@ export class CrmController {
     });
   }
 
+  @ApiOperation({ summary: 'Get contact by ID' })
+  @Get('contacts/:id')
+  @Permissions('crm.contact.read')
+  async getContactById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.getContactById(req.user.tenantId, id);
+  }
+
   @ApiOperation({ summary: 'Create contact' })
   @Post('contacts')
   @Permissions('crm.contact.create')
@@ -413,6 +445,13 @@ export class CrmController {
       sortBy,
       sortOrder,
     });
+  }
+
+  @ApiOperation({ summary: 'Get leads with no recent activity (at risk of going cold)' })
+  @Get('leads/stalled')
+  @Permissions('crm.lead.read')
+  async getStalledLeads(@Req() req: AuthenticatedRequest, @Query('staleDays') staleDays?: string) {
+    return this.crmService.getStalledLeads(req.user.tenantId, staleDays ? Number(staleDays) : undefined);
   }
 
   @ApiOperation({ summary: 'Get lead by id' })
@@ -473,6 +512,13 @@ export class CrmController {
   @Permissions('crm.lead.delete')
   async deleteLead(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.crmService.deleteLead(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Reactivate a disqualified lead (win-back)' })
+  @Post('leads/:id/reactivate')
+  @Permissions('crm.lead.update')
+  async reactivateLead(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) body: { reason?: string }) {
+    return this.crmService.reactivateLead(req.user.tenantId, id, body?.reason);
   }
 
   @ApiOperation({ summary: 'Bulk update lead status' })
@@ -749,6 +795,7 @@ export class CrmController {
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('status') status?: string,
   ) {
     return this.crmService.getCrmProducts(req.user.tenantId, {
       categoryId,
@@ -757,7 +804,36 @@ export class CrmController {
       search,
       sortBy,
       sortOrder,
+      status,
     });
+  }
+
+  @ApiOperation({ summary: 'Create crm product' })
+  @Post('products')
+  @Permissions('crm.product.create')
+  async createCrmProduct(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.any()) dto: { name: string; sku: string; sellPrice: number; costPrice?: number; type?: string; category?: string; status?: string },
+  ) {
+    return this.crmService.createCrmProduct(req.user.tenantId, req.user.orgId || '', dto);
+  }
+
+  @ApiOperation({ summary: 'Update crm product' })
+  @Put('products/:id')
+  @Permissions('crm.product.update')
+  async updateCrmProduct(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.any()) dto: { name?: string; sku?: string; sellPrice?: number; costPrice?: number; type?: string; category?: string; status?: string },
+  ) {
+    return this.crmService.updateCrmProduct(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete crm product' })
+  @Delete('products/:id')
+  @Permissions('crm.product.delete')
+  async deleteCrmProduct(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.crmService.deleteCrmProduct(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Get price books (paginated, searchable, sortable)' })

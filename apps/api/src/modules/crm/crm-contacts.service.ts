@@ -51,6 +51,14 @@ export class CrmContactsService {
         email: dto.email || null, phone: dto.phone || null, mobile: dto.mobile || null,
         title: dto.title || null, department: dto.department || null,
         isPrimary: dto.isPrimary || false, notes: dto.notes || null,
+        secondaryEmail: dto.secondaryEmail || null,
+        preferredContactMethod: dto.preferredContactMethod || null,
+        engagementScore: dto.engagementScore || 0,
+        socialProfiles: dto.socialProfiles || null,
+        lifecycleStatus: dto.lifecycleStatus || 'ACTIVE',
+        buyingRole: dto.buyingRole || 'INFLUENCER',
+        lastContactedAt: dto.lastContactedAt ? new Date(dto.lastContactedAt) : null,
+        interactionVelocity: dto.interactionVelocity || 0,
       },
     });
   }
@@ -64,7 +72,14 @@ export class CrmContactsService {
   async deleteContact(tenantId: string, id: string) {
     const existing = await prisma.contact.findFirst({ where: { id, tenantId } });
     if (!existing) throw new NotFoundException('Contact not found');
-    return prisma.contact.update({ where: { id }, data: { deletedAt: new Date() } });
+    const emailUpdate = existing.email ? `${existing.email}.deleted.${id}` : null;
+    return prisma.contact.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        email: emailUpdate,
+      },
+    });
   }
 
   // ── CONTACT TAGS & 360 ────────────────────────
@@ -143,5 +158,48 @@ export class CrmContactsService {
       await tx.contact.update({ where: { id: dto.secondaryContactId }, data: { deletedAt: new Date() } });
       return tx.contact.findFirst({ where: { id: dto.primaryContactId }, include: { tags: { include: { tag: true } } } });
     });
+  }
+
+  async getContactById(tenantId: string, id: string) {
+    const contact = await prisma.contact.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: {
+        customer: true,
+        tags: { include: { tag: true } },
+      },
+    });
+    if (!contact) throw new NotFoundException('Contact not found');
+
+    const activities = await prisma.activity.findMany({
+      where: {
+        tenantId,
+        OR: [
+          { description: { contains: `[CONTACT:${id}]` } },
+          { subject: { contains: `[CONTACT:${id}]` } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentActivities = activities.filter(act => new Date(act.createdAt) >= thirtyDaysAgo);
+
+    const velocity = recentActivities.length;
+    const lastContact = activities[0] ? activities[0].createdAt : null;
+
+    if (contact.interactionVelocity !== velocity || contact.lastContactedAt?.getTime() !== lastContact?.getTime()) {
+      await prisma.contact.update({
+        where: { id },
+        data: {
+          interactionVelocity: velocity,
+          lastContactedAt: lastContact,
+        },
+      });
+      contact.interactionVelocity = velocity;
+      contact.lastContactedAt = lastContact;
+    }
+
+    return contact;
   }
 }

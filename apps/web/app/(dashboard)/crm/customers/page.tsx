@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent, useToast } from '@unerp/ui';
-import { Search, Plus, Mail, Building, X, Users, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
+import { Search, Plus, Mail, Building, X, Users, ChevronLeft, ChevronRight, SlidersHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
 import { DuplicatesFinder } from '../_components/DuplicatesFinder';
-import { apiPost, ApiRequestError } from '../../../../src/lib/api';
+import { apiPost, apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface Customer {
     id: string;
@@ -38,7 +38,7 @@ export default function CustomersPage() {
     const [totalPages, setTotalPages] = useState(0);
 
     const [showCreate, setShowCreate] = useState(false);
-    const [form, setForm] = useState({ name: '', type: 'COMPANY', email: '', phone: '', creditLimit: '5000', paymentTerms: '30' });
+    const [form, setForm] = useState({ name: '', type: 'COMPANY', email: '', phone: '', creditLimit: '5000', paymentTerms: '30', customerType: 'RECURRING' });
     const [submitting, setSubmitting] = useState(false);
     const [showDuplicates, setShowDuplicates] = useState(false);
 
@@ -124,6 +124,83 @@ export default function CustomersPage() {
         fetchData();
     }, [fetchData]);
 
+    const handleSortChange = (key: string, order: SortOrder) => {
+        setSortBy(key);
+        setSortOrder(order);
+    };
+
+    const handleDelete = async (c: Customer) => {
+        if (!window.confirm(`Delete customer "${c.name}"? This cannot be undone.`)) return;
+        try {
+            await apiDelete(`/crm/customers/${c.id}`);
+            success('Customer deleted.');
+            fetchData();
+        } catch (err: unknown) {
+            const message = err instanceof ApiRequestError ? err.message : 'Failed to delete customer.';
+            error(message);
+        }
+    };
+
+    const columns: Column<Customer>[] = [
+        {
+            key: 'name', header: 'Name', sortable: true,
+            render: (c) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 'var(--weight-semibold)' }}>
+                    <Building size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                    {c.name}
+                </div>
+            ),
+        },
+        {
+            key: 'type', header: 'Type', sortable: true,
+            render: (c) => (
+                <span style={{ fontSize: 'var(--text-xs)', textTransform: 'capitalize', background: 'var(--color-bg-sunken)', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)' }}>
+                    {c.type.toLowerCase()}
+                </span>
+            ),
+        },
+        {
+            key: 'email', header: 'Email',
+            render: (c) => c.email ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-primary)' }}>
+                    <Mail size={12} />{c.email}
+                </span>
+            ) : '-',
+        },
+        { key: 'phone', header: 'Phone', render: (c) => c.phone || '-' },
+        {
+            key: 'creditLimit', header: 'Credit Limit', align: 'right', sortable: true,
+            render: (c) => c.creditLimit !== null ? `$${c.creditLimit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-',
+        },
+        { key: 'paymentTerms', header: 'Terms', align: 'center', render: (c) => `Net ${c.paymentTerms}` },
+        {
+            key: 'status', header: 'Status', align: 'center', sortable: true,
+            render: (c) => <StatusBadge status={c.status} />,
+        },
+        {
+            key: 'actions', header: 'Actions', align: 'center', width: '120px',
+            render: (c) => (
+                <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'center' }}>
+                    <button
+                        title="View"
+                        onClick={(e) => { e.stopPropagation(); router.push(`/crm/customers/${c.id}`); }}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 'var(--space-1)' }}
+                    ><Eye size={15} /></button>
+                    <button
+                        title="Edit"
+                        onClick={(e) => { e.stopPropagation(); router.push(`/crm/customers/${c.id}?edit=1`); }}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 'var(--space-1)' }}
+                    ><Pencil size={15} /></button>
+                    <button
+                        title="Delete"
+                        onClick={(e) => { e.stopPropagation(); handleDelete(c); }}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger, #dc2626)', padding: 'var(--space-1)' }}
+                    ><Trash2 size={15} /></button>
+                </div>
+            ),
+        },
+    ];
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
@@ -137,7 +214,7 @@ export default function CustomersPage() {
             };
             await apiPost('/crm/customers', payload);
             setShowCreate(false);
-            setForm({ name: '', type: 'COMPANY', email: '', phone: '', creditLimit: '5000', paymentTerms: '30' });
+            setForm({ name: '', type: 'COMPANY', email: '', phone: '', creditLimit: '5000', paymentTerms: '30', customerType: 'RECURRING' });
             success('Customer created successfully.');
             fetchData();
         } catch (err: unknown) {
@@ -269,70 +346,17 @@ export default function CustomersPage() {
                 </div>
             ) : (
                 <>
-                    <Card padding="none">
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Type</th>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Email</th>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Phone</th>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Credit Limit</th>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Terms</th>
-                                    <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {customers.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                                            No customers found. Click "Add Customer" to create one.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    customers.map(c => (
-                                        <tr 
-                                            key={c.id} 
-                                            onClick={() => router.push(`/crm/customers/${c.id}`)}
-                                            style={{ 
-                                                borderBottom: '1px solid var(--color-border)', 
-                                                cursor: 'pointer',
-                                                transition: 'background 0.2s',
-                                            }}
-                                            className="hover-row"
-                                        >
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                    <Building size={14} style={{ color: 'var(--color-text-secondary)' }} />
-                                                    {c.name}
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                                                <span style={{ fontSize: 'var(--text-xs)', textTransform: 'capitalize', background: 'var(--color-bg-sunken)', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)' }}>
-                                                    {c.type.toLowerCase()}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                                                {c.email ? (
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-primary)' }}>
-                                                        <Mail size={12} />{c.email}
-                                                    </span>
-                                                ) : '-'}
-                                            </td>
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{c.phone || '-'}</td>
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-medium)' }}>
-                                                {c.creditLimit !== null ? `$${c.creditLimit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
-                                            </td>
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center' }}>Net {c.paymentTerms}</td>
-                                            <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center' }}>
-                                                <StatusBadge status={c.status} />
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </Card>
+                    <DataTable<Customer>
+                        columns={columns}
+                        data={customers}
+                        rowKey={(c) => c.id}
+                        onRowClick={(c) => router.push(`/crm/customers/${c.id}`)}
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                        onSortChange={handleSortChange}
+                        emptyTitle="No customers found"
+                        emptyMessage='Click "Add Customer" to create one.'
+                    />
 
                     {/* Pagination Footer */}
                     {totalPages > 1 && (
@@ -384,6 +408,19 @@ export default function CustomersPage() {
                                 >
                                     <option value="COMPANY">Company</option>
                                     <option value="INDIVIDUAL">Individual</option>
+                                </select>
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Engagement Category</label>
+                                <select 
+                                    value={form.customerType} 
+                                    onChange={e => setForm({ ...form, customerType: e.target.value })} 
+                                    style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', outline: 'none' }}
+                                >
+                                    <option value="RECURRING">Recurring Customer</option>
+                                    <option value="ONE_TIME">One-Time / Guest</option>
+                                    <option value="PARTNER">Partner / Channel</option>
                                 </select>
                             </div>
                             

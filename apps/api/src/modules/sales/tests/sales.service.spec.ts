@@ -52,6 +52,7 @@ vi.mock('@unerp/database', () => ({
     },
     organization: { findFirst: vi.fn() },
     customer: { findFirst: vi.fn() },
+    vendor: { findFirst: vi.fn() },
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn({
       quotation: {
         create: vi.fn().mockResolvedValue({ id: 'q-1', quotationNumber: 'QT-001', status: 'DRAFT' }),
@@ -75,6 +76,13 @@ vi.mock('@unerp/database', () => ({
       },
       salesReturnItem: {
         create: vi.fn(),
+      },
+      purchaseOrder: {
+        count: vi.fn().mockResolvedValue(0),
+        create: vi.fn().mockImplementation((args) => Promise.resolve({ id: 'po-1', ...args.data })),
+      },
+      purchaseOrderItem: {
+        createMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
     })),
   },
@@ -341,6 +349,45 @@ describe('SalesService', () => {
           salesReturnId: 'sr-1',
         }),
       );
+    });
+  });
+
+  describe('convertToPurchaseOrders', () => {
+    it('should convert a SalesOrder to PurchaseOrder(s) grouped by preferred vendor', async () => {
+      const mockSalesOrder = {
+        id: 'so-1',
+        orgId: 'org-1',
+        orderNumber: 'SO-001',
+        currency: 'USD',
+        lineItems: [
+          {
+            id: 'so-item-1',
+            productId: 'prod-1',
+            description: 'Product A Description',
+            quantity: 2,
+            unitPrice: 100,
+            totalAmount: 200,
+            product: { name: 'Product A', reorderRules: [{ preferredVendorId: 'vendor-A' }] }
+          },
+          {
+            id: 'so-item-2',
+            productId: 'prod-2',
+            description: 'Product B Description',
+            quantity: 3,
+            unitPrice: 150,
+            totalAmount: 450,
+            product: { name: 'Product B', reorderRules: [{ preferredVendorId: 'vendor-B' }] }
+          }
+        ]
+      };
+
+      vi.mocked(prisma.salesOrder.findFirst).mockResolvedValue(mockSalesOrder as never);
+      vi.mocked(prisma.vendor.findFirst).mockResolvedValue({ id: 'vendor-fallback' } as never);
+
+      const result = await service.convertToPurchaseOrders('tenant-1', 'so-1', 'user-1');
+      expect(result).toHaveLength(2);
+      expect(result[0].vendorId).toBe('vendor-A');
+      expect(result[1].vendorId).toBe('vendor-B');
     });
   });
 });

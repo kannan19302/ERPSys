@@ -1,6 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
 import { GlAccountingService } from './gl-accounting.service';
 
 @Injectable()

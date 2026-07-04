@@ -236,4 +236,62 @@ describe('CrmLeadsService', () => {
       expect(result.metrics.isConverted).toBe(true);
     });
   });
+
+  describe('reactivateLead', () => {
+    it('throws if the lead does not exist', async () => {
+      (prisma.lead.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      await expect(service.reactivateLead(TENANT, 'missing')).rejects.toThrow(NotFoundException);
+    });
+
+    it('rejects reactivating a lead that is not DISQUALIFIED', async () => {
+      (prisma.lead.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'lead-1', tenantId: TENANT, status: 'NEW', notes: null });
+      await expect(service.reactivateLead(TENANT, 'lead-1')).rejects.toThrow(BadRequestException);
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
+
+    it('reactivates a DISQUALIFIED lead back to NEW and appends the reason to notes', async () => {
+      (prisma.lead.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'lead-1', tenantId: TENANT, status: 'DISQUALIFIED', notes: 'Old note' });
+      (prisma.lead.update as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'lead-1', status: 'NEW' });
+
+      const result = await service.reactivateLead(TENANT, 'lead-1', 'Budget freed up next quarter');
+
+      expect(result.status).toBe('NEW');
+      const call = (prisma.lead.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(call.data.status).toBe('NEW');
+      expect(call.data.notes).toContain('Old note');
+      expect(call.data.notes).toContain('Budget freed up next quarter');
+    });
+  });
+
+  describe('getStalledLeads', () => {
+    it('queries only open-status leads with no activity since the cutoff', async () => {
+      (prisma.lead.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      await service.getStalledLeads(TENANT, 10);
+
+      const call = (prisma.lead.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(call.where.tenantId).toBe(TENANT);
+      expect(call.where.status.in).toEqual(['NEW', 'CONTACTED', 'QUALIFIED']);
+      expect(call.where.activities.none.createdAt.gte).toBeInstanceOf(Date);
+    });
+
+    it('annotates each stalled lead with daysSinceCreation', async () => {
+      const createdAt = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+      (prisma.lead.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+        { id: 'lead-1', status: 'NEW', createdAt },
+      ]);
+
+      const result = await service.getStalledLeads(TENANT);
+      expect(result[0].daysSinceCreation).toBeGreaterThanOrEqual(14);
+    });
+
+    it('defaults staleDays to 7 when not provided', async () => {
+      (prisma.lead.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      const before = Date.now();
+      await service.getStalledLeads(TENANT);
+      const call = (prisma.lead.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const cutoff: Date = call.where.activities.none.createdAt.gte;
+      const expectedCutoff = before - 7 * 24 * 60 * 60 * 1000;
+      expect(Math.abs(cutoff.getTime() - expectedCutoff)).toBeLessThan(5000);
+    });
+  });
 });

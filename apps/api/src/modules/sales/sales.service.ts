@@ -812,6 +812,89 @@ export class SalesService {
     return updated;
   }
 
+  async convertToPurchaseOrders(tenantId: string, id: string, userId: string) {
+    const so = await prisma.salesOrder.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: {
+        lineItems: {
+          include: {
+            product: {
+              include: { reorderRules: true }
+            }
+          },
+        },
+      },
+    });
+    if (!so) throw new NotFoundException('Sales order not found');
+
+    const defaultVendor = await prisma.vendor.findFirst({
+      where: { tenantId, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const vendorGroups = new Map<string, typeof so.lineItems>();
+    for (const item of so.lineItems) {
+      const preferredVendorId = (item.product as any)?.reorderRules?.[0]?.preferredVendorId;
+      const vId = preferredVendorId || defaultVendor?.id;
+      if (!vId) {
+        throw new BadRequestException('No vendor available for product ' + (item.product?.name || 'Line Item'));
+      }
+      if (!vendorGroups.has(vId)) {
+        vendorGroups.set(vId, []);
+      }
+      vendorGroups.get(vId)!.push(item);
+    }
+
+    if (vendorGroups.size === 0) {
+      throw new BadRequestException('No items found in sales order');
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const createdPOs = [];
+      for (const [vendorId, items] of vendorGroups.entries()) {
+        const poCount = await tx.purchaseOrder.count({ where: { tenantId } });
+        const poNumber = `PO-${String(poCount + 1).padStart(5, '0')}`;
+
+        const subtotal = items.reduce((sum, item) => sum + Number(item.totalAmount), 0);
+
+        const po = await tx.purchaseOrder.create({
+          data: {
+            tenantId,
+            orgId: so.orgId,
+            vendorId,
+            poNumber,
+            status: 'DRAFT',
+            orderDate: new Date(),
+            subtotal,
+            totalAmount: subtotal,
+            currency: so.currency,
+            notes: `Generated from Sales Order ${so.orderNumber}`,
+            contractId: so.contractId,
+            createdBy: userId,
+          },
+        });
+
+        await tx.purchaseOrderItem.createMany({
+          data: items.map((item, idx) => ({
+            tenantId,
+            purchaseOrderId: po.id,
+            productId: item.productId,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalAmount: item.totalAmount,
+            taxRate: 0,
+            taxAmount: 0,
+            sortOrder: idx,
+          })),
+        });
+
+        createdPOs.push(po);
+      }
+      return createdPOs;
+    });
+  }
+
   async getSalesStats(tenantId: string) {
     const [totalOrders, pendingOrders, totalRevenue, returnsCount] = await Promise.all([
       prisma.salesOrder.count({ where: { tenantId, deletedAt: null } }),

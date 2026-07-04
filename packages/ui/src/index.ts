@@ -27,7 +27,7 @@ export { Skeleton, SkeletonText, type SkeletonProps, type SkeletonTextProps } fr
 export { ToastProvider, useToast, type ToastOptions, type ToastVariant } from './components/toast';
 export { Modal, ConfirmDialog, type ModalProps, type ConfirmDialogProps } from './components/modal';
 export { FormField, Input, Textarea, Select, TextField, type FormFieldProps, type InputProps, type TextareaProps, type SelectProps } from './components/form';
-export { DataTable, type Column, type DataTableProps } from './components/table';
+export { DataTable, type Column, type DataTableProps, type SortOrder } from './components/table';
 export { Tabs, Tooltip, Pagination, Drawer, Disclosure, type TabsProps, type TabItem, type TooltipProps, type PaginationProps, type DrawerProps, type DisclosureProps } from './components/navigation';
 
 // Sprint 5 — Forms & data-entry UX

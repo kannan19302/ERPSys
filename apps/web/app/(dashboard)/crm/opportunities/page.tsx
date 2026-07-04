@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
+import { useRouter } from 'next/navigation';
+import { Card, PageHeader, StatusBadge, Spinner, Button, DataTable, type Column, type SortOrder, useToast } from '@unerp/ui';
 import {
     Search, Plus, X, AlertCircle,
-    Building
+    Building, Eye, Trash2
 } from 'lucide-react';
 import Link from 'next/link';
+import { apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface Opportunity {
     id: string;
@@ -39,6 +41,8 @@ interface PipelineStage {
 }
 
 export default function OpportunitiesPage() {
+    const router = useRouter();
+    const { success, error: showToastError } = useToast();
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -143,6 +147,41 @@ export default function OpportunitiesPage() {
     useEffect(() => {
         fetchData();
     }, [page, debouncedSearch, stage, pipelineId, sortBy, sortOrder, viewMode]);
+
+    const handleSortChange = (key: string, order: SortOrder) => {
+        setSortBy(key);
+        setSortOrder(order);
+    };
+
+    const handleDelete = async (o: Opportunity) => {
+        if (!window.confirm(`Delete opportunity "${o.name}"? This cannot be undone.`)) return;
+        try {
+            await apiDelete(`/crm/opportunities/${o.id}`);
+            success('Opportunity deleted.');
+            fetchData();
+        } catch (err: unknown) {
+            const message = err instanceof ApiRequestError ? err.message : 'Failed to delete opportunity.';
+            showToastError(message);
+        }
+    };
+
+    const columns: Column<Opportunity>[] = [
+        { key: 'name', header: 'Name', sortable: true, render: (o) => <span style={{ fontWeight: 'var(--weight-semibold)' }}>{o.name}</span> },
+        { key: 'customer', header: 'Customer', render: (o) => o.customer?.name || '-' },
+        { key: 'stage', header: 'Stage', sortable: true, render: (o) => <StatusBadge status={stageLabel(o.stage)} /> },
+        { key: 'amount', header: 'Amount', align: 'right', sortable: true, render: (o) => `$${Number(o.amount || 0).toLocaleString()}` },
+        { key: 'probability', header: 'Prob.', align: 'center', render: (o) => `${o.probability}%` },
+        { key: 'expectedCloseDate', header: 'Close Date', sortable: true, render: (o) => o.expectedCloseDate ? new Date(o.expectedCloseDate).toLocaleDateString() : '-' },
+        {
+            key: 'actions', header: 'Actions', align: 'center', width: '90px',
+            render: (o) => (
+                <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'center' }}>
+                    <button title="View" onClick={(e) => { e.stopPropagation(); router.push(`/crm/opportunities/${o.id}`); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 'var(--space-1)' }}><Eye size={15} /></button>
+                    <button title="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(o); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger, #dc2626)', padding: 'var(--space-1)' }}><Trash2 size={15} /></button>
+                </div>
+            ),
+        },
+    ];
 
     const handleStageChange = async (id: string, newStage: string) => {
         const token = localStorage.getItem('token');
@@ -300,30 +339,17 @@ export default function OpportunitiesPage() {
                 </div>
             ) : (
                 <Card padding="none">
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Name</th>
-                                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Customer</th>
-                                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Stage</th>
-                                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Amount</th>
-                                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Prob.</th>
-                                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Close Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {opportunities.map(opp => (
-                                <tr key={opp.id} style={{ borderBottom: '1px solid var(--color-border)', cursor: 'pointer' }} onClick={() => window.location.href = `/crm/opportunities/${opp.id}`}>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{opp.name}</td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{opp.customer?.name || '-'}</td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}><StatusBadge status={stageLabel(opp.stage)} /></td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>${Number(opp.amount || 0).toLocaleString()}</td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center' }}>{opp.probability}%</td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{opp.expectedCloseDate ? new Date(opp.expectedCloseDate).toLocaleDateString() : '-'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <DataTable<Opportunity>
+                        columns={columns}
+                        data={opportunities}
+                        rowKey={(o) => o.id}
+                        onRowClick={(o) => router.push(`/crm/opportunities/${o.id}`)}
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                        onSortChange={handleSortChange}
+                        emptyTitle="No opportunities found"
+                        emptyMessage='Click "Add Opportunity" to create one.'
+                    />
                     {totalPages > 1 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
                             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
