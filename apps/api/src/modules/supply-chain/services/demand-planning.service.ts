@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { InventoryItem, Product, Warehouse } from '@prisma/client';
 
 @Injectable()
 export class DemandPlanningService {
@@ -23,7 +24,7 @@ export class DemandPlanningService {
     const monthlyDemand = new Map<string, number>();
     for (const order of salesHistory) {
       const monthKey = new Date(order.orderDate).toISOString().slice(0, 7);
-      const qty = order.lineItems.reduce((s, li) => s + Number(li.quantity), 0);
+      const qty = order.lineItems.reduce((s: number, li: { quantity: any }) => s + Number(li.quantity), 0);
       monthlyDemand.set(monthKey, (monthlyDemand.get(monthKey) || 0) + qty);
     }
 
@@ -45,7 +46,7 @@ export class DemandPlanningService {
 
     const lastMonth = new Date(historicalData[historicalData.length - 1]!.month + '-01');
     const variance = historicalData.length > 1
-      ? Math.sqrt(historicalData.reduce((s, p) => s + Math.pow(p.quantity - smoothed, 2), 0) / historicalData.length)
+      ? Math.sqrt(historicalData.reduce((s: number, p: { quantity: number }) => s + Math.pow(p.quantity - smoothed, 2), 0) / historicalData.length)
       : smoothed * 0.2;
 
     for (let i = 1; i <= periods; i++) {
@@ -79,12 +80,12 @@ export class DemandPlanningService {
     });
 
     const suggestions = items
-      .filter((item) => {
+      .filter((item: InventoryItem & { product: Product | null; warehouse: Warehouse | null }) => {
         const onHand = Number(item.quantity);
         const reorderPoint = Number(item.reorderPoint || 0);
         return reorderPoint > 0 && onHand <= reorderPoint;
       })
-      .map((item) => ({
+      .map((item: InventoryItem & { product: Product | null; warehouse: Warehouse | null }) => ({
         productId: item.productId,
         productName: item.product?.name,
         warehouseId: item.warehouseId,
@@ -97,8 +98,8 @@ export class DemandPlanningService {
 
     return {
       totalSuggestions: suggestions.length,
-      critical: suggestions.filter((s) => s.urgency === 'CRITICAL').length,
-      suggestions: suggestions.sort((a, b) => {
+      critical: suggestions.filter((s: { urgency: string }) => s.urgency === 'CRITICAL').length,
+      suggestions: suggestions.sort((a: { urgency: string }, b: { urgency: string }) => {
         const order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2 };
         return (order[a.urgency as keyof typeof order] || 2) - (order[b.urgency as keyof typeof order] || 2);
       }),

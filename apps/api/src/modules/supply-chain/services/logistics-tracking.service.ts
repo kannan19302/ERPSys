@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { Shipment } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 interface TrackingEvent {
@@ -83,7 +84,7 @@ export class LogisticsTrackingService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return shipments.map((s) => ({
+    return shipments.map((s: Shipment) => ({
       id: s.id,
       trackingNumber: (s as any).trackingNumber || s.id,
       carrier: (s as any).carrier || 'Unknown',

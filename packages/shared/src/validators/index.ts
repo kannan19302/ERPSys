@@ -2002,4 +2002,62 @@ export const errorReportSchema = z.object({
 });
 export type ErrorReportInput = z.infer<typeof errorReportSchema>;
 
+// ════════════════════════════════════════════════════
+// Fixed Asset Management Schemas
+// ════════════════════════════════════════════════════
+
+export const createFixedAssetCategorySchema = z.object({
+  name: z.string().min(1, 'Category name is required').max(200),
+  description: z.string().max(1000).optional().nullable(),
+  depreciationMethod: z.enum(['SLM', 'WDV']),
+  expectedLifeMonths: z.number().int().positive('Expected useful life in months must be positive'),
+  depreciationRate: z.coerce.number().min(0).max(100).optional().nullable(),
+  assetAccountId: z.string().optional().nullable(),
+  depreciationAccountId: z.string().optional().nullable(),
+  expenseAccountId: z.string().optional().nullable(),
+});
+export type CreateFixedAssetCategoryInput = z.infer<typeof createFixedAssetCategorySchema>;
+
+export const createFixedAssetSchema = z.object({
+  assetCode: z.string().min(1, 'Asset code is required').max(100),
+  name: z.string().min(1, 'Asset name is required').max(200),
+  description: z.string().max(1000).optional().nullable(),
+  categoryId: z.string().optional().nullable(),
+  purchaseDate: z.string().min(1, 'Purchase date is required'),
+  purchaseValue: z.number().positive('Purchase value must be positive'),
+  salvageValue: z.number().nonnegative('Salvage value must be non-negative'),
+  usefulLifeYears: z.number().int().positive('Useful life in years must be positive'),
+  depreciationMethod: z.enum(['SLM', 'WDV']),
+  depreciationRate: z.number().min(0).max(100).optional().nullable(),
+  accountId: z.string().min(1, 'GL Asset account is required'),
+  accumDepAccountId: z.string().min(1, 'Accumulated Depreciation contra-account is required'),
+  locationId: z.string().optional().nullable(),
+  custodianId: z.string().optional().nullable(),
+});
+export type CreateFixedAssetInput = z.infer<typeof createFixedAssetSchema>;
+
+export const updateFixedAssetSchema = createFixedAssetSchema.partial().extend({
+  status: z.enum(['ACTIVE', 'DISPOSED', 'UNDER_MAINTENANCE']).optional(),
+});
+export type UpdateFixedAssetInput = z.infer<typeof updateFixedAssetSchema>;
+
+export const transferFixedAssetSchema = z.object({
+  transferDate: z.string().min(1, 'Transfer date is required'),
+  toLocationId: z.string().optional().nullable(),
+  toCustodianId: z.string().optional().nullable(),
+  reason: z.string().max(1000).optional().nullable(),
+});
+export type TransferFixedAssetInput = z.infer<typeof transferFixedAssetSchema>;
+
+export const logFixedAssetMaintenanceSchema = z.object({
+  maintenanceDate: z.string().min(1, 'Maintenance date is required'),
+  type: z.enum(['PREVENTIVE', 'CORRECTIVE', 'CALIBRATION']),
+  description: z.string().min(1, 'Description is required').max(2000),
+  cost: z.number().nonnegative('Maintenance cost must be non-negative'),
+  performedBy: z.string().min(1, 'Performed by is required').max(200),
+  nextMaintenanceDate: z.string().optional().nullable(),
+});
+export type LogFixedAssetMaintenanceInput = z.infer<typeof logFixedAssetMaintenanceSchema>;
+
+
 

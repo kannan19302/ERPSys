@@ -41,6 +41,11 @@ model Tenant {
   userSessions    UserSession[]
   userGroups      UserGroup[]
   ipRestrictions  IpRestriction[]
+  fixedAssets            FixedAsset[]
+  fixedAssetCategories   FixedAssetCategory[]
+  assetDepreciations     AssetDepreciation[]
+  assetTransferLogs      AssetTransferLog[]
+  assetMaintenanceLogs   AssetMaintenanceLog[]
 
   @@map("tenants")
 }
@@ -231,6 +236,7 @@ model Employee {
   department          Department?          @relation(fields: [departmentId], references: [id])
   practitioners       Practitioner[]
   trainingEnrollments TrainingEnrollment[]
+  fixedAssets         FixedAsset[]
 
   @@unique([tenantId, orgId, employeeCode])
   @@index([tenantId])
@@ -591,6 +597,7 @@ model Warehouse {
   inventoryItems     InventoryItem[]
   stockLedgerEntries StockLedgerEntry[]
   binLocations       BinLocation[]
+  fixedAssets        FixedAsset[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -2689,6 +2696,7 @@ model Journal {
 
   entries JournalEntry[]
   book    AccountingBook? @relation(fields: [bookId], references: [id])
+  depreciations       AssetDepreciation[]
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -4384,30 +4392,57 @@ model FixedAsset {
   orgId              String   @map("org_id")
   assetCode          String   @map("asset_code")
   name               String
+  description        String?
+  categoryId         String?  @map("category_id")
   purchaseDate       DateTime @map("purchase_date")
   purchaseValue      Decimal  @map("purchase_value") @db.Decimal(15, 2)
   salvageValue       Decimal  @map("salvage_value") @db.Decimal(15, 2)
   usefulLifeYears    Int      @map("useful_life_years")
   depreciationMethod String   @map("depreciation_method") // SLM, WDV
+  depreciationRate   Decimal? @map("depreciation_rate") @db.Decimal(5, 2)
   currentValue       Decimal  @map("current_value") @db.Decimal(15, 2)
   accountId          String   @map("account_id")
   accumDepAccountId  String   @map("accum_dep_account_id")
-  status             String   @default("ACTIVE") // ACTIVE, DISPOSED
+  locationId         String?  @map("location_id")
+  custodianId        String?  @map("custodian_id")
+  status             String   @default("ACTIVE") // ACTIVE, DISPOSED, UNDER_MAINTENANCE
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
+  createdBy          String   @default("system") @map("created_by")
+  updatedBy          String   @default("system") @map("updated_by")
 
+  category           FixedAssetCategory? @relation(fields: [categoryId], references: [id])
+  location           Warehouse?          @relation(fields: [locationId], references: [id])
+  custodian          Employee?           @relation(fields: [custodianId], references: [id])
+  depreciations      AssetDepreciation[]
+  transfers          AssetTransferLog[]
+  maintenanceLogs    AssetMaintenanceLog[]
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, assetCode])
   @@index([tenantId])
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([custodianId])
   @@map("fixed_assets")
 }
 
 model AssetDepreciation {
-  id        String   @id @default(cuid())
-  tenantId  String   @map("tenant_id")
-  assetId   String   @map("asset_id")
-  date      DateTime
-  amount    Decimal  @db.Decimal(15, 2)
-  journalId String?  @map("journal_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  id                      String    @id @default(cuid())
+  tenantId                String    @map("tenant_id")
+  assetId                 String    @map("asset_id")
+  date                    DateTime
+  amount                  Decimal   @db.Decimal(15, 2)
+  periodName              String?   @map("period_name")
+  accumulatedDepreciation Decimal   @default(0) @map("accumulated_depreciation") @db.Decimal(15, 2)
+  bookValue               Decimal   @default(0) @map("book_value") @db.Decimal(15, 2)
+  status                  String    @default("POSTED") // PENDING, POSTED
+  journalId               String?   @map("journal_id")
+  createdAt               DateTime  @default(now()) @map("created_at")
+
+  asset                  FixedAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  journal                Journal?   @relation(fields: [journalId], references: [id])
+  tenant                 Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, assetId])
   @@map("asset_depreciations")
@@ -7976,5 +8011,72 @@ model StorefrontOrderPayment {
   @@index([tenantId])
   @@index([tenantId, salesOrderId])
   @@map("storefront_order_payments")
+}
+
+// ==========================================
+// FIXED ASSETS MODULE
+// ==========================================
+
+model FixedAssetCategory {
+  id                    String       @id @default(cuid())
+  tenantId              String       @map("tenant_id")
+  name                  String
+  description           String?
+  depreciationMethod    String       @default("STRAIGHT_LINE") // STRAIGHT_LINE, DOUBLE_DECLINING
+  expectedLifeMonths    Int          @map("expected_life_months")
+  depreciationRate      Decimal?     @map("depreciation_rate") @db.Decimal(5, 2)
+  assetAccountId        String?      @map("asset_account_id")
+  depreciationAccountId String?      @map("depreciation_account_id")
+  expenseAccountId      String?      @map("expense_account_id")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+
+  assets                FixedAsset[]
+  tenant                Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("fixed_asset_categories")
+}
+
+model AssetTransferLog {
+  id               String     @id @default(cuid())
+  tenantId         String     @map("tenant_id")
+  assetId          String     @map("asset_id")
+  transferDate     DateTime   @map("transfer_date")
+  fromLocationId   String?    @map("from_location_id")
+  toLocationId     String?    @map("to_location_id")
+  fromCustodianId  String?    @map("from_custodian_id")
+  toCustodianId    String?    @map("to_custodian_id")
+  reason           String?
+  performedBy      String     @map("performed_by")
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  asset            FixedAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_transfer_logs")
+}
+
+model AssetMaintenanceLog {
+  id                  String     @id @default(cuid())
+  tenantId            String     @map("tenant_id")
+  assetId             String     @map("asset_id")
+  maintenanceDate     DateTime   @map("maintenance_date")
+  type                String     @default("PREVENTIVE")
+  description         String
+  cost                Decimal    @db.Decimal(15, 2)
+  performedBy         String     @map("performed_by")
+  nextMaintenanceDate DateTime?  @map("next_maintenance_date")
+  createdAt           DateTime   @default(now()) @map("created_at")
+
+  asset            FixedAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_maintenance_logs")
 }
 

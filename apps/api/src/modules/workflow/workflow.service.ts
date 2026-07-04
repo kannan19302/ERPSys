@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { Prisma, WorkflowStep } from '@prisma/client';
 
 @Injectable()
 export class WorkflowService {
@@ -20,7 +21,7 @@ export class WorkflowService {
     });
     if (existing) throw new BadRequestException(`Workflow named ${dto.name} already exists.`);
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const flow = await tx.workflow.create({
         data: {
           tenantId,
@@ -97,7 +98,7 @@ export class WorkflowService {
     if (!chain) throw new NotFoundException('Approval step not found');
     if (chain.status !== 'PENDING') throw new BadRequestException('This step has already been actioned.');
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const updated = await tx.approvalChain.update({
         where: { id: chainId },
         data: {
@@ -112,7 +113,7 @@ export class WorkflowService {
       if (dto.status === 'APPROVED') {
         const currentStepOrder = chain.step.stepOrder;
         const allSteps = chain.step.workflow.steps;
-        const nextStep = allSteps.find(s => s.stepOrder === currentStepOrder + 1);
+        const nextStep = allSteps.find((s: WorkflowStep) => s.stepOrder === currentStepOrder + 1);
 
         if (nextStep) {
           // Create next step in approval chain
@@ -181,7 +182,7 @@ export class WorkflowService {
       success: true,
       workflowName: flow.name,
       stepsCount: flow.steps.length,
-      sequence: flow.steps.map(s => ({
+      sequence: flow.steps.map((s: WorkflowStep) => ({
         stepOrder: s.stepOrder,
         actionType: s.actionType,
         assigneeRole: s.assigneeRole,

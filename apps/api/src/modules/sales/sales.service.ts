@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { CreateQuotationInput, CreateSalesOrderInput, CreateDeliveryNoteInput, CreateSalesReturnInput } from '@unerp/shared';
-import { Quotation, QuotationItem, SalesOrder, SalesOrderItem, Prisma } from '@prisma/client';
+import { Quotation, QuotationItem, SalesOrder, SalesOrderItem, Invoice, SalesReturn, Prisma } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 /**
@@ -223,7 +223,7 @@ export class SalesService {
       });
 
       const outstandingBalance = unpaidInvoices.reduce(
-        (sum, inv) => sum + (Number(inv.totalAmount) - Number(inv.paidAmount)),
+        (sum: number, inv: Invoice) => sum + (Number(inv.totalAmount) - Number(inv.paidAmount)),
         0
       );
 
@@ -259,7 +259,7 @@ export class SalesService {
     orderTax: number,
     orderTotal: number,
   ) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const linesData = dto.lineItems.map((item, index) => {
         const lineSubtotal = item.quantity * item.unitPrice;
         const lineTax = lineSubtotal * (item.taxRate / 100);
@@ -468,7 +468,7 @@ export class SalesService {
 
     const orderNumber = `SO-QT-${quotation.quotationNumber.replace('QT-', '')}-${Math.floor(Math.random() * 1000)}`;
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const salesOrder = await tx.salesOrder.create({
         data: {
           tenantId,
@@ -544,7 +544,7 @@ export class SalesService {
     });
     if (existingDN) throw new BadRequestException(`Delivery number ${dto.deliveryNumber} already exists.`);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const dn = await tx.deliveryNote.create({
         data: {
           tenantId,
@@ -573,9 +573,9 @@ export class SalesService {
 
       // Update SO status
       const allSOItems = so.lineItems;
-      const totalOrdered = allSOItems.reduce((sum, li) => sum + Number(li.quantity), 0);
-      const previouslyDelivered = allSOItems.reduce((sum, li) => sum + Number(li.deliveredQty), 0);
-      const newlyDelivered = dto.lineItems.reduce((sum, li) => sum + li.deliveredQty, 0);
+      const totalOrdered = allSOItems.reduce((sum: number, li: SalesOrderItem) => sum + Number(li.quantity), 0);
+      const previouslyDelivered = allSOItems.reduce((sum: number, li: SalesOrderItem) => sum + Number(li.deliveredQty), 0);
+      const newlyDelivered = dto.lineItems.reduce((sum: number, li: { deliveredQty: number }) => sum + li.deliveredQty, 0);
       const totalDelivered = previouslyDelivered + newlyDelivered;
 
       const newStatus = totalDelivered >= totalOrdered ? 'DELIVERED' : 'PARTIALLY_DELIVERED';
@@ -611,7 +611,7 @@ export class SalesService {
       include: { customer: true, salesOrder: true, lineItems: true },
       orderBy: { createdAt: 'desc' },
     });
-    return returns.map((r) => ({
+    return returns.map((r: SalesReturn & { customer: { name: string }; salesOrder: { orderNumber: string }; lineItems: any[] }) => ({
       id: r.id,
       returnNumber: r.returnNumber,
       status: r.status,
@@ -650,7 +650,7 @@ export class SalesService {
     });
     const totalAmount = subtotal + taxAmount;
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Create Credit Note
       const creditNoteNumber = `CN-SR-${dto.returnNumber.replace('SR-', '')}-${Math.floor(Math.random() * 1000)}`;
       const creditNote = await tx.creditNote.create({
@@ -726,7 +726,7 @@ export class SalesService {
           tenantId,
           salesReturnId: sr.id,
           warehouseId: whId,
-          lineItems: dto.lineItems.map((li) => ({
+          lineItems: dto.lineItems.map((li: { productId?: string; description: string; quantity: number; unitPrice?: number; taxRate?: number; reason?: string }) => ({
             productId: li.productId,
             quantity: li.quantity,
           })),

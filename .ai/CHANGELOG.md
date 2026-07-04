@@ -3,6 +3,45 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] Fixed Asset Management Module (Module #35) Implementation
+
+Scaffolded and implemented the full vertical slice (Database → API backend → Web frontend) for the Fixed Asset Management module (Module #35) to manage asset register compliance, custody/location transfers, maintenance tracking, and periodic depreciation GL ledger integrations.
+
+1. **Database Schema & Migrations**:
+   - Added models `FixedAssetCategory`, `FixedAsset`, `AssetDepreciation`, `AssetTransferLog`, and `AssetMaintenanceLog` to `schema.prisma`.
+   - Setup unique indexes on `FixedAssetCategory(tenantId, name)` and `FixedAsset(tenantId, assetCode)` to enable safe database operations.
+   - Setup relation references to standard ERP models (`Tenant`, `Warehouse`, `Employee`, and `Journal`/`JournalEntry`).
+   - Ran `prisma db push` to synchronize indexes and schema live on PostgreSQL.
+   - Implemented extensive seed data in `packages/database/prisma/seed.ts` covering GL accounts, IT Equipment, Office Furniture categories, sample assets, and past depreciation runs.
+
+2. **Types, Validators, and Permissions**:
+   - Appended TypeScript interfaces for all fixed asset models to the shared types library (`packages/shared/src/types/index.ts`).
+   - Appended Zod validators (`createFixedAssetCategorySchema`, `createFixedAssetSchema`, `updateFixedAssetSchema`, `transferFixedAssetSchema`, `logFixedAssetMaintenanceSchema`) to the shared validators package (`packages/shared/src/validators/index.ts`).
+   - Appended fine-grained permissions for assets (`assets.asset.read`, `assets.asset.create`, `assets.asset.update`, `assets.asset.delete`, `assets.category.manage`, `assets.transfer.manage`, `assets.maintenance.manage`, `assets.depreciation.post`) to `packages/shared/src/permissions/registry.ts`.
+   - Rebuilt `@unerp/shared` successfully on the host.
+
+3. **NestJS API Module**:
+   - Scaffolded `apps/api/src/modules/fixed-assets/fixed-assets.module.ts`.
+   - Developed `fixed-assets.service.ts` implementing CRUD operations, location/custody transfer logs, maintenance logs, and monthly depreciation runs (Straight Line and Written Down Value method calculations with Net Book Value salvage limits) that auto-post double-entry journal items to the general ledger when GL accounts are mapped.
+   - Developed `fixed-assets.controller.ts` exposing JWT-secured REST routes with RBAC verification.
+   - Implemented asynchronous event broadcasting (`assets.asset.created`, `assets.asset.depreciated`) using NestJS `EventEmitter2`.
+   - Registered `FixedAssetsModule` in `app.module.ts`.
+   - Created comprehensive Vitest tests (`fixed-assets.service.spec.ts` and `fixed-assets.controller.spec.ts`) asserting math formulas, boundaries, and validation boundaries. Both packages compiled and passed all 14 tests.
+
+4. **Next.js Web Pages**:
+   - Created `/finance/advanced/fixed-assets` dashboard page with metrics cards (Asset Cost, Net Book Value, Accumulated Depreciation), monthly depreciation run batched wizard, and category creator modal.
+   - Created `/finance/advanced/fixed-assets/assets` registry page featuring tabular assets list with debounced client-side filtering by category and status.
+   - Created `/finance/advanced/fixed-assets/assets/new` asset registration page with validation schemas.
+   - Created `/finance/advanced/fixed-assets/assets/[id]` detail page supporting tabbed logs for depreciations, custody transfers, maintenance events, and embedding `ChangeHistory` timeline and `ProtectedComponent` permissions check wrapper.
+
+## [2026-07-04] Baseline resolution: Compiler Type resolution and strict-mode compilation errors fixed
+
+Resolved workspace compilation errors on the host and inside the Docker dev container, establishing a clean baseline for future expansion:
+1. **Dependency Symlink Resolution**: Cleaned all `node_modules` subfolders and root `node_modules` on the host, performing a clean `pnpm install` to restore workspace junction point links for `@unerp/database` and `@unerp/shared`.
+2. **Strict-mode Type Check Hardening**: Fixed strict-mode type errors (parameter implicitly has 'any' type `TS7006` and value usage error `TS1362`) in `sales.service.ts`, `demand-planning.service.ts`, `logistics-tracking.service.ts`, `supply-chain.service.ts`, and `workflow.service.ts` by explicitly typing transaction parameter `tx` and callback inputs.
+3. **Docker Environment Reset**: Performed a clean start of the Docker dev environment (`.\scripts\docker-start.ps1 -Clean`) to regenerate container-isolated dependency volumes and seed databases successfully.
+4. **Gates Validation**: Confirmed all 1855 tests are passing and the heuristic scorecard registers 10/10 with all Reality Gates green.
+
 ## [2026-07-04] Doc consolidation — 14 point-in-time status/planning files merged into MODULE_REGISTRY.md, then deleted
 
 Consolidated all standalone status/planning docs into `.ai/MODULE_REGISTRY.md` (kept at its exact

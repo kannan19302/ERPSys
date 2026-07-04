@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { CreateShipmentInput } from '@unerp/shared';
-import { Prisma } from '@prisma/client';
+import { Prisma, Shipment } from '@prisma/client';
 
 @Injectable()
 export class SupplyChainService {
@@ -14,7 +14,7 @@ export class SupplyChainService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return shipments.map((s) => ({
+    return shipments.map((s: Shipment) => ({
       id: s.id,
       shipmentNumber: s.shipmentNumber,
       type: s.type,
@@ -131,7 +131,7 @@ export class SupplyChainService {
         },
       });
 
-      const totalQuantity = salesItems.reduce((sum, item) => sum + Number(item.quantity), 0);
+      const totalQuantity = salesItems.reduce((sum: number, item: { quantity: any }) => sum + Number(item.quantity), 0);
       const averageMonthlySales = salesItems.length > 0 ? totalQuantity / Math.max(1, salesItems.length) : 0;
       
       // Predict next month: baseline average monthly sales + 10% trend buffer

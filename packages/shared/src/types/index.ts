@@ -376,3 +376,91 @@ export interface ThreeWayMatchItem {
   qtyMatch: boolean;
   priceMatch: boolean;
 }
+
+// ── Fixed Asset Management ──
+export interface FixedAssetCategory {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string | null;
+  depreciationMethod: 'SLM' | 'WDV';
+  expectedLifeMonths: number;
+  depreciationRate: number | null;
+  assetAccountId: string | null;
+  depreciationAccountId: string | null;
+  expenseAccountId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FixedAsset {
+  id: string;
+  tenantId: string;
+  orgId: string;
+  assetCode: string;
+  name: string;
+  description: string | null;
+  categoryId: string | null;
+  purchaseDate: string;
+  purchaseValue: number;
+  salvageValue: number;
+  usefulLifeYears: number;
+  depreciationMethod: string;
+  depreciationRate: number | null;
+  currentValue: number;
+  accountId: string;
+  accumDepAccountId: string;
+  locationId: string | null;
+  custodianId: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  category?: FixedAssetCategory | null;
+  depreciations?: AssetDepreciation[];
+  transfers?: AssetTransferLog[];
+  maintenanceLogs?: AssetMaintenanceLog[];
+}
+
+export interface AssetDepreciation {
+  id: string;
+  tenantId: string;
+  assetId: string;
+  date: string;
+  amount: number;
+  periodName: string | null;
+  accumulatedDepreciation: number;
+  bookValue: number;
+  status: 'PENDING' | 'POSTED';
+  journalId: string | null;
+  createdAt: string;
+}
+
+export interface AssetTransferLog {
+  id: string;
+  tenantId: string;
+  assetId: string;
+  transferDate: string;
+  fromLocationId: string | null;
+  toLocationId: string | null;
+  fromCustodianId: string | null;
+  toCustodianId: string | null;
+  reason: string | null;
+  performedBy: string;
+  createdAt: string;
+}
+
+export interface AssetMaintenanceLog {
+  id: string;
+  tenantId: string;
+  assetId: string;
+  maintenanceDate: string;
+  type: 'PREVENTIVE' | 'CORRECTIVE' | 'CALIBRATION';
+  description: string;
+  cost: number;
+  performedBy: string;
+  nextMaintenanceDate: string | null;
+  createdAt: string;
+}
+

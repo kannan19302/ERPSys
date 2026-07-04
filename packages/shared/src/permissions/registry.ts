@@ -401,6 +401,16 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('supply-chain', 'shipment', 'read', 'endpoint', 'Access supply-chain shipment read'),
   p('supply-chain', 'shipment', 'update', 'endpoint', 'Access supply-chain shipment update'),
   { code: 'workflow.create', module: 'workflow', resource: 'general', action: 'create', level: 'endpoint', description: 'Coarse legacy permission: workflow create' },
+
+  // Fixed Assets
+  p('assets', 'asset', 'read', 'endpoint', 'View fixed assets'),
+  p('assets', 'asset', 'create', 'endpoint', 'Register fixed assets'),
+  p('assets', 'asset', 'update', 'endpoint', 'Update fixed assets'),
+  p('assets', 'asset', 'delete', 'endpoint', 'Delete fixed assets'),
+  p('assets', 'category', 'manage', 'endpoint', 'Manage asset categories'),
+  p('assets', 'transfer', 'manage', 'endpoint', 'Manage asset location/custody transfers'),
+  p('assets', 'maintenance', 'manage', 'endpoint', 'Manage asset maintenance logs'),
+  p('assets', 'depreciation', 'post', 'endpoint', 'Calculate and post asset depreciation journal entries'),
 ];
 
 export const PERMISSION_MAP = new Map(

@@ -146,6 +146,19 @@ services:
       # incompatibility and persists installed deps across restarts.
       - node_modules:/app/node_modules
 
+      # Isolate apps node_modules from host
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+
+      # Isolate packages node_modules from host
+      - /app/packages/auth/node_modules
+      - /app/packages/config/node_modules
+      - /app/packages/database/node_modules
+      - /app/packages/framework/node_modules
+      - /app/packages/shared/node_modules
+      - /app/packages/ui/node_modules
+
+
     depends_on:
       postgres:
         condition: service_healthy

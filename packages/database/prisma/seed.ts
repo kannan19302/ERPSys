@@ -2435,6 +2435,168 @@ async function main() {
   }
   console.log('Storefront categories and product listings seeded.');
 
+  // ==========================================
+  // 17. Seed Fixed Assets
+  // ==========================================
+  console.log('🌱 Seeding Fixed Asset Management data...');
+  
+  // Resolve or create GL Accounts
+  const assetCostAccount = await prisma.account.upsert({
+    where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: '1200' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      code: '1200',
+      name: 'Fixed Assets Cost',
+      type: 'ASSET',
+      balance: 0,
+    },
+  });
+
+  const accumDepAccount = await prisma.account.upsert({
+    where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: '1250' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      code: '1250',
+      name: 'Accumulated Depreciation',
+      type: 'ASSET',
+      balance: 0,
+    },
+  });
+
+  const depExpenseAccount = await prisma.account.upsert({
+    where: { tenantId_orgId_code: { tenantId: tenant.id, orgId: org.id, code: '5200' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      code: '5200',
+      name: 'Depreciation Expense',
+      type: 'EXPENSE',
+      balance: 0,
+    },
+  });
+
+  // Seed Categories
+  const itEquipmentCategory = await prisma.fixedAssetCategory.upsert({
+    where: { tenantId_name: { tenantId: tenant.id, name: 'IT Equipment' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'IT Equipment',
+      description: 'Laptops, servers, networking gear, and accessories',
+      depreciationMethod: 'SLM',
+      expectedLifeMonths: 36,
+      depreciationRate: 0,
+      assetAccountId: assetCostAccount.id,
+      depreciationAccountId: accumDepAccount.id,
+      expenseAccountId: depExpenseAccount.id,
+    },
+  });
+
+  const furnitureCategory = await prisma.fixedAssetCategory.upsert({
+    where: { tenantId_name: { tenantId: tenant.id, name: 'Office Furniture' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      name: 'Office Furniture',
+      description: 'Desks, chairs, filing cabinets, and conference tables',
+      depreciationMethod: 'SLM',
+      expectedLifeMonths: 60,
+      depreciationRate: 0,
+      assetAccountId: assetCostAccount.id,
+      depreciationAccountId: accumDepAccount.id,
+      expenseAccountId: depExpenseAccount.id,
+    },
+  });
+
+  // Resolve warehouse & employee links
+  const mainWarehouse = await prisma.warehouse.findFirst({
+    where: { tenantId: tenant.id, code: 'WH-MAIN' },
+  });
+
+  const firstEmployee = await prisma.employee.findFirst({
+    where: { tenantId: tenant.id },
+  });
+
+  // Seed Fixed Assets
+  const laptopAsset = await prisma.fixedAsset.upsert({
+    where: { tenantId_assetCode: { tenantId: tenant.id, assetCode: 'AST-2026-0001' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      assetCode: 'AST-2026-0001',
+      name: 'MacBook Pro 16" M3 Max',
+      description: 'Development laptop for engineering team',
+      categoryId: itEquipmentCategory.id,
+      purchaseDate: new Date('2025-01-01T00:00:00Z'),
+      purchaseValue: 2500.00,
+      salvageValue: 100.00,
+      usefulLifeYears: 3,
+      depreciationMethod: 'SLM',
+      currentValue: 1700.00, // Adjusted after 1 year depreciation
+      accountId: assetCostAccount.id,
+      accumDepAccountId: accumDepAccount.id,
+      locationId: mainWarehouse?.id,
+      custodianId: firstEmployee?.id,
+      status: 'ACTIVE',
+      createdBy: 'system',
+      updatedBy: 'system',
+    },
+  });
+
+  const deskAsset = await prisma.fixedAsset.upsert({
+    where: { tenantId_assetCode: { tenantId: tenant.id, assetCode: 'AST-2026-0002' } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      orgId: org.id,
+      assetCode: 'AST-2026-0002',
+      name: 'Electric Height-Adjustable Ergonomic Desk',
+      description: 'L-shaped standing desk with motor control',
+      categoryId: furnitureCategory.id,
+      purchaseDate: new Date('2025-06-01T00:00:00Z'),
+      purchaseValue: 800.00,
+      salvageValue: 50.00,
+      usefulLifeYears: 5,
+      depreciationMethod: 'SLM',
+      currentValue: 800.00,
+      accountId: assetCostAccount.id,
+      accumDepAccountId: accumDepAccount.id,
+      locationId: mainWarehouse?.id,
+      custodianId: firstEmployee?.id,
+      status: 'ACTIVE',
+      createdBy: 'system',
+      updatedBy: 'system',
+    },
+  });
+
+  // Seed past depreciation entry
+  const pastDepreciation = await prisma.assetDepreciation.findFirst({
+    where: { tenantId: tenant.id, assetId: laptopAsset.id, periodName: '2025-12' },
+  });
+
+  if (!pastDepreciation) {
+    await prisma.assetDepreciation.create({
+      data: {
+        tenantId: tenant.id,
+        assetId: laptopAsset.id,
+        date: new Date('2025-12-31T23:59:59Z'),
+        amount: 800.00,
+        periodName: '2025-12',
+        accumulatedDepreciation: 800.00,
+        bookValue: 1700.00,
+        status: 'POSTED',
+      },
+    });
+  }
+
+  console.log('Fixed Asset Management data seeded.');
+
   console.log('🚀 Database seeding complete!');
 }
 

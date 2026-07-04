@@ -41,6 +41,7 @@ import { CommonModule } from './common/common.module';
 import { QueueModule } from './common/queues/queue.module';
 import { AiModule } from './modules/ai/ai.module';
 import { EcommerceModule } from './modules/ecommerce/ecommerce.module';
+import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
 
 @Module({
   imports: [
@@ -149,6 +150,9 @@ import { EcommerceModule } from './modules/ecommerce/ecommerce.module';
 
     // Module #33 — E-Commerce Storefront (depends on Sales for checkout order creation)
     EcommerceModule,
+
+    // Module #35 — Fixed Asset Management
+    FixedAssetsModule,
   ],
   controllers: [HealthController, MetricsController],
   providers: [

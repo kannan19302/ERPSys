@@ -14,6 +14,8 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:---|
+| 2026-07-04 | 411,732 | +2,790 | Fixed Asset Management vertical slice (Prisma models, GL mappings, transfers, maintenance, automated SLM/WDV depreciation postings, UI pages) |
+| 2026-07-04 | 408,942 | +642 | Type hardening, baseline compilation fixes, and dev container volumes resolution |
 | 2026-07-04 | 408,300 | baseline | Pre-tracking-convention baseline measurement |
 
 ---
@@ -38,7 +40,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| _(none active)_ | | | | |
+
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
@@ -61,6 +63,8 @@ Add new items here as they're identified (PM scoping, bug reports, user asks). D
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-04 | antigravity-ide | Fixed Asset Management vertical slice (Prisma DB, NestJS API, Vitest tests, Next.js UI) | (local verification) |
+| 2026-07-04 | antigravity-ide | Resolved baseline compilation, strict type errors, and dev container volumes | (local verification) |
 | 2026-07-03 | backend-developer + frontend-developer | E-commerce storefront module (backend + admin/public frontend) | `33ba17b` |
 | 2026-07-03 | — | Ollama swap for AI module (removed paid Anthropic calls from `AiService`) | `24222e7` |
 | 2026-07-01 | — | CRM god-class decomposition (2,330 LOC → 322 LOC facade + 10 domain services) | `9a1f347` |
@@ -122,6 +126,7 @@ _(none yet)_
 | 19 | **Notifications** | `apps/api/src/modules/notifications` | 🟢 ACTIVE | 9 | communication, workflow | NotificationChannel, Preference, Digest, WebSocketEvent |
 | 20 | **File Storage** | `apps/api/src/modules/storage` (registered directly in `app.module.ts`; the prior "consolidated into Drive app" note was stale/inaccurate — this is a separate, smaller, still-active module alongside Drive, not superseded by it) | 🟢 ACTIVE | 10 | documents (drive) | `StorageController`/`StorageService` (83 LOC) — `/storage/files` (list/register file metadata records), `/storage/generated` (generated-document listing), `/storage/generate` (template-based document generation), `/storage/presigned` (presigned URL generation), `/storage/lifecycle` (glacier/purge lifecycle policy). Reuses `documents.document.*` permissions rather than declaring its own — a lightweight metadata/lifecycle layer distinct from Drive's own upload/versioning/encryption stack (row 12). The frontend UI for this was folded into `/drive` per the 2026-06-21 "Admin Consolidation" CHANGELOG entry (old `/storage` page directory deleted), but the **backend module itself was never removed** and is still live — frontend consolidation and backend module retirement are two different things that got conflated in the prior doc. |
 | 21 | **Advanced Reporting** | `apps/api/src/modules/reporting` | 🟢 ACTIVE | 11 | analytics, finance | DashboardLayout, Widget, SavedView, ScheduledReport |
+| 35 | **Fixed Asset Management** | `apps/api/src/modules/fixed-assets` | 🟢 ACTIVE | 6 (ext) | finance, inventory, hr | FixedAssetCategory, FixedAsset, AssetDepreciation, AssetTransferLog, AssetMaintenanceLog. Category setups, GL account mappings, automatic Straight Line (SLM) & Written Down Value (WDV) depreciation runs with auto-posting of double-entry ledger journals, location custody transfers, and maintenance logs. |
 
 ---
 
