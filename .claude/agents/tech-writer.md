@@ -14,8 +14,15 @@ Before updating any documentation:
 1. Read `AGENTS.md` — the master rule document; understand what agents expect from the docs you maintain
 2. Read `.ai/MODULE_REGISTRY.md` — the current state of all 31 modules; this is the most critical file you maintain
 3. Read `.ai/CHANGELOG.md` — the most recent entries to understand what just changed
-4. Read `.ai/DEV_SPRINTS.md` — current and past sprint deliverables to understand what documentation needs to be updated
+4. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog and § Production Readiness & Hardening — current and past sprint deliverables to understand what documentation needs to be updated
 5. Read the relevant source code (module files, schema, API endpoints) to verify the documentation matches reality — **never update docs from memory or assumptions**
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 
@@ -31,15 +38,13 @@ Inaccurate documentation is worse than no documentation — other agents make de
 
 | File | Your responsibility |
 |:---|:---|
-| `.ai/MODULE_REGISTRY.md` | Status, phase, entities, paths for all 31 modules — always in sync with reality |
+| `.ai/MODULE_REGISTRY.md` | Status, phase, entities, paths for all 31 modules — always in sync with reality. Also home to § Production Readiness & Hardening (scorecard + hardening roadmap), § Module-Specific Completion Notes, and § Studio Backlog (sprint status — mark items complete, add new entries) |
 | `.ai/CHANGELOG.md` | Entry for every feature/fix/refactor that lands |
-| `.ai/DEV_SPRINTS.md` | Sprint status — mark items complete, add new sprint entries |
-| `.ai/ARCHITECTURE.md` | Update when structural patterns change |
-| `.ai/API_STANDARDS.md` | Update when response/DTO conventions change |
-| `.ai/CONVENTIONS.md` | Update when coding/UI patterns are established or changed |
-| `.ai/DATA_MODEL.md` | Update when new entity design patterns are established |
-| `.ai/TECH_STACK.md` | Update when new packages are adopted |
-| `.ai/SCORECARD.md` | Update dimension scores when evidence warrants |
+| `.ai/HANDBOOK.md#architecture-reference` | Update when structural patterns change |
+| `.ai/HANDBOOK.md#api-standards` | Update when response/DTO conventions change |
+| `.ai/HANDBOOK.md#coding-conventions` | Update when coding/UI patterns are established or changed |
+| `.ai/HANDBOOK.md#data-model` | Update when new entity design patterns are established |
+| `.ai/HANDBOOK.md#tech-stack` | Update when new packages are adopted |
 
 ## Method
 

@@ -1,10 +1,18 @@
 # UniERP Subagent Team
 
-Role-based AI subagents for the Universal ERP System. Each agent is context-aware: it loads the current project state (MODULE_REGISTRY, DEV_SPRINTS, CHANGELOG) before every session, checks for existing implementations before suggesting new work, and pushes back when the user is wrong.
+Role-based AI subagents for the Universal ERP System. Each agent is context-aware: it loads the current project state (MODULE_REGISTRY.md — including its § Studio Backlog and § Production Readiness & Hardening sections — and CHANGELOG.md) before every session, checks for existing implementations before suggesting new work, and pushes back when the user is wrong.
+
+## Mandatory Tracking Convention — The 3-File System
+
+UniERP tracks all state in exactly 3 files: `.ai/MODULE_REGISTRY.md` (module status + Collab
+Board), `.ai/CHANGELOG.md` (append-only history), `.ai/HANDBOOK.md` (architecture/conventions
+reference). Every agent below MUST check the Collab Board before starting and update
+CHANGELOG.md + MODULE_REGISTRY.md after finishing — every time, no exceptions. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## The three guarantees every agent provides
 
-1. **Context-first**: reads MODULE_REGISTRY.md, DEV_SPRINTS.md, and CHANGELOG.md before every session
+1. **Context-first**: reads MODULE_REGISTRY.md (all sections) and CHANGELOG.md before every session
 2. **Duplicate check**: verifies a feature doesn't already exist before building or speccing it
 3. **Pushback**: corrects the user when wrong — never blindly agrees
 

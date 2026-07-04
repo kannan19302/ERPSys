@@ -3,6 +3,70 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] Doc consolidation — 14 point-in-time status/planning files merged into MODULE_REGISTRY.md, then deleted
+
+Consolidated all standalone status/planning docs into `.ai/MODULE_REGISTRY.md` (kept at its exact
+path/name per `AGENTS.md` rule 17 and the fixed system hook that references it) as three new
+top-level sections, then deleted the 14 source files outright (not archived — confirmed by the
+user). This is a structural doc-consolidation, not a status re-audit; all merged content was
+condensed from files already verified against real code in prior sessions.
+
+**New sections added to `.ai/MODULE_REGISTRY.md`** (after the existing module tables):
+1. `## Production Readiness & Hardening` — heuristic scorecard + binding Reality Gates (from
+   `SCORECARD.md`), 8-phase hardening roadmap status (from `ENTERPRISE_HARDENING_PLAN.md`), and the
+   project-wide RBAC decorator-stacking defect finding.
+2. `## Module-Specific Completion Notes` — condensed per-module status for Admin, Connect, E-Commerce,
+   and Studio (from `ADMIN_MODULE_COMPLETION_REQUIREMENTS.md`, `ADMIN_SECURITY_AUDIT.md`,
+   `ADMIN_UAT_SIGNOFF.md`, `ADMIN_UI_ACCESS_CONTROL_SPEC.md`, `CONNECT_MODULE_REQUIREMENTS.md`,
+   `CONNECT_QA_REPORT.md`, `CONNECT_UAT_SIGNOFF.md`, `CONNECT_UI_DESIGN_SPEC.md`,
+   `ECOMMERCE_MODULE_REQUIREMENTS.md`, `BUILDER_STUDIO_MASTER_PLAN.md`).
+3. `## Studio Backlog` — open Studio (`/builder`) work by phase (from `DEV_SPRINTS.md`), plus a
+   `## UI Consolidation Status` section summarizing Settings/module tab-hub consolidation progress
+   (from `UI_CONSOLIDATION_PLAN.md`).
+
+**14 files deleted** (`git rm`): `.ai/SCORECARD.md`, `.ai/ENTERPRISE_HARDENING_PLAN.md`,
+`.ai/DEV_SPRINTS.md`, `.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md`, `.ai/ADMIN_SECURITY_AUDIT.md`,
+`.ai/ADMIN_UAT_SIGNOFF.md`, `.ai/ADMIN_UI_ACCESS_CONTROL_SPEC.md`,
+`.ai/CONNECT_MODULE_REQUIREMENTS.md`, `.ai/CONNECT_QA_REPORT.md`, `.ai/CONNECT_UAT_SIGNOFF.md`,
+`.ai/CONNECT_UI_DESIGN_SPEC.md`, `.ai/ECOMMERCE_MODULE_REQUIREMENTS.md`,
+`.ai/BUILDER_STUDIO_MASTER_PLAN.md`, `.ai/UI_CONSOLIDATION_PLAN.md`.
+
+**Cross-references fixed** (so nothing links to a 404): `AGENTS.md` (Current Sprint Context section),
+`.ai/COLLAB_BOARD.md` (§2 Up Next provenance note + item descriptions, §3 Recently Completed refs),
+`.ai/DATA_MODEL.md` (§3.4 E-Commerce reference), and 9 files under `.claude/agents/`
+(`backend-developer.md`, `devops-engineer.md`, `uiux-designer.md`, `business-analyst-uat.md`,
+`fullstack-developer.md`, `qa-tester.md`, `product-manager.md`, `security-auditor.md`,
+`frontend-developer.md`, `tech-writer.md`, `README.md`) all repointed from the deleted filenames to
+the corresponding new `MODULE_REGISTRY.md` sections. `.ai/CHANGELOG.md`'s own historical entries
+(which reference some of these filenames as of when they existed) were left untouched — this file is
+append-only history, not a live index.
+
+## [2026-07-04] Multi-agent collaboration protocol (Claude Code ⇄ Antigravity sync)
+
+Added a file-based, git-native coordination mechanism so multiple AI dev tools working the same repo (this Claude Code CLI and Google's Antigravity IDE agent, plus any future tool) stay in sync without a shared runtime.
+
+1. New `.ai/COLLAB_BOARD.md` — live state: Active Claims (who's touching what right now), Up Next (unclaimed backlog seeded from `ENTERPRISE_HARDENING_PLAN.md`/`DEV_SPRINTS.md`/`MODULE_REGISTRY.md` gaps), Recently Completed rolling log, and a Conflict Log.
+2. New `AGENTS.md` § "Multi-Agent Collaboration Protocol" — binding steps: pull before starting, check/claim scope in the board before writing code, commit+push small units promptly, move claim to completed with a commit hash, and top up the Up Next queue before finishing so the next agent (human-directed or AI) never has to re-derive "what's next."
+3. No new runtime/service was built for this — the repo + a markdown file is the whole mechanism, deliberately lightweight since the two tools never run in the same process.
+
+## [2026-07-04] Fallback error pages and client-side error reporting endpoint
+
+Implemented a system-wide fallback error handling solution covering 404, 500, and critical global layout crashes in Next.js, along with a backend public API endpoint on NestJS to securely log errors and alert administrators.
+
+**API Changes:**
+1. Created `POST /api/v1/public/error-reports` endpoint in a new `ErrorReportsController` and `ErrorReportsService` inside the admin module.
+2. The endpoint logs error messages, stack traces, request ID, user agent, URL, and user metadata to the `ErrorLog` database table.
+3. Automatically triggers an `AdminAlert` of type `USER_ERROR_REPORT` with severity `ERROR` when a user provides details describing what they were doing, alerting system administrators.
+4. Added Zod schema `errorReportSchema` in `packages/shared/src/validators/index.ts` to validate payload.
+5. Implemented comprehensive unit and integration testing in `error-reports.controller.spec.ts`.
+
+**Web/Frontend Changes:**
+1. Created `apps/web/src/components/ErrorFallback.tsx` — a reusable, accessible UI component complying with the Frappe/ERPNext aesthetic (using `.frappe-card`, `.frappe-btn`, `.frappe-input` and design tokens). It includes a collapsible technical details block and a support form that pre-fills user email/name if logged in.
+2. Created `apps/web/app/not-found.tsx` to handle 404 pages.
+3. Created `apps/web/app/error.tsx` for root runtime crashes.
+4. Created `apps/web/app/global-error.tsx` for layout crashes.
+5. Created `apps/web/app/(dashboard)/error.tsx` to catch workspace errors inside the dashboard layout, preserving the sidebar/navigation and displaying the error block directly within the content panel.
+
 ## [2026-07-04] Cross-module UI consolidation — Phase 3a of UI Consolidation Plan shipped
 
 Built the 4 Phase 3a tabbed hub pages per `.ai/UI_CONSOLIDATION_PLAN.md`'s cross-module rollout
@@ -1550,5 +1614,179 @@ not centrally.
 - **Authentication**: JWT, RBAC guards, login/register flows
 - **Administration**: User/role management, settings, navigation
 - **Unit Testing**: Vitest setup, service mocks
+
+---
+
+## [Retroactive] Pre-tracking-convention commits (2026-06-10 to 2026-06-26)
+
+> **Why this section exists**: the "update `.ai/CHANGELOG.md` after every unit of work" convention
+> (AGENTS.md rule 18) was not consistently followed for the earliest ~7 weeks of this repo's history.
+> The commits below have no matching narrative entry elsewhere in this file — cross-checked by date
+> and topic against every existing entry above before being listed here. This section documents them
+> after the fact, from `git log`/`git show --stat` evidence only (no fabricated detail beyond what the
+> diff stats show); some entries are necessarily terser than the post-2026-06-27 entries in this file
+> because the original commit message and diff are all the historical evidence that exists. Ordered
+> oldest-first to preserve the file's reverse-chronological convention (this section sits below the
+> oldest dated entry).
+>
+> **Explicitly not re-listed here** (already covered by an existing dated entry above, verified by
+> topic/date match): `583b02b`/`0fbe317` (2026-06-10, folded into "Phase 0 — Foundation Completion");
+> the six 2026-06-13/06-14 commits behind "CRM Advanced Features", "Advanced Inventory & Stock
+> Control", "Sales & Orders Module", "Cross-Module Advanced Features & MES Rollout", "Module 1: HR
+> Gaps", "Module 2: Project Management Gaps", and "Modules 3–13 Gap Features"; the Builder Studio/Web
+> Studio/Navigation commits from 2026-06-18 through 2026-06-20 (`61dfb43`, `1277e90`, `b3cb4ef`,
+> `9717043`, `89e0aa7`, `ffbe015`, `39dea96`, `8c810bd`, `90433a0`, `8792da7`) covered by the dense
+> cluster of "Builder Studio —", "Web Studio —", and "Navigation —" entries dated 2026-06-18/19/20; the
+> five 2026-06-21 "Competitor Revamp"/platform entries ("Procurement — Competitor Revamp", "Manufacturing
+> — Competitor Revamp", "Inventory & Stock" (x2), "Drive — Google Drive UI", "Admin Consolidation,
+> Operations, Branding & Platform", "Phase 5 — System Modules Complete", "ERP Platform Foundation",
+> "App Store System Applications Integration", "Dedicated Page Security Split").
+
+- **`b60bb1a`** (2026-06-21) — "feat: implement communication module and connect dashboard navigation
+  layout". Substantial expansion of `communication.controller.ts` (+171 lines) and
+  `communication.service.ts` (+579 lines) plus test updates — the first real build-out of the Connect
+  module's backend (channels/messages/notifications core), predating the later 2026-07-02 Teams/GChat
+  parity pass documented elsewhere in this file.
+- **`ba1bdee`** (2026-06-21) — "feat: implement CRM dashboard, workflow automation engine, and core
+  data management modules". Large CRM build-out: new `crm.controller.ts` (902 lines) and a +2,424-line
+  expansion of `crm.service.ts`, plus new frontend pages (`crm/approvals`, `crm/battlecards`,
+  `crm/commissions`, and others per the fuller diff) — this is the commit that first stood up most of
+  the CRM entity surface (Approvals, Battlecards, Commissions, etc.) later documented as "ENHANCED" in
+  row 4 of `MODULE_REGISTRY.md`.
+- **`db19b0b`** (2026-06-21) — "feat: implement CRM and document modules with associated controllers,
+  services, and database schema updates". Follow-on CRM refinement (`crm.service.ts` net -957 lines —
+  a refactor/cleanup pass, not a regression, per the commit message) plus Documents-module schema work;
+  this commit *did* touch `.ai/CHANGELOG.md` (+18 lines) but that content is not distinguishable from
+  the surrounding dense 2026-06-21 entries above, so it's listed here for completeness rather than
+  assumed covered.
+- **`22c4d76`** (2026-06-21) — "feat: implement core inventory management system with dashboard, stock
+  tracking, and API integration". Major Inventory build-out: `inventory.controller.ts` (+496 lines),
+  `inventory.service.ts` (+1,539 lines), and new/expanded pages (`inventory/advanced`,
+  `inventory/batches`, `inventory/bin-locations`, per the diff) — predates and is distinct from the
+  later, separately-documented "Inventory & Stock — Market Top Competitor #1 Overhaul" and "Dashboard
+  Analytics & Route Restructuring" entries also dated 2026-06-21.
+- **`cf17cc5`** (2026-06-21) — "feat: implement quality control module including inspection plans,
+  non-conformance reporting, and API endpoints". Despite the message, the diff shows this landed inside
+  `manufacturing.controller.ts`/`manufacturing.service.ts` (+470 lines) and `boms/page.tsx` — Quality
+  Control here is a sub-feature of the Manufacturing module (inspection plans, non-conformance
+  reports), not a standalone module directory.
+- **`fe2d596`** (2026-06-21) — "feat: implement core POS module with order management, schema
+  migrations, and UI support". New POS DTOs (`create-discount.dto.ts`, `create-loyalty-program.dto.ts`,
+  `create-pos-order.dto.ts`, `query-pos-orders.dto.ts`) and domain events
+  (`pos-order-created.event.ts`, `pos-order-voided.event.ts`) — the initial POS module scaffold
+  (discounts, loyalty programs, order events) underlying today's row 14 (`POS & Retail`).
+- **`4ca5daa`** (2026-06-21) — "feat: create layout component with dynamic sidebar navigation for
+  dashboard modules". Small, scoped change to `apps/web/app/(dashboard)/layout.tsx` (26 insertions) —
+  early sidebar-navigation wiring, superseded by later, larger navigation refactors also in this file.
+- **`11df8b5`** (2026-06-21) — "feat: implement comprehensive dashboard routing and initialize
+  manufacturing MRP module functionality". Despite the message, the actual diff is small/corrective
+  (builder test fixes, a `documents.service.ts` tweak, an inventory test fix, a manufacturing test
+  cleanup, a one-line `connect/page.tsx` fix) — a cleanup/fixup commit riding on the same message
+  pattern as its neighbors, not a large new-feature commit; noted honestly rather than inferring MRP
+  functionality the diff doesn't show.
+- **`024ff45`** (2026-06-21) — "feat: implement procurement module with requisitions and blanket
+  agreements support". New `procurement.controller.ts` additions (+97 lines), a new
+  `procurement.public.controller.ts` (46 lines, the public supplier-bidding surface later documented in
+  "Procurement — Competitor Revamp"), and a `procurement.service.ts` expansion (+498 lines) — the
+  backend groundwork for Purchase Requisitions and Blanket Purchase Agreements.
+- **`9ceac50`** (2026-06-21) — "feat: add RBAC guard, centralize search design tokens, and update
+  project changelog". Small, precisely-scoped commit: 4 lines added to `rbac.guard.ts`, 1 design token
+  added, 1 line added to `.ai/CHANGELOG.md`.
+- **`33a0379`** (2026-06-21) — "feat: implement comprehensive admin, super-admin, and devops modules
+  with change tracking and reporting capabilities". This is the commit that introduced the Change
+  History system's backend scaffolding (`change-history.controller.ts`, `track-changes.decorator.ts`,
+  `common.module.ts` wiring) — the +77-line `.ai/CHANGELOG.md` diff in this commit likely corresponds
+  to (or overlaps with) the "ERP Platform Foundation — Change History, Demo Data, RBAC, Super Admin"
+  entry already in this file dated the same day; listed here to flag the overlap rather than silently
+  assume full coverage, since the diff also touches `AGENTS.md` (+14 lines, presumably the change-history
+  rule additions) which that entry doesn't explicitly mention.
+- **`6c9f95e`** (2026-06-21) — "feat: initialize admin and drive module pages with structured dashboard
+  routing". New `admin/page.tsx` (156 lines) and the file-move of `super-admin/*` pages under
+  `(dashboard)/admin/super-admin/` (later re-flattened by the 2026-07-04 Admin→Settings rename entry in
+  this file) — early Admin/Drive page-routing scaffold.
+- **`c9c6aa0`** (2026-06-21) — "feat: implement comprehensive admin dashboard module with infrastructure
+  and management tools". New `admin.controller.ts` (+65 lines), `admin.service.ts` (+158 lines),
+  `operations.controller.ts` (77 lines) and `operations.service.ts` (177 lines) — the original Admin
+  Operations backend (System Health/Background Jobs/Scheduled Tasks groundwork), later hardened by the
+  2026-07-02 "Admin P0-2 + P1-1" entry in this file.
+- **`8ecc0a4`** (2026-06-21) — "feat: implement admin dashboard and data import/workflow management
+  modules". Split the monolithic `admin/access-control/page.tsx` (was 1,047+ lines) out into dedicated
+  `access-control/matrix`, `access-control/packages`, and `access-control/roles` pages, plus an
+  `admin/api-platform/analytics` page — an Access Control UI restructuring pass.
+- **`8ea4997`** (2026-06-21) — "feat: implement dynamic sidebar navigation layout for finance, HR, CRM,
+  and inventory modules". Small, scoped `layout.tsx` change (8 insertions) — incremental sidebar nav
+  wiring for the four core modules.
+- **`e0d9cb1`** (2026-06-21) — "feat: implement core admin modules and dashboard pages for platform
+  management and system configuration". New `alerts.controller.ts`/`alerts.service.ts` (Admin Alerts),
+  `automation-rules.controller.ts`/`automation-rules.service.ts` (the original Automation Rules
+  scaffold, later given a real execution engine per the 2026-07-02 "Admin P0-2" entry in this file), and
+  `bulk-operations.controller.ts` — core Admin platform-management surface.
+- **`8dc27e3`** (2026-06-22) — "feat: implement organization hierarchy service and marketplace
+  application detail view with installation management". Expanded `admin/marketplace.service.ts`
+  (+283 lines) and touched `org-hierarchy.service.ts`/`saas.service.ts` — this is the commit behind the
+  "App Marketplace" functionality later documented (as of this session's audit) as its own row 34 in
+  `MODULE_REGISTRY.md`; also touched `.ai/CHANGELOG.md` (+20 lines) — noted here since that content
+  isn't distinguishable from surrounding entries.
+- **`e67756d`** (2026-06-22) — "feat: initialize dashboard module structure, UI components, and advanced
+  finance backend services". New `advanced-finance.controller.ts` (23 lines) and
+  `advanced-finance.service.ts` (258 lines) — the original Advanced Finance module scaffold (row 16),
+  plus `sales.controller.ts`/`sales.service.ts` expansions (+70/+97 lines).
+- **`3288fdf`** (2026-06-22) — "feat: implement advanced finance services, sales module structure, and
+  login page interface". Small follow-on fixes to `advanced-finance.service.ts` and `sales.service.ts`
+  (2 lines each) plus a `login/page.tsx` UI tweak (10 lines) — a corrective/polish commit on top of
+  `e67756d` immediately above, not a new large feature.
+- **`adb02db`** (2026-06-25) — "Add healthcare schemas and patient management module". Despite the
+  message, the diff shows this is primarily SaaS-tiering/entitlement infrastructure: new
+  `entitlement.middleware.ts` (69 lines), `common/module-tiers.ts` (62 lines), and
+  `admin/marketplace.controller.ts` (20 lines) — module-tier gating groundwork rather than healthcare
+  domain models specifically (the Healthcare module's own `Hospitals/Clinics/Pharma` entities per row
+  22 of `MODULE_REGISTRY.md` are not evidenced in this diff's file list; they likely landed in the
+  `c12ab4b` commit below, which explicitly touches a `healthcare` module directory).
+- **`a5c9932`** (2026-06-25) — "feat: update design tokens for spacing and adjust dropdown styles".
+  Small, precisely-scoped design-system commit: 14 lines changed in `globals.css`, 1 new token in
+  `design-tokens.css`.
+- **`8101df6`** (2026-06-26) — "feat: add procurement, real estate, reporting, and billing services".
+  A large (68-file) infrastructure + module commit: new CI workflow (`.github/workflows/ci.yml`, 103
+  lines), new common services (`cache.service.ts`, `export.service.ts`, `i18n.service.ts`,
+  `logger.service.ts`), new middleware (`csrf.middleware.ts`, `metrics.middleware.ts`,
+  `request-logger.middleware.ts`), a `/metrics` controller, real Postgres RLS policies (migration
+  `20260626120000_rls_policies`) plus `packages/database/src/encryption.ts` and the first
+  `tenant-isolation.test.ts`, and initial service scaffolds across nine modules: `advanced-finance`,
+  `advanced-hr` (`payroll-tax.service.ts`), `ai` (`ai.service.ts`, `ai-copilot.service.ts`), `builder`
+  (`builder-governance.service.ts`, `builder-scripting.service.ts`), `crm`
+  (`crm-integrations.service.ts`), `education` (`education-core.service.ts`), `field-service`
+  (`dispatch.service.ts`), `healthcare` (`clinical.service.ts`), `inventory` (`costing.service.ts`),
+  `manufacturing` (`scheduling.service.ts`), `marketplace` (`storefront.service.ts`), `notifications`
+  (`notification-delivery.service.ts`), `procurement` (`contracts.service.ts`), `real-estate`
+  (`lease-accounting.service.ts`), `reporting` (`reporting-engine.service.ts`), `saas`
+  (`billing.service.ts`), `sales` (`pricing.service.ts`), `workflow` (`workflow-engine.service.ts`) — a
+  much broader multi-module infrastructure + service-layer commit than its message suggests.
+- **`c12ab4b`** (2026-06-26) — "feat(api): add governance, education, field service, healthcare,
+  inventory, manufacturing, marketplace, notifications, procurement, real estate, reporting, saas,
+  sales, and workflow modules". The controller-layer counterpart to `8101df6` above: adds the matching
+  `*.controller.ts` for each service added there (`education-core.controller.ts`,
+  `dispatch.controller.ts`, `clinical.controller.ts`, `costing.controller.ts`,
+  `scheduling.controller.ts`, `storefront.controller.ts` (Marketplace), `contracts.controller.ts`,
+  `lease-accounting.controller.ts`, `reporting-engine.controller.ts`, `billing.controller.ts`,
+  `pricing.controller.ts`, `workflow-engine.controller.ts`), plus `governance.controller.ts` (Builder)
+  and its test, `ai.controller.ts` expansion, and a `payroll-tax.service.spec.ts` test file — this pair
+  of commits (`8101df6` + `c12ab4b`) is the actual origin of most of today's Industry Extension (Phase
+  12–15) and Platform (Phase 16–20) module rows, despite neither commit message naming "healthcare
+  patient management" or similarly specific functionality that the current `MODULE_REGISTRY.md` rows
+  describe — those richer descriptions were evidently filled in by later, unlogged work.
+- **`28daa70`** (2026-06-26) — "feat: add production Docker Compose configuration for API, web, and
+  services". Despite the message, this is a large (62-file) commit spanning far more than Docker
+  Compose: production `Dockerfile`s for both `apps/api` and `apps/web`, `deploy/docker-compose.prod.yml`,
+  `RUNBOOK.md`, the original `scripts/scorecard.mjs` (320 lines — later consolidated into
+  `MODULE_REGISTRY.md` § Production Readiness & Hardening per the 2026-07-04 doc-consolidation entry in
+  this file), OpenTelemetry tracing (`apps/api/src/tracing.ts`), BullMQ queue processors
+  (`email.processor.ts`, `export.processor.ts`, `queue.module.ts`), an API-key auth guard
+  (`api-key.guard.ts`), a global exception filter (`all-exceptions.filter.ts`), an audit interceptor,
+  SSO backend (`auth/sso.controller.ts`, `auth/sso.service.ts` — the code behind today's Auth module
+  row's SSO support), offline-sync frontend groundwork (`src/lib/offline/db.ts`, `src/lib/offline/
+  sync.ts`, `public/pos-sw.js`), Playwright E2E specs (`e2e/api-health.spec.ts`, `e2e/auth.spec.ts`),
+  and a Storybook setup for `packages/ui` (11 new `.stories.tsx` files). This single commit is the
+  origin point for most of what is now documented across the DevOps/Monitoring (row 29), Auth, and PWA
+  (row 28) module entries.
 
 ---

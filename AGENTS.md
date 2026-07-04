@@ -16,6 +16,33 @@
 
 ---
 
+## 📊 Mandatory Tracking Convention — The 3-File System
+
+> **This section is non-negotiable for every AI agent that touches this repo** — named
+> (Claude Code, Antigravity, Cursor, GitHub Copilot, Windsurf, Aider) or unnamed, present
+> or future. It echoes the framing at the top of this file: if you are an AI agent working
+> on UniERP, you MUST follow this, no exceptions, not even for "small" changes.
+
+UniERP tracks its entire state in exactly **three files**. Nothing else counts as documentation of record:
+
+| File | Purpose |
+|:---|:---|
+| [`.ai/MODULE_REGISTRY.md`](.ai/MODULE_REGISTRY.md) | Module status/phase/entities/paths for all 31 modules, **plus the § Collab Board** (live multi-agent sync — active claims, up-next work, recently completed, conflict log) |
+| [`.ai/CHANGELOG.md`](.ai/CHANGELOG.md) | Append-only history — one entry per feature/fix/refactor, ever |
+| [`.ai/HANDBOOK.md`](.ai/HANDBOOK.md) | Architecture, coding conventions, data model, API standards, tech stack, security, testing — the "how we build" reference |
+
+**The concrete rule, every session, every task, no exceptions:**
+1. **Before starting work** — read `MODULE_REGISTRY.md` § Collab Board (Active Claims + Up Next). Don't start on something already claimed or already built.
+2. **After finishing any unit of work** — however small:
+   - Add an entry to `CHANGELOG.md` (what changed + why).
+   - Update `MODULE_REGISTRY.md` (module status/table if a module changed; move your Collab Board claim from Active Claims to Recently Completed).
+   - This applies even to one-line fixes and doc tweaks. "Too small to log" is not a valid exception.
+3. **Applies retroactively** — if you discover past work that was never logged (a module that exists in code but isn't in the registry, a merged change with no CHANGELOG entry), backfill it rather than leaving it invisible. Undocumented work is invisible to every other agent and gets silently duplicated. (A dedicated backfill pass may already be in flight for pre-existing gaps as of 2026-07 — check `MODULE_REGISTRY.md` § Collab Board before doing a large backfill yourself to avoid colliding with it. But going forward, this gap must not recur — log as you go.)
+
+Every other rule file in this repo (`.claude/agents/*.md`, `.cursor/rules/unerp-agents.mdc`, `.github/copilot-instructions.md`) points back to this section rather than restating it. This is the single source of truth for the tracking convention.
+
+---
+
 ## 📐 Architecture Summary
 
 This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The system is organized into:
@@ -28,7 +55,7 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 - **`packages/auth`** — Authentication (Auth.js) + RBAC
 - **`packages/config`** — Shared ESLint, TypeScript, Prettier configs
 
-> 📖 **Full details**: Read [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md)
+> 📖 **Full details**: Read [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference)
 
 ---
 
@@ -47,7 +74,7 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 | Testing | Vitest + Playwright |
 | Language | TypeScript (strict mode everywhere) |
 
-> 📖 **Full details & rationale**: Read [.ai/TECH_STACK.md](.ai/TECH_STACK.md)
+> 📖 **Full details & rationale**: Read [.ai/HANDBOOK.md#tech-stack](.ai/HANDBOOK.md#tech-stack)
 
 ---
 
@@ -60,20 +87,20 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 4. **All business logic MUST have unit tests.** No exceptions. Target 80%+ coverage.
 
 ### UI/UX Aesthetics
-5. **Always follow the Frappe/ERPNext UI aesthetic** outlined in Section 8 of `.ai/CONVENTIONS.md`. Apply psychological HCI principles (Hick's Law, Fitts's Law) by removing unnecessary icons, keeping borders soft, and avoiding hardcoded pixels or hex colors.
+5. **Always follow the Frappe/ERPNext UI aesthetic** outlined in [.ai/HANDBOOK.md#frappe-erpnext-ui-aesthetic](.ai/HANDBOOK.md#frappe-erpnext-ui-aesthetic) (Coding Conventions § 8). Apply psychological HCI principles (Hick's Law, Fitts's Law) by removing unnecessary icons, keeping borders soft, and avoiding hardcoded pixels or hex colors.
    - Use `design-tokens.css` strictly for spacing, colors, and typography.
    - For all layouts, use the global UI utility classes defined in `globals.css` (e.g., `.frappe-card`, `.frappe-form-group`, `.frappe-input`, `.frappe-btn`, `.frappe-grid-3`, `.frappe-breadcrumb`).
    - Do NOT use inline styles for forms or layout. Always use the predefined `.frappe-*` utility classes to achieve 90+ UX consistently across all modules.
    - **Page Breadcrumb Navigation**: Every application page must display a dynamic breadcrumb header navigation representing the hierarchy of parent pages: `Apps / [Application Name] / [Sub-pages]...`. This is handled centrally in `apps/web/app/(dashboard)/layout.tsx`. If creating new route paths, register their human-readable segment mappings in `SEGMENT_NAMES` in `layout.tsx`.
 
 ### Architecture
-6. **Never import directly between ERP modules.** Modules communicate via domain events only. Read [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 4 (Event-Driven Communication).
+6. **Never import directly between ERP modules.** Modules communicate via domain events only. Read [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference) Section 4 (Event-Driven Communication).
 7. **Never modify `packages/database/prisma/migrations/` manually.** Always use `pnpm db:migrate` to generate migrations from schema changes.
-8. **Every database table MUST include `tenant_id`.** Multi-tenancy is enforced at the data layer via Row-Level Security. Read [.ai/SECURITY.md](.ai/SECURITY.md).
-9. **Follow the Module Structure Template exactly.** Every new module must match the pattern in [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 3.
+8. **Every database table MUST include `tenant_id`.** Multi-tenancy is enforced at the data layer via Row-Level Security. Read [.ai/HANDBOOK.md#security](.ai/HANDBOOK.md#security).
+9. **Follow the Module Structure Template exactly.** Every new module must match the pattern in [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference) Section 3.
 
 ### Dependencies & Security
-10. **Never add npm dependencies without documenting rationale** in the commit message and updating [.ai/TECH_STACK.md](.ai/TECH_STACK.md).
+10. **Never add npm dependencies without documenting rationale** in the commit message and updating [.ai/HANDBOOK.md#tech-stack](.ai/HANDBOOK.md#tech-stack).
 11. **Never store secrets in code.** Use environment variables. Reference `.env.example` for the required variables.
 12. **Never disable CORS, rate limiting, or security headers** without explicit approval.
 
@@ -86,11 +113,11 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 16. **Every UI component that controls a privileged action MUST be wrapped in `<ProtectedComponent permission="x">`** to conditionally render based on user permissions. Import from `@unerp/ui`.
 
 ### Process
-17. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules.
-18. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work.
-19. **Always read the relevant `.ai/prompts/` template** before starting a common task (new module, new entity, new endpoint, new page).
+17. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules. See § Mandatory Tracking Convention above — this is non-negotiable.
+18. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work. See § Mandatory Tracking Convention above.
+19. **Always read [.ai/prompts/MASTER_PROMPT.md](.ai/prompts/MASTER_PROMPT.md)** before starting any task — it is the single master prompt (mission/scale goal, the 3-file tracking system, the Codebase Growth Tracker protocol, and task templates for new module/entity/endpoint/UI page/bugfix/review).
 16. **Always develop End-to-End.** When requested to "develop" or "build" a page or feature, AI agents MUST provide a completely end-to-end working implementation. This includes the database schema (Prisma), backend API (NestJS Controllers/Services), and the frontend (Next.js) hooked up to the API. Do not just build frontend mocks unless explicitly requested.
-17. **Zero-Code Builder Philosophy.** The Builder Studio module is strictly a **No-Code / Low-Code environment** aimed at non-technical users. AI agents MUST NOT provide "code snippets", "developer instructions", or expect the user to manually copy-paste React code to deploy forms. All form deployment, layout adjustment, and page creation MUST be handled via visual UI controls and dynamic rendering (via the Page Registry). Read `.ai/BUILDER_STUDIO_CONVENTIONS.md`.
+17. **Zero-Code Builder Philosophy.** The Builder Studio module is strictly a **No-Code / Low-Code environment** aimed at non-technical users. AI agents MUST NOT provide "code snippets", "developer instructions", or expect the user to manually copy-paste React code to deploy forms. All form deployment, layout adjustment, and page creation MUST be handled via visual UI controls and dynamic rendering (via the Page Registry). Read [.ai/HANDBOOK.md#builder-studio-conventions](.ai/HANDBOOK.md#builder-studio-conventions).
 
 ### Dev Environment Startup (MANDATORY BEFORE ANY DEV WORK)
 18. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
@@ -108,6 +135,52 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 
 ---
 
+## 🔄 Multi-Agent Collaboration Protocol (Claude Code ⇄ Antigravity ⇄ others)
+
+> This section is the detailed operating protocol for the Collab Board named in
+> § Mandatory Tracking Convention above. Read that section first for the 3-file
+> system as a whole; this section is the step-by-step mechanics of the Collab
+> Board specifically.
+
+This repo is developed in parallel by more than one AI coding tool — this Claude
+Code CLI session and Google's **Antigravity** IDE agent (and potentially others,
+per the "any future tool" line at the top of this file). They do not share a
+process, memory, or message bus. **The git repo plus [.ai/MODULE_REGISTRY.md#collab-board--multi-agent-sync](.ai/MODULE_REGISTRY.md#collab-board--multi-agent-sync)
+is the only synchronization mechanism.** Every agent MUST follow this protocol —
+it costs one file read/write per session and prevents silently clobbered work.
+
+**On starting any session or non-trivial task:**
+1. `git status` / `git pull` first — never start work on a stale tree.
+2. Read [.ai/MODULE_REGISTRY.md § Collab Board](.ai/MODULE_REGISTRY.md#collab-board--multi-agent-sync) §1 (Active Claims). If another
+   agent's claimed scope overlaps files/modules you're about to touch, **stop**
+   — pick a different item from §2 (Up Next), or flag the overlap to the user.
+3. Add a row to §1 with your agent name, start time, and scope (module or file
+   list) before writing any code.
+
+**While working:**
+4. Keep diffs scoped to your claimed scope. If you need to touch something
+   outside it (a shared cross-cutting file, e.g. `csrf.middleware.ts`), note it
+   in your claim row rather than expanding silently.
+5. Commit in small, coherent units and push promptly — per
+   [[feedback-module-completion-strategy]], always commit+push after a working
+   unit, don't let uncommitted work pile up (it's invisible to the other agent
+   until pushed).
+
+**On finishing:**
+6. Update `.ai/MODULE_REGISTRY.md` / `.ai/CHANGELOG.md` as usual (rules 17–18
+   above).
+7. Move your row from §1 to §3 (Recently Completed) in `MODULE_REGISTRY.md` § Collab Board with a
+   one-line result and commit hash.
+8. If §2 (Up Next) is thin or stale, add newly-identified work (bugs found,
+   follow-ups, PM-scoped items) so the next agent — human or AI — always has a
+   ready answer to "what should I build next?" without re-deriving it.
+
+**On conflict** (you discover another agent's unpushed/uncommitted work
+touching the same files): do not silently overwrite. Log it in
+`MODULE_REGISTRY.md` § Collab Board §4 and either merge, rebase, or defer — never force-push over
+another agent's in-flight work.
+
+---
 
 ## 🤖 Role-Based Subagent Team
 
@@ -138,18 +211,13 @@ This project ships a team of specialized subagents in [`.claude/agents/`](.claud
 ERPSys/
 ├── AGENTS.md                    ← YOU ARE HERE
 ├── .ai/                         ← Extended AI context (architecture, conventions, etc.)
-│   ├── ARCHITECTURE.md          ← System design, module patterns, data flow
-│   ├── CONVENTIONS.md           ← Naming, file structure, code style rules
-│   ├── BUILDER_STUDIO_CONVENTIONS.md ← Zero-Code philosophy and builder instructions
-│   ├── TECH_STACK.md            ← Technology choices & rationale
-│   ├── MODULE_REGISTRY.md       ← Status of every ERP module
-│   ├── DATA_MODEL.md            ← Entity relationships & schema design
-│   ├── API_STANDARDS.md         ← REST API conventions & endpoint design
-│   ├── SECURITY.md              ← Security patterns & multi-tenancy
-│   ├── TESTING.md               ← Testing strategy & patterns
-│   ├── GLOSSARY.md              ← Domain terminology
+│   ├── MODULE_REGISTRY.md       ← Status of every ERP module + Collab Board (multi-agent sync)
+│   ├── HANDBOOK.md              ← Consolidated reference: architecture, conventions
+│   │                              (incl. Frappe/ERPNext UI aesthetic), data model, API
+│   │                              standards, tech stack, security, testing, GitHub rules,
+│   │                              Builder Studio conventions, glossary
 │   ├── CHANGELOG.md             ← Agent-maintained change log
-│   └── prompts/                 ← Pre-built task templates
+│   └── prompts/MASTER_PROMPT.md ← Single master prompt (mission, tracking, growth, task templates)
 ├── apps/
 │   ├── web/                     ← Next.js 15 frontend
 │   └── api/                     ← NestJS backend
@@ -170,13 +238,13 @@ ERPSys/
 When building a new ERP module, follow these steps in order:
 
 ### Step 1: Prepare
-1. Read [.ai/prompts/new-module.md](.ai/prompts/new-module.md) for the full template
-2. Read [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md) Section 3 (Module Structure)
+1. Read [.ai/prompts/MASTER_PROMPT.md](.ai/prompts/MASTER_PROMPT.md) § New Module for the full template
+2. Read [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference) Section 3 (Module Structure)
 3. Check [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md) for existing modules and dependencies
 
 ### Step 2: Database Layer
 4. Define Prisma models in `packages/database/prisma/schema.prisma`
-5. Follow [.ai/DATA_MODEL.md](.ai/DATA_MODEL.md) for entity design rules
+5. Follow [.ai/HANDBOOK.md#data-model](.ai/HANDBOOK.md#data-model) for entity design rules
 6. Generate migration: `pnpm db:migrate --name <module>_initial`
 7. Add seed data in `packages/database/prisma/seed.ts`
 
@@ -184,18 +252,18 @@ When building a new ERP module, follow these steps in order:
 8. Create module directory: `apps/api/src/modules/<module-name>/`
 9. Follow the exact structure: `module.ts`, `controller.ts`, `service.ts`, `dto/`, `entities/`, `events/`, `tests/`
 10. Implement DTOs with Zod validation (shared via `packages/shared`)
-11. Follow [.ai/API_STANDARDS.md](.ai/API_STANDARDS.md) for endpoint design
+11. Follow [.ai/HANDBOOK.md#api-standards](.ai/HANDBOOK.md#api-standards) for endpoint design
 
 ### Step 4: Frontend (Next.js)
 12. Create pages: `apps/web/app/(dashboard)/<module-name>/`
 13. Use components from `packages/ui` — never create ad-hoc UI components
-14. Follow [.ai/prompts/new-ui-page.md](.ai/prompts/new-ui-page.md) for page templates
+14. Follow [.ai/prompts/MASTER_PROMPT.md](.ai/prompts/MASTER_PROMPT.md) § New UI Page for page templates
 
 ### Step 5: Testing
 15. Write unit tests for all services: `*.service.spec.ts`
 16. Write controller tests: `*.controller.spec.ts`
 17. Write E2E tests for critical flows
-18. Follow [.ai/TESTING.md](.ai/TESTING.md) for patterns
+18. Follow [.ai/HANDBOOK.md#testing](.ai/HANDBOOK.md#testing) for patterns
 
 ### Step 6: Register
 19. Update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md) with the new module
@@ -206,11 +274,11 @@ When building a new ERP module, follow these steps in order:
 
 ## 🎯 Current Sprint Context
 
-**Phase**: 11-20 — Advanced Roadmap & UI/UX Overhaul
-**Goal**: Plan and implement advanced reporting, industry modules, integration API hub, PWA, and SaaS portal
-**Status**: Planning & Designing
+**Phase**: Post-Phase-20 — Module hardening, UI framework consolidation, E-Commerce & AI Copilot
+**Goal**: All 31 planned modules (Phase 0–20) are built and marked ACTIVE/ENHANCED in `.ai/MODULE_REGISTRY.md`. Current work is enterprise hardening (see `.ai/MODULE_REGISTRY.md` § Production Readiness & Hardening), the `@unerp/framework` frontend runtime consolidation, and new cross-cutting modules (E-Commerce Storefront, AI Copilot).
+**Status**: See `.ai/MODULE_REGISTRY.md` for authoritative per-module status, § Production Readiness & Hardening for the hardening roadmap, and § Studio Backlog for active Studio sprint tracking.
 
-### Completed
+### Completed (Phase 0–20 — see `.ai/MODULE_REGISTRY.md` for verified module-level detail)
 - ✅ Phase 0 — Foundation (Monorepo, Auth, Admin, multi-tenancy, design system)
 - ✅ Phase 1 — Core Business Modules (Finance, HR, CRM, Inventory)
 - ✅ Phase 2 — Procurement, Sales & Supply Chain
@@ -222,23 +290,23 @@ When building a new ERP module, follow these steps in order:
 - ✅ Phase 8 — Workflow Engine & Approvals
 - ✅ Phase 9 — Notifications & Real-Time Events
 - ✅ Phase 10 — File Storage & Document Templates
-- ✅ Phase 2–10 full compilation check and unit test suite verification
+- ✅ Phase 11 — Advanced Reporting & Dashboards
+- ✅ Phase 12 — Healthcare Industry Module
+- ✅ Phase 13 — Education Industry Module
+- ✅ Phase 14 — Real Estate Industry Module
+- ✅ Phase 15 — Field Service Industry Module
+- ✅ Phase 16 — API Platform & Integration Hub
+- ✅ Phase 17 — Multi-Language (i18n) & Localization
+- ✅ Phase 18 — Mobile Responsive & PWA
+- ✅ Phase 19 — DevOps, CI/CD & Monitoring
+- ✅ Phase 20 — Enterprise SaaS Platform
 
 ### In Progress
-- 🔄 Phase 11–20 Advanced roadmaps mapping and 5-phase breakdown
-- 🔄 UI/UX revamp specification design (Odoo & ERPNext/Frappe style layout docs)
+- 🔄 `@unerp/framework` — unified schema-driven frontend runtime (see `.ai/MODULE_REGISTRY.md` Shared Packages, currently 🟡 IN_PROGRESS)
+- 🔄 Enterprise hardening plan phases (dependency-cruiser lint, DTO standardization, god-class refactors) — see `.ai/MODULE_REGISTRY.md` § Production Readiness & Hardening
 
 ### Next
-- ⬜ Phase 11 — Advanced Reporting & Dashboards
-- ⬜ Phase 12 — Healthcare Industry Module
-- ⬜ Phase 13 — Education Industry Module
-- ⬜ Phase 14 — Real Estate Industry Module
-- ⬜ Phase 15 — Field Service Industry Module
-- ⬜ Phase 16 — API Platform & Integration Hub
-- ⬜ Phase 17 — Multi-Language (i18n) & Localization
-- ⬜ Phase 18 — Mobile Responsive & PWA
-- ⬜ Phase 19 — DevOps, CI/CD & Monitoring
-- ⬜ Phase 20 — Enterprise SaaS Platform
+- Track ongoing/backlog work in `.ai/MODULE_REGISTRY.md` § Studio Backlog and § Collab Board §2 (Up Next) rather than here — this list is a snapshot and goes stale quickly under multi-agent development.
 
 ---
 
@@ -433,15 +501,19 @@ When building a new ERP module, follow these steps in order:
 
 ## 📚 Extended Context Files
 
-Before starting any significant work, read the relevant files from `.ai/`:
+Before starting any significant work, read the relevant files from `.ai/`. For task-specific
+step-by-step templates (new module, new entity, new API endpoint, new UI page, bugfix, code
+review), read `prompts/MASTER_PROMPT.md` § Task Templates by Type instead of a per-task file —
+there is now one master prompt, not several.
 
 | Task | Read These Files |
 |:---|:---|
-| Creating a new module | `ARCHITECTURE.md`, `CONVENTIONS.md`, `prompts/new-module.md` |
-| Adding database entities | `DATA_MODEL.md`, `CONVENTIONS.md`, `prompts/new-entity.md` |
-| Building API endpoints | `API_STANDARDS.md`, `CONVENTIONS.md`, `prompts/new-api-endpoint.md` |
-| Building UI pages | `CONVENTIONS.md`, `prompts/new-ui-page.md` |
-| Fixing bugs | `prompts/bugfix.md` |
-| Reviewing code | `prompts/review.md`, `SECURITY.md`, `TESTING.md` |
-| Understanding the domain | `GLOSSARY.md`, `MODULE_REGISTRY.md` |
-| Working on the Builder Studio | `BUILDER_STUDIO_CONVENTIONS.md` |
+| Any task (start here) | `prompts/MASTER_PROMPT.md` |
+| Creating a new module | `HANDBOOK.md#architecture-reference`, `HANDBOOK.md#coding-conventions`, `prompts/MASTER_PROMPT.md` § New Module |
+| Adding database entities | `HANDBOOK.md#data-model`, `HANDBOOK.md#coding-conventions`, `prompts/MASTER_PROMPT.md` § New Entity |
+| Building API endpoints | `HANDBOOK.md#api-standards`, `HANDBOOK.md#coding-conventions`, `prompts/MASTER_PROMPT.md` § New API Endpoint |
+| Building UI pages | `HANDBOOK.md#coding-conventions`, `prompts/MASTER_PROMPT.md` § New UI Page |
+| Fixing bugs | `prompts/MASTER_PROMPT.md` § Bugfix |
+| Reviewing code | `prompts/MASTER_PROMPT.md` § Code Review, `HANDBOOK.md#security`, `HANDBOOK.md#testing` |
+| Understanding the domain | `HANDBOOK.md#glossary`, `MODULE_REGISTRY.md` |
+| Working on the Builder Studio | `HANDBOOK.md#builder-studio-conventions` |

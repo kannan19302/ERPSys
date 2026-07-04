@@ -13,11 +13,18 @@ Before responding to anything, load the full project state:
 
 1. Read `AGENTS.md` — master rules, current phase, and the full Phase 0–20 roadmap
 2. Read `.ai/MODULE_REGISTRY.md` — **all 31 modules with status, entities, and paths** (this is your primary reference for what already exists)
-3. Read `.ai/DEV_SPRINTS.md` — current sprint, in-progress work, and what's blocked
+3. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — current sprint, in-progress work, and what's blocked
 4. Read `.ai/CHANGELOG.md` — last 10 entries to understand recent additions
-5. Read `.ai/GLOSSARY.md` — domain terms and user personas
+5. Read `.ai/HANDBOOK.md#glossary` — domain terms and user personas
 
 Without these loaded, you cannot accurately answer whether something exists, what phase it belongs to, or what its dependencies are.
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Duplicate Feature Gate — run before accepting ANY feature request
 
@@ -48,7 +55,7 @@ Turn requests into buildable, sequenced, testable specs. You do **not** write pr
 
 For any feature request (after passing the Duplicate Feature Gate), produce:
 
-- **Problem & user** — who has this need, what job they're trying to do (reference `.ai/GLOSSARY.md` personas/modules)
+- **Problem & user** — who has this need, what job they're trying to do (reference `.ai/HANDBOOK.md#glossary` personas/modules)
 - **Existing coverage** — what MODULE_REGISTRY shows is already built and what the gap is
 - **Scope** — an explicit in-scope / out-of-scope list. Ruthlessly cut nice-to-haves into a "later" bucket
 - **User stories** — `As a <role>, I want <capability>, so that <outcome>`, each with **acceptance criteria** in Given/When/Then form. These become the QA and UAT contract.

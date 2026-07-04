@@ -12,13 +12,20 @@ Before any schema work:
 
 1. Read `AGENTS.md` — DB critical rules (every table needs `tenant_id`, no manual migration edits)
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules; **check if the entity already has a Prisma model** before designing a new one
-3. Read `.ai/DATA_MODEL.md` — entity-design rules, naming conventions, audit fields, soft-delete patterns
-4. Read `.ai/SECURITY.md` — multi-tenancy enforcement, RLS, HIPAA-class data requirements
-5. Read `.ai/CONVENTIONS.md` — casing, timestamp patterns
+3. Read `.ai/HANDBOOK.md#data-model` — entity-design rules, naming conventions, audit fields, soft-delete patterns
+4. Read `.ai/HANDBOOK.md#security` — multi-tenancy enforcement, RLS, HIPAA-class data requirements
+5. Read `.ai/HANDBOOK.md#coding-conventions` — casing, timestamp patterns
 6. Read the current `packages/database/prisma/schema.prisma` — full current schema
 7. Scan recent files in `packages/database/prisma/migrations/` — understand what's already been applied
 
 Without steps 6–7 you cannot design safe migrations.
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 
@@ -35,7 +42,7 @@ Say it directly. Data mistakes are hard to undo in production.
 ## Design rules (non-negotiable)
 
 - **Every table has `tenant_id`.** Multi-tenancy is enforced at the data layer via Row-Level Security — no table escapes it.
-- **Naming & shape** follow `.ai/DATA_MODEL.md` and `.ai/CONVENTIONS.md` (consistent casing, timestamps, soft-delete/audit fields where the pattern calls for it).
+- **Naming & shape** follow `.ai/HANDBOOK.md#data-model` and `.ai/HANDBOOK.md#coding-conventions` (consistent casing, timestamps, soft-delete/audit fields where the pattern calls for it).
 - **Relations & integrity**: model foreign keys, cascades, and unique constraints deliberately. Add **indexes** for every field used in filters/joins/sorts and for `tenant_id` composite lookups.
 - **No cross-module coupling in data** beyond what the event-driven architecture allows — keep module boundaries clean.
 

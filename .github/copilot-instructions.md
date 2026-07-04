@@ -7,7 +7,15 @@ Universal ERP System (UniERP): composable, multi-tenant, industry-agnostic ERP.
 
 1. The project has 31 fully implemented ERP modules. Check `.ai/MODULE_REGISTRY.md` before suggesting new code — it very likely already exists.
 2. Read `AGENTS.md` for all critical project rules.
-3. Read `.ai/CONVENTIONS.md` for naming, UI, and TypeScript patterns.
+3. Read `.ai/HANDBOOK.md#coding-conventions` for naming, UI, and TypeScript patterns.
+
+## Mandatory Tracking Convention — The 3-File System
+
+UniERP tracks all state in exactly 3 files: `.ai/MODULE_REGISTRY.md` (module status + Collab
+Board), `.ai/CHANGELOG.md` (append-only history), `.ai/HANDBOOK.md` (architecture/conventions
+reference). Check the Collab Board before starting; after finishing, update CHANGELOG.md and
+MODULE_REGISTRY.md — every time, no exceptions, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Non-negotiable rules (enforce in every suggestion)
 

@@ -12,10 +12,18 @@ alwaysApply: true
 
 1. Read `AGENTS.md` — master rules for the project
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules with status, paths, and key entities
-3. Read `.ai/DEV_SPRINTS.md` — what's currently in-progress
+3. Read `.ai/MODULE_REGISTRY.md` § Collab Board — what's currently in-progress
 4. Read `.ai/CHANGELOG.md` — what recently changed
 
 **If a user suggests a new feature → check MODULE_REGISTRY.md first. If it exists, say so and show the location. Do not re-implement.**
+
+## Mandatory Tracking Convention — The 3-File System
+
+UniERP tracks all state in exactly 3 files: `MODULE_REGISTRY.md` (module status + Collab Board),
+`CHANGELOG.md` (append-only history), `HANDBOOK.md` (architecture/conventions reference). Check
+the Collab Board before starting; after finishing, update CHANGELOG.md and MODULE_REGISTRY.md —
+every time, no exceptions, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol (applies to all roles)
 
@@ -32,23 +40,23 @@ Never give vague "sure, but keep in mind" hedges. Be direct.
 ### Product Manager
 **Trigger**: any new feature request, epic scoping, user stories, acceptance criteria
 **First action**: Run the Duplicate Feature Gate — grep MODULE_REGISTRY.md and `apps/api/src/modules/` before writing a single user story
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → DEV_SPRINTS.md → CHANGELOG.md → GLOSSARY.md
+**Reads**: AGENTS.md → MODULE_REGISTRY.md § Collab Board → CHANGELOG.md → HANDBOOK.md#glossary
 
 ### Backend Developer (NestJS)
 **Trigger**: API endpoints, services, DTOs, domain events, guards, business logic
 **Module path**: `apps/api/src/modules/<module>/` → module, controller, service, dto/, events/, tests/
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → ARCHITECTURE.md → API_STANDARDS.md → CONVENTIONS.md
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#architecture-reference → HANDBOOK.md#api-standards → HANDBOOK.md#coding-conventions
 **Rules**: TypeScript strict (no `any`), tenant_id on every query, @Permissions on every endpoint, @TrackChanges on every mutation, no cross-module imports (domain events only), 80%+ test coverage
 
 ### Frontend Developer (Next.js 15)
 **Trigger**: pages, components, forms, UI wiring to API
 **Page path**: `apps/web/app/(dashboard)/<module>/`
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → CONVENTIONS.md → API_STANDARDS.md
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#coding-conventions → HANDBOOK.md#api-standards
 **Rules**: `@unerp/ui` + `.frappe-*` classes only, no inline styles, no hardcoded hex/px, Server Components by default, breadcrumbs on every page (register in SEGMENT_NAMES in layout.tsx), `<ProtectedComponent>` for privileged actions, handle loading/empty/error/success states
 
 ### Data Architect (Prisma/PostgreSQL)
 **Trigger**: schema changes, migrations, new entities, indexes, RLS
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → DATA_MODEL.md → SECURITY.md → schema.prisma
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#data-model → HANDBOOK.md#security → schema.prisma
 **Rules**: every table has tenant_id, never hand-edit migrations (use `pnpm db:migrate`), stop dev:api before prisma generate, destructive migrations need expand→backfill→contract plan
 
 ### Fullstack Developer
@@ -58,37 +66,37 @@ Never give vague "sure, but keep in mind" hedges. Be direct.
 
 ### UI/UX Designer
 **Trigger**: layout, component design, design system, accessibility, navigation
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → CONVENTIONS.md (Section 8) → packages/ui/
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#frappe-erpnext-ui-aesthetic (Coding Conventions Section 8) → packages/ui/
 **Rules**: Frappe/ERPNext aesthetic, HCI principles (Hick's Law, Fitts's Law), design tokens only, no new components without checking packages/ui/ first
 
 ### DevOps Engineer
 **Trigger**: Turborepo/pnpm config, CI/CD, Docker, observability, env/secrets
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → ENTERPRISE_HARDENING_PLAN.md → SCORECARD.md → TECH_STACK.md
-**Rules**: no secrets in code, never weaken security controls, document every new npm package in TECH_STACK.md
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → ENTERPRISE_HARDENING_PLAN.md → SCORECARD.md → HANDBOOK.md#tech-stack
+**Rules**: no secrets in code, never weaken security controls, document every new npm package in HANDBOOK.md#tech-stack
 
 ### QA Tester
 **Trigger**: tests, edge cases, coverage gaps, regression checks
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → TESTING.md → DEV_SPRINTS.md
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#testing → DEV_SPRINTS.md
 **Rules**: 80%+ coverage target, always run tests and report actual output, tenant isolation negative tests mandatory, no skip/only to hide failures
 
 ### Code Reviewer
 **Trigger**: any non-trivial diff before merge
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → ARCHITECTURE.md → CONVENTIONS.md → git diff
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#architecture-reference → HANDBOOK.md#coding-conventions → git diff
 **Blocks on**: missing tenant_id filter, missing @Permissions, any-type, cross-module import, missing tests, hardcoded secrets
 
 ### Security Auditor
 **Trigger**: auth/RBAC changes, new endpoints, PII/financial/health data, new dependencies
-**Reads**: AGENTS.md → SECURITY.md → MODULE_REGISTRY.md → ENTERPRISE_HARDENING_PLAN.md
+**Reads**: AGENTS.md → HANDBOOK.md#security → MODULE_REGISTRY.md → ENTERPRISE_HARDENING_PLAN.md
 **Highest priority**: tenant isolation breaks (Critical blocker), then broken access control, injection, secrets exposure
 
 ### Business Analyst / UAT
 **Trigger**: validating a delivered feature from the user's perspective before release
-**Reads**: AGENTS.md → MODULE_REGISTRY.md → GLOSSARY.md → DEV_SPRINTS.md → PM spec
+**Reads**: AGENTS.md → MODULE_REGISTRY.md → HANDBOOK.md#glossary → DEV_SPRINTS.md → PM spec
 **Output**: UAT PASSED or UAT REJECTED with precise repros
 
 ### Tech Writer
 **Trigger**: after features land, when docs drift, when MODULE_REGISTRY is stale
-**Maintains**: MODULE_REGISTRY.md, CHANGELOG.md, DEV_SPRINTS.md, all .ai/ context files
+**Maintains**: MODULE_REGISTRY.md, CHANGELOG.md, HANDBOOK.md
 **Rule**: always read source code before updating docs — never document from memory
 
 ## Critical Project Rules (never violate)

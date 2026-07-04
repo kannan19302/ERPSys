@@ -13,10 +13,17 @@ Before writing any test:
 
 1. Read `AGENTS.md` — testing rules: 80%+ coverage target, all business logic must have tests
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules; **understand what already has tests** before writing new ones (don't duplicate existing coverage)
-3. Read `.ai/TESTING.md` — testing strategy, patterns, test harness gotchas (finance test harness, bounded-loop/OOM issues)
-4. Read `.ai/DEV_SPRINTS.md` — current sprint; what feature just landed and needs testing
+3. Read `.ai/HANDBOOK.md#testing` — testing strategy, patterns, test harness gotchas (finance test harness, bounded-loop/OOM issues)
+4. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — current sprint; what feature just landed and needs testing
 5. Get the acceptance criteria from the product-manager spec (Given/When/Then). If none exist, derive them from the code and flag the gap to product-manager.
 6. Study existing `*.spec.ts` tests for the module under test — match their structure and understand the test harness before adding new ones.
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

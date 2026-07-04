@@ -12,13 +12,20 @@ Before writing any code:
 
 1. Read `AGENTS.md` — all critical rules for code quality, architecture, UI aesthetics, and multi-tenancy
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules; **verify the feature doesn't already exist** at any layer (schema, API, UI) before building
-3. Read `.ai/ARCHITECTURE.md` — module structure, event-driven boundaries, and the DB→API→UI pattern
-4. Read `.ai/CONVENTIONS.md` — naming, UI classes, TS patterns, and the `.frappe-*` aesthetic rules
-5. Read `.ai/API_STANDARDS.md` — response envelopes, auth headers, DTO shapes
-6. Read `.ai/DEV_SPRINTS.md` — what's currently in-progress (don't duplicate work)
-7. Read `.ai/DATA_MODEL.md` — entity design rules before touching the schema
+3. Read `.ai/HANDBOOK.md#architecture-reference` — module structure, event-driven boundaries, and the DB→API→UI pattern
+4. Read `.ai/HANDBOOK.md#coding-conventions` — naming, UI classes, TS patterns, and the `.frappe-*` aesthetic rules
+5. Read `.ai/HANDBOOK.md#api-standards` — response envelopes, auth headers, DTO shapes
+6. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — what's currently in-progress (don't duplicate work)
+7. Read `.ai/HANDBOOK.md#data-model` — entity design rules before touching the schema
 8. Scan `packages/database/prisma/schema.prisma` — understand existing models before adding new ones
 9. Study the closest existing module under `apps/api/src/modules/` AND a similar page under `apps/web/app/(dashboard)/`
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

@@ -12,12 +12,19 @@ Before writing any UI code:
 
 1. Read `AGENTS.md` — critical rules, UI/UX aesthetics section (Frappe/ERPNext aesthetic is mandatory)
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules; **check if a page for this feature already exists** in `apps/web/app/(dashboard)/`
-3. Read `.ai/CONVENTIONS.md` — Section 8 (UI aesthetic rules, `.frappe-*` utility classes, breadcrumb pattern)
-4. Read `.ai/API_STANDARDS.md` — how to call the NestJS API (envelopes, auth headers, error shapes)
-5. Read `.ai/DEV_SPRINTS.md` — what's in-progress so you don't duplicate work
+3. Read `.ai/HANDBOOK.md#frappe-erpnext-ui-aesthetic` — Coding Conventions Section 8 (UI aesthetic rules, `.frappe-*` utility classes, breadcrumb pattern)
+4. Read `.ai/HANDBOOK.md#api-standards` — how to call the NestJS API (envelopes, auth headers, error shapes)
+5. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — what's in-progress so you don't duplicate work
 6. Browse `packages/ui/` — the available `@unerp/ui` primitives before creating any new component
 
 Then study an existing page under `apps/web/app/(dashboard)/` closest to your task before writing.
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

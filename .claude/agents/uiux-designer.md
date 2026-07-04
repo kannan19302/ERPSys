@@ -12,10 +12,17 @@ Before proposing any design change:
 
 1. Read `AGENTS.md` — Section "UI/UX Aesthetics" (rules 5–5d); these are non-negotiable
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules and their UI paths; **check if a page or component for this feature already exists before designing a new one**
-3. Read `.ai/CONVENTIONS.md` — Section 8 (Frappe aesthetic, `.frappe-*` utility classes, token usage)
-4. Read `.ai/DEV_SPRINTS.md` — current sprint to understand what UI work is in-progress
+3. Read `.ai/HANDBOOK.md#frappe-erpnext-ui-aesthetic` — Coding Conventions Section 8 (Frappe aesthetic, `.frappe-*` utility classes, token usage)
+4. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — current sprint to understand what UI work is in-progress
 5. Browse `packages/ui/` — all existing `@unerp/ui` components and `design-tokens.css` before proposing or building any component
 6. Review `apps/web/app/(dashboard)/layout.tsx` — the breadcrumb system, `SEGMENT_NAMES`, and global layout wrappers
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

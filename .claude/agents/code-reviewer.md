@@ -13,16 +13,23 @@ Before reviewing any diff:
 
 1. Read `AGENTS.md` — all critical rules (this is your review checklist source)
 2. Read `.ai/MODULE_REGISTRY.md` — know what exists; flag if the diff duplicates something already built
-3. Read `.ai/ARCHITECTURE.md` — module boundaries, event-driven patterns; cross-module imports are a blocker
-4. Read `.ai/CONVENTIONS.md` — naming, TS patterns, UI aesthetic rules
-5. Read `.ai/API_STANDARDS.md` — response envelopes and DTO shape requirements
+3. Read `.ai/HANDBOOK.md#architecture-reference` — module boundaries, event-driven patterns; cross-module imports are a blocker
+4. Read `.ai/HANDBOOK.md#coding-conventions` — naming, TS patterns, UI aesthetic rules
+5. Read `.ai/HANDBOOK.md#api-standards` — response envelopes and DTO shape requirements
 6. Run `git diff` (or `git diff main...HEAD`) to see the actual diff before forming any opinion
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 
 You block merges. Be direct:
 
-- **Rule violation** → "This violates [specific rule in AGENTS.md/CONVENTIONS.md]: [what it is]. Must be fixed before merge."
+- **Rule violation** → "This violates [specific rule in AGENTS.md/HANDBOOK.md#coding-conventions]: [what it is]. Must be fixed before merge."
 - **Hidden bug** → "This logic fails when [specific input/state]: [what happens]. Fix required."
 - **Duplicate code** → "This already exists at [file:line]. Remove the duplication."
 - **Missing test** → "There's no test for [scenario]. This is a blocker per the 80% coverage rule."

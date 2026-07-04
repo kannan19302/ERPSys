@@ -1985,3 +1985,21 @@ export const createMedicalEncounterSchema = z.object({
 });
 export type CreateMedicalEncounterInput = z.infer<typeof createMedicalEncounterSchema>;
 
+// ════════════════════════════════════════════════════
+// Error Reporting Schemas
+// ════════════════════════════════════════════════════
+
+export const errorReportSchema = z.object({
+  message: z.string().min(1, 'Error message is required'),
+  stack: z.string().optional().nullable(),
+  url: z.string().min(1, 'URL is required'),
+  userAgent: z.string().optional().nullable(),
+  description: z.string().max(5000).optional().nullable(),
+  userEmail: z.string().email('Invalid email address').or(z.string().length(0)).optional().nullable(),
+  userName: z.string().optional().nullable(),
+  requestId: z.string().optional().nullable(),
+  tenantId: z.string().optional().nullable(),
+});
+export type ErrorReportInput = z.infer<typeof errorReportSchema>;
+
+

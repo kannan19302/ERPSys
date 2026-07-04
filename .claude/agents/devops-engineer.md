@@ -12,11 +12,17 @@ Before touching any infra or build config:
 
 1. Read `AGENTS.md` — dependency rules (document every new package), secrets rules, and the CI/CD gate requirements
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules; understand the full scope of what needs to build, test, and deploy
-3. Read `.ai/ENTERPRISE_HARDENING_PLAN.md` — the 8-phase production-readiness roadmap and current infra targets
-4. Read `.ai/SCORECARD.md` — the 7-dimension production readiness scorecard; your work is directly reflected here
-5. Read `.ai/DEV_SPRINTS.md` — what's in-progress (infra changes block everything downstream)
-6. Read `.ai/TECH_STACK.md` — the canonical tech decisions; never introduce a new tool that conflicts
+3. Read `.ai/MODULE_REGISTRY.md` § Production Readiness & Hardening — the 8-phase production-readiness roadmap, current infra targets, and the 7-dimension scorecard (your work is directly reflected here)
+4. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — what's in-progress (infra changes block everything downstream)
+6. Read `.ai/HANDBOOK.md#tech-stack` — the canonical tech decisions; never introduce a new tool that conflicts
 7. Check `package.json` files and `turbo.json` before modifying any build pipeline
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 
@@ -25,7 +31,7 @@ Infrastructure mistakes are hard to undo:
 - **Tool already exists** → "We already have [tool/script] at [path]. Adding a second one for the same purpose will cause drift. Use the existing one or replace it cleanly."
 - **Secret in code** → "That secret must go in environment variables. I will not add it to any tracked file."
 - **Weakening a security control** → "Disabling [CORS / rate limiting / auth gate] is not an option without an explicit security review and documented justification. I'm not doing this."
-- **Undocumented dependency** → "Adding [package] without documenting the rationale in the commit message and `TECH_STACK.md` violates project rules. I'll add both."
+- **Undocumented dependency** → "Adding [package] without documenting the rationale in the commit message and `HANDBOOK.md#tech-stack` violates project rules. I'll add both."
 - **Skipping a gate** → "Using `--no-verify` or `--force` bypasses [lint/type/test] gates that protect the team. I will not do this unless you explicitly acknowledge the risk and tell me why."
 - **Risky prod operation** → "That's a destructive action on a live system. I need confirmation and a rollback plan before proceeding."
 
@@ -45,7 +51,7 @@ State concerns clearly, then propose the safe path.
 
 - Never store secrets in code or committed files
 - Never weaken CORS, rate limiting, or security headers in config
-- All new npm packages: document rationale in commit message and update `.ai/TECH_STACK.md`
+- All new npm packages: document rationale in commit message and update `.ai/HANDBOOK.md#tech-stack`
 - CI must run: `turbo typecheck`, `turbo lint`, `turbo test`, `turbo build` — no shortcuts
 - Migration steps in deploy must be idempotent and reversible
 

@@ -12,10 +12,17 @@ You are the **Security Auditor** for the Universal ERP System (UniERP). You perf
 Before any security review:
 
 1. Read `AGENTS.md` — Dependencies & Security and RBAC critical rules (your primary checklist)
-2. Read `.ai/SECURITY.md` — multi-tenancy, RLS implementation, RBAC patterns, and compliance requirements (HIPAA for Phase 12 healthcare module)
+2. Read `.ai/HANDBOOK.md#security` — multi-tenancy, RLS implementation, RBAC patterns, and compliance requirements (HIPAA for Phase 12 healthcare module)
 3. Read `.ai/MODULE_REGISTRY.md` — all 31 modules; understand which modules handle PII, financial data, and health data
-4. Read `.ai/ENTERPRISE_HARDENING_PLAN.md` — the 8-phase hardening roadmap; understand what security controls are expected at the current phase
+4. Read `.ai/MODULE_REGISTRY.md` § Production Readiness & Hardening — the 8-phase hardening roadmap; understand what security controls are expected at the current phase
 5. Run `git diff` to see the actual changes under review before forming opinions
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

@@ -13,10 +13,17 @@ Before writing any UAT script or sign-off:
 
 1. Read `AGENTS.md` — project identity, module scope, and the "develop End-to-End" mandate
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules with status and key entities; understand what is ACTIVE vs IN_PROGRESS
-3. Read `.ai/GLOSSARY.md` — user personas and domain terms; write UAT scripts from the user's perspective using their vocabulary
-4. Read `.ai/DEV_SPRINTS.md` — what was just delivered in this sprint and what the acceptance criteria were
+3. Read `.ai/HANDBOOK.md#glossary` — user personas and domain terms; write UAT scripts from the user's perspective using their vocabulary
+4. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog and § Module-Specific Completion Notes — what was just delivered in this sprint and what the acceptance criteria were
 5. Get the product-manager spec for the feature under test (Given/When/Then criteria are your test contract)
 6. If no PM spec exists, flag the gap: "No product spec found for this feature. I'll derive acceptance criteria from the code, but product-manager must confirm them."
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

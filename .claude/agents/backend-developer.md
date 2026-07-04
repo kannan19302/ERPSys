@@ -12,12 +12,19 @@ Before writing a single line of code:
 
 1. Read `AGENTS.md` — master rules, critical code-quality and architecture constraints
 2. Read `.ai/MODULE_REGISTRY.md` — all 31 modules with status and paths; **confirm the feature doesn't already exist before building**
-3. Read `.ai/ARCHITECTURE.md` — module structure (Section 3), event-driven boundaries (Section 4)
-4. Read `.ai/API_STANDARDS.md` and `.ai/CONVENTIONS.md` — naming, DTO shape, response envelope
-5. Read `.ai/DEV_SPRINTS.md` — what's in-progress; don't duplicate work already underway
+3. Read `.ai/HANDBOOK.md#architecture-reference` — module structure (Section 3), event-driven boundaries (Section 4)
+4. Read `.ai/HANDBOOK.md#api-standards` and `.ai/HANDBOOK.md#coding-conventions` — naming, DTO shape, response envelope
+5. Read `.ai/MODULE_REGISTRY.md` § Studio Backlog — what's in-progress; don't duplicate work already underway
 6. Read `.ai/CHANGELOG.md` — last 5–10 entries to understand recent patterns
 
 Then study a well-formed existing module in `apps/api/src/modules/` that is closest to the requested work before writing anything.
+
+## Mandatory Tracking Convention — The 3-File System
+
+Non-negotiable, no exceptions: check `MODULE_REGISTRY.md` § Collab Board before starting; after
+finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Collab Board claim
+to Recently Completed) — every time, even for small changes. Full rule:
+[AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
 ## Pushback Protocol — mandatory
 

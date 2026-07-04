@@ -5,6 +5,78 @@
 
 ---
 
+## Codebase Growth Tracker
+
+> Protocol lives in [`.ai/prompts/MASTER_PROMPT.md` § 3](prompts/MASTER_PROMPT.md#3-codebase-growth-tracker-protocol).
+> North star: 1,000,000+ lines of genuine, production-ready, non-padded enterprise
+> functionality. Add a new dated row after any substantial unit of work — append-only,
+> never edit/delete prior rows.
+
+| Date | Total LOC | Delta | Notable modules/features added that session |
+|:---|:---|:---|:---|
+| 2026-07-04 | 408,300 | baseline | Pre-tracking-convention baseline measurement |
+
+---
+
+## Collab Board — Multi-Agent Sync
+
+> **Purpose:** UniERP is built by more than one agent tool in the same working copy —
+> Claude Code (this CLI) and Antigravity (Google's agentic IDE), plus whichever
+> other tool a session names. There is no shared runtime between them — no shared
+> memory, no message bus — so **this section + git is the only synchronization
+> mechanism.** Read it before you start; update it before you stop.
+>
+> Full protocol lives in [AGENTS.md § Multi-Agent Collaboration Protocol](../AGENTS.md).
+> This section is the *live state*; AGENTS.md is the *rulebook*.
+
+### 1. Active Claims
+
+> One row per agent session currently touching the repo. Add your row when you
+> start; remove it (move to §3) when you commit+push and stop. If you see a
+> claim whose `Files/Scope` overlaps what you're about to touch, **do not start**
+> — either pick something else off §2 or coordinate with the user first.
+
+| Agent | Session started | Scope (module/files) | Branch | Status |
+|:---|:---|:---|:---|:---|
+| _(none active)_ | | | | |
+
+### 2. Up Next (unclaimed work, pick from the top)
+
+> Pulled from this file's § Production Readiness & Hardening, § Studio Backlog, and
+> "not yet built" notes in the module tables. Whoever picks an item: move it
+> to §1 with your claim, and when done move it to §3 with a one-line result +
+> link to the commit.
+
+1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
+2. **`dependency-cruiser`/ESLint module-boundary lint** — enforce "no cross-module deep imports, no business logic in controllers" in CI (Enterprise Hardening Phase 1 exit criteria).
+3. **CI test-suite scope decision** — `test:coverage` still excludes `*.coverage.spec.ts`; decide whether to run the full suite in CI now that it's stable (Enterprise Hardening Phase 0 follow-up).
+4. **Studio Phase 2 — Business Logic visual rule/flow editor** (Form/Page/Workflow canvas editors are already built and confirmed — `FormBuilderWorkspace.tsx` uses `@dnd-kit`, `WorkflowEditorWorkspace.tsx` uses `reactflow`, `PageBuilderWorkspace.tsx` is a grid canvas; only the Business Logic editor, to replace form-driven automation rules, remains open) — see § Studio Backlog below.
+5. **E-commerce**: real payment gateway (Stripe) replacing `MockPaymentGatewayService`; Sales Orders list channel filter UI — see row 33, "Not yet built".
+6. **AI module known gap**: `workflow-engine.service.ts` and `builder/web-studio.service.ts` call `api.anthropic.com` directly via raw `fetch`, bypassing the self-hosted-Ollama `AiService` — still incurring paid API cost. Route through `AiService`.
+7. **Commit the pending Admin error-reporting work** — `error-reports.controller.ts`/`.service.ts`, Next.js `error.tsx`/`not-found.tsx`/`global-error.tsx`, `ErrorFallback.tsx` are implemented (per row 1) but sit **uncommitted** in the working tree as of 2026-07-04. Whoever picks this up: verify tests pass, then commit.
+
+Add new items here as they're identified (PM scoping, bug reports, user asks). Don't let this list go stale — prune completed/obsolete entries.
+
+### 3. Recently Completed (rolling log, last ~15 — older entries live in `.ai/CHANGELOG.md`)
+
+| Date | Agent | What | Commit/ref |
+|:---|:---|:---|:---|
+| 2026-07-03 | backend-developer + frontend-developer | E-commerce storefront module (backend + admin/public frontend) | `33ba17b` |
+| 2026-07-03 | — | Ollama swap for AI module (removed paid Anthropic calls from `AiService`) | `24222e7` |
+| 2026-07-01 | — | CRM god-class decomposition (2,330 LOC → 322 LOC facade + 10 domain services) | `9a1f347` |
+| 2026-07-01 | — | Central tenant-isolation enforcement (global `TenantInterceptor`, Prisma extension) | see § Production Readiness & Hardening (Phase 2) |
+| 2026-07-01 | — | Reality Gates in `scripts/scorecard.mjs`; fixed unbounded slug-uniqueness DoS loops; full suite 121/121 files green in parallel | see § Production Readiness & Hardening (Phase 0) |
+
+### 4. Conflict Log (only if two agents collided)
+
+> If you discover another agent's uncommitted/unpushed work conflicts with
+> yours, log it here instead of silently overwriting. Note what happened and
+> how it was resolved (merge, rebase, one side deferred).
+
+_(none yet)_
+
+---
+
 ## Module Status Legend
 
 | Status | Meaning |
@@ -21,7 +93,7 @@
 
 | # | Module | Package Path | Status | Phase | Dependencies | Key Entities |
 |:--|:---|:---|:---|:---|:---|:---|
-| 1 | **Admin** | `apps/api/src/modules/admin` | 🟢 ACTIVE | 0 | auth, database | Tenant, User, Role, Permission, Setting, Workflows, Localization, Sync, DevOps, Super Admin. P0-1 (dead fine-grained RBAC decorator-stacking bug) fixed. P0-2 (automation rules) now has a real trigger→condition→action runtime: `AutomationRuleEngineService` listens for real domain events (`sales.order.confirmed`, `sales.delivery.created`, `sales.return.*`, `procurement.receipt.created`, `procurement.return.created`, `finance.invoice.*`, `finance.payment.received`, `hr.employee.onboarded`), loads ACTIVE rules per tenant, evaluates conditions (shared logic extracted from `testRule`), and executes `notify`/`email` actions for real (`notification.send` event + real BullMQ `email` queue job), recording `SUCCESS`/`SKIPPED`/`FAILED` execution rows — DRAFT rules stay inert. P1-1 partially closed: backups remain simulated but are now honestly labeled `source: 'SIMULATED'` in the API response (real `pg_dump` needs devops sign-off, deferred); backup create/read endpoints moved behind a new Super-Admin-only `system.operations.backup` permission (`@SkipTenantScope()`); `BackgroundJob` rows are now correlated with real BullMQ jobs via `bullJobId` (see `job-tracking.util.ts`), `EmailProcessor`/`ExportProcessor` sync job status on real worker lifecycle events, and `OperationsService.retryJobs` re-enqueues into the real BullMQ queue by `queueName` instead of only flipping a DB flag; see `.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md`. UAT PASSED 2026-07-02 (see `.ai/ADMIN_UAT_SIGNOFF.md`): RBAC regression sweep, seed wildcard non-breaking, automation engine edge-case fix, and honest backups labeling all independently verified. |
+| 1 | **Admin** | `apps/api/src/modules/admin` | 🟢 ACTIVE | 0 | auth, database | Tenant, User, Role, Permission, Setting, Workflows, Localization, Sync, DevOps, Super Admin. P0-1 (dead fine-grained RBAC decorator-stacking bug) fixed. P0-2 (automation rules) now has a real trigger→condition→action runtime: `AutomationRuleEngineService` listens for real domain events (`sales.order.confirmed`, `sales.delivery.created`, `sales.return.*`, `procurement.receipt.created`, `procurement.return.created`, `finance.invoice.*`, `finance.payment.received`, `hr.employee.onboarded`), loads ACTIVE rules per tenant, evaluates conditions (shared logic extracted from `testRule`), and executes `notify`/`email` actions for real (`notification.send` event + real BullMQ `email` queue job), recording `SUCCESS`/`SKIPPED`/`FAILED` execution rows — DRAFT rules stay inert. P1-1 partially closed: backups remain simulated but are now honestly labeled `source: 'SIMULATED'` in the API response (real `pg_dump` needs devops sign-off, deferred); backup create/read endpoints moved behind a new Super-Admin-only `system.operations.backup` permission (`@SkipTenantScope()`); `BackgroundJob` rows are now correlated with real BullMQ jobs via `bullJobId` (see `job-tracking.util.ts`), `EmailProcessor`/`ExportProcessor` sync job status on real worker lifecycle events, and `OperationsService.retryJobs` re-enqueues into the real BullMQ queue by `queueName` instead of only flipping a DB flag; see `.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md`. UAT PASSED 2026-07-02 (see `.ai/ADMIN_UAT_SIGNOFF.md`): RBAC regression sweep, seed wildcard non-breaking, automation engine edge-case fix, and honest backups labeling all independently verified. Also implemented public error reporting API (`/public/error-reports`) creating `ErrorLog` and `AdminAlert` rows, and integrated Next.js fallback pages (`error.tsx`, `not-found.tsx`, `global-error.tsx`, and dashboard `error.tsx`) utilizing a unified contact support form and debug logs UI. |
 | 2 | **Finance & Accounting** | `apps/api/src/modules/finance` | 🟢 ENHANCED | 1 | admin, database | Invoice, Payment (paginated, bulk ops, send/void, events, stats, KPI) |
 | 3 | **Human Resources** | `apps/api/src/modules/hr` | 🟢 ENHANCED | 1 | admin, finance | Employee (paginated, detail, update, bulk ops, events, stats, KPI), Department management |
 | 4 | **CRM & Sales** | `apps/api/src/modules/crm` | 🟢 ENHANCED | 1 | admin | Contact, Lead, Opportunity, Activity, Pipeline, LineItem, PriceBook, ContactTag, SalesTarget, SavedReport, WorkflowRule, EmailSequence, Territory, Commission, WebForm, Document, CustomField, RecordType, ApprovalProcess, QuotationTemplate, QuotationSignature, Comment, Note, Follower, Playbook, Battlecard, Dashboard |
@@ -29,6 +101,7 @@
 | 6 | **Procurement** | `apps/api/src/modules/procurement` | 🟢 ENHANCED | 2 | admin, finance, inventory, crm | Vendor, PurchaseOrder, PurchaseReceipt, RFQ, GoodsReceipt, PurchaseRequisition, BlanketPurchaseAgreement |
 | 7 | **Sales & Orders** | `apps/api/src/modules/sales` | 🟢 ACTIVE | 2 | admin, finance, inventory, crm | Quotation, SalesOrder, DeliveryNote, Return, SalesPipeline |
 | 8 | **Supply Chain** | `apps/api/src/modules/supply-chain` | 🟢 ACTIVE | 2 | inventory, procurement, sales | Shipment, Carrier, Route, DemandForecast |
+| — | **Auth** (distinct from `packages/auth`, see Shared Packages) | `apps/api/src/modules/auth` | 🟢 ACTIVE | 0 | database | `AuthController`/`AuthService` (769 LOC) — register/login/logout with httpOnly cookie session, JWT profile (`GET/PATCH auth/me`), password reset (`forgot-password`/`reset-password`), demo-role login bypass (`login-demo`), TOTP MFA setup/verify (`mfa/setup`, `mfa/verify`, `mfa/verify-login`), WebAuthn passkey register/login. `SsoController`/`SsoService` (OIDC/SAML tenant SSO config check). This is the actual runtime auth surface (NestJS controllers/services + Prisma `User`/`Tenant`); `packages/auth` is the separate shared package (Auth.js providers/RBAC helpers) consumed elsewhere — the two were previously conflated into a single Shared Packages row, which undocumented this entire backend module. |
 
 ---
 
@@ -45,9 +118,9 @@
 | 15 | **Advanced Inventory** | `apps/api/src/modules/inventory` (ext) | 🟢 ACTIVE | 5 | inventory | SerialNumber, Batch, BinLocation, CycleCount, Valuation |
 | 16 | **Advanced Finance** | `apps/api/src/modules/finance` (ext) | 🟢 ACTIVE | 6 | finance, sales, procurement | ChartOfAccounts, GeneralLedger, BankRecon, Budget, TaxReturn |
 | 17 | **Advanced HR** | `apps/api/src/modules/hr` (ext) | 🟢 ACTIVE | 7 | hr, finance | PayrollRun, LeavePolicy, ShiftSchedule, Appraisal, Training |
-| 18 | **Workflow Engine** | `apps/api/src/modules/admin` (ext) | 🟢 ACTIVE | 8 | all modules | Workflow, WorkflowStep, ApprovalChain, Delegation, SLA (consolidated into Admin app) |
+| 18 | **Workflow Engine** | `apps/api/src/modules/workflow` (registered directly in `app.module.ts`, NOT consolidated into Admin — prior doc was stale) | 🟢 ACTIVE | 8 | admin, database | `WorkflowController` (`/workflows`) — CRUD workflows, approval-chain listing/action submission, SLA-breach check, workflow simulation. `WorkflowEngineController` (`/workflows/engine`) + `WorkflowEngineService` (227 LOC) — real execute/event-trigger runtime (`executeWorkflow`, `processEventTrigger`), tenant-scoped via `TenantInterceptor`. Distinct from the Admin app's own frontend Workflow Builder UI hub (`settings/workflow-builder`) and the `AutomationRuleEngineService` in the Admin module (row 1) — three related-but-separate systems, not one consolidated engine; do not assume this directory is dead. **Known gap** (see AI module row 32 and CHANGELOG 2026-07-02): `workflow-engine.service.ts` calls `https://api.anthropic.com/v1/messages` directly via raw `fetch`, bypassing the self-hosted-Ollama `AiService` — still incurring Anthropic API cost. |
 | 19 | **Notifications** | `apps/api/src/modules/notifications` | 🟢 ACTIVE | 9 | communication, workflow | NotificationChannel, Preference, Digest, WebSocketEvent |
-| 20 | **File Storage** | `apps/api/src/modules/documents` (ext) | 🟢 ACTIVE | 10 | drive | File, Bucket, DocumentTemplate, GeneratedDocument (consolidated into Drive app) |
+| 20 | **File Storage** | `apps/api/src/modules/storage` (registered directly in `app.module.ts`; the prior "consolidated into Drive app" note was stale/inaccurate — this is a separate, smaller, still-active module alongside Drive, not superseded by it) | 🟢 ACTIVE | 10 | documents (drive) | `StorageController`/`StorageService` (83 LOC) — `/storage/files` (list/register file metadata records), `/storage/generated` (generated-document listing), `/storage/generate` (template-based document generation), `/storage/presigned` (presigned URL generation), `/storage/lifecycle` (glacier/purge lifecycle policy). Reuses `documents.document.*` permissions rather than declaring its own — a lightweight metadata/lifecycle layer distinct from Drive's own upload/versioning/encryption stack (row 12). The frontend UI for this was folded into `/drive` per the 2026-06-21 "Admin Consolidation" CHANGELOG entry (old `/storage` page directory deleted), but the **backend module itself was never removed** and is still live — frontend consolidation and backend module retirement are two different things that got conflated in the prior doc. |
 | 21 | **Advanced Reporting** | `apps/api/src/modules/reporting` | 🟢 ACTIVE | 11 | analytics, finance | DashboardLayout, Widget, SavedView, ScheduledReport |
 
 ---
@@ -68,8 +141,8 @@
 | # | Module | Package Path | Status | Phase | Dependencies | Key Features |
 |:--|:---|:---|:---|:---|:---|:---|
 | 26 | **API Platform** | `apps/api/src/modules/api-platform` | 🟢 ACTIVE | 16 | all core modules | OpenAPI, Webhooks, API Keys, OAuth |
-| 27 | **i18n & Localization** | `packages/i18n` | 🟢 ACTIVE | 17 | all UI modules | Translations, RTL, Date/Currency formats |
-| 28 | **Mobile & PWA** | `apps/web` (enhancement) | 🟢 ACTIVE | 18 | all UI, i18n | Responsive, PWA, Offline mode |
+| 27 | **i18n & Localization** | `packages/i18n` (frontend translation/RTL/date-format layer) **+** `apps/api/src/modules/localization` (backend admin API, previously undocumented) | 🟢 ACTIVE | 17 | all UI modules, database | `packages/i18n`: Translations, RTL, Date/Currency formats. `LocalizationController`/`LocalizationService` (backend, `admin/localization/*`, 57+61 LOC): `GET languages` (supported language list), `GET/POST/DELETE admin/localization/overrides` — tenant-scoped UI-text translation override CRUD (the backing store for AGENTS.md Phase 17.4's "UI-based translation editor in admin modules"). |
+| 28 | **Mobile & PWA** | `apps/web` (enhancement, manifest/service-worker/offline UI) **+** `apps/api/src/modules/pwa` (backend offline-sync API, previously undocumented) | 🟢 ACTIVE | 18 | all UI, i18n, database | `apps/web`: Responsive, PWA manifest/icons, service worker, offline mode. `PwaController`/`PwaService` (backend, `admin/pwa-sync/*`, 54+55 LOC) — NOT push-subscription/service-worker-config as originally guessed; it's the server side of Phase 18.4's "Offline data synchronization queue": `GET admin/pwa-sync/queue` (per-tenant sync queue), `POST admin/pwa-sync/push` (client pushes queued offline operations — `{operation, entityType, payload}[]` — keyed by `clientId`), `PUT admin/pwa-sync/reconcile/:id` (mark a queued op `RECONCILED` or `CONFLICT`). |
 | 29 | **DevOps & Monitoring** | `infra/` | 🟢 ACTIVE | 19 | all modules | CI/CD, Docker, K8s, Logging, APM |
 | 30 | **SaaS Platform** | `apps/api/src/modules/saas` | 🟢 ACTIVE | 20 | all modules | Billing, Metering, Marketplace |
 
@@ -79,8 +152,9 @@
 
 | # | Module | Package Path | Status | Phase | Dependencies | Key Features |
 |:--|:---|:---|:---|:---|:---|:---|
-| 31 | **Studio** | `apps/api/src/modules/builder` | 🟢 ENHANCED | 0–10 | admin, database | Zero-code form/page/dashboard/workflow builder, Page Registry, Schema Registry, Custom Records, dynamic rendering, deploy-to-app wizard, field-level RBAC, server-side webhooks & scripts, app overview dashboard, publish scopes, sandbox simulator test platform, **app releases (immutable snapshots) + semantic versioning + rollback, App Marketplace with provision-on-install (built apps published to App Store), `AppRelease` model, Web Studio CMS Collections (dynamic content types: products/projects/team/testimonials/blog), public content + form-submission API, `WebCollection`/`WebCollectionItem`/`WebFormSubmission` models** |
+| 31 | **Studio** | `apps/api/src/modules/builder` | 🟢 ENHANCED | 0–10 | admin, database | Zero-code form/page/dashboard/workflow builder, Page Registry, Schema Registry, Custom Records, dynamic rendering, deploy-to-app wizard, field-level RBAC, server-side webhooks & scripts, app overview dashboard, publish scopes, sandbox simulator test platform, **app releases (immutable snapshots) + semantic versioning + rollback, App Marketplace with provision-on-install (built apps published to App Store), `AppRelease` model, Web Studio CMS Collections (dynamic content types: products/projects/team/testimonials/blog), public content + form-submission API, `WebCollection`/`WebCollectionItem`/`WebFormSubmission` models**. Note: this row's "App Marketplace" (`builder.service.ts`'s `getMarketplace`/`installBuilderApp`/`uninstallBuilderApp`) is a **different system** from row 34's standalone `apps/api/src/modules/marketplace` module — this one is specifically for Studio-built custom apps (GLOBAL/ORG scope, provision-on-install of Studio pages); row 34 is the general third-party app-store/vendor/bundle system. Don't conflate the two when working on either. |
 | 33 | **E-Commerce Storefront** | `apps/api/src/modules/ecommerce` | 🟢 ACTIVE (full stack) | new | inventory, sales, finance, crm | StorefrontConfig, StorefrontCategory, ProductListing, Cart, CartItem, StorefrontOrderPayment. Public-facing catalog/cart/checkout on top of existing Product/SalesOrder/Invoice — see `.ai/ECOMMERCE_MODULE_REQUIREMENTS.md` for full MVP spec. **Backend API complete** (backend-developer, 2026-07-03): data layer from the prior session unchanged. Two controllers: `EcommerceAdminController` (`/ecommerce/*`, JWT+RBAC-gated, new `ecommerce.storefront.{read,manage}` / `ecommerce.category.*` / `ecommerce.listing.*` / `ecommerce.order.read` permissions registered in `packages/shared/src/permissions/registry.ts`) covers StorefrontConfig upsert, StorefrontCategory CRUD, and ProductListing CRUD (validates `productId` belongs to the tenant's own `Product` before linking; joins Product+Category for the admin list view) — all mutation endpoints carry `@TrackChanges`+`ChangeHistoryInterceptor`. `EcommercePublicController` (`store/:tenantSlug/*`) is **intentionally unauthenticated** — no `@Permissions()`, guarded only by the new `PublicTenantResolverGuard` (`apps/api/src/modules/ecommerce/guards/public-tenant-resolver.guard.ts`), which resolves `:tenantSlug` → `StorefrontConfig.storeSlug` (404 if missing/disabled) and stamps a synthetic `request.user = { tenantId, userId: 'storefront-guest' }` so the existing global `TenantInterceptor`/`AsyncLocalStorage` tenant-scoping mechanism (`packages/database/src/tenant-context.ts`) activates exactly as it does for JWT-authenticated requests — no parallel scoping mechanism was built. Covers config/categories/products (published-listings-only, paginated, category filter)/cart CRUD (server-persisted `Cart`/`CartItem`, price-snapshotted at add-time, quantity merge on repeat add)/checkout. Checkout (`EcommerceCheckoutService`) validates the cart, finds-or-creates a guest `Customer` by tenant+email, calls the new `PaymentGatewayAdapter` interface (`apps/api/src/modules/ecommerce/payments/payment-gateway.interface.ts`) — implemented by `MockPaymentGatewayService` (unmistakably labeled MOCK in class name/logs/`provider: 'mock_gateway'` field, supports a `simulateDecline` test lever) — then calls the **new** `SalesService.createConfirmedOnlineOrder()` (added to `apps/api/src/modules/sales/sales.service.ts`, reusing the extracted `persistSalesOrderTransaction` helper shared with `createSalesOrder`) to create a real `SalesOrder`+`SalesOrderItem`s (`salesChannel = 'ONLINE'`, `status = 'CONFIRMED'`, `paymentStatus = 'PAID'`) and synchronously emit `sales.order.confirmed` — a gap in the existing order-creation path where auto-confirmed orders never fired that event was fixed for this entry point only, not touching `createSalesOrder`'s behavior. On success, records a `StorefrontOrderPayment` (status `SUCCEEDED`) and marks the `Cart` `CONVERTED`; on decline, no `SalesOrder`/`StorefrontOrderPayment` row is created (the FK from `StorefrontOrderPayment.salesOrderId` to `SalesOrder` is required/non-null, so a failed pre-order attempt can't be persisted as an orphaned payment row — logged instead, a documented deviation from a literal "record a FAILED payment row" reading) and the cart stays `ACTIVE` for retry. Coverage specs (`apps/api/src/modules/ecommerce/tests/*.coverage.spec.ts`, 30 tests) cover admin CRUD + tenant-isolation, public catalog/cart, checkout happy/decline/empty-cart paths, the guard's 404 behavior, and a metadata-level proof the public controller carries neither `JwtAuthGuard`/`RbacGuard` nor `@Permissions()`. `pnpm --filter @unerp/api typecheck` and the full ecommerce+sales test suites pass. **Frontend complete** (frontend-developer, 2026-07-03): admin pages `apps/web/app/(dashboard)/ecommerce/{page.tsx,categories/page.tsx,listings/page.tsx}` (config with an empty-state "Get started" flow, DataTable+Modal Categories CRUD, Listings screen with a debounced searchable Inventory-product picker/category assign/publish toggle/price override, every action gated by `<ProtectedComponent permission="ecommerce.*.*">`); public storefront `apps/web/app/(storefront)/store/[tenantSlug]/{page.tsx,products/[listingId]/page.tsx,cart/page.tsx,checkout/page.tsx}` plus `apps/web/app/(storefront)/layout.tsx` (plain wrapper, no nested html/body, no dashboard chrome) and `apps/web/app/(storefront)/lib/{storefront-api.ts,cart-session.ts}` (unauthenticated fetch helper + localStorage `sessionToken` persistence per `storefront_cart_{tenantSlug}`, transparent re-create on a 404'd/expired cart). Fixed a pre-existing bug where the admin config/categories pages destructured `useToast()` as `{ showToast }` and passed `variant: 'danger'` — neither exists on the real `useToast()` API (`{ toast, success, error, warning, info, dismiss }`, variants `'success'|'error'|'warning'|'info'`); switched both to `toast.success(...)`/`toast.error(...)`. **Also fixed a real backend bug found during verification**, in a shared cross-cutting file outside the ecommerce/sales/database boundary: `apps/api/src/common/middleware/csrf.middleware.ts`'s global CSRF check 403'd every `/store/:tenantSlug/*` write (cart create/add-item/checkout) because its skip-list only exempted `/auth/login`, `/auth/register`, and `/public/` paths, never the storefront's documented unauthenticated routes; added a matching bypass for `/store/` paths. Verified end-to-end in the browser: enabled the storefront (slug `system`), browsed two published listings on `/store/system` with correct currency formatting and category filtering, added to cart, edited quantity, checked out with a valid shipping address (`201`, real `orderNumber` e.g. `ONL-1783089914253-869`, cart token cleared from localStorage), and confirmed the decline path (`simulateDecline: true` via direct API call) returns `400` with the spec's exact message, creates no `SalesOrder`, and leaves the cart `ACTIVE` for retry. `pnpm --filter web typecheck` and `pnpm --filter @unerp/api typecheck` both clean. **Not yet built**: real payment gateway (Stripe), Sales Orders list channel filter UI (Flow D), decline-simulation UI toggle (optional bonus per spec — verified via direct API call instead). |
+| 34 | **Marketplace** (App Store / vendor & bundle system, previously undocumented — was only mentioned narratively as part of Studio row 31, but is a structurally separate, substantial module) | `apps/api/src/modules/marketplace` | 🟢 ACTIVE | new | admin, database | No dedicated `MarketplaceModule` file — its services/controllers (`BundleStoreService`, `AppProvisioningService`, `VendorService`, `StorefrontService`, `StorefrontController`, `DeveloperController`) are registered directly as providers/controllers inside `AdminModule` (`apps/api/src/modules/admin/admin.module.ts`). Real app-store architecture per prior data-architect work: `AppVendor`/`AppPackage`/`AppBundle` models, file-based install/uninstall of tenant apps under `var/tenant-apps` (`AppProvisioningService`, 152 LOC), a storefront read/browse layer (`StorefrontService`/`StorefrontController`, 188+73 LOC), a developer-facing portal (`DeveloperController`, 108 LOC, for vendors publishing packages), and a pre-built `healthcare-bundles.ts` (481 LOC) catalog of packaged healthcare-industry app bundles. This is a **different system from Studio's own "App Marketplace"** (row 31 — Studio-built custom-app provision-on-install); this one is the general third-party/vendor app-store. ~1,588 total LOC across 8 files. |
 | 32 | **AI** | `apps/api/src/modules/ai` | 🟢 ACTIVE | 4 | reporting | No DB models — stateless service layer (uses generic `Setting` for the one persisted config field, see below). `AiService` calls a **self-hosted Ollama server** (`OLLAMA_BASE_URL`, default `http://localhost:11434`; `OLLAMA_MODEL`, default `llama3.2:3b`) via plain `fetch()` against `POST /api/chat` — no paid LLM API, zero per-token cost. `isConfigured()` always returns `true` (self-hosted, no API key concept); unreachable-server/model errors surface as a friendly `BadRequestException` at request time, not a startup crash. Exposes `chat`/`summarize`/`classify`/`extractFields` (unchanged signatures) plus `rawChat()`/`getBaseUrl()`/`getDefaultModel()` for lower-level tool-calling access. `AiCopilotService` holds fixed-mode business logic: `askData` (NL→structured report query→real `ReportingEngineService.executeQuery`→narrated answer, never hallucinated), `summarizeRecord`, `draftEmail`, `generateFormFromPrompt`, `generateWorkflowFromPrompt`, `processInvoiceDocument` (extraction + optional draft PO creation). `AiAgentService` is the general-purpose agent behind the global floating "AI Copilot" widget rendered on every dashboard page (`apps/web/app/(dashboard)/layout.tsx`): runs an Ollama function-calling tool loop (`POST /ai/converse`, capped at 6 iterations, OpenAI-style `tools`/`message.tool_calls` — not Anthropic content blocks) exposing `query_erp_data`, `summarize_record`, `draft_email`, `generate_form`, `generate_workflow`, `process_invoice_text` as tools that delegate 1:1 to the existing tenant-scoped `AiCopilotService` methods — no intent keyword-matching, no bypass of tenant scoping. `OllamaProcessService` starts/stops/status-checks the local `ollama serve` process (same-host deployment assumption). `AiConfigService` is the new tenant-scoped kill switch: reads/writes a single `Setting` row (`key = 'ai.config'`, same generic-JSON pattern as `PlatformService`'s feature flags) holding `{ enabled: boolean }`; `model`/`baseUrl` in its response are always live-read from `AiService`, never persisted (no per-tenant model override yet). All `ai.controller.ts` endpoints sit behind `JwtAuthGuard` + `RbacGuard` + `TenantInterceptor` with `ai.read`/`ai.create` permissions, and every AI-invoking handler (all but `status`) now calls `AiConfigService.isEnabled()` first, throwing a 503 `ServiceUnavailableException` if the tenant admin disabled AI; `GET /ai/status` additionally returns `enabled` so the floating widget (any authenticated user) can hide itself without needing admin permission. **New dedicated admin console**: `AiAdminController` (`admin/ai/*`, gated by the new admin-only `ai.admin.manage` permission on every route) exposes `GET/POST admin/ai/config` (kill switch) and `GET admin/ai/engine/{status,start,stop}` (relocated from `OperationsController`'s `admin/operations/ai-engine/*`, which no longer has these routes or an `OllamaProcessService` dependency). Frontend: `apps/web/app/(dashboard)/admin/ai/page.tsx` is the new AI admin page (kill switch card, read-only model info card, relocated engine start/stop card); `apps/web/app/(dashboard)/admin/page.tsx`'s sidebar AI Engine card was replaced with an "AI Assistant" link-out card and a matching `quickLinks` entry. **Known gap (out of scope for this Ollama swap, flagged separately):** `workflow-engine.service.ts` and `builder/web-studio.service.ts` still call `https://api.anthropic.com/v1/messages` directly via raw `fetch`, bypassing `AiService` entirely — untouched by this change, still incurring Anthropic API cost. |
 
 
@@ -139,4 +213,256 @@ When adding a new module:
 4. List key entities
 5. Follow the module development workflow in [AGENTS.md](../AGENTS.md)
 6. Update status to `🟢 ACTIVE` when complete
+
+---
+
+## Production Readiness & Hardening
+
+> Consolidated from the former `.ai/SCORECARD.md` (generated by `scripts/scorecard.mjs`) and
+> `.ai/ENTERPRISE_HARDENING_PLAN.md` (8-phase roadmap), both now retired as standalone files. This
+> section is the authoritative status; regenerate the heuristic score with `node scripts/scorecard.mjs`
+> and re-summarize here rather than restoring the old file.
+
+### Heuristic scorecard (last generated 2026-07-01)
+- **System score: 10/10** (33 modules, presence-based heuristic — checks for `@Permissions`,
+  `@ApiOperation`, zod validation pipes, etc.). **This is not proof of correctness** — see Reality
+  Gates below, which is the binding signal. All 33 modules + all 4 platform dimensions (CI/CD,
+  Observability, Security, Deployment) scored 10/10 on the last run.
+- **Reality Gates (binding, last verified 2026-07-01)**: `tsc --noEmit` across all packages — PASS
+  (6s); full API test suite — PASS (32s, 121 files / 1694 tests green in parallel).
+- Regenerate via `node scripts/scorecard.mjs --gates` periodically; a red gate voids the heuristic
+  headline per the tool's own design.
+
+### Enterprise Hardening Plan — phase status (owner: Architecture, started 2026-07-01)
+Goal: move from "heuristic 10/10" to genuine enterprise-grade readiness (SAP/Oracle/Dynamics/NetSuite-class).
+
+- **Phase 0 — Restore honest quality gates: COMPLETE.** Removed `ignoreBuildErrors`/`ignoreDuringBuilds`
+  from `next.config`; fixed the test runner (root cause was two unbounded `while(true)` slug-uniqueness
+  loops causing OOM, not a "Node memory leak" — fixed via `common/utils/slug.util.ts`'s bounded
+  `resolveUniqueSlug`); replaced `run-tests-sequential.ps1` with plain `vitest run` (full suite now
+  121/121 files, 1694/1694 tests green in parallel, ~30s); added Reality Gates (binding `--gates` mode)
+  to `scripts/scorecard.mjs`. **Open follow-up**: `test:coverage` (the CI gate) still excludes
+  `*.coverage.spec.ts` — decide whether to run the full suite in CI now that it's stable.
+- **Phase 1 — Architecture guardrails & god-class decomposition: IN PROGRESS.** CRM god-class **DONE**
+  (`crm.service.ts` 2,330 → 322 LOC facade + 10 domain services, strangler-fig pattern, gates green).
+  Follow-up: `crm.service.coverage.spec.ts` needs repointing to exercise the moved domain logic for
+  real (currently instantiates `CrmService` with no sub-services). **Next god-classes still open**:
+  `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), advanced-finance/procurement/
+  manufacturing services (>1,200 LOC each). `dependency-cruiser`/ESLint module-boundary lint
+  (no cross-module deep imports, no business logic in controllers) not yet added to CI.
+- **Phase 2 — Data & tenant integrity: substantially COMPLETE.** Central tenant-isolation enforcement
+  closed 2026-07-01: `TenantInterceptor` now registered globally (`APP_INTERCEPTOR`), fixed an
+  args-mutation bug where `findMany()`-style calls with no options silently skipped scoping, added
+  `@SkipTenantScope()` decorator for the one legitimate cross-tenant surface (`SuperAdminController`).
+  Added `packages/database/src/tenant-isolation.test.ts` (22 cases) — `packages/database` previously
+  had zero test infrastructure. Remaining schema-wide audit for missing `tenantId` filters is now
+  defense-in-depth verification, not the last line of defense.
+- **Phase 3 — Security hardening (OWASP): PARTIALLY ADDRESSED via a separate finding, not the
+  original phase plan.** See "RBAC decorator-stacking defect" below — a systemic issue discovered
+  mid-stream that is larger in scope than originally planned for this phase.
+- **Phase 4 (Observability), Phase 5 (Testing depth), Phase 6 (Frontend architecture), Phase 7
+  (Delivery & DR): NOT STARTED** as dedicated passes — some incidental progress (e.g. a stray
+  `console.error` in `builder.service.ts` fixed during Phase 0) but no phase-level work done yet.
+
+### Critical cross-cutting finding: RBAC decorator-stacking defect (project-wide)
+Discovered while scoping Admin module work (2026-07-02), confirmed by `security-auditor` to be
+**systemic, not admin-specific**: NestJS's `@Permissions(...)` decorator calls `SetMetadata`, which
+is last-write-wins on the same metadata key — stacking two `@Permissions(...)` calls on one handler
+(a common copy-paste pattern in this codebase) silently discards the physically-lower (usually more
+specific) permission; only the coarse one the guard ever sees. **1,024 endpoint methods across 55 of
+71 controller files (77%)** have this pattern — CRM (177 methods), Builder Studio (123), Advanced HR
+(90), POS (73), Inventory (69), Manufacturing (41), and 20+ other modules including `SuperAdminController`
+itself (meaning `system.tenant.read` was dead and any `admin.read`-holder could enumerate all tenants
+via `GET /super-admin/tenants` — a tenant-isolation-adjacent Critical finding, not just lost granularity).
+- **Fixed for Admin only** (P0-1 in the former Admin completion requirements doc): all 19 admin
+  controllers de-duplicated to a single `@Permissions(fine-grained)` call each, ~30 fine-grained
+  `admin.*` codes registered in `packages/shared/src/permissions/registry.ts`, seed data confirmed
+  non-breaking (seeded `ADMIN` role uses a `admin.*` wildcard, not an enumerated list, so it
+  automatically retains access to all newly-live codes). UAT PASSED 2026-07-02.
+- **NOT fixed project-wide** — this is the single largest open item from the hardening effort.
+  Recommended fix: a project-wide static check (ESLint rule or build-time test parsing every
+  `*.controller.ts` for methods with more than one `@Permissions(...)` call) in CI, followed by a
+  mechanical codemod across the other 54 affected controller files, paired with a seed-data
+  re-alignment pass (any role relying on coarse `module.read/create/update/delete` needs fine-grained
+  grants added, or it silently loses access once fixed — same risk pattern as the Admin fix required).
+- **RBAC boundary recommendation adopted for backups**: a dedicated `system.operations.backup`
+  permission (Super-Admin-only, `@SkipTenantScope()`) was created rather than reusing tenant-scoped
+  `admin.operations.*`, since a full Postgres backup/restore is instance-wide, not per-tenant — this
+  pattern (system.* namespace, distinct from tenant-scoped admin.*) is the template for any future
+  cross-tenant/platform-operator permission.
+
+---
+
+## Module-Specific Completion Notes
+
+> Condensed from former standalone spec/audit/sign-off files (`ADMIN_MODULE_COMPLETION_REQUIREMENTS.md`,
+> `ADMIN_SECURITY_AUDIT.md`, `ADMIN_UAT_SIGNOFF.md`, `ADMIN_UI_ACCESS_CONTROL_SPEC.md`,
+> `CONNECT_MODULE_REQUIREMENTS.md`, `CONNECT_QA_REPORT.md`, `CONNECT_UAT_SIGNOFF.md`,
+> `CONNECT_UI_DESIGN_SPEC.md`, `ECOMMERCE_MODULE_REQUIREMENTS.md`, `BUILDER_STUDIO_MASTER_PLAN.md`),
+> all now retired. Grouped by module; status detail beyond this belongs in module row prose above.
+
+### Admin (row 1)
+Closed gaps (P0-1 RBAC decorator fix + registry fill, P0-2 real automation-rule execution engine,
+P1-1 honest backup labeling + BullMQ↔BackgroundJob wiring) — all UAT PASSED 2026-07-02, evidence
+walked in a dedicated regression sweep (`rbac-regression-sweep.spec.ts`) using a real `Reflector`
+against real controller metadata.
+
+**Still open (P2 backlog, explicitly deferred, non-blocking):**
+- Automation rule execution idempotency — no dedupe guard against duplicate domain-event delivery
+  double-executing a rule's actions (acceptable under today's synchronous at-most-once emitter).
+- Scheduled Tasks → real handler dispatch (`triggerTask` creates a `BackgroundJob` row but no
+  processor switches on arbitrary `handler` strings yet).
+- **Access Control UI restructuring** (uiux-designer spec ready, not yet built): the Access Control
+  matrix (`/admin/access-control/matrix`) and Roles page currently group permissions by `module` only
+  — once ~30 fine-grained `admin.*` codes are live, Admin's column/card becomes an unreadable flat
+  list (47+ checkboxes in one column). Spec calls for a `category?: string` field added to
+  `PermissionDefinition`, a two-level Module→Category hierarchy, a drill-in `Drawer` for the matrix's
+  admin column, and nested category groups replacing flat checkbox stacks on the Roles page. Not yet
+  implemented — flagged as open frontend work.
+- The project-wide RBAC decorator-stacking defect (see Production Readiness section above) was
+  *discovered* via Admin work but is out of Admin's own UAT scope — tracked at the platform level.
+
+### Connect (Communication) module (row 13)
+Teams/GChat parity pass — Phases A/B/C plus later D-phase additions, UAT **ACCEPTED** 2026-07-02.
+Real file sharing (Drive-backed, no more blob URLs), WebSocket real-time wiring (existing
+`notifications.gateway.ts` was built but unused — now wired for live messages/typing/presence),
+message search, channel management + roles (`ChannelMember.role` OWNER/ADMIN/MEMBER), seen-by read
+receipts (≤8-member bound), link preview unfurling, per-channel notification levels, message
+forwarding (client-side marker, no new endpoint), upgraded categorized/searchable emoji picker,
+directory search by department/designation, Saved Messages view.
+
+**Two P0 bugs found and closed during QA** (both re-verified live): (1) channel creator was never
+seeded as `ChannelMember` with role `OWNER` — made archive/rename/member-management permanently
+unreachable for every newly created channel; fixed by mirroring the existing `getOrCreateDM`/
+`createGroup` member-seeding pattern. (2) `PermissionContext.Provider` was never mounted anywhere in
+`apps/web` — every `ProtectedComponent`-gated control in the entire app (not just Connect) was
+invisible to 100% of users regardless of permission; fixed via new `PermissionProvider.tsx` wrapping
+the dashboard layout tree. This was app-wide infra debt surfaced by Connect's QA pass, not a
+Connect-specific defect.
+
+**Known open items** (documented, non-blocking per UAT):
+- Connect's `@mention` notification flow calls `prisma.notification.create` directly instead of
+  emitting `notification.send` — so `NotificationDeliveryService`'s DND-suppression logic (correct,
+  unit-tested in isolation) never actually runs for chat mentions. Low practical harm (nothing is
+  being wrongly delivered, there's just nothing to suppress) but the acceptance criterion as written
+  isn't literally true. Route to backend-developer.
+- `link-preview` endpoint performs a server-side fetch of a fully user-supplied URL with **no SSRF
+  guard** (no private-IP/localhost denylist) — flagged to security-auditor as a required follow-up
+  before this endpoint is exposed to untrusted input.
+- Real-time video/audio calling remains a **non-functional client-side mock** (no WebRTC, no media
+  server) — explicitly out of scope for the parity pass, would need a separate infra/vendor decision
+  (LiveKit/mediasoup/managed provider).
+- Deliberately deferred to backlog: slash commands/bot framework, external/guest cross-tenant access
+  (needs its own security-reviewed spec), calendar recurrence expansion.
+- Directory designation/department enrichment cannot be demonstrated with real data in the seeded dev
+  DB (zero `Employee` rows link to a `User.id`) — a seed-data gap, not a code defect.
+
+### E-Commerce Storefront (row 33)
+See row 33 prose for full implementation detail (backend + admin/public frontend, both shipped
+2026-07-03). Original MVP spec's explicit non-goals for this pass, still open: real payment gateway
+(Stripe, replacing `MockPaymentGatewayService`), Sales Orders list channel-filter UI (Flow D),
+multi-vendor marketplace, subscriptions, discount/coupon engine, customer accounts/order history
+portal, product variants, shipping-rate calculation, nested category trees, abandoned-cart recovery.
+
+### Studio / Builder (row 31)
+The former 40-phase "Builder Studio Master Plan" was an aspirational competitive-strategy document
+(vs. Salesforce/Odoo/Retool/Bubble/Frappe) — most of its content described planned phases, not shipped
+work; that context now lives only in this note since the aspirational roadmap itself added no
+verifiable status beyond what's already tracked in the Studio Backlog section below and the module's
+row-31 prose (which documents what's actually built: visual canvas editors, releases/versioning,
+Marketplace with provision-on-install, Web Studio CMS). Treat any phase from the old master-plan
+document (e.g. Phase 31 real-time multiplayer collaboration, Phase 39 AI-assisted schema generation
+beyond what's already in `builder-ai.service.ts`, Phase 33 custom component CLI) as **BACKLOG/PLANNED,
+not in progress**, unless it also appears in the Studio Backlog section below.
+
+---
+
+## Studio Backlog
+
+> Consolidated from the former `.ai/DEV_SPRINTS.md`. Scope: only the **Studio** module (`/builder`).
+> Phase 1 (UI restructure foundation) is done. Full original plan reference:
+> `~/.claude/plans/complete-ui-restructure-for-compiled-cosmos.md` (competitive gap analysis, 5-phase
+> roadmap). Last re-verified 2026-07-04 against `apps/api/src/modules/builder/` and
+> `apps/web/src/components/builder/`.
+
+**Convention reminder**: `.frappe-*` utility classes are mandated (AGENTS.md), not legacy. The bar =
+`frappe-*` utilities + `@unerp/ui` components together (PageHeader/breadcrumbs/DataTable/Modal/KPICard).
+
+**Still open, from Phase 1 carryover:**
+- Authenticated preview verification — capture screenshots of Studio Home, the 4 pillar hubs,
+  auto-breadcrumbs, and the Cmd-K palette (needs `infra`+`api` running).
+
+**Still open, from Phase 2 (Parity Gap-Fill):**
+- Business Logic → visual rule/flow editor (to replace form-driven automation rules) — the only
+  remaining open item; Form/Page/Workflow canvas editors are already built and confirmed
+  (`FormBuilderWorkspace.tsx` uses `@dnd-kit`, `WorkflowEditorWorkspace.tsx` uses `reactflow`,
+  `PageBuilderWorkspace.tsx` is a grid canvas).
+
+**Still open, from Phase 3 (AI Layer):**
+- Wire the Home "Start with AI" box to real generation end-to-end — not independently re-verified.
+- AI site builder for Web Studio (prompt→site + section regeneration) — not re-verified.
+- (Prompt→artifact generation, in-editor copilot in ≥2 editors are confirmed built —
+  `builder-ai.service.ts`'s `generateAppModule()`, now routed through the self-hosted-Ollama-backed
+  `AiService`, not a direct Claude call as originally scoped.)
+
+**Still open, from Phase 4 (Governance & Enterprise):**
+- Audit trail + approval gates depth in `builder-governance.service.ts` — not independently
+  re-verified this pass.
+- (Environments/promotion pipeline and connector/integration catalog are confirmed built.)
+
+**Still open, from Phase 5 (Ecosystem & Web Advanced) — the largest remaining cluster:**
+- Theme/template marketplace — `/builder/manage/marketplace/page.tsx` exists but not confirmed to
+  cover theme/template distribution vs. the existing App Marketplace (provision-on-install, already
+  documented in row 31).
+- Custom-domain DNS/SSL automation — confirmed still **verify-only** (`WebDomain` model has only
+  `host`/`verified`/`isPrimary`, no automation fields). Genuinely open.
+- DAM upgrade for assets (folders, transforms, CDN) — not re-verified.
+- A/B testing + personalization for Web Studio — not re-verified.
+- Mobile runtime polish — `/builder/manage/mobile-export/page.tsx` covers some surface (native build
+  queue) but "runtime polish" as originally scoped is broader; open pending closer review.
+
+**Key files**: Nav/IA `apps/web/src/navigation/{moduleNav.tsx, registry.tsx, useResolvedNav.ts}`;
+Studio shell `apps/web/app/(dashboard)/builder/{layout.tsx, page.tsx}`,
+`src/components/builder/{StudioCommandPalette,StudioBreadcrumb}.tsx`; Editors
+`apps/web/src/components/builder/{FormBuilderWorkspace,PageBuilderWorkspace,WorkflowEditorWorkspace,DashboardEditorWorkspace}.tsx`;
+Manage pages `apps/web/app/(dashboard)/builder/manage/{releases,environments,logs,access}/page.tsx`;
+Backend `apps/api/src/modules/builder/{builder.service.ts, builder.controller.ts,
+builder-governance.service.ts, builder-ai.service.ts}`; Data/UI
+`apps/web/src/lib/{api.ts, hooks/useModuleData.ts, queryKeys.ts}`, `@unerp/ui`
+(`packages/ui/src/index.ts`).
+
+---
+
+## UI Consolidation Status
+
+> Condensed from the former `.ai/UI_CONSOLIDATION_PLAN.md`. Tracks the multi-phase effort to merge
+> fragmented single-purpose Settings/module pages into tabbed hubs (reduces sidebar nav sprawl).
+
+- **Phase 1 (SHIPPED 2026-07-04)**: Identity & Access Hub (`settings/identity-access`) — merged
+  Users/Groups & Teams/Roles/Access Packages (4→1). Permissions Matrix, SSO, MFA, Password Policy,
+  Sessions, Impersonation, Delegations deliberately kept separate (dense grid or distinct
+  actor/audited flow).
+- **Phase 2 (SHIPPED 2026-07-04)**: all remaining Settings groups — 9 hubs built (Security Policies,
+  Compliance & Data Governance, Approval Operations, Workflow Builder, Branding & Communication,
+  System Operations, General & Branding, API Platform, Import/Export), ~45 legacy redirects in place,
+  nav updated, typecheck clean, verified via curl.
+- **Phase 3a (SHIPPED 2026-07-04)**: cross-module rollout — CRM Marketing & Outreach hub (4→1), CRM
+  Sales Enablement hub (2→1), HR Operations & Service hub (5→1), Supply Chain Operations hub (4→1),
+  15 legacy redirects, nav updated.
+- **Phase 3b (DEFERRED, lower priority)**: POS & Retail "Retail Tools" hub (Held Orders/Promotions/
+  Layaway, 3→1) — small win, not urgent. Drive module marginal candidate, revisit only if page count
+  grows.
+- **Phase 3c (DEFERRED, revisit alongside future backend work)**: Real Estate, Field Service,
+  Healthcare, Education — currently thin/mocked placeholder pages; consolidating now risks being
+  thrown away once real backend work lands. Consolidate as part of each module's real API-wiring
+  effort, not before.
+- **Rejected outright / explicit no-go** (do not re-propose): HR onboarding/offboarding, all Finance
+  module clusters, Studio Manage pages, Analytics/BI (every page is a distinct canvas/builder),
+  Manufacturing, Projects, E-Commerce (already lean), Connect (already unified), CRM Settings
+  (`crm/settings/*` — wait until the org-wide Settings hub pattern proves out further), Settings
+  Reports group (4 pages, no shared actor/mental model).
+- **Flagged, not a consolidation task**: top-level `/workflows` nav entries point at routes with no
+  backing page files under `apps/web/app/(dashboard)/workflows/` — needs a frontend-developer
+  investigation pass (likely dead/stale nav, or should redirect into the Settings Workflow
+  Builder/Approval Operations hubs), separate from this plan's scope.
 

@@ -44,6 +44,8 @@ import { VendorService } from '../marketplace/vendor.service';
 import { StorefrontService } from '../marketplace/storefront.service';
 import { StorefrontController } from '../marketplace/storefront.controller';
 import { DeveloperController } from '../marketplace/developer.controller';
+import { ErrorReportsController } from './error-reports.controller';
+import { ErrorReportsService } from './error-reports.service';
 
 @Module({
   controllers: [
@@ -68,6 +70,7 @@ import { DeveloperController } from '../marketplace/developer.controller';
     OrgHierarchyController,
     DeveloperController,
     StorefrontController,
+    ErrorReportsController,
   ],
   providers: [
     BundleStoreService,
@@ -94,6 +97,7 @@ import { DeveloperController } from '../marketplace/developer.controller';
     DataQualityService,
     SubscriptionService,
     OrgHierarchyService,
+    ErrorReportsService,
   ],
   exports: [
     AdminService,
