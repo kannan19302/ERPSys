@@ -410,7 +410,8 @@ model SalesPipeline {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  opportunities Opportunity[]
+  opportunities  Opportunity[]
+  stageConfigs   PipelineStage[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -7758,6 +7759,9 @@ model Case {
   slaDeadline     DateTime? @map("sla_deadline")
   firstResponseAt DateTime? @map("first_response_at")
   resolvedAt      DateTime? @map("resolved_at")
+  slaFirstResponseAt DateTime? @map("sla_first_response_at")
+  slaResolveBy       DateTime? @map("sla_resolve_by")
+  slaBreached        Boolean   @default(false) @map("sla_breached")
   assignedToId    String?   @map("assigned_to_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
@@ -8078,5 +8082,121 @@ model AssetMaintenanceLog {
   @@index([tenantId])
   @@index([assetId])
   @@map("asset_maintenance_logs")
+}
+
+// ════════════════════════════════════════════════
+// CRM ADVANCED — LEAD SCORING, DUPLICATE DETECTION,
+// CONFIGURABLE PIPELINES, SEGMENTATION, SLA POLICIES
+// ════════════════════════════════════════════════
+
+model LeadScoringRule {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  field     String
+  operator  String
+  value     String
+  points    Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, active])
+  @@map("crm_lead_scoring_rules")
+}
+
+model DuplicateRule {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  entity      String // LEAD|CONTACT|ACCOUNT
+  matchFields Json     @map("match_fields")
+  threshold   Int
+  action      String // BLOCK|WARN|MERGE
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, entity, active])
+  @@map("crm_duplicate_rules")
+}
+
+model PipelineStage {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  pipelineId  String   @map("pipeline_id")
+  name        String
+  order       Int
+  probability Int
+  isWon       Boolean  @default(false) @map("is_won")
+  isLost      Boolean  @default(false) @map("is_lost")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  pipeline SalesPipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, pipelineId])
+  @@map("crm_pipeline_stages")
+}
+
+model Segment {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  entity    String // CONTACT|LEAD|ACCOUNT
+  criteria  Json
+  isDynamic Boolean  @default(true) @map("is_dynamic")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members SegmentMember[]
+
+  @@index([tenantId, entity])
+  @@map("crm_segments")
+}
+
+model SegmentMember {
+  id        String   @id @default(cuid())
+  segmentId String   @map("segment_id")
+  entityId  String   @map("entity_id")
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  segment Segment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@unique([segmentId, entityId])
+  @@index([segmentId])
+  @@map("crm_segment_members")
+}
+
+model SlaPolicy {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  name              String
+  entity            String // CASE
+  priority          String
+  firstResponseMins Int      @map("first_response_mins")
+  resolutionMins    Int      @map("resolution_mins")
+  businessHoursId   String?  @map("business_hours_id")
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, entity, active])
+  @@map("crm_sla_policies")
+}
+
+model SlaBreach {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  entity     String
+  entityId   String   @map("entity_id")
+  policyId   String   @map("policy_id")
+  breachType String   @map("breach_type") // FIRST_RESPONSE|RESOLUTION
+  breachedAt DateTime @map("breached_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, entity, entityId])
+  @@index([tenantId, policyId])
+  @@map("crm_sla_breaches")
 }
 

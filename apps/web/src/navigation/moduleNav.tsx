@@ -187,6 +187,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Sales Enablement Hub', href: '/crm/sales-enablement', icon: BookOpen },
+            { name: 'Segments', href: '/crm/segments', icon: Target },
           ]
         },
         {
@@ -214,6 +215,10 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Custom Fields', href: '/crm/settings/custom-fields', icon: Database },
             { name: 'Record Types', href: '/crm/settings/record-types', icon: Layers },
             { name: 'Approval Processes', href: '/crm/settings/approvals', icon: ShieldCheck },
+            { name: 'Lead Scoring', href: '/crm/settings/lead-scoring', icon: Zap },
+            { name: 'Duplicate Rules', href: '/crm/settings/duplicate-rules', icon: Users },
+            { name: 'Pipelines', href: '/crm/settings/pipelines', icon: GitBranch },
+            { name: 'SLA Policies', href: '/crm/settings/sla-policies', icon: Clock },
           ]
         },
       ] as SidebarItem[]

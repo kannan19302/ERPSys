@@ -20,15 +20,23 @@ interface Opportunity {
     _count?: { activities: number };
 }
 
-const PIPELINE_STAGES = ['PROSPECTING', 'QUALIFICATION', 'PROPOSAL', 'NEGOTIATION', 'CLOSED_WON', 'CLOSED_LOST'];
-const STAGE_LABELS: Record<string, string> = {
+// Fallback stages if no pipeline configured. Real stages fetched from GET /crm/pipelines/:id/stages.
+const DEFAULT_STAGES = ['PROSPECTING', 'QUALIFICATION', 'PROPOSAL', 'NEGOTIATION', 'CLOSED_WON', 'CLOSED_LOST'];
+const DEFAULT_STAGE_LABELS: Record<string, string> = {
     PROSPECTING: 'Prospecting', QUALIFICATION: 'Qualification', PROPOSAL: 'Proposal',
     NEGOTIATION: 'Negotiation', CLOSED_WON: 'Closed Won', CLOSED_LOST: 'Closed Lost'
 };
-const STAGE_COLORS: Record<string, string> = {
-    PROSPECTING: '#3b82f6', QUALIFICATION: '#f59e0b', PROPOSAL: '#8b5cf6',
-    NEGOTIATION: '#f97316', CLOSED_WON: '#10b981', CLOSED_LOST: '#ef4444'
-};
+const STAGE_COLOR_PALETTE = ['#3b82f6', '#f59e0b', '#8b5cf6', '#f97316', '#10b981', '#ef4444', '#06b6d4', '#eab308'];
+
+interface PipelineStage {
+    id: string;
+    name: string;      // display label
+    key: string;       // machine key stored on opportunity.stage
+    probability: number;
+    isWon: boolean;
+    isLost: boolean;
+    color: string;
+}
 
 export default function OpportunitiesPage() {
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -40,16 +48,45 @@ export default function OpportunitiesPage() {
     const [formData, setFormData] = useState({ name: '', customerId: '', amount: '', probability: '10', stage: 'PROSPECTING' });
     const [submitting, setSubmitting] = useState(false);
     const [customers, setCustomers] = useState<Array<{ id: string; name: string }>>([]);
+    const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([]);
+
+    const stageKeys = pipelineStages.length > 0 ? pipelineStages.map(s => s.key) : DEFAULT_STAGES;
+    const stageLabel = (k: string) => pipelineStages.find(s => s.key === k)?.name || DEFAULT_STAGE_LABELS[k] || k;
+    const stageColor = (k: string) => pipelineStages.find(s => s.key === k)?.color || STAGE_COLOR_PALETTE[stageKeys.indexOf(k) % STAGE_COLOR_PALETTE.length] || '#6b7280';
+    const isLostStage = (k: string) => pipelineStages.find(s => s.key === k)?.isLost ?? (k === 'CLOSED_LOST');
+    const isWonStage = (k: string) => pipelineStages.find(s => s.key === k)?.isWon ?? (k === 'CLOSED_WON');
 
     const fetchData = async () => {
         const token = localStorage.getItem('token');
         try {
-            const [oppsRes, customersRes] = await Promise.all([
+            const [oppsRes, customersRes, pipelinesRes] = await Promise.all([
                 fetch('/api/v1/crm/opportunities', { headers: { Authorization: `Bearer ${token || ''}` } }),
                 fetch('/api/v1/crm/customers', { headers: { Authorization: `Bearer ${token || ''}` } }),
+                fetch('/api/v1/crm/pipelines', { headers: { Authorization: `Bearer ${token || ''}` } }),
             ]);
             if (oppsRes.ok) setOpportunities(await oppsRes.json().then(d => Array.isArray(d) ? d : (d?.data || [])));
             if (customersRes.ok) setCustomers((await customersRes.json()).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
+            if (pipelinesRes.ok) {
+                const pipelinesJson = await pipelinesRes.json();
+                const pipelinesList = Array.isArray(pipelinesJson) ? pipelinesJson : (pipelinesJson?.data || []);
+                const defaultPipeline = pipelinesList.find((p: { isDefault?: boolean }) => p.isDefault) || pipelinesList[0];
+                if (defaultPipeline?.id) {
+                    const stagesRes = await fetch(`/api/v1/crm/pipelines/${defaultPipeline.id}/stages`, { headers: { Authorization: `Bearer ${token || ''}` } });
+                    if (stagesRes.ok) {
+                        const sj = await stagesRes.json();
+                        const list = Array.isArray(sj) ? sj : (sj?.data || []);
+                        setPipelineStages(list.map((s: { id: string; name: string; key?: string; probability: number; isWon: boolean; isLost: boolean }, i: number) => ({
+                            id: s.id,
+                            name: s.name,
+                            key: s.key || s.name.toUpperCase().replace(/\s+/g, '_'),
+                            probability: s.probability,
+                            isWon: s.isWon,
+                            isLost: s.isLost,
+                            color: STAGE_COLOR_PALETTE[i % STAGE_COLOR_PALETTE.length],
+                        })));
+                    }
+                }
+            }
         } catch {
             setError('Could not load data. Please try again.');
             setCustomers([]);
@@ -89,14 +126,14 @@ export default function OpportunitiesPage() {
         `${o.name} ${o.customer?.name || ''}`.toLowerCase().includes(search.toLowerCase())
     );
 
-    const grouped = PIPELINE_STAGES.reduce((acc, stage) => {
+    const grouped = stageKeys.reduce((acc, stage) => {
         acc[stage] = filtered.filter(o => o.stage === stage);
         return acc;
     }, {} as Record<string, Opportunity[]>);
 
     // Calculate totals
-    const totalPipeline = filtered.filter(o => o.stage !== 'CLOSED_LOST').reduce((sum, o) => sum + Number(o.amount || 0), 0);
-    const totalWon = filtered.filter(o => o.stage === 'CLOSED_WON').reduce((sum, o) => sum + Number(o.amount || 0), 0);
+    const totalPipeline = filtered.filter(o => !isLostStage(o.stage)).reduce((sum, o) => sum + Number(o.amount || 0), 0);
+    const totalWon = filtered.filter(o => isWonStage(o.stage)).reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
 
@@ -129,12 +166,12 @@ export default function OpportunitiesPage() {
                 </Card>
                 <Card>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Open Deals</div>
-                    <h3 style={{ margin: 'var(--space-1) 0', fontSize: 'var(--text-xl)' }}>{filtered.filter(o => !['CLOSED_WON', 'CLOSED_LOST'].includes(o.stage)).length}</h3>
+                    <h3 style={{ margin: 'var(--space-1) 0', fontSize: 'var(--text-xl)' }}>{filtered.filter(o => !isWonStage(o.stage) && !isLostStage(o.stage)).length}</h3>
                 </Card>
                 <Card>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Avg Deal Size</div>
                     <h3 style={{ margin: 'var(--space-1) 0', fontSize: 'var(--text-xl)' }}>
-                        ${filtered.length > 0 ? Math.round(totalPipeline / filtered.filter(o => o.stage !== 'CLOSED_LOST').length || 1).toLocaleString() : 0}
+                        ${filtered.length > 0 ? Math.round(totalPipeline / filtered.filter(o => !isLostStage(o.stage)).length || 1).toLocaleString() : 0}
                     </h3>
                 </Card>
             </div>
@@ -153,15 +190,15 @@ export default function OpportunitiesPage() {
 
             {viewMode === 'kanban' ? (
                 <div style={{ display: 'flex', gap: 'var(--space-3)', overflowX: 'auto', minHeight: '60vh', paddingBottom: 'var(--space-4)' }}>
-                    {PIPELINE_STAGES.map(stage => {
+                    {stageKeys.map(stage => {
                         const stageOpps = grouped[stage] || [];
                         const stageTotal = stageOpps.reduce((s, o) => s + Number(o.amount || 0), 0);
                         return (
                             <div key={stage} style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                                <div style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', border: `1px solid ${STAGE_COLORS[stage]}33`, borderLeft: `3px solid ${STAGE_COLORS[stage]}` }}>
+                                <div style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', border: `1px solid ${stageColor(stage)}33`, borderLeft: `3px solid ${stageColor(stage)}` }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{STAGE_LABELS[stage]}</span>
-                                        <span style={{ background: STAGE_COLORS[stage] + '20', color: STAGE_COLORS[stage], padding: '1px 8px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)' }}>{stageOpps.length}</span>
+                                        <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{stageLabel(stage)}</span>
+                                        <span style={{ background: stageColor(stage) + '20', color: stageColor(stage), padding: '1px 8px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-bold)' }}>{stageOpps.length}</span>
                                     </div>
                                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>${stageTotal.toLocaleString()}</div>
                                 </div>
@@ -177,10 +214,10 @@ export default function OpportunitiesPage() {
                                                 </div>
                                                 {opp.expectedCloseDate && <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: 'var(--space-1)' }}>Close: {new Date(opp.expectedCloseDate).toLocaleDateString()}</div>}
                                                 <div style={{ marginTop: 'var(--space-2)', display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
-                                                    {PIPELINE_STAGES.filter(s => s !== opp.stage && s !== 'CLOSED_LOST').slice(0, 3).map(s => (
+                                                    {stageKeys.filter(s => s !== opp.stage && !isLostStage(s)).slice(0, 3).map(s => (
                                                         <button key={s} onClick={e => { e.preventDefault(); handleStageChange(opp.id, s); }}
-                                                            style={{ fontSize: '8px', padding: '1px 4px', border: `1px solid ${STAGE_COLORS[s]}44`, borderRadius: '4px', background: 'transparent', color: STAGE_COLORS[s], cursor: 'pointer' }}>
-                                                            {(STAGE_LABELS[s] || s).slice(0, 4)}
+                                                            style={{ fontSize: '8px', padding: '1px 4px', border: `1px solid ${stageColor(s)}44`, borderRadius: '4px', background: 'transparent', color: stageColor(s), cursor: 'pointer' }}>
+                                                            {(stageLabel(s)).slice(0, 4)}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -210,7 +247,7 @@ export default function OpportunitiesPage() {
                                 <tr key={opp.id} style={{ borderBottom: '1px solid var(--color-border)', cursor: 'pointer' }} onClick={() => window.location.href = `/crm/opportunities/${opp.id}`}>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)' }}>{opp.name}</td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{opp.customer?.name || '-'}</td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}><StatusBadge status={STAGE_LABELS[opp.stage] || opp.stage} /></td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}><StatusBadge status={stageLabel(opp.stage)} /></td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>${Number(opp.amount || 0).toLocaleString()}</td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'center' }}>{opp.probability}%</td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{opp.expectedCloseDate ? new Date(opp.expectedCloseDate).toLocaleDateString() : '-'}</td>
@@ -244,7 +281,7 @@ export default function OpportunitiesPage() {
                             </div>
                             <select value={formData.stage} onChange={e => setFormData({ ...formData, stage: e.target.value })}
                                 style={{ padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }}>
-                                {PIPELINE_STAGES.map(s => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
+                                {stageKeys.map(s => <option key={s} value={s}>{stageLabel(s)}</option>)}
                             </select>
                             <Button variant="primary" type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create Opportunity'}</Button>
                         </form>

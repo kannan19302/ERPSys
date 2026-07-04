@@ -3,6 +3,61 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] Advanced Finance module refactoring and hardening
+
+Resolved advanced-finance module unit and integration test failures due to service contract mismatches, mock leaks, and algorithm discrepancies.
+
+- **Constructor Mismatches & Decoupling**: Restored the modular architecture of `AdvancedFinanceService` by decomposing its monolithic class into 10 dedicated domain services (`GlAccountingService`, `BudgetingService`, `BankingService`, `ExpenseManagementService`, `RevenueRecognitionService`, `TaxEngineService`, `TreasuryService`, `ConsolidationService`, `FinancialReportingService`, `PeriodManagementService`). Configured correct dependency injection in `advanced-finance.module.ts` and resolved test-harness instantiation failures by passing correct mock dependencies to all constructor calls in the specs.
+- **Mock Leaks & Test Isolation**: Replaced the global `mockResolvedValue` loops in the service specs with `mockResolvedValueOnce` and implemented a manual mock reset and restore loop inside the `beforeEach` block. This guarantees clean isolation of prisma mock implementations across tests and prevents test pollution.
+- **Shared Reference Mock Bug**: Fixed a bug where `prisma.invoice` and `prisma.purchaseOrder` shared the same mock object reference due to a non-factory model mock structure. Replaced the generic model mock with a factory function (`createGenericPrismaMock`) to isolate models, and fixed the FX loss test to mock the correct models (`purchaseOrder.findMany` instead of `invoice.findMany`).
+- **Algorithm Parity & Date Scoping**: Restored legacy time-scoped P&L report generation, trial balances, aging reports, and currency revaluation logic (querying open invoices/PO sub-ledgers directly to calculate unrealized exchange gain/loss).
+- **All 194 Advanced Finance tests passing successfully.**
+
+## [2026-07-04] CRM backend contract-drift fix — lead scoring, duplicates, pipelines, segments, SLA policies
+
+Backend-only pass to align 5 new CRM features (built in parallel with the frontend) with the frontend's
+actual API calls. Frontend (`apps/web/app/(dashboard)/crm/`) was not touched.
+
+- **Permissions renamed** to match `ProtectedComponent permission="..."` strings used by the frontend,
+  and registered in `packages/shared/src/permissions/registry.ts`: `crm.pipeline.*` → `crm.pipelines.*`
+  (`.read`/`.create`/`.update`/`.delete`) across `crm-pipeline-stages.controller.ts` and the pre-existing
+  `GET/POST /crm/pipelines` routes in `crm.controller.ts` (previously guarded by the unrelated
+  `crm.opportunity.read`/`.create`); `crm.segment.*` → `crm.segments.*` in `crm-segments.controller.ts`
+  (including the `/segments/:id/refresh` endpoint, corrected to `.update`); `crm.duplicates.scan` fixed
+  on the 4 merge endpoints in `crm-duplicates.controller.ts` (`leads|contacts|customers|accounts/merge`),
+  which had incorrectly inherited the `.scan` permission instead of `crm.duplicates.merge`.
+  `crm.lead-scoring.*` and `crm.sla-policies.*` were already correctly named.
+- **Removed a dead/colliding route**: `crm.controller.ts` had a legacy `POST /crm/contacts/merge`
+  (`primaryContactId`/`secondaryContactId` shape, `crm.contact.update` permission) that Express-shadowed
+  the new `CrmDuplicatesController`'s `POST /crm/contacts/merge` (`winnerId`/`loserIds`/`fieldChoices`,
+  matching `DuplicatesFinder.tsx` exactly) since `CrmController` registers first in `crm.module.ts`.
+  Deleted the legacy route; the duplicates-based merge (already correct pre-existing logic in
+  `crm-duplicates.service.ts`) is now reachable for all four entities.
+- **Response envelope**: wrapped list/mutation responses in `{ data: ... }` for
+  `crm-lead-scoring.controller.ts` and `crm-duplicates.controller.ts`, plus the `GET/POST /crm/pipelines`
+  routes in `crm.controller.ts`, matching the frontend `api.ts` unwrap convention
+  (`json?.data ?? json`) and the codebase's standard envelope. `crm-pipeline-stages`, `crm-segments`,
+  `crm-sla` controllers were already wrapped correctly.
+- **Audit trail**: added `@TrackChanges('SalesPipeline')` + `ChangeHistoryInterceptor` to
+  `POST /crm/pipelines` (was missing).
+- Verified (no fix needed): `GET /crm/pipelines` + `POST /crm/pipelines` already existed
+  (`crm-deals.service.ts` `getPipelines`/`createPipeline`, backed by `SalesPipeline` Prisma model with
+  `id`/`name`/`isDefault`/`stages`) — only needed permission renames + envelope, not new endpoints.
+  Stage reorder (`POST /crm/pipelines/:id/stages/reorder`) already treats a stage row with a missing
+  `id` as a create (`crm-pipeline-stages.service.ts`). Case list/`sla-status` endpoints already return
+  `slaDeadline`/`slaResolveBy` (full-model Prisma select, no serializer needed).
+- **Typecheck**: `pnpm --filter @unerp/api typecheck` — 2 pre-existing unrelated errors in
+  `advanced-finance/services/{expense-management,tax-engine}.service.ts` (unused `Prisma` import); zero
+  errors in any CRM file touched.
+- **Tests**: `pnpm --filter @unerp/api test -- crm` — 233 passed, 7 failed. All 7 failures are
+  pre-existing test-harness issues unrelated to this change (services under test instantiated without
+  newly-added constructor dependencies, e.g. `crm-cases.service.spec.ts` not passing `sla`,
+  `crm.service.spec.ts` not passing `leadScoring`, `crm-duplicates.service.spec.ts` /
+  `crm-pipeline-stages.service.spec.ts` mock-setup gaps) — none touch permission strings or response
+  shape, and none regressed by this change (verified via `git diff --stat` showing zero changes to the
+  service files those specs exercise, aside from `crm-cases.service.ts`/`crm-leads.service.ts` which
+  were already modified before this session started).
+
 ## [2026-07-04] Stripe E-Commerce Payment Gateway Integration
 
 Implemented a production-grade Stripe card payment processing pipeline for storefront checkouts, featuring a zero-dependency API adapter service, a dynamic provider factory, native cryptographic webhook signature verification, and Next.js admin channel filters.

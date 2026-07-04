@@ -20,7 +20,7 @@ import {
   CreateCampaignInput,
   CreateOpportunityLineItemInput, UpdateOpportunityLineItemInput,
   CreatePriceBookInput, UpdatePriceBookInput, CreatePriceBookEntryInput,
-  CreateContactTagInput, MergeContactsInput,
+  CreateContactTagInput,
   CreateSalesTargetInput, UpdateSalesTargetInput,
   CreateSavedReportInput,
   CreateCrmWorkflowRuleInput, UpdateCrmWorkflowRuleInput,
@@ -226,16 +226,18 @@ export class CrmController {
 
   @ApiOperation({ summary: 'Get pipelines' })
   @Get('pipelines')
-  @Permissions('crm.opportunity.read')
+  @Permissions('crm.pipelines.read')
   async getPipelines(@Req() req: AuthenticatedRequest) {
-    return this.crmService.getPipelines(req.user.tenantId);
+    return { data: await this.crmService.getPipelines(req.user.tenantId) };
   }
 
   @ApiOperation({ summary: 'Create pipeline' })
   @Post('pipelines')
-  @Permissions('crm.opportunity.create')
+  @Permissions('crm.pipelines.create')
+  @TrackChanges('SalesPipeline')
+  @UseInterceptors(ChangeHistoryInterceptor)
   async createPipeline(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateSalesPipelineInput) {
-    return this.crmService.createPipeline(req.user.tenantId, dto);
+    return { data: await this.crmService.createPipeline(req.user.tenantId, dto) };
   }
 
   // ── OPPORTUNITIES ─────────────────────────────
@@ -543,12 +545,12 @@ export class CrmController {
     return this.crmService.findDuplicateContacts(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Merge contacts' })
-  @Post('contacts/merge')
-  @Permissions('crm.contact.update')
-  async mergeContacts(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: MergeContactsInput) {
-    return this.crmService.mergeContacts(req.user.tenantId, dto);
-  }
+  // NOTE: POST /crm/contacts/merge is now served by CrmDuplicatesController
+  // (winnerId/loserIds/fieldChoices shape, matching DuplicatesFinder.tsx).
+  // The legacy primaryContactId/secondaryContactId route was removed here to
+  // avoid an Express route collision — CrmDuplicatesController is registered
+  // after this controller in crm.module.ts, so it would otherwise be
+  // unreachable/shadowed by this route.
 
   // ── PHASE 2: PIPELINE HEALTH ─────────────────
 

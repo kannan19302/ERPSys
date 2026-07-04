@@ -12,8 +12,33 @@ interface CaseRow {
   status: string;
   channel: string;
   slaDeadline: string | null;
+  slaResolveBy?: string | null;
   createdAt: string;
   customer?: { id: string; name: string } | null;
+}
+
+function SlaCountdownBadge({ resolveBy, status }: { resolveBy?: string | null; status: string }) {
+  if (!resolveBy || status === 'RESOLVED' || status === 'CLOSED') {
+    return <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>—</span>;
+  }
+  const remainingMs = new Date(resolveBy).getTime() - Date.now();
+  const overdue = remainingMs < 0;
+  const hoursLeft = remainingMs / (1000 * 60 * 60);
+  const color = overdue
+    ? 'var(--color-danger)'
+    : hoursLeft <= 4
+      ? 'var(--color-warning)'
+      : 'var(--color-success)';
+  const label = overdue
+    ? `Overdue by ${Math.abs(Math.round(hoursLeft))}h`
+    : hoursLeft >= 24
+      ? `${Math.round(hoursLeft / 24)}d left`
+      : `${Math.max(0, Math.round(hoursLeft))}h left`;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-sunken)', color, fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)' }}>
+      <Clock size={10} /> {label}
+    </span>
+  );
 }
 
 interface SlaStatus {
@@ -89,6 +114,7 @@ export default function CrmCasesPage() {
     { key: 'priority', header: 'Priority', render: (row) => <Badge variant={row.priority === 'URGENT' || row.priority === 'HIGH' ? 'danger' : 'default'}>{row.priority}</Badge> },
     { key: 'status', header: 'Status', render: (row) => <Badge variant={row.status === 'RESOLVED' || row.status === 'CLOSED' ? 'success' : 'info'}>{row.status}</Badge> },
     { key: 'channel', header: 'Channel' },
+    { key: 'sla-countdown', header: 'SLA', render: (row) => <SlaCountdownBadge resolveBy={row.slaResolveBy ?? row.slaDeadline} status={row.status} /> },
     {
       key: 'slaDeadline', header: 'SLA Deadline',
       render: (row) => row.slaDeadline ? (

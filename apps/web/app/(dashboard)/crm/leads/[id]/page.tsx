@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
-import { Phone, Mail, Globe, ArrowLeft, Activity, UserPlus, X } from 'lucide-react';
+import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent } from '@unerp/ui';
+import { Phone, Mail, Globe, ArrowLeft, Activity, UserPlus, X, RefreshCw, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 interface LeadDetail {
@@ -24,6 +24,22 @@ export default function LeadDetailPage() {
     const [showConvert, setShowConvert] = useState(false);
     const [convertForm, setConvertForm] = useState({ customerName: '', opportunityName: '', opportunityAmount: '' });
     const [converting, setConverting] = useState(false);
+    const [recalcing, setRecalcing] = useState(false);
+
+    const recalcScore = async () => {
+        setRecalcing(true);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/v1/crm/leads/${params.id}/recalculate-score`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
+            });
+            if (res.ok) {
+                const json = await res.json();
+                const updated = json?.data ?? json;
+                setLead(prev => prev ? { ...prev, score: updated.score ?? prev.score } : prev);
+            }
+        } catch { /* ignore */ } finally { setRecalcing(false); }
+    };
 
     useEffect(() => {
         const fetchLead = async () => {
@@ -83,6 +99,28 @@ export default function LeadDetailPage() {
                     </div>
                 }
             />
+
+            {/* Prominent score banner */}
+            <Card padding="md">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: lead.score >= 80 ? 'var(--color-success-light, #ecfdf5)' : lead.score >= 50 ? 'var(--color-warning-light)' : 'var(--color-bg-sunken)', color: lead.score >= 80 ? 'var(--color-success)' : lead.score >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)', fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-2xl, 22px)' }}>
+                            {lead.score}
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>Lead Score</div>
+                            <div style={{ fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                                <TrendingUp size={14} /> {lead.score >= 80 ? 'Hot' : lead.score >= 50 ? 'Warm' : 'Cold'}
+                            </div>
+                        </div>
+                    </div>
+                    <ProtectedComponent permission="crm.lead-scoring.recalculate">
+                        <Button variant="outline" size="sm" onClick={recalcScore} disabled={recalcing}>
+                            <RefreshCw size={14} /> {recalcing ? 'Recalculating…' : 'Recalculate Score'}
+                        </Button>
+                    </ProtectedComponent>
+                </div>
+            </Card>
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)' }}>
                 {/* Main Content */}

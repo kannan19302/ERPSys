@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
-import { Search, Plus, Mail, Building, X } from 'lucide-react';
+import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent } from '@unerp/ui';
+import { Search, Plus, Mail, Building, X, Users } from 'lucide-react';
+import { DuplicatesFinder } from '../_components/DuplicatesFinder';
 
 interface Customer {
     id: string; name: string; type: string; email: string | null; phone: string | null;
@@ -17,6 +18,7 @@ export default function CustomersPage() {
     const [showCreate, setShowCreate] = useState(false);
     const [form, setForm] = useState({ name: '', email: '', phone: '', creditLimit: '5000', paymentTerms: '30' });
     const [submitting, setSubmitting] = useState(false);
+    const [showDuplicates, setShowDuplicates] = useState(false);
 
     const fetchData = async () => {
         const token = localStorage.getItem('token');
@@ -53,7 +55,14 @@ export default function CustomersPage() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
             <PageHeader title="Customers" description="Manage your customer accounts and credit terms" breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Customers' }]}
-                actions={<Button variant="primary" size="sm" onClick={() => setShowCreate(true)}><Plus size={14} /> Add Customer</Button>} />
+                actions={
+                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                        <ProtectedComponent permission="crm.duplicates.scan">
+                            <Button variant="outline" size="sm" onClick={() => setShowDuplicates(true)}><Users size={14} /> Find Duplicates</Button>
+                        </ProtectedComponent>
+                        <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}><Plus size={14} /> Add Customer</Button>
+                    </div>
+                } />
             <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
                 <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
                     <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
@@ -106,6 +115,10 @@ export default function CustomersPage() {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {showDuplicates && (
+                <DuplicatesFinder entity="customers" onClose={() => setShowDuplicates(false)} onMerged={fetchData} />
             )}
         </div>
     );

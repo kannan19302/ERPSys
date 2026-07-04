@@ -34,7 +34,16 @@ export default function CampaignsTab() {
   const [selected, setSelected] = useState<Campaign | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: '', status: 'PLANNED', type: 'EMAIL', budget: 0, actualCost: 0, notes: '' });
+  const [form, setForm] = useState({ name: '', status: 'PLANNED', type: 'EMAIL', budget: 0, actualCost: 0, notes: '', segmentId: '' });
+  const [segments, setSegments] = useState<Array<{ id: string; name: string; entity: string; memberCount?: number }>>([]);
+
+  useEffect(() => {
+    fetch('/api/v1/crm/segments', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((d) => setSegments(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => setSegments([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const authHeaders = () => ({ Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''}` });
 
@@ -55,7 +64,7 @@ export default function CampaignsTab() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const resetForm = () => setForm({ name: '', status: 'PLANNED', type: 'EMAIL', budget: 0, actualCost: 0, notes: '' });
+  const resetForm = () => setForm({ name: '', status: 'PLANNED', type: 'EMAIL', budget: 0, actualCost: 0, notes: '', segmentId: '' });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +73,7 @@ export default function CampaignsTab() {
       const res = await fetch('/api/v1/crm/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ ...form, budget: Number(form.budget), actualCost: Number(form.actualCost), notes: form.notes || undefined }),
+        body: JSON.stringify({ ...form, budget: Number(form.budget), actualCost: Number(form.actualCost), notes: form.notes || undefined, segmentId: form.segmentId || undefined }),
       });
       if (!res.ok) throw new Error(`Save failed (${res.status})`);
       toast.success('Campaign created', `"${form.name}" has been registered.`);
@@ -214,6 +223,12 @@ export default function CampaignsTab() {
               <Input type="number" min={0} value={form.actualCost} onChange={(e) => setForm({ ...form, actualCost: Number(e.target.value) })} />
             </FormField>
           </div>
+          <FormField label="Target Segment">
+            <Select value={form.segmentId} onChange={(e) => setForm({ ...form, segmentId: e.target.value })}>
+              <option value="">— All records (no segment) —</option>
+              {segments.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.entity}{typeof s.memberCount === 'number' ? ` · ${s.memberCount}` : ''})</option>)}
+            </Select>
+          </FormField>
           <FormField label="Notes / Brief">
             <Textarea rows={3} placeholder="Goal, target demographics, etc." value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           </FormField>

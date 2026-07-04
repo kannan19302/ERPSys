@@ -1,12 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Spinner, Button } from '@unerp/ui';
+import { Card, PageHeader, StatusBadge, Spinner, Button, ProtectedComponent } from '@unerp/ui';
 import {
     Search, Plus, X, AlertCircle,
-    TrendingUp, Building
+    TrendingUp, Building, Users
 } from 'lucide-react';
 import Link from 'next/link';
+import { DuplicatesFinder } from '../_components/DuplicatesFinder';
+
+function ScoreChip({ score }: { score: number }) {
+    const color = score >= 80 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)';
+    return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-sunken)', color, fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)' }}>
+            <TrendingUp size={10} /> {score}
+        </span>
+    );
+}
 
 interface Lead {
     id: string;
@@ -36,6 +46,7 @@ export default function LeadsPage() {
     const [showCreate, setShowCreate] = useState(false);
     const [formData, setFormData] = useState({ firstName: '', lastName: '', company: '', email: '', phone: '', notes: '' });
     const [submitting, setSubmitting] = useState(false);
+    const [showDuplicates, setShowDuplicates] = useState(false);
 
     const fetchLeads = async () => {
         const token = localStorage.getItem('token');
@@ -107,6 +118,11 @@ export default function LeadsPage() {
                             <button onClick={() => setViewMode('kanban')} style={{ padding: 'var(--space-1.5) var(--space-3)', border: 'none', background: viewMode === 'kanban' ? 'var(--color-primary)' : 'transparent', color: viewMode === 'kanban' ? 'white' : 'var(--color-text)', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>Kanban</button>
                             <button onClick={() => setViewMode('table')} style={{ padding: 'var(--space-1.5) var(--space-3)', border: 'none', background: viewMode === 'table' ? 'var(--color-primary)' : 'transparent', color: viewMode === 'table' ? 'white' : 'var(--color-text)', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>Table</button>
                         </div>
+                        <ProtectedComponent permission="crm.duplicates.scan">
+                            <Button variant="outline" size="sm" onClick={() => setShowDuplicates(true)}>
+                                <Users size={14} /> Find Duplicates
+                            </Button>
+                        </ProtectedComponent>
                         <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>
                             <Plus size={14} /> Add Lead
                         </Button>
@@ -148,7 +164,7 @@ export default function LeadsPage() {
                                                     <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
                                                         {lead.firstName} {lead.lastName}
                                                     </span>
-                                                    {lead.score >= 80 && <TrendingUp size={14} style={{ color: 'var(--color-success)' }} />}
+                                                                    <ScoreChip score={lead.score} />
                                                 </div>
                                                 {lead.company && (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
@@ -197,7 +213,7 @@ export default function LeadsPage() {
                                         {lead.email && <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{lead.email}</div>}
                                     </td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)' }}><StatusBadge status={lead.status} /></td>
-                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{lead.score}</td>
+                                    <td style={{ padding: 'var(--space-3) var(--space-4)' }}><ScoreChip score={lead.score} /></td>
                                     <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{lead.source?.name || '-'}</td>
                                 </tr>
                             ))}
@@ -234,6 +250,10 @@ export default function LeadsPage() {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {showDuplicates && (
+                <DuplicatesFinder entity="leads" onClose={() => setShowDuplicates(false)} onMerged={fetchLeads} />
             )}
         </div>
     );

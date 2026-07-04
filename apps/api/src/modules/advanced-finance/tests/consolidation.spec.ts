@@ -1,5 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdvancedFinanceService } from '../advanced-finance.service';
+import {
+  GlAccountingService,
+  BudgetingService,
+  BankingService,
+  ExpenseManagementService,
+  RevenueRecognitionService,
+  TaxEngineService,
+  TreasuryService,
+  ConsolidationService,
+  FinancialReportingService,
+  PeriodManagementService,
+} from '../services';
 
 vi.mock('@prisma/client', () => ({
   Prisma: {
@@ -34,8 +46,47 @@ describe('AdvancedFinanceService — consolidation', () => {
   let service: AdvancedFinanceService;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    service = new AdvancedFinanceService();
+    Object.keys(prisma).forEach((key) => {
+      const model = (prisma as any)[key];
+      if (model && typeof model === 'object') {
+        Object.keys(model).forEach((m) => {
+          if (typeof model[m] === 'function' && vi.isMockFunction(model[m])) {
+            vi.mocked(model[m]).mockReset();
+            // Restore default mocked values
+            if (m === 'findMany') vi.mocked(model[m]).mockResolvedValue([]);
+            if (m === 'findFirst') vi.mocked(model[m]).mockResolvedValue(null);
+            if (m === 'create') vi.mocked(model[m]).mockResolvedValue({ id: 'new-id' });
+            if (m === 'update') vi.mocked(model[m]).mockResolvedValue({ id: 'updated-id' });
+            if (m === 'findUnique') vi.mocked(model[m]).mockResolvedValue(null);
+            if (m === 'count') vi.mocked(model[m]).mockResolvedValue(0);
+          }
+        });
+      }
+    });
+
+    const glService = new GlAccountingService();
+    const budgetingService = new BudgetingService(glService);
+    const bankingService = new BankingService(glService);
+    const expenseService = new ExpenseManagementService(glService);
+    const revenueService = new RevenueRecognitionService(glService);
+    const taxService = new TaxEngineService(glService);
+    const treasuryService = new TreasuryService(glService);
+    const consolidationService = new ConsolidationService();
+    const reportingService = new FinancialReportingService(glService);
+    const periodService = new PeriodManagementService(glService);
+
+    service = new AdvancedFinanceService(
+      glService,
+      budgetingService,
+      bankingService,
+      expenseService,
+      revenueService,
+      taxService,
+      treasuryService,
+      consolidationService,
+      reportingService,
+      periodService,
+    );
   });
 
   describe('getConsolidation', () => {

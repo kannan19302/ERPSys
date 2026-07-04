@@ -13,6 +13,16 @@ import { CrmConfigService } from './crm-config.service';
 import { CrmCollaborationService } from './crm-collaboration.service';
 import { CrmDashboardsService } from './crm-dashboards.service';
 import { CrmCasesService } from './crm-cases.service';
+import { CrmLeadScoringService } from './crm-lead-scoring.service';
+import { CrmLeadScoringController } from './crm-lead-scoring.controller';
+import { CrmDuplicatesService } from './crm-duplicates.service';
+import { CrmDuplicatesController } from './crm-duplicates.controller';
+import { CrmPipelineStagesService } from './crm-pipeline-stages.service';
+import { CrmPipelineStagesController } from './crm-pipeline-stages.controller';
+import { CrmSegmentsService } from './crm-segments.service';
+import { CrmSegmentsController } from './crm-segments.controller';
+import { CrmSlaService } from './crm-sla.service';
+import { CrmSlaController } from './crm-sla.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -28,10 +38,22 @@ const CRM_SERVICES = [
   CrmCollaborationService,
   CrmDashboardsService,
   CrmCasesService,
+  CrmLeadScoringService,
+  CrmDuplicatesService,
+  CrmPipelineStagesService,
+  CrmSegmentsService,
+  CrmSlaService,
 ];
 
 @Module({
-  controllers: [CrmController],
+  controllers: [
+    CrmController,
+    CrmLeadScoringController,
+    CrmDuplicatesController,
+    CrmPipelineStagesController,
+    CrmSegmentsController,
+    CrmSlaController,
+  ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,
 })

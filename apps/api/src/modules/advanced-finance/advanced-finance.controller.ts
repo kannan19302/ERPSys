@@ -1,11 +1,24 @@
-import { Controller, Get, Post, UseGuards, Req, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, UseGuards, Req, Param, Query, UseInterceptors } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
-import { AdvancedFinanceService } from './advanced-finance.service';
+import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
+import { TrackChanges } from '../../common/decorators/track-changes.decorator';
+import {
+  GlAccountingService,
+  BudgetingService,
+  BankingService,
+  ExpenseManagementService,
+  RevenueRecognitionService,
+  TaxEngineService,
+  TreasuryService,
+  ConsolidationService,
+  FinancialReportingService,
+  PeriodManagementService,
+} from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
@@ -18,463 +31,1229 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+// ── Zod Schemas ─────────────────────────────────────────
+const createAccountSchema = z.object({
+  code: z.string().min(1).max(20),
+  name: z.string().min(1).max(200),
+  type: z.enum(['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE']),
+  parentId: z.string().optional(),
+});
+
+const updateAccountSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  type: z.enum(['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE']).optional(),
+  parentId: z.string().nullable().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createJournalSchema = z.object({
+  entryNumber: z.string().min(1),
+  notes: z.string().optional(),
+  entries: z.array(z.object({
+    accountId: z.string().min(1),
+    debit: z.number().min(0),
+    credit: z.number().min(0),
+    description: z.string().optional(),
+    departmentId: z.string().optional(),
+    costCenterId: z.string().optional(),
+    projectId: z.string().optional(),
+  })).min(2),
+});
+
+const createCostCenterSchema = z.object({
+  code: z.string().min(1).max(20),
+  name: z.string().min(1).max(200),
+  parentId: z.string().optional(),
+});
+
+const createBudgetSchema = z.object({
+  accountId: z.string().min(1),
+  amount: z.number().positive(),
+  startDate: z.string().min(1),
+  endDate: z.string().min(1),
+  costCenterId: z.string().optional(),
+  projectId: z.string().optional(),
+});
+
+const updateBudgetSchema = z.object({
+  accountId: z.string().optional(),
+  amount: z.number().positive().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  costCenterId: z.string().nullable().optional(),
+  projectId: z.string().nullable().optional(),
+});
+
+const createFinancialPeriodSchema = z.object({
+  name: z.string().min(1),
+  startDate: z.string().min(1),
+  endDate: z.string().min(1),
+});
+
+const createBankAccountSchema = z.object({
+  accountId: z.string().min(1),
+  bankName: z.string().min(1).max(200),
+  accountNumber: z.string().min(1).max(50),
+  currency: z.string().min(3).max(3).default('USD'),
+});
+
+const updateBankAccountSchema = z.object({
+  bankName: z.string().optional(),
+  accountName: z.string().optional(),
+  status: z.string().optional(),
+});
+
+const createBankReconciliationSchema = z.object({
+  accountId: z.string().min(1),
+  statementDate: z.string().min(1),
+  statementBalance: z.number(),
+});
+
+const importBankStatementSchema = z.object({
+  accountId: z.string().min(1),
+  statementDate: z.string().min(1),
+  statementBalance: z.number(),
+  transactions: z.array(z.object({
+    date: z.string().min(1),
+    description: z.string().min(1),
+    amount: z.number(),
+  })),
+});
+
+const createCreditNoteSchema = z.object({
+  customerId: z.string().min(1),
+  noteNumber: z.string().min(1),
+  amount: z.number().positive(),
+  invoiceId: z.string().optional(),
+  reason: z.string().optional(),
+});
+
+const createDebitNoteSchema = z.object({
+  vendorId: z.string().min(1),
+  noteNumber: z.string().min(1),
+  amount: z.number().positive(),
+  purchaseOrderId: z.string().optional(),
+  reason: z.string().optional(),
+});
+
+const createDunningLevelSchema = z.object({
+  levelName: z.string().min(1),
+  daysOverdue: z.number().int().nonnegative(),
+  feeAmount: z.number().nonnegative(),
+  emailTemplateId: z.string().optional(),
+});
+
+const createPaymentScheduleSchema = z.object({
+  vendorId: z.string().min(1),
+  purchaseOrderId: z.string().optional(),
+  dueDate: z.string().min(1),
+  amount: z.number().positive(),
+});
+
+const createPaymentRunSchema = z.object({
+  bankAccountId: z.string().min(1),
+  runDate: z.string().min(1),
+  totalAmount: z.number().nonnegative().optional(),
+});
+
+const createForecastScenarioSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  type: z.string().min(1),
+  parameters: z.any().optional(),
+});
+
+const updateExchangeRateSchema = z.object({
+  fromCurrency: z.string().min(3).max(3),
+  toCurrency: z.string().min(3).max(3),
+  rate: z.number().positive(),
+  date: z.string().optional(),
+});
+
+const createRecurringScheduleSchema = z.object({
+  entryTemplate: z.any(),
+  frequency: z.string().min(1),
+  nextRunDate: z.string().min(1),
+});
+
+const createExpenseReportSchema = z.object({
+  employeeId: z.string().min(1),
+  reportNumber: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  items: z.array(z.object({
+    category: z.string().min(1),
+    description: z.string().min(1),
+    amount: z.number().positive(),
+    expenseDate: z.string().min(1),
+    billable: z.boolean().optional(),
+  })).min(1),
+});
+
+const createRevenueScheduleSchema = z.object({
+  description: z.string().min(1),
+  totalAmount: z.number().positive(),
+  startDate: z.string().min(1),
+  endDate: z.string().min(1),
+  recognitionType: z.string().min(1),
+  invoiceId: z.string().optional(),
+});
+
+const createAccountingBookSchema = z.object({
+  name: z.string().min(1),
+  standard: z.string().min(1),
+  isPrimary: z.boolean().optional(),
+});
+
+const postJournalToBookSchema = z.object({
+  entryNumber: z.string().min(1),
+  date: z.string().min(1),
+  entries: z.array(z.object({
+    accountId: z.string().min(1),
+    debit: z.number().min(0),
+    credit: z.number().min(0),
+    description: z.string().optional(),
+  })).min(2),
+  notes: z.string().optional(),
+});
+
+const createInterCompanyTransferSchema = z.object({
+  fromOrgId: z.string().min(1),
+  toOrgId: z.string().min(1),
+  amount: z.number().positive(),
+  currency: z.string().optional(),
+  date: z.string().optional(),
+});
+
+const createInvestmentPortfolioSchema = z.object({
+  name: z.string().min(1),
+  type: z.string().min(1),
+  accountId: z.string().min(1),
+});
+
+const createTreasuryTransactionSchema = z.object({
+  type: z.string().min(1),
+  amount: z.number().positive(),
+  bankAccountId: z.string().min(1),
+  date: z.string().optional(),
+});
+
+const createTaxRuleSchema = z.any();
+const createWithholdingTaxSchema = z.any();
+const createTaxFilingSchema = z.any();
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class AdvancedFinanceController {
-  constructor(private readonly financeService: AdvancedFinanceService) {}
+  constructor(
+    private readonly glService: GlAccountingService,
+    private readonly budgetingService: BudgetingService,
+    private readonly bankingService: BankingService,
+    private readonly expenseService: ExpenseManagementService,
+    private readonly revenueService: RevenueRecognitionService,
+    private readonly taxService: TaxEngineService,
+    private readonly treasuryService: TreasuryService,
+    private readonly consolidationService: ConsolidationService,
+    private readonly reportingService: FinancialReportingService,
+    private readonly periodService: PeriodManagementService,
+  ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
-  @Get('exchange-rates') @Permissions('finance.report.read')
-  async getExchangeRates(@Req() req: AuthenticatedRequest) { return this.financeService.getExchangeRates(req.user.tenantId); }
+  @Get('exchange-rates')
+  @Permissions('finance.treasury.read')
+  async getExchangeRates(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getExchangeRates(req.user.tenantId);
+  }
 
-  @ApiOperation({ summary: 'Get accounts' })
-  @Get('accounts') @Permissions('finance.invoice.read')
-  async getAccounts(@Req() req: AuthenticatedRequest) { return this.financeService.getAccounts(req.user.tenantId); }
+  @ApiOperation({ summary: 'Get chart of accounts' })
+  @Get('accounts')
+  @Permissions('finance.account.read')
+  async getAccounts(@Req() req: AuthenticatedRequest) {
+    return this.glService.getAccounts(req.user.tenantId);
+  }
 
-  @ApiOperation({ summary: 'Create account' })
-  @Post('accounts') @Permissions('finance.invoice.create')
-  async createAccount(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { code: string; name: string; type: string; parentId?: string }) {
-    return this.financeService.createAccount(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @ApiOperation({ summary: 'Get account by ID' })
+  @Get('accounts/:id')
+  @Permissions('finance.account.read')
+  async getAccountById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.getAccountById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create ledger account' })
+  @Post('accounts')
+  @Permissions('finance.account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Account')
+  async createAccount(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createAccountSchema) dto: z.infer<typeof createAccountSchema>,
+  ) {
+    return this.glService.createAccount(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
+
+  @ApiOperation({ summary: 'Update ledger account' })
+  @Patch('accounts/:id')
+  @Permissions('finance.account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Account', 'id')
+  async updateAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateAccountSchema) dto: z.infer<typeof updateAccountSchema>,
+  ) {
+    return this.glService.updateAccount(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete ledger account' })
+  @Delete('accounts/:id')
+  @Permissions('finance.account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Account', 'id')
+  async deleteAccount(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.deleteAccount(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get GL ledger for a specific account' })
+  @Get('accounts/:id/ledger')
+  @Permissions('finance.account.read')
+  async getAccountLedger(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.glService.getAccountLedger(req.user.tenantId, req.user.orgId || 'org-system-default', id, startDate, endDate);
   }
 
   @ApiOperation({ summary: 'Get cost centers' })
-  @Get('cost-centers') @Permissions('finance.report.read')
-  async getCostCenters(@Req() req: AuthenticatedRequest) { return this.financeService.getCostCenters(req.user.tenantId); }
-
-  @ApiOperation({ summary: 'Create cost center' })
-  @Post('cost-centers') @Permissions('finance.invoice.create')
-  async createCostCenter(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { code: string; name: string; parentId?: string }) {
-    return this.financeService.createCostCenter(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @Get('cost-centers')
+  @Permissions('finance.account.read')
+  async getCostCenters(@Req() req: AuthenticatedRequest) {
+    return this.glService.getCostCenters(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Get journals' })
-  @Get('journals') @Permissions('finance.invoice.read')
-  async getJournals(@Req() req: AuthenticatedRequest) { return this.financeService.getJournals(req.user.tenantId); }
+  @ApiOperation({ summary: 'Create cost center' })
+  @Post('cost-centers')
+  @Permissions('finance.account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CostCenter')
+  async createCostCenter(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createCostCenterSchema) dto: z.infer<typeof createCostCenterSchema>,
+  ) {
+    return this.glService.createCostCenter(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
 
-  @ApiOperation({ summary: 'Create journal' })
-  @Post('journals') @Permissions('finance.invoice.create')
-  async createJournal(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: {
-    entryNumber: string; notes?: string;
-    entries: { accountId: string; debit: number; credit: number; description?: string; departmentId?: string; costCenterId?: string; projectId?: string }[]
-  }) {
-    return this.financeService.createJournal(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @ApiOperation({ summary: 'Update cost center' })
+  @Patch('cost-centers/:id')
+  @Permissions('finance.account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CostCenter', 'id')
+  async updateCostCenter(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ name: z.string().optional(), parentId: z.string().nullable().optional() }))
+    dto: { name?: string; parentId?: string | null },
+  ) {
+    return this.glService.updateCostCenter(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete cost center' })
+  @Delete('cost-centers/:id')
+  @Permissions('finance.account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CostCenter', 'id')
+  async deleteCostCenter(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.deleteCostCenter(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get journal entries' })
+  @Get('journals')
+  @Permissions('finance.journal.read')
+  async getJournals(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.glService.getJournals(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get journal entry by ID' })
+  @Get('journals/:id')
+  @Permissions('finance.journal.read')
+  async getJournalById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.getJournalById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create journal entry' })
+  @Post('journals')
+  @Permissions('finance.journal.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal')
+  async createJournal(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createJournalSchema) dto: z.infer<typeof createJournalSchema>,
+  ) {
+    return this.glService.createJournal(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
+
+  @ApiOperation({ summary: 'Submit journal for approval' })
+  @Post('journals/:id/submit')
+  @Permissions('finance.journal.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal', 'id')
+  async submitJournal(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.submitJournal(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Approve journal entry' })
+  @Post('journals/:id/approve')
+  @Permissions('finance.journal.approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal', 'id')
+  async approveJournal(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.approveJournal(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  @ApiOperation({ summary: 'Post journal to general ledger' })
+  @Post('journals/:id/post')
+  @Permissions('finance.journal.approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal', 'id')
+  async postJournal(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.postJournal(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Reject journal entry' })
+  @Post('journals/:id/reject')
+  @Permissions('finance.journal.approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal', 'id')
+  async rejectJournal(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ reason: z.string().min(1) })) dto: { reason: string },
+  ) {
+    return this.glService.rejectJournal(req.user.tenantId, id, dto.reason, req.user.userId || 'system');
+  }
+
+  @ApiOperation({ summary: 'Reverse a posted journal entry' })
+  @Post('journals/:id/reverse')
+  @Permissions('finance.journal.reverse')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal', 'id')
+  async reverseJournal(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ reversalDate: z.string().optional() })) dto: { reversalDate?: string },
+  ) {
+    return this.glService.reverseJournal(req.user.tenantId, id, dto.reversalDate);
   }
 
   @ApiOperation({ summary: 'Get budgets' })
-  @Get('budgets') @Permissions('finance.report.read')
-  async getBudgets(@Req() req: AuthenticatedRequest) { return this.financeService.getBudgets(req.user.tenantId); }
+  @Get('budgets')
+  @Permissions('finance.budget.read')
+  async getBudgets(@Req() req: AuthenticatedRequest) {
+    return this.budgetingService.getBudgets(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get budget by ID' })
+  @Get('budgets/:id')
+  @Permissions('finance.budget.read')
+  async getBudgetById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.budgetingService.getBudgetById(req.user.tenantId, id);
+  }
 
   @ApiOperation({ summary: 'Create budget' })
-  @Post('budgets') @Permissions('finance.invoice.create')
-  async createBudget(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; amount: number; startDate: string; endDate: string }) {
-    return this.financeService.createBudget(req.user.tenantId, req.user.orgId || 'org-system-default', { ...dto });
+  @Post('budgets')
+  @Permissions('finance.budget.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Budget')
+  async createBudget(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createBudgetSchema) dto: z.infer<typeof createBudgetSchema>,
+  ) {
+    return this.budgetingService.createBudget(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
+
+  @ApiOperation({ summary: 'Update budget' })
+  @Patch('budgets/:id')
+  @Permissions('finance.budget.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Budget', 'id')
+  async updateBudget(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateBudgetSchema) dto: z.infer<typeof updateBudgetSchema>,
+  ) {
+    return this.budgetingService.updateBudget(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete budget' })
+  @Delete('budgets/:id')
+  @Permissions('finance.budget.delete')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Budget', 'id')
+  async deleteBudget(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.budgetingService.deleteBudget(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Budget vs actuals comparison' })
+  @Get('budgets/:id/vs-actuals')
+  @Permissions('finance.budget.read')
+  async getBudgetVsActualsById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.budgetingService.getBudgetVsActuals(req.user.tenantId, req.user.orgId || 'org-system-default', id);
   }
 
   @ApiOperation({ summary: 'Get bank reconciliations' })
-  @Get('bank-reconciliations') @Permissions('finance.report.read')
-  async getBankReconciliations(@Req() req: AuthenticatedRequest) { return this.financeService.getBankReconciliations(req.user.tenantId); }
+  @Get('bank-reconciliations')
+  @Permissions('finance.bank-recon.read')
+  async getBankReconciliations(@Req() req: AuthenticatedRequest) {
+    return this.bankingService.getBankReconciliations(req.user.tenantId);
+  }
 
   @ApiOperation({ summary: 'Create bank reconciliation' })
-  @Post('bank-reconciliations') @Permissions('finance.invoice.create')
-  async createBankReconciliation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; statementDate: string; statementBalance: number }) {
-    return this.financeService.createBankReconciliation(req.user.tenantId, dto);
+  @Post('bank-reconciliations')
+  @Permissions('finance.bank-recon.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankReconciliation')
+  async createBankReconciliation(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createBankReconciliationSchema) dto: z.infer<typeof createBankReconciliationSchema>,
+  ) {
+    return this.bankingService.createBankReconciliation(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Get financial periods' })
-  @Get('financial-periods') @Permissions('finance.report.read')
-  async getFinancialPeriods(@Req() req: AuthenticatedRequest) { return this.financeService.getFinancialPeriods(req.user.tenantId); }
+  @Get('financial-periods')
+  @Permissions('finance.period.read')
+  async getFinancialPeriods(@Req() req: AuthenticatedRequest) {
+    return this.periodService.getFinancialPeriods(req.user.tenantId);
+  }
 
   @ApiOperation({ summary: 'Create financial period' })
-  @Post('financial-periods') @Permissions('finance.invoice.create')
-  async createFinancialPeriod(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { name: string; startDate: string; endDate: string; status: string }) {
-    return this.financeService.createFinancialPeriod(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @Post('financial-periods')
+  @Permissions('finance.period.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FinancialPeriod')
+  async createFinancialPeriod(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createFinancialPeriodSchema) dto: z.infer<typeof createFinancialPeriodSchema>,
+  ) {
+    return this.periodService.createFinancialPeriod(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
-  @ApiOperation({ summary: 'Update financial period status' })
-  @Post('financial-periods/:id/status') @Permissions('finance.invoice.create')
-  async updateFinancialPeriodStatus(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { status: string }) {
-    return this.financeService.updateFinancialPeriodStatus(req.user.tenantId, id, dto.status);
+  @ApiOperation({ summary: 'Close financial period' })
+  @Post('financial-periods/:id/close')
+  @Permissions('finance.period.close')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FinancialPeriod', 'id')
+  async closePeriod(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.periodService.closePeriod(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Get fixed assets' })
-  @Get('fixed-assets') @Permissions('finance.report.read')
-  async getFixedAssets(@Req() req: AuthenticatedRequest) { return this.financeService.getFixedAssets(req.user.tenantId); }
+  @ApiOperation({ summary: 'Reopen financial period' })
+  @Post('financial-periods/:id/reopen')
+  @Permissions('finance.period.close')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FinancialPeriod', 'id')
+  async reopenPeriod(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ reason: z.string().min(1) })) dto: { reason: string },
+  ) {
+    return this.periodService.reopenPeriod(req.user.tenantId, id, dto.reason);
+  }
 
-  @ApiOperation({ summary: 'Create fixed asset' })
-  @Post('fixed-assets') @Permissions('finance.invoice.create')
-  async createFixedAsset(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: {
-    assetCode: string; name: string; purchaseDate: string; purchaseValue: number;
-    salvageValue: number; usefulLifeYears: number; depreciationMethod: string;
-    accountId: string; accumDepAccountId: string
-  }) {
-    return this.financeService.createFixedAsset(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @ApiOperation({ summary: 'Get period close checklist' })
+  @Get('financial-periods/:id/close-checklist')
+  @Permissions('finance.period.read')
+  async getPeriodCloseChecklist(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.periodService.getPeriodCloseChecklist(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Get bank accounts' })
-  @Get('bank-accounts') @Permissions('finance.report.read')
-  async getBankAccounts(@Req() req: AuthenticatedRequest) { return this.financeService.getBankAccounts(req.user.tenantId); }
+  @Get('bank-accounts')
+  @Permissions('finance.bank-account.read')
+  async getBankAccounts(@Req() req: AuthenticatedRequest) {
+    return this.bankingService.getBankAccounts(req.user.tenantId);
+  }
 
   @ApiOperation({ summary: 'Create bank account' })
-  @Post('bank-accounts') @Permissions('finance.invoice.create')
-  async createBankAccount(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; bankName: string; accountNumber: string; currency: string }) {
-    return this.financeService.createBankAccount(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @Post('bank-accounts')
+  @Permissions('finance.bank-account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankAccount')
+  async createBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createBankAccountSchema) dto: z.infer<typeof createBankAccountSchema>,
+  ) {
+    return this.bankingService.createBankAccount(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
+
+  @ApiOperation({ summary: 'Get credit notes' })
+  @Get('credit-notes')
+  @Permissions('finance.tax.read')
+  async getCreditNotes(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getCreditNotes(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create credit note' })
-  @Permissions('advanced_finance.read')
-  @Get('credit-notes') async getCreditNotes(@Req() req: AuthenticatedRequest) { return this.financeService.getCreditNotes(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get debit notes' })
-  @Post('credit-notes') async createCreditNote(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createCreditNote(req.user.tenantId, req.user.orgId || '', body);
+  @Post('credit-notes')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CreditNote')
+  async createCreditNote(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createCreditNoteSchema) body: z.infer<typeof createCreditNoteSchema>,
+  ) {
+    return this.taxService.createCreditNote(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Get debit notes' })
+  @Get('debit-notes')
+  @Permissions('finance.tax.read')
+  async getDebitNotes(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getDebitNotes(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Create debit note' })
-  @Permissions('advanced_finance.read')
-  @Get('debit-notes') async getDebitNotes(@Req() req: AuthenticatedRequest) { return this.financeService.getDebitNotes(req.user.tenantId); }
+  @Post('debit-notes')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DebitNote')
+  async createDebitNote(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createDebitNoteSchema) body: z.infer<typeof createDebitNoteSchema>,
+  ) {
+    return this.taxService.createDebitNote(req.user.tenantId, req.user.orgId || '', body);
+  }
+
   @ApiOperation({ summary: 'Get dunning levels' })
-  @Post('debit-notes') async createDebitNote(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createDebitNote(req.user.tenantId, req.user.orgId || '', body);
+  @Get('dunning-levels')
+  @Permissions('finance.tax.read')
+  async getDunningLevels(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getDunningLevels(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create dunning level' })
-  @Permissions('advanced_finance.read')
-  @Get('dunning-levels') async getDunningLevels(@Req() req: AuthenticatedRequest) { return this.financeService.getDunningLevels(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get dunning runs' })
-  @Post('dunning-levels') async createDunningLevel(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createDunningLevel(req.user.tenantId, req.user.orgId || '', body);
+  @Post('dunning-levels')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DunningLevel')
+  async createDunningLevel(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createDunningLevelSchema) body: z.infer<typeof createDunningLevelSchema>,
+  ) {
+    return this.taxService.createDunningLevel(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Get dunning runs' })
+  @Get('dunning-runs')
+  @Permissions('finance.tax.read')
+  async getDunningRuns(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getDunningRuns(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Create dunning run' })
-  @Permissions('advanced_finance.read')
-  @Get('dunning-runs') async getDunningRuns(@Req() req: AuthenticatedRequest) { return this.financeService.getDunningRuns(req.user.tenantId); }
+  @Post('dunning-runs')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DunningRun')
+  async createDunningRun(@Req() req: AuthenticatedRequest) {
+    return this.taxService.createDunningRun(req.user.tenantId, req.user.orgId || '');
+  }
+
   @ApiOperation({ summary: 'Get payment schedules' })
-  @Post('dunning-runs') async createDunningRun(@Req() req: AuthenticatedRequest) {
-    return this.financeService.createDunningRun(req.user.tenantId, req.user.orgId || '');
+  @Get('payment-schedules')
+  @Permissions('finance.treasury.read')
+  async getPaymentSchedules(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getPaymentSchedules(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create payment schedule' })
-  @Permissions('advanced_finance.read')
-  @Get('payment-schedules') async getPaymentSchedules(@Req() req: AuthenticatedRequest) { return this.financeService.getPaymentSchedules(req.user.tenantId); }
+  @Post('payment-schedules')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentSchedule')
+  async createPaymentSchedule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createPaymentScheduleSchema) body: z.infer<typeof createPaymentScheduleSchema>,
+  ) {
+    return this.treasuryService.createPaymentSchedule(req.user.tenantId, req.user.orgId || '', body);
+  }
+
   @ApiOperation({ summary: 'Get payment runs' })
-  @Post('payment-schedules') async createPaymentSchedule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createPaymentSchedule(req.user.tenantId, req.user.orgId || '', body);
+  @Get('payment-runs')
+  @Permissions('finance.treasury.read')
+  async getPaymentRuns(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getPaymentRuns(req.user.tenantId);
   }
+
   @ApiOperation({ summary: 'Create payment run' })
-  @Permissions('advanced_finance.read')
-  @Get('payment-runs') async getPaymentRuns(@Req() req: AuthenticatedRequest) { return this.financeService.getPaymentRuns(req.user.tenantId); }
-  @ApiOperation({ summary: 'Approve payment run' })
-  @Post('payment-runs') async createPaymentRun(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { bankAccountId: string; runDate: string; totalAmount?: number }) {
-    return this.financeService.createPaymentRun(req.user.tenantId, req.user.orgId || '', body);
+  @Post('payment-runs')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentRun')
+  async createPaymentRun(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createPaymentRunSchema) body: z.infer<typeof createPaymentRunSchema>,
+  ) {
+    return this.treasuryService.createPaymentRun(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Approve payment run' })
+  @Post('payment-runs/:id/approve')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentRun', 'id')
+  async approvePaymentRun(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.treasuryService.approvePaymentRun(req.user.tenantId, id);
+  }
+
   @ApiOperation({ summary: 'Get forecast scenarios' })
-  @Permissions('advanced_finance.create')
-  @Post('payment-runs/:id/approve') async approvePaymentRun(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.financeService.approvePaymentRun(req.user.tenantId, id);
+  @Get('forecast-scenarios')
+  @Permissions('finance.treasury.read')
+  async getForecastScenarios(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getForecastScenarios(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create forecast scenario' })
-  @Permissions('advanced_finance.read')
-  @Get('forecast-scenarios') async getForecastScenarios(@Req() req: AuthenticatedRequest) { return this.financeService.getForecastScenarios(req.user.tenantId); }
-  @ApiOperation({ summary: 'Handle request' })
-  @Post('forecast-scenarios') async createForecastScenario(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createForecastScenario(req.user.tenantId, req.user.orgId || '', body);
+  @Post('forecast-scenarios')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ForecastScenario')
+  async createForecastScenario(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createForecastScenarioSchema) body: z.infer<typeof createForecastScenarioSchema>,
+  ) {
+    return this.treasuryService.createForecastScenario(req.user.tenantId, req.user.orgId || '', body);
   }
 
-  // ── TIER 1: REPORTS ──
+  // ── REPORTS ──
 
   @ApiOperation({ summary: 'Get profit and loss' })
-  @Get('reports/pnl') @Permissions('finance.report.read')
-  async getProfitAndLoss(@Req() req: AuthenticatedRequest, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-    return this.financeService.getProfitAndLoss(req.user.tenantId, req.user.orgId || '', startDate, endDate);
-  }
-  @ApiOperation({ summary: 'Get balance sheet' })
-  @Get('reports/balance-sheet') @Permissions('finance.report.read')
-  async getBalanceSheet(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
-    return this.financeService.getBalanceSheet(req.user.tenantId, req.user.orgId || '', asOfDate);
-  }
-  @ApiOperation({ summary: 'Get cash flow' })
-  @Get('reports/cash-flow') @Permissions('finance.report.read')
-  async getCashFlow(@Req() req: AuthenticatedRequest, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-    return this.financeService.getCashFlow(req.user.tenantId, req.user.orgId || '', startDate, endDate);
-  }
-  @ApiOperation({ summary: 'Get trial balance' })
-  @Get('reports/trial-balance') @Permissions('finance.report.read')
-  async getTrialBalance(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
-    return this.financeService.getTrialBalance(req.user.tenantId, req.user.orgId || '', asOfDate || new Date().toISOString());
-  }
-  @ApiOperation({ summary: 'Get aging report' })
-  @Get('reports/aging') @Permissions('finance.report.read')
-  async getAgingReport(@Req() req: AuthenticatedRequest, @Query('type') type: 'AR' | 'AP', @Query('asOfDate') asOfDate: string) {
-    return this.financeService.getAgingReport(req.user.tenantId, req.user.orgId || '', type || 'AR', asOfDate || new Date().toISOString());
+  @Get('reports/pnl')
+  @Permissions('finance.report.read')
+  async getProfitAndLoss(
+    @Req() req: AuthenticatedRequest,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportingService.getProfitAndLoss(req.user.tenantId, req.user.orgId || '', startDate, endDate);
   }
 
-  // ── TIER 2: Budget vs Actuals ──
+  @ApiOperation({ summary: 'Get balance sheet' })
+  @Get('reports/balance-sheet')
+  @Permissions('finance.report.read')
+  async getBalanceSheet(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
+    return this.reportingService.getBalanceSheet(req.user.tenantId, req.user.orgId || '', asOfDate);
+  }
+
+  @ApiOperation({ summary: 'Get cash flow' })
+  @Get('reports/cash-flow')
+  @Permissions('finance.report.read')
+  async getCashFlow(
+    @Req() req: AuthenticatedRequest,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportingService.getCashFlowStatement(req.user.tenantId, req.user.orgId || '', startDate, endDate);
+  }
+
+  @ApiOperation({ summary: 'Get trial balance' })
+  @Get('reports/trial-balance')
+  @Permissions('finance.report.read')
+  async getTrialBalance(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
+    return this.reportingService.getTrialBalance(req.user.tenantId, req.user.orgId || '', asOfDate || new Date().toISOString());
+  }
+
+  @ApiOperation({ summary: 'Get aging report' })
+  @Get('reports/aging')
+  @Permissions('finance.report.read')
+  async getAgingReport(
+    @Req() req: AuthenticatedRequest,
+    @Query('type') type: 'AR' | 'AP',
+    @Query('asOfDate') asOfDate: string,
+  ) {
+    return this.reportingService.getAgingReport(req.user.tenantId, req.user.orgId || '', type || 'AR', asOfDate || new Date().toISOString());
+  }
+
   @ApiOperation({ summary: 'Get budget vs actuals' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.budget.read')
   @Get('budget-vs-actuals')
   async getBudgetVsActuals(@Req() req: AuthenticatedRequest, @Query('fiscalYear') fiscalYear: string) {
-    return this.financeService.getBudgetVsActuals(req.user.tenantId, req.user.orgId || '', fiscalYear || '2026');
+    return this.budgetingService.getBudgetVsActuals(req.user.tenantId, req.user.orgId || '', fiscalYear || '2026');
   }
 
-  // ── TIER 2: Multi-Currency ──
   @ApiOperation({ summary: 'Update exchange rate' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.treasury.create')
   @Post('exchange-rates')
-  async updateExchangeRate(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { fromCurrency: string; toCurrency: string; rate: number; date?: string }) {
-    return this.financeService.updateExchangeRate(req.user.tenantId, dto);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExchangeRate')
+  async updateExchangeRate(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(updateExchangeRateSchema) dto: z.infer<typeof updateExchangeRateSchema>,
+  ) {
+    return this.treasuryService.updateExchangeRate(req.user.tenantId, dto);
   }
+
   @ApiOperation({ summary: 'Convert currency' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.treasury.read')
   @Get('currency-convert')
-  async convertCurrency(@Req() req: AuthenticatedRequest, @Query('from') from: string, @Query('to') to: string, @Query('amount') amount: string, @Query('date') date?: string) {
-    return this.financeService.convertCurrency(req.user.tenantId, from || 'USD', to || 'EUR', parseFloat(amount || '1'), date);
+  async convertCurrency(
+    @Req() req: AuthenticatedRequest,
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('amount') amount: string,
+    @Query('date') date?: string,
+  ) {
+    return this.treasuryService.convertCurrency(req.user.tenantId, from || 'USD', to || 'EUR', parseFloat(amount || '1'), date);
   }
 
-  // ── TIER 2: Tax Computation ──
   @ApiOperation({ summary: 'Compute tax' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.tax.compute')
   @Get('compute-tax')
-  async computeTax(@Req() req: AuthenticatedRequest, @Query('amount') amount: string, @Query('taxRuleId') taxRuleId?: string) {
-    return this.financeService.computeTax(req.user.tenantId, req.user.orgId || '', parseFloat(amount || '0'), taxRuleId);
+  async computeTax(
+    @Req() req: AuthenticatedRequest,
+    @Query('amount') amount: string,
+    @Query('taxRuleId') taxRuleId?: string,
+  ) {
+    return this.taxService.computeTax(req.user.tenantId, req.user.orgId || '', parseFloat(amount || '0'), taxRuleId);
   }
 
-  // ── TIER 2: Recurring Invoices ──
   @ApiOperation({ summary: 'List recurring invoice schedules' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.journal.read')
   @Get('recurring-schedules')
   async getRecurringSchedules(@Req() req: AuthenticatedRequest) {
-    return this.financeService.getRecurringSchedules(req.user.tenantId);
+    return this.glService.getRecurringSchedules(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create recurring invoice schedule' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.journal.create')
   @Post('recurring-schedules')
-  async createRecurringSchedule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { entryTemplate: any; frequency: string; nextRunDate: string }) {
-    return this.financeService.createRecurringSchedule(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('RecurringJournal')
+  async createRecurringSchedule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createRecurringScheduleSchema) dto: z.infer<typeof createRecurringScheduleSchema>,
+  ) {
+    return this.glService.createRecurringSchedule(req.user.tenantId, req.user.orgId || 'org-system-default', dto as any);
   }
 
   @ApiOperation({ summary: 'Generate recurring invoices' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.journal.create')
   @Post('recurring/generate')
   async generateRecurringInvoices(@Req() req: AuthenticatedRequest) {
-    return this.financeService.generateRecurringInvoices(req.user.tenantId);
+    return this.glService.generateRecurringInvoices(req.user.tenantId);
   }
 
-  // ── TIER 2: Bank Reconciliation Full Flow ──
   @ApiOperation({ summary: 'Auto match reconciliation' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.bank-recon.match')
   @Post('bank-reconciliations/:id/auto-match')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankReconciliation', 'id')
   async autoMatchReconciliation(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.financeService.autoMatchBankReconciliation(req.user.tenantId, id);
+    return this.bankingService.autoMatchBankReconciliation(req.user.tenantId, id);
   }
+
   @ApiOperation({ summary: 'Import bank statement' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.bank-recon.create')
   @Post('bank-reconciliations/import')
-  async importBankStatement(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { accountId: string; statementDate: string; statementBalance: number; transactions: Array<{ date: string; description: string; amount: number }> }) {
-    return this.financeService.importBankStatement(req.user.tenantId, dto);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankReconciliation')
+  async importBankStatement(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(importBankStatementSchema) dto: z.infer<typeof importBankStatementSchema>,
+  ) {
+    return this.bankingService.importBankStatement(req.user.tenantId, dto);
   }
 
-  // ── TIER 3: Expense Management ──
+  // ── Expense Management ──
   @ApiOperation({ summary: 'Get expense reports' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.expense.read')
   @Get('expense-reports')
-  async getExpenseReports(@Req() req: AuthenticatedRequest) { return this.financeService.getExpenseReports(req.user.tenantId); }
+  async getExpenseReports(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getExpenseReports(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get expense report by ID' })
+  @Permissions('finance.expense.read')
+  @Get('expense-reports/:id')
+  async getExpenseReportById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expenseService.getExpenseReportById(req.user.tenantId, id);
+  }
+
   @ApiOperation({ summary: 'Create expense report' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.expense.create')
   @Post('expense-reports')
-  async createExpenseReport(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { employeeId: string; reportNumber: string; title: string; description?: string; items: Array<{ category: string; description: string; amount: number; expenseDate: string; billable?: boolean }> }) {
-    return this.financeService.createExpenseReport(req.user.tenantId, req.user.orgId || '', dto);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReport')
+  async createExpenseReport(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createExpenseReportSchema) dto: z.infer<typeof createExpenseReportSchema>,
+  ) {
+    return this.expenseService.createExpenseReport(req.user.tenantId, req.user.orgId || '', dto);
   }
+
+  @ApiOperation({ summary: 'Submit expense report for approval' })
+  @Permissions('finance.expense.create')
+  @Post('expense-reports/:id/submit')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReport', 'id')
+  async submitExpenseReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expenseService.submitExpenseReport(req.user.tenantId, id);
+  }
+
   @ApiOperation({ summary: 'Approve expense report' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.expense.approve')
   @Post('expense-reports/:id/approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReport', 'id')
   async approveExpenseReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.financeService.approveExpenseReport(req.user.tenantId, id, req.user.userId || 'system');
+    return this.expenseService.approveExpenseReport(req.user.tenantId, id, req.user.userId || 'system');
   }
 
-  // ── TIER 3: Revenue Recognition ──
+  @ApiOperation({ summary: 'Reject expense report' })
+  @Permissions('finance.expense.reject')
+  @Post('expense-reports/:id/reject')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReport', 'id')
+  async rejectExpenseReport(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ reason: z.string().min(1) })) dto: { reason: string },
+  ) {
+    return this.expenseService.rejectExpenseReport(req.user.tenantId, id, dto.reason, req.user.userId || 'system');
+  }
+
+  @ApiOperation({ summary: 'Mark expense report as paid' })
+  @Permissions('finance.expense.approve')
+  @Post('expense-reports/:id/pay')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReport', 'id')
+  async markExpenseReportPaid(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expenseService.markExpenseReportPaid(req.user.tenantId, id);
+  }
+
+  // ── Revenue Recognition ──
   @ApiOperation({ summary: 'Get revenue schedules' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.revenue.read')
   @Get('revenue-schedules')
-  async getRevenueSchedules(@Req() req: AuthenticatedRequest) { return this.financeService.getRevenueSchedules(req.user.tenantId); }
+  async getRevenueSchedules(@Req() req: AuthenticatedRequest) {
+    return this.revenueService.getRevenueSchedules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get revenue schedule by ID' })
+  @Permissions('finance.revenue.read')
+  @Get('revenue-schedules/:id')
+  async getRevenueScheduleById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.revenueService.getRevenueScheduleById(req.user.tenantId, id);
+  }
+
   @ApiOperation({ summary: 'Create revenue schedule' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.revenue.create')
   @Post('revenue-schedules')
-  async createRevenueSchedule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { description: string; totalAmount: number; startDate: string; endDate: string; recognitionType: string; invoiceId?: string }) {
-    return this.financeService.createRevenueSchedule(req.user.tenantId, req.user.orgId || '', dto);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('RevenueSchedule')
+  async createRevenueSchedule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createRevenueScheduleSchema) dto: z.infer<typeof createRevenueScheduleSchema>,
+  ) {
+    return this.revenueService.createRevenueSchedule(req.user.tenantId, req.user.orgId || '', dto);
   }
-  @ApiOperation({ summary: 'Recognize revenue' })
-  @Permissions('advanced_finance.create')
+
+  @ApiOperation({ summary: 'Recognize revenue (manual)' })
+  @Permissions('finance.revenue.recognize')
   @Post('revenue-schedules/:id/recognize')
-  async recognizeRevenue(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: { amount: number }) {
-    return this.financeService.recognizeRevenue(req.user.tenantId, id, dto.amount);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('RevenueSchedule', 'id')
+  async recognizeRevenue(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ amount: z.number().min(0) })) dto: { amount: number },
+  ) {
+    return this.revenueService.recognizeRevenue(req.user.tenantId, id, dto.amount);
   }
 
-  // ── TIER 3: Depreciation Run ──
-  @ApiOperation({ summary: 'Run depreciation' })
-  @Permissions('advanced_finance.create')
-  @Post('fixed-assets/depreciation-run')
-  async runDepreciation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { asOfDate: string }) {
-    return this.financeService.runDepreciation(req.user.tenantId, dto.asOfDate || new Date().toISOString());
+  @ApiOperation({ summary: 'Run ASC 606 automated revenue recognition' })
+  @Permissions('finance.revenue.recognize')
+  @Post('revenue-recognition/asc606')
+  async runAsc606Recognition(@Req() req: AuthenticatedRequest, @ZodBody(z.object({ asOfDate: z.string().min(1) })) dto: { asOfDate: string }) {
+    return this.revenueService.runAsc606Recognition(req.user.tenantId, dto.asOfDate);
   }
 
-  // ── TIER 3: Period Close ──
-  @ApiOperation({ summary: 'Get period close checklist' })
-  @Permissions('advanced_finance.read')
-  @Get('financial-periods/:id/close-checklist')
-  async getPeriodCloseChecklist(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.financeService.getPeriodCloseChecklist(req.user.tenantId, req.user.orgId || '', id);
-  }
-
-  // ── TIER 4: Cash Position ──
+  // ── Cash Position & Forecasts ──
   @ApiOperation({ summary: 'Get cash position' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.report.read')
   @Get('cash-position')
   async getCashPosition(@Req() req: AuthenticatedRequest) {
-    return this.financeService.getCashPosition(req.user.tenantId, req.user.orgId || '');
+    return this.reportingService.getCashPosition(req.user.tenantId, req.user.orgId || '');
   }
 
-  // ── TIER 4: Financial Ratios ──
   @ApiOperation({ summary: 'Get financial ratios' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.report.read')
   @Get('financial-ratios')
   async getFinancialRatios(@Req() req: AuthenticatedRequest) {
-    return this.financeService.getFinancialRatios(req.user.tenantId, req.user.orgId || '');
+    return this.reportingService.getFinancialRatios(req.user.tenantId, req.user.orgId || '');
   }
 
-  // ── TIER 4: Cash Flow Forecast ──
   @ApiOperation({ summary: 'Get cash flow forecast' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.report.read')
   @Get('cash-flow-forecast')
   async getCashFlowForecast(@Req() req: AuthenticatedRequest, @Query('months') months: string) {
-    return this.financeService.getCashFlowForecast(req.user.tenantId, req.user.orgId || '', parseInt(months || '3'));
+    return this.reportingService.getCashFlowForecast(req.user.tenantId, req.user.orgId || '', parseInt(months || '3'));
   }
 
-  // ── TIER 4: Finance Audit Trail ──
   @ApiOperation({ summary: 'Get finance audit logs' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.audit.read')
   @Get('audit-logs')
-  async getFinanceAuditLogs(@Req() req: AuthenticatedRequest, @Query('entityType') entityType?: string, @Query('entityId') entityId?: string) {
-    return this.financeService.getFinanceAuditLogs(req.user.tenantId, entityType, entityId);
+  async getFinanceAuditLogs(
+    @Req() req: AuthenticatedRequest,
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+  ) {
+    return this.glService.getFinanceAuditLogs(req.user.tenantId, entityType, entityId);
   }
 
-  // ── TIER 5: Tax Return Computation ──
   @ApiOperation({ summary: 'Compute tax return' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.tax.compute')
   @Get('tax-returns/compute')
-  async computeTaxReturn(@Req() req: AuthenticatedRequest, @Query('filingType') filingType: string, @Query('periodStart') periodStart: string, @Query('periodEnd') periodEnd: string) {
-    return this.financeService.computeTaxReturn(req.user.tenantId, req.user.orgId || '', filingType || 'GSTR-1', periodStart, periodEnd);
+  async computeTaxReturn(
+    @Req() req: AuthenticatedRequest,
+    @Query('filingType') filingType: string,
+    @Query('periodStart') periodStart: string,
+    @Query('periodEnd') periodEnd: string,
+  ) {
+    return this.taxService.computeTaxReturn(req.user.tenantId, req.user.orgId || '', filingType || 'GSTR-1', periodStart, periodEnd);
   }
 
-  // ── TIER 5: Account Reconciliation ──
   @ApiOperation({ summary: 'Reconcile account' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.bank-recon.read')
   @Get('accounts/:id/reconcile')
-  async reconcileAccount(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Query('asOfDate') asOfDate: string) {
-    return this.financeService.reconcileAccount(req.user.tenantId, req.user.orgId || '', id, asOfDate || new Date().toISOString());
+  async reconcileAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('asOfDate') asOfDate: string,
+  ) {
+    return this.bankingService.reconcileAccount(req.user.tenantId, req.user.orgId || '', id, asOfDate || new Date().toISOString());
   }
 
-  // ── TIER 5: Consolidation ──
-  @ApiOperation({ summary: 'Get live consolidation overview (entities, YTD consolidated KPIs, eliminations, quarterly trend)' })
-  @Permissions('advanced_finance.read')
+  // ── Consolidation ──
+  @ApiOperation({ summary: 'Get live consolidation overview' })
+  @Permissions('finance.consolidation.read')
   @Get('consolidation/overview')
   async getConsolidation(@Req() req: AuthenticatedRequest) {
-    return this.financeService.getConsolidation(req.user.tenantId);
+    return this.consolidationService.getConsolidation(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get consolidation run history' })
-  @Permissions('advanced_finance.read')
+  @Permissions('finance.consolidation.read')
   @Get('consolidation/runs')
   async getConsolidationRuns(@Req() req: AuthenticatedRequest) {
-    return this.financeService.getConsolidationRuns(req.user.tenantId);
+    return this.consolidationService.getConsolidationRuns(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Run consolidation' })
-  @Permissions('advanced_finance.create')
+  @Permissions('finance.consolidation.run')
   @Post('consolidation/run')
-  async runConsolidation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { periodStart: string; periodEnd: string; eliminateIntercompany?: boolean }) {
-    return this.financeService.runConsolidation(req.user.tenantId, dto.periodStart, dto.periodEnd, dto.eliminateIntercompany !== false);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ConsolidationRun')
+  async runConsolidation(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ periodStart: z.string().min(1), periodEnd: z.string().min(1), eliminateIntercompany: z.boolean().optional() }))
+    dto: { periodStart: string; periodEnd: string; eliminateIntercompany?: boolean },
+  ) {
+    return this.consolidationService.runConsolidation(req.user.tenantId, dto.periodStart, dto.periodEnd, dto.eliminateIntercompany !== false);
   }
 
-  // ── TIER 5: Intercompany Transfers ──
-  @ApiOperation({ summary: 'Create inter company transfer' })
-  @Permissions('advanced_finance.create')
+  @ApiOperation({ summary: 'Run multi-currency consolidation with translation' })
+  @Permissions('finance.consolidation.run')
+  @Post('consolidation/multi-currency')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ConsolidationRun')
+  async runMultiCurrencyConsolidation(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      periodStart: z.string().min(1),
+      periodEnd: z.string().min(1),
+      reportingCurrency: z.string().min(3).max(3),
+      translationMethod: z.enum(['CURRENT_RATE', 'TEMPORAL']).optional(),
+    }))
+    dto: { periodStart: string; periodEnd: string; reportingCurrency: string; translationMethod?: 'CURRENT_RATE' | 'TEMPORAL' },
+  ) {
+    return this.consolidationService.runMultiCurrencyConsolidation(req.user.tenantId, dto.periodStart, dto.periodEnd, dto.reportingCurrency, dto.translationMethod);
+  }
+
+  @ApiOperation({ summary: 'Smart match bank transactions' })
+  @Permissions('finance.bank-recon.match')
+  @Post('bank-reconciliations/:id/smart-match')
+  async smartMatchBankTransactions(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ fuzzyThreshold: z.number().optional(), dateWindowDays: z.number().optional() }))
+    options: { fuzzyThreshold?: number; dateWindowDays?: number },
+  ) {
+    return this.bankingService.smartMatchBankTransactions(req.user.tenantId, id, options);
+  }
+
+  @ApiOperation({ summary: 'Update bank account' })
+  @Permissions('finance.bank-account.update')
+  @Patch('bank-accounts/:id')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankAccount', 'id')
+  async updateBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateBankAccountSchema) dto: z.infer<typeof updateBankAccountSchema>,
+  ) {
+    return this.bankingService.updateBankAccount(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Create intercompany transfer' })
+  @Permissions('finance.treasury.create')
   @Post('inter-company-transfers')
-  async createInterCompanyTransfer(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: { fromOrgId: string; toOrgId: string; amount: number; currency?: string; date?: string }) {
-    return this.financeService.createInterCompanyTransfer(req.user.tenantId, dto);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('InterCompanyTransfer')
+  async createInterCompanyTransfer(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createInterCompanyTransferSchema)
+    dto: z.infer<typeof createInterCompanyTransferSchema>,
+  ) {
+    return this.treasuryService.createInterCompanyTransfer(req.user.tenantId, dto);
   }
-  @ApiOperation({ summary: 'Approve inter company transfer' })
-  @Permissions('advanced_finance.create')
+
+  @ApiOperation({ summary: 'Approve intercompany transfer' })
+  @Permissions('finance.treasury.create')
   @Post('inter-company-transfers/:id/approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('InterCompanyTransfer', 'id')
   async approveInterCompanyTransfer(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.financeService.approveInterCompanyTransfer(req.user.tenantId, id);
+    return this.treasuryService.approveInterCompanyTransfer(req.user.tenantId, id);
   }
 
-  // Tax & Treasury (existing)
   @ApiOperation({ summary: 'Create tax rule' })
-  @Permissions('advanced_finance.read')
-  @Get('tax-rules') async getTaxRules(@Req() req: AuthenticatedRequest) { return this.financeService.getTaxRules(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get withholding taxes' })
-  @Post('tax-rules') async createTaxRule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createTaxRule(req.user.tenantId, req.user.orgId || '', body);
+  @Permissions('finance.tax.create')
+  @Post('tax-rules')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TaxRule')
+  async createTaxRule(@Req() req: AuthenticatedRequest, @ZodBody(createTaxRuleSchema) body: any) {
+    return this.taxService.createTaxRule(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Get tax rules' })
+  @Get('tax-rules')
+  @Permissions('finance.tax.read')
+  async getTaxRules(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getTaxRules(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Create withholding tax' })
-  @Permissions('advanced_finance.read')
-  @Get('withholding-taxes') async getWithholdingTaxes(@Req() req: AuthenticatedRequest) { return this.financeService.getWithholdingTaxes(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get tax filings' })
-  @Post('withholding-taxes') async createWithholdingTax(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createWithholdingTax(req.user.tenantId, req.user.orgId || '', body);
+  @Permissions('finance.tax.create')
+  @Post('withholding-taxes')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('WithholdingTax')
+  async createWithholdingTax(@Req() req: AuthenticatedRequest, @ZodBody(createWithholdingTaxSchema) body: any) {
+    return this.taxService.createWithholdingTax(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Get withholding taxes' })
+  @Get('withholding-taxes')
+  @Permissions('finance.tax.read')
+  async getWithholdingTaxes(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getWithholdingTaxes(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Create tax filing' })
-  @Permissions('advanced_finance.read')
-  @Get('tax-filings') async getTaxFilings(@Req() req: AuthenticatedRequest) { return this.financeService.getTaxFilings(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get investment portfolios' })
-  @Post('tax-filings') async createTaxFiling(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createTaxFiling(req.user.tenantId, req.user.orgId || '', body);
+  @Permissions('finance.tax.create')
+  @Post('tax-filings')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TaxFiling')
+  async createTaxFiling(@Req() req: AuthenticatedRequest, @ZodBody(createTaxFilingSchema) body: any) {
+    return this.taxService.createTaxFiling(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Get tax filings' })
+  @Get('tax-filings')
+  @Permissions('finance.tax.read')
+  async getTaxFilings(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getTaxFilings(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Create investment portfolio' })
-  @Permissions('advanced_finance.read')
-  @Get('investment-portfolios') async getInvestmentPortfolios(@Req() req: AuthenticatedRequest) { return this.financeService.getInvestmentPortfolios(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get treasury transactions' })
-  @Post('investment-portfolios') async createInvestmentPortfolio(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createInvestmentPortfolio(req.user.tenantId, req.user.orgId || '', body);
+  @Permissions('finance.treasury.create')
+  @Post('investment-portfolios')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('InvestmentPortfolio')
+  async createInvestmentPortfolio(@Req() req: AuthenticatedRequest, @ZodBody(createInvestmentPortfolioSchema) body: any) {
+    return this.treasuryService.createInvestmentPortfolio(req.user.tenantId, req.user.orgId || '', body);
   }
+
+  @ApiOperation({ summary: 'Get investment portfolios' })
+  @Get('investment-portfolios')
+  @Permissions('finance.treasury.read')
+  async getInvestmentPortfolios(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getInvestmentPortfolios(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Create treasury transaction' })
-  @Permissions('advanced_finance.read')
-  @Get('treasury-transactions') async getTreasuryTransactions(@Req() req: AuthenticatedRequest) { return this.financeService.getTreasuryTransactions(req.user.tenantId); }
-  @ApiOperation({ summary: 'Get inter company transfers' })
-  @Post('treasury-transactions') async createTreasuryTransaction(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: unknown) {
-    return this.financeService.createTreasuryTransaction(req.user.tenantId, req.user.orgId || '', body);
+  @Permissions('finance.treasury.create')
+  @Post('treasury-transactions')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TreasuryTransaction')
+  async createTreasuryTransaction(@Req() req: AuthenticatedRequest, @ZodBody(createTreasuryTransactionSchema) body: any) {
+    return this.treasuryService.createTreasuryTransaction(req.user.tenantId, req.user.orgId || '', body);
   }
-  @ApiOperation({ summary: 'Get currency revaluations' })
-  @Get('inter-company-transfers') async getInterCompanyTransfers(@Req() req: AuthenticatedRequest) { return this.financeService.getInterCompanyTransfers(req.user.tenantId); }
+
+  @ApiOperation({ summary: 'Get treasury transactions' })
+  @Get('treasury-transactions')
+  @Permissions('finance.treasury.read')
+  async getTreasuryTransactions(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getTreasuryTransactions(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get intercompany transfers list' })
+  @Get('inter-company-transfers')
+  @Permissions('finance.treasury.read')
+  async getInterCompanyTransfers(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getInterCompanyTransfers(req.user.tenantId);
+  }
 
   @ApiOperation({ summary: 'Get currency revaluations' })
-  @Get('currency-revaluations') @Permissions('finance.report.read')
-  async getCurrencyRevaluations(@Req() req: AuthenticatedRequest) { return this.financeService.getCurrencyRevaluations(req.user.tenantId); }
+  @Get('currency-revaluations')
+  @Permissions('finance.treasury.read')
+  async getCurrencyRevaluations(@Req() req: AuthenticatedRequest) {
+    return this.treasuryService.getCurrencyRevaluations(req.user.tenantId);
+  }
 
   @ApiOperation({ summary: 'Run currency revaluation' })
-  @Post('currency-revaluations/run') @Permissions('finance.invoice.create')
+  @Post('currency-revaluations/run')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CurrencyRevaluation')
   async runCurrencyRevaluation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { asOfDate?: string; baseCurrency?: string }) {
-    return this.financeService.runCurrencyRevaluation(req.user.tenantId, req.user.orgId || 'org-system-default', body.asOfDate || new Date().toISOString(), body.baseCurrency || 'USD');
+    return this.treasuryService.runCurrencyRevaluation(req.user.tenantId, req.user.orgId || 'org-system-default', body.asOfDate || new Date().toISOString(), body.baseCurrency || 'USD');
   }
 
-  @ApiOperation({ summary: 'Get e invoices' })
-  @Get('e-invoices') @Permissions('finance.invoice.read')
+  @ApiOperation({ summary: 'Get e-invoices list' })
+  @Get('e-invoices')
+  @Permissions('finance.einvoice.read')
   async getEInvoices(@Req() req: AuthenticatedRequest, @Query('invoiceId') invoiceId?: string) {
-    return this.financeService.getEInvoices(req.user.tenantId, invoiceId);
+    return this.taxService.getEInvoices(req.user.tenantId, invoiceId);
   }
 
-  @ApiOperation({ summary: 'Get e invoice by id' })
-  @Get('e-invoices/:id') @Permissions('finance.invoice.read')
+  @ApiOperation({ summary: 'Get e-invoice by ID' })
+  @Get('e-invoices/:id')
+  @Permissions('finance.einvoice.read')
   async getEInvoiceById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.financeService.getEInvoiceById(req.user.tenantId, id);
+    return this.taxService.getEInvoiceById(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Generate e invoice' })
-  @Post('e-invoices/generate') @Permissions('finance.invoice.create')
+  @ApiOperation({ summary: 'Generate e-invoice' })
+  @Post('e-invoices/generate')
+  @Permissions('finance.einvoice.generate')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EInvoice')
   async generateEInvoice(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { invoiceId: string; format?: string }) {
-    return this.financeService.generateEInvoice(req.user.tenantId, req.user.orgId || 'org-system-default', body.invoiceId, body.format || 'UBL');
+    return this.taxService.generateEInvoice(req.user.tenantId, req.user.orgId || 'org-system-default', body.invoiceId, body.format || 'UBL');
   }
 
   // ── MULTI-BOOK ACCOUNTING ──────────────────────────────────────
@@ -483,38 +1262,42 @@ export class AdvancedFinanceController {
   @Permissions('finance.accounting-book.read')
   @Get('accounting-books')
   async getAccountingBooks(@Req() req: AuthenticatedRequest) {
-    return this.financeService.getAccountingBooks(req.user.tenantId);
+    return this.glService.getAccountingBooks(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create an accounting book' })
   @Permissions('finance.accounting-book.create')
   @Post('accounting-books')
-  async createAccountingBook(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { name: string; standard: string; isPrimary?: boolean }) {
-    return this.financeService.createAccountingBook(req.user.tenantId, req.user.orgId || 'org-system-default', body);
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AccountingBook')
+  async createAccountingBook(@Req() req: AuthenticatedRequest, @ZodBody(createAccountingBookSchema) body: z.infer<typeof createAccountingBookSchema>) {
+    return this.glService.createAccountingBook(req.user.tenantId, req.user.orgId || 'org-system-default', body);
   }
 
   @ApiOperation({ summary: 'Post a journal entry to a specific accounting book' })
   @Permissions('finance.accounting-book.create')
   @Post('accounting-books/:bookId/journals')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Journal')
   async postJournalToBook(
     @Req() req: AuthenticatedRequest,
     @Param('bookId') bookId: string,
-    @ZodBody(z.any()) body: { entryNumber: string; date: string; entries: Array<{ accountId: string; debit: number; credit: number; description?: string }>; notes?: string },
+    @ZodBody(postJournalToBookSchema) body: z.infer<typeof postJournalToBookSchema>,
   ) {
-    return this.financeService.postJournalToBook(req.user.tenantId, req.user.orgId || 'org-system-default', bookId, body);
+    return this.glService.postJournalToBook(req.user.tenantId, req.user.orgId || 'org-system-default', bookId, body);
   }
 
   @ApiOperation({ summary: 'Trial balance for an accounting book' })
   @Permissions('finance.accounting-book.read')
   @Get('accounting-books/:bookId/trial-balance')
   async getBookTrialBalance(@Req() req: AuthenticatedRequest, @Param('bookId') bookId: string, @Query('asOf') asOf?: string) {
-    return this.financeService.getBookTrialBalance(req.user.tenantId, bookId, asOf);
+    return this.glService.getBookTrialBalance(req.user.tenantId, bookId, asOf);
   }
 
   @ApiOperation({ summary: 'Cross-book variance report (e.g. LOCAL_GAAP vs IFRS)' })
   @Permissions('finance.accounting-book.read')
   @Get('accounting-books/variance')
   async crossBookVarianceReport(@Req() req: AuthenticatedRequest, @Query('book1') book1: string, @Query('book2') book2: string, @Query('asOf') asOf?: string) {
-    return this.financeService.crossBookVarianceReport(req.user.tenantId, book1, book2, asOf);
+    return this.glService.crossBookVarianceReport(req.user.tenantId, book1, book2, asOf);
   }
 }

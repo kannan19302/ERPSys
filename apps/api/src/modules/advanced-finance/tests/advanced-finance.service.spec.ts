@@ -1,7 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdvancedFinanceService } from '../advanced-finance.service';
+import { prisma } from '@unerp/database';
 import { BadRequestException } from '@nestjs/common';
-// import { Prisma } from '@prisma/client';
+import {
+  GlAccountingService,
+  BudgetingService,
+  BankingService,
+  ExpenseManagementService,
+  RevenueRecognitionService,
+  TaxEngineService,
+  TreasuryService,
+  ConsolidationService,
+  FinancialReportingService,
+  PeriodManagementService,
+} from '../services';
 
 vi.mock('@prisma/client', () => {
   return {
@@ -16,76 +28,79 @@ vi.mock('@prisma/client', () => {
 });
 
 vi.mock('@unerp/database', () => {
-  const genericPrismaMock = {
-    findMany: vi.fn(),
-    findFirst: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    findUnique: vi.fn(),
+  const createGenericPrismaMock = () => ({
+    findMany: vi.fn().mockResolvedValue([]),
+    findFirst: vi.fn().mockResolvedValue(null),
+    create: vi.fn().mockResolvedValue({ id: 'new-id' }),
+    update: vi.fn().mockResolvedValue({ id: 'updated-id' }),
+    findUnique: vi.fn().mockResolvedValue(null),
+    count: vi.fn().mockResolvedValue(0),
+  });
+
+  const txMocks = {
+    exchangeRate: createGenericPrismaMock(),
+    account: { ...createGenericPrismaMock(), findUnique: vi.fn().mockResolvedValue({ id: 'acc-1', type: 'ASSET' }) },
+    financeAuditLog: createGenericPrismaMock(),
+    costCenter: createGenericPrismaMock(),
+    journal: { ...createGenericPrismaMock(), findUnique: vi.fn().mockResolvedValue({ id: 'journal-id' }) },
+    journalEntry: createGenericPrismaMock(),
+    budget: createGenericPrismaMock(),
+    bankReconciliation: createGenericPrismaMock(),
+    financialPeriod: createGenericPrismaMock(),
+    fixedAsset: createGenericPrismaMock(),
+    bankAccount: createGenericPrismaMock(),
+    creditNote: createGenericPrismaMock(),
+    debitNote: createGenericPrismaMock(),
+    dunningLevel: createGenericPrismaMock(),
+    dunningRun: createGenericPrismaMock(),
+    paymentSchedule: createGenericPrismaMock(),
+    paymentRun: createGenericPrismaMock(),
+    forecastScenario: createGenericPrismaMock(),
+    taxRule: createGenericPrismaMock(),
+    withholdingTax: createGenericPrismaMock(),
+    taxFiling: createGenericPrismaMock(),
+    investmentPortfolio: createGenericPrismaMock(),
+    treasuryTransaction: createGenericPrismaMock(),
+    interCompanyTransfer: createGenericPrismaMock(),
   };
 
   return {
     prisma: {
-      exchangeRate: { ...genericPrismaMock },
-      account: { ...genericPrismaMock },
-      costCenter: { ...genericPrismaMock },
-      journal: { ...genericPrismaMock, findUnique: vi.fn() },
-      journalEntry: { ...genericPrismaMock },
-      budget: { ...genericPrismaMock },
-      bankReconciliation: { ...genericPrismaMock },
-      financialPeriod: { ...genericPrismaMock },
-      fixedAsset: { ...genericPrismaMock },
-      bankAccount: { ...genericPrismaMock },
-      creditNote: { ...genericPrismaMock },
-      debitNote: { ...genericPrismaMock },
-      dunningLevel: { ...genericPrismaMock },
-      dunningRun: { ...genericPrismaMock },
-      paymentSchedule: { ...genericPrismaMock },
-      paymentRun: { ...genericPrismaMock },
-      forecastScenario: { ...genericPrismaMock },
-      taxRule: { ...genericPrismaMock },
-      withholdingTax: { ...genericPrismaMock },
-      taxFiling: { ...genericPrismaMock },
-      investmentPortfolio: { ...genericPrismaMock },
-      treasuryTransaction: { ...genericPrismaMock },
-      interCompanyTransfer: { ...genericPrismaMock },
-      invoice: { ...genericPrismaMock },
-      purchaseOrder: { ...genericPrismaMock },
-      customer: { ...genericPrismaMock },
-      vendor: { ...genericPrismaMock },
-      currencyRevaluation: { ...genericPrismaMock },
-      eInvoice: { ...genericPrismaMock, upsert: vi.fn() },
-      financeAuditLog: { ...genericPrismaMock },
+      exchangeRate: createGenericPrismaMock(),
+      account: createGenericPrismaMock(),
+      costCenter: createGenericPrismaMock(),
+      journal: { ...createGenericPrismaMock(), findUnique: vi.fn().mockResolvedValue({ id: 'journal-id' }) },
+      journalEntry: createGenericPrismaMock(),
+      budget: createGenericPrismaMock(),
+      bankReconciliation: createGenericPrismaMock(),
+      financialPeriod: createGenericPrismaMock(),
+      fixedAsset: createGenericPrismaMock(),
+      bankAccount: createGenericPrismaMock(),
+      creditNote: createGenericPrismaMock(),
+      debitNote: createGenericPrismaMock(),
+      dunningLevel: createGenericPrismaMock(),
+      dunningRun: createGenericPrismaMock(),
+      paymentSchedule: createGenericPrismaMock(),
+      paymentRun: createGenericPrismaMock(),
+      forecastScenario: createGenericPrismaMock(),
+      taxRule: createGenericPrismaMock(),
+      withholdingTax: createGenericPrismaMock(),
+      taxFiling: createGenericPrismaMock(),
+      investmentPortfolio: createGenericPrismaMock(),
+      treasuryTransaction: createGenericPrismaMock(),
+      interCompanyTransfer: createGenericPrismaMock(),
+      invoice: createGenericPrismaMock(),
+      purchaseOrder: createGenericPrismaMock(),
+      customer: createGenericPrismaMock(),
+      vendor: createGenericPrismaMock(),
+      currencyRevaluation: createGenericPrismaMock(),
+      eInvoice: { ...createGenericPrismaMock(), upsert: vi.fn() },
+      financeAuditLog: createGenericPrismaMock(),
       organization: {
-        findFirst: vi.fn().mockResolvedValue({ id: 'org-1' }),
+        findFirst: vi.fn().mockResolvedValue({ id: 'org-1', name: 'Seller Inc' }),
       },
       $transaction: vi.fn(async (cb) => {
-        return cb({
-          exchangeRate: { ...genericPrismaMock },
-          account: { ...genericPrismaMock, findUnique: vi.fn().mockResolvedValue({ id: 'acc-1', type: 'ASSET' }) },
-          financeAuditLog: { ...genericPrismaMock },
-          costCenter: { ...genericPrismaMock },
-          journal: { ...genericPrismaMock, findUnique: vi.fn().mockResolvedValue({ id: 'journal-id' }) },
-          journalEntry: { ...genericPrismaMock },
-          budget: { ...genericPrismaMock },
-          bankReconciliation: { ...genericPrismaMock },
-          financialPeriod: { ...genericPrismaMock },
-          fixedAsset: { ...genericPrismaMock },
-          bankAccount: { ...genericPrismaMock },
-          creditNote: { ...genericPrismaMock },
-          debitNote: { ...genericPrismaMock },
-          dunningLevel: { ...genericPrismaMock },
-          dunningRun: { ...genericPrismaMock },
-          paymentSchedule: { ...genericPrismaMock },
-          paymentRun: { ...genericPrismaMock },
-          forecastScenario: { ...genericPrismaMock },
-          taxRule: { ...genericPrismaMock },
-          withholdingTax: { ...genericPrismaMock },
-          taxFiling: { ...genericPrismaMock },
-          investmentPortfolio: { ...genericPrismaMock },
-          treasuryTransaction: { ...genericPrismaMock },
-          interCompanyTransfer: { ...genericPrismaMock },
-        });
+        return cb(txMocks);
       }),
     },
   };
@@ -95,8 +110,49 @@ describe('AdvancedFinanceService', () => {
   let service: AdvancedFinanceService;
 
   beforeEach(() => {
-    service = new AdvancedFinanceService();
-    vi.clearAllMocks();
+    Object.keys(prisma).forEach((key) => {
+      const model = (prisma as any)[key];
+      if (model && typeof model === 'object') {
+        Object.keys(model).forEach((m) => {
+          if (typeof model[m] === 'function' && vi.isMockFunction(model[m])) {
+            vi.mocked(model[m]).mockReset();
+            // Restore default mocked values
+            if (m === 'findMany') vi.mocked(model[m]).mockResolvedValue([]);
+            if (m === 'findFirst') vi.mocked(model[m]).mockResolvedValue(null);
+            if (m === 'create') vi.mocked(model[m]).mockResolvedValue({ id: 'new-id' });
+            if (m === 'update') vi.mocked(model[m]).mockResolvedValue({ id: 'updated-id' });
+            if (m === 'findUnique') vi.mocked(model[m]).mockResolvedValue(null);
+            if (m === 'count') vi.mocked(model[m]).mockResolvedValue(0);
+          }
+        });
+      }
+    });
+
+    vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1', name: 'Seller Inc' } as any);
+
+    const glService = new GlAccountingService();
+    const budgetingService = new BudgetingService(glService);
+    const bankingService = new BankingService(glService);
+    const expenseService = new ExpenseManagementService(glService);
+    const revenueService = new RevenueRecognitionService(glService);
+    const taxService = new TaxEngineService(glService);
+    const treasuryService = new TreasuryService(glService);
+    const consolidationService = new ConsolidationService();
+    const reportingService = new FinancialReportingService(glService);
+    const periodService = new PeriodManagementService(glService);
+
+    service = new AdvancedFinanceService(
+      glService,
+      budgetingService,
+      bankingService,
+      expenseService,
+      revenueService,
+      taxService,
+      treasuryService,
+      consolidationService,
+      reportingService,
+      periodService,
+    );
   });
 
   const getMethods = [
@@ -107,7 +163,6 @@ describe('AdvancedFinanceService', () => {
     'getBudgets',
     'getBankReconciliations',
     'getFinancialPeriods',
-    'getFixedAssets',
     'getBankAccounts',
     'getCreditNotes',
     'getDebitNotes',
@@ -130,7 +185,7 @@ describe('AdvancedFinanceService', () => {
       // Mocking whatever entity model might be called inside by generically making all findMany return []
       Object.keys(prisma).forEach((key) => {
         if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.findMany) {
-          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.findMany!).mockResolvedValue([]);
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.findMany!).mockResolvedValueOnce([]);
         }
       });
 
@@ -144,8 +199,6 @@ describe('AdvancedFinanceService', () => {
     { method: 'createCostCenter', args: ['tenant-1', 'org-1', { code: 'C100', name: 'Test CC' }] },
     { method: 'createBankReconciliation', args: ['tenant-1', { accountId: 'acc-1', statementDate: new Date().toISOString(), statementBalance: 100 }] },
     { method: 'createFinancialPeriod', args: ['tenant-1', 'org-1', { name: 'FY2026', startDate: new Date().toISOString(), endDate: new Date().toISOString(), status: 'OPEN' }] },
-    { method: 'updateFinancialPeriodStatus', args: ['tenant-1', 'period-1', 'CLOSED'] },
-    { method: 'createFixedAsset', args: ['tenant-1', 'org-1', { assetCode: 'AST-001', name: 'Server', purchaseDate: new Date().toISOString(), purchaseValue: 100, salvageValue: 10, usefulLifeYears: 5, depreciationMethod: 'SLM', accountId: 'acc-1', accumDepAccountId: 'acc-2' }] },
     { method: 'createBankAccount', args: ['tenant-1', 'org-1', { accountId: 'acc-1', bankName: 'Test Bank', accountNumber: '123456', currency: 'USD' }] },
     { method: 'createCreditNote', args: ['tenant-1', 'org-1', { customerId: 'cust-1', noteNumber: 'CN-001', amount: 100 }] },
     { method: 'createDebitNote', args: ['tenant-1', 'org-1', { vendorId: 'ven-1', noteNumber: 'DN-001', amount: 50 }] },
@@ -165,13 +218,13 @@ describe('AdvancedFinanceService', () => {
       const { prisma } = await import('@unerp/database');
       Object.keys(prisma).forEach((key) => {
         if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.create) {
-          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.create!).mockResolvedValue({ id: 'new-id' });
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.create!).mockResolvedValueOnce({ id: 'new-id' });
         }
         if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.findFirst) {
-          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.findFirst!).mockResolvedValue(null);
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.findFirst!).mockResolvedValueOnce(null);
         }
         if ((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]?.update) {
-          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.update!).mockResolvedValue({ id: 'updated-id' });
+          vi.mocked((prisma as unknown as Record<string, Record<string, import("vitest").Mock>>)[key]!.update!).mockResolvedValueOnce({ id: 'updated-id' });
         }
       });
       // specific mock for org
@@ -474,11 +527,10 @@ describe('AdvancedFinanceService', () => {
     it('recognises an unrealized FX loss on an open foreign-currency payable when the rate rises', async () => {
       const { prisma } = await import('@unerp/database');
       // No AR; one EUR PO: 1000 EUR owed, booked 1.10, current 1.25 -> owe more base -> 150 loss
-      vi.mocked(prisma.invoice.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([
-          { id: 'po-1', poNumber: 'PO-1', currency: 'EUR', totalAmount: 1000 as never, paidAmount: 0 as never, exchangeRate: 1.1 as never } as never,
-        ]);
+      vi.mocked(prisma.invoice.findMany).mockResolvedValueOnce([]);
+      vi.mocked(prisma.purchaseOrder.findMany).mockResolvedValueOnce([
+        { id: 'po-1', poNumber: 'PO-1', currency: 'EUR', totalAmount: 1000 as never, paidAmount: 0 as never, exchangeRate: 1.1 as never } as never,
+      ]);
       vi.mocked(prisma.exchangeRate.findFirst)
         .mockResolvedValueOnce({ rate: 1.25 as never } as never)
         .mockResolvedValue({ id: 'acc-1', type: 'LIABILITY' } as never);

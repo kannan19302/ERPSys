@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { resolveOrgId } from './crm-shared';
+import { CrmSlaService } from './crm-sla.service';
 
 export interface CreateCaseInput {
   subject: string;
@@ -37,6 +38,8 @@ const DEFAULT_SLA_HOURS: Record<string, number> = {
  */
 @Injectable()
 export class CrmCasesService {
+  constructor(private readonly sla: CrmSlaService) {}
+
   async getCases(tenantId: string, filters: { status?: string; priority?: string; customerId?: string } = {}) {
     const where: Prisma.CaseWhereInput = { tenantId };
     if (filters.status) where.status = filters.status;
@@ -78,7 +81,7 @@ export class CrmCasesService {
     const count = await prisma.case.count({ where: { tenantId } });
     const caseNumber = `CASE-${String(count + 1).padStart(5, '0')}`;
 
-    return prisma.case.create({
+    const created = await prisma.case.create({
       data: {
         tenantId,
         orgId: resolvedOrgId,
@@ -93,6 +96,8 @@ export class CrmCasesService {
         assignedToId: dto.assignedToId || null,
       },
     });
+    await this.sla.applyToCase(tenantId, created.id);
+    return created;
   }
 
   async updateCase(tenantId: string, id: string, dto: UpdateCaseInput) {

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, PageHeader, Spinner, Button, DataTable, Modal, type Column } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Button, DataTable, Modal, type Column, ProtectedComponent } from '@unerp/ui';
 import { Search, Plus, Mail, Phone, Building, Users, CheckCircle } from 'lucide-react';
+import { DuplicatesFinder } from '../_components/DuplicatesFinder';
 import { useContacts, useCustomers } from '../../../../src/lib/hooks/useModuleData';
 import { apiPost } from '../../../../src/lib/api';
 
@@ -25,6 +26,7 @@ export default function ContactsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', mobile: '', title: '', customerId: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [showDuplicates, setShowDuplicates] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +123,14 @@ export default function ContactsPage() {
         title="Contacts"
         description="Manage contact persons linked to your customer accounts"
         breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Contacts' }]}
-        actions={<Button variant="primary" size="sm" onClick={() => setShowCreate(true)}><Plus size={14} /> Add Contact</Button>}
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <ProtectedComponent permission="crm.duplicates.scan">
+              <Button variant="outline" size="sm" onClick={() => setShowDuplicates(true)}><Users size={14} /> Find Duplicates</Button>
+            </ProtectedComponent>
+            <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}><Plus size={14} /> Add Contact</Button>
+          </div>
+        }
       />
       <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
@@ -233,6 +242,10 @@ export default function ContactsPage() {
           </div>
         </form>
       </Modal>
+
+      {showDuplicates && (
+        <DuplicatesFinder entity="contacts" onClose={() => setShowDuplicates(false)} onMerged={() => refetchContacts()} />
+      )}
     </div>
   );
 }

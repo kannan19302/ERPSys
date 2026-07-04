@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { CreateLeadInput, UpdateLeadInput } from '@unerp/shared';
+import { CrmLeadScoringService } from './crm-lead-scoring.service';
 
 /**
  * Leads bounded context: lead sources, the lead lifecycle (create → score →
@@ -11,6 +12,8 @@ import { CreateLeadInput, UpdateLeadInput } from '@unerp/shared';
  */
 @Injectable()
 export class CrmLeadsService {
+  constructor(private readonly leadScoring: CrmLeadScoringService) {}
+
   async getLeadSources(tenantId: string) {
     return prisma.leadSource.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
   }
@@ -94,6 +97,7 @@ export class CrmLeadsService {
       },
     });
     await this.recalculateLeadScore(tenantId, lead.id);
+    await this.leadScoring.recalculateScore(tenantId, lead.id);
     return this.getLeadById(tenantId, lead.id);
   }
 
@@ -110,6 +114,7 @@ export class CrmLeadsService {
       } as Prisma.LeadUpdateInput
     });
     await this.recalculateLeadScore(tenantId, id);
+    await this.leadScoring.recalculateScore(tenantId, id);
     return updated;
   }
 
