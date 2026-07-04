@@ -44,6 +44,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
+| antigravity-ide | 2026-07-04 14:38 | Draft detailed plan for advanced CRM features and stub buttons | main | In Progress |
 
 
 
