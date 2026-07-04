@@ -235,6 +235,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Duplicate Rules', href: '/crm/settings/duplicate-rules', icon: Users },
             { name: 'Pipelines', href: '/crm/settings/pipelines', icon: GitBranch },
             { name: 'SLA Policies', href: '/crm/settings/sla-policies', icon: Clock },
+            { name: 'Email Integration', href: '/crm/settings/email-integration', icon: Mail },
           ]
         },
       ] as SidebarItem[]

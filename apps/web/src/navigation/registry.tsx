@@ -77,6 +77,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'duplicate-rules': 'Duplicate Rules',
   pipelines: 'Pipelines',
   'sla-policies': 'SLA Policies',
+  'email-integration': 'Email Integration',
   'purchase-orders': 'Purchase Orders',
   'purchase-receipts': 'Purchase Receipts',
   returns: 'Returns',

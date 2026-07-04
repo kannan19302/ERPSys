@@ -3,6 +3,85 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] CRM: Real inbound email/calendar integration (Gmail/Outlook OAuth + Activity sync)
+
+Confirmed gap: `EmailSequence` was an outbound-campaign data model only, and
+`CrmIntegrationsService.syncEmails`/`syncCalendarEvents` already had the right
+shape (match participant emails against Contacts/Leads/Customers, write
+`Activity` rows) but every provider fetch method (`fetchGmailMessages`,
+`fetchOutlookMessages`, `fetchGoogleCalendarEvents`, `fetchOutlookCalendarEvents`)
+was a stub hardcoded to return `[]` — no OAuth flow existed anywhere in the
+codebase (SSO controller's SAML/OIDC callbacks are similarly stubbed with
+"In production: exchange code..." comments) and there was no token storage.
+
+**Schema** — new `MailboxConnection` model (`crm_mailbox_connections` table):
+`tenantId`/`orgId`/`userId`/`provider` (GOOGLE|MICROSOFT), `emailAddress`,
+`accessTokenEnc`/`refreshTokenEnc` (encrypted at rest via the existing
+`encryptField`/`decryptField` helpers in `packages/database/src/encryption.ts`
+— reused, not reinvented), `tokenExpiresAt`, `status`, `lastSyncedAt`,
+`lastSyncError`, `lastSyncMessages`/`lastSyncEvents`. Migration
+`20260704200000_crm_mailbox_connections` (applied via `prisma db execute` +
+`migrate resolve --applied` due to known dev-DB drift on an unrelated table;
+documented in memory).
+
+**Backend** — `apps/api/src/modules/crm/crm-mailbox.service.ts` +
+`crm-mailbox.controller.ts`, registered in `crm.module.ts`:
+- `POST /crm/mailbox-connections/connect` — builds a real Google
+  (`accounts.google.com/o/oauth2/v2/auth`) or Microsoft
+  (`login.microsoftonline.com/common/oauth2/v2.0/authorize`) consent URL,
+  state param carries `{tenantId, userId, provider}` base64url-encoded.
+- `POST /crm/mailbox-connections/callback` — exchanges the authorization code
+  for tokens against the provider's real token endpoint via `fetch` (no new
+  OAuth SDK dependency added), resolves the connected email address
+  (`/oauth2/v2/userinfo` or Graph `/me`), stores the connection with encrypted
+  tokens (never returned to the client — `serialize()` strips them).
+- `POST /crm/mailbox-connections/:id/sync` — manual/polling sync: pulls up to
+  25 recent Gmail messages / Outlook messages and up to 25 upcoming Google/
+  Outlook calendar events since `lastSyncedAt` (or 7 days back on first run),
+  extracts participant email addresses, matches against `Contact`/`Lead`/
+  `Customer.email`, and writes `Activity` rows (`type: 'EMAIL'` or `'MEETING'`)
+  linked to the matching entity — same mechanism the existing contact/lead/
+  customer detail pages already render activity timelines from, so synced
+  items appear there with no frontend timeline changes needed. Dedupes on
+  subject+date+linked-entity so re-running sync doesn't create duplicate rows.
+  Lazily refreshes the access token via the stored refresh token if expired.
+- `GET /crm/mailbox-connections`, `DELETE /:id` (disconnect, keeps synced
+  Activity history).
+- New permissions: `crm.mailbox.read/create/update/delete` (dynamic
+  string-based RBAC, no central registry to update per `RbacGuard`).
+
+**Frontend** — `apps/web/app/(dashboard)/crm/settings/email-integration/page.tsx`:
+connect Gmail/Outlook buttons (redirect to consent URL), handles the OAuth
+redirect back (`?code=&state=`) by decoding state and calling the callback
+endpoint, connections table (provider, email, status badge, last synced,
+last sync message/event counts, sync-now + disconnect actions), explains the
+polling-sync model inline. Nav entry added under CRM > Settings
+(`moduleNav.tsx`) and breadcrumb segment registered (`registry.tsx`).
+
+**Simplified/deferred (explicitly, not hidden):**
+- Polling "sync now" endpoint, not a continuous background daemon or
+  Gmail `watch()`/Graph webhook push subscription — `syncNow()` is written so
+  a future scheduled job can call it per-connection on an interval without
+  further schema changes.
+- No background token-refresh loop; refresh happens lazily on the next
+  `syncNow()` call if the stored token is expired.
+- Message body fetch for Gmail uses `format=metadata` (headers only, no full
+  body) to keep the REST calls small; Outlook uses Graph's `bodyPreview`.
+  Both are enough for the Activity `description` field but not full HTML body
+  capture.
+
+**Tests** — `apps/api/src/modules/crm/tests/crm-mailbox.service.spec.ts`, 10
+new focused unit tests (authorization URL building + config-missing guard,
+token exchange success/failure, disconnect, sync matching a Contact and
+writing an Activity, sync dedup on re-run, sync error handling without
+throwing, guard against syncing a disconnected mailbox) using the same
+`vi.mock('@unerp/database')` + mocked `fetch` pattern as existing CRM specs.
+Full CRM suite: **355/355 passing** (345 pre-existing + 10 new).
+`@unerp/api` and `@unerp/web` typecheck clean for all new/touched files
+(pre-existing unrelated type errors in `crm-customers.service.ts`,
+`crm.controller.ts`, `crm.service.ts` from a prior concurrent session
+confirmed via `git log`/`git status` as out of scope for this change).
+
 ## [2026-07-04] CRM: New Contract/Renewal management feature (end-to-end)
 
 Closed a confirmed gap — no Contract entity existed anywhere in CRM. Built the full vertical

@@ -7868,6 +7868,32 @@ model Contract {
   @@map("crm_contracts")
 }
 
+model MailboxConnection {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  userId            String    @map("user_id")
+  provider          String // GOOGLE, MICROSOFT
+  emailAddress      String    @map("email_address")
+  accessTokenEnc    String    @map("access_token_enc") // encrypted at rest via encryptField()
+  refreshTokenEnc   String    @map("refresh_token_enc") // encrypted at rest via encryptField()
+  tokenExpiresAt    DateTime? @map("token_expires_at")
+  scope             String?
+  status            String    @default("CONNECTED") // CONNECTED, DISCONNECTED, ERROR
+  lastSyncedAt      DateTime? @map("last_synced_at")
+  lastSyncError     String?   @map("last_sync_error")
+  lastSyncMessages  Int       @default(0) @map("last_sync_messages")
+  lastSyncEvents    Int       @default(0) @map("last_sync_events")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  disconnectedAt    DateTime? @map("disconnected_at")
+
+  @@unique([tenantId, userId, provider])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("crm_mailbox_connections")
+}
+
 // ════════════════════════════════════════════════
 // PROCUREMENT — SUPPLIER PORTAL & E-AUCTION
 // ════════════════════════════════════════════════
