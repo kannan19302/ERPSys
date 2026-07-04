@@ -6,11 +6,12 @@ import {
   PageHeader, Card, Button, Spinner, StatusBadge, DataTable, type Column,
   Modal, TextField, FormField, Select, KPICard, Badge, useToast,
 } from '@unerp/ui';
-import { 
-  Building, Plus, Search, Mail, Phone, DollarSign, Users, 
-  Download, Trash2, Edit, AlertCircle, ShieldAlert, CheckCircle, 
-  MapPin, HelpCircle, FileText 
+import {
+  Building, Plus, Search, Mail, Phone, DollarSign, Users,
+  Download, Trash2, Edit, AlertCircle, ShieldAlert, CheckCircle,
+  MapPin, HelpCircle, FileText
 } from 'lucide-react';
+import { apiPost, apiPut, apiDelete, ApiRequestError } from '../../../../src/lib/api';
 
 interface Address {
   street?: string;
@@ -179,25 +180,14 @@ export default function VendorsPage() {
     if (selectedIds.length === 0) return;
     setBulkUpdating(true);
     try {
-      const res = await fetch('/api/v1/crm/vendors/bulk-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken() || ''}`,
-        },
-        body: JSON.stringify({ ids: selectedIds, status: bulkStatus }),
-      });
-      if (res.ok) {
-        success(`Successfully updated status for ${selectedIds.length} vendors.`);
-        setSelectedIds([]);
-        setBulkStatusOpen(false);
-        fetchData();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        error(err.message || 'Failed to perform bulk status change.');
-      }
-    } catch (err: any) {
-      error(err.message || 'An error occurred during bulk operation.');
+      await apiPost('/crm/vendors/bulk-status', { ids: selectedIds, status: bulkStatus });
+      success(`Successfully updated status for ${selectedIds.length} vendors.`);
+      setSelectedIds([]);
+      setBulkStatusOpen(false);
+      fetchData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred during bulk operation.';
+      error(message);
     } finally {
       setBulkUpdating(false);
     }
@@ -278,30 +268,18 @@ export default function VendorsPage() {
         } : undefined,
       };
 
-      const res = await fetch('/api/v1/crm/vendors', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          Authorization: `Bearer ${getToken() || ''}` 
-        },
-        body: JSON.stringify(payload),
+      await apiPost('/crm/vendors', payload);
+      setCreateOpen(false);
+      setForm({
+        name: '', email: '', phone: '', taxId: '', type: 'COMPANY',
+        paymentTerms: '30', notes: '', street: '', city: '', state: '',
+        postalCode: '', country: '',
       });
-
-      if (res.ok) {
-        setCreateOpen(false);
-        setForm({
-          name: '', email: '', phone: '', taxId: '', type: 'COMPANY',
-          paymentTerms: '30', notes: '', street: '', city: '', state: '',
-          postalCode: '', country: '',
-        });
-        success('Vendor created successfully.');
-        fetchData();
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        error(errData.message || 'Failed to create vendor.');
-      }
-    } catch (err: any) {
-      error(err.message || 'An error occurred while creating vendor.');
+      success('Vendor created successfully.');
+      fetchData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred while creating vendor.';
+      error(message);
     } finally {
       setCreating(false);
     }
@@ -353,25 +331,13 @@ export default function VendorsPage() {
         } : null,
       };
 
-      const res = await fetch(`/api/v1/crm/vendors/${editingVendorId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken() || ''}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        setEditOpen(false);
-        success('Vendor details updated.');
-        fetchData();
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        error(errData.message || 'Failed to update vendor.');
-      }
-    } catch (err: any) {
-      error(err.message || 'An error occurred during vendor update.');
+      await apiPut(`/crm/vendors/${editingVendorId}`, payload);
+      setEditOpen(false);
+      success('Vendor details updated.');
+      fetchData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred during vendor update.';
+      error(message);
     } finally {
       setEditing(false);
     }
@@ -388,21 +354,14 @@ export default function VendorsPage() {
     if (!deletingId) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/v1/crm/vendors/${deletingId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getToken() || ''}` },
-      });
-      if (res.ok) {
-        setDeleteOpen(false);
-        setDeletingId(null);
-        success('Vendor deleted.');
-        fetchData();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        error(err.message || 'Failed to delete vendor.');
-      }
-    } catch {
-      error('An error occurred during deletion.');
+      await apiDelete(`/crm/vendors/${deletingId}`);
+      setDeleteOpen(false);
+      setDeletingId(null);
+      success('Vendor deleted.');
+      fetchData();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred during deletion.';
+      error(message);
     } finally {
       setDeleting(false);
     }

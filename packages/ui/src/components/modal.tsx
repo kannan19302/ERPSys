@@ -22,6 +22,14 @@ export const Modal: FC<ModalProps> = ({ open, onClose, title, description, size 
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
+  // Latest onClose in a ref so the mount/unmount effect below doesn't need it
+  // as a dependency — callers commonly pass an inline arrow function, whose
+  // identity changes on every parent re-render (e.g. every keystroke in a
+  // controlled form field), which would otherwise tear down and rebuild focus
+  // management on every render and steal focus back to the pre-open element.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   const trapFocus = useCallback((e: KeyboardEvent) => {
     if (e.key !== 'Tab' || !dialogRef.current) return;
     const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
@@ -38,7 +46,7 @@ export const Modal: FC<ModalProps> = ({ open, onClose, title, description, size 
     if (!open) return;
     previousFocusRef.current = document.activeElement as HTMLElement;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
       trapFocus(e);
     };
     document.addEventListener('keydown', onKey);
@@ -53,7 +61,7 @@ export const Modal: FC<ModalProps> = ({ open, onClose, title, description, size 
       document.body.style.overflow = prev;
       previousFocusRef.current?.focus();
     };
-  }, [open, onClose, trapFocus]);
+  }, [open, trapFocus]);
 
   if (!open) return null;
 

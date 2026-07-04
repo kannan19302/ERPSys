@@ -49,6 +49,7 @@
 |:---|:---|:---|:---|:---|
 | claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
 | claude-code | 2026-07-04 17:10 | CRM deepening: Lead/Opportunity/Case 360 summaries + status-transition guards (`crm-leads.service.ts`, `crm-deals.service.ts`, `crm-cases.service.ts`, `crm.service.ts`, `crm.controller.ts`) — explicitly avoided Customer/Vendor files, being handled in parallel | main | Complete, see §3 |
+| claude-code | 2026-07-04 17:12 | CRM: Account (Customer) duplicate-merge soft-delete consistency fix + Customer Tags controller wiring/tests (`crm-duplicates.service.ts`, `crm.controller.ts`, new `customer_tags`/`customer_tag_links` migration) — worked additively alongside another concurrent session's in-flight Customer/Vendor-notes changes already in the tree, did not revert them | main | Complete, see §3 |
 
 ### 2. Up Next (unclaimed work, pick from the top)
 

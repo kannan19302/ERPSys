@@ -13,6 +13,7 @@ import {
   TrendingUp, Award, ThumbsUp, ShieldAlert, Edit, Trash2, Plus,
   AlertCircle
 } from 'lucide-react';
+import { apiPost, apiPut, apiPatch, apiDelete, ApiRequestError } from '../../../../../src/lib/api';
 
 interface Address {
   street?: string;
@@ -220,27 +221,17 @@ export default function VendorDetailPage() {
     if (!noteForm.content.trim()) return;
     setAddingNote(true);
     try {
-      const res = await fetch(`/api/v1/crm/vendors/${id}/notes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken() || ''}`
-        },
-        body: JSON.stringify({
-          content: noteForm.content.trim(),
-          type: noteForm.type,
-        })
+      await apiPost(`/crm/vendors/${id}/notes`, {
+        content: noteForm.content.trim(),
+        type: noteForm.type,
       });
-      if (res.ok) {
-        success('Activity note logged successfully.');
-        setNoteForm({ content: '', type: 'NOTE' });
-        setNoteOpen(false);
-        fetchSummary();
-      } else {
-        error('Failed to log activity note.');
-      }
-    } catch {
-      error('An error occurred while logging activity.');
+      success('Activity note logged successfully.');
+      setNoteForm({ content: '', type: 'NOTE' });
+      setNoteOpen(false);
+      fetchSummary();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred while logging activity.';
+      error(message);
     } finally {
       setAddingNote(false);
     }
@@ -291,25 +282,13 @@ export default function VendorDetailPage() {
         } : null,
       };
 
-      const res = await fetch(`/api/v1/crm/vendors/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken() || ''}`
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        success('Supplier profile updated successfully.');
-        setEditOpen(false);
-        fetchSummary();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        error(err.message || 'Failed to update supplier profile.');
-      }
-    } catch {
-      error('An error occurred during update.');
+      await apiPut(`/crm/vendors/${id}`, payload);
+      success('Supplier profile updated successfully.');
+      setEditOpen(false);
+      fetchSummary();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred during update.';
+      error(message);
     } finally {
       setUpdating(false);
     }
@@ -319,22 +298,12 @@ export default function VendorDetailPage() {
   const handleStatusChange = async (newStatus: string) => {
     setStatusUpdating(true);
     try {
-      const res = await fetch(`/api/v1/crm/vendors/${id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken() || ''}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (res.ok) {
-        success(`Vendor status changed to ${newStatus}.`);
-        fetchSummary();
-      } else {
-        error('Failed to change status.');
-      }
-    } catch {
-      error('An error occurred updating vendor lifecycle status.');
+      await apiPatch(`/crm/vendors/${id}/status`, { status: newStatus });
+      success(`Vendor status changed to ${newStatus}.`);
+      fetchSummary();
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred updating vendor lifecycle status.';
+      error(message);
     } finally {
       setStatusUpdating(false);
     }
@@ -344,19 +313,13 @@ export default function VendorDetailPage() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/v1/crm/vendors/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getToken() || ''}` },
-      });
-      if (res.ok) {
-        success('Supplier deleted successfully.');
-        setDeleteOpen(false);
-        router.push('/crm/vendors');
-      } else {
-        error('Failed to delete vendor.');
-      }
-    } catch {
-      error('An error occurred during deletion.');
+      await apiDelete(`/crm/vendors/${id}`);
+      success('Supplier deleted successfully.');
+      setDeleteOpen(false);
+      router.push('/crm/vendors');
+    } catch (err: unknown) {
+      const message = err instanceof ApiRequestError ? err.message : 'An error occurred during deletion.';
+      error(message);
     } finally {
       setDeleting(false);
     }
