@@ -68,7 +68,7 @@ const applications: AppDefinition[] = [
   { id: 'education', name: 'Education Module', description: 'Students, courses, fees, and library', href: '/education', icon: GraduationCap, color: '#2563eb', category: 'Industry', installed: false },
   { id: 'real-estate', name: 'Real Estate Module', description: 'Properties, leases, and maintenance', href: '/real-estate', icon: Building2, color: '#ca8a04', category: 'Industry', installed: false },
   { id: 'field-service', name: 'Field Service Module', description: 'Tickets, dispatch, and technician management', href: '/field-service', icon: Wrench, color: '#78716c', category: 'Industry', installed: false },
-  { id: 'api-keys', name: 'API Platform', description: 'API keys, webhooks, and developer console', href: '/admin/api-keys', icon: Key, color: '#334155', category: 'Developer', installed: true },
+  { id: 'api-keys', name: 'API Platform', description: 'API keys, webhooks, and developer console', href: '/settings/api-keys', icon: Key, color: '#334155', category: 'Developer', installed: true },
   { id: 'saas', name: 'SaaS Portal', description: 'Subscription plans, billing, and usage meters', href: '/saas/portal', icon: Cloud, color: '#9333ea', category: 'Platform', installed: true },
   { id: 'app-store', name: 'App Store', description: 'Browse additional apps and modules', href: '/apps/store', icon: ShoppingBag, color: '#7c3aed', category: 'Developer', installed: true },
   { id: 'builder', name: 'Studio', description: 'Low-code App Studio and Web Studio for custom ERP apps and website management', href: '/builder', icon: Cpu, color: '#0ea5e9', category: 'Developer', installed: true },

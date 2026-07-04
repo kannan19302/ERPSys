@@ -1,5 +1,15 @@
 'use client';
 
+// This entire route group is an authenticated, client-only dashboard: every
+// page reads the JWT/user from localStorage and fetches tenant data client-side.
+// There is no meaningful static HTML to produce for these routes, and
+// attempting to statically prerender 'use client' pages at build time (Next's
+// default when a page has no dynamic data fetching) causes prerender workers
+// to blow up with "Cannot read properties of null (reading 'useState')" —
+// forcing every page under (dashboard) onto the dynamic rendering path avoids
+// the broken prerender pass entirely. See root-cause notes in git history.
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { DemoBanner, Spinner } from '@unerp/ui';
 import Link from 'next/link';
@@ -115,10 +125,10 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Connect', href: '/connect', icon: MessageSquare, type: 'App' },
   { name: 'POS & Retail', href: '/pos', icon: Store, type: 'App' },
   { name: 'E-Commerce', href: '/ecommerce', icon: Globe, type: 'App' },
-  { name: 'Admin', href: '/admin', icon: ShieldAlert, type: 'App' },
+  { name: 'Settings', href: '/settings', icon: Settings, type: 'App' },
   { name: 'Studio', href: '/builder', icon: Cpu, type: 'App' },
   // Actions — General
-  { name: 'Create New User', href: '/admin/users/new', icon: UserIcon, type: 'Action' },
+  { name: 'Create New User', href: '/settings/identity-access?tab=users', icon: UserIcon, type: 'Action' },
   { name: 'Create Invoice', href: '/finance', icon: CreditCard, type: 'Action' },
   { name: 'Add Product', href: '/inventory/products/new', icon: Package, type: 'Action' },
   // Finance — Core Accounting
@@ -138,56 +148,88 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart, type: 'Action' },
   { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen, type: 'Action' },
   // Admin — Actions & Pages
-  { name: 'User Groups & Teams', href: '/admin/groups', icon: Users, type: 'Action' },
-  { name: 'User Roles Configuration', href: '/admin/access-control/roles', icon: ShieldCheck, type: 'Action' },
-  { name: 'Access Packages Configuration', href: '/admin/access-control/packages', icon: Package, type: 'Action' },
-  { name: 'Permissions Matrix Checkbox Grid', href: '/admin/access-control/matrix', icon: LayoutGrid, type: 'Action' },
-  { name: 'SSO Configuration', href: '/admin/sso', icon: Key, type: 'Action' },
-  { name: 'MFA / 2FA Settings', href: '/admin/mfa', icon: Smartphone, type: 'Action' },
-  { name: 'Password Policies', href: '/admin/password-policy', icon: Key, type: 'Action' },
-  { name: 'Session Management', href: '/admin/sessions', icon: Clock, type: 'Action' },
-  { name: 'Login Impersonation', href: '/admin/impersonate', icon: UserIcon, type: 'Action' },
-  { name: 'IP Whitelist & Geo Rules', href: '/admin/ip-restrictions', icon: Globe, type: 'Action' },
-  { name: 'Audit Trail Viewer', href: '/admin/audit-trail', icon: History, type: 'Action' },
-  { name: 'Login History', href: '/admin/login-history', icon: Clock, type: 'Action' },
-  { name: 'Data Retention Policies', href: '/admin/data-retention', icon: Database, type: 'Action' },
-  { name: 'Compliance Reports', href: '/admin/compliance', icon: ShieldCheck, type: 'Action' },
-  { name: 'GDPR Erasure Requests Registry', href: '/admin/gdpr/erasure', icon: ShieldCheck, type: 'Action' },
-  { name: 'GDPR Retention Rules Configurator', href: '/admin/gdpr/retention', icon: Database, type: 'Action' },
-  { name: 'Workflow Configuration Templates', href: '/admin/workflows/templates', icon: GitFork, type: 'Action' },
-  { name: 'Active Workflow Approvals Log', href: '/admin/workflows/approvals', icon: CheckSquare, type: 'Action' },
-  { name: 'Bulk Workflow Approvals', href: '/admin/workflows/bulk', icon: CheckSquare, type: 'Action' },
-  { name: 'Workflow Approvals Cycle Analytics', href: '/admin/workflows/analytics', icon: BarChart3, type: 'Action' },
-  { name: 'Workflow Dynamic Routing Rules', href: '/admin/workflows/routing', icon: Zap, type: 'Action' },
-  { name: 'Email Approvals & Expiry Settings', href: '/admin/workflows/email', icon: Mail, type: 'Action' },
-  { name: 'General Settings Profile & Prefix', href: '/admin/settings/general', icon: Settings, type: 'Action' },
-  { name: 'Branding Settings Color & Logo', href: '/admin/settings/branding', icon: Image, type: 'Action' },
-  { name: 'Integrations Settings SMTP & Stripe', href: '/admin/settings/integrations', icon: Plug, type: 'Action' },
-  { name: 'API Keys Registry & Scopes', href: '/admin/api-keys', icon: Key, type: 'Action' },
-  { name: 'Webhooks Configuration Registry', href: '/admin/webhooks', icon: Webhook, type: 'Action' },
-  { name: 'Webhook Deliveries Logs History', href: '/admin/webhook-logs', icon: ExternalLink, type: 'Action' },
-  { name: 'SSO & OAuth 2.0 Clients Registry', href: '/admin/api-platform/oauth', icon: Shield, type: 'Action' },
-  { name: 'Developer Sandboxes Isolation Hub', href: '/admin/api-platform/sandbox', icon: Box, type: 'Action' },
-  { name: 'API Latency Metrics & Analytics', href: '/admin/api-platform/analytics', icon: BarChart3, type: 'Action' },
-  { name: 'Import Data CSV & JSON Tool', href: '/admin/import', icon: Upload, type: 'Action' },
-  { name: 'Export Data CSV & JSON Tool', href: '/admin/export', icon: Download, type: 'Action' },
-  { name: 'Custom Login Page Designer', href: '/admin/login-customizer', icon: Image, type: 'Action' },
-  { name: 'Email Server (SMTP) Configuration', href: '/admin/email-config', icon: Mail, type: 'Action' },
-  { name: 'Email Templates Manager', href: '/admin/email-templates', icon: FileText, type: 'Action' },
-  { name: 'Announcements', href: '/admin/announcements', icon: Bell, type: 'Action' },
-  { name: 'Maintenance Mode Control', href: '/admin/maintenance', icon: ShieldAlert, type: 'Action' },
-  { name: 'System Health Dashboard', href: '/admin/system-health', icon: Activity, type: 'Action' },
-  { name: 'Background Jobs Monitor', href: '/admin/jobs', icon: Layers, type: 'Action' },
-  { name: 'Scheduled Tasks Cron Manager', href: '/admin/scheduled-tasks', icon: CalendarDays, type: 'Action' },
-  { name: 'Error Logs Viewer', href: '/admin/error-logs', icon: ShieldAlert, type: 'Action' },
-  { name: 'Backup & Restore Manager', href: '/admin/backups', icon: Database, type: 'Action' },
-  { name: 'DB Schema Manager', href: '/admin/db-schema', icon: Database, type: 'Action' },
-  { name: 'Module Manager', href: '/admin/modules', icon: Settings, type: 'Action' },
-  { name: 'Feature Flags Toggles', href: '/admin/feature-flags', icon: Zap, type: 'Action' },
-  { name: 'Custom Domains Configuration', href: '/admin/domains', icon: Globe, type: 'Action' },
-  { name: 'Environment Sync Sandbox', href: '/admin/environments', icon: Server, type: 'Action' },
-  { name: 'System Updates Checker', href: '/admin/updates', icon: Cpu, type: 'Action' },
-  { name: 'Tenant Usage & Storage Analytics', href: '/admin/tenant-analytics', icon: BarChart3, type: 'Action' },
+  { name: 'Identity & Access Hub', href: '/settings/identity-access', icon: Users, type: 'Action' },
+  { name: 'Permissions Matrix Checkbox Grid', href: '/settings/access-control/matrix', icon: LayoutGrid, type: 'Action' },
+  { name: 'Login Impersonation', href: '/settings/impersonate', icon: UserIcon, type: 'Action' },
+  { name: 'Delegations & OOO', href: '/settings/delegations', icon: Users, type: 'Action' },
+  // Hub 1: Security Policies
+  { name: 'Security Policies Hub', href: '/settings/security-policies', icon: ShieldAlert, type: 'Action' },
+  { name: 'SSO Configuration', href: '/settings/security-policies?tab=sso', icon: Key, type: 'Action' },
+  { name: 'MFA / 2FA Settings', href: '/settings/security-policies?tab=mfa', icon: Smartphone, type: 'Action' },
+  { name: 'Password Policies', href: '/settings/security-policies?tab=password-policy', icon: Key, type: 'Action' },
+  { name: 'Session Management', href: '/settings/security-policies?tab=sessions', icon: Clock, type: 'Action' },
+  { name: 'IP Whitelist & Geo Rules', href: '/settings/security-policies?tab=ip-rules', icon: Globe, type: 'Action' },
+  { name: 'Audit Trail Viewer', href: '/settings/security-policies?tab=audit-trail', icon: History, type: 'Action' },
+  { name: 'Login History', href: '/settings/security-policies?tab=login-history', icon: Clock, type: 'Action' },
+  // Hub 2: Compliance & Governance
+  { name: 'Compliance & Governance Hub', href: '/settings/compliance-governance', icon: ShieldCheck, type: 'Action' },
+  { name: 'Compliance Reports', href: '/settings/compliance-governance?tab=reports', icon: ShieldCheck, type: 'Action' },
+  { name: 'Data Retention Policies', href: '/settings/compliance-governance?tab=data-retention', icon: Database, type: 'Action' },
+  { name: 'GDPR Erasure Requests Registry', href: '/settings/compliance-governance?tab=erasure', icon: ShieldCheck, type: 'Action' },
+  { name: 'GDPR Retention Rules Configurator', href: '/settings/compliance-governance?tab=gdpr-retention', icon: Database, type: 'Action' },
+  // Hub 3: Approval Operations
+  { name: 'Approval Operations Hub', href: '/settings/approval-operations', icon: CheckSquare, type: 'Action' },
+  { name: 'Active Workflow Approvals Log', href: '/settings/approval-operations?tab=active', icon: CheckSquare, type: 'Action' },
+  { name: 'Bulk Workflow Approvals', href: '/settings/approval-operations?tab=bulk', icon: CheckSquare, type: 'Action' },
+  { name: 'Workflow Approvals Cycle Analytics', href: '/settings/approval-operations?tab=analytics', icon: BarChart3, type: 'Action' },
+  { name: 'Escalation Logs', href: '/settings/approval-operations?tab=escalations', icon: ShieldAlert, type: 'Action' },
+  // Hub 4: Workflow Builder
+  { name: 'Workflow Builder Hub', href: '/settings/workflow-builder', icon: GitFork, type: 'Action' },
+  { name: 'Workflow Configuration Templates', href: '/settings/workflow-builder?tab=templates', icon: GitFork, type: 'Action' },
+  { name: 'Workflow Dynamic Routing Rules', href: '/settings/workflow-builder?tab=routing', icon: Zap, type: 'Action' },
+  { name: 'Email Approvals & Expiry Settings', href: '/settings/workflow-builder?tab=email', icon: Mail, type: 'Action' },
+  { name: 'Workflow Simulator', href: '/settings/workflow-builder?tab=simulator', icon: Play, type: 'Action' },
+  { name: 'Automation Rules Builder', href: '/settings/automation-rules', icon: Zap, type: 'Action' },
+  // Hub 5: Branding & Communication
+  { name: 'Branding & Communication Hub', href: '/settings/branding-communication', icon: Image, type: 'Action' },
+  { name: 'Custom Login Page Designer', href: '/settings/branding-communication?tab=login-page', icon: Image, type: 'Action' },
+  { name: 'Email Server (SMTP) Configuration', href: '/settings/branding-communication?tab=email-server', icon: Mail, type: 'Action' },
+  { name: 'Email Templates Manager', href: '/settings/branding-communication?tab=email-templates', icon: FileText, type: 'Action' },
+  { name: 'Announcements', href: '/settings/branding-communication?tab=announcements', icon: Bell, type: 'Action' },
+  { name: 'Maintenance Mode Control', href: '/settings/branding-communication?tab=maintenance', icon: ShieldAlert, type: 'Action' },
+  // Hub 6: System Operations
+  { name: 'System Operations Hub', href: '/settings/system-operations', icon: Activity, type: 'Action' },
+  { name: 'System Health Dashboard', href: '/settings/system-operations?tab=health', icon: Activity, type: 'Action' },
+  { name: 'Background Jobs Monitor', href: '/settings/system-operations?tab=jobs', icon: Layers, type: 'Action' },
+  { name: 'Scheduled Tasks Cron Manager', href: '/settings/system-operations?tab=tasks', icon: CalendarDays, type: 'Action' },
+  { name: 'Error Logs Viewer', href: '/settings/system-operations?tab=error-logs', icon: ShieldAlert, type: 'Action' },
+  { name: 'Admin Alerts', href: '/settings/system-operations?tab=alerts', icon: Bell, type: 'Action' },
+  { name: 'Recycle Bin', href: '/settings/system-operations?tab=recycle-bin', icon: Trash2, type: 'Action' },
+  { name: 'Backup & Restore Manager', href: '/settings/backups', icon: Database, type: 'Action' },
+  { name: 'DB Schema Manager', href: '/settings/db-schema', icon: Database, type: 'Action' },
+  { name: 'Bulk Operations', href: '/settings/bulk-operations', icon: Layers, type: 'Action' },
+  // Hub 7: General & Branding
+  { name: 'General & Branding Hub', href: '/settings/general-branding', icon: Settings, type: 'Action' },
+  { name: 'General Settings Profile & Prefix', href: '/settings/general-branding?tab=general', icon: Settings, type: 'Action' },
+  { name: 'Branding Settings Color & Logo', href: '/settings/general-branding?tab=branding', icon: Image, type: 'Action' },
+  { name: 'White-Label & PWA Settings', href: '/settings/general-branding?tab=white-label', icon: Smartphone, type: 'Action' },
+  { name: 'Feature Flags Toggles', href: '/settings/general-branding?tab=feature-flags', icon: Zap, type: 'Action' },
+  { name: 'Custom Fields Manager', href: '/settings/general-branding?tab=custom-fields', icon: Settings, type: 'Action' },
+  { name: 'Module Manager', href: '/settings/modules', icon: Settings, type: 'Action' },
+  { name: 'Custom Domains Configuration', href: '/settings/domains', icon: Globe, type: 'Action' },
+  { name: 'Environment Sync Sandbox', href: '/settings/environments', icon: Server, type: 'Action' },
+  { name: 'System Updates Checker', href: '/settings/updates', icon: Cpu, type: 'Action' },
+  { name: 'Marketplace', href: '/settings/marketplace', icon: Box, type: 'Action' },
+  { name: 'Subscription & Billing', href: '/settings/subscription', icon: CreditCard, type: 'Action' },
+  { name: 'Organization Hierarchy', href: '/settings/org-hierarchy', icon: Building, type: 'Action' },
+  // Hub 8: API Platform
+  { name: 'API Platform Hub', href: '/settings/api-platform', icon: Key, type: 'Action' },
+  { name: 'API Keys Registry & Scopes', href: '/settings/api-platform?tab=api-keys', icon: Key, type: 'Action' },
+  { name: 'SSO & OAuth 2.0 Clients Registry', href: '/settings/api-platform?tab=oauth', icon: Shield, type: 'Action' },
+  { name: 'Developer Sandboxes Isolation Hub', href: '/settings/api-platform?tab=sandbox', icon: Box, type: 'Action' },
+  { name: 'API Latency Metrics & Analytics', href: '/settings/api-platform?tab=analytics', icon: BarChart3, type: 'Action' },
+  { name: 'Webhooks Configuration Registry', href: '/settings/api-platform?tab=webhooks', icon: Webhook, type: 'Action' },
+  { name: 'Webhook Deliveries Logs History', href: '/settings/api-platform?tab=webhook-logs', icon: ExternalLink, type: 'Action' },
+  // Hub 9: Import / Export
+  { name: 'Import / Export Hub', href: '/settings/import-export', icon: Upload, type: 'Action' },
+  { name: 'Import Data CSV & JSON Tool', href: '/settings/import-export?tab=import', icon: Upload, type: 'Action' },
+  { name: 'Export Data CSV & JSON Tool', href: '/settings/import-export?tab=export', icon: Download, type: 'Action' },
+  { name: 'Sync Monitor', href: '/settings/import-export?tab=sync', icon: Smartphone, type: 'Action' },
+  // Standalone (unaffected by consolidation)
+  { name: 'i18n Localization', href: '/settings/localization', icon: Globe, type: 'Action' },
+  { name: 'Data Quality', href: '/settings/data-quality', icon: ShieldCheck, type: 'Action' },
+  { name: 'DevOps & Telemetry', href: '/settings/devops', icon: Server, type: 'Action' },
+  { name: 'Tenant Usage & Storage Analytics', href: '/settings/tenant-analytics', icon: BarChart3, type: 'Action' },
 ];
 
 function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav; pathname: string; collapsed: boolean }) {
@@ -1310,7 +1352,7 @@ export default function DashboardLayout({
                     <UserIcon size={14} style={{ color: 'var(--color-text-secondary)' }} /> Profile
                   </button>
                   <button
-                    onClick={() => { router.push('/admin/settings'); setUserDropdownOpen(false); }}
+                    onClick={() => { router.push('/settings'); setUserDropdownOpen(false); }}
                     className="frappe-dropdown-item"
                   >
                     <Settings size={14} style={{ color: 'var(--color-text-secondary)' }} /> Settings

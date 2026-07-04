@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PageHeader, Card, Badge, Spinner, Tabs, Tooltip, Drawer, Disclosure, EmptyState } from '@unerp/ui';
-import { Check, X, Minus, Shield, Search } from 'lucide-react';
+import { PageHeader, Card, Badge, Spinner, Button, Tooltip, Drawer, Disclosure, EmptyState } from '@unerp/ui';
+import { Check, X, Minus, Shield, Search, ArrowLeft } from 'lucide-react';
 import { PERMISSION_REGISTRY, getPermissionsByModule, getCategoriesForModule, getPermissionsByCategory } from '@unerp/shared';
 
 interface RoleData {
@@ -75,24 +75,20 @@ export default function MatrixPage() {
         title="Permission Matrix"
         description="Visual overview of role-to-module access levels across your organization"
         breadcrumbs={[
-          { label: 'Administration', href: '/admin' },
-          { label: 'Access Control' },
+          { label: 'Settings', href: '/settings' },
+          { label: 'Identity & Access', href: '/settings/identity-access' },
           { label: 'Permission Matrix' },
         ]}
       />
 
-      <Tabs
-        tabs={[
-          { key: 'roles', label: 'Roles', icon: <Shield size={14} /> },
-          { key: 'matrix', label: 'Permission Matrix' },
-          { key: 'packages', label: 'Access Packages' },
-        ]}
-        value="matrix"
-        onChange={(key) => {
-          if (key === 'roles') window.location.href = '/admin/access-control/roles';
-          if (key === 'packages') window.location.href = '/admin/access-control/packages';
-        }}
-      />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => { window.location.href = '/settings/identity-access?tab=roles'; }}
+        style={{ alignSelf: 'flex-start' }}
+      >
+        <ArrowLeft size={14} /> Back to Identity & Access
+      </Button>
 
       {/* Filter */}
       <div style={{ position: 'relative', maxWidth: 320 }}>

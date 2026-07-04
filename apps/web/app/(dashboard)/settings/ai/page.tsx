@@ -34,7 +34,7 @@ export default function AiAdminPage() {
     setConfigLoading(true);
     setConfigError(null);
     try {
-      const data = await apiGet<AiConfig>('/admin/ai/config');
+      const data = await apiGet<AiConfig>('/settings/ai/config');
       setConfig(data);
     } catch {
       setConfigError('Could not load AI assistant configuration.');
@@ -45,7 +45,7 @@ export default function AiAdminPage() {
 
   const fetchEngineStatus = useCallback(async () => {
     try {
-      const data = await apiGet<OllamaStatus>('/admin/ai/engine/status');
+      const data = await apiGet<OllamaStatus>('/settings/ai/engine/status');
       setEngineStatus(data);
       setEngineStatusError(null);
     } catch {
@@ -105,7 +105,7 @@ export default function AiAdminPage() {
       <PageHeader
         title="AI Assistant"
         description="Manage UniERP's AI copilot — the self-hosted assistant available across the app."
-        breadcrumbs={[{ label: 'Administration', href: '/admin' }, { label: 'AI Assistant' }]}
+        breadcrumbs={[{ label: 'Administration', href: '/settings' }, { label: 'AI Assistant' }]}
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)', alignItems: 'start' }}>

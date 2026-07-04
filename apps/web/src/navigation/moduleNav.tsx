@@ -112,13 +112,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Attendance Record', href: '/hr/advanced/attendance', icon: Clock },
             { name: 'Shift Scheduling', href: '/hr/advanced/shifts', icon: CalendarDays },
-            { name: 'Asset Management', href: '/hr/advanced/assets', icon: Monitor },
             { name: 'Documents Manager', href: '/hr/advanced/documents', icon: FileText },
             { name: 'Trainings & Certs', href: '/hr/advanced/trainings', icon: GraduationCap },
-            { name: 'HR Helpdesk', href: '/hr/advanced/tickets', icon: HelpCircle },
-            { name: 'Engagement Surveys', href: '/hr/advanced/surveys', icon: CheckSquare },
-            { name: 'Public Holidays', href: '/hr/advanced/holidays', icon: CalendarDays },
-            { name: 'Labor Compliance', href: '/hr/advanced/compliance', icon: ShieldCheck },
+            { name: 'Operations & Service Hub', href: '/hr/advanced/operations-service', icon: Monitor },
           ]
         },
         {
@@ -166,10 +162,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           name: 'Marketing & Outreach',
           isHeader: true,
           items: [
-            { name: 'Campaigns', href: '/crm/campaigns', icon: Target },
-            { name: 'Web Forms', href: '/crm/forms', icon: Globe },
-            { name: 'Email Sequences', href: '/crm/sequences', icon: Send },
-            { name: 'Email Templates', href: '/crm/email-templates', icon: Mail },
+            { name: 'Marketing & Outreach Hub', href: '/crm/marketing-outreach', icon: Target },
           ]
         },
         {
@@ -193,8 +186,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           name: 'Sales Enablement',
           isHeader: true,
           items: [
-            { name: 'Playbooks', href: '/crm/playbooks', icon: BookOpen },
-            { name: 'Battlecards', href: '/crm/battlecards', icon: Target },
+            { name: 'Sales Enablement Hub', href: '/crm/sales-enablement', icon: BookOpen },
           ]
         },
         {
@@ -313,10 +305,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           name: 'Operations',
           isHeader: true,
           items: [
-            { name: 'Shipments', href: '/supply-chain/shipments', icon: Package },
-            { name: 'Shipment Tracking', href: '/supply-chain/tracking', icon: MapPin },
-            { name: 'Carrier Management', href: '/supply-chain/carriers', icon: Truck },
-            { name: 'Route Optimization', href: '/supply-chain/routes', icon: MapPin },
+            { name: 'Operations Hub', href: '/supply-chain/operations', icon: Package },
           ]
         },
         {
@@ -675,7 +664,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
       ]
     };
   }
-  if (pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/settings')) {
     // Check if user is a super admin
     const userJson = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let isSuperAdmin = false;
@@ -687,124 +676,85 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
     }
 
     const items: SidebarItem[] = [
-      { name: 'Dashboard', href: '/admin', icon: Home },
+      { name: 'Dashboard', href: '/settings', icon: Home },
       {
         name: 'Identity & Access',
         isHeader: true,
         items: [
-          { name: 'Users Directory', href: '/admin/users', icon: Users },
-          { name: 'User Groups & Teams', href: '/admin/groups', icon: Users },
-          { name: 'User Roles', href: '/admin/access-control/roles', icon: ShieldCheck },
-          { name: 'Access Packages', href: '/admin/access-control/packages', icon: Package },
-          { name: 'Permissions Matrix', href: '/admin/access-control/matrix', icon: LayoutGrid },
-          { name: 'SSO Configuration', href: '/admin/sso', icon: Key },
-          { name: 'MFA / 2FA Settings', href: '/admin/mfa', icon: Smartphone },
-          { name: 'Password Policies', href: '/admin/password-policy', icon: Key },
-          { name: 'Session Management', href: '/admin/sessions', icon: Clock },
-          { name: 'Login impersonation', href: '/admin/impersonate', icon: UserIcon },
-          { name: 'Delegations & OOO', href: '/admin/delegations', icon: Users },
+          { name: 'Identity & Access Hub', href: '/settings/identity-access', icon: Users },
+          { name: 'Permissions Matrix', href: '/settings/access-control/matrix', icon: LayoutGrid },
+          { name: 'Login impersonation', href: '/settings/impersonate', icon: UserIcon },
+          { name: 'Delegations & OOO', href: '/settings/delegations', icon: Users },
         ]
       },
       {
         name: 'Security & Compliance',
         isHeader: true,
         items: [
-          { name: 'Security Control Hub', href: '/admin/security', icon: ShieldAlert },
-          { name: 'IP Whitelist & Geo Rules', href: '/admin/ip-restrictions', icon: Globe },
-          { name: 'Audit Trail Viewer', href: '/admin/audit-trail', icon: History },
-          { name: 'Login History', href: '/admin/login-history', icon: Clock },
-          { name: 'Data Retention Policies', href: '/admin/data-retention', icon: Database },
-          { name: 'Compliance Reports', href: '/admin/compliance', icon: ShieldCheck },
-          { name: 'GDPR Erasure Requests', href: '/admin/gdpr/erasure', icon: ShieldCheck },
-          { name: 'GDPR Retention Rules', href: '/admin/gdpr/retention', icon: Database },
+          { name: 'Security Policies Hub', href: '/settings/security-policies', icon: ShieldAlert },
+          { name: 'Compliance & Governance Hub', href: '/settings/compliance-governance', icon: ShieldCheck },
         ]
       },
       {
         name: 'Automation & Workflows',
         isHeader: true,
         items: [
-          { name: 'Workflow Templates', href: '/admin/workflows/templates', icon: GitFork },
-          { name: 'Active Approvals', href: '/admin/workflows/approvals', icon: CheckSquare },
-          { name: 'Bulk Approvals', href: '/admin/workflows/bulk', icon: CheckSquare },
-          { name: 'Approval Analytics', href: '/admin/workflows/analytics', icon: BarChart3 },
-          { name: 'Dynamic Routing', href: '/admin/workflows/routing', icon: Zap },
-          { name: 'Email Approvals', href: '/admin/workflows/email', icon: Mail },
-          { name: 'Escalation Logs', href: '/admin/workflows/escalations', icon: ShieldAlert },
-          { name: 'Workflow Simulator', href: '/admin/workflows/simulation', icon: Play },
-          { name: 'Automation Rules', href: '/admin/automation-rules', icon: Zap },
+          { name: 'Approval Operations Hub', href: '/settings/approval-operations', icon: CheckSquare },
+          { name: 'Workflow Builder Hub', href: '/settings/workflow-builder', icon: GitFork },
+          { name: 'Automation Rules', href: '/settings/automation-rules', icon: Zap },
         ]
       },
       {
         name: 'Branding & Communication',
         isHeader: true,
         items: [
-          { name: 'Custom Login Page', href: '/admin/login-customizer', icon: Image },
-          { name: 'Email Server (SMTP)', href: '/admin/email-config', icon: Mail },
-          { name: 'Email Templates', href: '/admin/email-templates', icon: FileText },
-          { name: 'Announcements', href: '/admin/announcements', icon: Bell },
-          { name: 'Maintenance Mode', href: '/admin/maintenance', icon: ShieldAlert },
+          { name: 'Branding & Communication Hub', href: '/settings/branding-communication', icon: Image },
         ]
       },
       {
         name: 'System Operations',
         isHeader: true,
         items: [
-          { name: 'System Health', href: '/admin/system-health', icon: Activity },
-          { name: 'Background Jobs', href: '/admin/jobs', icon: Layers },
-          { name: 'Scheduled Tasks', href: '/admin/scheduled-tasks', icon: CalendarDays },
-          { name: 'Error Logs', href: '/admin/error-logs', icon: ShieldAlert },
-          { name: 'Backup & Restore', href: '/admin/backups', icon: Database },
-          { name: 'DB Schema Manager', href: '/admin/db-schema', icon: Database },
-          { name: 'Recycle Bin', href: '/admin/recycle-bin', icon: Layers },
-          { name: 'Admin Alerts', href: '/admin/alerts', icon: Bell },
-          { name: 'Bulk Operations', href: '/admin/bulk-operations', icon: Layers },
+          { name: 'System Operations Hub', href: '/settings/system-operations', icon: Activity },
+          { name: 'Backup & Restore', href: '/settings/backups', icon: Database },
+          { name: 'DB Schema Manager', href: '/settings/db-schema', icon: Database },
+          { name: 'Bulk Operations', href: '/settings/bulk-operations', icon: Layers },
         ]
       },
       {
         name: 'Platform Configuration',
         isHeader: true,
         items: [
-          { name: 'General Settings', href: '/admin/settings/general', icon: Settings },
-          { name: 'Branding Settings', href: '/admin/settings/branding', icon: Image },
-          { name: 'Integrations Settings', href: '/admin/settings/integrations', icon: Plug },
-          { name: 'Module Manager', href: '/admin/modules', icon: Settings },
-          { name: 'Feature Flags', href: '/admin/feature-flags', icon: Zap },
-          { name: 'Custom Domains', href: '/admin/domains', icon: Globe },
-          { name: 'Environment Manager', href: '/admin/environments', icon: Server },
-          { name: 'System Updates', href: '/admin/updates', icon: Cpu },
-          { name: 'White-Label & PWA', href: '/admin/settings/white-label', icon: Image },
-          { name: 'Custom Fields', href: '/admin/custom-fields', icon: Settings },
-          { name: 'Marketplace', href: '/admin/marketplace', icon: Box },
-          { name: 'Subscription & Billing', href: '/admin/subscription', icon: CreditCard },
-          { name: 'Organization Hierarchy', href: '/admin/org-hierarchy', icon: Building },
+          { name: 'General & Branding Hub', href: '/settings/general-branding', icon: Settings },
+          { name: 'Integrations Settings', href: '/settings/integrations', icon: Plug },
+          { name: 'Module Manager', href: '/settings/modules', icon: Settings },
+          { name: 'Custom Domains', href: '/settings/domains', icon: Globe },
+          { name: 'Environment Manager', href: '/settings/environments', icon: Server },
+          { name: 'System Updates', href: '/settings/updates', icon: Cpu },
+          { name: 'Marketplace', href: '/settings/marketplace', icon: Box },
+          { name: 'Subscription & Billing', href: '/settings/subscription', icon: CreditCard },
+          { name: 'Organization Hierarchy', href: '/settings/org-hierarchy', icon: Building },
         ]
       },
       {
         name: 'Data & Integration',
         isHeader: true,
         items: [
-          { name: 'API Keys', href: '/admin/api-keys', icon: Key },
-          { name: 'Webhooks Configuration', href: '/admin/webhooks', icon: Webhook },
-          { name: 'Webhook Logs', href: '/admin/webhook-logs', icon: ExternalLink },
-          { name: 'SSO & OAuth Clients', href: '/admin/api-platform/oauth', icon: Shield },
-          { name: 'Developer Sandboxes', href: '/admin/api-platform/sandbox', icon: Box },
-          { name: 'API Metrics & Analytics', href: '/admin/api-platform/analytics', icon: BarChart3 },
-          { name: 'Import Data', href: '/admin/import', icon: Upload },
-          { name: 'Export Data', href: '/admin/export', icon: Download },
-          { name: 'i18n Localization', href: '/admin/localization', icon: Globe },
-          { name: 'Sync Monitor', href: '/admin/sync', icon: Smartphone },
-          { name: 'DevOps & Telemetry', href: '/admin/devops', icon: Server },
-          { name: 'Data Quality', href: '/admin/data-quality', icon: ShieldCheck },
+          { name: 'API Platform Hub', href: '/settings/api-platform', icon: Key },
+          { name: 'Import / Export Hub', href: '/settings/import-export', icon: Upload },
+          { name: 'i18n Localization', href: '/settings/localization', icon: Globe },
+          { name: 'DevOps & Telemetry', href: '/settings/devops', icon: Server },
+          { name: 'Data Quality', href: '/settings/data-quality', icon: ShieldCheck },
         ]
       },
       {
         name: 'Reports',
         isHeader: true,
         items: [
-          { name: 'Scheduled Reports', href: '/admin/scheduled-reports', icon: FileText },
-          { name: 'Activity Feed', href: '/admin/activity-feed', icon: Activity },
-          { name: 'Notification Prefs', href: '/admin/notifications', icon: Bell },
-          { name: 'Tenant Usage Analytics', href: '/admin/tenant-analytics', icon: BarChart3 },
+          { name: 'Scheduled Reports', href: '/settings/scheduled-reports', icon: FileText },
+          { name: 'Activity Feed', href: '/settings/activity-feed', icon: Activity },
+          { name: 'Notification Prefs', href: '/settings/notifications', icon: Bell },
+          { name: 'Tenant Usage Analytics', href: '/settings/tenant-analytics', icon: BarChart3 },
         ]
       }
     ];
@@ -814,10 +764,10 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
         name: 'Super Admin Tools',
         isHeader: true,
         items: [
-          { name: 'Super Admin Dashboard', href: '/admin/super-admin', icon: Home },
-          { name: 'Tenants', href: '/admin/super-admin/tenants', icon: Building },
-          { name: 'Admin Users', href: '/admin/super-admin/admins', icon: Users },
-          { name: 'System Health', href: '/admin/super-admin/health', icon: Activity },
+          { name: 'Super Admin Dashboard', href: '/settings/super-admin', icon: Home },
+          { name: 'Tenants', href: '/settings/super-admin/tenants', icon: Building },
+          { name: 'Admin Users', href: '/settings/super-admin/admins', icon: Users },
+          { name: 'System Health', href: '/settings/super-admin/health', icon: Activity },
         ]
       });
     }

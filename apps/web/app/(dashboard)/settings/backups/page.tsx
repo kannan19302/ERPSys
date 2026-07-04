@@ -99,7 +99,7 @@ export default function BackupPage() {
         title="Backup & Restore Manager (Preview)"
         description="This is a preview of the backup workflow. Generated entries are simulated and do not yet produce a restorable database file."
         breadcrumbs={[
-          { label: 'Administration', href: '/admin' },
+          { label: 'Administration', href: '/settings' },
           { label: 'Database Backups' },
         ]}
         actions={

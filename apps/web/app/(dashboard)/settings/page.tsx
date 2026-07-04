@@ -119,19 +119,20 @@ export default function AdminDashboardPage() {
   const s = stats || FALLBACK_STATS;
 
   const quickLinks = [
-    { title: 'Users', href: '/admin/users', icon: Users, desc: 'Manage users & invitations', color: 'var(--color-primary)' },
-    { title: 'Roles & Permissions', href: '/admin/access-control', icon: Shield, desc: 'Configure RBAC policies', color: 'var(--color-success)' },
-    { title: 'SSO Configuration', href: '/admin/sso', icon: Key, desc: 'SAML & OIDC providers', color: 'var(--color-warning)' },
-    { title: 'Security Hub', href: '/admin/security', icon: Lock, desc: 'MFA, IP rules, policies', color: 'var(--color-danger)' },
-    { title: 'Localization', href: '/admin/localization', icon: Globe, desc: 'Languages & date formats', color: 'var(--color-info)' },
-    { title: 'Workflows', href: '/admin/workflows', icon: Workflow, desc: 'Approval chains & routing', color: '#8b5cf6' },
-    { title: 'Audit Trail', href: '/admin/audit-trail', icon: FileText, desc: 'Activity logs & compliance', color: '#f97316' },
-    { title: 'System Health', href: '/admin/system-health', icon: Server, desc: 'Server & services status', color: '#06b6d4' },
-    { title: 'Import / Export', href: '/admin/import', icon: Import, desc: 'Bulk data operations', color: '#84cc16' },
-    { title: 'API Platform', href: '/admin/api-platform', icon: Zap, desc: 'Keys, webhooks, OAuth', color: '#ec4899' },
-    { title: 'Analytics', href: '/admin/tenant-analytics', icon: BarChart3, desc: 'Tenant usage analytics', color: '#14b8a6' },
-    { title: 'AI Assistant', href: '/admin/ai', icon: Bot, desc: 'Kill switch, model info & engine control', color: '#6366f1' },
-    { title: 'General Settings', href: '/admin/settings/general', icon: Settings, desc: 'Organization profile', color: 'var(--color-text-secondary)' },
+    { title: 'Users', href: '/settings/identity-access?tab=users', icon: Users, desc: 'Manage users & invitations', color: 'var(--color-primary)' },
+    { title: 'Roles & Permissions', href: '/settings/identity-access?tab=roles', icon: Shield, desc: 'Configure RBAC policies', color: 'var(--color-success)' },
+    { title: 'Security Policies', href: '/settings/security-policies', icon: Lock, desc: 'SSO, MFA, sessions, audit trail', color: 'var(--color-danger)' },
+    { title: 'Compliance & Governance', href: '/settings/compliance-governance', icon: FileText, desc: 'Compliance, retention, GDPR', color: '#f97316' },
+    { title: 'Approval Operations', href: '/settings/approval-operations', icon: CheckCircle, desc: 'Active approvals & analytics', color: '#8b5cf6' },
+    { title: 'Workflow Builder', href: '/settings/workflow-builder', icon: Workflow, desc: 'Templates, routing, simulator', color: '#a855f7' },
+    { title: 'Branding & Communication', href: '/settings/branding-communication', icon: Bell, desc: 'Login page, SMTP, announcements', color: '#ec4899' },
+    { title: 'System Operations', href: '/settings/system-operations', icon: Server, desc: 'Health, jobs, error logs', color: '#06b6d4' },
+    { title: 'General & Branding', href: '/settings/general-branding', icon: Settings, desc: 'Organization profile, feature flags', color: 'var(--color-text-secondary)' },
+    { title: 'API Platform', href: '/settings/api-platform', icon: Zap, desc: 'Keys, webhooks, OAuth', color: '#d946ef' },
+    { title: 'Import / Export', href: '/settings/import-export', icon: Import, desc: 'Bulk data & sync monitor', color: '#84cc16' },
+    { title: 'Localization', href: '/settings/localization', icon: Globe, desc: 'Languages & date formats', color: 'var(--color-info)' },
+    { title: 'Analytics', href: '/settings/tenant-analytics', icon: BarChart3, desc: 'Tenant usage analytics', color: '#14b8a6' },
+    { title: 'AI Assistant', href: '/settings/ai', icon: Bot, desc: 'Kill switch, model info & engine control', color: '#6366f1' },
   ];
 
   const userSegments = [
@@ -206,14 +207,14 @@ export default function AdminDashboardPage() {
           changeLabel="vs last month"
           icon={<Users size={20} />}
           color="var(--color-primary)"
-          onClick={() => window.location.href = '/admin/users'}
+          onClick={() => window.location.href = '/settings/identity-access?tab=users'}
         />
         <KPICard
           title="Active Sessions"
           value={s.activeSessions}
           icon={<MonitorSmartphone size={20} />}
           color="var(--color-success)"
-          onClick={() => window.location.href = '/admin/sessions'}
+          onClick={() => window.location.href = '/settings/security-policies?tab=sessions'}
         />
         <KPICard
           title="API Requests Today"
@@ -222,14 +223,14 @@ export default function AdminDashboardPage() {
           changeLabel="vs yesterday"
           icon={<Zap size={20} />}
           color="var(--color-info)"
-          onClick={() => window.location.href = '/admin/api-platform/analytics'}
+          onClick={() => window.location.href = '/settings/api-platform?tab=analytics'}
         />
         <KPICard
           title="Failed Logins (24h)"
           value={s.failedLogins24h}
           icon={<AlertTriangle size={20} />}
           color={s.failedLogins24h > 10 ? 'var(--color-danger)' : 'var(--color-warning)'}
-          onClick={() => window.location.href = '/admin/login-history'}
+          onClick={() => window.location.href = '/settings/security-policies?tab=login-history'}
         />
       </div>
 
@@ -243,7 +244,7 @@ export default function AdminDashboardPage() {
           <Card padding="none">
             <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)' }}>Recent Activity</h3>
-              <Link href="/admin/audit-trail" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Link href="/settings/security-policies?tab=audit-trail" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
                 View all <ArrowRight size={12} />
               </Link>
             </div>
@@ -327,14 +328,14 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <Link href="/admin/system-health" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Link href="/settings/system-operations?tab=system-health" style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
                 View details <ArrowRight size={12} />
               </Link>
             </div>
           </Card>
 
           {/* AI Assistant (link-out to dedicated admin console) */}
-          <Link href="/admin/ai" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link href="/settings/ai" style={{ textDecoration: 'none', color: 'inherit' }}>
             <Card>
               <div style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                 <div style={{
@@ -402,9 +403,9 @@ export default function AdminDashboardPage() {
           <Card>
             <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <h3 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)' }}>Pending Actions</h3>
-              <PendingItem label="User invitations pending" count={s.pendingInvitations} href="/admin/users" color="var(--color-warning)" />
-              <PendingItem label="Failed login attempts" count={s.failedLogins24h} href="/admin/login-history" color="var(--color-danger)" />
-              <PendingItem label="Roles configured" count={s.totalRoles} href="/admin/access-control" color="var(--color-primary)" />
+              <PendingItem label="User invitations pending" count={s.pendingInvitations} href="/settings/identity-access?tab=users" color="var(--color-warning)" />
+              <PendingItem label="Failed login attempts" count={s.failedLogins24h} href="/settings/security-policies?tab=login-history" color="var(--color-danger)" />
+              <PendingItem label="Roles configured" count={s.totalRoles} href="/settings/identity-access?tab=roles" color="var(--color-primary)" />
             </div>
           </Card>
         </div>

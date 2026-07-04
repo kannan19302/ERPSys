@@ -84,7 +84,7 @@ export default function ModuleManagerPage() {
         title="Module Manager"
         description="Enable or disable ERP modules for your organization"
         breadcrumbs={[
-          { label: 'Administration', href: '/admin' },
+          { label: 'Administration', href: '/settings' },
           { label: 'Modules' },
         ]}
       />

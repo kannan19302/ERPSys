@@ -3,6 +3,237 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-04] Cross-module UI consolidation — Phase 3a of UI Consolidation Plan shipped
+
+Built the 4 Phase 3a tabbed hub pages per `.ai/UI_CONSOLIDATION_PLAN.md`'s cross-module rollout
+section, replicating the Phase 1/2 pattern exactly (lazy-mounted tabs via a `visited` Set, `?tab=`
+query param + `router.replace` deep-linking, `PageHeader` + `@unerp/ui` `Tabs`, per-tab RBAC
+preserved verbatim, inline create/edit overlays converted to `Modal`).
+
+**New hub pages:**
+1. `apps/web/app/(dashboard)/crm/marketing-outreach/page.tsx` — Campaigns, Web Forms, Email
+   Sequences, Email Templates (4 CRM pages → 1). Web Forms and Email Sequences had custom inline
+   `position: fixed` overlay modals converted to `@unerp/ui` `Modal`.
+2. `apps/web/app/(dashboard)/crm/sales-enablement/page.tsx` — Playbooks, Battlecards (2 CRM pages →
+   1), same inline-overlay-to-`Modal` conversion.
+3. `apps/web/app/(dashboard)/hr/advanced/operations-service/page.tsx` — Asset Management, Public
+   Holidays, Labor Compliance, HR Helpdesk, Engagement Surveys (5 HR pages → 1); Attendance, Shifts,
+   and Documents Manager stay excluded per the plan (different cadence/actor).
+4. `apps/web/app/(dashboard)/supply-chain/operations/page.tsx` — Shipments, Shipment Tracking,
+   Carrier Management, Route Optimization (4 Supply Chain pages → 1); Demand Forecast and Analytics
+   stay standalone.
+
+**Legacy routes**: all 15 merged page URLs (`/crm/campaigns`, `/crm/forms`, `/crm/sequences`,
+`/crm/email-templates`, `/crm/playbooks`, `/crm/battlecards`, `/hr/advanced/assets`,
+`/hr/advanced/holidays`, `/hr/advanced/compliance`, `/hr/advanced/tickets`, `/hr/advanced/surveys`,
+`/supply-chain/shipments`, `/supply-chain/tracking`, `/supply-chain/carriers`,
+`/supply-chain/routes`) now render a `redirect()` to their hub with the correct `?tab=` query param
+— no 404s, no broken bookmarks. Verified via curl: all 4 hub URLs and all 15 legacy URLs return 200.
+
+**Nav updates**: `apps/web/src/navigation/moduleNav.tsx`'s CRM (Marketing & Outreach, Sales
+Enablement groups), HR (Operations & Service group), and Supply Chain (Operations group) sidebar
+blocks collapsed to one hub entry each; all explicitly-standalone pages (Account Management, Sales
+Pipeline, Automation & Workflows, Territories/Commissions, Analytics & Reports in CRM;
+Onboarding/Offboarding/Attendance/Shifts/Talent/Compensation in HR; Demand Forecast/Analytics in
+Supply Chain) keep their own unchanged nav entries. `apps/web/src/navigation/registry.tsx`'s
+`SEGMENT_NAMES` gained breadcrumb labels for `marketing-outreach`, `sales-enablement`,
+`operations-service`, `operations`.
+
+**Not built this phase** (per plan): Analytics/BI module rejected entirely (all pages are distinct
+builder/canvas tools); POS & Retail Retail Tools hub and Drive deferred to Phase 3b; Real Estate,
+Field Service, Healthcare, Education deferred to Phase 3c pending real backend wiring.
+
+**Flagged, not fixed**: `apps/web/src/navigation/moduleNav.tsx`'s `pathname.startsWith('/workflows')`
+contextual nav block (~line 488) resolves for a top-level `/workflows` route that has no backing page
+files under `apps/web/app/(dashboard)/workflows/` (confirmed — directory does not exist). This is
+pre-existing and unrelated to this consolidation; it is not reachable from `GLOBAL_SEARCH_ITEMS` or
+any module switcher entry found, so it does not currently 404 for real users, but it should be
+either removed or repointed at `/settings/workflow-builder` / `/settings/approval-operations` (the
+Phase 2 hubs that now own this functionality) in a follow-up pass.
+
+Verification: `docker exec unerp-dev sh -lc "cd apps/web && npx tsc --noEmit -p tsconfig.json"` clean
+(no output/errors). All 4 new hub URLs and all 15 legacy redirect URLs curl-verified to return 200
+after a container restart to pick up the new route folders.
+
+## [2026-07-04] Full Settings consolidation — Phase 2 of UI Consolidation Plan shipped
+
+Built all 9 remaining tabbed hub pages per `.ai/UI_CONSOLIDATION_PLAN.md` Phase 2, consolidating the
+~45 remaining thin Settings pages down to 9 hubs + explicitly-standalone pages, replicating the
+Phase 1 pattern exactly (lazy-mounted tabs via a `visited` Set, `?tab=` query param + `router.replace`
+deep-linking, `PageHeader` + `@unerp/ui` `Tabs`, per-tab RBAC preserved verbatim, inline create/edit
+forms converted to `Modal`).
+
+**New hub pages** (all under `apps/web/app/(dashboard)/settings/`):
+1. `security-policies/page.tsx` — Overview, SSO, MFA, Password Policy, Active Sessions, IP & Geo
+   Rules, Audit Trail, Login History. Audit Trail and Login History share one `AuditLogTable.tsx`
+   component with a different default `actionFilter` prop, per the plan's resolved-overlap note —
+   not two independent re-implementations.
+2. `compliance-governance/page.tsx` — Compliance Reports, Data Retention, GDPR Erasure, GDPR
+   Retention.
+3. `approval-operations/page.tsx` — Active Approvals, Bulk Approvals, Approval Analytics, Escalation
+   Logs (live monitoring views).
+4. `workflow-builder/page.tsx` — Templates, Dynamic Routing, Email Approvals, Simulator
+   (authoring/config tools); `automation-rules/page.tsx` stays standalone, linked from the Templates
+   tab only.
+5. `branding-communication/page.tsx` — Login Page, Email Server (SMTP), Email Templates,
+   Announcements, Maintenance Mode.
+6. `system-operations/page.tsx` — System Health, Background Jobs, Scheduled Tasks, Error Logs, Admin
+   Alerts, Recycle Bin; `backups`, `db-schema`, `bulk-operations` stay standalone (sensitive/distinct
+   workflows).
+7. `general-branding/page.tsx` — General Settings, Branding, White-Label & PWA, Feature Flags, Custom
+   Fields.
+8. `api-platform/page.tsx` — repurposed from its 5-line redirect stub into the real hub: API Keys,
+   SSO & OAuth Clients, Developer Sandboxes, API Metrics & Analytics, Webhooks Config, Webhook Logs.
+9. `import-export/page.tsx` — repurposed from its redirect stub: Import Data, Export Data, Sync
+   Monitor.
+
+**Legacy routes**: all ~45 merged page URLs now render a `redirect()` to their hub with the correct
+`?tab=` query param (e.g. `/settings/sso` → `/settings/security-policies?tab=sso`), matching the
+Phase 1 pattern — no 404s, no broken bookmarks.
+
+**Nav updated as one final consistent pass** after all 9 hubs existed: `moduleNav.tsx`'s Settings
+block collapses each merged nav group down to its hub entry while preserving every standalone page's
+own nav entry unchanged; `layout.tsx`'s `GLOBAL_SEARCH_ITEMS` re-pointed at hub `?tab=` URLs;
+`registry.tsx`'s `SEGMENT_NAMES` gained breadcrumb labels for the 9 new route segments.
+
+**Verification**: `docker exec unerp-dev sh -lc "cd apps/web && npx tsc --noEmit -p tsconfig.json"`
+passed clean. All 9 new hub URLs return HTTP 200; a sample of legacy redirected URLs (`/settings/sso`,
+`/settings/webhooks`, `/settings/import`, `/settings/mfa`, `/settings/general`,
+`/settings/announcements`, `/settings/workflows/templates`, `/settings/api-keys`, `/settings/sync`)
+all resolve to 200 via redirect with no 404s.
+
+## [2026-07-04] Identity & Access Hub — Phase 1 of UI Consolidation Plan shipped
+
+Merged 4 fragmented Settings pages (Users, Groups & Teams, Roles, Access Packages) into one tabbed
+hub at `apps/web/app/(dashboard)/settings/identity-access/page.tsx`, per `.ai/UI_CONSOLIDATION_PLAN.md`
+Phase 1 (approved by product-manager).
+
+**New page**: `settings/identity-access/page.tsx` renders `PageHeader` + `@unerp/ui` `Tabs` (Users /
+Groups & Teams / Roles / Access Packages). Each tab is only mounted after its first activation
+(`visited` Set gates rendering) so switching tabs doesn't fire all 4 entities' API calls on page
+load; once visited a tab stays mounted (hidden via CSS `display`) so its independent fetch/loading/
+pagination state survives switching away and back. Active tab is synced to a `?tab=` query param via
+`router.replace` so deep links work.
+
+**Extracted tab components** (colocated in `identity-access/`): `UsersTab.tsx`, `GroupsTab.tsx`,
+`RolesTab.tsx`, `PackagesTab.tsx` — each is the original page's CRUD logic lifted verbatim (fetch,
+table, filters, pagination), not rewritten.
+
+**Groups and Roles create/edit forms converted from inline/on-page forms to `Modal`** (Users and
+Packages already used `Modal`, unchanged): `GroupsTab.tsx`'s "Create Group", "Edit Group", and "Add
+Members" panels — previously hand-rolled `position: fixed` overlay divs — now use `@unerp/ui`'s
+`Modal`/`TextField`/`Textarea`/`EmptyState`, matching the Frappe aesthetic and eliminating duplicated
+overlay/backdrop CSS. Roles' `CreateRoleModal` already used `Modal`; only the page-level `Tabs`
+cross-navigation (`window.location.href` to sibling pages) was removed since it no longer navigates
+away.
+
+**RBAC gating added, not just preserved**: the 4 source pages had zero `ProtectedComponent`/
+`usePermission` gating on their privileged actions — a gap versus AGENTS.md rule 16. Added real
+per-action gating using permission codes that already existed in
+`packages/shared/src/permissions/registry.ts` (`admin.user.create/update`, `admin.user-group.create/
+update/delete`, `admin.role.create/update`, `admin.access-package.create/update`) to "New X" buttons,
+edit/delete icons, and suspend/save actions in each tab. No new permission codes were added — the
+registry already had matching entries under the `Users & Roles` and `User Groups` categories.
+
+**Legacy redirects**: `/settings/users`, `/settings/groups`, `/settings/access-control/roles`,
+`/settings/access-control/packages`, and `/settings/access-control` (index) now `redirect()` (Next
+`next/navigation`) to `/settings/identity-access?tab=<x>`, following the same pattern already used by
+the pre-existing `settings/access-control/page.tsx` redirect. Verified via curl against the RSC
+payload (`identity-access?tab=users;307;` etc. embedded in the flight data) since these are
+client-side redirects and don't produce a raw HTTP 3xx to curl.
+
+**Permissions Matrix hand-off**: Roles tab has a "Permissions Matrix" button linking to the
+unchanged `/settings/access-control/matrix` page (not touched, per plan).
+
+**Nav updated**: `apps/web/src/navigation/moduleNav.tsx`'s "Identity & Access" sidebar section
+collapsed from 4 entries (Users Directory, User Groups & Teams, User Roles, Access Packages) to 1
+("Identity & Access Hub" → `/settings/identity-access`); Permissions Matrix/SSO/MFA/Password
+Policies/Sessions/Impersonation/Delegations left untouched (Phase 2 scope).
+`apps/web/app/(dashboard)/layout.tsx`'s `GLOBAL_SEARCH_ITEMS` command-palette entries updated the
+same way. `apps/web/src/navigation/registry.tsx`'s `SEGMENT_NAMES` gained an `'identity-access':
+'Identity & Access'` breadcrumb mapping.
+
+**Verified**: `docker exec unerp-dev sh -lc "cd apps/web && npx tsc --noEmit -p tsconfig.json"` clean.
+Container restarted to pick up the new route folder; `/settings/identity-access` returns HTTP 200 and
+its RSC payload resolves to the real page component (no 404 boundary). All 5 legacy paths' RSC
+payloads confirm the correct redirect target.
+
+## [2026-07-04] Admin→Settings rename: the actual URL, not just labels
+
+Follow-up to the earlier same-day "display label" rename: the browser URL still said `/admin` because only
+`SEGMENT_NAMES`/sidebar titles had been changed, not the route itself. This pass renames the actual Next.js
+route segment.
+
+**Route move:** `apps/web/app/(dashboard)/admin/**` → `apps/web/app/(dashboard)/settings/**` via `git mv`
+(history preserved). The old folder had a nested `admin/settings/{general,branding,integrations,white-label}`
+subtree (plus a `settings/page.tsx` that only redirected to `settings/general`) — after the outer rename this
+would have produced the awkward `settings/settings/general`. Flattened it: those four pages now live directly
+at `settings/general`, `settings/branding`, `settings/integrations`, `settings/white-label`, and the redundant
+inner redirect page was deleted (the outer `settings/page.tsx` is the real Settings dashboard, unaffected).
+
+**References updated** (page navigation only — every occurrence was individually checked against whether it
+was a `router.push`/`href`/`redirect()` page link vs. an `apiGet`/`apiPost`/raw `fetch` API call):
+- `apps/web/src/navigation/moduleNav.tsx` — the `pathname.startsWith('/admin')` guard and every `href:
+  '/admin/...'` inside that sidebar block now read `/settings/...`.
+- `apps/web/src/navigation/registry.tsx` — removed the now-redundant `admin: 'Settings'` entry from
+  `SEGMENT_NAMES` (the segment is literally `settings` now, matching the existing `settings: 'Settings'` key);
+  `allApplications`'s API Platform entry now points at `/settings/api-keys`.
+- `apps/web/app/(dashboard)/layout.tsx` — `GLOBAL_SEARCH_ITEMS` hrefs, the command palette (`Ctrl+K`) results,
+  and the user-dropdown "Settings" button (`router.push('/admin/settings')` → `router.push('/settings')`) all
+  updated. Its `/api/v1/admin/...` `fetch()` calls (marketplace modules, demo status) are backend API
+  requests and were intentionally left untouched.
+- `apps/web/src/components/CommandPalette.tsx` and `apps/web/app/(dashboard)/apps/page.tsx` (the App Store
+  tile for "API Platform") — both had a stray `/admin/...` page href, fixed.
+- Every page inside the renamed tree that linked to a sibling via breadcrumbs, "back" links, or
+  `window.location.href` (e.g. `settings/page.tsx`, `settings/security/page.tsx`,
+  `settings/access-control/*/page.tsx`, `settings/workflows/page.tsx`, etc.) — swept with a guarded
+  find/replace that skipped any line containing `apiGet(`/`apiPost(`/`apiPut(`/`apiDelete(`/`apiPatch(`, then
+  verified with a follow-up grep across the whole `apps/web` tree that zero `href`/`router.push`/`redirect()`
+  occurrences of `/admin` remain anywhere.
+
+**Explicitly NOT changed** (out of scope, per instructions): the backend NestJS module at
+`apps/api/src/modules/admin/**` and its `/api/v1/admin/*` routes — every `apiGet('/admin/...')`,
+`apiPost('/admin/...')`, and raw `fetch('/api/v1/admin/...')` call across the frontend still hits the same
+backend endpoints, unchanged. RBAC permission strings (`admin.read`, `admin.users.manage`, etc. in
+`packages/shared/src/permissions/registry.ts`) are untouched — they're a permission namespace, not a URL.
+`middleware.ts` has no admin-specific logic (it only does host-based multi-tenant site rewriting) so nothing
+there needed updating; no post-login redirect to `/admin` existed to fix either.
+
+**Verification:** `docker exec unerp-dev sh -lc "cd apps/web && npx tsc --noEmit -p tsconfig.json"` is clean.
+After a `docker restart unerp-dev` (Next's dev route manifest needed a restart to pick up the renamed
+directory — a plain file-watch recompile wasn't enough for a folder move), `curl` against the running
+container confirms: `GET /admin` → 404, `GET /settings` → 200, and the flattened
+`/settings/{users,general,branding,access-control/roles,ai,super-admin}` all → 200.
+
+## [2026-07-04] Admin→Settings rename: last remaining user-facing spot fixed; Docker dev workflow verified
+
+The Admin console rename to "Settings" (distinct from the "Admin"/"Super Admin" *role* concept, which
+keeps its name everywhere) was already mostly done in prior work: `SEGMENT_NAMES.admin` → `'Settings'`
+(`apps/web/src/navigation/registry.tsx`), the `/admin/*` sidebar's `title` → `'Settings'`
+(`apps/web/src/navigation/moduleNav.tsx`), the user-menu dropdown link already labeled "Settings", and the
+`admin/page.tsx` `PageHeader` already `title="Settings"`. The one remaining hardcoded label was in the
+dashboard's global command-palette/search index: `apps/web/app/(dashboard)/layout.tsx`'s
+`GLOBAL_SEARCH_ITEMS` still had `{ name: 'Admin', href: '/admin', icon: ShieldAlert, type: 'App' }` — fixed
+to `{ name: 'Settings', href: '/admin', icon: Settings, type: 'App' }`. Audited the rest of `apps/web` for
+hardcoded "Admin"/"Administration" page titles; the only other hits (`"Admin Users"`, `"Super Admin
+Dashboard"`) refer to the role, not the app, and are intentionally left unchanged. `allApplications` in
+`registry.tsx` never had an `'admin'` app-switcher entry to begin with (it's reached via the user-menu
+Settings link, not the app switcher), so no change needed there.
+
+**Docker dev workflow verified working** after the prior session's containerization refactor
+(`docker-compose.dev.yml` + `Dockerfile.dev`, single `unerp-dev` container running both `@unerp/api:dev` and
+`@unerp/web:dev` via Turborepo, bind-mounted repo with `WATCHPACK_POLLING`/`CHOKIDAR_USEPOLLING` for Windows
+file-watching): confirmed the container picks up host file edits and recompiles automatically (`docker logs
+unerp-dev` showed `✓ Compiled /dashboard` immediately after this session's `layout.tsx` edit, with zero
+manual restart). Updated the stale `.claude/launch.json` (still referenced the deleted `docker/docker-compose.yml`
+and separate host-side `pnpm dev:api`/`dev:web` processes from before the containerization) to a single
+`docker-dev` config running `docker compose -f docker-compose.dev.yml up -d`. **Important workflow note for
+future sessions:** the `node_modules` inside the container is a *named Docker volume*, isolated from the
+host filesystem — running `tsc`/`vitest` directly on the host (outside the container) will fail with
+spurious `Cannot find module '@unerp/ui'` etc. errors because host-side `node_modules` symlinks are no
+longer kept in sync. Typecheck/test verification must run via `docker exec unerp-dev sh -lc "cd apps/api &&
+npx tsc --noEmit ..."` (or the equivalent for `apps/web`), not on the host directly.
+
 ## [2026-07-03] E-Commerce Storefront: frontend — admin config/categories/listings, public store/cart/checkout (frontend-developer)
 
 Frontend build for module #33, completing the vertical slice on top of the backend landed

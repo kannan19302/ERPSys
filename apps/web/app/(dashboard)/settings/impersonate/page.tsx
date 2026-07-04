@@ -68,7 +68,7 @@ export default function ImpersonatePage() {
         const data = await res.json();
         localStorage.setItem('token', data.token);
         // Redirect to dashboard under the impersonated context
-        window.location.href = '/admin';
+        window.location.href = '/settings';
       } else {
         const errData = await res.json().catch(() => ({}));
         setError(errData.message || `Impersonation failed: ${res.statusText}`);

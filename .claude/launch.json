@@ -2,25 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "infra",
+      "name": "docker-dev",
       "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "-f", "docker/docker-compose.yml", "up", "-d"],
-      "port": 5432,
-      "autoPort": false
-    },
-    {
-      "name": "api",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev:api"],
-      "port": 3001,
-      "autoPort": false
-    },
-    {
-      "name": "web",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev:web"],
+      "runtimeArgs": ["compose", "-f", "docker-compose.dev.yml", "up", "-d"],
       "port": 3000,
-      "autoPort": true
+      "autoPort": false
     }
   ]
 }
