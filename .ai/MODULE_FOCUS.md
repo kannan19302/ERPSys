@@ -87,6 +87,11 @@ CHANGELOG, and re-benchmark the completed module one last time in MARKET_BENCHMA
 | Date | Module | Proxy count | Delta | What was added |
 |:--|:--|:--|:--|:--|
 | 2026-07-08 | Finance | 121 | — | Baseline (11 core + 110 advanced-finance endpoints) |
+| 2026-07-08 | Finance | 140 | +19 | Finance AR Automation & Dunning (dunning escalations, aging reports, risk holds, customer ledger). |
+| 2026-07-08 | Finance | 148 | +8 | Finance Advanced Reporting (Analytics, payment terms, tax filing summaries, aging charts). |
+| 2026-07-08 | Finance | 156 | +8 | Finance Automated Bank Feeds (Plaid oauth connections, bank feeds sync, auto transaction matching). |
+| 2026-07-08 | Finance | 163 | +7 | Finance Cash Flow Forecasting (rolling 13-week cash projections, override variables, custom scenarios CRUD). |
+| 2026-07-08 | Finance | 168 | +5 | Finance Intercompany Netting & Elimination (Prisma transaction model, auto matching buyer/seller, netting clearing GL journals). |
 
 ## 7. Cross-Module Integration Contracts (pre-planned BEFORE building)
 

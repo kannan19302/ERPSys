@@ -22,6 +22,7 @@ import {
   BankFeedsService,
   CashFlowForecastService,
   InterCompanyService,
+  FxRevaluationService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -332,6 +333,12 @@ const manualMatchIntercompanySchema = z.object({
   description: z.string().optional(),
 });
 
+const createFxRevaluationSchema = z.object({
+  runDate: z.string(),
+  targetCurrency: z.string().min(3).max(3),
+  notes: z.string().optional(),
+});
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
@@ -352,6 +359,7 @@ export class AdvancedFinanceController {
     private readonly bankFeedsService: BankFeedsService,
     private readonly cashFlowForecastService: CashFlowForecastService,
     private readonly interCompanyService: InterCompanyService,
+    private readonly fxRevaluationService: FxRevaluationService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -1295,6 +1303,52 @@ export class AdvancedFinanceController {
   async getIntercompanyStats(@Req() req: AuthenticatedRequest) {
     return this.interCompanyService.getConsolidatedStats(req.user.tenantId);
   }
+
+  @ApiOperation({ summary: 'Get FX revaluation runs list' })
+  @Get('fx-revaluation/runs')
+  @Permissions('finance.report.read')
+  async getFxRevaluationRuns(@Req() req: AuthenticatedRequest) {
+    return this.fxRevaluationService.getRevaluationRuns(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create draft FX revaluation run' })
+  @Post('fx-revaluation/runs')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FxRevaluationRun')
+  async createFxRevaluationRun(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createFxRevaluationSchema) dto: z.infer<typeof createFxRevaluationSchema>,
+  ) {
+    return this.fxRevaluationService.createRevaluationRun(
+      req.user.tenantId,
+      req.user.orgId || '',
+      dto,
+    );
+  }
+
+  @ApiOperation({ summary: 'Post FX revaluation run adjustments to GL ledger' })
+  @Post('fx-revaluation/runs/:id/post')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FxRevaluationRun')
+  async postFxRevaluationRun(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.fxRevaluationService.postRevaluationRun(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get details of FX revaluation run' })
+  @Get('fx-revaluation/runs/:id/details')
+  @Permissions('finance.report.read')
+  async getFxRevaluationRunDetails(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.fxRevaluationService.getRevaluationRunDetails(req.user.tenantId, id);
+  }
+
 
 
 

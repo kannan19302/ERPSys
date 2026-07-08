@@ -29,6 +29,7 @@ describe('AdvancedFinanceController', () => {
   let bankFeedsService: any;
   let cashFlowForecastService: any;
   let interCompanyService: any;
+  let fxRevaluationService: any;
 
   let serviceMap: Record<string, any>;
 
@@ -47,6 +48,7 @@ describe('AdvancedFinanceController', () => {
     bankFeedsService = createMockService();
     cashFlowForecastService = createMockService();
     interCompanyService = createMockService();
+    fxRevaluationService = createMockService();
 
     serviceMap = {
       glService,
@@ -63,6 +65,7 @@ describe('AdvancedFinanceController', () => {
       bankFeedsService,
       cashFlowForecastService,
       interCompanyService,
+      fxRevaluationService,
     };
 
     controller = new AdvancedFinanceController(
@@ -80,6 +83,7 @@ describe('AdvancedFinanceController', () => {
       bankFeedsService,
       cashFlowForecastService,
       interCompanyService,
+      fxRevaluationService,
     );
   });
 
@@ -147,6 +151,27 @@ describe('AdvancedFinanceController', () => {
   it('should call getIntercompanyStats via interCompanyService.getConsolidatedStats', async () => {
     await controller.getIntercompanyStats(mockReq);
     expect(interCompanyService.getConsolidatedStats).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call createFxRevaluationRun via fxRevaluationService.createRevaluationRun', async () => {
+    const dto = { runDate: '2026-07-08T00:00:00Z', targetCurrency: 'EUR', notes: 'test run' };
+    await controller.createFxRevaluationRun(mockReq, dto);
+    expect(fxRevaluationService.createRevaluationRun).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
+  });
+
+  it('should call postFxRevaluationRun via fxRevaluationService.postRevaluationRun', async () => {
+    await controller.postFxRevaluationRun(mockReq, 'run-1');
+    expect(fxRevaluationService.postRevaluationRun).toHaveBeenCalledWith('tenant-1', 'run-1');
+  });
+
+  it('should call getFxRevaluationRunDetails via fxRevaluationService.getRevaluationRunDetails', async () => {
+    await controller.getFxRevaluationRunDetails(mockReq, 'run-1');
+    expect(fxRevaluationService.getRevaluationRunDetails).toHaveBeenCalledWith('tenant-1', 'run-1');
+  });
+
+  it('should call getFxRevaluationRuns via fxRevaluationService.getRevaluationRuns', async () => {
+    await controller.getFxRevaluationRuns(mockReq);
+    expect(fxRevaluationService.getRevaluationRuns).toHaveBeenCalledWith('tenant-1');
   });
 
   it('should call getIntercompanyTransactions via interCompanyService.getTransactions', async () => {

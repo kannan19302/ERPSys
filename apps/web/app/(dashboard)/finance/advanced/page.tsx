@@ -72,6 +72,7 @@ const groups = [
       { href: '/finance/advanced/consolidation', label: 'Consolidation', icon: <PieChart size={18} />, desc: 'Multi-entity consolidated financial statements' },
       { href: '/finance/advanced/intercompany/netting', label: 'Intercompany Netting Match', icon: <Link2 size={18} />, desc: 'Map internal receivables (AR) and payables (AP) transactions' },
       { href: '/finance/advanced/intercompany/eliminations', label: 'Intercompany Eliminations Ledger', icon: <Scale size={18} />, desc: 'Consolidated elimination entry postings and compliance logs' },
+      { href: '/finance/advanced/fx-revaluation', label: 'FX Currency Revaluation', icon: <DollarSign size={18} />, desc: 'Revalue foreign accounts at period-end and post unrealized gain/loss entries' },
     ]
   }
 ];

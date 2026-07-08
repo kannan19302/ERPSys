@@ -16,6 +16,7 @@ import {
   BankFeedsService,
   CashFlowForecastService,
   InterCompanyService,
+  FxRevaluationService,
 } from './services';
 
 const domainServices = [
@@ -33,6 +34,7 @@ const domainServices = [
   BankFeedsService,
   CashFlowForecastService,
   InterCompanyService,
+  FxRevaluationService,
 ];
 
 @Module({

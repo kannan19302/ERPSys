@@ -14,6 +14,7 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:-|
+| 2026-07-08 | 431,060 | +775 | Finance Period-End FX Revaluation Engine Batch (Prisma runs and details models, draft computations engine, unrealized gains/losses math, auto-generating posted GL adjustments, wizard page, unit tests). |
 | 2026-07-08 | 430,285 | +1,060 | Finance Intercompany AP/AR Netting & Elimination Batch (Prisma model, auto match rules, manual linkings, netting clearing GL journal postings, stats counters, 2 Next.js pages, unit tests). |
 | 2026-07-08 | 429,225 | +950 | Finance Cash Flow Forecasting Batch (rolling 13-week projections, overrides, custom scenarios CRUD, scenario multipliers, dashboard, csv exporter, unit tests). |
 | 2026-07-08 | 428,275 | +1,410 | Finance Automated Bank Feeds Batch (direct sync, smart auto-matching, manual linking, connections/reconciliations pages, schema models, unit tests). |
@@ -59,7 +60,6 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| antigravity-ide | 2026-07-08 21:48 | Finance: Period-End FX Revaluation Engine (relational runs and details models, unrealized gains/losses math, auto-generating GL entries, Next.js page) | main | In Progress |
 | claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
 | claude-code | 2026-07-04 (session) | CRM Leads/Deals deepening: lead scoring decay, source ROI, territory assignment, nurture sequences, disqualify/reactivate, conversion audit, SLA timer; Deal health scoring, competitor tracking, win/loss taxonomy, deal team/split-credit, contract renewal linkage, quote linkage, discount approval workflow (`crm-leads.service.ts`, `crm-deals.service.ts`, new `crm-approvals.service.ts` + related controllers/migrations) — explicitly avoiding leads/opportunities list-table page.tsx JSX (another agent migrating those to shared DataTable) | main | In Progress |
 
@@ -93,6 +93,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-08 | antigravity-ide | Finance Period-End FX Revaluation Engine Batch (10+ features, DB+API+UI): Prisma runs and details models, draft computations engine, unrealized gains/losses math, auto-generating posted GL adjustments, wizard page, unit tests. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | Finance Intercompany AP/AR Netting & Elimination Batch (10+ features, DB+API+UI): Prisma model, auto match rules, manual linkings, netting clearing GL journal postings, stats counters, 2 Next.js pages, unit tests. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | Finance Cash Flow Forecasting Batch (10+ features, DB+API+UI): rolling 13-week projections, overrides, custom scenarios CRUD, scenario multipliers, dashboard, csv exporter, unit tests. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | Finance Automated Bank Feeds Batch (15+ features, DB+API+UI): direct bank sync connections, automated transaction matching, manual overrides, ignore filters, schema updates, 2 new pages (bank-feeds, bank-recon), unit tests, and segment formatting. | see CHANGELOG 2026-07-08 |

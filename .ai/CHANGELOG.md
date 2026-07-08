@@ -10,6 +10,33 @@
 
 **Why**: owner directive — a daily sprint tracker showing how much code and how many functionalities are delivered each day, visible to every agent and human without manual bookkeeping.
 
+## [2026-07-08] Finance Period-End FX Currency Revaluation Batch — 10+ new features: runs and details models, draft computations engine, unrealized gains/losses math, auto-generating posted GL adjustments, wizard page (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — FX Currency Revaluation engine (Sage Intacct / NetSuite parity).
+
+**Features shipped**:
+
+*FX Revaluation Service & Controllers (`fx-revaluation.service.ts`)*
+1. `createRevaluationRun` — Draft revaluation run generation logic scanning open customer invoices, open vendor payment schedules, and cash account balances in foreign currencies, comparing book rates with period-end rates.
+2. `postRevaluationRun` — Posted execution engine that offsets unrealized FX gains or losses to revenue/expense accounts by auto-generating general ledger posted Journal entries.
+3. `getRevaluationRuns` — Retrieves history list of revaluation execution logs.
+4. `getRevaluationRunDetails` — Fetches calculated itemized detail adjustments.
+
+*Database (`schema.prisma`)*:
+5. Created `FxRevaluationRun` relational run model.
+6. Created `FxRevaluationDetail` computed adjustments detail model. Synced via `prisma db push`.
+
+*Next.js Frontend*:
+7. `/finance/advanced/fx-revaluation` — Period-End FX Currency Revaluation dashboard page with history list, wizard run creators, calculated adjustment previews, and post execution checklists.
+8. Navigation updates & Segment Maps registered in `SEGMENT_NAMES` (`fx-revaluation` mapped to "FX Revaluation").
+
+**Unit Tests**:
+9. Added full unit tests in `fx-revaluation.service.spec.ts` (4 tests passed).
+10. Expanded controller tests in `advanced-finance.controller.spec.ts` (all passed).
+11. Verified total suite of 251 module unit tests passes clean in vitest.
+
+**TypeScript**: Both web and api apps typecheck completely clean (`tsc --noEmit` zero errors).
+
 ## [2026-07-08] Finance Cash Flow Forecasting Batch — 10+ new features: Rolling 13-week forecast projections, manual adjustments override, custom simulation factors, CSV exporter (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — rolling forecast projections and simulation scenarios depth pass (Dynamics 365 / NetSuite parity).

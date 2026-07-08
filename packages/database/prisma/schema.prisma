@@ -2810,6 +2810,7 @@ model Account {
   taxComponents        TaxComponent[]
   withholdingTaxes     WithholdingTax[]
   investmentPortfolios InvestmentPortfolio[]
+  fxRevaluationDetails FxRevaluationDetail[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -8629,6 +8630,44 @@ model InterCompanyTransaction {
   @@index([tenantId])
   @@map("intercompany_transactions")
 }
+
+model FxRevaluationRun {
+  id               String                 @id @default(cuid())
+  tenantId         String                 @map("tenant_id")
+  orgId            String                 @map("org_id")
+  runDate          DateTime               @map("run_date")
+  targetCurrency   String                 @map("target_currency")
+  status           String                 @default("DRAFT") // DRAFT, POSTED, REVERSED
+  notes            String?
+  journalId        String?                @map("journal_id")
+  createdBy        String?                @map("created_by")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+  details          FxRevaluationDetail[]
+
+  @@index([tenantId])
+  @@map("fx_revaluation_runs")
+}
+
+model FxRevaluationDetail {
+  id                 String           @id @default(cuid())
+  runId              String           @map("run_id")
+  accountId          String           @map("account_id")
+  entityType         String           @map("entity_type") // INVOICE, PAYMENT_SCHEDULE, BANK_ACCOUNT
+  entityId           String           @map("entity_id")
+  balanceInForeign   Decimal          @map("balance_in_foreign") @db.Decimal(15, 2)
+  originalAmountBase Decimal          @map("original_amount_base") @db.Decimal(15, 2)
+  revaluedAmountBase Decimal          @map("revalued_amount_base") @db.Decimal(15, 2)
+  unrealizedGainLoss Decimal          @map("unrealized_gain_loss") @db.Decimal(15, 2)
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  run FxRevaluationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  account Account      @relation(fields: [accountId], references: [id])
+
+  @@index([runId])
+  @@map("fx_revaluation_details")
+}
+
 
 
 

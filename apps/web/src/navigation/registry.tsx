@@ -111,6 +111,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'intercompany': 'Intercompany',
   'netting': 'Netting',
   'eliminations': 'Eliminations',
+  'fx-revaluation': 'FX Revaluation',
   'payment-terms': 'Payment Terms',
   'invoice-analytics': 'Invoice Analytics',
   'tax-filing-summary': 'Tax Filing Summary',

@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-08T16:15:35.862Z
+> Last generated: 2026-07-08T17:00:50.396Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1534 features** across 35 modules
+## System total: **1538 features** across 35 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 162 |
+| [advanced-finance](#advanced-finance) | 166 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -239,7 +239,7 @@
 
 ## advanced-finance
 
-162 features
+166 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -336,6 +336,10 @@
 | POST | `/advanced-finance/intercompany/manual-match` | Manually match intercompany transaction pair | `finance.report.create` |
 | POST | `/advanced-finance/intercompany/eliminate/:id` | Run netting elimination entry for intercompany matched transaction | `finance.report.create` |
 | GET | `/advanced-finance/intercompany/stats` | Get intercompany netting consolidated stats | `finance.report.read` |
+| GET | `/advanced-finance/fx-revaluation/runs` | Get FX revaluation runs list | `finance.report.read` |
+| POST | `/advanced-finance/fx-revaluation/runs` | Create draft FX revaluation run | `finance.report.read` |
+| POST | `/advanced-finance/fx-revaluation/runs/:id/post` | Post FX revaluation run adjustments to GL ledger | `finance.report.create` |
+| GET | `/advanced-finance/fx-revaluation/runs/:id/details` | Get details of FX revaluation run | `finance.report.read` |
 | POST | `/advanced-finance/exchange-rates` | Update exchange rate | `finance.treasury.create` |
 | GET | `/advanced-finance/currency-convert` | Convert currency | `finance.treasury.read` |
 | GET | `/advanced-finance/compute-tax` | Compute tax | `finance.tax.compute` |
