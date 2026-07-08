@@ -37,7 +37,11 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
 7. **Review** the diff with the `code-reviewer` subagent (plus `security-auditor` for
    auth/tenancy/permission-sensitive changes).
 8. **Record**: update `.ai/CHANGELOG.md` and `.ai/MODULE_REGISTRY.md` (status, Growth
-   Tracker, move claim to Recently Completed).
+   Tracker, move claim to Recently Completed); **regenerate the system-wide
+   functionality ledger** — `node scripts/feature-ledger.mjs` → `.ai/FEATURE_LEDGER.md`
+   (mandatory whenever any code shipped; commit it with the change; also the
+   duplicate-check source during planning); log the focus module's new count in
+   `MODULE_FOCUS.md` § 6.
 9. **Ship**: commit only your claimed scope, push.
 10. **Refill & discover** (mandatory): run the Discovery Protocol in
     `.ai/MARKET_BENCHMARK.md` — benchmark the most-overdue module against its top

@@ -38,14 +38,12 @@ the genuine-capability north star and doesn't count.
 
 ## 3. Measurement (run each cycle, log in § 6)
 
-Endpoint-count proxy (fast, objective):
-```bash
-grep -rEc "@(Get|Post|Put|Patch|Delete)\(" apps/api/src/modules/<module> \
-  --include="*.controller.ts" | awk -F: '{s+=$2} END {print s}'
-```
-The proxy over-counts trivial getters and under-counts UI-only features — sanity-check
-against § 2 judgment. The **binding number** is the proxy count; the quality bar is
-enforced by the existing gates (tests, E2E, parity checklists).
+Run `node scripts/feature-ledger.mjs` and read the module's count from the regenerated
+`.ai/FEATURE_LEDGER.md` (the single-file inventory of every functionality in the system
+— method + route + summary + permission per row). That count is the **binding number**;
+it over-counts trivial getters and under-counts UI-only features, so sanity-check
+against § 2 judgment. The quality bar is enforced by the existing gates (tests, E2E,
+parity checklists).
 
 ## 4. Focus Order (work top-down; a module is DONE when § 5 exit criteria pass)
 

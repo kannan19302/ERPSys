@@ -2,6 +2,14 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] System-Wide Functionality Ledger — single generated file, mandatory on every change
+
+**Accomplished**:
+- Created `scripts/feature-ledger.mjs` → generates `.ai/FEATURE_LEDGER.md`: **one file listing every functionality in the entire ERP** — 1 row per endpoint (method + route + @ApiOperation summary + @Permissions), scanned directly from every controller. First generation: **1,521 features across 35 modules** (per-module table of contents + counts).
+- Because it reads the code, it always reflects existing **and** newly shipped functionality with zero manual drift. Mandated in `AUTOPILOT.md` Step 7 (regenerate + commit whenever any code ships) and Step 3 (it is now the duplicate-check source before building anything, alongside MODULE_REGISTRY). `MODULE_FOCUS.md` § 3 now takes its binding per-module feature counts from this ledger; AGENTS.md § Autonomous Mode and the start skill updated.
+
+**Why**: owner directive — mandate a single-file functionality ledger for the whole system, updated whenever any change occurs, covering existing and new functionality. Generated-from-code beats hand-maintained: it cannot go stale.
+
 ## [2026-07-08] Finance Automated Bank Feeds Batch — 15+ new features: Direct bank sync, auto-matching, manual reconciliation, ignore logs (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — direct integrations, automated reconciliations, and statement matches (Plaid/Yodlee-style parity).

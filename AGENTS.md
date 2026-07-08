@@ -27,6 +27,11 @@ competitive gaps > module deepening > new capability) → claim → plan → bui
 end-to-end → verify gates → review → record in the 3-file system → commit+push →
 **refill & discover** → report.
 
+The single-file inventory of every functionality in the system is the generated
+[.ai/FEATURE_LEDGER.md](.ai/FEATURE_LEDGER.md) (`node scripts/feature-ledger.mjs`) —
+**regenerate and commit it whenever any change ships**, and search it before building
+anything to avoid duplicates.
+
 Autonomous mode works **one module at a time**: [.ai/MODULE_FOCUS.md](.ai/MODULE_FOCUS.md)
 names the Current Focus Module (starting with core: Finance), which is driven to **500+
 distinct working features** with pre-planned cross-module integration contracts before

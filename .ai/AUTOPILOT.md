@@ -94,7 +94,9 @@ overlaps an existing Active Claim.
 ## Step 3 — PLAN
 
 Act as the product manager (Claude Code: invoke the `product-manager` subagent):
-- Confirm the item doesn't already exist (`MODULE_REGISTRY.md` check — mandatory).
+- Confirm the item doesn't already exist — search `.ai/FEATURE_LEDGER.md` (the
+  generated single-file inventory of every functionality in the system) and
+  `MODULE_REGISTRY.md`. Mandatory.
 - Enumerate the batch as a numbered feature list (10–20+ items, per the batch-throughput
   rule) grouped under one sub-domain, then write user stories with acceptance criteria
   and an explicit **Definition of Done**:
@@ -171,9 +173,15 @@ tenancy, permissions, file upload, or payments additionally require the
 
 Per the Mandatory Tracking Convention — no exceptions:
 - Append a `CHANGELOG.md` entry (what + why + any follow-ups spawned).
-- If the cycle advanced the focus module: append a Feature Ledger row in
-  `MODULE_FOCUS.md` § 6 (re-run the § 3 endpoint-count command) and update any
-  integration-contract statuses in § 7.
+- **Regenerate the system-wide Functionality Ledger (mandatory whenever any code
+  shipped)**: `node scripts/feature-ledger.mjs` → `.ai/FEATURE_LEDGER.md` — the single
+  file listing every functionality in the entire ERP (method + route + summary +
+  permission, scanned from the code), existing and newly shipped alike. Commit it with
+  your change. This file is also the duplicate-check source in Step 3: search it before
+  building anything.
+- If the cycle advanced the focus module: append a progress row in
+  `MODULE_FOCUS.md` § 6 (take the module's count from the regenerated
+  `FEATURE_LEDGER.md`) and update any integration-contract statuses in § 7.
 - Update `MODULE_REGISTRY.md` (module row/status, Growth Tracker row if substantial,
   move your Collab Board claim §1 → §3 Recently Completed with commit hash).
 - Update `HANDBOOK.md` only if a convention/architecture actually changed.
