@@ -74,9 +74,16 @@ exactly **one** item per cycle. Never skip a higher rung because a lower one is 
 | **P6 — Module deepening** | `MODULE_REGISTRY.md` § Module-Specific Completion Notes; run an ad-hoc discovery pass (§ Step 9) on the weakest module to find its gaps. | Deepen one module completely before starting another (module-completion strategy). |
 | **P7 — New capability** | Nothing above applies (rare). Act as product manager: propose a new module/app/integration consistent with the Phase roadmap and the 1M-LOC genuine-capability north star; write it into Up Next, then build the first slice. | Must pass the "does this already exist?" check against `MODULE_REGISTRY.md`. |
 
-**Sizing rule**: an item must be completable end-to-end in one session. If the top item
-is too big, split it — put the remainder back into Up Next as groomed sub-items and take
-the first slice.
+**Batch-throughput rule (binding)**: one cycle = one coherent **batch of 10–20+
+distinct features** (per `MODULE_FOCUS.md` § 2 definition) in the focus module — more
+is welcome; fewer only if a single feature is genuinely L-sized (log why). Compose the
+batch around one sub-domain so it shares a schema migration and UI surface (e.g.
+"Finance/AR: dunning levels + reminder templates + escalation schedule + pause-on-dispute
++ aging buckets + statement generation + …" ≈ 15 features, one migration, two pages).
+Every batch MUST span all three layers: **DB (Prisma) + API (NestJS) + UI (Next.js)** —
+API-only or UI-only cycles don't count toward the ledger. If the top queue item is too
+big, split it; if too small, pull the next items from the same sub-domain until the
+batch reaches 10+.
 
 ## Step 2 — CLAIM
 
@@ -88,7 +95,9 @@ overlaps an existing Active Claim.
 
 Act as the product manager (Claude Code: invoke the `product-manager` subagent):
 - Confirm the item doesn't already exist (`MODULE_REGISTRY.md` check — mandatory).
-- Write 2–5 user stories with acceptance criteria and an explicit **Definition of Done**:
+- Enumerate the batch as a numbered feature list (10–20+ items, per the batch-throughput
+  rule) grouped under one sub-domain, then write user stories with acceptance criteria
+  and an explicit **Definition of Done**:
   schema + API + UI + tests + docs + nav/breadcrumbs + RBAC — the full E2E rule.
 - **Competitor-parity depth rule** (for `[benchmark]` items and any feature a market
   leader also ships): acceptance criteria must quote the *actual capability* of the
@@ -108,9 +117,27 @@ classes, DataTable policy, breadcrumbs, no cross-module imports, no `any`, no
 `console.log`). New module UI goes through `@unerp/framework` where applicable.
 Write unit tests alongside code, not after.
 
+**Batch-efficient build order** (pay each fixed cost ONCE per cycle, not per feature):
+1. **DB first, once**: design ALL Prisma models/fields for the whole batch → one
+   `pnpm db:migrate` → one `prisma generate` (stop `dev:api` first, per known gotcha).
+2. **API next, in bulk**: all services + controllers + DTOs + permission registrations
+   for the batch. Compile-check with the *scoped* filter as you go
+   (`pnpm --filter @unerp/api typecheck`), not the whole turbo graph.
+3. **UI last, in bulk**: pages/actions wired to the new endpoints; the dev server's HMR
+   verifies renders as you write — no rebuilds needed.
+4. Unit tests for the batch's services in ONE spec pass at the end of the API stage.
+
+**Time discipline — building is the point**: target ≥ 70% of the cycle on writing
+schema/API/UI code. DO NOT run the full test suite, full typecheck, or E2E after every
+feature — those are Step 5 gates, paid **once per cycle**. During Step 4 use only the
+fast feedback loops: scoped `--filter` typecheck, the single module's vitest file
+(`npx vitest run src/modules/<module>`), and HMR in the already-running dev stack
+(never restart docker; never re-seed unless schema demands it).
+
 ## Step 5 — VERIFY (reality gates — binding)
 
-All must pass before anything is recorded or shipped:
+Run this step **exactly once per cycle**, after the whole batch is built (Step 4) — not
+per feature. All must pass before anything is recorded or shipped:
 1. `pnpm turbo typecheck` (or `pnpm --filter ... tsc --noEmit`) — zero errors.
 2. Full API unit test suite — zero failures (no `skip`/`only`).
 3. **E2E smoke gate (binding)**: with the dev stack up, run
@@ -122,8 +149,11 @@ All must pass before anything is recorded or shipped:
    If the stack genuinely cannot be started in your environment, you may ship on gates
    1–2 only, but MUST log `[e2e-unverified] <scope>` at the top of Up Next so the next
    agent with a stack runs the gate first.
-4. Manually exercise the changed feature end-to-end in the running app (create → read →
-   update flow, empty/loading/error states, console clean).
+   To keep this fast, run only the smoke project (`npx playwright test smoke`) — the
+   full e2e suite is for CI, not the inner loop.
+4. Manually exercise the batch's **primary workflow** end-to-end in the running app
+   (create → read → update, empty/error states, console clean) — one representative
+   pass over the batch, not a per-feature ritual; the smoke suite covers page health.
 5. Regenerate the scorecard if substantial: `node scripts/scorecard.mjs`; regenerate
    feedback: `node scripts/feedback-scan.mjs` (your fix should remove its error rows).
 
@@ -193,7 +223,8 @@ what shipped (commits), gate results, and the top 3 Up Next items.
 
 ## Guardrails (absolute)
 
-- **One item per cycle.** Depth over breadth; finish completely (E2E) or split and log the remainder.
+- **One coherent batch (10–20+ features) per cycle.** Finish it completely (DB+API+UI)
+  or split and log the remainder — never leave half-wired layers.
 - **Never** force-push, rewrite history, delete migrations, drop/reset databases, or
   modify another agent's claimed scope or uncommitted files.
 - **Never** ship stubs, mocks, dead scaffolding, or padded code — the LOC north star

@@ -2,6 +2,17 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Batch Throughput + Verify-Once — 10–20+ features per cycle, gates paid once
+
+Tuned the autonomous cycle for speed-to-500 per owner directive: each cycle must ship a meaningful batch, and build/test overhead is paid once per cycle instead of per feature.
+
+**Accomplished**:
+- `AUTOPILOT.md`: replaced the one-item sizing rule with the **batch-throughput rule** — one cycle = one coherent batch of **10–20+ distinct features** (more welcome; fewer only for a genuinely L-sized feature, logged) composed around a single sub-domain of the focus module so it shares one migration and UI surface; every batch MUST span **DB + API + UI** (single-layer cycles don't count in the Feature Ledger).
+- Step 4 gained a **batch-efficient build order** (all schema → one migrate/generate → all services/controllers → all UI → one test pass) and a **time-discipline rule**: ≥ 70% of the cycle on writing code; during build only fast scoped feedback (scoped `--filter` typecheck, single-module vitest, HMR in the running stack; never restart docker/re-seed needlessly); full typecheck/suite/E2E are Step 5 gates run **exactly once per cycle** (smoke project only in the inner loop — the full e2e suite is CI's job); manual verification is one representative workflow pass, not per-feature ritual.
+- Step 3 planning now enumerates the batch as a numbered 10–20+ feature list before stories; `.claude/skills/start/SKILL.md` updated to match.
+
+**Why**: owner feedback — cycles were spending too much time in build/test/process overhead relative to building; module completion (500+ features) needs batch-sized cycles with fixed costs amortized.
+
 ## [2026-07-08] Module-Focus Discipline — one module at a time to 500+ features, Studio last
 
 Added the focus layer to the autonomy engine per owner directive: depth-first, one module at a time.

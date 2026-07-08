@@ -23,12 +23,17 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
 3. **Claim** it on the Collab Board (§1 Active Claims).
 4. **Plan** with the `product-manager` subagent (registry duplicate-check, stories,
    acceptance criteria, Definition of Done).
-5. **Build end-to-end** (schema → NestJS API → Next.js UI → tests) following every
-   AGENTS.md critical rule; use role subagents as appropriate.
-6. **Verify gates**: `pnpm turbo typecheck`, the full API test suite, AND the binding
-   E2E smoke gate (`pnpm --filter @unerp/web test:e2e` — `e2e/smoke.spec.ts` logs in
-   and walks all core module surfaces against the running stack; add new pages to
-   `SMOKE_ROUTES`). Also manually exercise the changed feature in the running app.
+5. **Build a BATCH end-to-end** — minimum **10–20 distinct features per cycle** (more is
+   better), composed around one sub-domain of the focus module, always spanning
+   **DB + API + UI**. Batch-efficient order: ALL schema changes → one migration → all
+   services/controllers → all UI pages → one test pass. Spend ≥ 70% of the cycle
+   writing code: during build use only fast scoped checks (`pnpm --filter @unerp/api
+   typecheck`, single-module vitest, HMR in the running stack) — never the full
+   suite/typecheck/E2E per feature, and never restart docker or re-seed needlessly.
+6. **Verify gates ONCE per cycle** (after the whole batch, never per feature):
+   `pnpm turbo typecheck`, the full API test suite, AND the binding E2E smoke gate
+   (`npx playwright test smoke` in apps/web against the running stack; add new pages
+   to `SMOKE_ROUTES`). Manually exercise the batch's primary workflow once.
 7. **Review** the diff with the `code-reviewer` subagent (plus `security-auditor` for
    auth/tenancy/permission-sensitive changes).
 8. **Record**: update `.ai/CHANGELOG.md` and `.ai/MODULE_REGISTRY.md` (status, Growth
