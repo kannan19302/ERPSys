@@ -20,7 +20,16 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    in `.ai/MODULE_FOCUS.md` (one module at a time → 500+ distinct working features →
    exit criteria → next module; core first, Studio locked until last). Only P0–P2 may
    touch other modules. Log a Feature Ledger row in MODULE_FOCUS.md § 6 each cycle.
-3. **Claim** it on the Collab Board (§1 Active Claims).
+3. **Claim** it on the Collab Board (§1 Active Claims) — commit+push the claim row
+   BEFORE writing code. **Parallel agents** (see AUTOPILOT § Parallel Agents): claims
+   are disjoint sub-domain locks within the focus module; work on your own
+   `autopilot/<sub-domain>` branch and merge to main only after gates pass; serialize
+   Prisma migrations (rebase + re-apply if another landed first); append-only edits in
+   shared hotspots (schema.prisma, permissions registry, moduleNav, SMOKE_ROUTES) with
+   `git pull --rebase` before push; on conflicts in generated trackers, regenerate —
+   never hand-merge; never reset/re-seed the shared DB while other agents' claims are active;
+   after any rebase, grep FEATURE_LEDGER for your routes and shrink the batch if
+   another agent already shipped part of it.
 4. **Plan** with the `product-manager` subagent (registry duplicate-check, stories,
    acceptance criteria, Definition of Done).
 5. **Build a BATCH end-to-end** — minimum **10–20 distinct features per cycle** (more is

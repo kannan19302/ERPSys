@@ -2,6 +2,12 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] ADP Parallel-Agents Concurrency Rules
+
+**Accomplished**: added binding § Parallel Agents to `AUTOPILOT.md` (mirrored in the start skill) for when multiple agents run cycles simultaneously: (1) claims are **disjoint sub-domain locks** within the focus module, committed+pushed before any code, stale after 24h without commits; (2) branch policy — solo agents commit to main, parallel agents work on `autopilot/<sub-domain>` branches merged only after gates pass (rebase first, never force-push, never merge red); (3) shared-hotspot etiquette for schema.prisma / permissions registry / moduleNav / SMOKE_ROUTES — append in your module's own section + `pull --rebase` before push; (4) **migration serialization** — Prisma migrations created one-at-a-time, rebase + re-apply + regenerate client if another landed first, conflicting later migration recreated; (5) generated trackers (FEATURE_LEDGER/SPRINT_TRACKER/FEEDBACK/SCORECARD) never hand-merged — regenerate after rebase; append-only files keep both sides; (6) shared dev-stack etiquette — no reset/re-seed/restart while other claims are active; (7) duplicate-work check — inspect all branches' recent commits before claiming, and after rebases grep FEATURE_LEDGER for your routes, shrinking the batch if features already landed.
+
+**Why**: owner directive — the protocol must handle multiple agents running in parallel (already the daily reality: Claude Code + Antigravity shipped concurrent Finance batches today) without clobbered work, duplicate features, or migration collisions.
+
 ## [2026-07-08] Finance Lease Accounting — ASC 842 / IFRS 16 full vertical slice (20 features, DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes the `[benchmark]` lease accounting gap (Up Next item #6, RICE 112.5). Parity target: NetSuite Fixed Assets, Sage Intacct Lease Accounting.

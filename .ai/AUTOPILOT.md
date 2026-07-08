@@ -235,6 +235,60 @@ toward 500 (from `MODULE_FOCUS.md` § 6), and the top 3 Up Next items.
 
 ---
 
+## Parallel Agents (multi-agent concurrency — binding when >1 agent runs at once)
+
+Multiple agents (Claude Code sessions, Antigravity, unattended loop, CI) may execute
+this protocol simultaneously. The Collab Board is the lock table; these rules make
+parallel cycles collision-free:
+
+**1. Claim = sub-domain lock, committed FIRST.**
+Parallel agents working the same focus module take **disjoint sub-domains** (e.g.
+Finance/AR-dunning vs Finance/tax vs Finance/leases — one Collab Board §1 row each,
+listing the module sub-path and pages you'll touch). Commit + push the claim row
+*before writing any code*; if the push is rejected, pull — someone else may have just
+claimed your target; pick the next sub-domain. A claim with no commits referencing it
+for **24h is stale** and may be taken over (note the takeover in §4 Conflict Log).
+
+**2. Branch policy.**
+Solo agent → commit directly to `main`. Parallel agents → each works on its own branch
+`autopilot/<sub-domain>` and merges to `main` only after Step 5 gates pass
+(`git pull --rebase origin main` first; re-run scoped typecheck after rebase; never
+force-push, never merge a red branch). Small doc/tracking edits may go straight to
+`main` from any agent.
+
+**3. Shared-hotspot files** — `schema.prisma`, `packages/shared/src/permissions/registry.ts`,
+`moduleNav.tsx`, navigation `registry.tsx`/`SEGMENT_NAMES`, `SMOKE_ROUTES`:
+append your entries in your module's own section (not at a common tail), keep the edit
+minimal, and `git pull --rebase` immediately before pushing. These files merge cleanly
+when everyone appends locally-scoped blocks.
+
+**4. Migration serialization (the one true mutex).**
+Prisma migrations must be created one-at-a-time: before `pnpm db:migrate`, pull and
+check for migrations newer than yours; if another agent's migration landed after you
+branched, rebase, re-run `prisma migrate dev`/`deploy` so yours applies on top, and
+re-generate the client. Never rename/reorder another agent's migration; never hand-edit
+`prisma/migrations/`. If two unapplied migrations genuinely conflict, the later claimer
+recreates theirs (log it in §4 Conflict Log).
+
+**5. Generated trackers never hand-merged.**
+On any rebase/merge conflict in `FEATURE_LEDGER.md`, `SPRINT_TRACKER.md`,
+`FEEDBACK.md`, or `SCORECARD.md`: take either side, then **re-run the generating
+script** and commit the regenerated file. Hand-merging generated content is forbidden.
+Append-only files (`CHANGELOG.md`, Collab Board rows, `MODULE_FOCUS.md` § 6): keep both
+sides on conflict — entries are independent rows.
+
+**6. Shared dev stack etiquette.**
+The docker stack and dev DB are shared. Reading, HMR, and running the smoke suite are
+always safe in parallel. **Never** reset/re-seed the DB, restart containers, or run
+`prisma migrate reset` while another agent's claim is active — if a destructive reset
+is unavoidable, treat it like a migration: announce via a Collab Board row first.
+
+**7. Don't duplicate work.**
+Before claiming, check §1 Active Claims AND `git log --all --since="1 day ago"
+--oneline` (another agent's branch may already contain your target). After rebasing,
+grep `FEATURE_LEDGER.md` for your batch's routes — if half your features just landed
+from someone else's merge, shrink your batch to the remainder rather than re-shipping.
+
 ## Token & Context Efficiency (binding — less reading/re-doing, more building)
 
 Tokens spent re-deriving context are tokens not spent shipping features. Rules:
