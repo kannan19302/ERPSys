@@ -20,8 +20,14 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    in `.ai/MODULE_FOCUS.md` (one module at a time → 500+ distinct working features →
    exit criteria → next module; core first, Studio locked until last). Only P0–P2 may
    touch other modules. Log a Feature Ledger row in MODULE_FOCUS.md § 6 each cycle.
-3. **Claim** it on the Collab Board (§1 Active Claims) — commit+push the claim row
-   BEFORE writing code. **Parallel agents** (see AUTOPILOT § Parallel Agents): claims
+3. **Claim** with the atomic lock FIRST: `node scripts/claim.mjs acquire
+   <sub-domain-slug> --agent <name+session> --scope "<desc>"` (exit 1 = HELD by
+   another session → pick a different sub-domain, never proceed); commit+push the
+   lock file, then add the Collab Board §1 row. Heartbeat each step
+   (`claim.mjs heartbeat <slug>`; 2h silence = stale, takeover allowed), release +
+   commit in Step 9. Duplicate check both ends: grep FEATURE_LEDGER for your routes
+   at claim time AND again after the pre-merge rebase — drop features another
+   session already shipped. **Parallel agents** (see AUTOPILOT § Parallel Agents): claims
    are disjoint sub-domain locks within the focus module; work on your own
    `autopilot/<sub-domain>` branch and merge to main only after gates pass; serialize
    Prisma migrations (rebase + re-apply if another landed first); append-only edits in

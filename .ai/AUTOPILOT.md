@@ -87,9 +87,12 @@ batch reaches 10+.
 
 ## Step 2 — CLAIM
 
-Add a row to Collab Board §1 (agent name, timestamp, scope = module/file list) and
-commit that small edit early so parallel agents see it. Never start on a scope that
-overlaps an existing Active Claim.
+Acquire the atomic lock FIRST — `node scripts/claim.mjs acquire <sub-domain-slug>
+--agent <name+session> --scope "<desc>"` — and commit+push the lock file. Exit 1
+(`HELD`) means another session owns it: pick a different sub-domain, never proceed.
+Then add the human-readable row to Collab Board §1. Run the same-functionality
+double-check (§ Parallel Agents rule 1b) before writing any code. Full mechanics:
+§ Parallel Agents rules 1/1b.
 
 ## Step 3 — PLAN
 
@@ -246,13 +249,42 @@ Multiple agents (Claude Code sessions, Antigravity, unattended loop, CI) may exe
 this protocol simultaneously. The Collab Board is the lock table; these rules make
 parallel cycles collision-free:
 
-**1. Claim = sub-domain lock, committed FIRST.**
-Parallel agents working the same focus module take **disjoint sub-domains** (e.g.
-Finance/AR-dunning vs Finance/tax vs Finance/leases — one Collab Board §1 row each,
-listing the module sub-path and pages you'll touch). Commit + push the claim row
-*before writing any code*; if the push is rejected, pull — someone else may have just
-claimed your target; pick the next sub-domain. A claim with no commits referencing it
-for **24h is stale** and may be taken over (note the takeover in §4 Conflict Log).
+**1. Claim = atomic lock file, acquired BEFORE anything else.**
+The Collab Board alone cannot prevent duplicate work: it's only visible after
+commit→push→pull, so **multiple sessions in the same checkout** (several Antigravity
+windows, several Claude Code sessions, IDE + terminal) race straight past it. The
+binding mutex is the lock registry in `.ai/locks/`:
+
+```
+node scripts/claim.mjs acquire <sub-domain-slug> --agent <name+session> --scope "<files/desc>"
+```
+
+- Atomic (O_EXCL): if another session — same machine or not — holds the slug, you get
+  exit 1 (`HELD`) instantly. **Pick a different sub-domain; never proceed on HELD.**
+- On `ACQUIRED`: commit + push the lock file immediately (cross-machine visibility),
+  THEN add your Collab Board §1 row (the board stays the human-readable view; the lock
+  is the mutex). If the lock-file push is rejected, `pull --rebase` — if someone else's
+  lock for your slug arrives, you lost the race: release yours, pick another.
+- **Heartbeat** each protocol step (`claim.mjs heartbeat <slug>`); a lock with no
+  heartbeat for **2h is stale** and `acquire` auto-takes it over (log in §4).
+- **Release** in Step 8 (`claim.mjs release <slug>`) and commit the deletion.
+- `claim.mjs list` shows every active session's claim — run it during Step 0 bootstrap.
+
+Sub-domains must be **disjoint** (Finance/AR-dunning vs Finance/tax vs Finance/leases),
+each listing the module sub-path and pages it covers. Agent names must include a
+session discriminator (e.g. `antigravity-win2`, `claude-code-cli-a`) so `list` shows
+who is who.
+
+**1b. Same-functionality double-check (mandatory, both ends of the cycle).**
+Locks prevent *scope* collisions; this prevents *semantic* duplicates (two sessions
+building the same feature under different slugs): (a) at claim time, grep
+`FEATURE_LEDGER.md` for your batch's intended routes/nouns AND run
+`git log --all --oneline --since="2 days ago"` + `claim.mjs list` looking for the same
+feature under another name — if found, shrink or re-target your batch; (b) right
+before Step 8's merge, after rebasing onto `origin/main`, re-grep `FEATURE_LEDGER.md`
+for your routes — if another session shipped overlapping features while you built,
+keep the better implementation, drop the duplicate, and log the collision in §4 so the
+sub-domain split gets refined.
 
 **2. Branch policy — everything ends on `main`, every cycle.**
 `main` is the single source of truth; work not on `main` is invisible to every other
