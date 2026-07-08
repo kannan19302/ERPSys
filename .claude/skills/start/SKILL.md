@@ -53,7 +53,10 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    `node scripts/sprint-tracker.mjs` → `.ai/SPRINT_TRACKER.md`; log the focus module's
    new count in `MODULE_FOCUS.md` § 6. Quote today's SPRINT_TRACKER row (features +
    net LOC) and the 500-target progress in the final report.
-9. **Ship**: commit only your claimed scope, push.
+9. **Ship**: commit only your claimed scope, push — and the cycle MUST end with the
+   changes on `origin/main`. If on an `autopilot/*` branch: rebase onto origin/main,
+   re-run scoped typecheck, merge to main, push, delete the branch. Never leave
+   shipped work stranded on a branch.
 10. **Refill & discover** (mandatory): run the Discovery Protocol in
     `.ai/MARKET_BENCHMARK.md` — benchmark the most-overdue module against its top
     market-leader competitors (use WebSearch/WebFetch), log new gaps/improvements in

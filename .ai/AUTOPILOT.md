@@ -196,6 +196,11 @@ Commit in small coherent units with conventional messages (`feat(module): ...`,
 `fix(module): ...`) and **push**. Stage only files within your claimed scope — never
 sweep in another agent's uncommitted work with `git add -A`.
 
+**A cycle ends with the changes on `origin/main` — always.** If you worked on an
+`autopilot/*` branch (parallel mode), Step 8 includes merging it into `main`, pushing,
+and deleting the branch (see § Parallel Agents rule 2). Leaving shipped work stranded
+on a branch violates the protocol.
+
 ## Step 9 — REFILL & DISCOVER (mandatory every cycle — this generates NEW requirements)
 
 The system must never merely consume its backlog; every cycle must also **create**
@@ -249,12 +254,17 @@ listing the module sub-path and pages you'll touch). Commit + push the claim row
 claimed your target; pick the next sub-domain. A claim with no commits referencing it
 for **24h is stale** and may be taken over (note the takeover in §4 Conflict Log).
 
-**2. Branch policy.**
-Solo agent → commit directly to `main`. Parallel agents → each works on its own branch
-`autopilot/<sub-domain>` and merges to `main` only after Step 5 gates pass
-(`git pull --rebase origin main` first; re-run scoped typecheck after rebase; never
-force-push, never merge a red branch). Small doc/tracking edits may go straight to
-`main` from any agent.
+**2. Branch policy — everything ends on `main`, every cycle.**
+`main` is the single source of truth; work not on `main` is invisible to every other
+agent and to the user. Solo agent → commit directly to `main`. Parallel agents → work
+on a **short-lived** `autopilot/<sub-domain>` branch, but the cycle is NOT complete
+until that branch is **merged into `main`, pushed, and deleted** — merging is part of
+Step 8 (SHIP), not an optional afterthought. Sequence: gates pass → `git fetch` +
+rebase onto `origin/main` → re-run scoped typecheck → merge to `main` → push → delete
+the branch. Never force-push, never merge a red branch, and **never end a cycle with
+unmerged branch commits** — if the merge is blocked (conflict needing the other agent),
+log it in §4 Conflict Log and resolve it as the immediate next action, not "later".
+Small doc/tracking edits may go straight to `main` from any agent.
 
 **3. Shared-hotspot files** — `schema.prisma`, `packages/shared/src/permissions/registry.ts`,
 `moduleNav.tsx`, navigation `registry.tsx`/`SEGMENT_NAMES`, `SMOKE_ROUTES`:
