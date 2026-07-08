@@ -4866,6 +4866,7 @@ model BankAccount {
   paymentRuns          PaymentRun[]
   treasuryTransactions TreasuryTransaction[]
   connections          BankConnection[]
+  paymentBatches       PaymentBatch[]
 
   @@index([tenantId])
   @@map("bank_accounts")
@@ -8911,4 +8912,96 @@ model FxRevaluationDetail {
 
   @@index([runId])
   @@map("fx_revaluation_details")
+}
+
+// ─── AP Three-Way Matching ────────────────────────────────────────────────────
+
+model APMatchRule {
+  id                         String   @id @default(cuid())
+  tenantId                   String   @map("tenant_id")
+  vendorId                   String?  @map("vendor_id")
+  quantityTolerancePercent   Decimal  @db.Decimal(5, 2) @map("quantity_tolerance_percent")
+  priceTolerancePercent      Decimal  @db.Decimal(5, 2) @map("price_tolerance_percent")
+  effectiveDate              DateTime @map("effective_date")
+  status                     String   @default("ACTIVE")
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+  createdBy                  String   @map("created_by")
+  updatedBy                  String   @map("updated_by")
+  deletedAt                  DateTime? @map("deleted_at")
+  deletedBy                  String?  @map("deleted_by")
+
+  @@map("ap_match_rules")
+  @@unique([tenantId, vendorId, effectiveDate])
+  @@index([tenantId, vendorId, status])
+}
+
+model APMatchException {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  invoiceId         String   @map("invoice_id")
+  poLineId          String   @map("po_line_id")
+  varianceType      String   @map("variance_type")
+  varianceAmount    Decimal  @db.Decimal(15, 2) @map("variance_amount")
+  variancePercent   Decimal  @db.Decimal(5, 2) @map("variance_percent")
+  expectedValue     String?  @map("expected_value")
+  actualValue       String?  @map("actual_value")
+  status            String   @default("PENDING")
+  resolutionNotes   String?  @map("resolution_notes")
+  createdAt         DateTime @default(now()) @map("created_at")
+  resolvedAt        DateTime? @map("resolved_at")
+  createdBy         String   @map("created_by")
+  updatedBy         String   @map("updated_by")
+  resolvedBy        String?  @map("resolved_by")
+
+  @@map("ap_match_exceptions")
+  @@unique([tenantId, invoiceId, poLineId])
+  @@index([tenantId, status, createdAt])
+}
+
+// ─── Payment Batches ──────────────────────────────────────────────────────────
+
+model PaymentBatch {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  batchNumber      String   @map("batch_number")
+  status           String   @default("DRAFT")
+  createdAt        DateTime @default(now()) @map("created_at")
+  createdBy        String   @map("created_by")
+  submittedAt      DateTime? @map("submitted_at")
+  submittedBy      String?  @map("submitted_by")
+  exportedAt       DateTime? @map("exported_at")
+  settlementDate   DateTime? @map("settlement_date")
+  totalAmount      Decimal  @db.Decimal(15, 2) @map("total_amount")
+  currency         String   @default("USD")
+  bankAccountId    String?  @map("bank_account_id")
+  paymentMethod    String   @map("payment_method")
+  notes            String?
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  updatedBy        String   @map("updated_by")
+
+  bankAccount      BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  lines            PaymentBatchLine[]
+
+  @@map("payment_batches")
+  @@unique([tenantId, batchNumber])
+  @@index([tenantId, status, createdAt])
+}
+
+model PaymentBatchLine {
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  batchId               String   @map("batch_id")
+  invoiceId             String   @map("invoice_id")
+  amount                Decimal  @db.Decimal(15, 2)
+  scheduledPaymentDate  DateTime @map("scheduled_payment_date")
+  status                String   @default("INCLUDED")
+  settledAt             DateTime? @map("settled_at")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  batch                 PaymentBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@map("payment_batch_lines")
+  @@index([tenantId, batchId, status])
 }

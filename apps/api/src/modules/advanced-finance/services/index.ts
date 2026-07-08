@@ -13,6 +13,4 @@ export { BankFeedsService } from './bank-feeds.service';
 export { CashFlowForecastService } from './cash-flow-forecast.service';
 export { InterCompanyService } from './intercompany.service';
 export { FxRevaluationService } from './fx-revaluation.service';
-
-
-
+export { PayablesService } from './payables.service';
