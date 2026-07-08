@@ -57,6 +57,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
+| antigravity-ide | 2026-07-08 21:22 | Finance: cash-flow forecasting (rolling 13-week cash projections, auto-aggregating invoices/payments/schedules, manual overrides, scenario comparisons, Next.js page) | main | In Progress |
 | claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
 | claude-code | 2026-07-04 (session) | CRM Leads/Deals deepening: lead scoring decay, source ROI, territory assignment, nurture sequences, disqualify/reactivate, conversion audit, SLA timer; Deal health scoring, competitor tracking, win/loss taxonomy, deal team/split-credit, contract renewal linkage, quote linkage, discount approval workflow (`crm-leads.service.ts`, `crm-deals.service.ts`, new `crm-approvals.service.ts` + related controllers/migrations) — explicitly avoiding leads/opportunities list-table page.tsx JSX (another agent migrating those to shared DataTable) | main | In Progress |
 
