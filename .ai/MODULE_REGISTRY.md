@@ -61,7 +61,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| claude-code | 2026-07-08 23:20 | Finance: Payables & Reporting Integration (AP matching + drill-through + batch payment run; APMatchRule/PaymentBatch/PaymentBatchLine models, match/batch services, `/payables/invoices/:id/match`, `/payables/payment-batches` CRUD+export, `/advanced-finance/reports/drilldown` endpoints, 3 UI pages, 3 permissions) | main | In Progress |
+| claude-code | 2026-07-09 00:15 | Finance: Payables & Reporting Integration (18-feature batch: AP matching + drill-through + payment batches). DB layer ✅ (4 models, migration applied). Services scaffolded ✅ (APMatchingService, StatementDrillThroughService, PaymentBatchService, module-registered). BLOCKED: type errors in service imports (need prisma singleton pattern + tenantId params). Remaining: fix service types → endpoints → UI pages → tests | main | Blocked |
 | antigravity-ide | 2026-07-08 23:08 | Finance: Subscription Billing & MRR/ARR (Subscription/SubscriptionLine/SubscriptionUsage Prisma models, billing-run engine, MRR/ARR/churn calc service, CRUD endpoints + metrics, dashboard UI) | main | In Progress |
 
 ### 2. Up Next (unclaimed work, pick from the top)
