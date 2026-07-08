@@ -27,6 +27,7 @@ describe('AdvancedFinanceController', () => {
   let periodService: any;
   let paymentTermsService: any;
   let bankFeedsService: any;
+  let cashFlowForecastService: any;
 
   let serviceMap: Record<string, any>;
 
@@ -43,6 +44,7 @@ describe('AdvancedFinanceController', () => {
     periodService = createMockService();
     paymentTermsService = createMockService();
     bankFeedsService = createMockService();
+    cashFlowForecastService = createMockService();
 
     serviceMap = {
       glService,
@@ -57,6 +59,7 @@ describe('AdvancedFinanceController', () => {
       periodService,
       paymentTermsService,
       bankFeedsService,
+      cashFlowForecastService,
     };
 
     controller = new AdvancedFinanceController(
@@ -72,6 +75,7 @@ describe('AdvancedFinanceController', () => {
       periodService,
       paymentTermsService,
       bankFeedsService,
+      cashFlowForecastService,
     );
   });
 
@@ -100,6 +104,7 @@ describe('AdvancedFinanceController', () => {
     { method: 'getTreasuryTransactions', serviceName: 'treasuryService' },
     { method: 'getInterCompanyTransfers', serviceName: 'treasuryService' },
     { method: 'getPaymentTerms', serviceName: 'paymentTermsService' },
+    { method: 'exportForecastCsv', serviceName: 'cashFlowForecastService' },
   ];
 
   getEndpoints.forEach(({ method, serviceName }) => {
@@ -125,6 +130,16 @@ describe('AdvancedFinanceController', () => {
     expect(reportingService.getCashFlowStatement).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
   });
 
+  it('should call getCashFlowProjections via cashFlowForecastService.get13WeekForecast', async () => {
+    await controller.getCashFlowProjections(mockReq, 'scen-1');
+    expect(cashFlowForecastService.get13WeekForecast).toHaveBeenCalledWith('tenant-1', 'scen-1');
+  });
+
+  it('should call getCashFlowScenarios via cashFlowForecastService.getScenarios', async () => {
+    await controller.getCashFlowScenarios(mockReq);
+    expect(cashFlowForecastService.getScenarios).toHaveBeenCalledWith('tenant-1');
+  });
+
   it('should call getBankConnections via bankFeedsService.getConnections', async () => {
     await controller.getBankConnections(mockReq);
     expect(bankFeedsService.getConnections).toHaveBeenCalledWith('tenant-1');
@@ -134,6 +149,34 @@ describe('AdvancedFinanceController', () => {
     const dto = { bankName: 'Chase', accountNumber: '123', accountType: 'SAVINGS', bankAccountId: 'ba-1' };
     await controller.createBankConnection(mockReq, dto);
     expect(bankFeedsService.createConnection).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
+  });
+
+  it('should call saveForecastWeekOverride via cashFlowForecastService.saveForecastWeekOverride', async () => {
+    const dto = { weekStart: '2026-07-08T00:00:00Z', adjustments: 1000, comments: 'test' };
+    await controller.saveForecastWeekOverride(mockReq, dto);
+    expect(cashFlowForecastService.saveForecastWeekOverride).toHaveBeenCalledWith('tenant-1', expect.any(Date), dto);
+  });
+
+  it('should call createCashFlowScenario via cashFlowForecastService.createScenario', async () => {
+    const dto = { name: 'Optimistic' };
+    await controller.createCashFlowScenario(mockReq, dto);
+    expect(cashFlowForecastService.createScenario).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
+  });
+
+  it('should call updateCashFlowScenario via cashFlowForecastService.updateScenario', async () => {
+    const dto = { name: 'Optimistic v2' };
+    await controller.updateCashFlowScenario(mockReq, 'scen-1', dto);
+    expect(cashFlowForecastService.updateScenario).toHaveBeenCalledWith('tenant-1', 'scen-1', dto);
+  });
+
+  it('should call deleteCashFlowScenario via cashFlowForecastService.deleteScenario', async () => {
+    await controller.deleteCashFlowScenario(mockReq, 'scen-1');
+    expect(cashFlowForecastService.deleteScenario).toHaveBeenCalledWith('tenant-1', 'scen-1');
+  });
+
+  it('should call compareForecastScenarios via cashFlowForecastService.compareForecastScenarios', async () => {
+    await controller.compareForecastScenarios(mockReq, 'scen-1');
+    expect(cashFlowForecastService.compareForecastScenarios).toHaveBeenCalledWith('tenant-1', 'scen-1');
   });
 
   const postEndpoints = [

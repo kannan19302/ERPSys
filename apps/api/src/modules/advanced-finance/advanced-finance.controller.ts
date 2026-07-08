@@ -20,6 +20,7 @@ import {
   PeriodManagementService,
   PaymentTermsService,
   BankFeedsService,
+  CashFlowForecastService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -302,6 +303,28 @@ const manualMatchTransactionSchema = z.object({
   matchedEntityType: z.enum(['PAYMENT', 'JOURNAL_ENTRY']),
 });
 
+const saveForecastAdjustmentSchema = z.object({
+  weekStart: z.string(),
+  adjustments: z.number(),
+  comments: z.string().optional(),
+});
+
+const createCashFlowScenarioSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+  inflowFactor: z.number().nonnegative().optional(),
+  outflowFactor: z.number().nonnegative().optional(),
+  status: z.string().optional(),
+});
+
+const updateCashFlowScenarioSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  inflowFactor: z.number().nonnegative().optional(),
+  outflowFactor: z.number().nonnegative().optional(),
+  status: z.string().optional(),
+});
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
@@ -320,6 +343,7 @@ export class AdvancedFinanceController {
     private readonly periodService: PeriodManagementService,
     private readonly paymentTermsService: PaymentTermsService,
     private readonly bankFeedsService: BankFeedsService,
+    private readonly cashFlowForecastService: CashFlowForecastService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -1118,6 +1142,94 @@ export class AdvancedFinanceController {
   ) {
     return this.bankFeedsService.ignoreTransaction(req.user.tenantId, id);
   }
+
+  @ApiOperation({ summary: 'Get rolling 13-week cash flow forecast' })
+  @Get('cash-flow/forecast')
+  @Permissions('finance.report.read')
+  async getCashFlowProjections(
+    @Req() req: AuthenticatedRequest,
+    @Query('scenarioId') scenarioId?: string,
+  ) {
+    return this.cashFlowForecastService.get13WeekForecast(req.user.tenantId, scenarioId);
+  }
+
+  @ApiOperation({ summary: 'Save weekly forecast manual adjustment' })
+  @Post('cash-flow/forecast/adjust')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ForecastWeek')
+  async saveForecastWeekOverride(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(saveForecastAdjustmentSchema) dto: z.infer<typeof saveForecastAdjustmentSchema>,
+  ) {
+    return this.cashFlowForecastService.saveForecastWeekOverride(
+      req.user.tenantId,
+      new Date(dto.weekStart),
+      dto,
+    );
+  }
+
+  @ApiOperation({ summary: 'Get custom forecast scenarios' })
+  @Get('cash-flow/forecast/scenarios')
+  @Permissions('finance.report.read')
+  async getCashFlowScenarios(@Req() req: AuthenticatedRequest) {
+    return this.cashFlowForecastService.getScenarios(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create custom forecast scenario' })
+  @Post('cash-flow/forecast/scenarios')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ForecastScenario')
+  async createCashFlowScenario(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createCashFlowScenarioSchema) dto: z.infer<typeof createCashFlowScenarioSchema>,
+  ) {
+    return this.cashFlowForecastService.createScenario(req.user.tenantId, req.user.orgId || '', dto);
+  }
+
+  @ApiOperation({ summary: 'Update custom forecast scenario' })
+  @Patch('cash-flow/forecast/scenarios/:id')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ForecastScenario')
+  async updateCashFlowScenario(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateCashFlowScenarioSchema) dto: z.infer<typeof updateCashFlowScenarioSchema>,
+  ) {
+    return this.cashFlowForecastService.updateScenario(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete custom forecast scenario' })
+  @Delete('cash-flow/forecast/scenarios/:id')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ForecastScenario')
+  async deleteCashFlowScenario(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.cashFlowForecastService.deleteScenario(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Compare scenarios side-by-side' })
+  @Get('cash-flow/forecast/compare')
+  @Permissions('finance.report.read')
+  async compareForecastScenarios(
+    @Req() req: AuthenticatedRequest,
+    @Query('scenarioId') scenarioId: string,
+  ) {
+    return this.cashFlowForecastService.compareForecastScenarios(req.user.tenantId, scenarioId);
+  }
+
+  @ApiOperation({ summary: 'Export forecast to CSV' })
+  @Get('cash-flow/forecast/export')
+  @Permissions('finance.report.read')
+  async exportForecastCsv(@Req() req: AuthenticatedRequest) {
+    return this.cashFlowForecastService.exportForecastCsv(req.user.tenantId);
+  }
+
 
 
 

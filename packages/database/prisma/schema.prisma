@@ -2909,13 +2909,15 @@ model Budget {
 }
 
 model ForecastScenario {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orgId       String   @map("org_id")
-  name        String
-  description String?
-  status      String   @default("DRAFT") // DRAFT, APPROVED, ARCHIVED
-  createdAt   DateTime @default(now()) @map("created_at")
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  orgId         String   @map("org_id")
+  name          String
+  description   String?
+  inflowFactor  Decimal? @default(1.0) @map("inflow_factor") @db.Decimal(5, 2)
+  outflowFactor Decimal? @default(1.0) @map("outflow_factor") @db.Decimal(5, 2)
+  status        String   @default("DRAFT") // DRAFT, APPROVED, ARCHIVED
+  createdAt     DateTime @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   budgets      Budget[]
@@ -8590,6 +8592,24 @@ model BankTransaction {
   @@index([tenantId])
   @@map("bank_transactions")
 }
+
+model ForecastWeek {
+  id               String           @id @default(cuid())
+  tenantId         String           @map("tenant_id")
+  weekStart        DateTime         @map("week_start")
+  projectedInflow  Decimal          @map("projected_inflow") @db.Decimal(15, 2)
+  projectedOutflow Decimal          @map("projected_outflow") @db.Decimal(15, 2)
+  adjustments      Decimal          @default(0) @map("adjustments") @db.Decimal(15, 2)
+  net              Decimal          @db.Decimal(15, 2)
+  comments         String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@unique([tenantId, weekStart])
+  @@index([tenantId])
+  @@map("forecast_weeks")
+}
+
 
 
 

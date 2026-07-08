@@ -107,6 +107,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'bank-accounts': 'Bank Accounts',
   'bank-feeds': 'Bank Connections',
   'bank-recon': 'Bank Reconciliation',
+  'cash-flow-forecast': 'Cash Flow Forecast',
   'payment-terms': 'Payment Terms',
   'invoice-analytics': 'Invoice Analytics',
   'tax-filing-summary': 'Tax Filing Summary',

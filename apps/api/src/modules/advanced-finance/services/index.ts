@@ -10,5 +10,7 @@ export { FinancialReportingService } from './financial-reporting.service';
 export { PeriodManagementService } from './period-management.service';
 export { PaymentTermsService } from './payment-terms.service';
 export { BankFeedsService } from './bank-feeds.service';
+export { CashFlowForecastService } from './cash-flow-forecast.service';
+
 
 

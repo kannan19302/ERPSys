@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-08T15:51:21.737Z
+> Last generated: 2026-07-08T15:58:27.441Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1521 features** across 35 modules
+## System total: **1529 features** across 35 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 149 |
+| [advanced-finance](#advanced-finance) | 157 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -239,7 +239,7 @@
 
 ## advanced-finance
 
-149 features
+157 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -323,6 +323,14 @@
 | POST | `/advanced-finance/bank-feeds/transactions/:id/auto-match` | Auto-match bank transaction | `finance.bank-recon.match` |
 | POST | `/advanced-finance/bank-feeds/transactions/:id/manual-match` | Manual match bank transaction | `finance.bank-recon.match` |
 | POST | `/advanced-finance/bank-feeds/transactions/:id/ignore` | Ignore bank transaction | `finance.bank-recon.match` |
+| GET | `/advanced-finance/cash-flow/forecast` | Get rolling 13-week cash flow forecast | `finance.report.read` |
+| POST | `/advanced-finance/cash-flow/forecast/adjust` | Save weekly forecast manual adjustment | `finance.report.create` |
+| GET | `/advanced-finance/cash-flow/forecast/scenarios` | Get custom forecast scenarios | `finance.report.read` |
+| POST | `/advanced-finance/cash-flow/forecast/scenarios` | Create custom forecast scenario | `finance.report.read` |
+| PATCH | `/advanced-finance/cash-flow/forecast/scenarios/:id` | Update custom forecast scenario | `finance.report.create` |
+| DELETE | `/advanced-finance/cash-flow/forecast/scenarios/:id` | Delete custom forecast scenario | `finance.report.create` |
+| GET | `/advanced-finance/cash-flow/forecast/compare` | Compare scenarios side-by-side | `finance.report.read` |
+| GET | `/advanced-finance/cash-flow/forecast/export` | Export forecast to CSV | `finance.report.read` |
 | POST | `/advanced-finance/exchange-rates` | Update exchange rate | `finance.treasury.create` |
 | GET | `/advanced-finance/currency-convert` | Convert currency | `finance.treasury.read` |
 | GET | `/advanced-finance/compute-tax` | Compute tax | `finance.tax.compute` |

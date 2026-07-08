@@ -2,6 +2,37 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Finance Cash Flow Forecasting Batch — 10+ new features: Rolling 13-week forecast projections, manual adjustments override, custom simulation factors, CSV exporter (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — rolling forecast projections and simulation scenarios depth pass (Dynamics 365 / NetSuite parity).
+
+**Features shipped**:
+
+*Cash Flow Forecast Service & Controllers (`cash-flow-forecast.service.ts`)*
+1. `get13WeekForecast` — aggregates baseline inflows (unpaid customer invoices due) and baseline outflows (pending vendor payment runs) for the next 13 weeks. Applies custom scenario multiplier weights and weekly manual overrides.
+2. `saveForecastWeekOverride` — sets manual adjustments and notes/comments for specific week starting dates.
+3. `getScenarios` — retrieves custom simulation scenario variables.
+4. `createScenario` — creates new scenario with specific inflow and outflow multiplier factors.
+5. `updateScenario` — updates scenario name, description, factors, and active status.
+6. `deleteScenario` — deletes custom scenario.
+7. `compareForecastScenarios` — side-by-side comparative array matching baseline projection with target custom scenario.
+8. `exportForecastCsv` — compiles rolling forecast projections table as CSV string content.
+
+*Database (`schema.prisma`)*:
+9. Created `ForecastWeek` model for manual adjustment entries cache.
+10. Updated the existing `ForecastScenario` model with `inflowFactor` and `outflowFactor` Decimal columns. Synced via `prisma db push`.
+
+*Next.js Frontend*:
+11. `/finance/advanced/cash-flow-forecast` — Rolling forecasting calculations dashboard page with weekly bar trends table, manual override drawer input forms, custom scenario builders, and CSV download exporters.
+12. Navigation updates & Segment Maps registered in `SEGMENT_NAMES` (`cash-flow-forecast` mapped to "Cash Flow Forecast").
+
+**Unit Tests**:
+13. Added full unit tests in `cash-flow-forecast.service.spec.ts` (7 tests passed).
+14. Expanded controller tests in `advanced-finance.controller.spec.ts` (all passed).
+15. verified 232 total module unit tests pass clean in vitest.
+
+**TypeScript**: Both web and api apps typecheck completely clean (`tsc --noEmit` zero errors).
+
 ## [2026-07-08] System-Wide Functionality Ledger — single generated file, mandatory on every change
 
 **Accomplished**:
