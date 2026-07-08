@@ -14,6 +14,7 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:-|
+| 2026-07-09 | 433,509 | +1,105 | Finance: Subscription Billing & MRR/ARR Dashboard (15+ features, DB+API+UI): MRR/ARR/churn metrics, Run Billing job trigger, DataTable with filter and lifecycle controls, create form, usage tracking logs, spec tests |
 | 2026-07-08 | 432,404 | +1,344 | Finance Lease Accounting full vertical slice (ASC 842/IFRS 16): 17 API endpoints, amortization engine, GL posting, 3 UI pages, 23 tests; subscriptions.service.ts TS fixes |
 | 2026-07-08 | 431,060 | +775 | Finance Period-End FX Revaluation Engine Batch (Prisma runs and details models, draft computations engine, unrealized gains/losses math, auto-generating posted GL adjustments, wizard page, unit tests). |
 | 2026-07-08 | 430,285 | +1,060 | Finance Intercompany AP/AR Netting & Elimination Batch (Prisma model, auto match rules, manual linkings, netting clearing GL journal postings, stats counters, 2 Next.js pages, unit tests). |
@@ -62,7 +63,6 @@
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
 | claude-code | 2026-07-09 00:15 | Finance: Payables & Reporting Integration (18-feature batch: AP matching + drill-through + payment batches). DB layer ✅ (4 models, migration applied). Services scaffolded ✅ (APMatchingService, StatementDrillThroughService, PaymentBatchService, module-registered). BLOCKED: type errors in service imports (need prisma singleton pattern + tenantId params). Remaining: fix service types → endpoints → UI pages → tests | main | Blocked |
-| antigravity-ide | 2026-07-08 23:08 | Finance: Subscription Billing & MRR/ARR (Subscription/SubscriptionLine/SubscriptionUsage Prisma models, billing-run engine, MRR/ARR/churn calc service, CRUD endpoints + metrics, dashboard UI) | main | In Progress |
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
@@ -98,6 +98,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-09 | antigravity-ide | Finance: Subscription Billing & MRR/ARR Dashboard (15+ features, DB+API+UI): MRR/ARR/churn metrics, Run Billing trigger, DataTable pagination and inline controls, new subscription creation wizard, detail page with usage logs, 14 unit tests passed, typecheck green. | see CHANGELOG 2026-07-09 |
 | 2026-07-08 | claude-code | Finance Lease Accounting full vertical slice (20 features, DB+API+UI): 17 API endpoints (list/summary/upcoming-payments/expiring-soon/analytics/CRUD/schedule/journal-entries/post-month/bulk-post/terminate/renew/status), effective-interest amortization engine (annuity formula, monthly compounding, ROU amortization, zero-rate fallback), GL journal posting via Journal+JournalEntry, 3 Next.js pages (list with summary cards + filters, create wizard, detail with per-row Post button + inline termination/renewal flows), 5 new permissions, 23 unit tests. Also fixed subscriptions.service.ts pre-existing TS errors. Gates: API typecheck ✅ web typecheck ✅ 23/23 tests ✅. | commit c0820dc |
 | 2026-07-08 | claude-code | Finance Expense Management Deepening Batch (28 features, DB+API+UI): simulated OCR receipt capture, category policy engine (per-item limits + receipt-required thresholds), mileage rate CRUD + auto-computed mileage expenses, per-diem rate CRUD + auto-computed per-diem expenses, item-level CRUD, multi-level approval routing (second approval >$2000), GL reimbursement journal posting, corporate card registration + transaction import + matching/ignoring, expense analytics; 6 new Prisma models, 20 new endpoints, 2 Next.js pages, 16 new unit tests, fixed pre-existing permission-registry drift (finance.report.create/tax.update/tax.delete/reports.read/credit.read/credit.manage). | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | Finance Period-End FX Revaluation Engine Batch (10+ features, DB+API+UI): Prisma runs and details models, draft computations engine, unrealized gains/losses math, auto-generating posted GL adjustments, wizard page, unit tests. | see CHANGELOG 2026-07-08 |

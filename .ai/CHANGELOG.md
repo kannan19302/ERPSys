@@ -2,6 +2,24 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Subscription Billing & MRR/ARR Dashboard (15+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module - Subscription Billing & MRR/ARR analytics dashboard. Closes the `[benchmark]` subscription billing gap (Up Next item #9, RICE 94.5). Parity target: Sage Intacct / Zuora / NetSuite SuiteBilling.
+
+**Accomplished**:
+- **Database Schema**: Successfully migrated and initialized the `subscriptions`, `subscription_lines`, `subscription_invoices`, and `subscription_usage` tables in the PostgreSQL database.
+- **Frontend Dashboard UI**:
+  - Main subscriptions console at `/finance/advanced/subscriptions` with real-time KPI metrics cards for MRR, ARR, Active Subscriptions, and Churn Rate.
+  - "Run Billing" action trigger that manually executes billing cycles for all due subscriptions.
+  - Interactive, paginated `DataTable` with status filtering and inline lifecycle controls (Pause, Resume, Cancel).
+  - Subscription creation form at `/finance/advanced/subscriptions/new` with plan info, pricing cycles, trial end dates, and dynamic multi-line item adders.
+  - Detailed subscription page at `/finance/advanced/subscriptions/[id]` displaying plan lines, generated invoice logs, usage tracking form, and ERPNext-style `ChangeHistory` timeline.
+- **Navigation Shell**:
+  - Registered "Subscription Billing" link in `moduleNav.tsx` under the Advanced Finance Core Accounting section.
+- **Tests & Verification**:
+  - Expanded unit tests in `subscriptions.spec.ts` to cover 14 test cases (CRUD, lifecycle triggers, usage logging, billing run generation, MRR math). All tests pass green.
+  - Completed typecheck compilation of NestJS API and Next.js frontend with 0 errors.
+
 ## [2026-07-09] Atomic Session Locks — stop parallel sessions building the same functionality
 
 **Accomplished**:

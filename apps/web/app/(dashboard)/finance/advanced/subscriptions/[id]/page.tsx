@@ -238,7 +238,7 @@ export default function SubscriptionDetailPage() {
       key: 'metricName',
       header: 'Metric',
       render: (row: SubscriptionUsage) => (
-        <Badge variant="secondary">{row.metricName}</Badge>
+        <Badge variant="info">{row.metricName}</Badge>
       )
     },
     {
@@ -274,7 +274,7 @@ export default function SubscriptionDetailPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-900">{sub.name}</h1>
-              <Badge variant={sub.status === 'ACTIVE' ? 'success' : sub.status === 'PAUSED' ? 'warning' : 'error'}>
+              <Badge variant={sub.status === 'ACTIVE' ? 'success' : sub.status === 'PAUSED' ? 'warning' : 'danger'}>
                 {sub.status}
               </Badge>
             </div>

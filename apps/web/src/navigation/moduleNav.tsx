@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap, Link, GitBranch, Calculator,
+  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -54,6 +54,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet },
             { name: 'Bank Reconciliation', href: '/finance/advanced/reconciliations', icon: GitFork },
             { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart },
+            { name: 'AP Match Rules', href: '/finance/advanced/ap-match-rules', icon: ShoppingCart },
+            { name: 'AP Exception Queue', href: '/finance/advanced/exception-queue', icon: AlertTriangle },
+            { name: 'Payment Batches', href: '/finance/advanced/payment-batches', icon: CreditCard },
             { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList },
             { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3 },
             { name: 'Expense Management', href: '/finance/advanced/expense-reports', icon: Receipt },

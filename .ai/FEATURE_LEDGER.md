@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-08T17:35:52.783Z
+> Last generated: 2026-07-08T19:07:23.101Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1557 features** across 35 modules
+## System total: **1604 features** across 36 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 185 |
+| [advanced-finance](#advanced-finance) | 202 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -28,7 +28,7 @@
 | [ecommerce](#ecommerce) | 23 |
 | [education](#education) | 20 |
 | [field-service](#field-service) | 13 |
-| [finance](#finance) | 11 |
+| [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [healthcare](#healthcare) | 24 |
 | [hr](#hr) | 8 |
@@ -46,6 +46,7 @@
 | [saas](#saas) | 13 |
 | [sales](#sales) | 29 |
 | [storage](#storage) | 6 |
+| [subscriptions](#subscriptions) | 14 |
 | [supply-chain](#supply-chain) | 5 |
 | [workflow](#workflow) | 8 |
 
@@ -239,7 +240,7 @@
 
 ## advanced-finance
 
-185 features
+202 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -428,6 +429,23 @@
 | GET | `/advanced-finance/customers/:customerId/credit` | Get credit summary for a customer (limit, usage, hold, risk rating) | `finance.credit.read` |
 | PATCH | `/advanced-finance/customers/:customerId/credit` | Update customer credit terms (limit, payment terms, hold status, risk rating) | `finance.credit.read` |
 | GET | `/advanced-finance/credit-risk` | Credit risk list — all active customers with outstanding balances and utilization | `finance.credit.read` |
+| GET | `/advanced-finance/payables/stats` | Payables stats dashboard | `finance.payables.read` |
+| GET | `/advanced-finance/payables/match-rules` | List AP match rules | `finance.payables.read` |
+| POST | `/advanced-finance/payables/match-rules` | Create AP match rule | `finance.payables.read` |
+| PATCH | `/advanced-finance/payables/match-rules/:id` | Update AP match rule | `finance.payables.manage` |
+| DELETE | `/advanced-finance/payables/match-rules/:id` | Delete AP match rule (soft delete) | `finance.payables.manage` |
+| POST | `/advanced-finance/payables/invoices/:id/match` | Run three-way match on a purchase order | `finance.payables.manage` |
+| GET | `/advanced-finance/payables/exceptions` | List AP match exceptions (out-of-tolerance invoices) | `finance.payables.read` |
+| POST | `/advanced-finance/payables/exceptions/:id/approve` | Approve an AP match exception | `finance.payables.read` |
+| POST | `/advanced-finance/payables/exceptions/:id/reject` | Reject an AP match exception | `finance.payables.manage` |
+| GET | `/advanced-finance/payables/payment-batches` | List vendor payment batches | `finance.payables.read` |
+| GET | `/advanced-finance/payables/payment-batches/:id` | Get a payment batch by ID | `finance.payables.read` |
+| POST | `/advanced-finance/payables/payment-batches` | Create a new vendor payment batch | `finance.payables.read` |
+| POST | `/advanced-finance/payables/payment-batches/:id/lines` | Add an invoice/PO to a payment batch | `finance.payables.manage` |
+| DELETE | `/advanced-finance/payables/payment-batches/:id/lines/:lineId` | Remove a line from a payment batch | `finance.payables.manage` |
+| POST | `/advanced-finance/payables/payment-batches/:id/run` | Execute (run) a payment batch — settle lines and post GL journal | `finance.payables.run` |
+| GET | `/advanced-finance/payables/payment-batches/:id/export` | Export payment batch as NACHA / SEPA XML / CSV | `finance.payables.read` |
+| GET | `/advanced-finance/reports/:reportType/drilldown` | Drill through a P&L or Balance Sheet line to underlying journal entries | `finance.reports.read` |
 
 ## advanced-hr
 
@@ -1299,7 +1317,7 @@
 
 ## finance
 
-11 features
+27 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1314,6 +1332,22 @@
 | POST | `/finance/invoices/bulk` | Bulk action | `finance.invoice.update` |
 | POST | `/finance/payments` | Create payment | `finance.payment.create` |
 | GET | `/finance/invoices/:id/payments` | Get payments | `finance.payment.read` |
+| GET | `/finance/leases` | — | `finance.leases.read` |
+| GET | `/finance/leases/summary` | — | `finance.leases.read` |
+| GET | `/finance/leases/upcoming-payments` | — | `finance.leases.read` |
+| GET | `/finance/leases/expiring-soon` | — | `finance.leases.read` |
+| GET | `/finance/leases/analytics` | — | `finance.leases.read` |
+| POST | `/finance/leases/bulk-post` | — | `finance.leases.read` |
+| GET | `/finance/leases/:id` | — | `finance.leases.post` |
+| GET | `/finance/leases/:id/schedule` | — | `finance.leases.read` |
+| GET | `/finance/leases/:id/journal-entries` | — | `finance.leases.read` |
+| POST | `/finance/leases` | — | `finance.leases.read` |
+| PATCH | `/finance/leases/:id` | — | `finance.leases.create` |
+| PATCH | `/finance/leases/:id/status` | — | `finance.leases.update` |
+| DELETE | `/finance/leases/:id` | — | `finance.leases.delete` |
+| POST | `/finance/leases/:id/post-month` | — | `finance.leases.delete` |
+| POST | `/finance/leases/:id/terminate` | — | `finance.leases.update` |
+| POST | `/finance/leases/:id/renew` | — | `finance.leases.update` |
 
 ## fixed-assets
 
@@ -1823,6 +1857,27 @@
 | POST | `/storage/generate` | Generate document | `documents.document.read` |
 | POST | `/storage/presigned` | Generate presigned url | `documents.document.read` |
 | POST | `/storage/lifecycle` | Update lifecycle policy | `documents.document.create` |
+
+## subscriptions
+
+14 features
+
+| Method | Route | Functionality | Permission |
+|:--|:--|:--|:--|
+| GET | `/subscriptions` | List subscriptions (paginated, sortable, filterable) | `finance.subscription.read` |
+| GET | `/subscriptions/stats` | List subscriptions (paginated, sortable, filterable) | `finance.subscription.read` |
+| GET | `/subscriptions/metrics` | Get subscription stats by status | `finance.subscription.read` |
+| GET | `/subscriptions/:id` | Get MRR/ARR/churn metrics | `finance.subscription.read` |
+| POST | `/subscriptions` | Get subscription by ID | `finance.subscription.read` |
+| PATCH | `/subscriptions/:id` | Update subscription | `finance.subscription.update` |
+| DELETE | `/subscriptions/:id` | Cancel a subscription | `finance.subscription.delete` |
+| POST | `/subscriptions/:id/pause` | Pause a subscription | `finance.subscription.update` |
+| POST | `/subscriptions/:id/resume` | Pause a subscription | `finance.subscription.update` |
+| POST | `/subscriptions/:id/cancel` | Resume a paused subscription | `finance.subscription.update` |
+| POST | `/subscriptions/billing/run` | Run billing for all due subscriptions | `finance.subscription.manage` |
+| POST | `/subscriptions/:id/usage` | Record usage for a subscription | `finance.subscription.update` |
+| GET | `/subscriptions/:id/usage` | Get usage records for a subscription | `finance.subscription.read` |
+| GET | `/subscriptions/:id/usage/summary` | Get usage records for a subscription | `finance.subscription.read` |
 
 ## supply-chain
 

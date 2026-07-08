@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Trash2, Plus, ArrowLeft } from 'lucide-react';
 import {
-  Card, Button, FormField, Input, Select, PageHeader, useToast
+  Card, Button, FormField, Input, Select, PageHeader
 } from '@unerp/ui';
 import { apiPost } from '@/lib/api';
 
@@ -49,7 +49,7 @@ export default function NewSubscriptionPage() {
     updated[idx] = {
       ...updated[idx],
       [field]: val,
-    };
+    } as LineItemForm;
     setLines(updated);
   };
 

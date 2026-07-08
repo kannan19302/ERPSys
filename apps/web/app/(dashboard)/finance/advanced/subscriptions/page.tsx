@@ -8,8 +8,7 @@ import {
 } from 'lucide-react';
 import {
   Card, Button, Badge, DataTable, PageHeader,
-  Spinner, ConfirmDialog, selectToast, useToast,
-  KPICard
+  Spinner, ConfirmDialog, KPICard
 } from '@unerp/ui';
 import { apiGet, apiPost, apiPatch } from '@/lib/api';
 
@@ -156,17 +155,17 @@ export default function SubscriptionsListPage() {
       key: 'period',
       header: 'Billing Period',
       render: (row: Subscription) => (
-        <Badge variant="secondary">{row.billingPeriod}</Badge>
+        <Badge variant="info">{row.billingPeriod}</Badge>
       )
     },
     {
       key: 'status',
       header: 'Status',
       render: (row: Subscription) => {
-        let variant: 'success' | 'warning' | 'danger' | 'secondary' = 'success';
+        let variant: 'success' | 'warning' | 'danger' | 'info' = 'success';
         if (row.status === 'PAUSED') variant = 'warning';
         if (row.status === 'CANCELED') variant = 'danger';
-        if (row.status === 'TRIALING') variant = 'secondary';
+        if (row.status === 'TRIALING') variant = 'info';
         return <Badge variant={variant}>{row.status}</Badge>;
       }
     },
@@ -185,22 +184,22 @@ export default function SubscriptionsListPage() {
       render: (row: Subscription) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <Link href={`/finance/advanced/subscriptions/${row.id}`}>
-            <Button size="xs" variant="secondary" className="p-1">
+            <Button size="sm" variant="secondary" className="p-1">
               <Eye size={14} />
             </Button>
           </Link>
           {row.status === 'ACTIVE' && (
-            <Button size="xs" variant="secondary" className="p-1" onClick={() => setConfirmPauseId(row.id)}>
+            <Button size="sm" variant="secondary" className="p-1" onClick={() => setConfirmPauseId(row.id)}>
               <Pause size={14} className="text-yellow-600" />
             </Button>
           )}
           {row.status === 'PAUSED' && (
-            <Button size="xs" variant="secondary" className="p-1" onClick={() => setConfirmResumeId(row.id)}>
+            <Button size="sm" variant="secondary" className="p-1" onClick={() => setConfirmResumeId(row.id)}>
               <Play size={14} className="text-green-600" />
             </Button>
           )}
           {(row.status === 'ACTIVE' || row.status === 'PAUSED' || row.status === 'TRIALING') && (
-            <Button size="xs" variant="secondary" className="p-1" onClick={() => setConfirmCancelId(row.id)}>
+            <Button size="sm" variant="secondary" className="p-1" onClick={() => setConfirmCancelId(row.id)}>
               <XCircle size={14} className="text-red-600" />
             </Button>
           )}
@@ -303,51 +302,55 @@ export default function SubscriptionsListPage() {
             <Spinner size="lg" />
           </div>
         ) : (
-          <DataTable
-            data={subs}
-            columns={columns}
-            pagination={{
-              page,
-              totalPages,
-              onPageChange: setPage
-            }}
-          />
+          <div className="space-y-4">
+            <DataTable
+              data={subs}
+              columns={columns}
+            />
+            {totalPages > 1 && (
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="secondary" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
+                <span className="text-sm text-slate-500 self-center">Page {page} of {totalPages}</span>
+                <Button variant="secondary" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+              </div>
+            )}
+          </div>
         )}
       </Card>
 
       {confirmPauseId && (
         <ConfirmDialog
-          isOpen={true}
+          open={true}
           title="Pause Subscription"
           message="Are you sure you want to pause this subscription? Billing runs will skip this subscription until it is resumed."
           confirmLabel="Pause"
           cancelLabel="Cancel"
           onConfirm={() => handlePause(confirmPauseId)}
-          onCancel={() => setConfirmPauseId(null)}
+          onClose={() => setConfirmPauseId(null)}
         />
       )}
 
       {confirmResumeId && (
         <ConfirmDialog
-          isOpen={true}
+          open={true}
           title="Resume Subscription"
           message="Are you sure you want to resume this subscription? Automated billing runs will resume on the next due date."
           confirmLabel="Resume"
           cancelLabel="Cancel"
           onConfirm={() => handleResume(confirmResumeId)}
-          onCancel={() => setConfirmResumeId(null)}
+          onClose={() => setConfirmResumeId(null)}
         />
       )}
 
       {confirmCancelId && (
         <ConfirmDialog
-          isOpen={true}
+          open={true}
           title="Cancel Subscription"
           message="Are you sure you want to immediately cancel this subscription? This action cannot be undone."
           confirmLabel="Cancel Subscription"
           cancelLabel="Keep Subscription"
           onConfirm={() => handleCancel(confirmCancelId)}
-          onCancel={() => setConfirmCancelId(null)}
+          onClose={() => setConfirmCancelId(null)}
         />
       )}
     </div>
