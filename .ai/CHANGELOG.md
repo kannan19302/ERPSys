@@ -2,6 +2,40 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Finance Automated Bank Feeds Batch — 15+ new features: Direct bank sync, auto-matching, manual reconciliation, ignore logs (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — direct integrations, automated reconciliations, and statement matches (Plaid/Yodlee-style parity).
+
+**Features shipped**:
+
+*Bank Feeds Service & Controllers (`bank-feeds.service.ts`)*
+1. `getConnections` — fetch direct bank credentials feeds
+2. `getConnectionById` — fetch single connection profile
+3. `createConnection` — link new bank account feed with target ERP bank account ID
+4. `deleteConnection` — disconnect external feed and purge synced statement list
+5. `syncTransactions` — Direct mock Plaid synchronizer generating simulated statement items
+6. `getTransactions` — search/filter statement downloads by status/date/amount
+7. `autoMatchTransaction` — smart matching logic matching statement amount to unpaid invoices or ledger journals
+8. `manualMatchTransaction` — link unmatched bank statements to specific journal entry or payment UUIDs
+9. `ignoreTransaction` — suppress inter-account transfers or un-reconcilable statement fees
+
+*Database (`schema.prisma`)*:
+10. Added `BankConnection` model for direct OAuth credential status tracking.
+11. Added `BankTransaction` model for statement feed cache storage.
+12. Updated `BankAccount` model to relationally reference multiple bank connection profiles. Synced via `prisma db push`.
+
+*Next.js Frontend*:
+13. `/finance/advanced/bank-feeds` — direct bank connections list page and simulated link modal
+14. `/finance/advanced/bank-recon` — visual matching engine split view (statement feed left pane, matching options / manual linking right pane)
+15. Navigation updates & Segment Maps registered in `SEGMENT_NAMES` (`bank-feeds` mapped to "Bank Connections", `bank-recon` mapped to "Bank Reconciliation").
+
+**Unit Tests**:
+16. Added full unit tests in `bank-feeds.service.spec.ts` (8 tests passed).
+17. Expanded controller tests in `advanced-finance.controller.spec.ts` (all passed).
+18. verified 217 total module unit tests pass clean in vitest.
+
+**TypeScript**: Both web and api apps typecheck completely clean (`tsc --noEmit` zero errors).
+
 ## [2026-07-08] Finance Reporting & Settings Batch — 25+ new features: Payment Terms + Invoice Analytics + AP Aging + Bad Debt Write-Off + 13-Week Cash Forecast + Tax Filing Summary (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — reporting, settings, compliance, and cash-flow depth pass.

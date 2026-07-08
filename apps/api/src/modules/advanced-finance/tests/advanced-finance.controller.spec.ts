@@ -26,6 +26,7 @@ describe('AdvancedFinanceController', () => {
   let reportingService: any;
   let periodService: any;
   let paymentTermsService: any;
+  let bankFeedsService: any;
 
   let serviceMap: Record<string, any>;
 
@@ -41,6 +42,7 @@ describe('AdvancedFinanceController', () => {
     reportingService = createMockService();
     periodService = createMockService();
     paymentTermsService = createMockService();
+    bankFeedsService = createMockService();
 
     serviceMap = {
       glService,
@@ -54,6 +56,7 @@ describe('AdvancedFinanceController', () => {
       reportingService,
       periodService,
       paymentTermsService,
+      bankFeedsService,
     };
 
     controller = new AdvancedFinanceController(
@@ -68,6 +71,7 @@ describe('AdvancedFinanceController', () => {
       reportingService,
       periodService,
       paymentTermsService,
+      bankFeedsService,
     );
   });
 
@@ -119,6 +123,17 @@ describe('AdvancedFinanceController', () => {
   it('should call getCashFlow', async () => {
     await controller.getCashFlow(mockReq, "start", "end");
     expect(reportingService.getCashFlowStatement).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
+  });
+
+  it('should call getBankConnections via bankFeedsService.getConnections', async () => {
+    await controller.getBankConnections(mockReq);
+    expect(bankFeedsService.getConnections).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call createBankConnection via bankFeedsService.createConnection', async () => {
+    const dto = { bankName: 'Chase', accountNumber: '123', accountType: 'SAVINGS', bankAccountId: 'ba-1' };
+    await controller.createBankConnection(mockReq, dto);
+    expect(bankFeedsService.createConnection).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
   });
 
   const postEndpoints = [

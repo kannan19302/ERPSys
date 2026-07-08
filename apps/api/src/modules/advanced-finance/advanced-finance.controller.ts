@@ -19,6 +19,7 @@ import {
   FinancialReportingService,
   PeriodManagementService,
   PaymentTermsService,
+  BankFeedsService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -288,6 +289,19 @@ const updatePaymentTermSchema = z.object({
 });
 
 
+const createBankConnectionSchema = z.object({
+  bankName: z.string().min(1),
+  accountNumber: z.string().min(1),
+  accountType: z.string().min(1),
+  bankAccountId: z.string().min(1),
+  credentialsHash: z.string().optional(),
+});
+
+const manualMatchTransactionSchema = z.object({
+  matchedEntityId: z.string().min(1),
+  matchedEntityType: z.enum(['PAYMENT', 'JOURNAL_ENTRY']),
+});
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
@@ -305,6 +319,7 @@ export class AdvancedFinanceController {
     private readonly reportingService: FinancialReportingService,
     private readonly periodService: PeriodManagementService,
     private readonly paymentTermsService: PaymentTermsService,
+    private readonly bankFeedsService: BankFeedsService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -1005,6 +1020,105 @@ export class AdvancedFinanceController {
   ) {
     return this.paymentTermsService.deletePaymentTerm(req.user.tenantId, id);
   }
+
+  @ApiOperation({ summary: 'Get bank connections' })
+  @Get('bank-feeds/connections')
+  @Permissions('finance.bank-account.read')
+  async getBankConnections(@Req() req: AuthenticatedRequest) {
+    return this.bankFeedsService.getConnections(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create bank connection' })
+  @Post('bank-feeds/connections')
+  @Permissions('finance.bank-account.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankConnection')
+  async createBankConnection(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createBankConnectionSchema) dto: z.infer<typeof createBankConnectionSchema>,
+  ) {
+    return this.bankFeedsService.createConnection(req.user.tenantId, req.user.orgId || '', dto);
+  }
+
+  @ApiOperation({ summary: 'Delete bank connection' })
+  @Delete('bank-feeds/connections/:id')
+  @Permissions('finance.bank-account.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankConnection')
+  async deleteBankConnection(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.bankFeedsService.deleteConnection(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Sync bank connection transactions' })
+  @Post('bank-feeds/connections/:id/sync')
+  @Permissions('finance.bank-account.update')
+  async syncBankTransactions(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.bankFeedsService.syncTransactions(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get bank transactions' })
+  @Get('bank-feeds/transactions')
+  @Permissions('finance.bank-recon.read')
+  async getBankTransactions(
+    @Req() req: AuthenticatedRequest,
+    @Query('connectionId') connectionId?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.bankFeedsService.getTransactions(req.user.tenantId, {
+      connectionId,
+      status,
+      search,
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 50,
+    });
+  }
+
+  @ApiOperation({ summary: 'Auto-match bank transaction' })
+  @Post('bank-feeds/transactions/:id/auto-match')
+  @Permissions('finance.bank-recon.match')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankTransaction')
+  async autoMatchBankTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.bankFeedsService.autoMatchTransaction(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Manual match bank transaction' })
+  @Post('bank-feeds/transactions/:id/manual-match')
+  @Permissions('finance.bank-recon.match')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankTransaction')
+  async manualMatchBankTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(manualMatchTransactionSchema) dto: z.infer<typeof manualMatchTransactionSchema>,
+  ) {
+    return this.bankFeedsService.manualMatchTransaction(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Ignore bank transaction' })
+  @Post('bank-feeds/transactions/:id/ignore')
+  @Permissions('finance.bank-recon.match')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BankTransaction')
+  async ignoreBankTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.bankFeedsService.ignoreTransaction(req.user.tenantId, id);
+  }
+
 
 
   @ApiOperation({ summary: 'Update exchange rate' })

@@ -13,6 +13,7 @@ import {
   FinancialReportingService,
   PeriodManagementService,
   PaymentTermsService,
+  BankFeedsService,
 } from './services';
 
 const domainServices = [
@@ -27,6 +28,7 @@ const domainServices = [
   FinancialReportingService,
   PeriodManagementService,
   PaymentTermsService,
+  BankFeedsService,
 ];
 
 @Module({

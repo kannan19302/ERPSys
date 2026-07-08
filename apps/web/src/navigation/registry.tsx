@@ -105,6 +105,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'ap-automation': 'AP Automation',
   'ar-automation': 'AR Automation',
   'bank-accounts': 'Bank Accounts',
+  'bank-feeds': 'Bank Connections',
+  'bank-recon': 'Bank Reconciliation',
   'payment-terms': 'Payment Terms',
   'invoice-analytics': 'Invoice Analytics',
   'tax-filing-summary': 'Tax Filing Summary',

@@ -9,7 +9,7 @@ import {
   Wallet, Scale, Eye, GitCompare, RefreshCw,
   FolderOpen, ChevronRight, CreditCard, FileSliders,
   Building2, ShoppingCart, ClipboardList,
-  ShieldAlert, Calendar
+  ShieldAlert, Calendar, Link2
 } from 'lucide-react';
 
 const groups = [
@@ -39,6 +39,8 @@ const groups = [
       { href: '/finance/advanced/credit-risk', label: 'Credit Risk Management', icon: <ShieldAlert size={18} />, desc: 'Credit limits, holds, risk ratings, and utilization monitoring' },
       { href: '/finance/advanced/payment-terms', label: 'Payment Terms Templates', icon: <Calendar size={18} />, desc: 'Configure credit and discount term templates (Net 30, Net 60, 2/10 Net 30)' },
       { href: '/finance/advanced/invoice-analytics', label: 'Invoice Analytics', icon: <TrendingUp size={18} />, desc: 'Track sales trends, collection velocities, and payment behaviors' },
+      { href: '/finance/advanced/bank-feeds', label: 'Bank Feeds & Connections', icon: <Link2 size={18} />, desc: 'Connect direct external bank statement feeds using Plaid/OAuth' },
+      { href: '/finance/advanced/bank-recon', label: 'Bank Statement Auto-Match', icon: <GitCompare size={18} />, desc: 'Match Statement transfers to General Ledger entries automatically' },
       { href: '/finance/advanced/treasury', label: 'Treasury & Investments', icon: <BarChart3 size={18} />, desc: 'Treasury operations, investment tracking, and liquidity management' },
       { href: '/finance/advanced/reconciliations', label: 'Bank Reconciliation', icon: <GitCompare size={18} />, desc: 'Statement import, auto-matching, and reconciliation reports' },
       { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, approvals, and reimbursements' },

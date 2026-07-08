@@ -14,6 +14,7 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:-|
+| 2026-07-08 | 428,275 | +1,410 | Finance Automated Bank Feeds Batch (direct sync, smart auto-matching, manual linking, connections/reconciliations pages, schema models, unit tests). |
 | 2026-07-08 | 426,865 | +1,765 | Finance Advanced Reporting & Settings Batch: added PaymentTermTemplate Prisma schema, PaymentTermsService CRUD, 12 new financial-reporting endpoints for analytics, bad debt write-off, proforma, late fees, forecasting, budgets monthly spread, GL drilldown, customer/vendor payment analysis, tax filing summary. Built 3 Next.js pages: payment-terms config, revenue analytics dashboard, and tax summary dashboard. 207 unit tests passed clean; web and api typechecks completely green. |
 | 2026-07-05 | 425,100 | +600 | Completed and verified CRM B2B Sales Expansion Batch 1 (Forecasting & Account Management): database models, CRUD services, secured controller endpoints, navigation, segment mapping, interactive forecasting, and strategic account plans. All Vitest tests (2,026/2,026) and frontend typecheck clean. |
 | 2026-07-05 | 424,500 | +450 | Hardened and compiled all 10 new backend service layers & controllers for CRM/Sales expansion (Forecasting, CPQ, support queues, commissions). Resolved 20+ typecheck errors and added 10 unit tests (`crm-expansion.spec.ts`, 433/433 tests green). |
@@ -56,7 +57,6 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| antigravity-ide | 2026-07-08 21:12 | Finance: automated bank feeds (Plaid-style transaction sync, auto-match/manual-match reconciliation, UI matching engine) | main | In Progress |
 | claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
 | claude-code | 2026-07-04 (session) | CRM Leads/Deals deepening: lead scoring decay, source ROI, territory assignment, nurture sequences, disqualify/reactivate, conversion audit, SLA timer; Deal health scoring, competitor tracking, win/loss taxonomy, deal team/split-credit, contract renewal linkage, quote linkage, discount approval workflow (`crm-leads.service.ts`, `crm-deals.service.ts`, new `crm-approvals.service.ts` + related controllers/migrations) — explicitly avoiding leads/opportunities list-table page.tsx JSX (another agent migrating those to shared DataTable) | main | In Progress |
 
@@ -90,6 +90,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-08 | antigravity-ide | Finance Automated Bank Feeds Batch (15+ features, DB+API+UI): direct bank sync connections, automated transaction matching, manual overrides, ignore filters, schema updates, 2 new pages (bank-feeds, bank-recon), unit tests, and segment formatting. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | Finance Advanced Reporting & Settings Batch (25+ features, DB+API+UI): Payment Terms CRUD, Invoice Analytics dashboard, AP Aging Report, Cash Flow Forecast, Bad Debt Write-Off, budget monthly spread, GL account drilldown, customer/vendor payment analysis, tax filing summary, controller endpoints, unit tests, Next.js templates/trends/tax pages. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | Finance AR Batch (19 features, DB+API+UI): dunning levels CRUD + stats + pause/resume, AR aging report (5 buckets + visual bar), customer statement (ledger+CSV), credit risk management (limit/hold/rating edits), cash application (payment→invoice), 15 new controller endpoints, 5 new permissions; overhauled ar-automation page, 3 new Next.js pages, Advanced Finance nav updated; both API+Web tsc clean. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | God-class decomposition of BuilderService: extracted Forms, Workflows, Stats, Dashboards, DevOps, and WebContent logic into dedicated sub-services, redirected builder.controller.ts, cleaned up builder.service.ts, updated module, and verified 109 unit tests pass. | see CHANGELOG 2026-07-08 |
