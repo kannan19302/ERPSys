@@ -21,6 +21,7 @@ import {
   PaymentTermsService,
   BankFeedsService,
   CashFlowForecastService,
+  InterCompanyService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -325,6 +326,12 @@ const updateCashFlowScenarioSchema = z.object({
   status: z.string().optional(),
 });
 
+const manualMatchIntercompanySchema = z.object({
+  fromInvoiceId: z.string().min(1),
+  toInvoiceId: z.string().min(1),
+  description: z.string().optional(),
+});
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
@@ -344,6 +351,7 @@ export class AdvancedFinanceController {
     private readonly paymentTermsService: PaymentTermsService,
     private readonly bankFeedsService: BankFeedsService,
     private readonly cashFlowForecastService: CashFlowForecastService,
+    private readonly interCompanyService: InterCompanyService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -1229,6 +1237,65 @@ export class AdvancedFinanceController {
   async exportForecastCsv(@Req() req: AuthenticatedRequest) {
     return this.cashFlowForecastService.exportForecastCsv(req.user.tenantId);
   }
+
+  @ApiOperation({ summary: 'Get intercompany transactions list' })
+  @Get('intercompany/transactions')
+  @Permissions('finance.report.read')
+  async getIntercompanyTransactions(
+    @Req() req: AuthenticatedRequest,
+    @Query('status') status?: string,
+    @Query('fromOrgId') fromOrgId?: string,
+    @Query('toOrgId') toOrgId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.interCompanyService.getTransactions(req.user.tenantId, {
+      status,
+      fromOrgId,
+      toOrgId,
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 50,
+    });
+  }
+
+  @ApiOperation({ summary: 'Run intercompany automatic transaction matching' })
+  @Post('intercompany/auto-match')
+  @Permissions('finance.report.create')
+  async autoMatchIntercompanyTransactions(@Req() req: AuthenticatedRequest) {
+    return this.interCompanyService.autoMatchTransactions(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Manually match intercompany transaction pair' })
+  @Post('intercompany/manual-match')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('InterCompanyTransaction')
+  async manualMatchIntercompanyTransactions(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(manualMatchIntercompanySchema) dto: z.infer<typeof manualMatchIntercompanySchema>,
+  ) {
+    return this.interCompanyService.manualMatchTransactions(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Run netting elimination entry for intercompany matched transaction' })
+  @Post('intercompany/eliminate/:id')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('InterCompanyTransaction')
+  async eliminateIntercompanyTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.interCompanyService.eliminateTransaction(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get intercompany netting consolidated stats' })
+  @Get('intercompany/stats')
+  @Permissions('finance.report.read')
+  async getIntercompanyStats(@Req() req: AuthenticatedRequest) {
+    return this.interCompanyService.getConsolidatedStats(req.user.tenantId);
+  }
+
 
 
 

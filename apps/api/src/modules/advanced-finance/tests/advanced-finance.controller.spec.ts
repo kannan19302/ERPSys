@@ -28,6 +28,7 @@ describe('AdvancedFinanceController', () => {
   let paymentTermsService: any;
   let bankFeedsService: any;
   let cashFlowForecastService: any;
+  let interCompanyService: any;
 
   let serviceMap: Record<string, any>;
 
@@ -45,6 +46,7 @@ describe('AdvancedFinanceController', () => {
     paymentTermsService = createMockService();
     bankFeedsService = createMockService();
     cashFlowForecastService = createMockService();
+    interCompanyService = createMockService();
 
     serviceMap = {
       glService,
@@ -60,6 +62,7 @@ describe('AdvancedFinanceController', () => {
       paymentTermsService,
       bankFeedsService,
       cashFlowForecastService,
+      interCompanyService,
     };
 
     controller = new AdvancedFinanceController(
@@ -76,6 +79,7 @@ describe('AdvancedFinanceController', () => {
       paymentTermsService,
       bankFeedsService,
       cashFlowForecastService,
+      interCompanyService,
     );
   });
 
@@ -138,6 +142,38 @@ describe('AdvancedFinanceController', () => {
   it('should call getCashFlowScenarios via cashFlowForecastService.getScenarios', async () => {
     await controller.getCashFlowScenarios(mockReq);
     expect(cashFlowForecastService.getScenarios).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call getIntercompanyStats via interCompanyService.getConsolidatedStats', async () => {
+    await controller.getIntercompanyStats(mockReq);
+    expect(interCompanyService.getConsolidatedStats).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call getIntercompanyTransactions via interCompanyService.getTransactions', async () => {
+    await controller.getIntercompanyTransactions(mockReq, 'PENDING', 'org-1', 'org-2', '2', '20');
+    expect(interCompanyService.getTransactions).toHaveBeenCalledWith('tenant-1', {
+      status: 'PENDING',
+      fromOrgId: 'org-1',
+      toOrgId: 'org-2',
+      page: 2,
+      limit: 20,
+    });
+  });
+
+  it('should call autoMatchIntercompanyTransactions via interCompanyService.autoMatchTransactions', async () => {
+    await controller.autoMatchIntercompanyTransactions(mockReq);
+    expect(interCompanyService.autoMatchTransactions).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call manualMatchIntercompanyTransactions via interCompanyService.manualMatchTransactions', async () => {
+    const dto = { fromInvoiceId: 'inv-1', toInvoiceId: 'sched-1', description: 'match description' };
+    await controller.manualMatchIntercompanyTransactions(mockReq, dto);
+    expect(interCompanyService.manualMatchTransactions).toHaveBeenCalledWith('tenant-1', dto);
+  });
+
+  it('should call eliminateIntercompanyTransaction via interCompanyService.eliminateTransaction', async () => {
+    await controller.eliminateIntercompanyTransaction(mockReq, 'tx-1');
+    expect(interCompanyService.eliminateTransaction).toHaveBeenCalledWith('tenant-1', 'tx-1');
   });
 
   it('should call getBankConnections via bankFeedsService.getConnections', async () => {

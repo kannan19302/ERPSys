@@ -70,6 +70,8 @@ const groups = [
       { href: '/finance/advanced/exchange-rates', label: 'Multi-Currency', icon: <DollarSign size={18} />, desc: 'Exchange rates, currency conversion, revaluation' },
       { href: '/finance/advanced/financial-ratios', label: 'Financial Ratios', icon: <Scale size={18} />, desc: 'Current ratio, ROI, debt-to-equity analysis' },
       { href: '/finance/advanced/consolidation', label: 'Consolidation', icon: <PieChart size={18} />, desc: 'Multi-entity consolidated financial statements' },
+      { href: '/finance/advanced/intercompany/netting', label: 'Intercompany Netting Match', icon: <Link2 size={18} />, desc: 'Map internal receivables (AR) and payables (AP) transactions' },
+      { href: '/finance/advanced/intercompany/eliminations', label: 'Intercompany Eliminations Ledger', icon: <Scale size={18} />, desc: 'Consolidated elimination entry postings and compliance logs' },
     ]
   }
 ];

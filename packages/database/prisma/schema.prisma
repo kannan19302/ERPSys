@@ -8610,6 +8610,27 @@ model ForecastWeek {
   @@map("forecast_weeks")
 }
 
+model InterCompanyTransaction {
+  id                   String    @id @default(cuid())
+  tenantId             String    @map("tenant_id")
+  fromOrgId            String    @map("from_org_id")
+  toOrgId              String    @map("to_org_id")
+  date                 DateTime
+  description          String
+  amount               Decimal   @db.Decimal(15, 2)
+  currency             String    @default("USD")
+  status               String    @default("PENDING") // PENDING, MATCHED, ELIMINATED
+  fromInvoiceId        String?   @map("from_invoice_id")
+  toInvoiceId          String?   @map("to_invoice_id")
+  eliminationJournalId String?   @map("elimination_journal_id")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("intercompany_transactions")
+}
+
+
 
 
 

@@ -11,6 +11,7 @@ export { PeriodManagementService } from './period-management.service';
 export { PaymentTermsService } from './payment-terms.service';
 export { BankFeedsService } from './bank-feeds.service';
 export { CashFlowForecastService } from './cash-flow-forecast.service';
+export { InterCompanyService } from './intercompany.service';
 
 
 

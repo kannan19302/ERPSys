@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-08T15:58:27.441Z
+> Last generated: 2026-07-08T16:15:35.862Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1529 features** across 35 modules
+## System total: **1534 features** across 35 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 157 |
+| [advanced-finance](#advanced-finance) | 162 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -239,7 +239,7 @@
 
 ## advanced-finance
 
-157 features
+162 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -331,6 +331,11 @@
 | DELETE | `/advanced-finance/cash-flow/forecast/scenarios/:id` | Delete custom forecast scenario | `finance.report.create` |
 | GET | `/advanced-finance/cash-flow/forecast/compare` | Compare scenarios side-by-side | `finance.report.read` |
 | GET | `/advanced-finance/cash-flow/forecast/export` | Export forecast to CSV | `finance.report.read` |
+| GET | `/advanced-finance/intercompany/transactions` | Get intercompany transactions list | `finance.report.read` |
+| POST | `/advanced-finance/intercompany/auto-match` | Run intercompany automatic transaction matching | `finance.report.create` |
+| POST | `/advanced-finance/intercompany/manual-match` | Manually match intercompany transaction pair | `finance.report.create` |
+| POST | `/advanced-finance/intercompany/eliminate/:id` | Run netting elimination entry for intercompany matched transaction | `finance.report.create` |
+| GET | `/advanced-finance/intercompany/stats` | Get intercompany netting consolidated stats | `finance.report.read` |
 | POST | `/advanced-finance/exchange-rates` | Update exchange rate | `finance.treasury.create` |
 | GET | `/advanced-finance/currency-convert` | Convert currency | `finance.treasury.read` |
 | GET | `/advanced-finance/compute-tax` | Compute tax | `finance.tax.compute` |
