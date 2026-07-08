@@ -218,6 +218,78 @@ const createExpenseReportSchema = z.object({
   })).min(1),
 });
 
+const addExpenseItemSchema = z.object({
+  category: z.string().min(1),
+  description: z.string().min(1),
+  merchant: z.string().optional(),
+  amount: z.number().min(0),
+  taxAmount: z.number().min(0).optional(),
+  receiptUrl: z.string().optional(),
+  expenseDate: z.string().min(1),
+  billable: z.boolean().optional(),
+  isMileage: z.boolean().optional(),
+  mileageDistance: z.number().min(0).optional(),
+  isPerDiem: z.boolean().optional(),
+  perDiemDays: z.number().min(0).optional(),
+  perDiemLocation: z.string().optional(),
+});
+
+const updateExpenseItemSchema = z.object({
+  category: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  merchant: z.string().optional(),
+  amount: z.number().min(0).optional(),
+  taxAmount: z.number().min(0).optional(),
+  receiptUrl: z.string().optional(),
+  expenseDate: z.string().min(1).optional(),
+  billable: z.boolean().optional(),
+});
+
+const scanReceiptSchema = z.object({
+  fileName: z.string().min(1),
+  rawText: z.string().optional(),
+});
+
+const upsertExpensePolicySchema = z.object({
+  category: z.string().min(1),
+  maxAmountPerItem: z.number().min(0).nullable().optional(),
+  receiptRequiredAbove: z.number().min(0).optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createMileageRateSchema = z.object({
+  ratePerMile: z.number().positive(),
+  effectiveDate: z.string().min(1),
+  endDate: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const upsertPerDiemRateSchema = z.object({
+  location: z.string().min(1),
+  dailyRate: z.number().positive(),
+  currency: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createCorporateCardSchema = z.object({
+  employeeId: z.string().min(1),
+  provider: z.string().min(1),
+  last4: z.string().min(4).max(4),
+  nickname: z.string().optional(),
+});
+
+const importCardTransactionsSchema = z.object({
+  transactions: z.array(z.object({
+    transactionDate: z.string().min(1),
+    merchant: z.string().min(1),
+    amount: z.number().positive(),
+  })).min(1),
+});
+
+const matchCardTransactionSchema = z.object({
+  itemId: z.string().min(1),
+});
+
 const createRevenueScheduleSchema = z.object({
   description: z.string().min(1),
   totalAmount: z.number().positive(),
@@ -1502,6 +1574,191 @@ export class AdvancedFinanceController {
   @TrackChanges('ExpenseReport', 'id')
   async markExpenseReportPaid(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.expenseService.markExpenseReportPaid(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Second-level approve expense report (over threshold)' })
+  @Permissions('finance.expense.approve')
+  @Post('expense-reports/:id/second-approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReport', 'id')
+  async secondApproveExpenseReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expenseService.secondApproveExpenseReport(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  // ── Expense Items ──
+  @ApiOperation({ summary: 'Add expense line item to report' })
+  @Permissions('finance.expense.create')
+  @Post('expense-reports/:id/items')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReportItem')
+  async addExpenseItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(addExpenseItemSchema) dto: z.infer<typeof addExpenseItemSchema>,
+  ) {
+    return this.expenseService.addExpenseItem(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Update expense line item' })
+  @Permissions('finance.expense.create')
+  @Patch('expense-items/:itemId')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseReportItem', 'itemId')
+  async updateExpenseItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('itemId') itemId: string,
+    @ZodBody(updateExpenseItemSchema) dto: z.infer<typeof updateExpenseItemSchema>,
+  ) {
+    return this.expenseService.updateExpenseItem(req.user.tenantId, itemId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete expense line item' })
+  @Permissions('finance.expense.create')
+  @Delete('expense-items/:itemId')
+  async deleteExpenseItem(@Req() req: AuthenticatedRequest, @Param('itemId') itemId: string) {
+    return this.expenseService.deleteExpenseItem(req.user.tenantId, itemId);
+  }
+
+  // ── OCR Receipt Capture ──
+  @ApiOperation({ summary: 'Scan a receipt (simulated OCR extraction of merchant/amount/date/category)' })
+  @Permissions('finance.expense.create')
+  @Post('expenses/ocr-scan')
+  async scanReceipt(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(scanReceiptSchema) dto: z.infer<typeof scanReceiptSchema>,
+  ) {
+    return this.expenseService.scanReceipt(req.user.tenantId, dto);
+  }
+
+  // ── Expense Category Policies ──
+  @ApiOperation({ summary: 'List expense category policies' })
+  @Permissions('finance.expense.read')
+  @Get('expense-policies')
+  async getExpensePolicies(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getPolicies(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create or update an expense category policy' })
+  @Permissions('finance.expense.approve')
+  @Post('expense-policies')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ExpenseCategoryPolicy')
+  async upsertExpensePolicy(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(upsertExpensePolicySchema) dto: z.infer<typeof upsertExpensePolicySchema>,
+  ) {
+    return this.expenseService.upsertPolicy(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete an expense category policy' })
+  @Permissions('finance.expense.approve')
+  @Delete('expense-policies/:id')
+  async deleteExpensePolicy(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expenseService.deletePolicy(req.user.tenantId, id);
+  }
+
+  // ── Mileage Rates ──
+  @ApiOperation({ summary: 'List mileage rates' })
+  @Permissions('finance.expense.read')
+  @Get('mileage-rates')
+  async getMileageRates(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getMileageRates(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create a mileage rate' })
+  @Permissions('finance.expense.approve')
+  @Post('mileage-rates')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('MileageRate')
+  async createMileageRate(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createMileageRateSchema) dto: z.infer<typeof createMileageRateSchema>,
+  ) {
+    return this.expenseService.createMileageRate(req.user.tenantId, dto);
+  }
+
+  // ── Per Diem Rates ──
+  @ApiOperation({ summary: 'List per-diem rates' })
+  @Permissions('finance.expense.read')
+  @Get('per-diem-rates')
+  async getPerDiemRates(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getPerDiemRates(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create or update a per-diem rate' })
+  @Permissions('finance.expense.approve')
+  @Post('per-diem-rates')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PerDiemRate')
+  async upsertPerDiemRate(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(upsertPerDiemRateSchema) dto: z.infer<typeof upsertPerDiemRateSchema>,
+  ) {
+    return this.expenseService.upsertPerDiemRate(req.user.tenantId, dto);
+  }
+
+  // ── Corporate Cards ──
+  @ApiOperation({ summary: 'List corporate cards' })
+  @Permissions('finance.expense.read')
+  @Get('corporate-cards')
+  async getCorporateCards(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getCorporateCards(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Register a corporate card' })
+  @Permissions('finance.expense.approve')
+  @Post('corporate-cards')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CorporateCard')
+  async createCorporateCard(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createCorporateCardSchema) dto: z.infer<typeof createCorporateCardSchema>,
+  ) {
+    return this.expenseService.createCorporateCard(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Import corporate card transactions (feed simulation)' })
+  @Permissions('finance.expense.approve')
+  @Post('corporate-cards/:id/transactions/import')
+  async importCardTransactions(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(importCardTransactionsSchema) dto: z.infer<typeof importCardTransactionsSchema>,
+  ) {
+    return this.expenseService.importCardTransactions(req.user.tenantId, id, dto.transactions);
+  }
+
+  @ApiOperation({ summary: 'List unmatched corporate card transactions' })
+  @Permissions('finance.expense.read')
+  @Get('corporate-card-transactions/unmatched')
+  async getUnmatchedCardTransactions(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getUnmatchedCardTransactions(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Match a corporate card transaction to an expense item' })
+  @Permissions('finance.expense.create')
+  @Post('corporate-card-transactions/:id/match')
+  async matchCardTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(matchCardTransactionSchema) dto: z.infer<typeof matchCardTransactionSchema>,
+  ) {
+    return this.expenseService.matchCardTransactionToItem(req.user.tenantId, id, dto.itemId);
+  }
+
+  @ApiOperation({ summary: 'Ignore a corporate card transaction' })
+  @Permissions('finance.expense.create')
+  @Post('corporate-card-transactions/:id/ignore')
+  async ignoreCardTransaction(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expenseService.ignoreCardTransaction(req.user.tenantId, id);
+  }
+
+  // ── Expense Analytics ──
+  @ApiOperation({ summary: 'Expense analytics: spend by category, status, policy violations' })
+  @Permissions('finance.expense.read')
+  @Get('expense-analytics')
+  async getExpenseAnalytics(@Req() req: AuthenticatedRequest) {
+    return this.expenseService.getExpenseAnalytics(req.user.tenantId);
   }
 
   // ── Revenue Recognition ──

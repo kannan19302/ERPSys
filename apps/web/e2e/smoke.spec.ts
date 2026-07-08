@@ -20,6 +20,8 @@ const ADMIN_PASSWORD = process.env.E2E_PASSWORD || 'admin123';
 const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/dashboard' },
   { path: '/finance/invoices' },
+  { path: '/finance/advanced/expense-reports' },
+  { path: '/finance/advanced/expense-policies' },
   { path: '/crm/contacts' },
   { path: '/crm/leads' },
   { path: '/inventory/products' },

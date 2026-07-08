@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-08T17:00:50.396Z
+> Last generated: 2026-07-08T17:23:16.511Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1538 features** across 35 modules
+## System total: **1557 features** across 35 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 166 |
+| [advanced-finance](#advanced-finance) | 185 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -239,7 +239,7 @@
 
 ## advanced-finance
 
-166 features
+185 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -355,6 +355,25 @@
 | POST | `/advanced-finance/expense-reports/:id/approve` | Approve expense report | `finance.expense.approve` |
 | POST | `/advanced-finance/expense-reports/:id/reject` | Reject expense report | `finance.expense.reject` |
 | POST | `/advanced-finance/expense-reports/:id/pay` | Mark expense report as paid | `finance.expense.approve` |
+| POST | `/advanced-finance/expense-reports/:id/second-approve` | Second-level approve expense report (over threshold) | `finance.expense.approve` |
+| POST | `/advanced-finance/expense-reports/:id/items` | Add expense line item to report | `finance.expense.create` |
+| PATCH | `/advanced-finance/expense-items/:itemId` | Update expense line item | `finance.expense.create` |
+| DELETE | `/advanced-finance/expense-items/:itemId` | Delete expense line item | `finance.expense.create` |
+| POST | `/advanced-finance/expenses/ocr-scan` | Scan a receipt (simulated OCR extraction of merchant/amount/date/category) | `finance.expense.create` |
+| GET | `/advanced-finance/expense-policies` | List expense category policies | `finance.expense.read` |
+| POST | `/advanced-finance/expense-policies` | Create or update an expense category policy | `finance.expense.approve` |
+| DELETE | `/advanced-finance/expense-policies/:id` | Delete an expense category policy | `finance.expense.approve` |
+| GET | `/advanced-finance/mileage-rates` | List mileage rates | `finance.expense.read` |
+| POST | `/advanced-finance/mileage-rates` | Create a mileage rate | `finance.expense.approve` |
+| GET | `/advanced-finance/per-diem-rates` | List per-diem rates | `finance.expense.read` |
+| POST | `/advanced-finance/per-diem-rates` | Create or update a per-diem rate | `finance.expense.approve` |
+| GET | `/advanced-finance/corporate-cards` | List corporate cards | `finance.expense.read` |
+| POST | `/advanced-finance/corporate-cards` | Register a corporate card | `finance.expense.approve` |
+| POST | `/advanced-finance/corporate-cards/:id/transactions/import` | Import corporate card transactions (feed simulation) | `finance.expense.approve` |
+| GET | `/advanced-finance/corporate-card-transactions/unmatched` | List unmatched corporate card transactions | `finance.expense.read` |
+| POST | `/advanced-finance/corporate-card-transactions/:id/match` | Match a corporate card transaction to an expense item | `finance.expense.create` |
+| POST | `/advanced-finance/corporate-card-transactions/:id/ignore` | Ignore a corporate card transaction | `finance.expense.create` |
+| GET | `/advanced-finance/expense-analytics` | Expense analytics: spend by category, status, policy violations | `finance.expense.read` |
 | GET | `/advanced-finance/revenue-schedules` | Get revenue schedules | `finance.revenue.read` |
 | GET | `/advanced-finance/revenue-schedules/:id` | Get revenue schedule by ID | `finance.revenue.read` |
 | POST | `/advanced-finance/revenue-schedules` | Create revenue schedule | `finance.revenue.create` |

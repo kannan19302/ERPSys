@@ -55,6 +55,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'AR Automation', href: '/finance/advanced/ar-automation', icon: ClipboardList },
             { name: 'Treasury & Investments', href: '/finance/advanced/treasury', icon: BarChart3 },
             { name: 'Expense Management', href: '/finance/advanced/expense-reports', icon: Receipt },
+            { name: 'Expense Policies & Rates', href: '/finance/advanced/expense-policies', icon: ShieldCheck },
             { name: 'Cash Position', href: '/finance/advanced/cash-position', icon: DollarSign },
             { name: 'Cash Flow Forecast', href: '/finance/advanced/cash-flow-forecast', icon: Activity },
           ]

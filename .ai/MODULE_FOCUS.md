@@ -92,6 +92,7 @@ CHANGELOG, and re-benchmark the completed module one last time in MARKET_BENCHMA
 | 2026-07-08 | Finance | 156 | +8 | Finance Automated Bank Feeds (Plaid oauth connections, bank feeds sync, auto transaction matching). |
 | 2026-07-08 | Finance | 163 | +7 | Finance Cash Flow Forecasting (rolling 13-week cash projections, override variables, custom scenarios CRUD). |
 | 2026-07-08 | Finance | 168 | +5 | Finance Intercompany Netting & Elimination (Prisma transaction model, auto matching buyer/seller, netting clearing GL journals). |
+| 2026-07-08 | Finance | 196 | +28 | Finance Expense Management Deepening (closes [benchmark] OCR gap): simulated OCR receipt capture, category policy engine with per-item limits + receipt-required thresholds, mileage rate CRUD + auto-computed mileage expenses, per-diem rate CRUD + auto-computed per-diem expenses, item-level CRUD, multi-level approval routing (second approval >$2000), GL reimbursement journal posting, corporate card registration + transaction import + matching/ignoring, expense analytics (spend by category/status, violations); 6 new Prisma models, 20 new API endpoints, 2 Next.js pages (expense-reports rewired off mocks, new expense-policies), 16 new unit tests. |
 
 ## 7. Cross-Module Integration Contracts (pre-planned BEFORE building)
 

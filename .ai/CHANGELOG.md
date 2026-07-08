@@ -2,6 +2,22 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Finance Expense Management Deepening — 28 features: OCR receipt capture, policy engine, mileage/per-diem, corporate cards, multi-level approval, GL posting (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes the last MARKET_BENCHMARK gap seeded 2026-07-08 ("Expense management: OCR receipt capture, employee reimbursement flow", NetSuite/Zoho/Odoo parity).
+
+**Accomplished**:
+- **Schema**: 6 new Prisma models (`ExpenseCategoryPolicy`, `MileageRate`, `PerDiemRate`, `CorporateCard`, `CorporateCardTransaction`) plus new fields on `ExpenseReport`/`ExpenseReportItem` (policy-violation flags, second-approval routing, mileage/per-diem/OCR/corporate-card-match fields). Applied via hand-written idempotent migration `20260708223552_expense_management_deepening` (dev DB has pre-existing drift — `migrate deploy`, not `migrate dev`, per the known workflow gotcha).
+- **API** (`advanced-finance/services/expense-management.service.ts`, 20 new endpoints on `advanced-finance.controller.ts`): item-level CRUD (add/update/delete expense line items, DRAFT-only), simulated OCR receipt scan (`/expenses/ocr-scan` — regex-extracts merchant/amount/date, suggests a category), category policy engine (per-item max, receipt-required-above threshold, auto-flags violations on add/update), mileage rate CRUD + auto-computed mileage line amounts (distance × rate effective on the expense date), per-diem rate CRUD + auto-computed per-diem line amounts (days × location daily rate), multi-level approval routing (reports over $2,000 route through `PENDING_SECOND_APPROVAL` before `APPROVED`), GL reimbursement journal auto-posted on `pay` (debits an Expense Reimbursement account, credits Cash, stores `glJournalId`), corporate card registration + transaction import (feed simulation) + match-to-item / ignore, expense analytics (spend by category, by report status, policy-violation count).
+- **UI**: rewired `finance/advanced/expense-reports` off mock data onto the real API (KPIs, tabs, item entry with OCR-scan-to-autofill, submit/approve/second-approve/pay actions); new `finance/advanced/expense-policies` page (category policies, mileage rates, per-diem rates, corporate cards + unmatched-transaction queue) with nav/breadcrumb registration.
+- **Tests**: 16 new unit tests (`expense-management.service.spec.ts`) covering the policy engine, mileage/per-diem calculators, OCR extraction, second-approval routing, GL journal posting, and card matching. Full `advanced-finance` suite: 267/267 passing. Full API suite: 2,103/2,103 passing.
+- **Fixed pre-existing drift** (found while running the full suite gate, unrelated to this batch but blocking it): 8 `@Permissions(...)` codes used in `advanced-finance.controller.ts` (`finance.report.create`, `finance.tax.update`, `finance.tax.delete`, `finance.reports.read`, `finance.credit.read`, `finance.credit.manage`) were missing from `packages/shared/src/permissions/registry.ts`; registered them and rebuilt `@unerp/shared`.
+- Gates: `pnpm turbo typecheck` (api + web) clean, full API vitest suite green, Playwright `smoke` project 15/15 green (added `/finance/advanced/expense-reports` and `/finance/advanced/expense-policies` to `SMOKE_ROUTES`).
+
+**Why**: last open item in the Finance Gap Backlog's original seed list; NetSuite/Zoho/Odoo all ship OCR-assisted expense capture with policy enforcement — this closes the parity gap and deepens the module toward the 500-feature target (168 → 196 proxy count).
+
+**Follow-ups**: web-verified benchmark discovery this cycle found 5 new Finance gaps (lease accounting ASC 842/IFRS 16, subscription billing/MRR-ARR, unified spend management with real-time card controls, continuous close automation, project-based WIP/job-costing) — logged in `MARKET_BENCHMARK.md` and promoted to Collab Board Up Next.
+
 ## [2026-07-08] Daily Sprint Tracker — LOC + functionality delivered per day
 
 **Accomplished**:

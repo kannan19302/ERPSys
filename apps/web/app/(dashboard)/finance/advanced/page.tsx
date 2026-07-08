@@ -9,7 +9,7 @@ import {
   Wallet, Scale, Eye, GitCompare, RefreshCw,
   FolderOpen, ChevronRight, CreditCard, FileSliders,
   Building2, ShoppingCart, ClipboardList,
-  ShieldAlert, Calendar, Link2
+  ShieldAlert, Calendar, Link2, ShieldCheck
 } from 'lucide-react';
 
 const groups = [
@@ -43,7 +43,8 @@ const groups = [
       { href: '/finance/advanced/bank-recon', label: 'Bank Statement Auto-Match', icon: <GitCompare size={18} />, desc: 'Match Statement transfers to General Ledger entries automatically' },
       { href: '/finance/advanced/treasury', label: 'Treasury & Investments', icon: <BarChart3 size={18} />, desc: 'Treasury operations, investment tracking, and liquidity management' },
       { href: '/finance/advanced/reconciliations', label: 'Bank Reconciliation', icon: <GitCompare size={18} />, desc: 'Statement import, auto-matching, and reconciliation reports' },
-      { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, approvals, and reimbursements' },
+      { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, OCR receipt capture, approvals, and reimbursements' },
+      { href: '/finance/advanced/expense-policies', label: 'Expense Policies & Rates', icon: <ShieldCheck size={18} />, desc: 'Category spending limits, mileage/per-diem rates, corporate card feeds' },
       { href: '/finance/advanced/cash-position', label: 'Cash Position', icon: <DollarSign size={18} />, desc: 'Real-time cash position and projected cash flow' },
       { href: '/finance/advanced/cash-flow-forecast', label: 'Cash Flow Forecast', icon: <Activity size={18} />, desc: '3-month rolling cash flow forecast' },
     ]

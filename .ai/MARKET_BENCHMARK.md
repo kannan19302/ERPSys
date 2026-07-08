@@ -66,12 +66,17 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 ### Finance & Accounting — refs: NetSuite, Sage Intacct, SAP, Dynamics 365, Odoo
 | Gap | Who has it | UniERP | Value | Size |
 |:--|:--|:--|:--|:--|
-| Automated bank feeds (Plaid/Yodlee-style connections, not just statement import) | NetSuite, Intacct, Odoo, Dynamics | MISSING | H | M |
+| Automated bank feeds (Plaid/Yodlee-style connections, not just statement import) | NetSuite, Intacct, Odoo, Dynamics | 🟢 SHIPPED 2026-07-08 (BankConnection OAuth model, connect/sync, auto-matching, bank-feeds + bank-recon pages) | H | M |
 | Revenue recognition engine (ASC 606/IFRS 15 schedules, deferral rules) | NetSuite, Intacct, SAP | 🟢 SHIPPED 2026-07-04 | H | L |
-| Multi-entity consolidation with inter-company eliminations | Intacct, NetSuite, SAP | 🟢 SHIPPED 2026-07-04 | H | L |
-| Cash-flow forecasting (rolling 13-week, AI-assisted) | Dynamics, NetSuite | MISSING | H | M |
+| Multi-entity consolidation with inter-company eliminations | Intacct, NetSuite, SAP | 🟢 SHIPPED 2026-07-04 (elimination journal auto-posting shipped 2026-07-08) | H | L |
+| Cash-flow forecasting (rolling 13-week, AI-assisted) | Dynamics, NetSuite | 🟢 SHIPPED 2026-07-08 (rolling 13-week ForecastWeek projections, overrides, custom scenarios, dashboard) | H | M |
 | Dunning / automated payment reminders with escalation levels | Odoo, NetSuite, ERPNext | 🟢 SHIPPED 2026-07-08 (dunning levels, runs, pause/resume, stats + AR aging + customer statement + credit risk — full AR/collections suite) | M | S |
-| Expense management (OCR receipt capture, employee reimbursement flow) | NetSuite, Zoho, Odoo | PARTIAL (reimbursement workflow shipped 2026-07-04, OCR missing) | M | M |
+| Expense management (OCR receipt capture, employee reimbursement flow) | NetSuite, Zoho, Odoo | 🟢 SHIPPED 2026-07-08 (simulated OCR extraction, category policies, mileage/per-diem auto-calc, multi-level approval, GL reimbursement posting, corporate card matching) | M | M |
+| Lease accounting (ASC 842/IFRS 16: right-of-use asset, lease liability amortization schedules) | NetSuite Fixed Assets, Sage Intacct Lease Accounting | MISSING | H | M |
+| Subscription billing & recurring-revenue metrics (MRR/ARR tracking, usage-based billing, dunning tied to subscriptions) | Sage Intacct, Zuora, NetSuite SuiteBilling | MISSING | H | M |
+| Unified spend management (corporate card issuing + real-time transaction controls + budget-linked approvals, beyond expense reports) | Ramp, Brex, Emburse, BILL Spend & Expense | PARTIAL (corporate card import/matching shipped 2026-07-08; no card issuing, no real-time spend controls) | M | M |
+| Continuous close / close-management checklist with task automation and variance flagging | Sage Intacct, BlackLine, FloQast | PARTIAL (financial-periods close checklist exists; no automated variance flagging or close-task assignment) | M | M |
+| Project-based accounting (WIP, job costing, percentage-of-completion revenue recognition tied to projects) | Sage Intacct, Deltek, NetSuite SRP | PARTIAL (RevenueSchedule engine exists; not project-linked WIP/job-costing) | H | M |
 
 ### CRM & Sales — refs: Salesforce, HubSpot, Dynamics 365, Zoho, Odoo
 | Gap | Who has it | UniERP | Value | Size |
@@ -149,7 +154,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Module | Last benchmarked | Method | Notes |
 |:--|:--|:--|:--|
 | ALL (seed pass) | 2026-07-08 | offline analysis | Initial seed by claude-code; each module still owes a web-verified pass |
-| Finance | 2026-07-08 | offline analysis | Verified consolidation, rev-rec, and expense-reimbursement are implemented. Plaid bank feeds and cash forecasting remain key gaps. |
+| Finance | 2026-07-08 | web-verified (NetSuite, Sage Intacct, Odoo, Emburse/Ramp/BILL spend-mgmt sources) | All originally-seeded gaps now SHIPPED (bank feeds, cash-flow forecast, dunning, expense mgmt w/ OCR). New gaps found this pass: lease accounting (ASC 842/IFRS 16), subscription billing/MRR-ARR, unified spend management (card issuing + real-time controls), continuous close automation, project-based WIP/job-costing revenue recognition. |
 | CRM & Sales | — (due) | — | |
 | Inventory/Supply Chain | — (due) | — | |
 | Manufacturing | — (due) | — | |
