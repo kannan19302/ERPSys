@@ -3,6 +3,20 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-08] Inventory Service God-Class Decomposition — Warehouses Sub-Domain
+
+Decomposed the `InventoryService` god-class by extracting the Warehouse sub-domain logic into a dedicated service `InventoryWarehousesService`.
+
+**Accomplished**:
+- Created `InventoryWarehousesService` containing all warehouse CRUD and listing operations (`getWarehouses`, `getWarehouseById`, `createWarehouse`, `updateWarehouse`, `deleteWarehouse`).
+- Extracted these methods from the `InventoryService` class, reducing its complexity.
+- Injected `InventoryWarehousesService` into `InventoryController` and rerouted the corresponding REST endpoints.
+- Registered and exported `InventoryWarehousesService` in `InventoryModule`.
+- Created a comprehensive unit test suite `inventory-warehouses.service.spec.ts` verifying all warehouse operations (4/4 tests green, 100% pass).
+- Confirmed full API typecheck compiles successfully with 0 errors.
+
+**Why**: To begin Phase 1 of Enterprise Hardening (Decomposing god-classes (>1,500 LOC) into modular domain sub-services, satisfying the Strangler-fig refactoring pattern).
+
 ## [2026-07-08] Market Discovery Engine — autonomous requirement generation vs. top-20 ERP leaders
 
 Closed the gap where autonomous mode only *consumed* the existing backlog. The system now **generates new requirements every cycle** by benchmarking UniERP against the top-20 ERP market leaders.

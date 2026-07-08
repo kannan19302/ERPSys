@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { InventoryService } from './inventory.service';
+import { InventoryWarehousesService } from './inventory-warehouses.service';
 import {
   CreateProductInput, UpdateProductInput,
   CreateWarehouseInput, UpdateWarehouseInput,
@@ -31,7 +32,10 @@ interface AuthenticatedRequest extends Request {
 @Controller('inventory')
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(
+    private readonly inventoryService: InventoryService,
+    private readonly inventoryWarehousesService: InventoryWarehousesService,
+  ) {}
 
   // ─── PRODUCTS ─────────────────────────────────────
 
@@ -107,7 +111,7 @@ export class InventoryController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.inventoryService.getWarehouses(req.user.tenantId, {
+    return this.inventoryWarehousesService.getWarehouses(req.user.tenantId, {
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,
     });
@@ -117,7 +121,7 @@ export class InventoryController {
   @Get('warehouses/:id')
   @Permissions('inventory.warehouse.read')
   async getWarehouseById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.inventoryService.getWarehouseById(req.user.tenantId, id);
+    return this.inventoryWarehousesService.getWarehouseById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create warehouse' })
@@ -125,21 +129,21 @@ export class InventoryController {
   @Permissions('inventory.warehouse.create')
   async createWarehouse(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateWarehouseInput) {
     const orgId = req.user.orgId || 'org-system-default';
-    return this.inventoryService.createWarehouse(req.user.tenantId, orgId, dto);
+    return this.inventoryWarehousesService.createWarehouse(req.user.tenantId, orgId, dto);
   }
 
   @ApiOperation({ summary: 'Update warehouse' })
   @Patch('warehouses/:id')
   @Permissions('inventory.warehouse.update')
   async updateWarehouse(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateWarehouseInput) {
-    return this.inventoryService.updateWarehouse(req.user.tenantId, id, dto);
+    return this.inventoryWarehousesService.updateWarehouse(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete warehouse' })
   @Delete('warehouses/:id')
   @Permissions('inventory.warehouse.delete')
   async deleteWarehouse(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.inventoryService.deleteWarehouse(req.user.tenantId, id);
+    return this.inventoryWarehousesService.deleteWarehouse(req.user.tenantId, id);
   }
 
   // ─── STOCK LEVELS ──────────────────────────────────

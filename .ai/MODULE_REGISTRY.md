@@ -79,6 +79,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-08 | antigravity-ide | God-class decomposition of inventory service: extracted Warehouse sub-domain operations (`getWarehouses`, `getWarehouseById`, `createWarehouse`, `updateWarehouse`, `deleteWarehouse`) into dedicated `InventoryWarehousesService`, resolved unused tsc errors, and added vitest coverage spec (4/4 tests passed). | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Market Discovery Engine: added `.ai/MARKET_BENCHMARK.md` (top-20 competitor set, Discovery Protocol, ~40-gap seeded backlog, rotation tracker); AUTOPILOT Step 9 → mandatory per-cycle REFILL & DISCOVER; priority ladder gained P5 Competitive gaps; seeded first two `[benchmark]` Up Next items. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | AI Module Hardening: refactored `workflow-engine.service.ts` and `builder/web-studio.service.ts` to route through `AiService`, eliminating paid Anthropic API dependency | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Autonomous Development Protocol: added `.ai/AUTOPILOT.md` ("Start" → self-selected end-to-end dev cycle with priority ladder, reality gates, guardrails, queue-refill rule), wired via AGENTS.md § Autonomous Mode, root `CLAUDE.md`, `.claude/skills/start/`, and MASTER_PROMPT pointer. | see CHANGELOG 2026-07-08 |
