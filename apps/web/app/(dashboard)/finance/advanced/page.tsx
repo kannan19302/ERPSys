@@ -33,7 +33,10 @@ const groups = [
     modules: [
       { href: '/finance/advanced/bank-accounts', label: 'Bank Accounts', icon: <Wallet size={18} />, desc: 'Manage bank accounts, opening balances, and reconciliation setup' },
       { href: '/finance/advanced/ap-automation', label: 'AP Automation', icon: <ShoppingCart size={18} />, desc: 'Accounts payable workflow, invoice matching, and payment runs' },
-      { href: '/finance/advanced/ar-automation', label: 'AR Automation', icon: <ClipboardList size={18} />, desc: 'Accounts receivable, dunning, credit notes, and collection tracking' },
+      { href: '/finance/advanced/ar-automation', label: 'AR Automation & Dunning', icon: <ClipboardList size={18} />, desc: 'Dunning levels, automated reminders, fee escalation, and collection cadences' },
+      { href: '/finance/advanced/ar-aging', label: 'AR Aging Report', icon: <BarChart3 size={18} />, desc: 'Receivables by aging bucket: Current, 1–30, 31–60, 61–90, 90+ days' },
+      { href: '/finance/advanced/customer-statement', label: 'Customer Statement', icon: <FileText size={18} />, desc: 'Full invoice/payment ledger per customer for any period' },
+      { href: '/finance/advanced/credit-risk', label: 'Credit Risk Management', icon: <ShieldAlert size={18} />, desc: 'Credit limits, holds, risk ratings, and utilization monitoring' },
       { href: '/finance/advanced/treasury', label: 'Treasury & Investments', icon: <BarChart3 size={18} />, desc: 'Treasury operations, investment tracking, and liquidity management' },
       { href: '/finance/advanced/reconciliations', label: 'Bank Reconciliation', icon: <GitCompare size={18} />, desc: 'Statement import, auto-matching, and reconciliation reports' },
       { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, approvals, and reimbursements' },

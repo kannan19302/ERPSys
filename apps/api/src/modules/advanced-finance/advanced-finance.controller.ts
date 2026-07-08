@@ -143,6 +143,29 @@ const createDunningLevelSchema = z.object({
   emailTemplateId: z.string().optional(),
 });
 
+const updateDunningLevelSchema = z.object({
+  levelName: z.string().min(1).optional(),
+  daysOverdue: z.number().int().nonnegative().optional(),
+  feeAmount: z.number().nonnegative().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
+const applyCashSchema = z.object({
+  invoiceId: z.string().min(1),
+  amount: z.number().positive(),
+  paymentDate: z.string().min(1),
+  paymentMethod: z.enum(['BANK_TRANSFER', 'CREDIT_CARD', 'CHEQUE', 'CASH', 'OTHER']),
+  reference: z.string().optional(),
+});
+
+const updateCustomerCreditSchema = z.object({
+  creditLimit: z.number().nonnegative().optional(),
+  paymentTerms: z.number().int().positive().optional(),
+  creditHold: z.boolean().optional(),
+  creditHoldReason: z.string().optional(),
+  riskRating: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+});
+
 const createPaymentScheduleSchema = z.object({
   vendorId: z.string().min(1),
   purchaseOrderId: z.string().optional(),
@@ -1299,5 +1322,138 @@ export class AdvancedFinanceController {
   @Get('accounting-books/variance')
   async crossBookVarianceReport(@Req() req: AuthenticatedRequest, @Query('book1') book1: string, @Query('book2') book2: string, @Query('asOf') asOf?: string) {
     return this.glService.crossBookVarianceReport(req.user.tenantId, book1, book2, asOf);
+  }
+
+  // ── DUNNING MANAGEMENT (extended) ──────────────────────────────────
+
+  @ApiOperation({ summary: 'Get a single dunning level by ID' })
+  @Get('dunning-levels/:id')
+  @Permissions('finance.tax.read')
+  async getDunningLevelById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxService.getDunningLevelById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Update a dunning level' })
+  @Patch('dunning-levels/:id')
+  @Permissions('finance.tax.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DunningLevel')
+  async updateDunningLevel(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateDunningLevelSchema) body: z.infer<typeof updateDunningLevelSchema>,
+  ) {
+    return this.taxService.updateDunningLevel(req.user.tenantId, id, body);
+  }
+
+  @ApiOperation({ summary: 'Delete a dunning level' })
+  @Delete('dunning-levels/:id')
+  @Permissions('finance.tax.delete')
+  async deleteDunningLevel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxService.deleteDunningLevel(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get dunning logs for a specific level (paginated)' })
+  @Get('dunning-levels/:id/logs')
+  @Permissions('finance.tax.read')
+  async getDunningLevelLogs(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.taxService.getDunningLevelLogs(req.user.tenantId, id, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
+  }
+
+  @ApiOperation({ summary: 'Get dunning campaign stats (success rate, fees, emails)' })
+  @Get('dunning-stats')
+  @Permissions('finance.tax.read')
+  async getDunningStats(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getDunningStats(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Pause dunning for a specific invoice (dispute hold)' })
+  @Post('dunning/invoices/:invoiceId/pause')
+  @Permissions('finance.tax.update')
+  async pauseDunningForInvoice(@Req() req: AuthenticatedRequest, @Param('invoiceId') invoiceId: string) {
+    return this.taxService.pauseDunningForInvoice(req.user.tenantId, invoiceId);
+  }
+
+  @ApiOperation({ summary: 'Resume dunning for a specific invoice' })
+  @Post('dunning/invoices/:invoiceId/resume')
+  @Permissions('finance.tax.update')
+  async resumeDunningForInvoice(@Req() req: AuthenticatedRequest, @Param('invoiceId') invoiceId: string) {
+    return this.taxService.resumeDunningForInvoice(req.user.tenantId, invoiceId);
+  }
+
+  // ── AR AGING & CUSTOMER STATEMENTS ──────────────────────────────────
+
+  @ApiOperation({ summary: 'AR Aging report — buckets: Current, 1-30, 31-60, 61-90, 90+ days' })
+  @Get('ar-aging')
+  @Permissions('finance.reports.read')
+  async getArAgingReport(@Req() req: AuthenticatedRequest, @Query('orgId') orgId?: string) {
+    return this.taxService.getArAgingReport(req.user.tenantId, orgId);
+  }
+
+  @ApiOperation({ summary: 'Customer statement — invoice/payment ledger for a specific customer' })
+  @Get('customer-statement/:customerId')
+  @Permissions('finance.reports.read')
+  async getCustomerStatement(
+    @Req() req: AuthenticatedRequest,
+    @Param('customerId') customerId: string,
+    @Query('periodStart') periodStart?: string,
+    @Query('periodEnd') periodEnd?: string,
+  ) {
+    return this.taxService.getCustomerStatement(req.user.tenantId, customerId, periodStart, periodEnd);
+  }
+
+  @ApiOperation({ summary: 'Overdue invoice summary KPIs and top debtors' })
+  @Get('ar-overdue-summary')
+  @Permissions('finance.reports.read')
+  async getOverdueInvoiceSummary(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getOverdueInvoiceSummary(req.user.tenantId);
+  }
+
+  // ── CASH APPLICATION ──────────────────────────────────
+
+  @ApiOperation({ summary: 'Apply a cash payment to a specific invoice (cash application)' })
+  @Post('cash-application')
+  @Permissions('finance.payment.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Payment')
+  async applyCashToInvoice(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(applyCashSchema) body: z.infer<typeof applyCashSchema>,
+  ) {
+    return this.taxService.applyCashToInvoice(req.user.tenantId, req.user.orgId || '', body);
+  }
+
+  // ── CUSTOMER CREDIT MANAGEMENT ──────────────────────────────────
+
+  @ApiOperation({ summary: 'Get credit summary for a customer (limit, usage, hold, risk rating)' })
+  @Get('customers/:customerId/credit')
+  @Permissions('finance.credit.read')
+  async getCustomerCreditSummary(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string) {
+    return this.taxService.getCustomerCreditSummary(req.user.tenantId, customerId);
+  }
+
+  @ApiOperation({ summary: 'Update customer credit terms (limit, payment terms, hold status, risk rating)' })
+  @Patch('customers/:customerId/credit')
+  @Permissions('finance.credit.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Customer')
+  async updateCustomerCredit(
+    @Req() req: AuthenticatedRequest,
+    @Param('customerId') customerId: string,
+    @ZodBody(updateCustomerCreditSchema) body: z.infer<typeof updateCustomerCreditSchema>,
+  ) {
+    return this.taxService.updateCustomerCredit(req.user.tenantId, customerId, body);
+  }
+
+  @ApiOperation({ summary: 'Credit risk list — all active customers with outstanding balances and utilization' })
+  @Get('credit-risk')
+  @Permissions('finance.credit.read')
+  async getCustomersCreditRisk(@Req() req: AuthenticatedRequest) {
+    return this.taxService.getCustomersCreditRisk(req.user.tenantId);
   }
 }

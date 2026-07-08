@@ -2,11 +2,15 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { createHash } from 'crypto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GlAccountingService } from './gl-accounting.service';
 
 @Injectable()
 export class TaxEngineService {
-  constructor(private readonly glService: GlAccountingService) {}
+  constructor(
+    private readonly glService: GlAccountingService,
+    private readonly eventEmitter?: EventEmitter2,
+  ) {}
 
   // ── TAX RULES ──────────────────────────────────
 
@@ -338,6 +342,12 @@ export class TaxEngineService {
     });
   }
 
+  async getDunningLevelById(tenantId: string, id: string) {
+    const level = await prisma.dunningLevel.findFirst({ where: { id, tenantId } });
+    if (!level) throw new NotFoundException('Dunning level not found');
+    return level;
+  }
+
   async createDunningLevel(tenantId: string, orgId: string, dto: { levelName: string; daysOverdue: number; feeAmount: number; emailTemplateId?: string }) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.dunningLevel.create({
@@ -352,6 +362,25 @@ export class TaxEngineService {
     });
   }
 
+  async updateDunningLevel(tenantId: string, id: string, dto: { levelName?: string; daysOverdue?: number; feeAmount?: number; status?: string }) {
+    await this.getDunningLevelById(tenantId, id);
+    return prisma.dunningLevel.update({
+      where: { id },
+      data: {
+        ...(dto.levelName !== undefined && { levelName: dto.levelName }),
+        ...(dto.daysOverdue !== undefined && { daysOverdue: dto.daysOverdue }),
+        ...(dto.feeAmount !== undefined && { feeAmount: new Prisma.Decimal(dto.feeAmount) }),
+        ...(dto.status !== undefined && { status: dto.status }),
+      },
+    });
+  }
+
+  async deleteDunningLevel(tenantId: string, id: string) {
+    await this.getDunningLevelById(tenantId, id);
+    await prisma.dunningLevel.delete({ where: { id } });
+    return { deleted: true };
+  }
+
   async getDunningRuns(tenantId: string) {
     return prisma.dunningRun.findMany({
       where: { tenantId },
@@ -359,24 +388,513 @@ export class TaxEngineService {
     });
   }
 
+  async getDunningLevelLogs(tenantId: string, levelId: string, page = 1, limit = 20) {
+    await this.getDunningLevelById(tenantId, levelId);
+    const skip = (page - 1) * limit;
+    const [logs, total] = await Promise.all([
+      prisma.invoiceDunningLog.findMany({
+        where: { tenantId, dunningLevelId: levelId },
+        orderBy: { sentAt: 'desc' },
+        skip,
+        take: limit,
+        include: { invoice: { include: { customer: true } } },
+      }),
+      prisma.invoiceDunningLog.count({ where: { tenantId, dunningLevelId: levelId } }),
+    ]);
+    return { data: logs, total, page, limit };
+  }
+
+  async getDunningStats(tenantId: string) {
+    const runs = await prisma.dunningRun.findMany({ where: { tenantId } });
+    const logs = await prisma.invoiceDunningLog.findMany({
+      where: { tenantId },
+      include: { dunningLevel: true },
+    });
+
+    const totalRuns = runs.length;
+    const completedRuns = runs.filter((r) => r.status === 'COMPLETED').length;
+    const totalFeeCollected = logs.reduce((s, l) => s + Number(l.feeApplied), 0);
+    const totalEmailsSent = logs.filter((l) => l.emailSentTo).length;
+    const successRate = totalRuns > 0 ? (completedRuns / totalRuns) * 100 : 0;
+
+    const byLevel: Record<string, { count: number; fees: number }> = {};
+    for (const log of logs) {
+      const key = log.dunningLevel?.levelName ?? log.dunningLevelId;
+      if (!byLevel[key]) byLevel[key] = { count: 0, fees: 0 };
+      byLevel[key].count++;
+      byLevel[key].fees += Number(log.feeApplied);
+    }
+
+    return {
+      totalRuns,
+      completedRuns,
+      successRate: Math.round(successRate * 10) / 10,
+      totalFeeCollected,
+      totalEmailsSent,
+      byLevel: Object.entries(byLevel).map(([level, stats]) => ({ level, ...stats })),
+    };
+  }
+
+  async pauseDunningForInvoice(tenantId: string, invoiceId: string) {
+    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId } });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+    // Store pause status as a metadata tag in the invoice's notes (lightweight pattern — no schema change needed)
+    const notes = ((invoice as any).notes || '') as string;
+    const pauseTag = '[dunning:paused]';
+    if (notes.includes(pauseTag)) return { paused: true, invoiceId };
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { notes: `${notes} ${pauseTag}`.trim() } as never,
+    });
+    return { paused: true, invoiceId };
+  }
+
+  async resumeDunningForInvoice(tenantId: string, invoiceId: string) {
+    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId } });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+    const notes = ((invoice as any).notes || '') as string;
+    const updatedNotes = notes.replace('[dunning:paused]', '').trim();
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { notes: updatedNotes } as never,
+    });
+    return { paused: false, invoiceId };
+  }
+
+  // ── AR AGING ──────────────────────────────────
+
+  async getArAgingReport(tenantId: string, orgId?: string) {
+    const where: Record<string, unknown> = {
+      tenantId,
+      status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+    };
+    if (orgId) where['orgId'] = orgId;
+
+    const invoices = await prisma.invoice.findMany({
+      where,
+      include: { customer: true },
+      orderBy: { dueDate: 'asc' },
+    });
+
+    const now = Date.now();
+    const buckets = {
+      current: { total: 0, count: 0, invoices: [] as unknown[] },
+      '1-30': { total: 0, count: 0, invoices: [] as unknown[] },
+      '31-60': { total: 0, count: 0, invoices: [] as unknown[] },
+      '61-90': { total: 0, count: 0, invoices: [] as unknown[] },
+      '90+': { total: 0, count: 0, invoices: [] as unknown[] },
+    };
+
+    for (const inv of invoices) {
+      const daysOverdue = Math.floor((now - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const amount = Number(inv.totalAmount);
+      const entry = { id: inv.id, invoiceNumber: inv.invoiceNumber, customer: inv.customer?.name, dueDate: inv.dueDate, amount, daysOverdue };
+
+      if (daysOverdue <= 0) {
+        buckets['current'].total += amount;
+        buckets['current'].count++;
+        buckets['current'].invoices.push(entry);
+      } else if (daysOverdue <= 30) {
+        buckets['1-30'].total += amount;
+        buckets['1-30'].count++;
+        buckets['1-30'].invoices.push(entry);
+      } else if (daysOverdue <= 60) {
+        buckets['31-60'].total += amount;
+        buckets['31-60'].count++;
+        buckets['31-60'].invoices.push(entry);
+      } else if (daysOverdue <= 90) {
+        buckets['61-90'].total += amount;
+        buckets['61-90'].count++;
+        buckets['61-90'].invoices.push(entry);
+      } else {
+        buckets['90+'].total += amount;
+        buckets['90+'].count++;
+        buckets['90+'].invoices.push(entry);
+      }
+    }
+
+    const grandTotal = Object.values(buckets).reduce((s, b) => s + b.total, 0);
+    return { buckets, grandTotal, generatedAt: new Date().toISOString() };
+  }
+
+  // ── CUSTOMER STATEMENT ──────────────────────────────────
+
+  async getCustomerStatement(tenantId: string, customerId: string, periodStart?: string, periodEnd?: string) {
+    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    const dateFilter: Record<string, unknown> = {};
+    if (periodStart) dateFilter['gte'] = new Date(periodStart);
+    if (periodEnd) dateFilter['lte'] = new Date(periodEnd);
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        tenantId,
+        customerId,
+        ...(Object.keys(dateFilter).length ? { issueDate: dateFilter } : {}),
+      },
+      include: { payments: true },
+      orderBy: { issueDate: 'asc' },
+    });
+
+    let openingBalance = 0;
+    let totalInvoiced = 0;
+    let totalPaid = 0;
+
+    const lines = invoices.map((inv) => {
+      const invoiceAmount = Number(inv.totalAmount);
+      const paidAmount = inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      const balance = invoiceAmount - paidAmount;
+      totalInvoiced += invoiceAmount;
+      totalPaid += paidAmount;
+      return {
+        date: inv.issueDate,
+        invoiceNumber: inv.invoiceNumber,
+        description: `Invoice ${inv.invoiceNumber}`,
+        debit: invoiceAmount,
+        credit: paidAmount,
+        balance,
+        status: inv.status,
+        dueDate: inv.dueDate,
+      };
+    });
+
+    const closingBalance = openingBalance + totalInvoiced - totalPaid;
+
+    return {
+      customer: { id: customer.id, name: customer.name, email: customer.email },
+      periodStart: periodStart || null,
+      periodEnd: periodEnd || null,
+      openingBalance,
+      totalInvoiced,
+      totalPaid,
+      closingBalance,
+      lines,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  // ── OVERDUE SUMMARY ──────────────────────────────────
+
+  async getOverdueInvoiceSummary(tenantId: string) {
+    const now = new Date();
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        tenantId,
+        status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+        dueDate: { lt: now },
+      },
+      include: { customer: true },
+    });
+
+    const total = invoices.reduce((s, inv) => s + Number(inv.totalAmount), 0);
+    const byCustomer: Record<string, { name: string; count: number; total: number }> = {};
+
+    for (const inv of invoices) {
+      const custId = inv.customerId || 'unknown';
+      if (!byCustomer[custId]) byCustomer[custId] = { name: inv.customer?.name ?? 'Unknown', count: 0, total: 0 };
+      byCustomer[custId].count++;
+      byCustomer[custId].total += Number(inv.totalAmount);
+    }
+
+    const topDebtors = Object.values(byCustomer)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    return {
+      totalOverdueInvoices: invoices.length,
+      totalOverdueAmount: total,
+      topDebtors,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  // ── CASH APPLICATION ──────────────────────────────────
+
+  async applyCashToInvoice(tenantId: string, orgId: string, dto: { invoiceId: string; amount: number; paymentDate: string; paymentMethod: string; reference?: string }) {
+    await this.glService.resolveOrgId(tenantId, orgId);
+    const invoice = await prisma.invoice.findFirst({ where: { id: dto.invoiceId, tenantId } });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+
+    // Fetch existing payments to compute outstanding balance
+    const existingPayments = await prisma.payment.findMany({ where: { tenantId, invoiceId: dto.invoiceId } });
+    const totalPaid = existingPayments.reduce((s, p) => s + Number(p.amount), 0);
+    const outstanding = Number(invoice.totalAmount) - totalPaid;
+
+    if (dto.amount > outstanding + 0.01) {
+      throw new BadRequestException(`Payment amount $${dto.amount} exceeds outstanding balance $${outstanding.toFixed(2)}`);
+    }
+
+    const payment = await prisma.payment.create({
+      data: {
+        tenantId,
+        invoiceId: dto.invoiceId,
+        amount: new Prisma.Decimal(dto.amount),
+        paidAt: new Date(dto.paymentDate),
+        method: dto.paymentMethod,
+        reference: dto.reference || null,
+      },
+    });
+
+
+    // Update invoice status
+    const newTotalPaid = totalPaid + dto.amount;
+    const newStatus = newTotalPaid >= Number(invoice.totalAmount) - 0.01 ? 'PAID' : 'PARTIAL';
+    await prisma.invoice.update({
+      where: { id: dto.invoiceId },
+      data: { status: newStatus } as never,
+    });
+
+    if (this.eventEmitter) {
+      this.eventEmitter.emit('finance.payment.received', {
+        tenantId,
+        paymentId: payment.id,
+        invoiceId: dto.invoiceId,
+        amount: dto.amount,
+        method: dto.paymentMethod,
+      });
+    }
+
+    return { payment, invoiceStatus: newStatus, remainingBalance: Math.max(0, Number(invoice.totalAmount) - newTotalPaid) };
+  }
+
+  // ── CUSTOMER CREDIT MANAGEMENT ──────────────────────────────────
+
+  async getCustomerCreditSummary(tenantId: string, customerId: string) {
+    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    const invoices = await prisma.invoice.findMany({
+      where: { tenantId, customerId, status: { notIn: ['VOID', 'DRAFT'] } },
+      include: { payments: true },
+    });
+
+    let totalOutstanding = 0;
+    let totalOverdue = 0;
+    const now = Date.now();
+
+    for (const inv of invoices) {
+      const paid = inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      const balance = Number(inv.totalAmount) - paid;
+      if (balance > 0) {
+        totalOutstanding += balance;
+        if (inv.dueDate.getTime() < now) totalOverdue += balance;
+      }
+    }
+
+    const creditAvailable = customer.creditLimit ? Number(customer.creditLimit) - totalOutstanding : null;
+
+    return {
+      customerId,
+      customerName: customer.name,
+      creditLimit: customer.creditLimit ? Number(customer.creditLimit) : null,
+      creditUsed: totalOutstanding,
+      creditAvailable,
+      creditHold: customer.creditHold,
+      creditHoldReason: customer.creditHoldReason,
+      riskRating: customer.riskRating,
+      paymentTerms: customer.paymentTerms,
+      totalOutstanding,
+      totalOverdue,
+    };
+  }
+
+  async updateCustomerCredit(tenantId: string, customerId: string, dto: { creditLimit?: number; paymentTerms?: number; creditHold?: boolean; creditHoldReason?: string; riskRating?: string }) {
+    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    return prisma.customer.update({
+      where: { id: customerId },
+      data: {
+        ...(dto.creditLimit !== undefined && { creditLimit: new Prisma.Decimal(dto.creditLimit) }),
+        ...(dto.paymentTerms !== undefined && { paymentTerms: dto.paymentTerms }),
+        ...(dto.creditHold !== undefined && { creditHold: dto.creditHold }),
+        ...(dto.creditHoldReason !== undefined && { creditHoldReason: dto.creditHoldReason }),
+        ...(dto.riskRating !== undefined && { riskRating: dto.riskRating }),
+      } as never,
+    });
+  }
+
+  async getCustomersCreditRisk(tenantId: string) {
+    const customers = await prisma.customer.findMany({
+      where: { tenantId, status: 'ACTIVE' },
+      orderBy: { name: 'asc' },
+    });
+
+    const result = [];
+    for (const c of customers) {
+      const invoices = await prisma.invoice.findMany({
+        where: { tenantId, customerId: c.id, status: { notIn: ['VOID', 'DRAFT', 'PAID'] } },
+      });
+      const outstanding = invoices.reduce((s, inv) => s + Number(inv.totalAmount), 0);
+      result.push({
+        customerId: c.id,
+        name: c.name,
+        creditLimit: c.creditLimit ? Number(c.creditLimit) : null,
+        outstanding,
+        creditUtilization: c.creditLimit ? (outstanding / Number(c.creditLimit)) * 100 : null,
+        creditHold: c.creditHold,
+        riskRating: c.riskRating,
+      });
+    }
+
+    return result.sort((a, b) => (b.outstanding || 0) - (a.outstanding || 0));
+  }
+
+
   async createDunningRun(tenantId: string, orgId: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
-    
-    // Dynamically query overdue invoices count
-    const overdueCount = await prisma.invoice.count({
+
+    // 1. Fetch active dunning levels sorted by daysOverdue asc
+    const activeLevels = await prisma.dunningLevel.findMany({
+      where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' },
+      orderBy: { daysOverdue: 'asc' },
+    });
+
+    if (activeLevels.length === 0) {
+      return prisma.dunningRun.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          totalInvoices: 0,
+          status: 'COMPLETED',
+        },
+      });
+    }
+
+    // 2. Fetch all unpaid/overdue invoices
+    const overdueInvoices = await prisma.invoice.findMany({
       where: {
         tenantId,
         orgId: resolvedOrgId,
         status: { notIn: ['PAID', 'DRAFT', 'VOID'] },
         dueDate: { lt: new Date() },
       },
+      include: {
+        customer: true,
+      },
     });
 
-    return prisma.dunningRun.create({
+    // 3. Create the DunningRun record in status IN_PROGRESS first
+    const dunningRun = await prisma.dunningRun.create({
       data: {
         tenantId,
         orgId: resolvedOrgId,
-        totalInvoices: overdueCount,
+        totalInvoices: 0,
+        status: 'IN_PROGRESS',
+      },
+    });
+
+    let processedCount = 0;
+
+    // 4. Process each invoice
+    for (const invoice of overdueInvoices) {
+      const daysOverdue = Math.floor((Date.now() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysOverdue < 0) continue;
+
+      let matchingLevel: (typeof activeLevels)[number] | null = null;
+      for (const level of activeLevels) {
+        if (daysOverdue >= level.daysOverdue) {
+          matchingLevel = level;
+        }
+      }
+
+      if (!matchingLevel) continue;
+
+      const existingLog = await prisma.invoiceDunningLog.findFirst({
+        where: {
+          tenantId,
+          invoiceId: invoice.id,
+          dunningLevelId: matchingLevel.id,
+        },
+      });
+
+      if (existingLog) continue;
+
+      const fee = matchingLevel.feeAmount;
+
+      try {
+        await prisma.$transaction(async (tx) => {
+          if (fee.gt(0)) {
+            const lineItems = await tx.invoiceLineItem.findMany({
+              where: { invoiceId: invoice.id },
+              orderBy: { sortOrder: 'desc' },
+              take: 1,
+            });
+            const firstItem = lineItems[0];
+            const nextSortOrder = firstItem ? firstItem.sortOrder + 1 : 1;
+
+            await tx.invoiceLineItem.create({
+              data: {
+                tenantId,
+                invoiceId: invoice.id,
+                description: `Late Payment Fee - ${matchingLevel.levelName}`,
+                quantity: new Prisma.Decimal(1),
+                unitPrice: fee,
+                totalAmount: fee,
+                sortOrder: nextSortOrder,
+              },
+            });
+
+            const updatedSubtotal = invoice.subtotal.add(fee);
+            const updatedTotal = invoice.totalAmount.add(fee);
+
+            await tx.invoice.update({
+              where: { id: invoice.id },
+              data: {
+                subtotal: updatedSubtotal,
+                totalAmount: updatedTotal,
+              },
+            });
+          }
+
+          await tx.invoiceDunningLog.create({
+            data: {
+              tenantId,
+              orgId: resolvedOrgId,
+              invoiceId: invoice.id,
+              dunningLevelId: matchingLevel.id,
+              dunningRunId: dunningRun.id,
+              feeApplied: fee,
+              status: 'SENT',
+              emailSentTo: invoice.customer?.email || null,
+            },
+          });
+        });
+
+        if (this.eventEmitter) {
+          this.eventEmitter.emit('finance.invoice.overdue', {
+            tenantId,
+            invoiceId: invoice.id,
+            customerId: invoice.customerId,
+            dunningLevelId: matchingLevel.id,
+            daysOverdue,
+            feeApplied: fee.toNumber(),
+          });
+
+          if (invoice.customer?.email) {
+            this.eventEmitter.emit('notification.send', {
+              tenantId,
+              userId: invoice.customer.id,
+              type: 'DUNNING_REMINDER',
+              title: `Overdue Invoice Payment Reminder: Invoice #${invoice.invoiceNumber}`,
+              body: `Hello ${invoice.customer.name},\n\nYour payment for invoice #${invoice.invoiceNumber} is overdue by ${daysOverdue} days. A late payment fee of $${fee.toFixed(2)} has been applied (${matchingLevel.levelName}). Please complete your payment as soon as possible.\n\nThank you.`,
+              channel: 'EMAIL',
+            });
+          }
+        }
+
+        processedCount++;
+      } catch (err) {
+        const { pinoLogger } = await import('../../../common/services/logger.service');
+        pinoLogger.error({ invoiceId: invoice.id, err }, 'Failed to process dunning for invoice');
+      }
+    }
+
+    return prisma.dunningRun.update({
+      where: { id: dunningRun.id },
+      data: {
+        totalInvoices: processedCount,
         status: 'COMPLETED',
       },
     });

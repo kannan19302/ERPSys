@@ -156,6 +156,7 @@ model Organization {
   debitNotes                DebitNote[]
   dunningLevels             DunningLevel[]
   dunningRuns               DunningRun[]
+  dunningLogs               InvoiceDunningLog[]
   paymentSchedules          PaymentSchedule[]
   paymentRuns               PaymentRun[]
   budgets                   Budget[]
@@ -807,6 +808,7 @@ model Invoice {
   lineItems   InvoiceLineItem[]
   payments    Payment[]
   creditNotes CreditNote[]
+  dunningLogs InvoiceDunningLog[]
 
   @@unique([tenantId, orgId, invoiceNumber])
   @@index([tenantId])
@@ -4674,7 +4676,8 @@ model DunningLevel {
   emailTemplateId String? @map("email_template_id")
   status          String  @default("ACTIVE")
 
-  organization Organization @relation(fields: [orgId], references: [id])
+  organization Organization        @relation(fields: [orgId], references: [id])
+  dunningLogs  InvoiceDunningLog[]
 
   @@unique([tenantId, orgId, daysOverdue])
   @@index([tenantId])
@@ -4689,10 +4692,33 @@ model DunningRun {
   totalInvoices Int      @map("total_invoices")
   status        String   @default("COMPLETED")
 
-  organization Organization @relation(fields: [orgId], references: [id])
+  organization Organization        @relation(fields: [orgId], references: [id])
+  dunningLogs  InvoiceDunningLog[]
 
   @@index([tenantId])
   @@map("dunning_runs")
+}
+
+model InvoiceDunningLog {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  invoiceId       String   @map("invoice_id")
+  dunningLevelId  String   @map("dunning_level_id")
+  dunningRunId    String   @map("dunning_run_id")
+  sentAt          DateTime @default(now()) @map("sent_at")
+  feeApplied      Decimal  @db.Decimal(15, 2) @map("fee_applied")
+  status          String   @default("SENT")
+  emailSentTo     String?  @map("email_sent_to")
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  dunningLevel DunningLevel @relation(fields: [dunningLevelId], references: [id])
+  dunningRun   DunningRun   @relation(fields: [dunningRunId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("invoice_dunning_logs")
 }
 
 model PaymentSchedule {

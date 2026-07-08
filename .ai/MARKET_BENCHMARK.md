@@ -70,7 +70,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Revenue recognition engine (ASC 606/IFRS 15 schedules, deferral rules) | NetSuite, Intacct, SAP | 🟢 SHIPPED 2026-07-04 | H | L |
 | Multi-entity consolidation with inter-company eliminations | Intacct, NetSuite, SAP | 🟢 SHIPPED 2026-07-04 | H | L |
 | Cash-flow forecasting (rolling 13-week, AI-assisted) | Dynamics, NetSuite | MISSING | H | M |
-| Dunning / automated payment reminders with escalation levels | Odoo, NetSuite, ERPNext | PARTIAL (invoices exist, no dunning cadence) | M | S |
+| Dunning / automated payment reminders with escalation levels | Odoo, NetSuite, ERPNext | 🟢 SHIPPED 2026-07-08 (dunning levels, runs, pause/resume, stats + AR aging + customer statement + credit risk — full AR/collections suite) | M | S |
 | Expense management (OCR receipt capture, employee reimbursement flow) | NetSuite, Zoho, Odoo | PARTIAL (reimbursement workflow shipped 2026-07-04, OCR missing) | M | M |
 
 ### CRM & Sales — refs: Salesforce, HubSpot, Dynamics 365, Zoho, Odoo

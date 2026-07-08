@@ -2,7 +2,47 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Finance AR Batch — 16+ new features: Dunning + AR Aging + Customer Statement + Credit Risk (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — accounts-receivable and collections depth pass (NetSuite / Odoo / ERPNext parity).
+
+**Features shipped**:
+
+*Service layer (`tax-engine.service.ts`)*
+1. `getDunningLevelById` — fetch single dunning level
+2. `updateDunningLevel` — PATCH level name, days-overdue, fee, status
+3. `deleteDunningLevel` — hard delete with guard
+4. `getDunningLevelLogs` — paginated per-level execution history with invoice+customer join
+5. `getDunningStats` — success rate, fee collected, emails sent, breakdown by level
+6. `pauseDunningForInvoice` — tag invoice notes with [dunning:paused] to skip future runs
+7. `resumeDunningForInvoice` — remove pause tag
+8. `getArAgingReport` — AR aging buckets (Current, 1-30, 31-60, 61-90, 90+) with per-invoice drill-down
+9. `getCustomerStatement` — full debit/credit ledger per customer, optional period filter, closing balance
+10. `getOverdueInvoiceSummary` — overdue KPIs + top-10 debtors
+11. `applyCashToInvoice` — apply payment to invoice, validate vs. outstanding balance, auto-update status (PAID/PARTIAL), emit `finance.payment.received`
+12. `getCustomerCreditSummary` — credit limit, usage, available, hold, risk rating, overdue total
+13. `updateCustomerCredit` — PATCH credit limit, payment terms, hold, hold reason, risk rating
+14. `getCustomersCreditRisk` — all active customers ranked by outstanding balance with credit utilization
+
+*Controller (`advanced-finance.controller.ts`)*
+15. 15 new endpoints: `GET/PATCH/DELETE dunning-levels/:id`, `GET dunning-levels/:id/logs`, `GET dunning-stats`, `POST dunning/invoices/:id/pause|resume`, `GET ar-aging`, `GET customer-statement/:customerId`, `GET ar-overdue-summary`, `POST cash-application`, `GET/PATCH customers/:id/credit`, `GET credit-risk`
+
+*Permissions registry*: `finance.tax.update`, `finance.tax.delete`, `finance.reports.read`, `finance.credit.read`, `finance.credit.manage`
+
+*Frontend (Next.js)*:
+16. `/finance/advanced/ar-automation` — fully overhauled: dunning stats KPI row, delete levels, pause/resume invoice dunning, run history with status, by-level performance breakdown
+17. `/finance/advanced/ar-aging` — new page: 5 aging buckets with visual distribution bar, expandable per-bucket invoice drilldown, CSV export, summary KPIs
+18. `/finance/advanced/customer-statement` — new page: customer search+select, period date filter, full ledger table with debit/credit/balance, closing balance, CSV export
+19. `/finance/advanced/credit-risk` — new page: all-customer risk table with utilization %, hold toggle, inline detail panel with edit form for credit limit/terms/hold/risk rating
+
+*Navigation*: Advanced Finance hub updated with 3 new entries (AR Aging, Customer Statement, Credit Risk).
+
+**TypeScript**: both `@unerp/api` and `@unerp/web` pass `tsc --noEmit` with zero errors.
+
+**Benchmark gap closed**: Finance dunning row (`PARTIAL → complete`) in `MARKET_BENCHMARK.md § Finance`.
+
 ## [2026-07-08] Batch Throughput + Verify-Once — 10–20+ features per cycle, gates paid once
+
 
 Tuned the autonomous cycle for speed-to-500 per owner directive: each cycle must ship a meaningful batch, and build/test overhead is paid once per cycle instead of per feature.
 

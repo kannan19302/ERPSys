@@ -56,7 +56,6 @@
 |:---|:---|:---|:---|:---|
 | claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
 | claude-code | 2026-07-04 (session) | CRM Leads/Deals deepening: lead scoring decay, source ROI, territory assignment, nurture sequences, disqualify/reactivate, conversion audit, SLA timer; Deal health scoring, competitor tracking, win/loss taxonomy, deal team/split-credit, contract renewal linkage, quote linkage, discount approval workflow (`crm-leads.service.ts`, `crm-deals.service.ts`, new `crm-approvals.service.ts` + related controllers/migrations) — explicitly avoiding leads/opportunities list-table page.tsx JSX (another agent migrating those to shared DataTable) | main | In Progress |
-| antigravity-ide | 2026-07-08 20:10 | [benchmark] Finance: dunning / automated payment-reminder cadences (schema, tax-engine.service, and unit tests) | main | In Progress |
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
@@ -77,15 +76,13 @@
 4. **Studio Phase 2 — Business Logic visual rule/flow editor** (Form/Page/Workflow canvas editors are already built and confirmed — `FormBuilderWorkspace.tsx` uses `@dnd-kit`, `WorkflowEditorWorkspace.tsx` uses `reactflow`, `PageBuilderWorkspace.tsx` is a grid canvas; only the Business Logic editor, to replace form-driven automation rules, remains open) — see § Studio Backlog below.
 5. **Commit the pending Admin error-reporting work** — `error-reports.controller.ts`/`.service.ts`, Next.js `error.tsx`/`not-found.tsx`/`global-error.tsx`, `ErrorFallback.tsx` are implemented (per row 1) but sit **uncommitted** in the working tree as of 2026-07-04. Whoever picks this up: verify tests pass, then commit.
 
-6. **[benchmark] Finance: dunning / automated payment-reminder cadences** — escalation levels, templates, per-customer schedules; leaders: Odoo, NetSuite, ERPNext (see `.ai/MARKET_BENCHMARK.md` § Finance). Value H, Size S — good first benchmark item.
-7. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — split into slices (auth + read-only invoices first).
-
 Add new items here as they're identified (PM scoping, bug reports, user asks, and the mandatory per-cycle market-discovery pass in `.ai/AUTOPILOT.md` Step 9a → `.ai/MARKET_BENCHMARK.md`). Don't let this list go stale — prune completed/obsolete entries.
 
 ### 3. Recently Completed (rolling log, last ~15 — older entries live in `.ai/CHANGELOG.md`)
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-08 | antigravity-ide | Finance AR Batch (19 features, DB+API+UI): dunning levels CRUD + stats + pause/resume, AR aging report (5 buckets + visual bar), customer statement (ledger+CSV), credit risk management (limit/hold/rating edits), cash application (payment→invoice), 15 new controller endpoints, 5 new permissions; overhauled ar-automation page, 3 new Next.js pages, Advanced Finance nav updated; both API+Web tsc clean. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | God-class decomposition of BuilderService: extracted Forms, Workflows, Stats, Dashboards, DevOps, and WebContent logic into dedicated sub-services, redirected builder.controller.ts, cleaned up builder.service.ts, updated module, and verified 109 unit tests pass. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | God-class decomposition of inventory service: extracted Warehouse sub-domain operations (`getWarehouses`, `getWarehouseById`, `createWarehouse`, `updateWarehouse`, `deleteWarehouse`) into dedicated `InventoryWarehousesService`, resolved unused tsc errors, and added vitest coverage spec (4/4 tests passed). | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Batch Throughput + Verify-Once: AUTOPILOT now mandates 10–20+ features per cycle (one sub-domain batch, DB+API+UI required), batch-efficient build order (one migration, bulk API, bulk UI, one test pass), ≥70% time on code, and full gates (typecheck/suite/smoke) run exactly once per cycle. | see CHANGELOG 2026-07-08 |
