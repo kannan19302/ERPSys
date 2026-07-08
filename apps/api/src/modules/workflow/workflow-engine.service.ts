@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AiService } from '../ai/ai.service';
 
 interface WorkflowContext {
   tenantId: string;
@@ -12,7 +13,10 @@ interface WorkflowContext {
 
 @Injectable()
 export class WorkflowEngineService {
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(
+    private eventEmitter: EventEmitter2,
+    private readonly aiService: AiService
+  ) {}
 
   async executeWorkflow(tenantId: string, workflowId: string, context: WorkflowContext) {
     const workflow = await prisma.workflow.findFirst({
@@ -129,32 +133,19 @@ LOW + APPROVE = auto-approve. MEDIUM or HIGH + ESCALATE = route to human reviewe
     let reasoning = 'AI review unavailable; defaulting to human escalation.';
     let recommendation = 'ESCALATE';
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (apiKey) {
+    if (this.aiService.isConfigured()) {
       try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 256,
-            messages: [{ role: 'user', content: prompt }],
-          }),
-        });
-        if (res.ok) {
-          const body = await res.json() as { content?: Array<{ type: string; text: string }> };
-          const text = body.content?.[0]?.type === 'text' ? body.content[0].text : '';
-          const jsonMatch = text.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]) as { riskLevel?: string; reasoning?: string; recommendation?: string };
-            riskLevel = parsed.riskLevel || riskLevel;
-            reasoning = parsed.reasoning || reasoning;
-            recommendation = parsed.recommendation || recommendation;
-          }
+        const res = await this.aiService.chat(
+          [{ role: 'user', content: prompt }],
+          { maxTokens: 256, tenantId: context.tenantId }
+        );
+        const text = res.content;
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as { riskLevel?: string; reasoning?: string; recommendation?: string };
+          riskLevel = parsed.riskLevel || riskLevel;
+          reasoning = parsed.reasoning || reasoning;
+          recommendation = parsed.recommendation || recommendation;
         }
       } catch {
         // Keep defaults on network/parse error

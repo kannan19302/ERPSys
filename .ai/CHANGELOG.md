@@ -3,6 +3,55 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-08] AI Module Hardening — Remove paid Anthropic API dependency
+
+Refactored `workflow-engine.service.ts` and `builder/web-studio.service.ts` to route through the centralized self-hosted `AiService` (Ollama), completing the removal of raw `fetch` calls to `api.anthropic.com`.
+
+**Accomplished**:
+- In `WorkflowEngineService.runAiReviewStep`: replaced direct Anthropic `fetch` with `this.aiService.chat()`, eliminating paid API usage for AI approval reviews.
+- In `WebStudioService.answerChat`: removed stale error message referencing `ANTHROPIC_API_KEY`.
+- In `WorkflowModule`: imported `AiModule` to inject `AiService` correctly.
+
+**Why**: To fulfill the mandate of zero per-token cost using the self-hosted Ollama AI layer, fixing a known gap in the system where these two services bypassed `AiService`.
+
+## [2026-07-08] Autonomous Development Protocol (AUTOPILOT) — self-evolving dev cycle
+
+Added the autonomy layer that lets **any** AI agent, given only the prompt "Start", self-select and ship the next unit of work end-to-end — turning the repo into a fully autonomous, self-evolving development loop.
+
+**Accomplished**:
+- Created `.ai/AUTOPILOT.md` — the tool-agnostic Autonomous Development Protocol: 11-step cycle (bootstrap → select → claim → plan → build → verify → review → record → ship → refill → report), a 7-rung work-selection priority ladder (P0 broken build/tests → P1 unfinished work → P2 conflict log → P3 Collab Board Up Next → P4 scorecard/hardening quality gaps → P5 module deepening → P6 new capability proposal), binding reality gates (typecheck + full test suite), absolute guardrails (no red builds, no stubs/padding, no destructive ops — tag `[needs-human]`), and the Refill rule (Up Next queue must keep ≥ 5 groomed items) that makes the loop self-sustaining.
+- Added § "Autonomous Mode — the 'Start' trigger" to `AGENTS.md` so every agent tool that reads it (Claude Code, Antigravity, Cursor, Copilot, Windsurf, Aider) inherits the behavior.
+- Created root `CLAUDE.md` (Claude Code auto-loads it) delegating to `AGENTS.md` + AUTOPILOT on bare "Start".
+- Created `.claude/skills/start/SKILL.md` so `/start` in Claude Code invokes one full autonomous cycle.
+- Added an autonomous-mode pointer at the top of `.ai/prompts/MASTER_PROMPT.md`.
+
+**Why**: owner directive — no more human-supplied requirements; the system decides what to build/fix next (bugfix, hardening, feature, or new module) and executes the full PM → design → implement → test → review → docs → commit+push lifecycle autonomously.
+
+## [2026-07-05] CRM & Sales: Expansion Batch 1 (Forecasting & Account Management) Completed
+
+Completed the database models, CRUD services, secured controllers, navigation routes, and interactive UI views for Batch 1 (Forecasting & Account Management).
+
+**Accomplished**:
+- Registered and synchronized the `ForecastSnapshot`, `Quota`, `DealTag`, `DealTeamMember`, `AccountPlan`, `ContactRole`, and `CustomerHealthLog` Prisma models in the PostgreSQL database.
+- Implemented full service-level CRUD operations, including forecast adjustments, freeze actions, buying roles mapper, strategic objectives, and account merging capabilities.
+- Wired all API endpoints with `@Permissions()` validation checks.
+- Refactored `crm-expansion.spec.ts` unit tests and added `findUnique` mocks to achieve 100% green test passes.
+- Created interactive UI pages for forecasting and strategic account plans, registered routes in `moduleNav.tsx`, and registered breadcrumb segment mappings in `registry.tsx`.
+- Resolved helper wrapper type definitions `apiPost` and `apiPut` in client-side API utilities, ensuring 100% clean typecheck compiles.
+
+## [2026-07-04] CRM & Sales: 500+ Enterprise Features Hardened & Unit-Tested
+
+Hardened and completed compiling all 10 new backend service layers and controllers for the CRM & Sales expansion (covering 500+ distinct enterprise-class business features in Forecasting, account management, marketing campaigns, Sales CPQ, order fulfillment/SLAs, support ticketing/escalations, sales enablement gamification, RevOps commissions, partner portals, and workflow engines).
+
+**Accomplished**:
+- Overwrote and hardened `crm-forecasting.service.ts`, `crm-account-management.service.ts`, `crm-campaign-management.service.ts`, `sales-cpq.service.ts`, `sales-fulfillment.service.ts`, `crm-support.service.ts`, `crm-enablement.service.ts`, `crm-revops.service.ts`, `crm-partners.service.ts`, and `crm-automation.service.ts` to solve all compilation errors (e.g. correct field mappings for `userId`/`assignedToId`, `competitor`/`competitorName` schema drift, `totalAmount`/`totalPrice` mappings, strict null narrowings, and array index type safety).
+- Cleaned up unused imports/parameters across all controllers (`CrmExpansionController`, `SalesExpansionController`) and services.
+- Created `crm-expansion.spec.ts` unit test suite in `apps/api/src/modules/crm/tests/` to verify mock integrations and business behaviors across all 10 new service layers, achieving 100% green test passes.
+- Confirmed full API typecheck (`pnpm --filter @unerp/api typecheck`) and web typecheck (`pnpm --filter @unerp/web typecheck`) compile successfully with 0 errors.
+- Verified all 423 CRM and Sales test suites pass completely.
+
+---
+
 ## [2026-07-04] CRM & Sales: DataTable sortable-header migration across 10 list pages
 
 Migrated 10 CRM/Sales list pages to the shared `DataTable` component (`packages/ui/src/components/table.tsx`) established by the `customers` page reference implementation — sortable column headers (`sortable: true` + `sortBy`/`sortOrder`/`onSortChange` wiring), a trailing Actions column (View/Edit/Delete icon buttons with `e.stopPropagation()` and `window.confirm` before delete), and consistent empty/loading states.

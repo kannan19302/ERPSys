@@ -189,7 +189,7 @@ export class WebStudioService {
     const context = contextParts.join('\n').slice(0, 12000);
 
     if (!this.ai.isConfigured()) {
-      return { reply: 'The AI assistant is not configured yet. Please set ANTHROPIC_API_KEY on the server.', degraded: true };
+      return { reply: 'The AI assistant is not configured yet.', degraded: true };
     }
 
     const result = await this.ai.chat(
