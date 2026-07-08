@@ -1,5 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BuilderService } from '../builder.service';
+import { BuilderFormsService } from '../builder-forms.service';
+import { BuilderWorkflowsService } from '../builder-workflows.service';
+import { BuilderStatsService } from '../builder-stats.service';
+import { BuilderDashboardsService } from '../builder-dashboards.service';
+import { BuilderDevOpsService } from '../builder-devops.service';
+import { BuilderWebContentService } from '../builder-web-content.service';
 import { prisma } from '@unerp/database';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
@@ -52,13 +58,45 @@ vi.mock('@unerp/database', () => {
 
 describe('BuilderService', () => {
   let service: BuilderService;
+  let formsService: BuilderFormsService;
+  let workflowsService: BuilderWorkflowsService;
+  let statsService: BuilderStatsService;
+  let dashboardsService: BuilderDashboardsService;
+  let devOpsService: BuilderDevOpsService;
+  let webContentService: BuilderWebContentService;
+  let serviceMap: Record<string, any>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BuilderService],
+      providers: [
+        BuilderService,
+        BuilderFormsService,
+        BuilderWorkflowsService,
+        BuilderStatsService,
+        BuilderDashboardsService,
+        BuilderDevOpsService,
+        BuilderWebContentService,
+      ],
     }).compile();
 
     service = module.get<BuilderService>(BuilderService);
+    formsService = module.get<BuilderFormsService>(BuilderFormsService);
+    workflowsService = module.get<BuilderWorkflowsService>(BuilderWorkflowsService);
+    statsService = module.get<BuilderStatsService>(BuilderStatsService);
+    dashboardsService = module.get<BuilderDashboardsService>(BuilderDashboardsService);
+    devOpsService = module.get<BuilderDevOpsService>(BuilderDevOpsService);
+    webContentService = module.get<BuilderWebContentService>(BuilderWebContentService);
+
+    serviceMap = {
+      service,
+      formsService,
+      workflowsService,
+      statsService,
+      dashboardsService,
+      devOpsService,
+      webContentService,
+    };
+
     vi.clearAllMocks();
   });
 
@@ -67,34 +105,37 @@ describe('BuilderService', () => {
   });
 
   const models = [
-    { entity: 'Form', prismaMock: prisma.builderForm, createArgs: ['t1', { name: 'n', slug: 's' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
-    { entity: 'Workflow', prismaMock: prisma.builderWorkflow, createArgs: ['t1', { name: 'n', docType: 'd' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
-    { entity: 'Dashboard', prismaMock: prisma.builderDashboard, createArgs: ['t1', { name: 'n', refreshRate: 60 }], updateArgs: ['t1', 'id', { name: 'n2' }] },
-    { entity: 'Module', prismaMock: prisma.builderModule, createArgs: ['t1', { name: 'n', slug: 's' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
-    { entity: 'AutomationRule', prismaMock: prisma.automationRule, createArgs: ['t1', { name: 'n', trigger: 't' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
-    { entity: 'WebPage', prismaMock: prisma.webPage, createArgs: ['t1', { name: 'n', slug: 's' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
-    { entity: 'BlogPost', prismaMock: prisma.blogPost, createArgs: ['t1', { title: 't', slug: 's' }], updateArgs: ['t1', 'id', { title: 't2' }] },
+    { entity: 'Form', serviceName: 'formsService', prismaMock: prisma.builderForm, createArgs: ['t1', { name: 'n', slug: 's' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
+    { entity: 'Workflow', serviceName: 'workflowsService', prismaMock: prisma.builderWorkflow, createArgs: ['t1', { name: 'n', docType: 'd' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
+    { entity: 'Dashboard', serviceName: 'dashboardsService', prismaMock: prisma.builderDashboard, createArgs: ['t1', { name: 'n', refreshRate: 60 }], updateArgs: ['t1', 'id', { name: 'n2' }] },
+    { entity: 'Module', serviceName: 'service', prismaMock: prisma.builderModule, createArgs: ['t1', { name: 'n', slug: 's' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
+    { entity: 'AutomationRule', serviceName: 'service', prismaMock: prisma.automationRule, createArgs: ['t1', { name: 'n', trigger: 't' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
+    { entity: 'WebPage', serviceName: 'webContentService', prismaMock: prisma.webPage, createArgs: ['t1', { name: 'n', slug: 's' }], updateArgs: ['t1', 'id', { name: 'n2' }] },
+    { entity: 'BlogPost', serviceName: 'webContentService', prismaMock: prisma.blogPost, createArgs: ['t1', { title: 't', slug: 's' }], updateArgs: ['t1', 'id', { title: 't2' }] },
   ];
 
-  for (const { entity, prismaMock, createArgs, updateArgs } of models) {
+  for (const { entity, serviceName, prismaMock, createArgs, updateArgs } of models) {
     describe(entity, () => {
       it(`should get ${entity}s`, async () => {
         (prismaMock.findMany as any).mockResolvedValue([]);
-        const result = await (service as any)[`get${entity}s`]('t1');
+        const targetService = serviceMap[serviceName];
+        const result = await targetService[`get${entity}s`]('t1');
         expect(result.data || result).toEqual([]);
         expect(prismaMock.findMany).toHaveBeenCalled();
       });
 
       it(`should get ${entity} by id`, async () => {
         (prismaMock.findFirst as any).mockResolvedValue({ id: '1' });
-        const result = await (service as any)[`get${entity}ById`]('t1', '1');
+        const targetService = serviceMap[serviceName];
+        const result = await targetService[`get${entity}ById`]('t1', '1');
         expect(result).toEqual({ id: '1' });
       });
 
       it(`should create ${entity}`, async () => {
         (prismaMock.findFirst as any).mockResolvedValue(null);
         (prismaMock.create as any).mockResolvedValue({ id: '1' });
-        const result = await (service as any)[`create${entity}`](...createArgs);
+        const targetService = serviceMap[serviceName];
+        const result = await targetService[`create${entity}`](...createArgs);
         expect(result.id).toBe('1');
         expect(prismaMock.create).toHaveBeenCalled();
       });
@@ -102,7 +143,8 @@ describe('BuilderService', () => {
       it(`should update ${entity}`, async () => {
         (prismaMock.findFirst as any).mockResolvedValue({ id: '1' });
         (prismaMock.update as any).mockResolvedValue({ id: '1' });
-        const result = await (service as any)[`update${entity}`](...updateArgs);
+        const targetService = serviceMap[serviceName];
+        const result = await targetService[`update${entity}`](...updateArgs);
         expect(result.id).toBe('1');
         expect(prismaMock.update).toHaveBeenCalled();
       });
@@ -110,7 +152,8 @@ describe('BuilderService', () => {
       it(`should delete ${entity}`, async () => {
         (prismaMock.findFirst as any).mockResolvedValue({ id: '1' });
         (prismaMock.delete as any).mockResolvedValue({ id: '1' });
-        const result = await (service as any)[`delete${entity}`]('t1', '1');
+        const targetService = serviceMap[serviceName];
+        const result = await targetService[`delete${entity}`]('t1', '1');
         expect(result).toEqual({ id: '1' });
         expect(prismaMock.delete).toHaveBeenCalled();
       });
@@ -143,7 +186,7 @@ describe('BuilderService', () => {
       (prisma.webMenu.count as any).mockResolvedValue(0);
       (prisma.webSeo.count as any).mockResolvedValue(0);
 
-      const stats = await service.getStats('tenant1');
+      const stats = await statsService.getStats('tenant1');
       expect(stats.erp.forms).toBe(5);
       expect(stats.web.pages).toBe(20);
     });
@@ -158,7 +201,7 @@ describe('BuilderService', () => {
       (prisma.webPage.findMany as any).mockResolvedValue([]);
       (prisma.blogPost.findMany as any).mockResolvedValue([]);
 
-      const items = await service.getRecentItems('tenant1');
+      const items = await statsService.getRecentItems('tenant1');
       expect(items).toHaveLength(2);
       expect(items[0]?.id).toBe('w1'); // w1 is newer (d2)
       expect(items[1]?.id).toBe('f1');
@@ -345,7 +388,7 @@ describe('BuilderService', () => {
       (prisma.builderWorkflow.findFirst as any).mockResolvedValue(wf);
       (prisma.builderWorkflow.update as any).mockResolvedValue(wf);
       
-      const result = await service.executeWorkflow('t1', 'w1');
+      const result = await workflowsService.executeWorkflow('t1', 'w1');
       expect(result.status).toBe('COMPLETED');
       expect(result.logs.length).toBe(2);
       expect(result.logs[0]?.nodeLabel).toBe('Start');
@@ -355,7 +398,7 @@ describe('BuilderService', () => {
 
     it('should fail if no executable nodes', async () => {
       (prisma.builderWorkflow.findFirst as any).mockResolvedValue({ id: 'w1', nodes: [] });
-      await expect(service.executeWorkflow('t1', 'w1')).rejects.toThrow('Workflow has no executable nodes');
+      await expect(workflowsService.executeWorkflow('t1', 'w1')).rejects.toThrow('Workflow has no executable nodes');
     });
   });
 
@@ -516,7 +559,7 @@ describe('BuilderService', () => {
         ]);
       });
 
-      const res = await service.getGlobalPerformanceStats('tenant-1');
+      const res = await statsService.getGlobalPerformanceStats('tenant-1');
       expect(res.metrics.totalRevenue).toBe(1500);
       expect(res.metrics.pendingInvoices).toBe(2);
       expect(res.metrics.activeEmployees).toBe(12);
@@ -543,7 +586,7 @@ describe('BuilderService', () => {
       (prisma.builderModule.findMany as any).mockRejectedValue(new Error('DB Error'));
       (prisma.customRecord.findMany as any).mockRejectedValue(new Error('DB Error'));
 
-      const res = await service.getGlobalPerformanceStats('tenant-1');
+      const res = await statsService.getGlobalPerformanceStats('tenant-1');
       expect(res.metrics.totalRevenue).toBe(0);
       expect(res.metrics.activeEmployees).toBe(0);
       expect(res.metrics.totalCustomApps).toBe(0);

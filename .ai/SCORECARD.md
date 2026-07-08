@@ -1,11 +1,11 @@
 # Production-Readiness Scorecard
 
 > **Generated file** — produced by `node scripts/scorecard.mjs`. Do not edit by hand.
-> Last generated: 2026-07-04T04:24:19.699Z
+> Last generated: 2026-07-08T14:10:39.925Z
 
-## System score (heuristic): 10 / 10
+## System score (heuristic): 9.9 / 10
 
-- Module average: **9.9 / 10** (34 modules)
+- Module average: **9.9 / 10** (35 modules)
 - Platform average: **10 / 10**
 
 The score below measures the **presence** of good patterns (validation,
@@ -53,20 +53,22 @@ system reaches 10 only when every module and every platform dimension is 10.
 | auth  | **8.4** | 10 | 10 | 10 | 5 | 4 | 10 | 10 |
 | admin  | **9.4** | 6 | 10 | 10 | 10 | 10 | 10 | 10 |
 | ecommerce  | **9.4** | 10 | 10 | 10 | 6 | 10 | 10 | 10 |
-| advanced-finance  | **9.9** | 10 | 10 | 10 | 9 | 10 | 10 | 10 |
+| crm  | **9.6** | 10 | 9 | 10 | 10 | 10 | 8 | 10 |
+| sales  | **9.7** | 10 | 10 | 10 | 10 | 10 | 8 | 10 |
 | procurement  | **9.9** | 10 | 10 | 10 | 9 | 10 | 10 | 10 |
+| advanced-finance ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | advanced-hr ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | ai ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | analytics ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | api-platform ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | builder ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | communication ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
-| crm ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | devops ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | documents ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | education ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | field-service ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | finance ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
+| fixed-assets ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | healthcare ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | hr ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | inventory ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
@@ -80,7 +82,6 @@ system reaches 10 only when every module and every platform dimension is 10.
 | real-estate ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | reporting ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | saas ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
-| sales ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | storage ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | supply-chain ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | workflow ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |

@@ -1,7 +1,20 @@
 # Changelog — Universal ERP System
 
 > This file is maintained by AI agents and developers after completing work.
-> Format: Newest entries at the top.
+## [2026-07-08] God-Class Decomposition of BuilderService — Phase 11-20 Hardening
+
+Decomposed the `BuilderService` god-class by extracting Forms, Workflows, Dashboards, Web Pages, Blog Posts, Stats, and DevOps methods into dedicated domain sub-services.
+
+**Accomplished**:
+- Created `BuilderFormsService` and extracted forms CRUD and publishing logic.
+- Created `BuilderWorkflowsService` and extracted workflow CRUD and simulation execution engine.
+- Modified `builder.module.ts` to register and export all new and draft sub-services (`BuilderFormsService`, `BuilderWorkflowsService`, `BuilderStatsService`, `BuilderDashboardsService`, `BuilderDevOpsService`, `BuilderWebContentService`).
+- Refactored `BuilderController` constructor to inject all 6 sub-services and redirected stats, forms, workflows, dashboards, web CMS, and DevOps Capacitor builds endpoints to call the appropriate sub-services.
+- Cleaned up `BuilderService` by deleting the extracted methods, reducing its LOC footprint significantly.
+- Fixed unit tests in `builder.service.spec.ts` and `builder.controller.spec.ts` to mock and invoke the appropriate sub-services (all 109 builder unit tests passed successfully).
+- Confirmed full API typecheck (`pnpm --filter @unerp/api typecheck`) and the full test suite (`pnpm --filter @unerp/api test`) compile and pass with 0 errors (all 2030 unit tests passed).
+
+**Why**: To perform Phase 1 of Enterprise Hardening (Decomposing god-classes (>1,500 LOC) into modular domain sub-services, satisfying the Strangler-fig refactoring pattern).
 
 ## [2026-07-08] Inventory Service God-Class Decomposition — Warehouses Sub-Domain
 

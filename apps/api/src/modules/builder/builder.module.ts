@@ -11,10 +11,45 @@ import { BuilderAiService } from './builder-ai.service';
 import { GovernanceController } from './governance.controller';
 import { AiModule } from '../ai/ai.module';
 
+// Decomposed Sub-services
+import { BuilderFormsService } from './builder-forms.service';
+import { BuilderWorkflowsService } from './builder-workflows.service';
+import { BuilderStatsService } from './builder-stats.service';
+import { BuilderDashboardsService } from './builder-dashboards.service';
+import { BuilderDevOpsService } from './builder-devops.service';
+import { BuilderWebContentService } from './builder-web-content.service';
+
 @Module({
   imports: [AiModule],
   controllers: [BuilderController, WebPublicController, WebStudioController, GovernanceController],
-  providers: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService, BuilderAiService],
-  exports: [BuilderService, WebCollectionsService, WebStudioService, BuilderGovernanceService, BuilderScriptingService, BuilderAiService],
+  providers: [
+    BuilderService,
+    WebCollectionsService,
+    WebStudioService,
+    BuilderGovernanceService,
+    BuilderScriptingService,
+    BuilderAiService,
+    BuilderFormsService,
+    BuilderWorkflowsService,
+    BuilderStatsService,
+    BuilderDashboardsService,
+    BuilderDevOpsService,
+    BuilderWebContentService,
+  ],
+  exports: [
+    BuilderService,
+    WebCollectionsService,
+    WebStudioService,
+    BuilderGovernanceService,
+    BuilderScriptingService,
+    BuilderAiService,
+    BuilderFormsService,
+    BuilderWorkflowsService,
+    BuilderStatsService,
+    BuilderDashboardsService,
+    BuilderDevOpsService,
+    BuilderWebContentService,
+  ],
 })
 export class BuilderModule {}
+

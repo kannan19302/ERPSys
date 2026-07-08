@@ -60,7 +60,17 @@ describe('BuilderController', () => {
     });
 
     const mockService = generateMockService();
-    controller = new BuilderController(mockService as any);
+    controller = new BuilderController(
+      mockService as any, // builderService
+      {} as any,          // webCollections
+      {} as any,          // builderAiService
+      mockService as any, // builderFormsService
+      mockService as any, // builderWorkflowsService
+      mockService as any, // builderStatsService
+      mockService as any, // builderDashboardsService
+      {} as any,          // builderDevOpsService
+      mockService as any, // builderWebContentService
+    );
   });
 
   it('should be defined', () => {

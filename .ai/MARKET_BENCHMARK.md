@@ -67,11 +67,11 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Gap | Who has it | UniERP | Value | Size |
 |:--|:--|:--|:--|:--|
 | Automated bank feeds (Plaid/Yodlee-style connections, not just statement import) | NetSuite, Intacct, Odoo, Dynamics | MISSING | H | M |
-| Revenue recognition engine (ASC 606/IFRS 15 schedules, deferral rules) | NetSuite, Intacct, SAP | MISSING | H | L |
-| Multi-entity consolidation with inter-company eliminations | Intacct, NetSuite, SAP | MISSING | H | L |
+| Revenue recognition engine (ASC 606/IFRS 15 schedules, deferral rules) | NetSuite, Intacct, SAP | 🟢 SHIPPED 2026-07-04 | H | L |
+| Multi-entity consolidation with inter-company eliminations | Intacct, NetSuite, SAP | 🟢 SHIPPED 2026-07-04 | H | L |
 | Cash-flow forecasting (rolling 13-week, AI-assisted) | Dynamics, NetSuite | MISSING | H | M |
 | Dunning / automated payment reminders with escalation levels | Odoo, NetSuite, ERPNext | PARTIAL (invoices exist, no dunning cadence) | M | S |
-| Expense management (OCR receipt capture, employee reimbursement flow) | NetSuite, Zoho, Odoo | MISSING | M | M |
+| Expense management (OCR receipt capture, employee reimbursement flow) | NetSuite, Zoho, Odoo | PARTIAL (reimbursement workflow shipped 2026-07-04, OCR missing) | M | M |
 
 ### CRM & Sales — refs: Salesforce, HubSpot, Dynamics 365, Zoho, Odoo
 | Gap | Who has it | UniERP | Value | Size |
@@ -149,7 +149,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Module | Last benchmarked | Method | Notes |
 |:--|:--|:--|:--|
 | ALL (seed pass) | 2026-07-08 | offline analysis | Initial seed by claude-code; each module still owes a web-verified pass |
-| Finance | — (due) | — | |
+| Finance | 2026-07-08 | offline analysis | Verified consolidation, rev-rec, and expense-reimbursement are implemented. Plaid bank feeds and cash forecasting remain key gaps. |
 | CRM & Sales | — (due) | — | |
 | Inventory/Supply Chain | — (due) | — | |
 | Manufacturing | — (due) | — | |

@@ -79,6 +79,12 @@ import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { BuilderService } from './builder.service';
 import { WebCollectionsService } from './web-collections.service';
 import { BuilderAiService } from './builder-ai.service';
+import { BuilderFormsService } from './builder-forms.service';
+import { BuilderWorkflowsService } from './builder-workflows.service';
+import { BuilderStatsService } from './builder-stats.service';
+import { BuilderDashboardsService } from './builder-dashboards.service';
+import { BuilderDevOpsService } from './builder-devops.service';
+import { BuilderWebContentService } from './builder-web-content.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthenticatedRequest extends Request {
@@ -100,6 +106,12 @@ export class BuilderController {
     private readonly builderService: BuilderService,
     private readonly webCollections: WebCollectionsService,
     private readonly builderAiService: BuilderAiService,
+    private readonly builderFormsService: BuilderFormsService,
+    private readonly builderWorkflowsService: BuilderWorkflowsService,
+    private readonly builderStatsService: BuilderStatsService,
+    private readonly builderDashboardsService: BuilderDashboardsService,
+    private readonly builderDevOpsService: BuilderDevOpsService,
+    private readonly builderWebContentService: BuilderWebContentService,
   ) {}
 
   // ─── Stats ──────────────────────────────────────
@@ -107,14 +119,14 @@ export class BuilderController {
   @Get('stats')
   @Permissions('builder.read')
   async getStats(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getStats(req.user.tenantId);
+    return this.builderStatsService.getStats(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get recent items' })
   @Get('recent-items')
   @Permissions('builder.read')
   async getRecentItems(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getRecentItems(req.user.tenantId);
+    return this.builderStatsService.getRecentItems(req.user.tenantId);
   }
 
   // ─── Forms ──────────────────────────────────────
@@ -126,21 +138,21 @@ export class BuilderController {
     @Query('search') search?: string,
     @Query('module') module?: string,
   ) {
-    return this.builderService.getForms(req.user.tenantId, { search, module });
+    return this.builderFormsService.getForms(req.user.tenantId, { search, module });
   }
 
   @ApiOperation({ summary: 'Get form stats' })
   @Get('forms/stats')
   @Permissions('builder.form.read')
   async getFormStats(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getFormStats(req.user.tenantId);
+    return this.builderFormsService.getFormStats(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get form by id' })
   @Get('forms/:id')
   @Permissions('builder.form.read')
   async getFormById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getFormById(req.user.tenantId, id);
+    return this.builderFormsService.getFormById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create form' })
@@ -150,7 +162,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @Body(new ZodValidationPipe(createBuilderFormSchema)) dto: CreateBuilderFormInput
   ) {
-    return this.builderService.createForm(req.user.tenantId, dto);
+    return this.builderFormsService.createForm(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update form' })
@@ -161,21 +173,21 @@ export class BuilderController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateBuilderFormSchema)) dto: UpdateBuilderFormInput
   ) {
-    return this.builderService.updateForm(req.user.tenantId, id, dto);
+    return this.builderFormsService.updateForm(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete form' })
   @Delete('forms/:id')
   @Permissions('builder.form.delete')
   async deleteForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteForm(req.user.tenantId, id);
+    return this.builderFormsService.deleteForm(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Publish builder form' })
   @Post('forms/:id/publish')
   @Permissions('builder.form.update')
   async publishBuilderForm(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.publishBuilderForm(req.user.tenantId, id);
+    return this.builderFormsService.publishBuilderForm(req.user.tenantId, id);
   }
 
   // ─── Workflows ──────────────────────────────────
@@ -183,14 +195,14 @@ export class BuilderController {
   @Get('workflows')
   @Permissions('builder.workflow.read')
   async getWorkflows(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWorkflows(req.user.tenantId);
+    return this.builderWorkflowsService.getWorkflows(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get workflow by id' })
   @Get('workflows/:id')
   @Permissions('builder.workflow.read')
   async getWorkflowById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getWorkflowById(req.user.tenantId, id);
+    return this.builderWorkflowsService.getWorkflowById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create workflow' })
@@ -200,7 +212,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @Body(new ZodValidationPipe(createBuilderWorkflowSchema)) dto: any
   ) {
-    return this.builderService.createWorkflow(req.user.tenantId, dto);
+    return this.builderWorkflowsService.createWorkflow(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update workflow' })
@@ -211,28 +223,28 @@ export class BuilderController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateBuilderWorkflowSchema)) dto: any
   ) {
-    return this.builderService.updateWorkflow(req.user.tenantId, id, dto);
+    return this.builderWorkflowsService.updateWorkflow(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete workflow' })
   @Delete('workflows/:id')
   @Permissions('builder.workflow.delete')
   async deleteWorkflow(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWorkflow(req.user.tenantId, id);
+    return this.builderWorkflowsService.deleteWorkflow(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Execute workflow' })
   @Post('workflows/:id/execute')
   @Permissions('builder.workflow.update')
   async executeWorkflow(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.executeWorkflow(req.user.tenantId, id);
+    return this.builderWorkflowsService.executeWorkflow(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Get workflow executions' })
   @Get('workflows/:id/executions')
   @Permissions('builder.workflow.read')
   async getWorkflowExecutions(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getWorkflowExecutions(req.user.tenantId, id);
+    return this.builderWorkflowsService.getWorkflowExecutions(req.user.tenantId, id);
   }
 
   // ─── Dashboards ─────────────────────────────────
@@ -240,21 +252,21 @@ export class BuilderController {
   @Get('dashboards/global-stats')
   @Permissions('builder.dashboard.read')
   async getGlobalPerformanceStats(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getGlobalPerformanceStats(req.user.tenantId);
+    return this.builderStatsService.getGlobalPerformanceStats(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get dashboards' })
   @Get('dashboards')
   @Permissions('builder.dashboard.read')
   async getDashboards(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getDashboards(req.user.tenantId);
+    return this.builderDashboardsService.getDashboards(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get dashboard by id' })
   @Get('dashboards/:id')
   @Permissions('builder.dashboard.read')
   async getDashboardById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getDashboardById(req.user.tenantId, id);
+    return this.builderDashboardsService.getDashboardById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create dashboard' })
@@ -264,7 +276,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @Body(new ZodValidationPipe(createBuilderDashboardSchema)) dto: any
   ) {
-    return this.builderService.createDashboard(req.user.tenantId, dto);
+    return this.builderDashboardsService.createDashboard(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update dashboard' })
@@ -275,14 +287,14 @@ export class BuilderController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateBuilderDashboardSchema)) dto: any
   ) {
-    return this.builderService.updateDashboard(req.user.tenantId, id, dto);
+    return this.builderDashboardsService.updateDashboard(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete dashboard' })
   @Delete('dashboards/:id')
   @Permissions('builder.dashboard.delete')
   async deleteDashboard(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteDashboard(req.user.tenantId, id);
+    return this.builderDashboardsService.deleteDashboard(req.user.tenantId, id);
   }
 
   // ─── Custom Modules ─────────────────────────────
@@ -633,14 +645,14 @@ export class BuilderController {
   @Get('web-pages')
   @Permissions('builder.web.read')
   async getWebPages(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWebPages(req.user.tenantId);
+    return this.builderWebContentService.getWebPages(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get web page by id' })
   @Get('web-pages/:id')
   @Permissions('builder.web.read')
   async getWebPageById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getWebPageById(req.user.tenantId, id);
+    return this.builderWebContentService.getWebPageById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create web page' })
@@ -650,7 +662,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @Body(new ZodValidationPipe(createWebPageSchema)) dto: any
   ) {
-    return this.builderService.createWebPage(req.user.tenantId, dto);
+    return this.builderWebContentService.createWebPage(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update web page' })
@@ -661,14 +673,14 @@ export class BuilderController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateWebPageSchema)) dto: any
   ) {
-    return this.builderService.updateWebPage(req.user.tenantId, id, dto);
+    return this.builderWebContentService.updateWebPage(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete web page' })
   @Delete('web-pages/:id')
   @Permissions('builder.web.delete')
   async deleteWebPage(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWebPage(req.user.tenantId, id);
+    return this.builderWebContentService.deleteWebPage(req.user.tenantId, id);
   }
 
   // ─── Blog Posts ─────────────────────────────────
@@ -676,14 +688,14 @@ export class BuilderController {
   @Get('blog-posts')
   @Permissions('builder.blog.read')
   async getBlogPosts(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getBlogPosts(req.user.tenantId);
+    return this.builderWebContentService.getBlogPosts(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Get blog post by id' })
   @Get('blog-posts/:id')
   @Permissions('builder.blog.read')
   async getBlogPostById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getBlogPostById(req.user.tenantId, id);
+    return this.builderWebContentService.getBlogPostById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create blog post' })
@@ -693,7 +705,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @Body(new ZodValidationPipe(createBlogPostSchema)) dto: any
   ) {
-    return this.builderService.createBlogPost(req.user.tenantId, dto);
+    return this.builderWebContentService.createBlogPost(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update blog post' })
@@ -704,14 +716,14 @@ export class BuilderController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateBlogPostSchema)) dto: any
   ) {
-    return this.builderService.updateBlogPost(req.user.tenantId, id, dto);
+    return this.builderWebContentService.updateBlogPost(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete blog post' })
   @Delete('blog-posts/:id')
   @Permissions('builder.blog.delete')
   async deleteBlogPost(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteBlogPost(req.user.tenantId, id);
+    return this.builderWebContentService.deleteBlogPost(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -721,28 +733,28 @@ export class BuilderController {
   @Get('web-assets')
   @Permissions('builder.web.read')
   async getWebAssets(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWebAssets(req.user.tenantId);
+    return this.builderWebContentService.getWebAssets(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create web asset' })
   @Post('web-assets')
   @Permissions('builder.web.create')
   async createWebAsset(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebAssetSchema)) dto: any) {
-    return this.builderService.createWebAsset(req.user.tenantId, dto);
+    return this.builderWebContentService.createWebAsset(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update web asset' })
   @Patch('web-assets/:id')
   @Permissions('builder.web.update')
   async updateWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebAssetSchema)) dto: any) {
-    return this.builderService.updateWebAsset(req.user.tenantId, id, dto);
+    return this.builderWebContentService.updateWebAsset(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete web asset' })
   @Delete('web-assets/:id')
   @Permissions('builder.web.delete')
   async deleteWebAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWebAsset(req.user.tenantId, id);
+    return this.builderWebContentService.deleteWebAsset(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -752,28 +764,28 @@ export class BuilderController {
   @Get('web-templates')
   @Permissions('builder.web.read')
   async getWebTemplates(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWebTemplates(req.user.tenantId);
+    return this.builderWebContentService.getWebTemplates(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create web template' })
   @Post('web-templates')
   @Permissions('builder.web.create')
   async createWebTemplate(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebTemplateSchema)) dto: any) {
-    return this.builderService.createWebTemplate(req.user.tenantId, dto);
+    return this.builderWebContentService.createWebTemplate(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update web template' })
   @Patch('web-templates/:id')
   @Permissions('builder.web.update')
   async updateWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebTemplateSchema)) dto: any) {
-    return this.builderService.updateWebTemplate(req.user.tenantId, id, dto);
+    return this.builderWebContentService.updateWebTemplate(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete web template' })
   @Delete('web-templates/:id')
   @Permissions('builder.web.delete')
   async deleteWebTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWebTemplate(req.user.tenantId, id);
+    return this.builderWebContentService.deleteWebTemplate(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -783,28 +795,28 @@ export class BuilderController {
   @Get('web-menus')
   @Permissions('builder.web.read')
   async getWebMenus(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWebMenus(req.user.tenantId);
+    return this.builderWebContentService.getWebMenus(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create web menu' })
   @Post('web-menus')
   @Permissions('builder.web.create')
   async createWebMenu(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebMenuSchema)) dto: any) {
-    return this.builderService.createWebMenu(req.user.tenantId, dto);
+    return this.builderWebContentService.createWebMenu(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update web menu' })
   @Patch('web-menus/:id')
   @Permissions('builder.web.update')
   async updateWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebMenuSchema)) dto: any) {
-    return this.builderService.updateWebMenu(req.user.tenantId, id, dto);
+    return this.builderWebContentService.updateWebMenu(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete web menu' })
   @Delete('web-menus/:id')
   @Permissions('builder.web.delete')
   async deleteWebMenu(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWebMenu(req.user.tenantId, id);
+    return this.builderWebContentService.deleteWebMenu(req.user.tenantId, id);
   }
 
   // ---------------------------------------------------------------------------
@@ -814,28 +826,28 @@ export class BuilderController {
   @Get('web-seo')
   @Permissions('builder.web.read')
   async getWebSeo(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWebSeo(req.user.tenantId);
+    return this.builderWebContentService.getWebSeo(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create web seo' })
   @Post('web-seo')
   @Permissions('builder.web.create')
   async createWebSeo(@Req() req: AuthenticatedRequest, @Body(new ZodValidationPipe(createWebSeoSchema)) dto: any) {
-    return this.builderService.createWebSeo(req.user.tenantId, dto);
+    return this.builderWebContentService.createWebSeo(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update web seo' })
   @Patch('web-seo/:id')
   @Permissions('builder.web.update')
   async updateWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body(new ZodValidationPipe(updateWebSeoSchema)) dto: any) {
-    return this.builderService.updateWebSeo(req.user.tenantId, id, dto);
+    return this.builderWebContentService.updateWebSeo(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete web seo' })
   @Delete('web-seo/:id')
   @Permissions('builder.web.delete')
   async deleteWebSeo(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWebSeo(req.user.tenantId, id);
+    return this.builderWebContentService.deleteWebSeo(req.user.tenantId, id);
   }
 
 
@@ -1059,14 +1071,14 @@ export class BuilderController {
   @Get('web-settings')
   @Permissions('builder.page.read')
   async getWebSettings(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWebSettings(req.user.tenantId);
+    return this.builderWebContentService.getWebSettings(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Update web settings' })
   @Patch('web-settings')
   @Permissions('builder.page.update')
   async updateWebSettings(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) data: any) {
-    return this.builderService.updateWebSettings(req.user.tenantId, data);
+    return this.builderWebContentService.updateWebSettings(req.user.tenantId, data);
   }
 
   // ---------------------------------------------------------------------------
@@ -1314,7 +1326,7 @@ export class BuilderController {
   @Permissions('builder.read')
   @Get('widgets')
   async getWidgets(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getWidgets(req.user.tenantId);
+    return this.builderDevOpsService.getWidgets(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Create or update widget' })
@@ -1325,14 +1337,14 @@ export class BuilderController {
     @ZodBody(z.object({ name: z.string(), tag: z.string(), source: z.string(), manifest: z.any().optional() }))
     body: { name: string; tag: string; source: string; manifest?: any },
   ) {
-    return this.builderService.createWidget(req.user.tenantId, body.name, body.tag, body.source, body.manifest);
+    return this.builderDevOpsService.createWidget(req.user.tenantId, body.name, body.tag, body.source, body.manifest);
   }
 
   @ApiOperation({ summary: 'Delete widget' })
   @Permissions('builder.delete')
   @Delete('widgets/:id')
   async deleteWidget(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.deleteWidget(req.user.tenantId, id);
+    return this.builderDevOpsService.deleteWidget(req.user.tenantId, id);
   }
 
   // --- Git Control ---
@@ -1340,7 +1352,7 @@ export class BuilderController {
   @Permissions('builder.read')
   @Get('git/config')
   async getGitConfig(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getGitConfig(req.user.tenantId);
+    return this.builderDevOpsService.getGitConfig(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Save git config' })
@@ -1351,14 +1363,14 @@ export class BuilderController {
     @ZodBody(z.object({ repoUrl: z.string(), branch: z.string(), accessToken: z.string().optional() }))
     body: { repoUrl: string; branch: string; accessToken?: string },
   ) {
-    return this.builderService.saveGitConfig(req.user.tenantId, body.repoUrl, body.branch, body.accessToken);
+    return this.builderDevOpsService.saveGitConfig(req.user.tenantId, body.repoUrl, body.branch, body.accessToken);
   }
 
   @ApiOperation({ summary: 'Get git diff' })
   @Permissions('builder.read')
   @Get('git/diff')
   async getGitDiff(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getGitDiff(req.user.tenantId);
+    return this.builderDevOpsService.getGitDiff(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Commit git changes' })
@@ -1368,7 +1380,7 @@ export class BuilderController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(z.object({ message: z.string() })) body: { message: string },
   ) {
-    return this.builderService.executeGitCommit(req.user.tenantId, body.message);
+    return this.builderDevOpsService.executeGitCommit(req.user.tenantId, body.message);
   }
 
   // --- Native Builds ---
@@ -1376,7 +1388,7 @@ export class BuilderController {
   @Permissions('builder.read')
   @Get('native-builds')
   async getNativeBuilds(@Req() req: AuthenticatedRequest) {
-    return this.builderService.getNativeBuilds(req.user.tenantId);
+    return this.builderDevOpsService.getNativeBuilds(req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Trigger native build' })
@@ -1387,14 +1399,14 @@ export class BuilderController {
     @ZodBody(z.object({ version: z.string(), platform: z.string() }))
     body: { version: string; platform: string },
   ) {
-    return this.builderService.triggerNativeBuild(req.user.tenantId, body.version, body.platform);
+    return this.builderDevOpsService.triggerNativeBuild(req.user.tenantId, body.version, body.platform);
   }
 
   @ApiOperation({ summary: 'Get native build logs' })
   @Permissions('builder.read')
   @Get('native-builds/:id/logs')
   async getNativeBuildLogs(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.builderService.getNativeBuildLogs(req.user.tenantId, id);
+    return this.builderDevOpsService.getNativeBuildLogs(req.user.tenantId, id);
   }
 }
 

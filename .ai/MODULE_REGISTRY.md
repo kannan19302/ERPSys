@@ -79,6 +79,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-08 | antigravity-ide | God-class decomposition of BuilderService: extracted Forms, Workflows, Stats, Dashboards, DevOps, and WebContent logic into dedicated sub-services, redirected builder.controller.ts, cleaned up builder.service.ts, updated module, and verified 109 unit tests pass. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | God-class decomposition of inventory service: extracted Warehouse sub-domain operations (`getWarehouses`, `getWarehouseById`, `createWarehouse`, `updateWarehouse`, `deleteWarehouse`) into dedicated `InventoryWarehousesService`, resolved unused tsc errors, and added vitest coverage spec (4/4 tests passed). | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Autonomy Engine 10/10: binding E2E smoke gate (`apps/web/e2e/smoke.spec.ts`, 13/13 green vs live stack), reality-feedback loop (`scripts/feedback-scan.mjs` → generated `.ai/FEEDBACK.md`, error_logs/alerts/TODO feeding P1), unattended runners (`scripts/autopilot-loop.ps1`, `.github/workflows/autopilot.yml`), competitor-parity depth rule + RICE scoring in AUTOPILOT. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Market Discovery Engine: added `.ai/MARKET_BENCHMARK.md` (top-20 competitor set, Discovery Protocol, ~40-gap seeded backlog, rotation tracker); AUTOPILOT Step 9 → mandatory per-cycle REFILL & DISCOVER; priority ladder gained P5 Competitive gaps; seeded first two `[benchmark]` Up Next items. | see CHANGELOG 2026-07-08 |
@@ -291,11 +292,12 @@ Goal: move from "heuristic 10/10" to genuine enterprise-grade readiness (SAP/Ora
   `*.coverage.spec.ts` — decide whether to run the full suite in CI now that it's stable.
 - **Phase 1 — Architecture guardrails & god-class decomposition: IN PROGRESS.** CRM god-class **DONE**
   (`crm.service.ts` 2,330 → 322 LOC facade + 10 domain services, strangler-fig pattern, gates green).
+  `builder.service.ts` **DONE** (decomposed 2,906 LOC into 6 services + facade facade, redirected controller, all tests green).
+  `inventory.service.ts` **IN PROGRESS** (warehouses decomposed, others open).
   Follow-up: `crm.service.coverage.spec.ts` needs repointing to exercise the moved domain logic for
   real (currently instantiates `CrmService` with no sub-services). **Next god-classes still open**:
-  `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), advanced-finance/procurement/
-  manufacturing services (>1,200 LOC each). `dependency-cruiser`/ESLint module-boundary lint
-  (no cross-module deep imports, no business logic in controllers) not yet added to CI.
+  remaining inventory domain services, advanced-finance/procurement/manufacturing services (>1,200 LOC each).
+  `dependency-cruiser`/ESLint module-boundary lint (no cross-module deep imports, no business logic in controllers) not yet added to CI.
 - **Phase 2 — Data & tenant integrity: substantially COMPLETE.** Central tenant-isolation enforcement
   closed 2026-07-01: `TenantInterceptor` now registered globally (`APP_INTERCEPTOR`), fixed an
   args-mutation bug where `findMany()`-style calls with no options silently skipped scoping, added
