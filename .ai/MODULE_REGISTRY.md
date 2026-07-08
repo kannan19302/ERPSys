@@ -61,8 +61,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
-| claude-code | 2026-07-04 (session) | CRM Leads/Deals deepening: lead scoring decay, source ROI, territory assignment, nurture sequences, disqualify/reactivate, conversion audit, SLA timer; Deal health scoring, competitor tracking, win/loss taxonomy, deal team/split-credit, contract renewal linkage, quote linkage, discount approval workflow (`crm-leads.service.ts`, `crm-deals.service.ts`, new `crm-approvals.service.ts` + related controllers/migrations) — explicitly avoiding leads/opportunities list-table page.tsx JSX (another agent migrating those to shared DataTable) | main | In Progress |
+| claude-code | 2026-07-08 23:20 | Finance: Payables & Reporting Integration (AP matching + drill-through + batch payment run; APMatchRule/PaymentBatch/PaymentBatchLine models, match/batch services, `/payables/invoices/:id/match`, `/payables/payment-batches` CRUD+export, `/advanced-finance/reports/drilldown` endpoints, 3 UI pages, 3 permissions) | main | In Progress |
 | antigravity-ide | 2026-07-08 23:08 | Finance: Subscription Billing & MRR/ARR (Subscription/SubscriptionLine/SubscriptionUsage Prisma models, billing-run engine, MRR/ARR/churn calc service, CRUD endpoints + metrics, dashboard UI) | main | In Progress |
 
 ### 2. Up Next (unclaimed work, pick from the top)
