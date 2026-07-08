@@ -72,11 +72,14 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Cash-flow forecasting (rolling 13-week, AI-assisted) | Dynamics, NetSuite | 🟢 SHIPPED 2026-07-08 (rolling 13-week ForecastWeek projections, overrides, custom scenarios, dashboard) | H | M |
 | Dunning / automated payment reminders with escalation levels | Odoo, NetSuite, ERPNext | 🟢 SHIPPED 2026-07-08 (dunning levels, runs, pause/resume, stats + AR aging + customer statement + credit risk — full AR/collections suite) | M | S |
 | Expense management (OCR receipt capture, employee reimbursement flow) | NetSuite, Zoho, Odoo | 🟢 SHIPPED 2026-07-08 (simulated OCR extraction, category policies, mileage/per-diem auto-calc, multi-level approval, GL reimbursement posting, corporate card matching) | M | M |
-| Lease accounting (ASC 842/IFRS 16: right-of-use asset, lease liability amortization schedules) | NetSuite Fixed Assets, Sage Intacct Lease Accounting | MISSING | H | M |
+| Lease accounting (ASC 842/IFRS 16: right-of-use asset, lease liability amortization schedules) | NetSuite Fixed Assets, Sage Intacct Lease Accounting | ✅ SHIPPED 2026-07-08 (17 API endpoints, effective-interest amortization engine, GL posting, 3 UI pages, 23 tests) | H | M |
 | Subscription billing & recurring-revenue metrics (MRR/ARR tracking, usage-based billing, dunning tied to subscriptions) | Sage Intacct, Zuora, NetSuite SuiteBilling | MISSING | H | M |
 | Unified spend management (corporate card issuing + real-time transaction controls + budget-linked approvals, beyond expense reports) | Ramp, Brex, Emburse, BILL Spend & Expense | PARTIAL (corporate card import/matching shipped 2026-07-08; no card issuing, no real-time spend controls) | M | M |
 | Continuous close / close-management checklist with task automation and variance flagging | Sage Intacct, BlackLine, FloQast | PARTIAL (financial-periods close checklist exists; no automated variance flagging or close-task assignment) | M | M |
 | Project-based accounting (WIP, job costing, percentage-of-completion revenue recognition tied to projects) | Sage Intacct, Deltek, NetSuite SRP | PARTIAL (RevenueSchedule engine exists; not project-linked WIP/job-costing) | H | M |
+| AP three-way matching (auto-match PO → GR → vendor invoice, tolerance rules, exception queue) | NetSuite, SAP S/4HANA, Dynamics 365, Odoo | MISSING — NetSuite: configurable quantity/price tolerance per vendor, auto-post when matched, exception workflow with re-routing; SAP: match by GR line, LIV posting, price variance GL account | H | M |
+| Financial statement drill-through (click P&L/BS totals → underlying journal entries → source documents) | NetSuite SuiteAnalytics, Sage Intacct, Dynamics 365 | WEAK-UX — GL drilldown endpoint exists; no clickable P&L/BS report with drill path to journal lines and source transactions in one UX flow | H | S |
+| Vendor payment run (batch APR: select open invoices, auto-generate payment batch, print remittances, post payment GL entries) | SAP, NetSuite, Dynamics, Odoo | PARTIAL (individual invoice payment exists; no batch payment run with bank file / ACH export and remittance advice generation) | H | M |
 
 ### CRM & Sales — refs: Salesforce, HubSpot, Dynamics 365, Zoho, Odoo
 | Gap | Who has it | UniERP | Value | Size |
@@ -154,7 +157,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Module | Last benchmarked | Method | Notes |
 |:--|:--|:--|:--|
 | ALL (seed pass) | 2026-07-08 | offline analysis | Initial seed by claude-code; each module still owes a web-verified pass |
-| Finance | 2026-07-08 | web-verified (NetSuite, Sage Intacct, Odoo, Emburse/Ramp/BILL spend-mgmt sources) | All originally-seeded gaps now SHIPPED (bank feeds, cash-flow forecast, dunning, expense mgmt w/ OCR). New gaps found this pass: lease accounting (ASC 842/IFRS 16), subscription billing/MRR-ARR, unified spend management (card issuing + real-time controls), continuous close automation, project-based WIP/job-costing revenue recognition. |
+| Finance | 2026-07-08 (pass 2: 2026-07-08) | offline analysis (pass 2) | Pass 1: bank feeds, cash-flow, dunning, expense-mgmt OCR all SHIPPED. Pass 2: lease accounting SHIPPED. New gaps logged: AP 3-way matching, financial statement drill-through, batch vendor payment run. Remaining open: subscription billing (claimed), unified spend controls, continuous close, project-based WIP, project-based accounting. |
 | CRM & Sales | — (due) | — | |
 | Inventory/Supply Chain | — (due) | — | |
 | Manufacturing | — (due) | — | |
