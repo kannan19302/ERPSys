@@ -284,6 +284,8 @@ model Customer {
   cases         Case[]
   tags          CustomerTagLink[]
   contracts     Contract[]
+  accountPlans  AccountPlan[]
+  healthLogs    CustomerHealthLog[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -362,6 +364,7 @@ model Contact {
   activities Activity[]
   tags       ContactTagLink[]
   cases      Case[]
+  opportunityRoles ContactRole[]
 
   @@unique([tenantId, orgId, email])
   @@index([tenantId])
@@ -470,12 +473,128 @@ model Opportunity {
   pipeline   SalesPipeline?        @relation(fields: [pipelineId], references: [id])
   activities Activity[]
   lineItems  OpportunityLineItem[]
+  tags       DealTag[]
+  teamMembers DealTeamMember[]
+  contactRoles ContactRole[]
 
   @@index([tenantId])
   @@index([tenantId, stage])
   @@index([tenantId, pipelineId])
   @@index([customerId])
   @@map("opportunities")
+}
+
+model ForecastSnapshot {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  name            String
+  periodStart     DateTime  @map("period_start")
+  periodEnd       DateTime  @map("period_end")
+  quotaAmount     Decimal   @db.Decimal(15, 2) @map("quota_amount")
+  pipelineAmount  Decimal   @db.Decimal(15, 2) @map("pipeline_amount")
+  wonAmount       Decimal   @db.Decimal(15, 2) @map("won_amount")
+  forecastAmount  Decimal   @db.Decimal(15, 2) @map("forecast_amount") // override amount
+  status          String    @default("DRAFT") // DRAFT, FROZEN
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("forecast_snapshots")
+}
+
+model Quota {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  userId          String    @map("user_id")
+  period          String // Q1 2026, FY2026, etc.
+  amount          Decimal   @db.Decimal(15, 2)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, period])
+  @@index([tenantId])
+  @@map("quotas")
+}
+
+model DealTag {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  opportunityId   String    @map("opportunity_id")
+  tag             String
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  opportunity     Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, opportunityId, tag])
+  @@index([tenantId])
+  @@map("deal_tags")
+}
+
+model DealTeamMember {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  opportunityId   String    @map("opportunity_id")
+  userId          String    @map("user_id")
+  role            String // AE, SC, CSM, Exec Sponsor
+  accessLevel     String    @default("READ") // READ, WRITE
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  opportunity     Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, opportunityId, userId])
+  @@index([tenantId])
+  @@map("deal_team_members")
+}
+
+model AccountPlan {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  customerId      String    @map("customer_id")
+  name            String
+  objectives      String?
+  status          String    @default("ACTIVE") // ACTIVE, ARCHIVED
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  customer        Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("account_plans")
+}
+
+model ContactRole {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  opportunityId   String    @map("opportunity_id")
+  contactId       String    @map("contact_id")
+  role            String // Decision Maker, Influencer, Champion, Blocker
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  opportunity     Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  contact         Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, opportunityId, contactId])
+  @@index([tenantId])
+  @@map("contact_roles")
+}
+
+model CustomerHealthLog {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  customerId      String    @map("customer_id")
+  score           Int
+  status          String // GREEN, YELLOW, RED
+  reason          String?
+  loggedBy        String?   @map("logged_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  customer        Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("customer_health_logs")
 }
 
 model Activity {

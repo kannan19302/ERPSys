@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner, Badge, useToast } from '@unerp/ui';
+import { Card, PageHeader, Spinner, Badge, useToast, Button, Input } from '@unerp/ui';
 import {
   TrendingUp, TrendingDown, DollarSign, Target, BarChart3,
   ArrowUp, ArrowDown, Users, Clock, Award
@@ -23,30 +23,86 @@ export default function ForecastingPage() {
   const [targets, setTargets] = useState<SalesTarget[]>([]);
   const [sortField, setSortField] = useState<keyof RepPerformance>('revenue');
   const [sortAsc, setSortAsc] = useState(false);
+  const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [quotas, setQuotas] = useState<any[]>([]);
+  const [newQuota, setNewQuota] = useState({ userId: '', period: '', amount: '' });
+  const [submittingQuota, setSubmittingQuota] = useState(false);
   const toast = useToast();
 
+  const loadData = async () => {
+    try {
+      const [fc, rp, fn, tg, rf, snaps, qts] = await Promise.all([
+        apiGet<Forecast>('/crm/analytics/forecast'),
+        apiGet<RepPerformance[]>('/crm/analytics/rep-performance'),
+        apiGet<FunnelStage[]>('/crm/analytics/conversion-funnel'),
+        apiGet<SalesTarget[]>('/crm/targets'),
+        apiGet<RepForecast[]>('/crm/analytics/forecast-by-rep'),
+        apiGet<any[]>('/crm/expansion/forecast-snapshots'),
+        apiGet<any[]>('/crm/expansion/quotas'),
+      ]);
+      setForecast(fc || { bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
+      setReps(Array.isArray(rp) ? rp : []);
+      setFunnel(Array.isArray(fn) ? fn : []);
+      setTargets(Array.isArray(tg) ? tg : []);
+      setRepForecasts(Array.isArray(rf) ? rf : []);
+      setSnapshots(Array.isArray(snaps) ? snaps : []);
+      setQuotas(Array.isArray(qts) ? qts : []);
+    } catch (err) {
+      toast.error('Could not load forecasting data', err instanceof Error ? err.message : 'Please try again.');
+      setForecast({ bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
+    } finally { setLoading(false); }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [fc, rp, fn, tg, rf] = await Promise.all([
-          apiGet<Forecast>('/crm/analytics/forecast'),
-          apiGet<RepPerformance[]>('/crm/analytics/rep-performance'),
-          apiGet<FunnelStage[]>('/crm/analytics/conversion-funnel'),
-          apiGet<SalesTarget[]>('/crm/targets'),
-          apiGet<RepForecast[]>('/crm/analytics/forecast-by-rep'),
-        ]);
-        setForecast(fc || { bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
-        setReps(Array.isArray(rp) ? rp : []);
-        setFunnel(Array.isArray(fn) ? fn : []);
-        setTargets(Array.isArray(tg) ? tg : []);
-        setRepForecasts(Array.isArray(rf) ? rf : []);
-      } catch (err) {
-        toast.error('Could not load forecasting data', err instanceof Error ? err.message : 'Please try again.');
-        setForecast({ bestCase: 0, commit: 0, worstCase: 0, pipelineDeals: 0 });
-      } finally { setLoading(false); }
-    };
-    load();
+    loadData();
   }, [toast]);
+
+  const handleCreateQuota = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuota.userId || !newQuota.period || !newQuota.amount) {
+      toast.error('Validation Error', 'All fields are required.');
+      return;
+    }
+    setSubmittingQuota(true);
+    try {
+      // Import apiPost from components helper dynamically or use it directly
+      const { apiPost } = await import('../_components/api');
+      await apiPost('/crm/expansion/quotas', {
+        userId: newQuota.userId,
+        period: newQuota.period,
+        amount: parseFloat(newQuota.amount),
+      });
+      toast.success('Success', 'Quota created successfully.');
+      setNewQuota({ userId: '', period: '', amount: '' });
+      loadData();
+    } catch (err) {
+      toast.error('Error creating quota', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setSubmittingQuota(false);
+    }
+  };
+
+  const handleFreezeSnapshot = async (id: string) => {
+    try {
+      const { apiPut } = await import('../_components/api');
+      await apiPut(`/crm/expansion/forecast-snapshots/${id}/freeze`, {});
+      toast.success('Success', 'Snapshot frozen.');
+      loadData();
+    } catch (err) {
+      toast.error('Error freezing snapshot', err instanceof Error ? err.message : 'Please try again.');
+    }
+  };
+
+  const handleAdjustForecast = async (id: string, amount: number) => {
+    try {
+      const { apiPut } = await import('../_components/api');
+      await apiPut(`/crm/expansion/forecast-snapshots/${id}/adjust`, { amount });
+      toast.success('Success', 'Forecast override applied.');
+      loadData();
+    } catch (err) {
+      toast.error('Error adjusting forecast', err instanceof Error ? err.message : 'Please try again.');
+    }
+  };
 
   const fmtCurrency = (v: number) => `$${v >= 1000000 ? (v / 1000000).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'K' : v.toLocaleString()}`;
 
@@ -228,6 +284,140 @@ export default function ForecastingPage() {
           </table>
         </div>
       </Card>
+
+      {/* Forecast Snapshots / Overrides */}
+      <Card>
+        <div style={{ padding: 'var(--space-6)' }}>
+          <h3 style={{ margin: 0, marginBottom: 'var(--space-5)', fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>
+            Forecast Snapshots & Adjustments
+          </h3>
+          {snapshots.length === 0 ? (
+            <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>No forecast snapshots created yet.</div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--font-size-sm)' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
+                  <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Snapshot Name</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Quota</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Pipeline</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Won</th>
+                  <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Override Forecast</th>
+                  <th style={{ textAlign: 'center', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Status</th>
+                  <th style={{ textAlign: 'center', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {snapshots.map(snap => (
+                  <tr key={snap.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: 'var(--space-3)', fontWeight: 500 }}>{snap.name}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>{fmtCurrency(Number(snap.quotaAmount))}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>{fmtCurrency(Number(snap.pipelineAmount))}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>{fmtCurrency(Number(snap.wonAmount))}</td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>
+                      {snap.status === 'FROZEN' ? (
+                        <span>{fmtCurrency(Number(snap.forecastAmount))}</span>
+                      ) : (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                          <Input
+                            type="number"
+                            defaultValue={snap.forecastAmount}
+                            onBlur={(e) => handleAdjustForecast(snap.id, parseFloat(e.target.value))}
+                            style={{ width: 100, textAlign: 'right' }}
+                          />
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                      <Badge variant={snap.status === 'FROZEN' ? 'default' : 'success'}>{snap.status}</Badge>
+                    </td>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                      {snap.status !== 'FROZEN' && (
+                        <Button size="sm" onClick={() => handleFreezeSnapshot(snap.id)}>Freeze</Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </Card>
+
+      {/* Quota Management */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
+        <Card>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ margin: 0, marginBottom: 'var(--space-5)', fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>
+              Assign Sales Quota
+            </h3>
+            <form onSubmit={handleCreateQuota} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>User ID</label>
+                <Input
+                  type="text"
+                  placeholder="e.g. usr-123"
+                  value={newQuota.userId}
+                  onChange={(e) => setNewQuota({ ...newQuota, userId: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>Period</label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Q3 2026"
+                  value={newQuota.period}
+                  onChange={(e) => setNewQuota({ ...newQuota, period: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>Amount ($)</label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 100000"
+                  value={newQuota.amount}
+                  onChange={(e) => setNewQuota({ ...newQuota, amount: e.target.value })}
+                  required
+                />
+              </div>
+              <Button type="submit" disabled={submittingQuota}>
+                {submittingQuota ? 'Saving...' : 'Assign Quota'}
+              </Button>
+            </form>
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ margin: 0, marginBottom: 'var(--space-5)', fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>
+              Current Quotas
+            </h3>
+            {quotas.length === 0 ? (
+              <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>No quotas assigned yet.</div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--font-size-sm)' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
+                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>User ID</th>
+                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Period</th>
+                    <th style={{ textAlign: 'right', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quotas.map((q, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: 'var(--space-3)' }}>{q.userId}</td>
+                      <td style={{ padding: 'var(--space-3)' }}>{q.period}</td>
+                      <td style={{ padding: 'var(--space-3)', textAlign: 'right', fontWeight: 600 }}>{fmtCurrency(Number(q.amount))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

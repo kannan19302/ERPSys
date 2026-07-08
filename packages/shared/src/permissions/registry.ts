@@ -159,6 +159,15 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'mailbox', 'create', 'endpoint', 'Create crm mailbox items'),
   p('crm', 'mailbox', 'delete', 'endpoint', 'Delete crm mailbox items'),
   p('crm', 'mailbox', 'update', 'endpoint', 'Update crm mailbox items'),
+  p('crm', 'customer', 'read', 'endpoint', 'View customers'),
+  p('crm', 'customer', 'update', 'endpoint', 'Update customers'),
+  p('crm', 'campaign', 'read', 'endpoint', 'View marketing campaigns'),
+  p('crm', 'playbook', 'read', 'endpoint', 'View sales enablement playbooks'),
+  p('crm', 'sales-target', 'read', 'endpoint', 'View sales targets'),
+  p('crm', 'sales-target', 'update', 'endpoint', 'Update sales targets'),
+  p('crm', 'commission', 'read', 'endpoint', 'View RevOps commissions'),
+  p('crm', 'partner', 'read', 'endpoint', 'View partners'),
+  p('crm', 'workflow', 'read', 'endpoint', 'View automated workflows'),
   // Contract permissions: see `p('crm', 'contracts', ...)` further down
   // (resource is plural `contracts` there, matching the actual
   // `@Permissions('crm.contracts.*')` codes used by crm-contracts.controller.ts).

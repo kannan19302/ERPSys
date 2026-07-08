@@ -35,10 +35,12 @@ interface CommissionEntry {
 }
 
 export default function CommissionsPage() {
-  const [activeTab, setActiveTab] = useState<'rules' | 'earned'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'earned' | 'revops'>('rules');
   const [loading, setLoading] = useState(true);
   const [rules, setRules] = useState<CommissionRule[]>([]);
   const [entries, setEntries] = useState<CommissionEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [revopsMetrics, setRevopsMetrics] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,9 +67,11 @@ export default function CommissionsPage() {
     const headers = { Authorization: `Bearer ${token || ''}` };
 
     try {
-      const [rulesRes, entriesRes] = await Promise.all([
+      const [rulesRes, entriesRes, leaderboardRes, metricsRes] = await Promise.all([
         fetch('/api/v1/crm/commissions/rules', { headers }),
         fetch('/api/v1/crm/commissions/entries', { headers }),
+        fetch('/api/v1/crm/expansion/gamification-leaderboard', { headers }),
+        fetch('/api/v1/crm/expansion/revops-metrics', { headers }),
       ]);
 
       if (rulesRes.ok) {
@@ -79,11 +83,23 @@ export default function CommissionsPage() {
         const d = await entriesRes.json();
         setEntries(Array.isArray(d) ? d : (d?.data || []));
       }
+
+      if (leaderboardRes.ok) {
+        const d = await leaderboardRes.json();
+        setLeaderboard(Array.isArray(d) ? d : (d?.data || []));
+      }
+
+      if (metricsRes.ok) {
+        const d = await metricsRes.json();
+        setRevopsMetrics(d?.data || d || null);
+      }
     } catch (err) {
       setError('Could not load commission data. Please try again.');
       toast.error('Could not load commissions', err instanceof Error ? err.message : undefined);
       setRules([]);
       setEntries([]);
+      setLeaderboard([]);
+      setRevopsMetrics(null);
     } finally {
       setLoading(false);
     }
@@ -252,6 +268,7 @@ export default function CommissionsPage() {
       <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)' }}>
         <button style={tabStyle(activeTab === 'rules')} onClick={() => setActiveTab('rules')}>Rules</button>
         <button style={tabStyle(activeTab === 'earned')} onClick={() => setActiveTab('earned')}>Earned Commissions</button>
+        <button style={tabStyle(activeTab === 'revops')} onClick={() => setActiveTab('revops')}>RevOps Leaderboard</button>
       </div>
 
       {loading ? (
@@ -269,7 +286,7 @@ export default function CommissionsPage() {
             emptyMessage="Configure a commission rule to get started."
           />
         </Card>
-      ) : (
+      ) : activeTab === 'earned' ? (
         <Card>
           <DataTable<CommissionEntry>
             columns={entryColumns}
@@ -282,6 +299,52 @@ export default function CommissionsPage() {
             emptyMessage="Commission entries appear once opportunities close."
           />
         </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          {revopsMetrics && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)' }}>
+              <Card>
+                <div style={{ padding: 'var(--space-5)' }}>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Total Revenue</div>
+                  <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700 }}>${revopsMetrics.totalPipelineValue?.toLocaleString() || '0'}</div>
+                </div>
+              </Card>
+              <Card>
+                <div style={{ padding: 'var(--space-5)' }}>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Closed Won Amount</div>
+                  <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700 }}>${revopsMetrics.closedWonValue?.toLocaleString() || '0'}</div>
+                </div>
+              </Card>
+              <Card>
+                <div style={{ padding: 'var(--space-5)' }}>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Win Rate</div>
+                  <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700 }}>{revopsMetrics.winRatePct?.toFixed(1) || '0'}%</div>
+                </div>
+              </Card>
+            </div>
+          )}
+          <Card>
+            <div style={{ padding: 'var(--space-6)' }}>
+              <h3 style={{ fontSize: 'var(--font-size-md)', fontWeight: 600, marginBottom: 'var(--space-4)' }}>Gamification Leaderboard</h3>
+              {leaderboard.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  {leaderboard.map((user: any, index: number) => (
+                    <div key={user.userId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-3)', background: 'var(--color-bg-sunken)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <span style={{ fontWeight: 700, minWidth: 24 }}>#{index + 1}</span>
+                        <span>{user.name}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 'var(--space-4)', fontSize: 'var(--font-size-sm)' }}>
+                        <span>Deals Won: <strong>{user.dealsWon}</strong></span>
+                        <span>Points: <strong>{user.points || user.dealsWon * 100}</strong></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : <p style={{ color: 'var(--color-text-secondary)' }}>No leaderboard data found</p>}
+            </div>
+          </Card>
+        </div>
       )}
 
       {/* Create Rule Modal */}

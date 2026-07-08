@@ -33,3 +33,12 @@ export async function apiSend<T>(
   const json = JSON.parse(text);
   return (json?.data ?? json) as T;
 }
+
+export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
+  return apiSend<T>(path, 'POST', body);
+}
+
+export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  return apiSend<T>(path, 'PUT', body);
+}
+

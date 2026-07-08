@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Plus, Search, ArrowUpDown, ChevronLeft, ChevronRight, Pencil, Trash2, X } from 'lucide-react';

@@ -29,6 +29,17 @@ import { CrmContractsService } from './crm-contracts.service';
 import { CrmContractsController } from './crm-contracts.controller';
 import { CrmMailboxService } from './crm-mailbox.service';
 import { CrmMailboxController } from './crm-mailbox.controller';
+import { CrmExpansionController } from './crm-expansion.controller';
+
+// New expansion services
+import { CrmForecastingService } from './crm-forecasting.service';
+import { CrmAccountManagementService } from './crm-account-management.service';
+import { CrmCampaignManagementService } from './crm-campaign-management.service';
+import { CrmSupportService } from './crm-support.service';
+import { CrmEnablementService } from './crm-enablement.service';
+import { CrmRevOpsService } from './crm-revops.service';
+import { CrmPartnersService } from './crm-partners.service';
+import { CrmAutomationService } from './crm-automation.service';
 
 const CRM_SERVICES = [
   CrmService,
@@ -52,6 +63,15 @@ const CRM_SERVICES = [
   CrmSlaService,
   CrmContractsService,
   CrmMailboxService,
+  
+  CrmForecastingService,
+  CrmAccountManagementService,
+  CrmCampaignManagementService,
+  CrmSupportService,
+  CrmEnablementService,
+  CrmRevOpsService,
+  CrmPartnersService,
+  CrmAutomationService,
 ];
 
 @Module({
@@ -65,8 +85,11 @@ const CRM_SERVICES = [
     CrmSlaController,
     CrmContractsController,
     CrmMailboxController,
+    CrmExpansionController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,
 })
 export class CrmModule { }
+
+

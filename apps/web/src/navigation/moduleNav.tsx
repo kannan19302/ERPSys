@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap, Link, GitBranch,
+  Workflow, Wrench, Zap, Link, GitBranch, Calculator,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -181,6 +181,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Cases & SLA', href: '/crm/cases', icon: HelpCircle },
+            { name: 'SLA Dashboard', href: '/crm/cases/sla', icon: Clock },
           ]
         },
         {
@@ -204,6 +205,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Forecasting', href: '/crm/forecasting', icon: TrendingUp },
+            { name: 'Account Plans', href: '/crm/account-plans', icon: Shield },
             { name: 'Reports', href: '/crm/reports', icon: PieChart },
             { name: 'Dashboards', href: '/crm/dashboards', icon: Layers },
             { name: 'Advanced', href: '/crm/advanced', icon: Settings },
@@ -312,6 +314,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
         { name: 'Sales Dashboard', href: '/sales', icon: Home },
         { name: 'Customer Quotations', href: '/sales/quotations', icon: FileText },
         { name: 'Sales Orders', href: '/sales/orders', icon: ClipboardList },
+        { name: 'CPQ Pricing', href: '/sales/cpq', icon: Calculator },
+        { name: 'Fulfillment & SLAs', href: '/sales/fulfillment', icon: Truck },
         { name: 'Delivery Notes', href: '/sales/delivery-notes', icon: Truck },
         { name: 'Customer Returns', href: '/sales/returns', icon: History }
       ] as SidebarItem[]
