@@ -235,6 +235,47 @@ toward 500 (from `MODULE_FOCUS.md` § 6), and the top 3 Up Next items.
 
 ---
 
+## Token & Context Efficiency (binding — less reading/re-doing, more building)
+
+Tokens spent re-deriving context are tokens not spent shipping features. Rules:
+
+**Read less, target better**
+1. Never read a whole large file to find one thing — `grep` for the symbol, then read
+   only the matching range (offset+limit). Controllers/services here run 1,000+ lines.
+2. Use the generated indexes as your map, not code archaeology: `FEATURE_LEDGER.md`
+   answers "does X exist / what routes does module Y have"; `MODULE_REGISTRY.md`
+   answers status; `SCORECARD.md` answers quality. Do NOT dump these entire files
+   into context either — grep them for the module/row you need.
+3. Read a file at most once per cycle; do not re-read after your own edit to "verify"
+   (the edit tool already errors on failure). Never `cat` generated files
+   (FEATURE_LEDGER, SPRINT_TRACKER, FEEDBACK) — the scripts print a one-line summary;
+   trust it.
+4. Cap tool output: `--reporter=line`/`--reporter=dot` for tests, `| tail -n 20` for
+   long commands, `git diff --stat` before deciding whether any full diff is needed.
+
+**Copy patterns, don't rediscover them**
+5. Each layer has a reference implementation — clone its shape instead of exploring:
+   controller/service/DTO → the focus module's newest sub-service; list page →
+   `apps/web/app/(dashboard)/customers` (DataTable pattern); detail/form pages → any
+   recent `[benchmark]` batch. Read the reference ONCE, then write every batch file
+   from that template without re-reading it.
+6. Prefer schema-driven UI via `@unerp/framework` wherever it fits — one schema
+   definition replaces hundreds of hand-written JSX lines per page ("less use, build
+   more" applies to the code itself, not just the context).
+7. Write each new file in ONE complete Write call — no skeleton-then-fill iterations,
+   no rewriting a file three times. Plan the batch (Step 3) precisely enough that
+   files are written once, correct.
+
+**Don't multiply context**
+8. Avoid spawning subagents that must re-read AGENTS/HANDBOOK from scratch for small
+   tasks — a subagent is worth its boot cost only for a large parallelizable chunk
+   (e.g. the whole UI stage of a batch). Pass them the exact file list + pattern
+   reference in the prompt so they don't re-explore.
+9. Keep Step 10 reports tight: counts, gate results, ledger row — never paste code,
+   diffs, or file contents into the report.
+10. When a gate fails, read only the failing test/error lines (grep the output),
+    not the entire suite log.
+
 ## Guardrails (absolute)
 
 - **One coherent batch (10–20+ features) per cycle.** Finish it completely (DB+API+UI)

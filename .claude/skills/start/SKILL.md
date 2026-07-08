@@ -52,6 +52,14 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
     the queue at ≥ 5 groomed items (≥ 2 benchmark-sourced). Then **report** what was
     done, why it was selected, gate results, new gaps discovered, and the top 3 next items.
 
-Guardrails: one item per cycle, no red builds, no stubs/padding, no force-push, no
+Guardrails: one batch per cycle, no red builds, no stubs/padding, no force-push, no
 destructive ops (tag those `[needs-human]` in Up Next), no touching other agents'
 claimed scope. Do not ask the user questions — this cycle is fully autonomous.
+
+Token efficiency (binding — see AUTOPILOT § Token & Context Efficiency): grep + ranged
+reads instead of whole files; use FEATURE_LEDGER/registry as the map (grep them, never
+dump them); read each file at most once and never re-read after your own edit; clone
+the reference pattern (newest focus-module sub-service; `customers` list page) instead
+of exploring; prefer `@unerp/framework` schema-driven UI over hand-written JSX; write
+each file in ONE complete Write call; cap tool output (`--reporter=line`, `tail`);
+reports contain counts and results, never pasted code or diffs.

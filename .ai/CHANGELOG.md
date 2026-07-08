@@ -2,6 +2,12 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Token & Context Efficiency rules — less reading/re-doing, more building
+
+**Accomplished**: added a binding § Token & Context Efficiency to `AUTOPILOT.md` (mirrored in the start skill): grep + ranged reads instead of whole-file reads (controllers run 1,000+ lines); use the generated indexes (FEATURE_LEDGER/REGISTRY/SCORECARD) as the map and grep them rather than dumping them; read each file at most once per cycle and never re-read after an edit; never `cat` generated files (trust the scripts' one-line summaries); cap tool output (`--reporter=line`, `tail`, `git diff --stat`); clone reference patterns (newest focus-module sub-service, `customers` DataTable page) instead of re-exploring; prefer `@unerp/framework` schema-driven UI over hand-written JSX; write each file in ONE complete Write call; subagents only for large parallelizable chunks with the exact file list + pattern reference in the prompt; reports carry counts/results, never pasted code/diffs; on gate failure read only the failing lines.
+
+**Why**: owner directive — reduce token usage per cycle so budget goes to building features ("less use, build more"), not to context re-derivation.
+
 ## [2026-07-08] Finance Expense Management Deepening — 28 features: OCR receipt capture, policy engine, mileage/per-diem, corporate cards, multi-level approval, GL posting (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes the last MARKET_BENCHMARK gap seeded 2026-07-08 ("Expense management: OCR receipt capture, employee reimbursement flow", NetSuite/Zoho/Odoo parity).
