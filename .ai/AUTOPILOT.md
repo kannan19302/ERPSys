@@ -1,0 +1,160 @@
+# AUTOPILOT.md — Autonomous Development Protocol
+
+> **Trigger**: When a user (or scheduler) gives an AI agent the single instruction **"Start"**
+> (or "start", "/start", "continue", "next") with no other requirements, the agent MUST execute
+> this protocol end-to-end. No further human input is required or expected.
+>
+> This file is **tool-agnostic**. It works for Claude Code, Antigravity, Cursor, Copilot,
+> Aider, or any future agent. It is a *protocol*, not state — all state lives in the
+> 3-file system (`MODULE_REGISTRY.md`, `CHANGELOG.md`, `HANDBOOK.md`) per
+> [AGENTS.md § Mandatory Tracking Convention](../AGENTS.md).
+
+---
+
+## The Autonomous Cycle (one full loop per "Start")
+
+```
+Start
+  └─▶ 0. BOOTSTRAP   → read context, sync git, verify environment
+  └─▶ 1. SELECT      → pick exactly ONE work item via the priority ladder
+  └─▶ 2. CLAIM       → register the claim on the Collab Board
+  └─▶ 3. PLAN        → scope it like a product manager (stories, acceptance criteria)
+  └─▶ 4. BUILD       → implement end-to-end (DB → API → UI → tests)
+  └─▶ 5. VERIFY      → reality gates: typecheck + full test suite must pass
+  └─▶ 6. REVIEW      → self/agent code review + security pass if sensitive
+  └─▶ 7. RECORD      → update the 3 tracking files + Growth Tracker
+  └─▶ 8. SHIP        → commit + push (small, coherent commits)
+  └─▶ 9. REFILL      → ensure the Up Next queue has ≥ 5 groomed items
+  └─▶ 10. REPORT     → summarize what was done, why it was chosen, what's next
+```
+
+An agent that can loop (scheduler, `/loop`, cron) repeats from step 0. An agent that
+cannot loop stops after step 10 — the next "Start" from any agent resumes seamlessly
+because all state is in the repo.
+
+---
+
+## Step 0 — BOOTSTRAP
+
+1. Read, in order: `AGENTS.md`, `.ai/prompts/MASTER_PROMPT.md`, this file.
+2. `git status` + `git pull` — never work on a stale tree.
+3. Read `.ai/MODULE_REGISTRY.md` § Collab Board (Active Claims, Up Next, Conflict Log).
+4. Read `.ai/SCORECARD.md` (heuristic scores + Reality Gates) and `.ai/CHANGELOG.md`
+   (last ~10 entries) to know what just happened.
+5. If the working tree has uncommitted changes **you did not make**, do not touch those
+   files; treat them as another agent's in-flight work (Collab Board rules apply).
+
+## Step 1 — SELECT (the priority ladder)
+
+Walk this ladder top-down; take the **first** rung that yields a concrete item, and take
+exactly **one** item per cycle. Never skip a higher rung because a lower one is more fun.
+
+| Priority | Source | Rule |
+|:--|:--|:--|
+| **P0 — Broken build/tests** | Run `pnpm turbo typecheck` and the API test suite (or read Reality Gates in `SCORECARD.md` and re-verify). | If either fails, fixing it IS the work item. Nothing else ships on a red build. |
+| **P1 — Unfinished shipped work** | `.ai/CHANGELOG.md` entries flagging follow-ups; `git log` TODO/FIXME introduced recently; half-wired features (API without UI, UI without API). | Finish or explicitly de-scope with a note. |
+| **P2 — Conflict Log** | Collab Board §4. | Resolve any logged conflict before new work. |
+| **P3 — Up Next queue** | Collab Board §2 — pick from the top, skipping items overlapping Active Claims. | This is the primary steady-state source of work. |
+| **P4 — Quality gaps** | `SCORECARD.md` modules/dimensions below 10 (e.g. auth D4/D5, admin D1); `MODULE_REGISTRY.md` § Production Readiness & Hardening open phases; RBAC decorator-stacking defect notes. | Pick the lowest-scoring dimension of the lowest-scoring module. |
+| **P5 — Module deepening** | `MODULE_REGISTRY.md` § Module-Specific Completion Notes, parity gaps vs. mature ERPs (ERPNext/Odoo feature parity for that module). | Deepen one module completely before starting another (module-completion strategy). |
+| **P6 — New capability** | Nothing above applies (rare). Act as product manager: propose a new module/app/integration consistent with the Phase roadmap and the 1M-LOC genuine-capability north star; write it into Up Next, then build the first slice. | Must pass the "does this already exist?" check against `MODULE_REGISTRY.md`. |
+
+**Sizing rule**: an item must be completable end-to-end in one session. If the top item
+is too big, split it — put the remainder back into Up Next as groomed sub-items and take
+the first slice.
+
+## Step 2 — CLAIM
+
+Add a row to Collab Board §1 (agent name, timestamp, scope = module/file list) and
+commit that small edit early so parallel agents see it. Never start on a scope that
+overlaps an existing Active Claim.
+
+## Step 3 — PLAN
+
+Act as the product manager (Claude Code: invoke the `product-manager` subagent):
+- Confirm the item doesn't already exist (`MODULE_REGISTRY.md` check — mandatory).
+- Write 2–5 user stories with acceptance criteria and an explicit **Definition of Done**:
+  schema + API + UI + tests + docs + nav/breadcrumbs + RBAC — the full E2E rule.
+- Pick the task template from `MASTER_PROMPT.md` § Task Templates (New Module / New
+  Entity / New API Endpoint / New UI Page / Bugfix) and follow it exactly.
+
+## Step 4 — BUILD
+
+Implement the full vertical slice per the template and every AGENTS.md Critical Rule
+(tenant_id, `@Permissions`, `@TrackChanges`, Zod validation, `@unerp/ui` + `.frappe-*`
+classes, DataTable policy, breadcrumbs, no cross-module imports, no `any`, no
+`console.log`). New module UI goes through `@unerp/framework` where applicable.
+Write unit tests alongside code, not after.
+
+## Step 5 — VERIFY (reality gates — binding)
+
+All must pass before anything is recorded or shipped:
+1. `pnpm turbo typecheck` (or `pnpm --filter ... tsc --noEmit`) — zero errors.
+2. Full API unit test suite — zero failures (no `skip`/`only`).
+3. If UI changed and a dev environment is available: boot it and smoke-test the changed
+   pages (console errors, API 4xx/5xx, empty/loading/error states).
+4. Regenerate the scorecard if substantial: `node scripts/scorecard.mjs`.
+
+If a gate fails, fix it in this cycle. Never commit a red build; never weaken a test to
+make it pass.
+
+## Step 6 — REVIEW
+
+Run the Code Review checklist from `MASTER_PROMPT.md` § Code Review against your own
+diff (`git diff`). Claude Code: use the `code-reviewer` subagent; touches to auth,
+tenancy, permissions, file upload, or payments additionally require the
+`security-auditor` pass. Fix all Blockers and Warnings before shipping.
+
+## Step 7 — RECORD
+
+Per the Mandatory Tracking Convention — no exceptions:
+- Append a `CHANGELOG.md` entry (what + why + any follow-ups spawned).
+- Update `MODULE_REGISTRY.md` (module row/status, Growth Tracker row if substantial,
+  move your Collab Board claim §1 → §3 Recently Completed with commit hash).
+- Update `HANDBOOK.md` only if a convention/architecture actually changed.
+
+## Step 8 — SHIP
+
+Commit in small coherent units with conventional messages (`feat(module): ...`,
+`fix(module): ...`) and **push**. Stage only files within your claimed scope — never
+sweep in another agent's uncommitted work with `git add -A`.
+
+## Step 9 — REFILL
+
+Before ending, ensure Collab Board §2 (Up Next) has **at least 5 groomed items**, each
+with: title, module, priority rationale, and rough size. Sources: follow-ups you
+discovered, scorecard gaps, hardening phases, parity gaps, roadmap items. This is what
+makes the system self-evolving — every cycle leaves the next agent a ready answer to
+"what should I build next?".
+
+## Step 10 — REPORT
+
+End with a short human-readable summary: item chosen + why (which priority rung),
+what shipped (commits), gate results, and the top 3 Up Next items.
+
+---
+
+## Guardrails (absolute)
+
+- **One item per cycle.** Depth over breadth; finish completely (E2E) or split and log the remainder.
+- **Never** force-push, rewrite history, delete migrations, drop/reset databases, or
+  modify another agent's claimed scope or uncommitted files.
+- **Never** ship stubs, mocks, dead scaffolding, or padded code — the LOC north star
+  counts genuine capability only.
+- **Never** disable lint rules, skip tests, weaken RBAC/tenancy, or commit secrets.
+- Destructive or irreversible operations (data deletion, dependency major-bumps,
+  infra changes) are out of autonomous scope — log them in Up Next tagged
+  `[needs-human]` instead.
+- If blocked (missing credential, ambiguous business decision, environment broken beyond
+  repair), record the blocker in Up Next tagged `[blocked]`, release your claim, and
+  report — do not thrash.
+
+---
+
+## Agent-specific bindings
+
+| Agent | How "Start" reaches this protocol |
+|:--|:--|
+| **Claude Code** | Root `CLAUDE.md` instructs it; `/start` skill in `.claude/skills/start/` invokes it; role subagents (`product-manager`, `fullstack-developer`, `qa-tester`, `code-reviewer`, `security-auditor`, `tech-writer`) map to steps 3–7. |
+| **Cursor / Copilot / Windsurf / Aider / Antigravity** | Their rule files point to `AGENTS.md`, which points here (§ Autonomous Mode). |
+| **Schedulers / CI** | Any runner that can invoke an agent with the prompt "Start" gets one full cycle; run it on an interval for continuous evolution. |

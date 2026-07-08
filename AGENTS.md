@@ -16,6 +16,19 @@
 
 ---
 
+## 🤖 Autonomous Mode — the "Start" trigger
+
+If the user's entire instruction is **"Start"** (or "start", "/start", "continue",
+"next") with no other requirements, do NOT ask what to build. Execute
+[.ai/AUTOPILOT.md](.ai/AUTOPILOT.md) — the Autonomous Development Protocol. It defines
+the full self-directed cycle: bootstrap → select one work item via the priority ladder
+(broken build > unfinished work > conflicts > Up Next queue > quality gaps > module
+deepening > new capability) → claim → plan → build end-to-end → verify gates → review →
+record in the 3-file system → commit+push → refill the Up Next queue → report.
+Every rule in this file still applies inside autonomous mode.
+
+---
+
 ## 📊 Mandatory Tracking Convention — The 3-File System
 
 > **This section is non-negotiable for every AI agent that touches this repo** — named

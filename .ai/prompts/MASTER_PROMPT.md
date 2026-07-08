@@ -5,6 +5,10 @@
 > `bugfix.md`, `review.md`) — all deleted. Read this file before starting **any** task,
 > per [AGENTS.md rule 19](../../AGENTS.md).
 
+> **Autonomous mode**: if your instruction was just "Start" with no requirements,
+> follow [`.ai/AUTOPILOT.md`](../AUTOPILOT.md) — it tells you how to select and ship
+> the next work item yourself. This file's templates apply inside that cycle.
+
 ---
 
 ## 1. Mission & Scale Goal
