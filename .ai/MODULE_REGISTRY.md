@@ -78,6 +78,11 @@
 
 Add new items here as they're identified (PM scoping, bug reports, user asks, and the mandatory per-cycle market-discovery pass in `.ai/AUTOPILOT.md` Step 9a → `.ai/MARKET_BENCHMARK.md`). Don't let this list go stale — prune completed/obsolete entries.
 
+6. **[benchmark] Finance: automated bank feeds (Plaid/Yodlee-style)** — real-time bank transaction sync instead of manual statement import; leaders: NetSuite, Intacct, Odoo, Dynamics. Value H, Size M. Sub-tasks: Bank Connection model (bank name, account #, OAuth token), `/bank-feeds/connect`, `/bank-feeds/sync` (pull transactions → create unmatched BankTransaction rows), `/bank-feeds/list` + UI page with connection status + last-sync. RICE: Reach 80 · Impact 9 · Confidence 80% · Effort 3 = **192**.
+7. **[benchmark] Finance: cash-flow forecasting (rolling 13-week, AI-assisted)** — project inflows (AR) + outflows (AP + payroll) on a week-by-week basis; leaders: Dynamics 365, NetSuite. Value H, Size M. Sub-tasks: `ForecastWeek` schema row (week_start, projected_inflow, projected_outflow, net), service that aggregates due invoices + payment schedules + estimated payroll runs, `/cash-flow/forecast` GET + weekly-override PATCH, chart UI page. RICE: Reach 70 · Impact 9 · Confidence 75% · Effort 3 = **158**.
+8. **[benchmark] Finance: intercompany AP/AR netting & elimination** — for multi-entity: auto-match IC receivable to IC payable and generate elimination entries; leaders: Intacct, NetSuite, SAP. Value H, Size M. Sub-tasks: `IntercompanyTransaction` model, `/intercompany/match` (suggest matches), `/intercompany/net` (generate journal pair), consolidation page shows IC eliminations. RICE: Reach 40 · Impact 10 · Confidence 85% · Effort 3 = **113**.
+9. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — defer to CRM focus turn.
+
 ### 3. Recently Completed (rolling log, last ~15 — older entries live in `.ai/CHANGELOG.md`)
 
 | Date | Agent | What | Commit/ref |
