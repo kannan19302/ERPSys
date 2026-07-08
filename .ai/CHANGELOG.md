@@ -2,6 +2,14 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Daily Sprint Tracker — LOC + functionality delivered per day
+
+**Accomplished**:
+- Created `scripts/sprint-tracker.mjs` → generates `.ai/SPRINT_TRACKER.md`: per-day table of commits, LOC added/deleted/net (code files only), **features delivered** (new controller endpoints — same definition as FEATURE_LEDGER), and modules touched, mined from git history (default 30-day window; totals header). First generation: last 30 days = 1,686 features, net +448k LOC across 144 commits; today (so far) 92 features / +13.7k net LOC.
+- Mandated in `AUTOPILOT.md` Step 7 (regenerate + commit each cycle) and Step 10 (the cycle report must quote today's delivery row and the focus module's progress toward 500); start skill updated.
+
+**Why**: owner directive — a daily sprint tracker showing how much code and how many functionalities are delivered each day, visible to every agent and human without manual bookkeeping.
+
 ## [2026-07-08] Finance Cash Flow Forecasting Batch — 10+ new features: Rolling 13-week forecast projections, manual adjustments override, custom simulation factors, CSV exporter (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — rolling forecast projections and simulation scenarios depth pass (Dynamics 365 / NetSuite parity).

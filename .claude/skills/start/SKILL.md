@@ -40,8 +40,10 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    Tracker, move claim to Recently Completed); **regenerate the system-wide
    functionality ledger** — `node scripts/feature-ledger.mjs` → `.ai/FEATURE_LEDGER.md`
    (mandatory whenever any code shipped; commit it with the change; also the
-   duplicate-check source during planning); log the focus module's new count in
-   `MODULE_FOCUS.md` § 6.
+   duplicate-check source during planning); regenerate the daily sprint tracker
+   `node scripts/sprint-tracker.mjs` → `.ai/SPRINT_TRACKER.md`; log the focus module's
+   new count in `MODULE_FOCUS.md` § 6. Quote today's SPRINT_TRACKER row (features +
+   net LOC) and the 500-target progress in the final report.
 9. **Ship**: commit only your claimed scope, push.
 10. **Refill & discover** (mandatory): run the Discovery Protocol in
     `.ai/MARKET_BENCHMARK.md` — benchmark the most-overdue module against its top

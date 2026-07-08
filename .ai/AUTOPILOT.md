@@ -179,6 +179,10 @@ Per the Mandatory Tracking Convention — no exceptions:
   permission, scanned from the code), existing and newly shipped alike. Commit it with
   your change. This file is also the duplicate-check source in Step 3: search it before
   building anything.
+- **Regenerate the daily sprint tracker**: `node scripts/sprint-tracker.mjs` →
+  `.ai/SPRINT_TRACKER.md` — per-day LOC delivered (+/−/net, code files only), commits,
+  features shipped (new endpoints), and modules touched, mined from git history. Commit
+  it with your change; quote today's row in the Step 10 report.
 - If the cycle advanced the focus module: append a progress row in
   `MODULE_FOCUS.md` § 6 (take the module's count from the regenerated
   `FEATURE_LEDGER.md`) and update any integration-contract statuses in § 7.
@@ -225,7 +229,9 @@ priority class — P0–P2 emergencies always outrank RICE.
 ## Step 10 — REPORT
 
 End with a short human-readable summary: item chosen + why (which priority rung),
-what shipped (commits), gate results, and the top 3 Up Next items.
+what shipped (commits), gate results, **today's delivery line from
+`SPRINT_TRACKER.md`** (features + net LOC so far today), the focus module's progress
+toward 500 (from `MODULE_FOCUS.md` § 6), and the top 3 Up Next items.
 
 ---
 
