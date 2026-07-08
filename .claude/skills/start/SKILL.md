@@ -9,7 +9,9 @@ Execute the Autonomous Development Protocol defined in `.ai/AUTOPILOT.md`, exact
 end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
 
 1. **Bootstrap** — read `AGENTS.md`, `.ai/prompts/MASTER_PROMPT.md`, `.ai/AUTOPILOT.md`;
-   `git pull`; read the Collab Board, `SCORECARD.md`, recent `CHANGELOG.md`.
+   `git pull`; read the Collab Board, `SCORECARD.md`, recent `CHANGELOG.md`,
+   `MARKET_BENCHMARK.md`; regenerate `.ai/FEEDBACK.md` (`node scripts/feedback-scan.mjs`)
+   and start the dev stack if it's down.
 2. **Select ONE item** via the priority ladder: P0 broken typecheck/tests → P1 unfinished
    shipped work → P2 conflict log → P3 Collab Board "Up Next" queue → P4 scorecard/
    hardening quality gaps → P5 competitive gaps from `.ai/MARKET_BENCHMARK.md` →
@@ -19,7 +21,10 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    acceptance criteria, Definition of Done).
 5. **Build end-to-end** (schema → NestJS API → Next.js UI → tests) following every
    AGENTS.md critical rule; use role subagents as appropriate.
-6. **Verify gates**: `pnpm turbo typecheck` and the full API test suite must pass.
+6. **Verify gates**: `pnpm turbo typecheck`, the full API test suite, AND the binding
+   E2E smoke gate (`pnpm --filter @unerp/web test:e2e` — `e2e/smoke.spec.ts` logs in
+   and walks all core module surfaces against the running stack; add new pages to
+   `SMOKE_ROUTES`). Also manually exercise the changed feature in the running app.
 7. **Review** the diff with the `code-reviewer` subagent (plus `security-auditor` for
    auth/tenancy/permission-sensitive changes).
 8. **Record**: update `.ai/CHANGELOG.md` and `.ai/MODULE_REGISTRY.md` (status, Growth

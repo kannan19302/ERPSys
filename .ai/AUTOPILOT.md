@@ -43,6 +43,10 @@ because all state is in the repo.
 4. Read `.ai/SCORECARD.md` (heuristic scores + Reality Gates), `.ai/CHANGELOG.md`
    (last ~10 entries), and `.ai/MARKET_BENCHMARK.md` (open competitive gaps + which
    module is overdue for a discovery pass).
+5. Regenerate reality feedback: `node scripts/feedback-scan.mjs` → `.ai/FEEDBACK.md`
+   (unresolved runtime errors from `error_logs`, open admin alerts, TODO/FIXME debt).
+   If the dev stack is down, start it (`.\scripts\docker-start.ps1`) — the E2E gate in
+   Step 5 needs it anyway.
 5. If the working tree has uncommitted changes **you did not make**, do not touch those
    files; treat them as another agent's in-flight work (Collab Board rules apply).
 
@@ -54,7 +58,7 @@ exactly **one** item per cycle. Never skip a higher rung because a lower one is 
 | Priority | Source | Rule |
 |:--|:--|:--|
 | **P0 — Broken build/tests** | Run `pnpm turbo typecheck` and the API test suite (or read Reality Gates in `SCORECARD.md` and re-verify). | If either fails, fixing it IS the work item. Nothing else ships on a red build. |
-| **P1 — Unfinished shipped work** | `.ai/CHANGELOG.md` entries flagging follow-ups; `git log` TODO/FIXME introduced recently; half-wired features (API without UI, UI without API). | Finish or explicitly de-scope with a note. |
+| **P1 — Observed failures & unfinished work** | `.ai/FEEDBACK.md` (regenerated in Step 0): unresolved runtime errors and open admin alerts **outrank everything below** — real users hitting real errors beats any backlog feature. Also: `.ai/CHANGELOG.md` follow-ups, half-wired features (API without UI, UI without API). | Fix the highest-frequency unresolved error first; mark it resolved via the error-reports API when done. Finish or explicitly de-scope unfinished work with a note. |
 | **P2 — Conflict Log** | Collab Board §4. | Resolve any logged conflict before new work. |
 | **P3 — Up Next queue** | Collab Board §2 — pick from the top, skipping items overlapping Active Claims. | This is the primary steady-state source of work. |
 | **P4 — Quality gaps** | `SCORECARD.md` modules/dimensions below 10 (e.g. auth D4/D5, admin D1); `MODULE_REGISTRY.md` § Production Readiness & Hardening open phases; RBAC decorator-stacking defect notes. | Pick the lowest-scoring dimension of the lowest-scoring module. |
@@ -78,6 +82,13 @@ Act as the product manager (Claude Code: invoke the `product-manager` subagent):
 - Confirm the item doesn't already exist (`MODULE_REGISTRY.md` check — mandatory).
 - Write 2–5 user stories with acceptance criteria and an explicit **Definition of Done**:
   schema + API + UI + tests + docs + nav/breadcrumbs + RBAC — the full E2E rule.
+- **Competitor-parity depth rule** (for `[benchmark]` items and any feature a market
+  leader also ships): acceptance criteria must quote the *actual capability* of the
+  reference competitor from `MARKET_BENCHMARK.md` (e.g. "NetSuite dunning: N escalation
+  levels, per-customer schedules, pause-on-dispute") and the Definition of Done is a
+  **parity checklist** against that description. A thin checkbox version of a leader's
+  feature does not count as closing the gap — either build to parity or split the gap
+  into slices and leave the remainder logged in the Gap Backlog as `PARTIAL`.
 - Pick the task template from `MASTER_PROMPT.md` § Task Templates (New Module / New
   Entity / New API Endpoint / New UI Page / Bugfix) and follow it exactly.
 
@@ -94,9 +105,19 @@ Write unit tests alongside code, not after.
 All must pass before anything is recorded or shipped:
 1. `pnpm turbo typecheck` (or `pnpm --filter ... tsc --noEmit`) — zero errors.
 2. Full API unit test suite — zero failures (no `skip`/`only`).
-3. If UI changed and a dev environment is available: boot it and smoke-test the changed
-   pages (console errors, API 4xx/5xx, empty/loading/error states).
-4. Regenerate the scorecard if substantial: `node scripts/scorecard.mjs`.
+3. **E2E smoke gate (binding)**: with the dev stack up, run
+   `pnpm --filter @unerp/web test:e2e` — `e2e/smoke.spec.ts` logs in as the seeded
+   admin and walks every core module surface, failing on error boundaries and 5xx
+   responses. "Works" means observed behavior in a running app, not passing mocks.
+   If your change added a page/module, **add its route to `SMOKE_ROUTES`** in
+   `smoke.spec.ts` — that list is the binding definition of "the app boots".
+   If the stack genuinely cannot be started in your environment, you may ship on gates
+   1–2 only, but MUST log `[e2e-unverified] <scope>` at the top of Up Next so the next
+   agent with a stack runs the gate first.
+4. Manually exercise the changed feature end-to-end in the running app (create → read →
+   update flow, empty/loading/error states, console clean).
+5. Regenerate the scorecard if substantial: `node scripts/scorecard.mjs`; regenerate
+   feedback: `node scripts/feedback-scan.mjs` (your fix should remove its error rows).
 
 If a gate fails, fix it in this cycle. Never commit a red build; never weaken a test to
 make it pass.
@@ -138,11 +159,16 @@ requirements by looking outward at the market. Two mandatory sub-steps:
   the Gap Backlog, promote the top 1–3 into Up Next prefixed `[benchmark]`, and update
   the Rotation Tracker. Improvements to existing features count equally with new ones.
 
-**9b. Queue refill.** Ensure Collab Board §2 (Up Next) has **at least 5 groomed items**
-(title, module, rationale, rough size), and that **at least 2 of them are
-`[benchmark]`-sourced** — sources: 9a output, follow-ups you discovered, scorecard gaps,
-hardening phases, roadmap items. This is what makes the system self-evolving: every
-cycle leaves the next agent both *known* work and *newly discovered* market-driven work.
+**9b. Queue refill with business-value scoring.** Ensure Collab Board §2 (Up Next) has
+**at least 5 groomed items** and **at least 2 `[benchmark]`-sourced** — from 9a output,
+`.ai/FEEDBACK.md` signals, follow-ups, scorecard gaps, hardening phases, roadmap items.
+
+Each item carries a lightweight **RICE score** so selection is business-driven, not just
+engineering-driven: `RICE = (Reach × Impact × Confidence) / Effort` where Reach = % of
+tenants/users affected (0.1–1), Impact = 3 massive / 2 high / 1 medium / 0.5 low,
+Confidence = 1 / 0.8 / 0.5, Effort = person-days-equivalent (S=1, M=3, L=8). Format:
+`RICE 2.4 (R.8 × I2 × C1 / E0.67)`. Keep §2 sorted by RICE descending **within** each
+priority class — P0–P2 emergencies always outrank RICE.
 
 ## Step 10 — REPORT
 
@@ -175,3 +201,17 @@ what shipped (commits), gate results, and the top 3 Up Next items.
 | **Claude Code** | Root `CLAUDE.md` instructs it; `/start` skill in `.claude/skills/start/` invokes it; role subagents (`product-manager`, `fullstack-developer`, `qa-tester`, `code-reviewer`, `security-auditor`, `tech-writer`) map to steps 3–7. |
 | **Cursor / Copilot / Windsurf / Aider / Antigravity** | Their rule files point to `AGENTS.md`, which points here (§ Autonomous Mode). |
 | **Schedulers / CI** | Any runner that can invoke an agent with the prompt "Start" gets one full cycle; run it on an interval for continuous evolution. |
+
+## Continuous (unattended) operation
+
+Three ways to run the loop without a human:
+
+1. **Local loop**: `.\scripts\autopilot-loop.ps1 -Cycles 10 -PauseMinutes 5` — invokes
+   `claude -p "Start"` headless per cycle, logs to `var\autopilot\`. `-Cycles 0` = forever.
+2. **CI nightly**: `.github/workflows/autopilot.yml` — manual `workflow_dispatch` now;
+   uncomment the cron (and set the `ANTHROPIC_API_KEY` repo secret) for nightly
+   self-evolution.
+3. **Interactive pacing**: in a Claude Code session, `/loop /start` self-paces cycles.
+
+Concurrency is already handled by the Collab Board claim protocol — an unattended loop
+and a human-driven session can run simultaneously without clobbering each other.

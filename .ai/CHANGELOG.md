@@ -17,6 +17,19 @@ Decomposed the `InventoryService` god-class by extracting the Warehouse sub-doma
 
 **Why**: To begin Phase 1 of Enterprise Hardening (Decomposing god-classes (>1,500 LOC) into modular domain sub-services, satisfying the Strangler-fig refactoring pattern).
 
+## [2026-07-08] Autonomy Engine 10/10 — binding E2E gate, reality-feedback loop, unattended operation, parity + RICE rules
+
+Closed the five gaps between "self-directed engineering loop" and "full product lifecycle engine":
+
+**Accomplished**:
+- **Binding E2E smoke gate** (`apps/web/e2e/smoke.spec.ts`): logs in as seeded admin, walks 12 core module surfaces (dashboard, finance, CRM, inventory, HR, procurement, sales, projects, manufacturing, admin, reporting), fails on error boundaries and any 5xx response. **Verified live: 13/13 passing** against the running docker dev stack (after fixing `networkidle`→`domcontentloaded` for polling pages and 90s dev-compile timeout). AUTOPILOT Step 5 now makes this Gate 3 (binding when a stack is available; `[e2e-unverified]` Up Next tag otherwise). New pages must be added to `SMOKE_ROUTES`.
+- **Reality-feedback loop** (`scripts/feedback-scan.mjs` → generated `.ai/FEEDBACK.md`): unresolved `error_logs` grouped by frequency, open `admin_alerts`, TODO/FIXME debt scan. Verified live against the dev DB (db=ok; resolves DATABASE_URL from env > `.env` > compose default). AUTOPILOT P1 is now "Observed failures & unfinished work" — real runtime errors outrank all backlog features; Step 0 regenerates the file each cycle.
+- **Unattended operation**: `scripts/autopilot-loop.ps1` (headless `claude -p "Start"` loop with logs in `var/autopilot/`, `-Cycles 0` = forever) and `.github/workflows/autopilot.yml` (workflow_dispatch now, commented nightly cron; needs `ANTHROPIC_API_KEY` secret). New AUTOPILOT § Continuous operation documents all three modes (local loop / CI cron / `/loop /start`).
+- **Competitor-parity depth rule** (AUTOPILOT Step 3): acceptance criteria for `[benchmark]` items must quote the reference competitor's actual capability and Definition of Done is a parity checklist — thin checkbox versions don't close gaps (stay `PARTIAL`).
+- **RICE business-value scoring** (AUTOPILOT Step 9b): every Up Next item carries `RICE = (Reach × Impact × Confidence) / Effort`; queue sorted by RICE within priority class.
+
+**Why**: owner asked to take the autonomous lifecycle engine from 6.5/10 to 10/10 — verification by observed behavior, learning from real failures, running without a human, competing at market-leader depth, and choosing work by business value.
+
 ## [2026-07-08] Market Discovery Engine — autonomous requirement generation vs. top-20 ERP leaders
 
 Closed the gap where autonomous mode only *consumed* the existing backlog. The system now **generates new requirements every cycle** by benchmarking UniERP against the top-20 ERP market leaders.

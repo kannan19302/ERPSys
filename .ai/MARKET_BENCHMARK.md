@@ -52,7 +52,9 @@ competitors strongest in that domain (listed per module in § 3).
 4. Log findings in the Gap Backlog (§ 3): feature name, competitors that have it,
    UniERP status (`MISSING` / `PARTIAL` / `WEAK-UX`), business value (H/M/L), size (S/M/L).
 5. Promote the top 1–3 gaps into Collab Board § 2 "Up Next" as groomed items
-   (prefix `[benchmark]`), update the Rotation Tracker date, and note it in CHANGELOG.
+   (prefix `[benchmark]`, include a RICE score per `AUTOPILOT.md` Step 9b and quote the
+   competitor's actual capability so the parity checklist in Step 3 has a target),
+   update the Rotation Tracker date, and note it in CHANGELOG.
 6. Prune gaps that get built (mark `✅ SHIPPED <date>` — keep the row for history).
 
 **Quality bar**: a gap is only loggable if it is a *real, named capability shipping in a
