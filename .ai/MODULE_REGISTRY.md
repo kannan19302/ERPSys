@@ -70,12 +70,16 @@
 4. **Studio Phase 2 — Business Logic visual rule/flow editor** (Form/Page/Workflow canvas editors are already built and confirmed — `FormBuilderWorkspace.tsx` uses `@dnd-kit`, `WorkflowEditorWorkspace.tsx` uses `reactflow`, `PageBuilderWorkspace.tsx` is a grid canvas; only the Business Logic editor, to replace form-driven automation rules, remains open) — see § Studio Backlog below.
 5. **Commit the pending Admin error-reporting work** — `error-reports.controller.ts`/`.service.ts`, Next.js `error.tsx`/`not-found.tsx`/`global-error.tsx`, `ErrorFallback.tsx` are implemented (per row 1) but sit **uncommitted** in the working tree as of 2026-07-04. Whoever picks this up: verify tests pass, then commit.
 
-Add new items here as they're identified (PM scoping, bug reports, user asks). Don't let this list go stale — prune completed/obsolete entries.
+6. **[benchmark] Finance: dunning / automated payment-reminder cadences** — escalation levels, templates, per-customer schedules; leaders: Odoo, NetSuite, ERPNext (see `.ai/MARKET_BENCHMARK.md` § Finance). Value H, Size S — good first benchmark item.
+7. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — split into slices (auth + read-only invoices first).
+
+Add new items here as they're identified (PM scoping, bug reports, user asks, and the mandatory per-cycle market-discovery pass in `.ai/AUTOPILOT.md` Step 9a → `.ai/MARKET_BENCHMARK.md`). Don't let this list go stale — prune completed/obsolete entries.
 
 ### 3. Recently Completed (rolling log, last ~15 — older entries live in `.ai/CHANGELOG.md`)
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-08 | claude-code | Market Discovery Engine: added `.ai/MARKET_BENCHMARK.md` (top-20 competitor set, Discovery Protocol, ~40-gap seeded backlog, rotation tracker); AUTOPILOT Step 9 → mandatory per-cycle REFILL & DISCOVER; priority ladder gained P5 Competitive gaps; seeded first two `[benchmark]` Up Next items. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | AI Module Hardening: refactored `workflow-engine.service.ts` and `builder/web-studio.service.ts` to route through `AiService`, eliminating paid Anthropic API dependency | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Autonomous Development Protocol: added `.ai/AUTOPILOT.md` ("Start" → self-selected end-to-end dev cycle with priority ladder, reality gates, guardrails, queue-refill rule), wired via AGENTS.md § Autonomous Mode, root `CLAUDE.md`, `.claude/skills/start/`, and MASTER_PROMPT pointer. | see CHANGELOG 2026-07-08 |
 | 2026-07-05 | antigravity-ide | CRM & Sales Expansion (Batch 1: Forecasting & Account Management): added new relational database models, CRUD service operations, secured controller endpoints with @Permissions, registered moduleNav.tsx / registry.tsx paths, built interactive forecasting and account plan views, and fixed crm-expansion.spec.ts unit tests and apiPost / apiPut wrapper helpers. | (local verification) |

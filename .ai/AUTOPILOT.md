@@ -24,7 +24,8 @@ Start
   └─▶ 6. REVIEW      → self/agent code review + security pass if sensitive
   └─▶ 7. RECORD      → update the 3 tracking files + Growth Tracker
   └─▶ 8. SHIP        → commit + push (small, coherent commits)
-  └─▶ 9. REFILL      → ensure the Up Next queue has ≥ 5 groomed items
+  └─▶ 9. REFILL & DISCOVER → benchmark ONE module vs. market leaders, inject new
+  │                          requirements, keep Up Next ≥ 5 groomed items
   └─▶ 10. REPORT     → summarize what was done, why it was chosen, what's next
 ```
 
@@ -39,8 +40,9 @@ because all state is in the repo.
 1. Read, in order: `AGENTS.md`, `.ai/prompts/MASTER_PROMPT.md`, this file.
 2. `git status` + `git pull` — never work on a stale tree.
 3. Read `.ai/MODULE_REGISTRY.md` § Collab Board (Active Claims, Up Next, Conflict Log).
-4. Read `.ai/SCORECARD.md` (heuristic scores + Reality Gates) and `.ai/CHANGELOG.md`
-   (last ~10 entries) to know what just happened.
+4. Read `.ai/SCORECARD.md` (heuristic scores + Reality Gates), `.ai/CHANGELOG.md`
+   (last ~10 entries), and `.ai/MARKET_BENCHMARK.md` (open competitive gaps + which
+   module is overdue for a discovery pass).
 5. If the working tree has uncommitted changes **you did not make**, do not touch those
    files; treat them as another agent's in-flight work (Collab Board rules apply).
 
@@ -56,8 +58,9 @@ exactly **one** item per cycle. Never skip a higher rung because a lower one is 
 | **P2 — Conflict Log** | Collab Board §4. | Resolve any logged conflict before new work. |
 | **P3 — Up Next queue** | Collab Board §2 — pick from the top, skipping items overlapping Active Claims. | This is the primary steady-state source of work. |
 | **P4 — Quality gaps** | `SCORECARD.md` modules/dimensions below 10 (e.g. auth D4/D5, admin D1); `MODULE_REGISTRY.md` § Production Readiness & Hardening open phases; RBAC decorator-stacking defect notes. | Pick the lowest-scoring dimension of the lowest-scoring module. |
-| **P5 — Module deepening** | `MODULE_REGISTRY.md` § Module-Specific Completion Notes, parity gaps vs. mature ERPs (ERPNext/Odoo feature parity for that module). | Deepen one module completely before starting another (module-completion strategy). |
-| **P6 — New capability** | Nothing above applies (rare). Act as product manager: propose a new module/app/integration consistent with the Phase roadmap and the 1M-LOC genuine-capability north star; write it into Up Next, then build the first slice. | Must pass the "does this already exist?" check against `MODULE_REGISTRY.md`. |
+| **P5 — Competitive gaps** | `.ai/MARKET_BENCHMARK.md` § Gap Backlog — highest-value open gap (H value first, then smallest size). | This is where market-leader parity work comes from; prefer gaps already promoted to Up Next with the `[benchmark]` prefix. |
+| **P6 — Module deepening** | `MODULE_REGISTRY.md` § Module-Specific Completion Notes; run an ad-hoc discovery pass (§ Step 9) on the weakest module to find its gaps. | Deepen one module completely before starting another (module-completion strategy). |
+| **P7 — New capability** | Nothing above applies (rare). Act as product manager: propose a new module/app/integration consistent with the Phase roadmap and the 1M-LOC genuine-capability north star; write it into Up Next, then build the first slice. | Must pass the "does this already exist?" check against `MODULE_REGISTRY.md`. |
 
 **Sizing rule**: an item must be completable end-to-end in one session. If the top item
 is too big, split it — put the remainder back into Up Next as groomed sub-items and take
@@ -119,13 +122,27 @@ Commit in small coherent units with conventional messages (`feat(module): ...`,
 `fix(module): ...`) and **push**. Stage only files within your claimed scope — never
 sweep in another agent's uncommitted work with `git add -A`.
 
-## Step 9 — REFILL
+## Step 9 — REFILL & DISCOVER (mandatory every cycle — this generates NEW requirements)
 
-Before ending, ensure Collab Board §2 (Up Next) has **at least 5 groomed items**, each
-with: title, module, priority rationale, and rough size. Sources: follow-ups you
-discovered, scorecard gaps, hardening phases, parity gaps, roadmap items. This is what
-makes the system self-evolving — every cycle leaves the next agent a ready answer to
-"what should I build next?".
+The system must never merely consume its backlog; every cycle must also **create**
+requirements by looking outward at the market. Two mandatory sub-steps:
+
+**9a. Market discovery (one module per cycle).** Run the Discovery Protocol in
+[`.ai/MARKET_BENCHMARK.md`](MARKET_BENCHMARK.md) § 2:
+- Pick the most-overdue module from its Rotation Tracker (staleness > 45 days = due;
+  ties broken by lowest scorecard score).
+- Benchmark it against its 3–5 reference competitors from the top-20 set (SAP, NetSuite,
+  Dynamics 365, Odoo, ERPNext, Workday, Salesforce, Shopify, …) — via `WebSearch`/
+  `WebFetch` when available, otherwise offline product knowledge (mark it as such).
+- Log concrete gaps (feature | who has it | MISSING/PARTIAL/WEAK-UX | value | size) in
+  the Gap Backlog, promote the top 1–3 into Up Next prefixed `[benchmark]`, and update
+  the Rotation Tracker. Improvements to existing features count equally with new ones.
+
+**9b. Queue refill.** Ensure Collab Board §2 (Up Next) has **at least 5 groomed items**
+(title, module, rationale, rough size), and that **at least 2 of them are
+`[benchmark]`-sourced** — sources: 9a output, follow-ups you discovered, scorecard gaps,
+hardening phases, roadmap items. This is what makes the system self-evolving: every
+cycle leaves the next agent both *known* work and *newly discovered* market-driven work.
 
 ## Step 10 — REPORT
 

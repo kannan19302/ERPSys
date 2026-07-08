@@ -3,6 +3,18 @@
 > This file is maintained by AI agents and developers after completing work.
 > Format: Newest entries at the top.
 
+## [2026-07-08] Market Discovery Engine — autonomous requirement generation vs. top-20 ERP leaders
+
+Closed the gap where autonomous mode only *consumed* the existing backlog. The system now **generates new requirements every cycle** by benchmarking UniERP against the top-20 ERP market leaders.
+
+**Accomplished**:
+- Created `.ai/MARKET_BENCHMARK.md`: the top-20 competitor set (SAP S/4HANA, NetSuite, Oracle Fusion, Dynamics 365, Odoo, ERPNext, Workday, Sage Intacct, Infor, Epicor, Acumatica, Zoho One, IFS, Salesforce, HubSpot, ServiceNow, Shopify, Katana, Deltek/Unit4, vertical leaders), a Discovery Protocol (rotate one module per cycle, web-research its 3–5 reference competitors, log gaps with value/size, promote top gaps to Up Next), a per-module Gap Backlog **seeded with ~40 concrete gaps** across Finance/CRM/Inventory/Manufacturing/HR/POS/Projects/Platform/BI/verticals (offline analysis pass), and a Rotation Tracker with a 45-day staleness rule.
+- `AUTOPILOT.md`: Step 9 upgraded to **REFILL & DISCOVER** — market discovery is now *mandatory every cycle* (9a) and the Up Next refill must contain ≥ 2 `[benchmark]`-sourced items (9b); priority ladder gained **P5 — Competitive gaps** (ladder now P0–P7); bootstrap now reads MARKET_BENCHMARK.md.
+- Updated `AGENTS.md` § Autonomous Mode and `.claude/skills/start/SKILL.md` to match.
+- Seeded Collab Board Up Next with the first two `[benchmark]` items (Finance dunning cadences; CRM customer portal).
+
+**Why**: owner feedback — autonomy was only working through existing requirements and never analyzed market leaders for missing functionality or improvements. Requirement generation is now a built-in, outward-looking, every-cycle step.
+
 ## [2026-07-08] AI Module Hardening — Remove paid Anthropic API dependency
 
 Refactored `workflow-engine.service.ts` and `builder/web-studio.service.ts` to route through the centralized self-hosted `AiService` (Ollama), completing the removal of raw `fetch` calls to `api.anthropic.com`.

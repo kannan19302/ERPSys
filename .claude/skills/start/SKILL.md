@@ -12,7 +12,8 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    `git pull`; read the Collab Board, `SCORECARD.md`, recent `CHANGELOG.md`.
 2. **Select ONE item** via the priority ladder: P0 broken typecheck/tests → P1 unfinished
    shipped work → P2 conflict log → P3 Collab Board "Up Next" queue → P4 scorecard/
-   hardening quality gaps → P5 module deepening → P6 propose new capability.
+   hardening quality gaps → P5 competitive gaps from `.ai/MARKET_BENCHMARK.md` →
+   P6 module deepening → P7 propose new capability.
 3. **Claim** it on the Collab Board (§1 Active Claims).
 4. **Plan** with the `product-manager` subagent (registry duplicate-check, stories,
    acceptance criteria, Definition of Done).
@@ -24,8 +25,12 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
 8. **Record**: update `.ai/CHANGELOG.md` and `.ai/MODULE_REGISTRY.md` (status, Growth
    Tracker, move claim to Recently Completed).
 9. **Ship**: commit only your claimed scope, push.
-10. **Refill** the Up Next queue to ≥ 5 groomed items, then **report** what was done,
-    why it was selected, gate results, and the top 3 next items.
+10. **Refill & discover** (mandatory): run the Discovery Protocol in
+    `.ai/MARKET_BENCHMARK.md` — benchmark the most-overdue module against its top
+    market-leader competitors (use WebSearch/WebFetch), log new gaps/improvements in
+    the Gap Backlog, promote the best 1–3 into Up Next as `[benchmark]` items, and keep
+    the queue at ≥ 5 groomed items (≥ 2 benchmark-sourced). Then **report** what was
+    done, why it was selected, gate results, new gaps discovered, and the top 3 next items.
 
 Guardrails: one item per cycle, no red builds, no stubs/padding, no force-push, no
 destructive ops (tag those `[needs-human]` in Up Next), no touching other agents'

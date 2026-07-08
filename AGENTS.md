@@ -22,10 +22,17 @@ If the user's entire instruction is **"Start"** (or "start", "/start", "continue
 "next") with no other requirements, do NOT ask what to build. Execute
 [.ai/AUTOPILOT.md](.ai/AUTOPILOT.md) — the Autonomous Development Protocol. It defines
 the full self-directed cycle: bootstrap → select one work item via the priority ladder
-(broken build > unfinished work > conflicts > Up Next queue > quality gaps > module
-deepening > new capability) → claim → plan → build end-to-end → verify gates → review →
-record in the 3-file system → commit+push → refill the Up Next queue → report.
-Every rule in this file still applies inside autonomous mode.
+(broken build > unfinished work > conflicts > Up Next queue > quality gaps >
+competitive gaps > module deepening > new capability) → claim → plan → build
+end-to-end → verify gates → review → record in the 3-file system → commit+push →
+**refill & discover** → report.
+
+Autonomous mode does not just consume existing requirements — it **generates new ones**:
+every cycle ends with a mandatory market-discovery pass ([.ai/MARKET_BENCHMARK.md](.ai/MARKET_BENCHMARK.md))
+that benchmarks one module against the top-20 ERP market leaders (SAP, NetSuite,
+Dynamics 365, Odoo, ERPNext, Workday, Salesforce, Shopify, …), logs missing features and
+improvement opportunities in the Gap Backlog, and promotes the best ones into the Up Next
+queue. Every rule in this file still applies inside autonomous mode.
 
 ---
 
