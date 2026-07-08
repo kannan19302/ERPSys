@@ -443,4 +443,512 @@ export class FinancialReportingService {
       }),
     };
   }
+
+  // ── INVOICE ANALYTICS ──────────────────────────────────
+
+  async getInvoiceAnalytics(tenantId: string, months = 12) {
+    const since = new Date();
+    since.setMonth(since.getMonth() - months);
+
+    const invoices = await prisma.invoice.findMany({
+      where: { tenantId, issueDate: { gte: since } },
+      include: { customer: true, payments: true },
+    });
+
+    // Monthly revenue trend
+    const byMonth: Record<string, { invoiced: number; paid: number; count: number }> = {};
+    for (const inv of invoices) {
+      const key = `${inv.issueDate.getFullYear()}-${String(inv.issueDate.getMonth() + 1).padStart(2, '0')}`;
+      if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0, count: 0 };
+      byMonth[key].invoiced += Number(inv.totalAmount);
+      byMonth[key].paid += inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      byMonth[key].count++;
+    }
+
+    // Customer breakdown (top 10)
+    const byCustomer: Record<string, { name: string; invoiced: number; paid: number; count: number }> = {};
+    for (const inv of invoices) {
+      const key = inv.customerId || 'unknown';
+      if (!byCustomer[key]) byCustomer[key] = { name: inv.customer?.name ?? 'Unknown', invoiced: 0, paid: 0, count: 0 };
+      byCustomer[key].invoiced += Number(inv.totalAmount);
+      byCustomer[key].paid += inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      byCustomer[key].count++;
+    }
+
+    const topCustomers = Object.values(byCustomer).sort((a, b) => b.invoiced - a.invoiced).slice(0, 10);
+
+    // Status breakdown
+    const statusCounts: Record<string, number> = {};
+    const statusAmounts: Record<string, number> = {};
+    for (const inv of invoices) {
+      statusCounts[inv.status] = (statusCounts[inv.status] || 0) + 1;
+      statusAmounts[inv.status] = (statusAmounts[inv.status] || 0) + Number(inv.totalAmount);
+    }
+
+    // Average days to pay
+    const paidInvoices = invoices.filter(inv => inv.status === 'PAID' && inv.payments.length > 0);
+    const avgDaysToPay = paidInvoices.length > 0
+      ? paidInvoices.reduce((s, inv) => {
+          const lastPayment = inv.payments.sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime())[0];
+          return s + (lastPayment ? Math.max(0, (new Date(lastPayment.paidAt).getTime() - inv.issueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0);
+        }, 0) / paidInvoices.length
+      : 0;
+
+    return {
+      period: { months, since: since.toISOString() },
+      monthlyTrend: Object.entries(byMonth)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([month, data]) => ({ month, ...data })),
+      topCustomers,
+      statusBreakdown: Object.entries(statusCounts).map(([status, count]) => ({
+        status, count, amount: statusAmounts[status] || 0,
+      })),
+      avgDaysToPay: Math.round(avgDaysToPay),
+      totalInvoiced: invoices.reduce((s, inv) => s + Number(inv.totalAmount), 0),
+      totalCollected: invoices.reduce((s, inv) => s + inv.payments.reduce((ps, p) => ps + Number(p.amount), 0), 0),
+    };
+  }
+
+  // ── AP AGING ──────────────────────────────────
+
+  async getApAgingReport(tenantId: string) {
+    const schedules = await prisma.paymentSchedule.findMany({
+      where: { tenantId, status: 'PENDING' },
+      include: { vendor: true },
+    });
+
+    const now = Date.now();
+    const buckets = {
+      current: { total: 0, count: 0, items: [] as unknown[] },
+      '1-30': { total: 0, count: 0, items: [] as unknown[] },
+      '31-60': { total: 0, count: 0, items: [] as unknown[] },
+      '61-90': { total: 0, count: 0, items: [] as unknown[] },
+      '90+': { total: 0, count: 0, items: [] as unknown[] },
+    };
+
+    for (const s of schedules) {
+      const daysOverdue = Math.floor((now - s.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const amount = Number(s.amount);
+      const entry = { id: s.id, vendor: s.vendor?.name, dueDate: s.dueDate, amount, daysOverdue };
+      if (daysOverdue <= 0) { buckets.current.total += amount; buckets.current.count++; buckets.current.items.push(entry); }
+      else if (daysOverdue <= 30) { buckets['1-30'].total += amount; buckets['1-30'].count++; buckets['1-30'].items.push(entry); }
+      else if (daysOverdue <= 60) { buckets['31-60'].total += amount; buckets['31-60'].count++; buckets['31-60'].items.push(entry); }
+      else if (daysOverdue <= 90) { buckets['61-90'].total += amount; buckets['61-90'].count++; buckets['61-90'].items.push(entry); }
+      else { buckets['90+'].total += amount; buckets['90+'].count++; buckets['90+'].items.push(entry); }
+    }
+
+    const grandTotal = Object.values(buckets).reduce((s, b) => s + b.total, 0);
+    return { buckets, grandTotal, generatedAt: new Date().toISOString() };
+  }
+
+  // ── WRITE-OFF / BAD DEBT ──────────────────────────────────
+
+  async writeOffInvoice(tenantId: string, orgId: string, invoiceId: string, reason: string) {
+    const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
+    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId } });
+    if (!invoice) throw new Error('Invoice not found');
+    if (['PAID', 'VOID', 'WRITTEN_OFF'].includes(invoice.status)) {
+      throw new Error(`Cannot write off invoice in status ${invoice.status}`);
+    }
+
+    // Mark invoice as written off
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { status: 'VOID', notes: `[WRITTEN_OFF] ${reason} — ${new Date().toISOString()}` } as never,
+    });
+
+    // Create a bad-debt journal entry
+    const badDebtAccount = await prisma.account.findFirst({
+      where: { tenantId, orgId: resolvedOrgId, name: { contains: 'Bad Debt' } },
+    });
+    const arAccount = await prisma.account.findFirst({
+      where: { tenantId, orgId: resolvedOrgId, type: 'ASSET', name: { contains: 'Receivable' } },
+    });
+
+    if (badDebtAccount && arAccount) {
+      const writeOffAmount = Number(invoice.totalAmount) - Number(invoice.paidAmount || 0);
+      await prisma.journal.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          entryNumber: `WO-${Date.now()}`,
+          notes: `Bad debt write-off for invoice ${invoice.invoiceNumber}: ${reason}`,
+          status: 'POSTED',
+          date: new Date(),
+          entries: {
+            create: [
+              { tenantId, accountId: badDebtAccount.id, debit: writeOffAmount, credit: 0, description: `Bad debt write-off: ${invoice.invoiceNumber}` },
+              { tenantId, accountId: arAccount.id, debit: 0, credit: writeOffAmount, description: `AR reduction: ${invoice.invoiceNumber}` },
+            ],
+          },
+        },
+      });
+    }
+
+    await this.glService.logAudit(prisma, tenantId, 'Invoice', invoiceId, 'WRITE_OFF', { invoiceId, reason }, 'system');
+    return { writtenOff: true, invoiceId, reason };
+  }
+
+  // ── PROFORMA INVOICE ──────────────────────────────────
+
+  async createProformaInvoice(tenantId: string, orgId: string, sourceInvoiceId: string) {
+    const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
+    const source = await prisma.invoice.findFirst({
+      where: { id: sourceInvoiceId, tenantId },
+      include: { lineItems: true },
+    });
+    if (!source) throw new Error('Source invoice not found');
+
+    const proforma = await prisma.invoice.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        customerId: source.customerId!,
+        invoiceNumber: `PRO-${source.invoiceNumber}`,
+        issueDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        status: 'DRAFT',
+        notes: `Proforma invoice based on ${source.invoiceNumber}`,
+        subtotal: source.subtotal,
+        taxAmount: source.taxAmount,
+        totalAmount: source.totalAmount,
+        currency: source.currency,
+        lineItems: {
+          create: source.lineItems.map((li) => ({
+            tenantId,
+            description: li.description,
+            quantity: li.quantity,
+            unitPrice: li.unitPrice,
+            totalAmount: li.totalAmount,
+          })),
+        },
+      } as never,
+    });
+
+    return proforma;
+  }
+
+  // ── LATE FEE CALCULATION ──────────────────────────────────
+
+  async calculateLateFees(tenantId: string, orgId: string) {
+    const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
+    const dunningLevels = await prisma.dunningLevel.findMany({
+      where: { tenantId, status: 'ACTIVE' },
+      orderBy: { daysOverdue: 'desc' },
+    });
+
+    const overdueInvoices = await prisma.invoice.findMany({
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+        dueDate: { lt: new Date() },
+      },
+      include: { customer: true },
+    });
+
+    const now = Date.now();
+    const feeCalculations = overdueInvoices.map((inv) => {
+      const daysOverdue = Math.floor((now - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const applicableLevel = dunningLevels.find((lvl) => daysOverdue >= lvl.daysOverdue);
+      const lateFee = applicableLevel ? Number(applicableLevel.feeAmount) : 0;
+      return {
+        invoiceId: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        customer: inv.customer?.name,
+        daysOverdue,
+        invoiceAmount: Number(inv.totalAmount),
+        lateFee,
+        applicableLevel: applicableLevel?.levelName ?? 'None',
+      };
+    });
+
+    const totalFees = feeCalculations.reduce((s, f) => s + f.lateFee, 0);
+    return { calculations: feeCalculations, totalFees, overdueCount: feeCalculations.length };
+  }
+
+  // ── FINANCE DASHBOARD KPIs ──────────────────────────────────
+
+  async getFinanceDashboardKpis(tenantId: string, orgId: string) {
+    const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+    const [mtdRevenue, ytdRevenue, unpaidInvoices, overdueInvoices, cashPosition, pendingApprovals] = await Promise.all([
+      prisma.invoice.aggregate({
+        where: { tenantId, orgId: resolvedOrgId, status: 'PAID', issueDate: { gte: startOfMonth } },
+        _sum: { totalAmount: true },
+      }),
+      prisma.invoice.aggregate({
+        where: { tenantId, orgId: resolvedOrgId, status: 'PAID', issueDate: { gte: startOfYear } },
+        _sum: { totalAmount: true },
+      }),
+      prisma.invoice.aggregate({
+        where: { tenantId, orgId: resolvedOrgId, status: { notIn: ['PAID', 'VOID', 'DRAFT'] } },
+        _sum: { totalAmount: true },
+        _count: true,
+      }),
+      prisma.invoice.aggregate({
+        where: { tenantId, orgId: resolvedOrgId, status: { notIn: ['PAID', 'VOID', 'DRAFT'] }, dueDate: { lt: now } },
+        _sum: { totalAmount: true },
+        _count: true,
+      }),
+      prisma.bankAccount.findMany({ where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' } }),
+      prisma.journal.count({ where: { tenantId, orgId: resolvedOrgId, status: 'PENDING_APPROVAL' } }),
+    ]);
+
+    const bankAccountIds = cashPosition.map(ba => ba.accountId);
+    const bankAccountsGL = await prisma.account.findMany({
+      where: { id: { in: bankAccountIds }, tenantId },
+    });
+    const totalCash = bankAccountsGL.reduce((s, a) => s + Number(a.balance || 0), 0);
+
+    return {
+      mtdRevenue: Number(mtdRevenue._sum.totalAmount || 0),
+      ytdRevenue: Number(ytdRevenue._sum.totalAmount || 0),
+      totalUnpaidAr: Number(unpaidInvoices._sum.totalAmount || 0),
+      unpaidInvoiceCount: unpaidInvoices._count,
+      totalOverdueAr: Number(overdueInvoices._sum.totalAmount || 0),
+      overdueInvoiceCount: overdueInvoices._count,
+      totalCash,
+      pendingJournalApprovals: pendingApprovals,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  // ── 13-WEEK CASH FLOW FORECAST ──────────────────────────────────
+
+  async get13WeekCashForecast(tenantId: string, orgId: string) {
+    const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
+    const now = new Date();
+    const weeks: { weekStart: Date; weekEnd: Date; label: string; projectedInflows: number; projectedOutflows: number; netCashFlow: number }[] = [];
+
+    for (let w = 0; w < 13; w++) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() + w * 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      const [invoicesInflow, apOutflow] = await Promise.all([
+        prisma.invoice.aggregate({
+          where: {
+            tenantId, orgId: resolvedOrgId,
+            status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+            dueDate: { gte: weekStart, lte: weekEnd },
+          },
+          _sum: { totalAmount: true },
+        }),
+        prisma.paymentSchedule.aggregate({
+          where: { tenantId, orgId: resolvedOrgId, status: 'PENDING', dueDate: { gte: weekStart, lte: weekEnd } },
+          _sum: { amount: true },
+        }),
+      ]);
+
+      const inflows = Number(invoicesInflow._sum.totalAmount || 0);
+      const outflows = Number(apOutflow._sum.amount || 0);
+
+      weeks.push({
+        weekStart,
+        weekEnd,
+        label: `Week ${w + 1} (${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`,
+        projectedInflows: inflows,
+        projectedOutflows: outflows,
+        netCashFlow: inflows - outflows,
+      });
+    }
+
+    const totalInflows = weeks.reduce((s, w) => s + w.projectedInflows, 0);
+    const totalOutflows = weeks.reduce((s, w) => s + w.projectedOutflows, 0);
+    return { weeks, totalInflows, totalOutflows, netPosition: totalInflows - totalOutflows };
+  }
+
+  // ── BUDGET MONTHLY SPREAD ──────────────────────────────────
+
+  async getBudgetMonthlySpread(tenantId: string, fiscalYear: string) {
+    const yearStart = new Date(`${fiscalYear}-01-01`);
+    const yearEnd = new Date(`${fiscalYear}-12-31`);
+
+    const budgets = await prisma.budget.findMany({
+      where: { tenantId, startDate: { gte: yearStart }, endDate: { lte: yearEnd } },
+      include: { account: true },
+    });
+
+    const monthlyBudgets: Record<string, { month: string; budgeted: number; accounts: { name: string; amount: number }[] }> = {};
+    for (let m = 0; m < 12; m++) {
+      const monthDate = new Date(parseInt(fiscalYear), m, 1);
+      const monthKey = `${fiscalYear}-${String(m + 1).padStart(2, '0')}`;
+      monthlyBudgets[monthKey] = {
+        month: monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        budgeted: 0,
+        accounts: [],
+      };
+    }
+
+    for (const budget of budgets) {
+      const start = new Date(budget.startDate);
+      const end = new Date(budget.endDate);
+      const monthCount = Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1);
+      const monthlyAmount = Number(budget.amount) / monthCount;
+
+      for (let m = 0; m < monthCount; m++) {
+        const d = new Date(start.getFullYear(), start.getMonth() + m, 1);
+        if (d.getFullYear() !== parseInt(fiscalYear)) continue;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (monthlyBudgets[key]) {
+          monthlyBudgets[key].budgeted += monthlyAmount;
+          monthlyBudgets[key].accounts.push({ name: budget.account?.name ?? 'Unknown', amount: monthlyAmount });
+        }
+      }
+    }
+
+    return { fiscalYear, months: Object.values(monthlyBudgets), totalBudgeted: budgets.reduce((s, b) => s + Number(b.amount), 0) };
+  }
+
+  // ── GL ACCOUNT DRILL-DOWN ──────────────────────────────────
+
+  async getGlAccountDrillDown(tenantId: string, accountId: string, startDate?: string, endDate?: string, page = 1, limit = 50) {
+    const account = await prisma.account.findFirst({ where: { id: accountId, tenantId } });
+    if (!account) throw new Error('Account not found');
+
+    const dateFilter: Record<string, unknown> = {};
+    if (startDate) dateFilter['gte'] = new Date(startDate);
+    if (endDate) dateFilter['lte'] = new Date(endDate);
+
+    const skip = (page - 1) * limit;
+    const [entries, total] = await Promise.all([
+      prisma.journalEntry.findMany({
+        where: {
+          tenantId,
+          accountId,
+          ...(Object.keys(dateFilter).length ? { journal: { date: dateFilter } } : {}),
+        },
+        include: { journal: true },
+        orderBy: { journal: { date: 'desc' } },
+        skip,
+        take: limit,
+      }),
+      prisma.journalEntry.count({ where: { tenantId, accountId, ...(Object.keys(dateFilter).length ? { journal: { date: dateFilter } } : {}) } }),
+    ]);
+
+    let runningBalance = Number(account.balance || 0);
+    const transactions = entries.map((e) => {
+      const net = Number(e.credit) - Number(e.debit);
+      runningBalance -= net; // simplified running backwards
+      return {
+        date: e.journal.date,
+        description: e.description || e.journal.notes || '',
+        reference: e.journal.entryNumber,
+        debit: Number(e.debit),
+        credit: Number(e.credit),
+        balance: runningBalance,
+      };
+    });
+
+    return {
+      account: { id: account.id, code: account.code, name: account.name, type: account.type, currentBalance: Number(account.balance || 0) },
+      transactions,
+      total,
+      page,
+      limit,
+      period: { startDate: startDate || null, endDate: endDate || null },
+    };
+  }
+
+  // ── CUSTOMER PAYMENT BEHAVIOUR ──────────────────────────────────
+
+  async getCustomerPaymentBehavior(tenantId: string, months = 12) {
+    const since = new Date();
+    since.setMonth(since.getMonth() - months);
+
+    const paidInvoices = await prisma.invoice.findMany({
+      where: { tenantId, status: 'PAID', issueDate: { gte: since } },
+      include: { customer: true, payments: true },
+    });
+
+    const byCustomer: Record<string, { name: string; invoiceCount: number; avgDaysToPay: number; totalPaid: number; onTimeCount: number; lateCount: number }> = {};
+
+    for (const inv of paidInvoices) {
+      const key = inv.customerId || 'unknown';
+      if (!byCustomer[key]) byCustomer[key] = { name: inv.customer?.name ?? 'Unknown', invoiceCount: 0, avgDaysToPay: 0, totalPaid: 0, onTimeCount: 0, lateCount: 0 };
+
+      const lastPayment = inv.payments.sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime())[0];
+      if (!lastPayment) continue;
+      const daysToPay = Math.max(0, (new Date(lastPayment.paidAt).getTime() - inv.issueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const isLate = new Date(lastPayment.paidAt) > inv.dueDate;
+
+      byCustomer[key].invoiceCount++;
+      byCustomer[key].avgDaysToPay = (byCustomer[key].avgDaysToPay * (byCustomer[key].invoiceCount - 1) + daysToPay) / byCustomer[key].invoiceCount;
+      byCustomer[key].totalPaid += inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      if (isLate) byCustomer[key].lateCount++; else byCustomer[key].onTimeCount++;
+    }
+
+    return Object.values(byCustomer)
+      .map(c => ({ ...c, onTimeRate: c.invoiceCount > 0 ? (c.onTimeCount / c.invoiceCount) * 100 : 0, avgDaysToPay: Math.round(c.avgDaysToPay) }))
+      .sort((a, b) => a.avgDaysToPay - b.avgDaysToPay);
+  }
+
+  // ── VENDOR PAYMENT ANALYSIS ──────────────────────────────────
+
+  async getVendorPaymentAnalysis(tenantId: string) {
+    const schedules = await prisma.paymentSchedule.findMany({
+      where: { tenantId },
+      include: { vendor: true },
+    });
+
+    const byVendor: Record<string, { name: string; pending: number; paid: number; overdue: number; total: number }> = {};
+    const now = Date.now();
+
+    for (const s of schedules) {
+      const key = s.vendorId;
+      if (!byVendor[key]) byVendor[key] = { name: s.vendor?.name ?? 'Unknown', pending: 0, paid: 0, overdue: 0, total: 0 };
+      const amount = Number(s.amount);
+      byVendor[key].total += amount;
+      if (s.status === 'PAID') { byVendor[key].paid += amount; }
+      else if (s.dueDate.getTime() < now) { byVendor[key].overdue += amount; byVendor[key].pending += amount; }
+      else { byVendor[key].pending += amount; }
+    }
+
+    return Object.values(byVendor).sort((a, b) => b.pending - a.pending);
+  }
+
+  // ── TAX FILING SUMMARY ──────────────────────────────────
+
+  async getTaxFilingSummary(tenantId: string, year: string) {
+    const start = new Date(`${year}-01-01`);
+    const end = new Date(`${year}-12-31`);
+
+    const filings = await prisma.taxFiling.findMany({
+      where: { tenantId, periodStart: { gte: start, lte: end } },
+      orderBy: { periodStart: 'asc' },
+    });
+
+    const parsedFilings = filings.map(f => {
+      const payload = (f.payload && typeof f.payload === 'object' ? f.payload : {}) as Record<string, unknown>;
+      const netTaxPayable = typeof payload.netTaxPayable === 'number' ? payload.netTaxPayable : 0;
+      return {
+        id: f.id,
+        period: `${f.periodStart.toLocaleDateString()} – ${f.periodEnd.toLocaleDateString()}`,
+        type: f.filingType,
+        liability: netTaxPayable,
+        status: f.status,
+      };
+    });
+
+    const totalTaxLiability = parsedFilings.reduce((s, f) => s + f.liability, 0);
+    const totalTaxPaid = parsedFilings.filter(f => f.status === 'FILED').reduce((s, f) => s + f.liability, 0);
+    const pending = parsedFilings.filter(f => f.status !== 'FILED').length;
+
+    return {
+      year,
+      totalFilings: filings.length,
+      totalTaxLiability,
+      totalTaxPaid,
+      pendingFilings: pending,
+      filings: parsedFilings,
+    };
+  }
 }
+

@@ -18,6 +18,7 @@ import {
   ConsolidationService,
   FinancialReportingService,
   PeriodManagementService,
+  PaymentTermsService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -265,6 +266,28 @@ const createTaxRuleSchema = z.any();
 const createWithholdingTaxSchema = z.any();
 const createTaxFilingSchema = z.any();
 
+const writeOffInvoiceSchema = z.object({
+  reason: z.string().min(1),
+});
+
+const createPaymentTermSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+  dueDays: z.number().int().nonnegative(),
+  discountDays: z.number().int().nonnegative().optional(),
+  discountPct: z.number().nonnegative().max(100).optional(),
+});
+
+const updatePaymentTermSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  dueDays: z.number().int().nonnegative().optional(),
+  discountDays: z.number().int().nonnegative().optional(),
+  discountPct: z.number().nonnegative().max(100).optional(),
+  isActive: z.boolean().optional(),
+});
+
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
@@ -281,6 +304,7 @@ export class AdvancedFinanceController {
     private readonly consolidationService: ConsolidationService,
     private readonly reportingService: FinancialReportingService,
     private readonly periodService: PeriodManagementService,
+    private readonly paymentTermsService: PaymentTermsService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -806,6 +830,182 @@ export class AdvancedFinanceController {
   async getBudgetVsActuals(@Req() req: AuthenticatedRequest, @Query('fiscalYear') fiscalYear: string) {
     return this.budgetingService.getBudgetVsActuals(req.user.tenantId, req.user.orgId || '', fiscalYear || '2026');
   }
+
+  @ApiOperation({ summary: 'Get invoice analytics' })
+  @Get('analytics/invoices')
+  @Permissions('finance.report.read')
+  async getInvoiceAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query('months') months?: string,
+  ) {
+    return this.reportingService.getInvoiceAnalytics(req.user.tenantId, months ? parseInt(months) : 12);
+  }
+
+  @ApiOperation({ summary: 'Get AP aging report' })
+  @Get('reports/ap-aging')
+  @Permissions('finance.report.read')
+  async getApAgingReport(@Req() req: AuthenticatedRequest) {
+    return this.reportingService.getApAgingReport(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Write off invoice' })
+  @Post('invoices/:id/write-off')
+  @Permissions('finance.invoice.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Invoice')
+  async writeOffInvoice(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(writeOffInvoiceSchema) dto: z.infer<typeof writeOffInvoiceSchema>,
+  ) {
+    return this.reportingService.writeOffInvoice(req.user.tenantId, req.user.orgId || '', id, dto.reason);
+  }
+
+  @ApiOperation({ summary: 'Create proforma invoice' })
+  @Post('invoices/:id/proforma')
+  @Permissions('finance.invoice.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Invoice')
+  async createProformaInvoice(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.reportingService.createProformaInvoice(req.user.tenantId, req.user.orgId || '', id);
+  }
+
+  @ApiOperation({ summary: 'Calculate late fees' })
+  @Get('late-fees/calculate')
+  @Permissions('finance.tax.compute')
+  async calculateLateFees(@Req() req: AuthenticatedRequest) {
+    return this.reportingService.calculateLateFees(req.user.tenantId, req.user.orgId || '');
+  }
+
+  @ApiOperation({ summary: 'Get finance dashboard KPIs' })
+  @Get('dashboard/kpis')
+  @Permissions('finance.report.read')
+  async getFinanceDashboardKpis(@Req() req: AuthenticatedRequest) {
+    return this.reportingService.getFinanceDashboardKpis(req.user.tenantId, req.user.orgId || '');
+  }
+
+  @ApiOperation({ summary: 'Get 13-week cash forecast' })
+  @Get('cash-flow/13-week')
+  @Permissions('finance.report.read')
+  async get13WeekCashForecast(@Req() req: AuthenticatedRequest) {
+    return this.reportingService.get13WeekCashForecast(req.user.tenantId, req.user.orgId || '');
+  }
+
+  @ApiOperation({ summary: 'Get budget monthly spread' })
+  @Get('budgets/monthly-spread')
+  @Permissions('finance.budget.read')
+  async getBudgetMonthlySpread(
+    @Req() req: AuthenticatedRequest,
+    @Query('fiscalYear') fiscalYear: string,
+  ) {
+    return this.reportingService.getBudgetMonthlySpread(req.user.tenantId, fiscalYear || '2026');
+  }
+
+  @ApiOperation({ summary: 'Get GL account drill down' })
+  @Get('accounts/:id/drilldown')
+  @Permissions('finance.account.read')
+  async getGlAccountDrillDown(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.reportingService.getGlAccountDrillDown(
+      req.user.tenantId,
+      id,
+      startDate,
+      endDate,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 50,
+    );
+  }
+
+  @ApiOperation({ summary: 'Get customer payment behavior' })
+  @Get('analytics/customer-payment-behavior')
+  @Permissions('finance.report.read')
+  async getCustomerPaymentBehavior(
+    @Req() req: AuthenticatedRequest,
+    @Query('months') months?: string,
+  ) {
+    return this.reportingService.getCustomerPaymentBehavior(req.user.tenantId, months ? parseInt(months) : 12);
+  }
+
+  @ApiOperation({ summary: 'Get vendor payment analysis' })
+  @Get('analytics/vendor-payment')
+  @Permissions('finance.report.read')
+  async getVendorPaymentAnalysis(@Req() req: AuthenticatedRequest) {
+    return this.reportingService.getVendorPaymentAnalysis(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get tax filing summary' })
+  @Get('tax-filings/summary')
+  @Permissions('finance.tax.read')
+  async getTaxFilingSummary(
+    @Req() req: AuthenticatedRequest,
+    @Query('year') year: string,
+  ) {
+    return this.reportingService.getTaxFilingSummary(req.user.tenantId, year || '2026');
+  }
+
+  @ApiOperation({ summary: 'Get payment terms templates' })
+  @Get('payment-terms')
+  @Permissions('finance.payment.read')
+  async getPaymentTerms(@Req() req: AuthenticatedRequest) {
+    return this.paymentTermsService.getPaymentTerms(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get payment term template by ID' })
+  @Get('payment-terms/:id')
+  @Permissions('finance.payment.read')
+  async getPaymentTermById(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.paymentTermsService.getPaymentTermById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create payment term template' })
+  @Post('payment-terms')
+  @Permissions('finance.payment.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentTermTemplate')
+  async createPaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createPaymentTermSchema) dto: z.infer<typeof createPaymentTermSchema>,
+  ) {
+    return this.paymentTermsService.createPaymentTerm(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update payment term template' })
+  @Patch('payment-terms/:id')
+  @Permissions('finance.payment.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentTermTemplate')
+  async updatePaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updatePaymentTermSchema) dto: z.infer<typeof updatePaymentTermSchema>,
+  ) {
+    return this.paymentTermsService.updatePaymentTerm(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete payment term template' })
+  @Delete('payment-terms/:id')
+  @Permissions('finance.payment.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentTermTemplate')
+  async deletePaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.paymentTermsService.deletePaymentTerm(req.user.tenantId, id);
+  }
+
 
   @ApiOperation({ summary: 'Update exchange rate' })
   @Permissions('finance.treasury.create')

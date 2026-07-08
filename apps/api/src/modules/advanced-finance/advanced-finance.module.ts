@@ -12,6 +12,7 @@ import {
   ConsolidationService,
   FinancialReportingService,
   PeriodManagementService,
+  PaymentTermsService,
 } from './services';
 
 const domainServices = [
@@ -25,6 +26,7 @@ const domainServices = [
   ConsolidationService,
   FinancialReportingService,
   PeriodManagementService,
+  PaymentTermsService,
 ];
 
 @Module({

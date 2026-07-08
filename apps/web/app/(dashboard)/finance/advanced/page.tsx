@@ -9,7 +9,7 @@ import {
   Wallet, Scale, Eye, GitCompare, RefreshCw,
   FolderOpen, ChevronRight, CreditCard, FileSliders,
   Building2, ShoppingCart, ClipboardList,
-  ShieldAlert
+  ShieldAlert, Calendar
 } from 'lucide-react';
 
 const groups = [
@@ -37,6 +37,8 @@ const groups = [
       { href: '/finance/advanced/ar-aging', label: 'AR Aging Report', icon: <BarChart3 size={18} />, desc: 'Receivables by aging bucket: Current, 1–30, 31–60, 61–90, 90+ days' },
       { href: '/finance/advanced/customer-statement', label: 'Customer Statement', icon: <FileText size={18} />, desc: 'Full invoice/payment ledger per customer for any period' },
       { href: '/finance/advanced/credit-risk', label: 'Credit Risk Management', icon: <ShieldAlert size={18} />, desc: 'Credit limits, holds, risk ratings, and utilization monitoring' },
+      { href: '/finance/advanced/payment-terms', label: 'Payment Terms Templates', icon: <Calendar size={18} />, desc: 'Configure credit and discount term templates (Net 30, Net 60, 2/10 Net 30)' },
+      { href: '/finance/advanced/invoice-analytics', label: 'Invoice Analytics', icon: <TrendingUp size={18} />, desc: 'Track sales trends, collection velocities, and payment behaviors' },
       { href: '/finance/advanced/treasury', label: 'Treasury & Investments', icon: <BarChart3 size={18} />, desc: 'Treasury operations, investment tracking, and liquidity management' },
       { href: '/finance/advanced/reconciliations', label: 'Bank Reconciliation', icon: <GitCompare size={18} />, desc: 'Statement import, auto-matching, and reconciliation reports' },
       { href: '/finance/advanced/expense-reports', label: 'Expense Management', icon: <Receipt size={18} />, desc: 'Employee expense reports, approvals, and reimbursements' },
@@ -51,6 +53,7 @@ const groups = [
     modules: [
       { href: '/finance/advanced/tax-engine', label: 'Tax Engine', icon: <Calculator size={18} />, desc: 'Tax rules, components, and auto-computation engine' },
       { href: '/finance/advanced/tax-filing', label: 'Tax Filing', icon: <FileText size={18} />, desc: 'Auto-compute VAT/GST returns from transactions' },
+      { href: '/finance/advanced/tax-filing-summary', label: 'Tax Filing Summary', icon: <ShieldAlert size={18} />, desc: 'Computed tax return liabilities and compliance filings dashboard' },
       { href: '/finance/advanced/audit-logs', label: 'Finance Audit Trail', icon: <Eye size={18} />, desc: 'Track changes to financial records and compliance logs' },
       { href: '/finance/advanced/account-reconciliation', label: 'Account Reconciliation', icon: <GitCompare size={18} />, desc: 'Sub-ledger to GL matching and account validation' },
     ]

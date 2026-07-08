@@ -2,6 +2,51 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Finance Reporting & Settings Batch — 25+ new features: Payment Terms + Invoice Analytics + AP Aging + Bad Debt Write-Off + 13-Week Cash Forecast + Tax Filing Summary (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — reporting, settings, compliance, and cash-flow depth pass.
+
+**Features shipped**:
+
+*Payment Terms Service & Controllers (`payment-terms.service.ts`)*
+1. `getPaymentTerms` — list all templates
+2. `getPaymentTermById` — fetch template by ID
+3. `createPaymentTerm` — create credit/discount template (e.g. 2/10 Net 30)
+4. `updatePaymentTerm` — edit template fields and toggle active status
+5. `deletePaymentTerm` — delete payment term template
+
+*Reporting Service & Controllers (`financial-reporting.service.ts`)*
+6. `getInvoiceAnalytics` — invoice trends (monthly revenue, top customers, paid ratio, avg payment days)
+7. `getApAgingReport` — AP aging buckets (Current, 1-30, 31-60, 61-90, 90+) for payment schedules
+8. `writeOffInvoice` — write off bad debt invoice and post automatic general ledger adjustments
+9. `createProformaInvoice` — generate proforma invoices based on existing invoice line items
+10. `calculateLateFees` — compute fees based on active dunning levels for overdue invoices
+11. `getFinanceDashboardKpis` — dashboard KPIs (MTD/YTD revenue, unpaid AR, cash position, pending approvals)
+12. `get13WeekCashForecast` — 13-week cash flow forecast (inflows from invoices vs outflows from AP schedules)
+13. `getBudgetMonthlySpread` — distribute annual budgets monthly
+14. `getGlAccountDrillDown` — GL account ledger drill-down (paginated transactions, debit, credit, running balance)
+15. `getCustomerPaymentBehavior` — payment velocity, on-time rates, and late counts per customer
+16. `getVendorPaymentAnalysis` — vendor payment liabilities analysis (pending, paid, overdue total)
+17. `getTaxFilingSummary` — tax filings compliance dashboard details (period liability, status, filing type)
+
+*Permissions*: Re-used existing `finance.payment.*`, `finance.report.*`, `finance.tax.*`, `finance.budget.*`, and `finance.account.*` permission levels.
+
+*Database (`schema.prisma`)*:
+18. Created `PaymentTermTemplate` model mapping to `payment_term_templates` table in PostgreSQL. Synced database via `prisma db push` to support concurrently updated developer models.
+
+*Next.js Frontend*:
+19. `/finance/advanced/payment-terms` — CRUD template configuration page (add, edit, list, delete templates)
+20. `/finance/advanced/invoice-analytics` — rich revenue trends dashboard (KPI row, monthly revenue trend table, top customers breakdown, status performance cards)
+21. `/finance/advanced/tax-filing-summary` — tax returns compliance summary dashboard (total liabilities, tax paid, filing history)
+22. Advanced navigation sidebar and segment maps registered in `SEGMENT_NAMES` for breadcrumbs (`ar-aging`, `customer-statement`, `credit-risk`, `payment-terms`, `invoice-analytics`, `tax-filing-summary`).
+
+**Unit Tests**:
+23. Added full unit tests in `payment-terms.service.spec.ts` (8 tests passed).
+24. Expanded controller tests in `advanced-finance.controller.spec.ts` (all passed).
+25. verified 207 total module unit tests pass clean in vitest.
+
+**TypeScript**: Both web and api apps typecheck completely clean (`tsc --noEmit` zero errors).
+
 ## [2026-07-08] Finance AR Batch — 16+ new features: Dunning + AR Aging + Customer Statement + Credit Risk (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — accounts-receivable and collections depth pass (NetSuite / Odoo / ERPNext parity).

@@ -8,3 +8,5 @@ export { TreasuryService } from './treasury.service';
 export { ConsolidationService } from './consolidation.service';
 export { FinancialReportingService } from './financial-reporting.service';
 export { PeriodManagementService } from './period-management.service';
+export { PaymentTermsService } from './payment-terms.service';
+

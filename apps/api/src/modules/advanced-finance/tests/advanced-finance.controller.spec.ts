@@ -25,6 +25,7 @@ describe('AdvancedFinanceController', () => {
   let consolidationService: any;
   let reportingService: any;
   let periodService: any;
+  let paymentTermsService: any;
 
   let serviceMap: Record<string, any>;
 
@@ -39,6 +40,7 @@ describe('AdvancedFinanceController', () => {
     consolidationService = createMockService();
     reportingService = createMockService();
     periodService = createMockService();
+    paymentTermsService = createMockService();
 
     serviceMap = {
       glService,
@@ -51,6 +53,7 @@ describe('AdvancedFinanceController', () => {
       consolidationService,
       reportingService,
       periodService,
+      paymentTermsService,
     };
 
     controller = new AdvancedFinanceController(
@@ -64,6 +67,7 @@ describe('AdvancedFinanceController', () => {
       consolidationService,
       reportingService,
       periodService,
+      paymentTermsService,
     );
   });
 
@@ -91,6 +95,7 @@ describe('AdvancedFinanceController', () => {
     { method: 'getInvestmentPortfolios', serviceName: 'treasuryService' },
     { method: 'getTreasuryTransactions', serviceName: 'treasuryService' },
     { method: 'getInterCompanyTransfers', serviceName: 'treasuryService' },
+    { method: 'getPaymentTerms', serviceName: 'paymentTermsService' },
   ];
 
   getEndpoints.forEach(({ method, serviceName }) => {
@@ -135,6 +140,7 @@ describe('AdvancedFinanceController', () => {
     { method: 'createTaxFiling', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
     { method: 'createInvestmentPortfolio', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
     { method: 'createTreasuryTransaction', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
+    { method: 'createPaymentTerm', args: [mockReq, {}], expectedArgs: ['tenant-1', {}], serviceName: 'paymentTermsService' },
   ];
 
   postEndpoints.forEach(({ method, args, expectedArgs, serviceName }) => {
