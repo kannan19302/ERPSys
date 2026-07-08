@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 
@@ -215,7 +215,7 @@ export class SubscriptionsService {
                 });
 
                 // Link invoice to subscription
-                const seqNum = (sub._count?.invoices ?? await prisma.subscriptionInvoice.count({ where: { subscriptionId: sub.id } })) + 1;
+                const seqNum = (await prisma.subscriptionInvoice.count({ where: { subscriptionId: sub.id } })) + 1;
                 await prisma.subscriptionInvoice.create({
                     data: {
                         tenantId,
@@ -264,9 +264,6 @@ export class SubscriptionsService {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        const yearStart = new Date(now.getFullYear(), 0, 1);
-        const yearEnd = new Date(now.getFullYear(), 11, 31);
-
         const [activeSubs, newThisMonth, churnedThisMonth, allActive] = await Promise.all([
             prisma.subscription.findMany({
                 where: { tenantId, status: { in: ['ACTIVE', 'TRIALING'] } },

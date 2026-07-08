@@ -1,26 +1,178 @@
-import { Controller, Get, Post, Body, Param, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
+import { Request } from 'express';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RbacGuard } from '../../common/guards/rbac.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
+import { TrackChanges } from '../../common/decorators/track-changes.decorator';
+import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
 import { LeaseAccountingService } from './lease-accounting.service';
 
+interface AuthRequest extends Request {
+  user: { tenantId: string; orgId: string; userId: string };
+}
+
+const CreateLeaseSchema = z.object({
+  leaseRef: z.string().optional(),
+  description: z.string().optional(),
+  startDate: z.string(),
+  endDate: z.string(),
+  leaseType: z.enum(['OPERATING', 'FINANCE']).default('OPERATING'),
+  presentValue: z.number().positive().optional(),
+  interestRate: z.number().min(0).max(1).optional(),
+});
+
+const UpdateLeaseSchema = z.object({
+  leaseRef: z.string().optional(),
+  description: z.string().optional(),
+  leaseType: z.enum(['OPERATING', 'FINANCE']).optional(),
+});
+
+const StatusSchema = z.object({ status: z.enum(['ACTIVE', 'INACTIVE', 'EXPIRED', 'TERMINATED']) });
+const PostMonthSchema = z.object({ period: z.string().regex(/^\d{4}-\d{2}$/, 'Format: YYYY-MM') });
+const BulkPostSchema = z.object({ period: z.string().regex(/^\d{4}-\d{2}$/, 'Format: YYYY-MM') });
+const TerminateSchema = z.object({ terminationDate: z.string() });
+const RenewSchema = z.object({ newEndDate: z.string(), newPresentValue: z.number().positive().optional() });
+
 @Controller('finance/leases')
+@UseGuards(JwtAuthGuard, RbacGuard)
+@UseInterceptors(ChangeHistoryInterceptor)
 export class LeasesController {
-  constructor(private readonly leaseService: LeaseAccountingService) {}
+  constructor(private readonly svc: LeaseAccountingService) {}
+
+  private tid(req: AuthRequest) {
+    return req.user?.tenantId ?? (req as any).headers?.['x-tenant-id'];
+  }
+  private oid(req: AuthRequest) {
+    return req.user?.orgId ?? (req as any).headers?.['x-org-id'];
+  }
 
   @Get()
-  async list(@Req() req: any) {
-    const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
-    return this.leaseService.getLeases(tenantId);
+  @Permissions('finance.leases.read')
+  list(@Req() req: AuthRequest, @Query() q: any) {
+    return this.svc.getLeases(this.tid(req), {
+      page: q.page ? Number(q.page) : undefined,
+      limit: q.limit ? Number(q.limit) : undefined,
+      search: q.search,
+      leaseType: q.leaseType,
+      status: q.status,
+      sortBy: q.sortBy,
+      sortOrder: q.sortOrder,
+    });
+  }
+
+  @Get('summary')
+  @Permissions('finance.leases.read')
+  summary(@Req() req: AuthRequest) {
+    return this.svc.getLeaseSummary(this.tid(req));
+  }
+
+  @Get('upcoming-payments')
+  @Permissions('finance.leases.read')
+  upcomingPayments(@Req() req: AuthRequest, @Query('days') days?: string) {
+    return this.svc.getUpcomingPayments(this.tid(req), days ? Number(days) : 30);
+  }
+
+  @Get('expiring-soon')
+  @Permissions('finance.leases.read')
+  expiringSoon(@Req() req: AuthRequest, @Query('days') days?: string) {
+    return this.svc.getExpiringSoon(this.tid(req), days ? Number(days) : 90);
+  }
+
+  @Get('analytics')
+  @Permissions('finance.leases.read')
+  analytics(@Req() req: AuthRequest) {
+    return this.svc.getLeaseAnalytics(this.tid(req));
+  }
+
+  @Post('bulk-post')
+  @Permissions('finance.leases.post')
+  @TrackChanges('finance.leases.bulk-post')
+  bulkPost(@Req() req: AuthRequest, @ZodBody(BulkPostSchema) body: z.infer<typeof BulkPostSchema>) {
+    return this.svc.bulkPostMonth(this.tid(req), body.period);
   }
 
   @Get(':id')
-  async get(@Req() req: any, @Param('id') id: string) {
-    const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
-    return this.leaseService.getLeaseById(tenantId, id);
+  @Permissions('finance.leases.read')
+  getOne(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.svc.getLeaseById(this.tid(req), id);
+  }
+
+  @Get(':id/schedule')
+  @Permissions('finance.leases.read')
+  schedule(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.svc.getLeaseSchedule(this.tid(req), id);
+  }
+
+  @Get(':id/journal-entries')
+  @Permissions('finance.leases.read')
+  journalEntries(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.svc.getLeaseJournalEntries(this.tid(req), id);
   }
 
   @Post()
-  async create(@Req() req: any, @Body() body: any) {
-    const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
-    const orgId = body.orgId || req.headers['x-org-id'];
-    return this.leaseService.createLease(tenantId, orgId, body);
+  @Permissions('finance.leases.create')
+  @TrackChanges('finance.leases.create')
+  create(@Req() req: AuthRequest, @ZodBody(CreateLeaseSchema) body: z.infer<typeof CreateLeaseSchema>) {
+    return this.svc.createLease(this.tid(req), this.oid(req), body);
+  }
+
+  @Patch(':id')
+  @Permissions('finance.leases.update')
+  @TrackChanges('finance.leases.update')
+  update(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @ZodBody(UpdateLeaseSchema) body: z.infer<typeof UpdateLeaseSchema>,
+  ) {
+    return this.svc.updateLease(this.tid(req), id, body);
+  }
+
+  @Patch(':id/status')
+  @Permissions('finance.leases.update')
+  @TrackChanges('finance.leases.status')
+  setStatus(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @ZodBody(StatusSchema) body: z.infer<typeof StatusSchema>,
+  ) {
+    return this.svc.setLeaseStatus(this.tid(req), id, body.status);
+  }
+
+  @Delete(':id')
+  @Permissions('finance.leases.delete')
+  @TrackChanges('finance.leases.delete')
+  remove(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.svc.deleteLease(this.tid(req), id);
+  }
+
+  @Post(':id/post-month')
+  @Permissions('finance.leases.post')
+  @TrackChanges('finance.leases.post-month')
+  postMonth(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @ZodBody(PostMonthSchema) body: z.infer<typeof PostMonthSchema>,
+  ) {
+    return this.svc.postMonthlyEntry(this.tid(req), id, body.period);
+  }
+
+  @Post(':id/terminate')
+  @Permissions('finance.leases.update')
+  @TrackChanges('finance.leases.terminate')
+  terminate(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @ZodBody(TerminateSchema) body: z.infer<typeof TerminateSchema>,
+  ) {
+    return this.svc.terminateLease(this.tid(req), id, body.terminationDate);
+  }
+
+  @Post(':id/renew')
+  @Permissions('finance.leases.update')
+  @TrackChanges('finance.leases.renew')
+  renew(@Req() req: AuthRequest, @Param('id') id: string, @ZodBody(RenewSchema) body: z.infer<typeof RenewSchema>) {
+    return this.svc.renewLease(this.tid(req), id, body.newEndDate, body.newPresentValue);
   }
 }

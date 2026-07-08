@@ -2,6 +2,25 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-08] Finance Lease Accounting — ASC 842 / IFRS 16 full vertical slice (20 features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes the `[benchmark]` lease accounting gap (Up Next item #6, RICE 112.5). Parity target: NetSuite Fixed Assets, Sage Intacct Lease Accounting.
+
+**Accomplished**:
+- **API (17 endpoints)**: `GET /finance/leases` (paginated, search, filter by type/status, sort), `GET /finance/leases/summary` (total ROU assets + liability + counts by type), `GET /finance/leases/upcoming-payments` (within N days), `GET /finance/leases/expiring-soon`, `GET /finance/leases/analytics` (by type/status/maturity), `GET /finance/leases/:id` (detail + schedule), `GET /finance/leases/:id/schedule`, `GET /finance/leases/:id/journal-entries`, `POST /finance/leases` (create + auto amortization schedule), `PATCH /finance/leases/:id` (metadata), `PATCH /finance/leases/:id/status`, `DELETE /finance/leases/:id` (INACTIVE only), `POST /finance/leases/:id/post-month` (GL journal via `Journal`+`JournalEntry`), `POST /finance/leases/bulk-post`, `POST /finance/leases/:id/terminate` (early termination + gain/loss GL entry), `POST /finance/leases/:id/renew`, `POST /finance/leases/:id/schedule/:id` stub path
+- **Amortization engine**: effective-interest method (ASC 842 / IFRS 16), correct annuity formula (monthly compounding), running carrying amount update per period, ROU amortization column, zero-rate straight-line fallback
+- **GL posting**: creates `Journal` + `JournalEntry` records (principal debit, interest expense debit, cash credit per month); updates `LeaseSchedule.journalPosted + journalEntryId`; updates `FinanceLease.carryingAmount` after each posting
+- **Controller**: `@Permissions`, `@TrackChanges`, `@UseGuards(JwtAuthGuard, RbacGuard)`, `@UseInterceptors(ChangeHistoryInterceptor)`, Zod validation on all write endpoints, no raw `any` in route signatures
+- **Permissions**: 5 new permissions registered (`finance.leases.read/create/update/delete/post`)
+- **UI (3 pages)**: `/finance/advanced/leases` — paginated list with search/type/status filters, summary stat cards; `/finance/advanced/leases/new` — create wizard with ASC 842 type selector; `/finance/advanced/leases/[id]` — detail dashboard with amortization schedule table, per-row Post button, inline termination + renewal flows, carry amount progress
+- **Nav**: "Lease Accounting" added to Finance sidebar under Core Accounting
+- **Tests**: 23 unit tests (6 pure function + 17 service), all green
+- **Fixed pre-existing**: `subscriptions.service.ts` 4 typecheck errors (unused imports, `_count` property, unused vars) — both API and web typecheck now clean
+
+**Gates**: `pnpm --filter @unerp/api typecheck` ✅ clean, `pnpm --filter @unerp/web typecheck` ✅ clean, 23/23 Vitest tests green.
+
+**Follow-ups**: E2E smoke gate requires running stack; `Journal.entryNumber` unique constraint may conflict on bulk-post if same period run twice — add idempotency guard in next pass.
+
 ## [2026-07-08] Token & Context Efficiency rules — less reading/re-doing, more building
 
 **Accomplished**: added a binding § Token & Context Efficiency to `AUTOPILOT.md` (mirrored in the start skill): grep + ranged reads instead of whole-file reads (controllers run 1,000+ lines); use the generated indexes (FEATURE_LEDGER/REGISTRY/SCORECARD) as the map and grep them rather than dumping them; read each file at most once per cycle and never re-read after an edit; never `cat` generated files (trust the scripts' one-line summaries); cap tool output (`--reporter=line`, `tail`, `git diff --stat`); clone reference patterns (newest focus-module sub-service, `customers` DataTable page) instead of re-exploring; prefer `@unerp/framework` schema-driven UI over hand-written JSX; write each file in ONE complete Write call; subagents only for large parallelizable chunks with the exact file list + pattern reference in the prompt; reports carry counts/results, never pasted code/diffs; on gate failure read only the failing lines.

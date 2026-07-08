@@ -41,6 +41,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders },
             { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity },
             { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2 },
+            { name: 'Lease Accounting', href: '/finance/advanced/leases', icon: FileText },
             { name: 'Recurring Invoices', href: '/finance/advanced/recurring', icon: RefreshCw },
             { name: 'Revenue Recognition', href: '/finance/advanced/revenue-schedules', icon: TrendingUp },
           ]

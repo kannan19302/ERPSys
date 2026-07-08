@@ -62,7 +62,7 @@
 |:---|:---|:---|:---|:---|
 | claude-code | 2026-07-04 14:52 | Implementing full CRM enhancement plan: Section 1 (pagination/search/sort) complete for all 8 entity endpoints (vendors, contacts, leads, opportunities, products, price-books, customers, cases); continuing with button stubs and intelligence layer | main | In Progress |
 | claude-code | 2026-07-04 (session) | CRM Leads/Deals deepening: lead scoring decay, source ROI, territory assignment, nurture sequences, disqualify/reactivate, conversion audit, SLA timer; Deal health scoring, competitor tracking, win/loss taxonomy, deal team/split-credit, contract renewal linkage, quote linkage, discount approval workflow (`crm-leads.service.ts`, `crm-deals.service.ts`, new `crm-approvals.service.ts` + related controllers/migrations) — explicitly avoiding leads/opportunities list-table page.tsx JSX (another agent migrating those to shared DataTable) | main | In Progress |
-| github-copilot | 2026-07-08 10:15 | Finance: Lease Accounting (Lease & LeaseSchedule Prisma models, amortization engine scaffold, CRUD endpoints, monthly posting job, UI wizard) | autopilot/finance-lease-accounting | In Progress |
+| claude-code | 2026-07-08 23:45 | Finance: Lease Accounting completion (17 API endpoints, 3 UI pages, 23 tests, typecheck clean) | autopilot/finance-lease-accounting | In Progress |
 | antigravity-ide | 2026-07-08 23:08 | Finance: Subscription Billing & MRR/ARR (Subscription/SubscriptionLine/SubscriptionUsage Prisma models, billing-run engine, MRR/ARR/churn calc service, CRUD endpoints + metrics, dashboard UI) | main | In Progress |
 
 ### 2. Up Next (unclaimed work, pick from the top)
