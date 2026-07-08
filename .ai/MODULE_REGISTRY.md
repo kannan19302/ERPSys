@@ -63,6 +63,12 @@
 > "not yet built" notes in the module tables. Whoever picks an item: move it
 > to §1 with your claim, and when done move it to §3 with a one-line result +
 > link to the commit.
+>
+> **Focus filter (binding, per `.ai/MODULE_FOCUS.md`)**: feature items are only
+> pickable if they belong to the **Current Focus Module** (now: **Finance &
+> Accounting** — drive it to 500+ distinct working features). Non-focus feature items
+> (e.g. `[benchmark]` CRM items below) stay queued for their module's turn. P0/P1/P2
+> items (broken build, runtime failures, conflicts, cross-cutting hardening) are exempt.
 
 1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
 2. **`dependency-cruiser`/ESLint module-boundary lint** — enforce "no cross-module deep imports, no business logic in controllers" in CI (Enterprise Hardening Phase 1 exit criteria).
@@ -81,6 +87,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 |:---|:---|:---|:---|
 | 2026-07-08 | antigravity-ide | God-class decomposition of BuilderService: extracted Forms, Workflows, Stats, Dashboards, DevOps, and WebContent logic into dedicated sub-services, redirected builder.controller.ts, cleaned up builder.service.ts, updated module, and verified 109 unit tests pass. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | God-class decomposition of inventory service: extracted Warehouse sub-domain operations (`getWarehouses`, `getWarehouseById`, `createWarehouse`, `updateWarehouse`, `deleteWarehouse`) into dedicated `InventoryWarehousesService`, resolved unused tsc errors, and added vitest coverage spec (4/4 tests passed). | see CHANGELOG 2026-07-08 |
+| 2026-07-08 | claude-code | Module-Focus Discipline: added `.ai/MODULE_FOCUS.md` (Current Focus = Finance, baseline 121 → target 500+ features; focus order with Studio locked last; exit criteria; feature ledger; pre-planned cross-module integration contracts) and wired the binding focus filter into AUTOPILOT P3–P7 selection, discovery, and this board's Up Next. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Autonomy Engine 10/10: binding E2E smoke gate (`apps/web/e2e/smoke.spec.ts`, 13/13 green vs live stack), reality-feedback loop (`scripts/feedback-scan.mjs` → generated `.ai/FEEDBACK.md`, error_logs/alerts/TODO feeding P1), unattended runners (`scripts/autopilot-loop.ps1`, `.github/workflows/autopilot.yml`), competitor-parity depth rule + RICE scoring in AUTOPILOT. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | claude-code | Market Discovery Engine: added `.ai/MARKET_BENCHMARK.md` (top-20 competitor set, Discovery Protocol, ~40-gap seeded backlog, rotation tracker); AUTOPILOT Step 9 → mandatory per-cycle REFILL & DISCOVER; priority ladder gained P5 Competitive gaps; seeded first two `[benchmark]` Up Next items. | see CHANGELOG 2026-07-08 |
 | 2026-07-08 | antigravity-ide | AI Module Hardening: refactored `workflow-engine.service.ts` and `builder/web-studio.service.ts` to route through `AiService`, eliminating paid Anthropic API dependency | see CHANGELOG 2026-07-08 |

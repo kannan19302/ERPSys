@@ -27,6 +27,12 @@ competitive gaps > module deepening > new capability) → claim → plan → bui
 end-to-end → verify gates → review → record in the 3-file system → commit+push →
 **refill & discover** → report.
 
+Autonomous mode works **one module at a time**: [.ai/MODULE_FOCUS.md](.ai/MODULE_FOCUS.md)
+names the Current Focus Module (starting with core: Finance), which is driven to **500+
+distinct working features** with pre-planned cross-module integration contracts before
+the focus advances; the Studio/Builder module is locked until every functional module is
+done. Only broken-build/observed-failure/conflict fixes may touch other modules.
+
 Autonomous mode does not just consume existing requirements — it **generates new ones**:
 every cycle ends with a mandatory market-discovery pass ([.ai/MARKET_BENCHMARK.md](.ai/MARKET_BENCHMARK.md))
 that benchmarks one module against the top-20 ERP market leaders (SAP, NetSuite,

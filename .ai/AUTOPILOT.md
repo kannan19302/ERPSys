@@ -41,8 +41,8 @@ because all state is in the repo.
 2. `git status` + `git pull` — never work on a stale tree.
 3. Read `.ai/MODULE_REGISTRY.md` § Collab Board (Active Claims, Up Next, Conflict Log).
 4. Read `.ai/SCORECARD.md` (heuristic scores + Reality Gates), `.ai/CHANGELOG.md`
-   (last ~10 entries), and `.ai/MARKET_BENCHMARK.md` (open competitive gaps + which
-   module is overdue for a discovery pass).
+   (last ~10 entries), `.ai/MODULE_FOCUS.md` (**the Current Focus Module** — P3–P7 work
+   must belong to it), and `.ai/MARKET_BENCHMARK.md` (open competitive gaps).
 5. Regenerate reality feedback: `node scripts/feedback-scan.mjs` → `.ai/FEEDBACK.md`
    (unresolved runtime errors from `error_logs`, open admin alerts, TODO/FIXME debt).
    If the dev stack is down, start it (`.\scripts\docker-start.ps1`) — the E2E gate in
@@ -51,6 +51,14 @@ because all state is in the repo.
    files; treat them as another agent's in-flight work (Collab Board rules apply).
 
 ## Step 1 — SELECT (the priority ladder)
+
+**Focus-module constraint (binding)**: read [`MODULE_FOCUS.md`](MODULE_FOCUS.md) § 1
+first. Items from rungs P3–P7 MUST belong to the **Current Focus Module** — the engine
+drives one module to 500+ distinct working features before advancing (core modules
+first, Studio locked until last). Only P0 (broken build), P1 (observed failures), and
+P2 (conflicts) may touch other modules. If the focus module meets the exit criteria
+(`MODULE_FOCUS.md` § 5), advancing the focus — publishing integration contracts and
+drafting the next module's — IS the work item for that cycle.
 
 Walk this ladder top-down; take the **first** rung that yields a concrete item, and take
 exactly **one** item per cycle. Never skip a higher rung because a lower one is more fun.
@@ -133,6 +141,9 @@ tenancy, permissions, file upload, or payments additionally require the
 
 Per the Mandatory Tracking Convention — no exceptions:
 - Append a `CHANGELOG.md` entry (what + why + any follow-ups spawned).
+- If the cycle advanced the focus module: append a Feature Ledger row in
+  `MODULE_FOCUS.md` § 6 (re-run the § 3 endpoint-count command) and update any
+  integration-contract statuses in § 7.
 - Update `MODULE_REGISTRY.md` (module row/status, Growth Tracker row if substantial,
   move your Collab Board claim §1 → §3 Recently Completed with commit hash).
 - Update `HANDBOOK.md` only if a convention/architecture actually changed.
@@ -150,8 +161,11 @@ requirements by looking outward at the market. Two mandatory sub-steps:
 
 **9a. Market discovery (one module per cycle).** Run the Discovery Protocol in
 [`.ai/MARKET_BENCHMARK.md`](MARKET_BENCHMARK.md) § 2:
-- Pick the most-overdue module from its Rotation Tracker (staleness > 45 days = due;
-  ties broken by lowest scorecard score).
+- **While a focus module is active** (`MODULE_FOCUS.md`), benchmark the *focus module*
+  every cycle — its Gap Backlog is the primary source of the next 500-feature push;
+  go deeper each pass (sub-domains: e.g. Finance → AR, AP, GL, tax, banking, close,
+  reporting). Fall back to the most-overdue Rotation Tracker module only when the focus
+  module's gaps are all logged and groomed ahead ≥ 10 open items.
 - Benchmark it against its 3–5 reference competitors from the top-20 set (SAP, NetSuite,
   Dynamics 365, Odoo, ERPNext, Workday, Salesforce, Shopify, …) — via `WebSearch`/
   `WebFetch` when available, otherwise offline product knowledge (mark it as such).

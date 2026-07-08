@@ -16,6 +16,10 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    shipped work → P2 conflict log → P3 Collab Board "Up Next" queue → P4 scorecard/
    hardening quality gaps → P5 competitive gaps from `.ai/MARKET_BENCHMARK.md` →
    P6 module deepening → P7 propose new capability.
+   **Focus constraint (binding)**: P3–P7 items must belong to the Current Focus Module
+   in `.ai/MODULE_FOCUS.md` (one module at a time → 500+ distinct working features →
+   exit criteria → next module; core first, Studio locked until last). Only P0–P2 may
+   touch other modules. Log a Feature Ledger row in MODULE_FOCUS.md § 6 each cycle.
 3. **Claim** it on the Collab Board (§1 Active Claims).
 4. **Plan** with the `product-manager` subagent (registry duplicate-check, stories,
    acceptance criteria, Definition of Done).

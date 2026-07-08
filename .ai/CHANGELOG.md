@@ -1,6 +1,18 @@
 # Changelog — Universal ERP System
 
 > This file is maintained by AI agents and developers after completing work.
+
+## [2026-07-08] Module-Focus Discipline — one module at a time to 500+ features, Studio last
+
+Added the focus layer to the autonomy engine per owner directive: depth-first, one module at a time.
+
+**Accomplished**:
+- Created `.ai/MODULE_FOCUS.md`: Current Focus Module = **Finance & Accounting** (baseline 121 endpoint-proxy features, target 500+); definition of a "distinct working feature" (UI-reachable + real API/data + RBAC/Zod/tested + exercised in the running app); objective endpoint-count measurement command; **focus order** (Finance → CRM/Sales → Inventory/SC → HR → Procurement → Manufacturing → Projects → POS/E-Com → platform depth → verticals → platform → **Studio LAST, locked** until all functional modules are done); **module exit criteria** (500+ count, benchmark gaps closed, scorecard 10/10, smoke-suite green, zero module-sourced runtime errors, integration contracts published, UAT walkthrough); per-cycle **Feature Ledger**; and § 7 **Cross-Module Integration Contracts** pre-planned before building (Finance contracts seeded: invoice.posted, payment.received, invoice.overdue emits; sales.order.confirmed, purchase.received, hr.payroll.run.completed, inventory.valuation.changed, pos.session.closed consumes).
+- `AUTOPILOT.md`: binding focus-module constraint on P3–P7 selection (P0–P2 exempt); Step 9a discovery now benchmarks the *focus module* every cycle (sub-domain depth passes) instead of pure rotation; Step 7 records a Feature Ledger row per cycle; bootstrap reads MODULE_FOCUS.md.
+- `AGENTS.md` § Autonomous Mode, `.claude/skills/start/SKILL.md`, and Collab Board Up Next (focus filter note) updated to match.
+
+**Why**: owner directive — focus one module at a time to 500+ distinct real working features before moving on, starting with core modules, with cross-core integration contracts planned in advance; Studio last since it customizes/extends what must first exist.
+
 ## [2026-07-08] God-Class Decomposition of BuilderService — Phase 11-20 Hardening
 
 Decomposed the `BuilderService` god-class by extracting Forms, Workflows, Dashboards, Web Pages, Blog Posts, Stats, and DevOps methods into dedicated domain sub-services.
