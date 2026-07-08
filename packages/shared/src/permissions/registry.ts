@@ -127,6 +127,15 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('finance', 'revenue', 'read', 'endpoint', 'View revenue schedules'),
   p('finance', 'revenue', 'create', 'endpoint', 'Create revenue schedules'),
   p('finance', 'revenue', 'recognize', 'endpoint', 'Recognize revenue'),
+  p('finance', 'subscription', 'read', 'endpoint', 'View subscriptions'),
+  p('finance', 'subscription', 'create', 'endpoint', 'Create subscriptions'),
+  p('finance', 'subscription', 'update', 'endpoint', 'Update subscriptions'),
+  p('finance', 'subscription', 'delete', 'endpoint', 'Delete subscriptions'),
+  p('finance', 'subscription', 'manage', 'endpoint', 'Manage subscription lifecycle (activate, cancel, change plan)'),
+  p('finance', 'subscription', 'read', 'endpoint', 'View subscriptions (billing, MRR, usage)'),
+  p('finance', 'subscription', 'create', 'endpoint', 'Create subscriptions'),
+  p('finance', 'subscription', 'update', 'endpoint', 'Update subscriptions'),
+  p('finance', 'subscription', 'delete', 'endpoint', 'Delete subscriptions'),
 
   // HR
   p('hr', 'employee', 'read', 'endpoint', 'View employees'),

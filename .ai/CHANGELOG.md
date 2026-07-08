@@ -398,6 +398,21 @@ Deepened B2B CRM Account Management capabilities across Customers, Vendors, Cont
 
 ## [2026-07-04] CRM & Sales: B2B Contract Lifecycle Upgrade (Revisions, CSV Imports, Sales Order Conversion, Predefined Currencies, Product Approval Holds, and Contacts Editing)
 
+## [2026-07-08] Finance Lease Accounting — DB+API scaffold + amortization engine
+
+**Scope**: Finance & Accounting — basic lease accounting models, amortization schedule generation (effective-interest), and posting job scaffold.
+
+**Accomplished**:
+- **Schema**: Added `FinanceLease` and `LeaseSchedule` Prisma models (tenant-scoped) in `packages/database/prisma/schema.prisma`.
+- **API**: Implemented `LeaseAccountingService` and `LeasesController` with `createLease` and amortization schedule generation using `computeAmortizationSchedule` (effective-interest / annuity method). Added `postDueSchedules` to mark schedule rows as posted and assign `journalEntryId` placeholders.
+- **Tests**: Added unit test for amortization helper (`apps/api/src/modules/finance/tests/lease-accounting.spec.ts`).
+
+**Notes / Next steps**:
+- Wire journal posting to the GL (`JournalEntry`) and integrate with the accounting book service.
+- Add Zod DTOs, `@Permissions('finance.leases.*')` and `@TrackChanges('FinanceLease')` decorators on controller methods.
+- Create and apply Prisma migration (`pnpm --filter @unerp/database db:migrate --name finance_lease_accounting`) and run seeds in the dev environment.
+
+
 Deepened B2B order-to-cash workflow capabilities in the CRM & Sales module.
 
 **Schema Changes**:

@@ -179,6 +179,7 @@ model Organization {
   salesChannels             SalesChannel[]
   accountingBooks           AccountingBook[]
   contracts                 Contract[]
+  financeLeases             FinanceLease[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -809,6 +810,7 @@ model Invoice {
   payments    Payment[]
   creditNotes CreditNote[]
   dunningLogs InvoiceDunningLog[]
+  subscriptionInvoices SubscriptionInvoice[]
 
   @@unique([tenantId, orgId, invoiceNumber])
   @@index([tenantId])
@@ -2885,6 +2887,52 @@ model JournalEntry {
   @@map("journal_entries")
 }
 
+// Finance Lease Accounting: ROU asset + lease liability schedules (ASC 842 / IFRS 16)
+model FinanceLease {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  orgId            String   @map("org_id")
+  leaseRef         String?  @map("lease_ref")
+  description      String?  
+  startDate        DateTime @map("start_date")
+  endDate          DateTime @map("end_date")
+  leaseType        String   @default("OPERATING") @map("lease_type") // OPERATING | FINANCE
+  initialRecognition Decimal? @map("initial_recognition") @db.Decimal(18, 4)
+  carryingAmount   Decimal? @map("carrying_amount") @db.Decimal(18, 4)
+  presentValue     Decimal? @map("present_value") @db.Decimal(18, 4)
+  interestRate     Decimal? @map("interest_rate") @db.Decimal(6, 4)
+  status           String   @default("ACTIVE")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  schedules    LeaseSchedule[]
+
+  @@index([tenantId])
+  @@map("finance_leases")
+}
+
+model LeaseSchedule {
+  id                   String   @id @default(cuid())
+  tenantId             String   @map("tenant_id")
+  financeLeaseId       String   @map("finance_lease_id")
+  periodStart          DateTime @map("period_start")
+  periodEnd            DateTime @map("period_end")
+  paymentAmount        Decimal  @map("payment_amount") @db.Decimal(18, 4)
+  interestExpense      Decimal? @map("interest_expense") @db.Decimal(18, 4)
+  principalRepayment   Decimal? @map("principal_repayment") @db.Decimal(18, 4)
+  rouAmortization      Decimal? @map("rou_amortization") @db.Decimal(18, 4)
+  journalPosted        Boolean  @default(false) @map("journal_posted")
+  journalEntryId       String?  @map("journal_entry_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  financeLease FinanceLease @relation(fields: [financeLeaseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([financeLeaseId])
+  @@map("lease_schedules")
+}
+
 model Budget {
   id                 String   @id @default(cuid())
   tenantId           String   @map("tenant_id")
@@ -4552,6 +4600,106 @@ model RevenueSchedule {
 
   @@index([tenantId])
   @@map("revenue_schedules")
+}
+
+// ==========================================
+// SUBSCRIPTION BILLING MODULE
+// ==========================================
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  orgId              String   @map("org_id")
+  name               String
+  description        String?
+  customerId         String?  @map("customer_id")
+  productId          String?  @map("product_id")
+  currency           String   @default("USD")
+  unitAmount         Decimal  @map("unit_amount") @db.Decimal(15, 2)
+  quantity           Int      @default(1)
+  billingPeriod      String   @default("MONTHLY") @map("billing_period") // MONTHLY, QUARTERLY, SEMI_ANNUAL, ANNUAL
+  billingCycles      Int?     @map("billing_cycles") // null = infinite
+  status             String   @default("ACTIVE") // ACTIVE, PAUSED, CANCELED, EXPIRED, TRIALING
+  startDate          DateTime @map("start_date")
+  currentPeriodStart DateTime @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+  trialEndDate       DateTime? @map("trial_end_date")
+  cancelAtPeriodEnd  Boolean  @default(false) @map("cancel_at_period_end")
+  canceledAt         DateTime? @map("canceled_at")
+  pausedAt           DateTime? @map("paused_at")
+  metadata           Json     @default("{}")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  lines   SubscriptionLine[]
+  invoices SubscriptionInvoice[]
+  usage   SubscriptionUsage[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@map("subscriptions")
+}
+
+model SubscriptionLine {
+  id             String       @id @default(cuid())
+  tenantId       String       @map("tenant_id")
+  subscriptionId String       @map("subscription_id")
+  productId      String?      @map("product_id")
+  description    String
+  unitAmount     Decimal      @map("unit_amount") @db.Decimal(15, 2)
+  quantity       Int          @default(1)
+  taxRate        Decimal      @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  totalAmount    Decimal      @map("total_amount") @db.Decimal(15, 2)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([subscriptionId])
+  @@map("subscription_lines")
+}
+
+model SubscriptionInvoice {
+  id             String       @id @default(cuid())
+  tenantId       String       @map("tenant_id")
+  subscriptionId String       @map("subscription_id")
+  invoiceId      String       @map("invoice_id")
+  periodStart    DateTime     @map("period_start")
+  periodEnd      DateTime     @map("period_end")
+  sequenceNumber Int          @map("sequence_number")
+  status         String       @default("PENDING") // PENDING, PAID, FAILED
+  amount         Decimal      @db.Decimal(15, 2)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  paidAt         DateTime?    @map("paid_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
+
+  @@index([tenantId])
+  @@index([subscriptionId])
+  @@index([tenantId, status])
+  @@map("subscription_invoices")
+}
+
+model SubscriptionUsage {
+  id             String       @id @default(cuid())
+  tenantId       String       @map("tenant_id")
+  subscriptionId String       @map("subscription_id")
+  usageDate      DateTime     @map("usage_date")
+  metricName     String       @map("metric_name") // e.g. "api_calls", "storage_gb", "seats"
+  quantity       Int
+  unitAmount     Decimal      @map("unit_amount") @db.Decimal(15, 2)
+  totalAmount    Decimal      @map("total_amount") @db.Decimal(15, 2)
+  invoiceId      String?      @map("invoice_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([subscriptionId])
+  @@index([tenantId, subscriptionId, metricName])
+  @@map("subscription_usage")
 }
 
 model ConsolidationRun {
