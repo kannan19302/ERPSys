@@ -2,12 +2,16 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { GlAccountingService } from './gl-accounting.service';
+import { CardSpendLimitService } from './card-spend-limit.service';
 
 const SECOND_APPROVAL_THRESHOLD = 2000;
 
 @Injectable()
 export class ExpenseManagementService {
-  constructor(private readonly glService: GlAccountingService) {}
+  constructor(
+    private readonly glService: GlAccountingService,
+    private readonly cardSpendLimitService: CardSpendLimitService,
+  ) {}
 
   // ── Expense Reports ──────────────────────────────────────────
 
@@ -471,24 +475,33 @@ export class ExpenseManagementService {
   async importCardTransactions(
     tenantId: string,
     cardId: string,
-    transactions: Array<{ transactionDate: string; merchant: string; amount: number }>,
+    transactions: Array<{ transactionDate: string; merchant: string; amount: number; mccCategory?: string }>,
   ) {
     const card = await prisma.corporateCard.findFirst({ where: { id: cardId, tenantId } });
     if (!card) throw new NotFoundException('Corporate card not found');
-    const created = await prisma.$transaction(
-      transactions.map((t) =>
-        prisma.corporateCardTransaction.create({
-          data: {
-            tenantId,
-            cardId,
-            transactionDate: new Date(t.transactionDate),
-            merchant: t.merchant,
-            amount: new Prisma.Decimal(t.amount),
-          },
-        }),
-      ),
-    );
-    return { imported: created.length, transactions: created };
+
+    const imported: unknown[] = [];
+    const denied: Array<{ merchant: string; amount: number; reason: string | null }> = [];
+
+    for (const t of transactions) {
+      const auth = await this.cardSpendLimitService.checkAuthorization(tenantId, cardId, t.amount, t.mccCategory);
+      if (!auth.allowed) {
+        denied.push({ merchant: t.merchant, amount: t.amount, reason: auth.reason });
+        continue;
+      }
+      const record = await prisma.corporateCardTransaction.create({
+        data: {
+          tenantId,
+          cardId,
+          transactionDate: new Date(t.transactionDate),
+          merchant: t.merchant,
+          amount: new Prisma.Decimal(t.amount),
+        },
+      });
+      imported.push(record);
+    }
+
+    return { imported: imported.length, transactions: imported, denied };
   }
 
   async getUnmatchedCardTransactions(tenantId: string) {

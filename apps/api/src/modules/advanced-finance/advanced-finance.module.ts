@@ -20,12 +20,15 @@ import {
   PayablesService,
   FpaService,
   InvoiceCaptureService,
+  CardSpendLimitService,
+  AllocationService,
 } from './services';
 
 const domainServices = [
   GlAccountingService,
   BudgetingService,
   BankingService,
+  CardSpendLimitService,
   ExpenseManagementService,
   RevenueRecognitionService,
   TaxEngineService,
@@ -41,6 +44,7 @@ const domainServices = [
   PayablesService,
   FpaService,
   InvoiceCaptureService,
+  AllocationService,
 ];
 
 @Module({

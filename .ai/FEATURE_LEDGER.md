@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T02:50:42.061Z
+> Last generated: 2026-07-09T03:13:36.681Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1637 features** across 36 modules
+## System total: **1659 features** across 36 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 235 |
+| [advanced-finance](#advanced-finance) | 257 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -240,7 +240,7 @@
 
 ## advanced-finance
 
-235 features
+257 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -479,6 +479,28 @@
 | POST | `/advanced-finance/payables/invoices/capture/:id/lines` | Add a line item manually to captured invoice | `finance.payables.manage` |
 | PATCH | `/advanced-finance/payables/invoices/capture/:id/lines/:lineId` | Update captured invoice line item | `finance.payables.manage` |
 | DELETE | `/advanced-finance/payables/invoices/capture/:id/lines/:lineId` | Delete captured invoice line item | `finance.payables.manage` |
+| POST | `/advanced-finance/corporate-cards/:id/limits` | Create card spend limit | `finance.corporate-card-limit.create` |
+| GET | `/advanced-finance/corporate-cards/:id/limits` | List card spend limits | `finance.corporate-card-limit.read` |
+| PATCH | `/advanced-finance/corporate-cards/:id/limits/:limitId` | Update card spend limit | `finance.corporate-card-limit.read` |
+| DELETE | `/advanced-finance/corporate-cards/:id/limits/:limitId` | Delete card spend limit | `finance.corporate-card-limit.delete` |
+| POST | `/advanced-finance/corporate-cards/:id/category-limits` | Create card category (MCC) spend limit | `finance.corporate-card-limit.update` |
+| GET | `/advanced-finance/corporate-cards/:id/category-limits` | List card category (MCC) spend limits | `finance.corporate-card-limit.read` |
+| PATCH | `/advanced-finance/corporate-cards/:id/category-limits/:limitId` | Update card category (MCC) spend limit | `finance.corporate-card-limit.read` |
+| DELETE | `/advanced-finance/corporate-cards/:id/category-limits/:limitId` | Delete card category (MCC) spend limit | `finance.corporate-card-limit.update` |
+| GET | `/advanced-finance/corporate-cards/:id/utilization` | Get card utilization (spend vs cap for all active limits) | `finance.corporate-card-limit.read` |
+| POST | `/advanced-finance/corporate-cards/:id/freeze` | Freeze corporate card | `finance.corporate-card-limit.read` |
+| POST | `/advanced-finance/corporate-cards/:id/unfreeze` | Unfreeze corporate card | `finance.corporate-card.freeze` |
+| POST | `/advanced-finance/corporate-cards/:id/limits/:limitId/request-increase` | Request a card spend limit increase | `finance.corporate-card-limit.request-increase` |
+| POST | `/advanced-finance/corporate-cards/:id/limits/:limitId/request-increase/:requestId/approve` | Approve a card spend limit increase request | `finance.corporate-card-limit.approve` |
+| GET | `/advanced-finance/corporate-cards/:id/limits/:limitId/audit` | Get card spend limit audit trail | `finance.corporate-card-limit.read` |
+| GET | `/advanced-finance/allocations/rules` | List all allocation rules | `finance.allocations.read` |
+| GET | `/advanced-finance/allocations/rules/:id` | Get allocation rule by ID | `finance.allocations.read` |
+| POST | `/advanced-finance/allocations/rules` | Create a new allocation rule | `finance.allocations.read` |
+| PATCH | `/advanced-finance/allocations/rules/:id` | Update an allocation rule | `finance.allocations.manage` |
+| DELETE | `/advanced-finance/allocations/rules/:id` | Delete an allocation rule | `finance.allocations.manage` |
+| GET | `/advanced-finance/allocations/runs` | List all allocation runs | `finance.allocations.read` |
+| POST | `/advanced-finance/allocations/rules/:id/run` | Execute an allocation run (generate draft journal) | `finance.allocations.read` |
+| POST | `/advanced-finance/allocations/runs/:id/post` | Approve and post allocation run journal entries | `finance.allocations.run` |
 
 ## advanced-hr
 

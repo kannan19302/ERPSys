@@ -2,8 +2,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { PageHeader, Card, Button, Badge, DataTable, type Column, Modal, TextField, FormField, Select, Tabs } from '@unerp/ui';
-import { ShieldCheck, Plus, Car, CalendarClock, CreditCard, Trash2 } from 'lucide-react';
+import { ShieldCheck, Plus, Car, CalendarClock, CreditCard, Trash2, Sliders } from 'lucide-react';
 
 const API_BASE = 'http://localhost:3001/api/v1/advanced-finance';
 
@@ -15,7 +16,7 @@ function authHeaders() {
 interface Policy { id: string; category: string; maxAmountPerItem: string | number | null; receiptRequiredAbove: string | number; isActive: boolean; }
 interface MileageRate { id: string; ratePerMile: string | number; effectiveDate: string; endDate: string | null; notes: string | null; }
 interface PerDiemRate { id: string; location: string; dailyRate: string | number; currency: string; isActive: boolean; }
-interface CorporateCard { id: string; employeeId: string; provider: string; last4: string; nickname: string | null; isActive: boolean; }
+interface CorporateCard { id: string; employeeId: string; provider: string; last4: string; nickname: string | null; isActive: boolean; isFrozen?: boolean; }
 interface CardTransaction { id: string; merchant: string; amount: string | number; transactionDate: string; status: string; card?: { last4: string; provider: string }; }
 
 export default function ExpensePoliciesPage() {
@@ -135,7 +136,21 @@ export default function ExpensePoliciesPage() {
     { key: 'provider', header: 'Provider', render: (r) => <Badge variant="info">{r.provider}</Badge> },
     { key: 'last4', header: 'Card', render: (r) => `•••• ${r.last4}` },
     { key: 'employee', header: 'Employee', render: (r) => r.employeeId },
-    { key: 'active', header: 'Status', render: (r) => <Badge variant={r.isActive ? 'success' : 'default'}>{r.isActive ? 'Active' : 'Inactive'}</Badge> },
+    {
+      key: 'active', header: 'Status', render: (r) => (
+        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+          <Badge variant={r.isActive ? 'success' : 'default'}>{r.isActive ? 'Active' : 'Inactive'}</Badge>
+          {r.isFrozen && <Badge variant="danger">Frozen</Badge>}
+        </div>
+      ),
+    },
+    {
+      key: 'actions', header: '', align: 'right' as const, render: (r) => (
+        <Link href={`/finance/advanced/corporate-cards/${r.id}`} onClick={(e) => e.stopPropagation()}>
+          <Button variant="secondary"><Sliders size={13} style={{ marginRight: 6 }} /> Spend Limits</Button>
+        </Link>
+      ),
+    },
   ];
 
   const txnColumns: Column<CardTransaction>[] = [

@@ -805,11 +805,11 @@ model Invoice {
   updatedAt      DateTime  @updatedAt @map("updated_at")
   deletedAt      DateTime? @map("deleted_at")
 
-  customer    Customer            @relation(fields: [customerId], references: [id])
-  lineItems   InvoiceLineItem[]
-  payments    Payment[]
-  creditNotes CreditNote[]
-  dunningLogs InvoiceDunningLog[]
+  customer             Customer              @relation(fields: [customerId], references: [id])
+  lineItems            InvoiceLineItem[]
+  payments             Payment[]
+  creditNotes          CreditNote[]
+  dunningLogs          InvoiceDunningLog[]
   subscriptionInvoices SubscriptionInvoice[]
 
   @@unique([tenantId, orgId, invoiceNumber])
@@ -2813,6 +2813,7 @@ model Account {
   withholdingTaxes     WithholdingTax[]
   investmentPortfolios InvestmentPortfolio[]
   fxRevaluationDetails FxRevaluationDetail[]
+  allocationRules      AllocationRule[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -2853,9 +2854,10 @@ model Journal {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  entries       JournalEntry[]
-  book          AccountingBook?     @relation(fields: [bookId], references: [id])
-  depreciations AssetDepreciation[]
+  entries        JournalEntry[]
+  book           AccountingBook?     @relation(fields: [bookId], references: [id])
+  depreciations  AssetDepreciation[]
+  allocationRuns AllocationRun[]
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -2889,23 +2891,23 @@ model JournalEntry {
 
 // Finance Lease Accounting: ROU asset + lease liability schedules (ASC 842 / IFRS 16)
 model FinanceLease {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  orgId            String   @map("org_id")
-  leaseRef         String?  @map("lease_ref")
-  description      String?  
-  startDate        DateTime @map("start_date")
-  endDate          DateTime @map("end_date")
-  leaseType        String   @default("OPERATING") @map("lease_type") // OPERATING | FINANCE
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  orgId              String   @map("org_id")
+  leaseRef           String?  @map("lease_ref")
+  description        String?
+  startDate          DateTime @map("start_date")
+  endDate            DateTime @map("end_date")
+  leaseType          String   @default("OPERATING") @map("lease_type") // OPERATING | FINANCE
   initialRecognition Decimal? @map("initial_recognition") @db.Decimal(18, 4)
-  carryingAmount   Decimal? @map("carrying_amount") @db.Decimal(18, 4)
-  presentValue     Decimal? @map("present_value") @db.Decimal(18, 4)
-  interestRate     Decimal? @map("interest_rate") @db.Decimal(6, 4)
-  status           String   @default("ACTIVE")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  carryingAmount     Decimal? @map("carrying_amount") @db.Decimal(18, 4)
+  presentValue       Decimal? @map("present_value") @db.Decimal(18, 4)
+  interestRate       Decimal? @map("interest_rate") @db.Decimal(6, 4)
+  status             String   @default("ACTIVE")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  organization Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
   schedules    LeaseSchedule[]
 
   @@index([tenantId])
@@ -2913,18 +2915,18 @@ model FinanceLease {
 }
 
 model LeaseSchedule {
-  id                   String   @id @default(cuid())
-  tenantId             String   @map("tenant_id")
-  financeLeaseId       String   @map("finance_lease_id")
-  periodStart          DateTime @map("period_start")
-  periodEnd            DateTime @map("period_end")
-  paymentAmount        Decimal  @map("payment_amount") @db.Decimal(18, 4)
-  interestExpense      Decimal? @map("interest_expense") @db.Decimal(18, 4)
-  principalRepayment   Decimal? @map("principal_repayment") @db.Decimal(18, 4)
-  rouAmortization      Decimal? @map("rou_amortization") @db.Decimal(18, 4)
-  journalPosted        Boolean  @default(false) @map("journal_posted")
-  journalEntryId       String?  @map("journal_entry_id")
-  createdAt            DateTime @default(now()) @map("created_at")
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  financeLeaseId     String   @map("finance_lease_id")
+  periodStart        DateTime @map("period_start")
+  periodEnd          DateTime @map("period_end")
+  paymentAmount      Decimal  @map("payment_amount") @db.Decimal(18, 4)
+  interestExpense    Decimal? @map("interest_expense") @db.Decimal(18, 4)
+  principalRepayment Decimal? @map("principal_repayment") @db.Decimal(18, 4)
+  rouAmortization    Decimal? @map("rou_amortization") @db.Decimal(18, 4)
+  journalPosted      Boolean  @default(false) @map("journal_posted")
+  journalEntryId     String?  @map("journal_entry_id")
+  createdAt          DateTime @default(now()) @map("created_at")
 
   financeLease FinanceLease @relation(fields: [financeLeaseId], references: [id], onDelete: Cascade)
 
@@ -4554,14 +4556,98 @@ model CorporateCard {
   last4      String   @map("last4")
   nickname   String?
   isActive   Boolean  @default(true) @map("is_active")
+  isFrozen   Boolean  @default(false) @map("is_frozen")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  transactions CorporateCardTransaction[]
+  transactions   CorporateCardTransaction[]
+  spendLimits    CardSpendLimit[]
+  categoryLimits CardCategoryLimit[]
 
   @@index([tenantId])
   @@index([tenantId, employeeId])
   @@map("corporate_cards")
+}
+
+model CardSpendLimit {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  cardId       String   @map("card_id")
+  scopeType    String   @map("scope_type") // CARD, EMPLOYEE, DEPARTMENT
+  scopeId      String?  @map("scope_id")
+  period       String // WEEKLY, MONTHLY
+  amountCap    Decimal  @map("amount_cap") @db.Decimal(15, 2)
+  currentSpend Decimal  @default(0) @map("current_spend") @db.Decimal(15, 2)
+  periodStart  DateTime @map("period_start")
+  periodEnd    DateTime @map("period_end")
+  isActive     Boolean  @default(true) @map("is_active")
+  breachCount  Int      @default(0) @map("breach_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  card CorporateCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, cardId])
+  @@index([tenantId, periodEnd])
+  @@map("card_spend_limits")
+}
+
+model CardCategoryLimit {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  cardId       String   @map("card_id")
+  mccCategory  String   @map("mcc_category")
+  amountCap    Decimal  @map("amount_cap") @db.Decimal(15, 2)
+  currentSpend Decimal  @default(0) @map("current_spend") @db.Decimal(15, 2)
+  period       String // WEEKLY, MONTHLY
+  periodStart  DateTime @map("period_start")
+  periodEnd    DateTime @map("period_end")
+  isActive     Boolean  @default(true) @map("is_active")
+  breachCount  Int      @default(0) @map("breach_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  card CorporateCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, cardId])
+  @@index([tenantId, periodEnd])
+  @@map("card_category_limits")
+}
+
+model CardLimitAuditLog {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  limitId         String   @map("limit_id")
+  limitType       String   @map("limit_type") // SPEND, CATEGORY
+  changedByUserId String?  @map("changed_by_user_id")
+  oldValue        Json?    @map("old_value")
+  newValue        Json?    @map("new_value")
+  action          String // CREATE, UPDATE, DELETE, BREACH, RESET
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, limitId])
+  @@map("card_limit_audit_logs")
+}
+
+model CardLimitIncreaseRequest {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  limitId           String    @map("limit_id")
+  requestedByUserId String    @map("requested_by_user_id")
+  currentCap        Decimal   @map("current_cap") @db.Decimal(15, 2)
+  requestedCap      Decimal   @map("requested_cap") @db.Decimal(15, 2)
+  reason            String?
+  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedByUserId  String?   @map("approved_by_user_id")
+  approvedAt        DateTime? @map("approved_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, limitId])
+  @@map("card_limit_increase_requests")
 }
 
 model CorporateCardTransaction {
@@ -4607,33 +4693,33 @@ model RevenueSchedule {
 // ==========================================
 
 model Subscription {
-  id                 String   @id @default(cuid())
-  tenantId           String   @map("tenant_id")
-  orgId              String   @map("org_id")
+  id                 String    @id @default(cuid())
+  tenantId           String    @map("tenant_id")
+  orgId              String    @map("org_id")
   name               String
   description        String?
-  customerId         String?  @map("customer_id")
-  productId          String?  @map("product_id")
-  currency           String   @default("USD")
-  unitAmount         Decimal  @map("unit_amount") @db.Decimal(15, 2)
-  quantity           Int      @default(1)
-  billingPeriod      String   @default("MONTHLY") @map("billing_period") // MONTHLY, QUARTERLY, SEMI_ANNUAL, ANNUAL
-  billingCycles      Int?     @map("billing_cycles") // null = infinite
-  status             String   @default("ACTIVE") // ACTIVE, PAUSED, CANCELED, EXPIRED, TRIALING
-  startDate          DateTime @map("start_date")
-  currentPeriodStart DateTime @map("current_period_start")
-  currentPeriodEnd   DateTime @map("current_period_end")
+  customerId         String?   @map("customer_id")
+  productId          String?   @map("product_id")
+  currency           String    @default("USD")
+  unitAmount         Decimal   @map("unit_amount") @db.Decimal(15, 2)
+  quantity           Int       @default(1)
+  billingPeriod      String    @default("MONTHLY") @map("billing_period") // MONTHLY, QUARTERLY, SEMI_ANNUAL, ANNUAL
+  billingCycles      Int?      @map("billing_cycles") // null = infinite
+  status             String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELED, EXPIRED, TRIALING
+  startDate          DateTime  @map("start_date")
+  currentPeriodStart DateTime  @map("current_period_start")
+  currentPeriodEnd   DateTime  @map("current_period_end")
   trialEndDate       DateTime? @map("trial_end_date")
-  cancelAtPeriodEnd  Boolean  @default(false) @map("cancel_at_period_end")
+  cancelAtPeriodEnd  Boolean   @default(false) @map("cancel_at_period_end")
   canceledAt         DateTime? @map("canceled_at")
   pausedAt           DateTime? @map("paused_at")
-  metadata           Json     @default("{}")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  metadata           Json      @default("{}")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  lines   SubscriptionLine[]
+  lines    SubscriptionLine[]
   invoices SubscriptionInvoice[]
-  usage   SubscriptionUsage[]
+  usage    SubscriptionUsage[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -4642,16 +4728,16 @@ model Subscription {
 }
 
 model SubscriptionLine {
-  id             String       @id @default(cuid())
-  tenantId       String       @map("tenant_id")
-  subscriptionId String       @map("subscription_id")
-  productId      String?      @map("product_id")
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  subscriptionId String   @map("subscription_id")
+  productId      String?  @map("product_id")
   description    String
-  unitAmount     Decimal      @map("unit_amount") @db.Decimal(15, 2)
-  quantity       Int          @default(1)
-  taxRate        Decimal      @default(0) @map("tax_rate") @db.Decimal(5, 2)
-  totalAmount    Decimal      @map("total_amount") @db.Decimal(15, 2)
-  createdAt      DateTime     @default(now()) @map("created_at")
+  unitAmount     Decimal  @map("unit_amount") @db.Decimal(15, 2)
+  quantity       Int      @default(1)
+  taxRate        Decimal  @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  totalAmount    Decimal  @map("total_amount") @db.Decimal(15, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
@@ -4661,17 +4747,17 @@ model SubscriptionLine {
 }
 
 model SubscriptionInvoice {
-  id             String       @id @default(cuid())
-  tenantId       String       @map("tenant_id")
-  subscriptionId String       @map("subscription_id")
-  invoiceId      String       @map("invoice_id")
-  periodStart    DateTime     @map("period_start")
-  periodEnd      DateTime     @map("period_end")
-  sequenceNumber Int          @map("sequence_number")
-  status         String       @default("PENDING") // PENDING, PAID, FAILED
-  amount         Decimal      @db.Decimal(15, 2)
-  createdAt      DateTime     @default(now()) @map("created_at")
-  paidAt         DateTime?    @map("paid_at")
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  subscriptionId String    @map("subscription_id")
+  invoiceId      String    @map("invoice_id")
+  periodStart    DateTime  @map("period_start")
+  periodEnd      DateTime  @map("period_end")
+  sequenceNumber Int       @map("sequence_number")
+  status         String    @default("PENDING") // PENDING, PAID, FAILED
+  amount         Decimal   @db.Decimal(15, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  paidAt         DateTime? @map("paid_at")
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   invoice      Invoice      @relation(fields: [invoiceId], references: [id])
@@ -4683,16 +4769,16 @@ model SubscriptionInvoice {
 }
 
 model SubscriptionUsage {
-  id             String       @id @default(cuid())
-  tenantId       String       @map("tenant_id")
-  subscriptionId String       @map("subscription_id")
-  usageDate      DateTime     @map("usage_date")
-  metricName     String       @map("metric_name") // e.g. "api_calls", "storage_gb", "seats"
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  subscriptionId String   @map("subscription_id")
+  usageDate      DateTime @map("usage_date")
+  metricName     String   @map("metric_name") // e.g. "api_calls", "storage_gb", "seats"
   quantity       Int
-  unitAmount     Decimal      @map("unit_amount") @db.Decimal(15, 2)
-  totalAmount    Decimal      @map("total_amount") @db.Decimal(15, 2)
-  invoiceId      String?      @map("invoice_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
+  unitAmount     Decimal  @map("unit_amount") @db.Decimal(15, 2)
+  totalAmount    Decimal  @map("total_amount") @db.Decimal(15, 2)
+  invoiceId      String?  @map("invoice_id")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
@@ -8917,116 +9003,116 @@ model FxRevaluationDetail {
 // ─── AP Three-Way Matching ────────────────────────────────────────────────────
 
 model APMatchRule {
-  id                         String   @id @default(cuid())
-  tenantId                   String   @map("tenant_id")
-  vendorId                   String?  @map("vendor_id")
-  quantityTolerancePercent   Decimal  @db.Decimal(5, 2) @map("quantity_tolerance_percent")
-  priceTolerancePercent      Decimal  @db.Decimal(5, 2) @map("price_tolerance_percent")
-  effectiveDate              DateTime @map("effective_date")
-  status                     String   @default("ACTIVE")
-  createdAt                  DateTime @default(now()) @map("created_at")
-  updatedAt                  DateTime @updatedAt @map("updated_at")
-  createdBy                  String   @map("created_by")
-  updatedBy                  String   @map("updated_by")
-  deletedAt                  DateTime? @map("deleted_at")
-  deletedBy                  String?  @map("deleted_by")
+  id                       String    @id @default(cuid())
+  tenantId                 String    @map("tenant_id")
+  vendorId                 String?   @map("vendor_id")
+  quantityTolerancePercent Decimal   @map("quantity_tolerance_percent") @db.Decimal(5, 2)
+  priceTolerancePercent    Decimal   @map("price_tolerance_percent") @db.Decimal(5, 2)
+  effectiveDate            DateTime  @map("effective_date")
+  status                   String    @default("ACTIVE")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  createdBy                String    @map("created_by")
+  updatedBy                String    @map("updated_by")
+  deletedAt                DateTime? @map("deleted_at")
+  deletedBy                String?   @map("deleted_by")
 
-  @@map("ap_match_rules")
   @@unique([tenantId, vendorId, effectiveDate])
   @@index([tenantId, vendorId, status])
+  @@map("ap_match_rules")
 }
 
 model APMatchException {
-  id                String   @id @default(cuid())
-  tenantId          String   @map("tenant_id")
-  invoiceId         String   @map("invoice_id")
-  poLineId          String   @map("po_line_id")
-  varianceType      String   @map("variance_type")
-  varianceAmount    Decimal  @db.Decimal(15, 2) @map("variance_amount")
-  variancePercent   Decimal  @db.Decimal(5, 2) @map("variance_percent")
-  expectedValue     String?  @map("expected_value")
-  actualValue       String?  @map("actual_value")
-  status            String   @default("PENDING")
-  resolutionNotes   String?  @map("resolution_notes")
-  createdAt         DateTime @default(now()) @map("created_at")
-  resolvedAt        DateTime? @map("resolved_at")
-  createdBy         String   @map("created_by")
-  updatedBy         String   @map("updated_by")
-  resolvedBy        String?  @map("resolved_by")
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  invoiceId       String    @map("invoice_id")
+  poLineId        String    @map("po_line_id")
+  varianceType    String    @map("variance_type")
+  varianceAmount  Decimal   @map("variance_amount") @db.Decimal(15, 2)
+  variancePercent Decimal   @map("variance_percent") @db.Decimal(5, 2)
+  expectedValue   String?   @map("expected_value")
+  actualValue     String?   @map("actual_value")
+  status          String    @default("PENDING")
+  resolutionNotes String?   @map("resolution_notes")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  resolvedAt      DateTime? @map("resolved_at")
+  createdBy       String    @map("created_by")
+  updatedBy       String    @map("updated_by")
+  resolvedBy      String?   @map("resolved_by")
 
-  @@map("ap_match_exceptions")
   @@unique([tenantId, invoiceId, poLineId])
   @@index([tenantId, status, createdAt])
+  @@map("ap_match_exceptions")
 }
 
 // ─── Payment Batches ──────────────────────────────────────────────────────────
 
 model PaymentBatch {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  batchNumber      String   @map("batch_number")
-  status           String   @default("DRAFT")
-  createdAt        DateTime @default(now()) @map("created_at")
-  createdBy        String   @map("created_by")
-  submittedAt      DateTime? @map("submitted_at")
-  submittedBy      String?  @map("submitted_by")
-  exportedAt       DateTime? @map("exported_at")
-  settlementDate   DateTime? @map("settlement_date")
-  totalAmount      Decimal  @db.Decimal(15, 2) @map("total_amount")
-  currency         String   @default("USD")
-  bankAccountId    String?  @map("bank_account_id")
-  paymentMethod    String   @map("payment_method")
-  notes            String?
-  updatedAt        DateTime @updatedAt @map("updated_at")
-  updatedBy        String   @map("updated_by")
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  batchNumber    String    @map("batch_number")
+  status         String    @default("DRAFT")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  createdBy      String    @map("created_by")
+  submittedAt    DateTime? @map("submitted_at")
+  submittedBy    String?   @map("submitted_by")
+  exportedAt     DateTime? @map("exported_at")
+  settlementDate DateTime? @map("settlement_date")
+  totalAmount    Decimal   @map("total_amount") @db.Decimal(15, 2)
+  currency       String    @default("USD")
+  bankAccountId  String?   @map("bank_account_id")
+  paymentMethod  String    @map("payment_method")
+  notes          String?
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  updatedBy      String    @map("updated_by")
 
-  bankAccount      BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
-  lines            PaymentBatchLine[]
+  bankAccount BankAccount?       @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  lines       PaymentBatchLine[]
 
-  @@map("payment_batches")
   @@unique([tenantId, batchNumber])
   @@index([tenantId, status, createdAt])
+  @@map("payment_batches")
 }
 
 model PaymentBatchLine {
-  id                    String   @id @default(cuid())
-  tenantId              String   @map("tenant_id")
-  batchId               String   @map("batch_id")
-  invoiceId             String   @map("invoice_id")
-  amount                Decimal  @db.Decimal(15, 2)
-  scheduledPaymentDate  DateTime @map("scheduled_payment_date")
-  status                String   @default("INCLUDED")
-  settledAt             DateTime? @map("settled_at")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  id                   String    @id @default(cuid())
+  tenantId             String    @map("tenant_id")
+  batchId              String    @map("batch_id")
+  invoiceId            String    @map("invoice_id")
+  amount               Decimal   @db.Decimal(15, 2)
+  scheduledPaymentDate DateTime  @map("scheduled_payment_date")
+  status               String    @default("INCLUDED")
+  settledAt            DateTime? @map("settled_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
-  batch                 PaymentBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch PaymentBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
-  @@map("payment_batch_lines")
   @@index([tenantId, batchId, status])
+  @@map("payment_batch_lines")
 }
 
 // ── Continuous Close Automation ──────────────────────────────────────────────
 
 model CloseTask {
-  id               String    @id @default(cuid())
-  tenantId         String    @map("tenant_id")
-  financialPeriodId String   @map("financial_period_id")
-  name             String
-  description      String?
-  category         String    @default("RECONCILIATION") // RECONCILIATION, ACCRUALS, REPORTING, APPROVAL, OTHER
-  assigneeId       String?   @map("assignee_id")
-  dueDate          DateTime? @map("due_date")
-  status           String    @default("OPEN") // OPEN, IN_PROGRESS, DONE, SKIPPED
-  priority         String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
-  completedAt      DateTime? @map("completed_at")
-  completedBy      String?   @map("completed_by")
-  notes            String?
-  isTemplate       Boolean   @default(false) @map("is_template")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-  createdBy        String    @map("created_by")
-  updatedBy        String    @map("updated_by")
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  financialPeriodId String    @map("financial_period_id")
+  name              String
+  description       String?
+  category          String    @default("RECONCILIATION") // RECONCILIATION, ACCRUALS, REPORTING, APPROVAL, OTHER
+  assigneeId        String?   @map("assignee_id")
+  dueDate           DateTime? @map("due_date")
+  status            String    @default("OPEN") // OPEN, IN_PROGRESS, DONE, SKIPPED
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  completedAt       DateTime? @map("completed_at")
+  completedBy       String?   @map("completed_by")
+  notes             String?
+  isTemplate        Boolean   @default(false) @map("is_template")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  createdBy         String    @map("created_by")
+  updatedBy         String    @map("updated_by")
 
   @@index([tenantId, financialPeriodId, status])
   @@index([tenantId, assigneeId])
@@ -9034,22 +9120,22 @@ model CloseTask {
 }
 
 model VarianceFlag {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  financialPeriodId String  @map("financial_period_id")
-  accountId        String   @map("account_id")
-  currentAmount    Decimal  @map("current_amount") @db.Decimal(15, 2)
-  priorAmount      Decimal  @map("prior_amount") @db.Decimal(15, 2)
-  varianceAmount   Decimal  @map("variance_amount") @db.Decimal(15, 2)
-  variancePercent  Decimal  @map("variance_percent") @db.Decimal(7, 2)
-  thresholdPercent Decimal  @map("threshold_percent") @db.Decimal(5, 2)
-  severity         String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
-  status           String   @default("OPEN") // OPEN, ACKNOWLEDGED, RESOLVED
-  notes            String?
-  resolvedBy       String?  @map("resolved_by")
-  resolvedAt       DateTime? @map("resolved_at")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  financialPeriodId String    @map("financial_period_id")
+  accountId         String    @map("account_id")
+  currentAmount     Decimal   @map("current_amount") @db.Decimal(15, 2)
+  priorAmount       Decimal   @map("prior_amount") @db.Decimal(15, 2)
+  varianceAmount    Decimal   @map("variance_amount") @db.Decimal(15, 2)
+  variancePercent   Decimal   @map("variance_percent") @db.Decimal(7, 2)
+  thresholdPercent  Decimal   @map("threshold_percent") @db.Decimal(5, 2)
+  severity          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status            String    @default("OPEN") // OPEN, ACKNOWLEDGED, RESOLVED
+  notes             String?
+  resolvedBy        String?   @map("resolved_by")
+  resolvedAt        DateTime? @map("resolved_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   @@index([tenantId, financialPeriodId, status])
   @@index([tenantId, accountId])
@@ -9059,46 +9145,46 @@ model VarianceFlag {
 // ── Driver-Based Budgeting & Scenario Planning ────────────────────────────────
 
 model BudgetScenario {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orgId       String   @map("org_id")
-  name        String
-  description String?
-  type        String   @default("BASE") // BASE, UPSIDE, DOWNSIDE, ACTUALS, CUSTOM
-  fiscalYear  Int      @map("fiscal_year")
-  isLocked    Boolean  @default(false) @map("is_locked")
-  isDefault   Boolean  @default(false) @map("is_default")
-  clonedFromId String? @map("cloned_from_id")
-  status      String   @default("DRAFT") // DRAFT, APPROVED, ARCHIVED
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  createdBy   String   @map("created_by")
-  updatedBy   String   @map("updated_by")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  orgId        String   @map("org_id")
+  name         String
+  description  String?
+  type         String   @default("BASE") // BASE, UPSIDE, DOWNSIDE, ACTUALS, CUSTOM
+  fiscalYear   Int      @map("fiscal_year")
+  isLocked     Boolean  @default(false) @map("is_locked")
+  isDefault    Boolean  @default(false) @map("is_default")
+  clonedFromId String?  @map("cloned_from_id")
+  status       String   @default("DRAFT") // DRAFT, APPROVED, ARCHIVED
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdBy    String   @map("created_by")
+  updatedBy    String   @map("updated_by")
 
-  lines       BudgetScenarioLine[]
-  clonedFrom  BudgetScenario? @relation("BudgetScenarioClones", fields: [clonedFromId], references: [id])
-  clones      BudgetScenario[] @relation("BudgetScenarioClones")
+  lines      BudgetScenarioLine[]
+  clonedFrom BudgetScenario?      @relation("BudgetScenarioClones", fields: [clonedFromId], references: [id])
+  clones     BudgetScenario[]     @relation("BudgetScenarioClones")
 
   @@index([tenantId, orgId, fiscalYear])
   @@map("budget_scenarios")
 }
 
 model BudgetScenarioLine {
-  id             String    @id @default(cuid())
-  tenantId       String    @map("tenant_id")
-  scenarioId     String    @map("scenario_id")
-  accountId      String    @map("account_id")
-  costCenterId   String?   @map("cost_center_id")
-  month          Int       // 1-12
-  amount         Decimal   @db.Decimal(15, 2)
-  driverType     String?   @map("driver_type") // HEADCOUNT, UNITS, PERCENTAGE, MANUAL
-  driverValue    Decimal?  @map("driver_value") @db.Decimal(15, 4) // e.g. headcount count
-  driverRate     Decimal?  @map("driver_rate") @db.Decimal(15, 4)  // e.g. salary per head
-  notes          String?
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  scenarioId   String   @map("scenario_id")
+  accountId    String   @map("account_id")
+  costCenterId String?  @map("cost_center_id")
+  month        Int // 1-12
+  amount       Decimal  @db.Decimal(15, 2)
+  driverType   String?  @map("driver_type") // HEADCOUNT, UNITS, PERCENTAGE, MANUAL
+  driverValue  Decimal? @map("driver_value") @db.Decimal(15, 4) // e.g. headcount count
+  driverRate   Decimal? @map("driver_rate") @db.Decimal(15, 4) // e.g. salary per head
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  scenario       BudgetScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenario BudgetScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, scenarioId, accountId, month])
   @@index([tenantId, scenarioId])
@@ -9108,26 +9194,26 @@ model BudgetScenarioLine {
 // ── AI-Powered AP Invoice Capture ────────────────────────────────────────────
 
 model APInvoiceCapture {
-  id                      String   @id @default(cuid())
-  tenantId                String   @map("tenant_id")
-  fileName                String   @map("file_name")
-  vendorName              String?  @map("vendor_name")
-  invoiceNumber           String?  @map("invoice_number")
+  id                      String    @id @default(cuid())
+  tenantId                String    @map("tenant_id")
+  fileName                String    @map("file_name")
+  vendorName              String?   @map("vendor_name")
+  invoiceNumber           String?   @map("invoice_number")
   invoiceDate             DateTime? @map("invoice_date")
   dueDate                 DateTime? @map("due_date")
   totalAmount             Decimal?  @map("total_amount") @db.Decimal(15, 2)
-  currency                String   @default("USD")
-  confidenceScore         Decimal  @default(0.0) @map("confidence_score") @db.Decimal(5, 4)
-  status                  String   @default("QUEUED") // DRAFT, QUEUED, REVIEW_REQUIRED, PROCESSED, REJECTED
-  rawText                 String?  @map("raw_text") @db.Text
-  matchingPurchaseOrderId String?  @map("matching_purchase_order_id")
+  currency                String    @default("USD")
+  confidenceScore         Decimal   @default(0.0) @map("confidence_score") @db.Decimal(5, 4)
+  status                  String    @default("QUEUED") // DRAFT, QUEUED, REVIEW_REQUIRED, PROCESSED, REJECTED
+  rawText                 String?   @map("raw_text") @db.Text
+  matchingPurchaseOrderId String?   @map("matching_purchase_order_id")
   notes                   String?
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
-  createdBy               String   @map("created_by")
-  updatedBy               String   @map("updated_by")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  createdBy               String    @map("created_by")
+  updatedBy               String    @map("updated_by")
 
-  lines                   APInvoiceCaptureLine[]
+  lines APInvoiceCaptureLine[]
 
   @@index([tenantId, status])
   @@index([tenantId, matchingPurchaseOrderId])
@@ -9135,22 +9221,67 @@ model APInvoiceCapture {
 }
 
 model APInvoiceCaptureLine {
-  id                     String   @id @default(cuid())
-  tenantId               String   @map("tenant_id")
-  captureId              String   @map("capture_id")
-  description            String
-  quantity               Decimal  @db.Decimal(15, 4)
-  unitPrice              Decimal  @map("unit_price") @db.Decimal(15, 4)
-  amount                 Decimal  @db.Decimal(15, 2)
-  suggestedAccountId     String?  @map("suggested_account_id")
-  suggestedCostCenterId  String?  @map("suggested_cost_center_id")
-  matchingPOLineId       String?  @map("matching_po_line_id")
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  captureId             String   @map("capture_id")
+  description           String
+  quantity              Decimal  @db.Decimal(15, 4)
+  unitPrice             Decimal  @map("unit_price") @db.Decimal(15, 4)
+  amount                Decimal  @db.Decimal(15, 2)
+  suggestedAccountId    String?  @map("suggested_account_id")
+  suggestedCostCenterId String?  @map("suggested_cost_center_id")
+  matchingPOLineId      String?  @map("matching_po_line_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
-  capture                APInvoiceCapture @relation(fields: [captureId], references: [id], onDelete: Cascade)
+  capture APInvoiceCapture @relation(fields: [captureId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, captureId])
   @@map("ap_invoice_capture_lines")
 }
 
+// ─────────────────────────────────────────────────
+// DYNAMIC ALLOCATION ENGINE (module #2 advanced-finance)
+// ─────────────────────────────────────────────────
+
+model AllocationRule {
+  id              String          @id @default(cuid())
+  tenantId        String          @map("tenant_id")
+  name            String
+  description     String?
+  isActive        Boolean         @default(true) @map("is_active")
+  allocationType  String          @map("allocation_type") // STATIC_PCT, DYNAMIC_STAT
+  basisType       String?         @map("basis_type") // HEADCOUNT, SQUARE_FOOTAGE, REVENUE
+  sourceAccountId String          @map("source_account_id")
+  targetAllocations Json          // Array of { accountId: string, costCenterId: string, percentage: number }
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  createdBy       String?         @map("created_by")
+  updatedBy       String?         @map("updated_by")
+
+  sourceAccount   Account         @relation(fields: [sourceAccountId], references: [id])
+  runs            AllocationRun[]
+
+  @@index([tenantId])
+  @@map("allocation_rules")
+}
+
+model AllocationRun {
+  id              String         @id @default(cuid())
+  tenantId        String         @map("tenant_id")
+  ruleId          String         @map("rule_id")
+  runDate         DateTime       @default(now()) @map("run_date")
+  periodStart     DateTime       @map("period_start")
+  periodEnd       DateTime       @map("period_end")
+  allocatedAmount Decimal        @map("allocated_amount") @db.Decimal(15, 2)
+  journalId       String?        @map("journal_id")
+  status          String         @default("DRAFT") // DRAFT, POSTED
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  rule            AllocationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  journal         Journal?       @relation(fields: [journalId], references: [id])
+
+  @@index([tenantId])
+  @@map("allocation_runs")
+}

@@ -16,3 +16,6 @@ export { FxRevaluationService } from './fx-revaluation.service';
 export { PayablesService } from './payables.service';
 export { FpaService } from './fpa.service';
 export { InvoiceCaptureService } from './invoice-capture.service';
+export { CardSpendLimitService } from './card-spend-limit.service';
+export { AllocationService } from './allocation.service';
+

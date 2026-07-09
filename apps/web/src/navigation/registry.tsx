@@ -112,6 +112,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'netting': 'Netting',
   'eliminations': 'Eliminations',
   'fx-revaluation': 'FX Revaluation',
+  'corporate-cards': 'Corporate Cards',
   'payment-terms': 'Payment Terms',
   'invoice-analytics': 'Invoice Analytics',
   'tax-filing-summary': 'Tax Filing Summary',
@@ -241,6 +242,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   subscriptions: 'Subscription Billing',
   leases: 'Lease Accounting',
   new: 'New',
+  allocations: 'Dynamic Allocations',
   // Finance FP&A / Close
   'close-tasks': 'Close Checklist',
   'budget-scenarios': 'Budget Scenarios',

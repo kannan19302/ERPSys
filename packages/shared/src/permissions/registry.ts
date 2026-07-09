@@ -136,6 +136,13 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('finance', 'subscription', 'create', 'endpoint', 'Create subscriptions'),
   p('finance', 'subscription', 'update', 'endpoint', 'Update subscriptions'),
   p('finance', 'subscription', 'delete', 'endpoint', 'Delete subscriptions'),
+  p('finance', 'corporate-card-limit', 'read', 'endpoint', 'View corporate card spend/category limits, utilization, and audit trail'),
+  p('finance', 'corporate-card-limit', 'create', 'endpoint', 'Create corporate card spend limits'),
+  p('finance', 'corporate-card-limit', 'update', 'endpoint', 'Update corporate card spend/category limits'),
+  p('finance', 'corporate-card-limit', 'delete', 'endpoint', 'Delete corporate card spend limits'),
+  p('finance', 'corporate-card-limit', 'request-increase', 'endpoint', 'Request a corporate card spend limit increase'),
+  p('finance', 'corporate-card-limit', 'approve', 'endpoint', 'Approve a corporate card spend limit increase request'),
+  p('finance', 'corporate-card', 'freeze', 'endpoint', 'Freeze/unfreeze a corporate card'),
 
   // HR
   p('hr', 'employee', 'read', 'endpoint', 'View employees'),
@@ -436,6 +443,9 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('finance', 'fpa', 'read', 'endpoint', 'View budgeting scenarios, close checklists, and variance flags'),
   p('finance', 'fpa', 'manage', 'endpoint', 'Create and edit close tasks, budget scenarios, and budget lines'),
   p('finance', 'fpa', 'run', 'endpoint', 'Run variance detection, lock scenarios, and compute budget drivers'),
+  p('finance', 'allocations', 'read', 'endpoint', 'View allocation rules and run logs'),
+  p('finance', 'allocations', 'manage', 'endpoint', 'Create, update, and delete allocation rules'),
+  p('finance', 'allocations', 'run', 'endpoint', 'Execute allocation runs and post journal entries'),
   { code: 'healthcare.create', module: 'healthcare', resource: 'general', action: 'create', level: 'endpoint', description: 'Coarse legacy permission: healthcare create' },
   { code: 'healthcare.read', module: 'healthcare', resource: 'general', action: 'read', level: 'endpoint', description: 'Coarse legacy permission: healthcare read' },
   { code: 'healthcare.update', module: 'healthcare', resource: 'general', action: 'update', level: 'endpoint', description: 'Coarse legacy permission: healthcare update' },

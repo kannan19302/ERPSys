@@ -66,7 +66,15 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    release the lock (`claim.mjs release`); HANDBOOK only if conventions changed.
    Self-check: `git status --short .ai/` must show the expected set. Quote today's
    SPRINT_TRACKER row and 500-target progress in the final report.
-9. **Ship** (only after the step-8 documentation gate passes): stage code + the full
+9. **Ship** (only after the step-8 documentation gate passes): in parallel mode run in
+   your **own git worktree** (`git worktree add ../ERPSys-<slug> main`; remove after
+   merging) so commits never entangle other sessions' files. Sharing one checkout:
+   stage explicit paths only, verify `git diff --cached --stat` shows only your scope
+   + doc set, edit shared hotspots (CHANGELOG/REGISTRY/schema/permissions/moduleNav)
+   only at ship time just before staging, never commit a file containing another
+   session's hunks (defer + Conflict Log), never stash/reset foreign changes. Push
+   rejected → `git fetch && git rebase --autostash origin/main`, re-typecheck, retry
+   (max 3, never force-push). stage code + the full
    documentation set together — docs land in the SAME commit/push as the code, never
    a separate afterthought. Commit only your claimed scope, push — and the cycle MUST
    end with the changes on `origin/main`. If on an `autopilot/*` branch: rebase onto origin/main,

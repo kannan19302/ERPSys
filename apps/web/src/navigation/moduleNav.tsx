@@ -46,6 +46,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Subscription Billing', href: '/finance/advanced/subscriptions', icon: CreditCard },
             { name: 'Recurring Invoices', href: '/finance/advanced/recurring', icon: RefreshCw },
             { name: 'Revenue Recognition', href: '/finance/advanced/revenue-schedules', icon: TrendingUp },
+            { name: 'Dynamic Allocations', href: '/finance/advanced/allocations', icon: PieChart },
           ]
         },
         {

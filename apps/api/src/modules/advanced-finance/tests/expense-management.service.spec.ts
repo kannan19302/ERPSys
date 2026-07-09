@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ExpenseManagementService } from '../services/expense-management.service';
 import { GlAccountingService } from '../services/gl-accounting.service';
+import { CardSpendLimitService } from '../services/card-spend-limit.service';
 import { prisma } from '@unerp/database';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
@@ -61,11 +62,13 @@ const TENANT = 'tenant-1';
 describe('ExpenseManagementService', () => {
   let service: ExpenseManagementService;
   let glService: GlAccountingService;
+  let cardSpendLimitService: CardSpendLimitService;
 
   beforeEach(() => {
     vi.clearAllMocks();
     glService = new GlAccountingService();
-    service = new ExpenseManagementService(glService);
+    cardSpendLimitService = { checkAuthorization: vi.fn().mockResolvedValue({ allowed: true, reason: null }) } as unknown as CardSpendLimitService;
+    service = new ExpenseManagementService(glService, cardSpendLimitService);
   });
 
   describe('addExpenseItem — policy engine', () => {

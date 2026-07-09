@@ -346,7 +346,39 @@ always safe in parallel. **Never** reset/re-seed the DB, restart containers, or 
 `prisma migrate reset` while another agent's claim is active — if a destructive reset
 is unavoidable, treat it like a migration: announce via a Collab Board row first.
 
-**7. Don't duplicate work.**
+**7. Commit/push isolation — one working tree per session (the fix for mixed-file
+commits).**
+The commit-time failure mode is parallel sessions sharing ONE checkout: the tree
+holds several sessions' uncommitted edits, staging a shared file sweeps in someone
+else's half-done hunks, and `pull --rebase` refuses to run over foreign changes.
+
+- **Mandated setup**: every parallel session gets its **own git worktree** —
+  `git worktree add ../ERPSys-<slug> main` (Claude Code: use its worktree isolation;
+  IDE sessions: open the worktree folder, not the main checkout). Own tree = your
+  `git add`/`commit`/`rebase`/`push` can never entangle another session's files, and
+  the whole problem disappears. Remove the worktree at cycle end after the merge to
+  `main`.
+- **Fallback (sessions genuinely sharing one checkout)**:
+  a. Stage by explicit path list only (already rule); before committing, verify the
+     staged diff is exclusively yours: `git diff --cached --stat` must contain only
+     files from your claimed scope + your Step 7 doc set.
+  b. **Late-edit window for shared hotspots**: do NOT edit CHANGELOG /
+     MODULE_REGISTRY / schema.prisma / permissions registry / moduleNav during
+     Step 4 — make those edits at Step 7/8, immediately before staging, and commit
+     within the same minute. This shrinks the overlap window to near zero.
+  c. If a file you edited ALSO contains another session's uncommitted hunks (mixed
+     file): your locks overlapped — do not commit that file. Defer your edit (keep it
+     in a scratch copy), let the other session ship first, re-apply on the updated
+     file, and log the overlap in §4 so the sub-domain split is fixed.
+  d. Never stash, reset, or discard foreign changes to "clean" the tree for a rebase.
+- **Push-race retry loop** (all setups): on rejected push run
+  `git fetch origin && git rebase origin/main` (in your own worktree this is always
+  clean; in a shared checkout use `git rebase --autostash origin/main`, which restores
+  every session's uncommitted files afterward), re-run the scoped typecheck if code
+  moved under you, then push again. Retry up to 3 times; still failing → Conflict Log,
+  never force-push.
+
+**8. Don't duplicate work.**
 Before claiming, check §1 Active Claims AND `git log --all --since="1 day ago"
 --oneline` (another agent's branch may already contain your target). After rebasing,
 grep `FEATURE_LEDGER.md` for your batch's routes — if half your features just landed

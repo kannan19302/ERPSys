@@ -26,6 +26,8 @@ import {
   PayablesService,
   FpaService,
   InvoiceCaptureService,
+  CardSpendLimitService,
+  AllocationService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -414,6 +416,34 @@ const createFxRevaluationSchema = z.object({
   notes: z.string().optional(),
 });
 
+const createCardSpendLimitSchema = z.object({
+  scopeType: z.enum(['CARD', 'EMPLOYEE', 'DEPARTMENT']),
+  scopeId: z.string().optional(),
+  period: z.enum(['WEEKLY', 'MONTHLY']),
+  amountCap: z.number().positive(),
+});
+
+const updateCardSpendLimitSchema = z.object({
+  amountCap: z.number().positive().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createCardCategoryLimitSchema = z.object({
+  mccCategory: z.string().min(1),
+  amountCap: z.number().positive(),
+  period: z.enum(['WEEKLY', 'MONTHLY']),
+});
+
+const updateCardCategoryLimitSchema = z.object({
+  amountCap: z.number().positive().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const requestLimitIncreaseSchema = z.object({
+  requestedCap: z.number().positive(),
+  reason: z.string().optional(),
+});
+
 @ApiTags('advanced-finance')
 @ApiBearerAuth()
 @Controller('advanced-finance')
@@ -438,6 +468,8 @@ export class AdvancedFinanceController {
     private readonly payablesService: PayablesService,
     private readonly fpaService: FpaService,
     private readonly invoiceCaptureService: InvoiceCaptureService,
+    private readonly cardSpendLimitService: CardSpendLimitService,
+    private readonly allocationService: AllocationService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -2902,5 +2934,268 @@ export class AdvancedFinanceController {
     @Param('lineId') lineId: string,
   ) {
     return this.invoiceCaptureService.deleteLine(req.user.tenantId, captureId, lineId);
+  }
+
+  // ── Corporate Card Spend Management ──────────────────────────
+
+  @ApiOperation({ summary: 'Create card spend limit' })
+  @Post('corporate-cards/:id/limits')
+  @Permissions('finance.corporate-card-limit.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardSpendLimit')
+  async createCardSpendLimit(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') cardId: string,
+    @ZodBody(createCardSpendLimitSchema) dto: z.infer<typeof createCardSpendLimitSchema>,
+  ) {
+    return this.cardSpendLimitService.createSpendLimit(req.user.tenantId, cardId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'List card spend limits' })
+  @Get('corporate-cards/:id/limits')
+  @Permissions('finance.corporate-card-limit.read')
+  async getCardSpendLimits(@Req() req: AuthenticatedRequest, @Param('id') cardId: string) {
+    return this.cardSpendLimitService.getSpendLimits(req.user.tenantId, cardId);
+  }
+
+  @ApiOperation({ summary: 'Update card spend limit' })
+  @Patch('corporate-cards/:id/limits/:limitId')
+  @Permissions('finance.corporate-card-limit.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardSpendLimit', 'limitId')
+  async updateCardSpendLimit(
+    @Req() req: AuthenticatedRequest,
+    @Param('limitId') limitId: string,
+    @ZodBody(updateCardSpendLimitSchema) dto: z.infer<typeof updateCardSpendLimitSchema>,
+  ) {
+    return this.cardSpendLimitService.updateSpendLimit(req.user.tenantId, limitId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete card spend limit' })
+  @Delete('corporate-cards/:id/limits/:limitId')
+  @Permissions('finance.corporate-card-limit.delete')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardSpendLimit', 'limitId')
+  async deleteCardSpendLimit(@Req() req: AuthenticatedRequest, @Param('limitId') limitId: string) {
+    return this.cardSpendLimitService.deleteSpendLimit(req.user.tenantId, limitId, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Create card category (MCC) spend limit' })
+  @Post('corporate-cards/:id/category-limits')
+  @Permissions('finance.corporate-card-limit.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardCategoryLimit')
+  async createCardCategoryLimit(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') cardId: string,
+    @ZodBody(createCardCategoryLimitSchema) dto: z.infer<typeof createCardCategoryLimitSchema>,
+  ) {
+    return this.cardSpendLimitService.createCategoryLimit(req.user.tenantId, cardId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'List card category (MCC) spend limits' })
+  @Get('corporate-cards/:id/category-limits')
+  @Permissions('finance.corporate-card-limit.read')
+  async getCardCategoryLimits(@Req() req: AuthenticatedRequest, @Param('id') cardId: string) {
+    return this.cardSpendLimitService.getCategoryLimits(req.user.tenantId, cardId);
+  }
+
+  @ApiOperation({ summary: 'Update card category (MCC) spend limit' })
+  @Patch('corporate-cards/:id/category-limits/:limitId')
+  @Permissions('finance.corporate-card-limit.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardCategoryLimit', 'limitId')
+  async updateCardCategoryLimit(
+    @Req() req: AuthenticatedRequest,
+    @Param('limitId') limitId: string,
+    @ZodBody(updateCardCategoryLimitSchema) dto: z.infer<typeof updateCardCategoryLimitSchema>,
+  ) {
+    return this.cardSpendLimitService.updateCategoryLimit(req.user.tenantId, limitId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete card category (MCC) spend limit' })
+  @Delete('corporate-cards/:id/category-limits/:limitId')
+  @Permissions('finance.corporate-card-limit.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardCategoryLimit', 'limitId')
+  async deleteCardCategoryLimit(@Req() req: AuthenticatedRequest, @Param('limitId') limitId: string) {
+    return this.cardSpendLimitService.deleteCategoryLimit(req.user.tenantId, limitId, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Get card utilization (spend vs cap for all active limits)' })
+  @Get('corporate-cards/:id/utilization')
+  @Permissions('finance.corporate-card-limit.read')
+  async getCardUtilization(@Req() req: AuthenticatedRequest, @Param('id') cardId: string) {
+    return this.cardSpendLimitService.getUtilization(req.user.tenantId, cardId);
+  }
+
+  @ApiOperation({ summary: 'Freeze corporate card' })
+  @Post('corporate-cards/:id/freeze')
+  @Permissions('finance.corporate-card.freeze')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CorporateCard', 'id')
+  async freezeCorporateCard(@Req() req: AuthenticatedRequest, @Param('id') cardId: string) {
+    return this.cardSpendLimitService.freezeCard(req.user.tenantId, cardId);
+  }
+
+  @ApiOperation({ summary: 'Unfreeze corporate card' })
+  @Post('corporate-cards/:id/unfreeze')
+  @Permissions('finance.corporate-card.freeze')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CorporateCard', 'id')
+  async unfreezeCorporateCard(@Req() req: AuthenticatedRequest, @Param('id') cardId: string) {
+    return this.cardSpendLimitService.unfreezeCard(req.user.tenantId, cardId);
+  }
+
+  @ApiOperation({ summary: 'Request a card spend limit increase' })
+  @Post('corporate-cards/:id/limits/:limitId/request-increase')
+  @Permissions('finance.corporate-card-limit.request-increase')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardLimitIncreaseRequest')
+  async requestCardLimitIncrease(
+    @Req() req: AuthenticatedRequest,
+    @Param('limitId') limitId: string,
+    @ZodBody(requestLimitIncreaseSchema) dto: z.infer<typeof requestLimitIncreaseSchema>,
+  ) {
+    return this.cardSpendLimitService.requestLimitIncrease(req.user.tenantId, limitId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Approve a card spend limit increase request' })
+  @Post('corporate-cards/:id/limits/:limitId/request-increase/:requestId/approve')
+  @Permissions('finance.corporate-card-limit.approve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CardLimitIncreaseRequest', 'requestId')
+  async approveCardLimitIncrease(@Req() req: AuthenticatedRequest, @Param('requestId') requestId: string) {
+    return this.cardSpendLimitService.approveLimitIncrease(req.user.tenantId, requestId, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Get card spend limit audit trail' })
+  @Get('corporate-cards/:id/limits/:limitId/audit')
+  @Permissions('finance.corporate-card-limit.read')
+  async getCardLimitAudit(@Req() req: AuthenticatedRequest, @Param('limitId') limitId: string) {
+    return this.cardSpendLimitService.getAuditTrail(req.user.tenantId, limitId);
+  }
+
+  // ── Allocation Rules & Runs Operations ──────────────────────────────────────
+
+  @ApiOperation({ summary: 'List all allocation rules' })
+  @Get('allocations/rules')
+  @Permissions('finance.allocations.read')
+  async getRules(@Req() req: AuthenticatedRequest) {
+    return this.allocationService.getRules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get allocation rule by ID' })
+  @Get('allocations/rules/:id')
+  @Permissions('finance.allocations.read')
+  async getRuleById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.allocationService.getRuleById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create a new allocation rule' })
+  @Post('allocations/rules')
+  @Permissions('finance.allocations.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AllocationRule')
+  async createRule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(
+      z.object({
+        name: z.string().min(1),
+        description: z.string().optional(),
+        allocationType: z.string().min(1),
+        basisType: z.string().optional(),
+        sourceAccountId: z.string().min(1),
+        targetAllocations: z.array(
+          z.object({
+            accountId: z.string().min(1),
+            costCenterId: z.string().optional(),
+            departmentId: z.string().optional(),
+            percentage: z.number().optional(),
+            ratioWeight: z.number().optional(),
+          }),
+        ),
+      }),
+    )
+    dto: any,
+  ) {
+    return this.allocationService.createRule(req.user.tenantId, dto, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Update an allocation rule' })
+  @Patch('allocations/rules/:id')
+  @Permissions('finance.allocations.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AllocationRule')
+  async updateRule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(
+      z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+        isActive: z.boolean().optional(),
+        allocationType: z.string().optional(),
+        basisType: z.string().optional(),
+        sourceAccountId: z.string().optional(),
+        targetAllocations: z.array(
+          z.object({
+            accountId: z.string().min(1),
+            costCenterId: z.string().optional(),
+            departmentId: z.string().optional(),
+            percentage: z.number().optional(),
+            ratioWeight: z.number().optional(),
+          }),
+        ).optional(),
+      }),
+    )
+    dto: any,
+  ) {
+    return this.allocationService.updateRule(req.user.tenantId, id, dto, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Delete an allocation rule' })
+  @Delete('allocations/rules/:id')
+  @Permissions('finance.allocations.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AllocationRule')
+  async deleteRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.allocationService.deleteRule(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'List all allocation runs' })
+  @Get('allocations/runs')
+  @Permissions('finance.allocations.read')
+  async getRuns(@Req() req: AuthenticatedRequest) {
+    return this.allocationService.getRuns(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Execute an allocation run (generate draft journal)' })
+  @Post('allocations/rules/:id/run')
+  @Permissions('finance.allocations.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AllocationRun')
+  async executeRun(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') ruleId: string,
+    @ZodBody(
+      z.object({
+        periodStart: z.string().min(1),
+        periodEnd: z.string().min(1),
+      }),
+    )
+    dto: any,
+  ) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.allocationService.executeAllocationRun(req.user.tenantId, orgId, ruleId, dto, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Approve and post allocation run journal entries' })
+  @Post('allocations/runs/:id/post')
+  @Permissions('finance.allocations.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AllocationRun')
+  async postRun(@Req() req: AuthenticatedRequest, @Param('id') runId: string) {
+    return this.allocationService.postAllocationRun(req.user.tenantId, runId, req.user.userId);
   }
 }
