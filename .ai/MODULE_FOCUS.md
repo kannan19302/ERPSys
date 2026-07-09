@@ -97,6 +97,7 @@ CHANGELOG, and re-benchmark the completed module one last time in MARKET_BENCHMA
 | 2026-07-09 | Finance | 231 | +15 | Finance Subscription Billing & MRR/ARR (closes [benchmark] RICE 94.5): Subscription/SubscriptionLine/SubscriptionInvoice/SubscriptionUsage models, billing-run job, MRR/ARR/churn calc, 15 endpoints, 3 Next.js pages, 14 unit tests. |
 | 2026-07-09 | Finance | 249 | +18 | Finance AP Three-Way Matching + Batch Payment Runs + Report Drill-Through (closes 3 [benchmark] gaps): APMatchRule CRUD, three-way match engine, exception queue, payment batches (NACHA/SEPA/CSV export), GL posting, report drill-through, payables stats, 4 permissions, 3 Next.js pages, 25 unit tests. |
 | 2026-07-09 | Finance | 251 | +2 | Finance Month-End Continuous Close Automation, Budget Scenarios & Driver-Based FP&A (closes 2 [benchmark] gaps): CloseTask/VarianceFlag/BudgetScenario/BudgetScenarioLine models, close checklist CRUD, templates autogen, PoP variance engine, budget scenario CRUD, cloning, locking, driver computations, actuals vs scenario comparisons, 3 Next.js pages, 13 unit tests. |
+| 2026-07-09 | Finance | 262 | +11 | Finance AI-Powered Invoice Capture OCR & Auto-Coding (closes [benchmark] RICE 169 gap): APInvoiceCapture/APInvoiceCaptureLine models, OCR regex extractor, PO matching, auto coding based on vendor history, Accrued Liabilities/Expenses GL postings, 11 API endpoints, Next.js review page, 11 unit tests. |
 
 ## 7. Cross-Module Integration Contracts (pre-planned BEFORE building)
 

@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T02:38:02.463Z
+> Last generated: 2026-07-09T02:50:42.061Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1626 features** across 36 modules
+## System total: **1637 features** across 36 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 224 |
+| [advanced-finance](#advanced-finance) | 235 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -240,7 +240,7 @@
 
 ## advanced-finance
 
-224 features
+235 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -468,6 +468,17 @@
 | POST | `/advanced-finance/budget-scenarios/:id/driver` | Apply driver calculations to generate budget lines in bulk | `finance.fpa.run` |
 | DELETE | `/advanced-finance/budget-scenarios/:id` | Delete a budget scenario (archives it) | `finance.fpa.manage` |
 | POST | `/advanced-finance/budget-scenarios/:id/lines` | Upsert a single budget scenario line | `finance.fpa.manage` |
+| GET | `/advanced-finance/payables/invoices/capture` | List captured invoices | `finance.payables.read` |
+| GET | `/advanced-finance/payables/invoices/capture/:id` | Get captured invoice details | `finance.payables.read` |
+| POST | `/advanced-finance/payables/invoices/capture` | Create (upload) invoice capture record | `finance.payables.read` |
+| PATCH | `/advanced-finance/payables/invoices/capture/:id` | Update captured invoice metadata manually | `finance.payables.manage` |
+| DELETE | `/advanced-finance/payables/invoices/capture/:id` | Delete captured invoice record | `finance.payables.manage` |
+| POST | `/advanced-finance/payables/invoices/capture/:id/auto-code` | Auto-code GL account suggestions based on vendor history | `finance.payables.manage` |
+| POST | `/advanced-finance/payables/invoices/capture/:id/approve` | Approve and post captured invoice | `finance.payables.manage` |
+| POST | `/advanced-finance/payables/invoices/capture/:id/reject` | Reject captured invoice | `finance.payables.manage` |
+| POST | `/advanced-finance/payables/invoices/capture/:id/lines` | Add a line item manually to captured invoice | `finance.payables.manage` |
+| PATCH | `/advanced-finance/payables/invoices/capture/:id/lines/:lineId` | Update captured invoice line item | `finance.payables.manage` |
+| DELETE | `/advanced-finance/payables/invoices/capture/:id/lines/:lineId` | Delete captured invoice line item | `finance.payables.manage` |
 
 ## advanced-hr
 
