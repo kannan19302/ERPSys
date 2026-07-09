@@ -57,16 +57,19 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    to `SMOKE_ROUTES`). Manually exercise the batch's primary workflow once.
 7. **Review** the diff with the `code-reviewer` subagent (plus `security-auditor` for
    auth/tenancy/permission-sensitive changes).
-8. **Record**: update `.ai/CHANGELOG.md` and `.ai/MODULE_REGISTRY.md` (status, Growth
-   Tracker, move claim to Recently Completed); **regenerate the system-wide
-   functionality ledger** — `node scripts/feature-ledger.mjs` → `.ai/FEATURE_LEDGER.md`
-   (mandatory whenever any code shipped; commit it with the change; also the
-   duplicate-check source during planning); regenerate the daily sprint tracker
-   `node scripts/sprint-tracker.mjs` → `.ai/SPRINT_TRACKER.md`; log the focus module's
-   new count in `MODULE_FOCUS.md` § 6. Quote today's SPRINT_TRACKER row (features +
-   net LOC) and the 500-target progress in the final report.
-9. **Ship**: commit only your claimed scope, push — and the cycle MUST end with the
-   changes on `origin/main`. If on an `autopilot/*` branch: rebase onto origin/main,
+8. **Record (documentation gate — commit is FORBIDDEN until ALL done)**: updating only
+   CHANGELOG + MODULE_REGISTRY is a violation. Full checklist (AUTOPILOT Step 7):
+   CHANGELOG entry; MODULE_REGISTRY (status/Growth Tracker/claim → Recently Completed);
+   regenerate `feature-ledger.mjs`, `sprint-tracker.mjs`; MODULE_FOCUS § 6 row + § 7
+   contract statuses; MARKET_BENCHMARK `✅ SHIPPED` marks + discovery rows;
+   `feedback-scan.mjs` if a P1 error was fixed; `scorecard.mjs` if substantial;
+   release the lock (`claim.mjs release`); HANDBOOK only if conventions changed.
+   Self-check: `git status --short .ai/` must show the expected set. Quote today's
+   SPRINT_TRACKER row and 500-target progress in the final report.
+9. **Ship** (only after the step-8 documentation gate passes): stage code + the full
+   documentation set together — docs land in the SAME commit/push as the code, never
+   a separate afterthought. Commit only your claimed scope, push — and the cycle MUST
+   end with the changes on `origin/main`. If on an `autopilot/*` branch: rebase onto origin/main,
    re-run scoped typecheck, merge to main, push, delete the branch. Never leave
    shipped work stranded on a branch.
 10. **Refill & discover** (mandatory): run the Discovery Protocol in

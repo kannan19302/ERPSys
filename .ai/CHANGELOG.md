@@ -2,6 +2,12 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Documentation Gate — ALL docs updated before commit, shipped with the code
+
+**Accomplished**: `AUTOPILOT.md` Step 7 rewritten as a **documentation gate**: Step 8 (commit/push) is forbidden until every applicable item of a 10-row checklist is done — CHANGELOG, MODULE_REGISTRY, regenerated FEATURE_LEDGER + SPRINT_TRACKER (any code shipped), MODULE_FOCUS § 6 row + § 7 contract statuses (focus advanced), MARKET_BENCHMARK `✅ SHIPPED`/PARTIAL marks + rotation date (gap touched/discovery ran), regenerated FEEDBACK (P1 fix), SCORECARD (substantial), lock release, HANDBOOK (conventions changed). Updating only CHANGELOG+REGISTRY is now an explicit protocol violation. Mandatory self-check before shipping: `git status --short .ai/` must show the expected file set. Step 8 hardened: docs land **in the same commit/push as the code**, never as a separate afterthought. Start skill updated to match.
+
+**Why**: owner report — cycles were ending with only CHANGELOG.md and MODULE_REGISTRY.md updated while the other tracking files went stale; documentation is now an all-or-nothing gate that precedes commit+push.
+
 ## [2026-07-09] Pending-Work Quarantine — autonomous cycles never touch other sessions' work
 
 **Accomplished**: ADP now hard-quarantines pending work. `AUTOPILOT.md` Step 0 rule 5 rewritten: anything not created in the current session — uncommitted/untracked files, unclaimed half-built batches, unmerged `autopilot/*` branches, code behind stale locks — is **PENDING** and untouchable to autonomous cycles (no finishing, committing, stashing, reverting, reviewing, or `git add -A` sweeping). The agent logs it once as `[pending]` in Collab Board §2 and starts a NEW task in a non-overlapping sub-domain. P1 selection now explicitly excludes adopting other sessions' in-flight/orphaned work (only committed-on-main unfinished work not covered by locks/`[pending]` qualifies); stale-lock takeover releases the slug only, never adopts the previous holder's files; new absolute guardrail "Pending work is human-gated" — pending items are completed ONLY on explicit manual instruction (e.g. "complete pending work"). Start skill updated.

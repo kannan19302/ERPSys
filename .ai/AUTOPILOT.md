@@ -183,32 +183,42 @@ diff (`git diff`). Claude Code: use the `code-reviewer` subagent; touches to aut
 tenancy, permissions, file upload, or payments additionally require the
 `security-auditor` pass. Fix all Blockers and Warnings before shipping.
 
-## Step 7 — RECORD
+## Step 7 — RECORD (documentation gate — ALL items, then commit; not just CHANGELOG+REGISTRY)
 
-Per the Mandatory Tracking Convention — no exceptions:
-- Append a `CHANGELOG.md` entry (what + why + any follow-ups spawned).
-- **Regenerate the system-wide Functionality Ledger (mandatory whenever any code
-  shipped)**: `node scripts/feature-ledger.mjs` → `.ai/FEATURE_LEDGER.md` — the single
-  file listing every functionality in the entire ERP (method + route + summary +
-  permission, scanned from the code), existing and newly shipped alike. Commit it with
-  your change. This file is also the duplicate-check source in Step 3: search it before
-  building anything.
-- **Regenerate the daily sprint tracker**: `node scripts/sprint-tracker.mjs` →
-  `.ai/SPRINT_TRACKER.md` — per-day LOC delivered (+/−/net, code files only), commits,
-  features shipped (new endpoints), and modules touched, mined from git history. Commit
-  it with your change; quote today's row in the Step 10 report.
-- If the cycle advanced the focus module: append a progress row in
-  `MODULE_FOCUS.md` § 6 (take the module's count from the regenerated
-  `FEATURE_LEDGER.md`) and update any integration-contract statuses in § 7.
-- Update `MODULE_REGISTRY.md` (module row/status, Growth Tracker row if substantial,
-  move your Collab Board claim §1 → §3 Recently Completed with commit hash).
-- Update `HANDBOOK.md` only if a convention/architecture actually changed.
+**Step 8 (commit/push) is FORBIDDEN until every applicable checklist item below is
+done.** Updating only `CHANGELOG.md` and `MODULE_REGISTRY.md` is a protocol violation —
+the generated trackers and focus ledger are equally mandatory, and the documentation
+must land **in the same commit/push as the code** so `main` never shows code whose
+docs lag behind.
+
+**The checklist (tick every row; "n/a" only where the condition genuinely doesn't apply):**
+
+| # | Artifact | Action | When |
+|:--|:--|:--|:--|
+| 1 | `CHANGELOG.md` | Append entry (what + why + follow-ups) | always |
+| 2 | `MODULE_REGISTRY.md` | Module row/status; Growth Tracker row if substantial; move Collab Board claim §1 → §3 with commit hash | always |
+| 3 | `FEATURE_LEDGER.md` | Regenerate: `node scripts/feature-ledger.mjs` | any code shipped |
+| 4 | `SPRINT_TRACKER.md` | Regenerate: `node scripts/sprint-tracker.mjs` | any code shipped |
+| 5 | `MODULE_FOCUS.md` | § 6 progress row (count from #3) + § 7 contract statuses | focus module advanced |
+| 6 | `MARKET_BENCHMARK.md` | Mark built gaps `✅ SHIPPED <date>` / update `PARTIAL` notes; Step 9a discovery rows + Rotation Tracker date | gap touched / discovery ran |
+| 7 | `FEEDBACK.md` | Regenerate: `node scripts/feedback-scan.mjs` (your fix should clear its rows) | P1 error fixed |
+| 8 | `SCORECARD.md` | Regenerate: `node scripts/scorecard.mjs` | substantial batch |
+| 9 | `.ai/locks/<slug>.lock` | Release: `node scripts/claim.mjs release <slug>` (deletion committed) | always |
+| 10 | `HANDBOOK.md` | Update | only if a convention/architecture changed |
+
+**Self-check before Step 8**: run `git status --short .ai/` — for a feature batch it
+MUST show (at minimum) CHANGELOG, MODULE_REGISTRY, FEATURE_LEDGER, SPRINT_TRACKER,
+MODULE_FOCUS, and the released lock. If any expected file is missing from the status,
+go back and update it. Stage all of these **together with the code** — documentation
+is part of the batch, not a separate afterthought commit.
 
 ## Step 8 — SHIP
 
-Commit in small coherent units with conventional messages (`feat(module): ...`,
-`fix(module): ...`) and **push**. Stage only files within your claimed scope — never
-sweep in another agent's uncommitted work with `git add -A`.
+Runs ONLY after the Step 7 documentation gate passes — code and its documentation
+ship in the same commit/push, never separately. Commit in small coherent units with
+conventional messages (`feat(module): ...`, `fix(module): ...`) and **push**. Stage
+only files within your claimed scope plus the Step 7 documentation set — never sweep
+in another agent's uncommitted work with `git add -A`.
 
 **A cycle ends with the changes on `origin/main` — always.** If you worked on an
 `autopilot/*` branch (parallel mode), Step 8 includes merging it into `main`, pushing,
