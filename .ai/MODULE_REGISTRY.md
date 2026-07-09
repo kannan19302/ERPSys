@@ -63,7 +63,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-_(no active claims)_
+| antigravity-win2 | 2026-07-09T04:10:00Z | Finance: Multi-book/Multi-GAAP accounting (GLBook, book mapping rules, multi-book journals, balance sheets per book) | main | ACTIVE |
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
