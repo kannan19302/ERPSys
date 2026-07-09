@@ -163,10 +163,24 @@ export function verifyTenantToken(
 }
 
 /**
+ * Minimal structural types for an Express-like request/response, kept local
+ * so service-kit has zero runtime dependency on the `express` package while
+ * still type-checking against real Express objects (structurally compatible).
+ */
+export interface MinimalRequest {
+  path: string;
+  headers: Record<string, string | string[] | undefined>;
+  tenantContext?: TenantContextClaims;
+}
+export interface MinimalResponse {
+  status(code: number): MinimalResponse;
+  json(body: unknown): void;
+}
+export type NextFn = () => void;
+
+/**
  * Express-style middleware factory for extension services: verifies the token
  * and attaches `req.tenantContext`. Skips paths in `publicPaths` (health checks).
- * `resolveSecret` lets a service look up a per-app secret; a plain string uses
- * one secret.
  */
 export function tenantContextMiddleware(options: {
   secret: string;
@@ -174,7 +188,7 @@ export function tenantContextMiddleware(options: {
   publicPaths?: string[];
 }) {
   const publicPaths = new Set(options.publicPaths || []);
-  return (req: any, res: any, next: any) => {
+  return (req: MinimalRequest, res: MinimalResponse, next: NextFn) => {
     if (publicPaths.has(req.path)) return next();
     const token = req.headers?.[TENANT_TOKEN_HEADER];
     try {
@@ -182,11 +196,12 @@ export function tenantContextMiddleware(options: {
         expectedAppSlug: options.appSlug,
       });
       return next();
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Invalid tenant token';
       res.status(401).json({
         statusCode: 401,
         error: 'Unauthorized',
-        message: e?.message || 'Invalid tenant token',
+        message,
         app: options.appSlug,
       } satisfies ExtErrorEnvelope);
     }
@@ -232,12 +247,21 @@ export function assertScopes(
 }
 
 /**
+ * Structural stand-in for Nest's ExecutionContext — service-kit has no
+ * @nestjs/* dependency, but this shape matches it closely enough that a real
+ * ExecutionContext satisfies it at the call site.
+ */
+export interface MinimalExecutionContext {
+  switchToHttp(): { getRequest(): MinimalRequest };
+}
+
+/**
  * A Nest-compatible guard factory (implemented without importing @nestjs/*).
  * Usage in a service controller:  @UseGuards(RequireScopes('healthcare:write'))
  */
 export function RequireScopes(...scopes: string[]) {
   return class ScopeGuard {
-    canActivate(context: any): boolean {
+    canActivate(context: MinimalExecutionContext): boolean {
       const req = context.switchToHttp().getRequest();
       assertScopes(req.tenantContext, scopes, 'all');
       return true;
@@ -246,7 +270,7 @@ export function RequireScopes(...scopes: string[]) {
 }
 export function RequireAnyScope(...scopes: string[]) {
   return class AnyScopeGuard {
-    canActivate(context: any): boolean {
+    canActivate(context: MinimalExecutionContext): boolean {
       const req = context.switchToHttp().getRequest();
       assertScopes(req.tenantContext, scopes, 'any');
       return true;
@@ -326,7 +350,7 @@ export class CoreClient {
   }
 
   /** Read all/filtered records for one provisioned schema slug. */
-  async records(schemaSlug: string, filter?: CoreRecordFilter): Promise<any[]> {
+  async records(schemaSlug: string, filter?: CoreRecordFilter): Promise<Record<string, unknown>[]> {
     const qs = new URLSearchParams();
     if (filter?.where) qs.set('where', JSON.stringify(filter.where));
     if (filter?.limit) qs.set('limit', String(filter.limit));
@@ -340,24 +364,24 @@ export class CoreClient {
   }
 
   /** Fetch several schemas at once (one round trip). Returns a slug→rows map. */
-  async recordsBatch(schemaSlugs: string[]): Promise<Record<string, any[]>> {
+  async recordsBatch(schemaSlugs: string[]): Promise<Record<string, Record<string, unknown>[]>> {
     const res = await fetch(`${this.base()}/records:batch`, {
       method: 'POST',
       headers: this.headers(),
       body: JSON.stringify({ slugs: schemaSlugs }),
     });
     if (!res.ok) return Object.fromEntries(schemaSlugs.map((s) => [s, []]));
-    return (await res.json().catch(() => ({}))) as Record<string, any[]>;
+    return (await res.json().catch(() => ({}))) as Record<string, Record<string, unknown>[]>;
   }
 
   /** Create a record in a provisioned schema (requires a *:write* scope in the token). */
-  async createRecord(schemaSlug: string, data: Record<string, unknown>): Promise<any> {
+  async createRecord(schemaSlug: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
     const res = await fetch(`${this.base()}/records/${schemaSlug}`, {
       method: 'POST',
       headers: this.headers(),
       body: JSON.stringify({ data }),
     });
     if (!res.ok) throw new Error(`createRecord ${schemaSlug} failed: ${res.status}`);
-    return res.json();
+    return (await res.json()) as Record<string, unknown>;
   }
 }

@@ -77,16 +77,29 @@ export declare function verifyTenantToken(token: string, secret: string, opts?: 
     expectedAppSlug?: string;
 }): TenantContextClaims;
 /**
+ * Minimal structural types for an Express-like request/response, kept local
+ * so service-kit has zero runtime dependency on the `express` package while
+ * still type-checking against real Express objects (structurally compatible).
+ */
+export interface MinimalRequest {
+    path: string;
+    headers: Record<string, string | string[] | undefined>;
+    tenantContext?: TenantContextClaims;
+}
+export interface MinimalResponse {
+    status(code: number): MinimalResponse;
+    json(body: unknown): void;
+}
+export type NextFn = () => void;
+/**
  * Express-style middleware factory for extension services: verifies the token
  * and attaches `req.tenantContext`. Skips paths in `publicPaths` (health checks).
- * `resolveSecret` lets a service look up a per-app secret; a plain string uses
- * one secret.
  */
 export declare function tenantContextMiddleware(options: {
     secret: string;
     appSlug: string;
     publicPaths?: string[];
-}): (req: any, res: any, next: any) => any;
+}): (req: MinimalRequest, res: MinimalResponse, next: NextFn) => void;
 export declare function hasRole(claims: TenantContextClaims | undefined, role: string): boolean;
 export declare function hasScope(claims: TenantContextClaims | undefined, scope: string): boolean;
 /** Error carrying an HTTP status so services can map it to a 403 response. */
@@ -100,17 +113,27 @@ export declare class ExtForbiddenError extends Error {
  */
 export declare function assertScopes(claims: TenantContextClaims | undefined, required: string[], mode?: 'all' | 'any'): void;
 /**
+ * Structural stand-in for Nest's ExecutionContext — service-kit has no
+ * @nestjs/* dependency, but this shape matches it closely enough that a real
+ * ExecutionContext satisfies it at the call site.
+ */
+export interface MinimalExecutionContext {
+    switchToHttp(): {
+        getRequest(): MinimalRequest;
+    };
+}
+/**
  * A Nest-compatible guard factory (implemented without importing @nestjs/*).
  * Usage in a service controller:  @UseGuards(RequireScopes('healthcare:write'))
  */
 export declare function RequireScopes(...scopes: string[]): {
     new (): {
-        canActivate(context: any): boolean;
+        canActivate(context: MinimalExecutionContext): boolean;
     };
 };
 export declare function RequireAnyScope(...scopes: string[]): {
     new (): {
-        canActivate(context: any): boolean;
+        canActivate(context: MinimalExecutionContext): boolean;
     };
 };
 /** Sign a webhook body. Returns the value for WEBHOOK_SIGNATURE_HEADER. */
@@ -142,9 +165,9 @@ export declare class CoreClient {
     private base;
     private headers;
     /** Read all/filtered records for one provisioned schema slug. */
-    records(schemaSlug: string, filter?: CoreRecordFilter): Promise<any[]>;
+    records(schemaSlug: string, filter?: CoreRecordFilter): Promise<Record<string, unknown>[]>;
     /** Fetch several schemas at once (one round trip). Returns a slug→rows map. */
-    recordsBatch(schemaSlugs: string[]): Promise<Record<string, any[]>>;
+    recordsBatch(schemaSlugs: string[]): Promise<Record<string, Record<string, unknown>[]>>;
     /** Create a record in a provisioned schema (requires a *:write* scope in the token). */
-    createRecord(schemaSlug: string, data: Record<string, unknown>): Promise<any>;
+    createRecord(schemaSlug: string, data: Record<string, unknown>): Promise<Record<string, unknown>>;
 }

@@ -113,8 +113,6 @@ function verifyTenantToken(token, secret, opts = {}) {
 /**
  * Express-style middleware factory for extension services: verifies the token
  * and attaches `req.tenantContext`. Skips paths in `publicPaths` (health checks).
- * `resolveSecret` lets a service look up a per-app secret; a plain string uses
- * one secret.
  */
 function tenantContextMiddleware(options) {
     const publicPaths = new Set(options.publicPaths || []);
@@ -129,10 +127,11 @@ function tenantContextMiddleware(options) {
             return next();
         }
         catch (e) {
+            const message = e instanceof Error ? e.message : 'Invalid tenant token';
             res.status(401).json({
                 statusCode: 401,
                 error: 'Unauthorized',
-                message: e?.message || 'Invalid tenant token',
+                message,
                 app: options.appSlug,
             });
         }
@@ -281,7 +280,7 @@ class CoreClient {
         });
         if (!res.ok)
             throw new Error(`createRecord ${schemaSlug} failed: ${res.status}`);
-        return res.json();
+        return (await res.json());
     }
 }
 exports.CoreClient = CoreClient;
