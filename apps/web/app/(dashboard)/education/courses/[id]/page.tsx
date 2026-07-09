@@ -28,7 +28,7 @@ export default function CourseDetailPage() {
     if (!id) return;
     (async () => {
       try {
-        const res = await fetch('/api/v1/education/courses', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/education/courses', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) {
           const data = await res.json();
           const list = Array.isArray(data) ? data : data?.data || [];

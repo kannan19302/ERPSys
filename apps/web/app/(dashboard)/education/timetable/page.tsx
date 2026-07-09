@@ -40,8 +40,8 @@ export default function TimetablePage() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [tRes, cRes] = await Promise.all([
-          fetch('/api/v1/education/timetables', { headers }),
-          fetch('/api/v1/education/courses', { headers }),
+          fetch('/api/v1/ext/education/timetables', { headers }),
+          fetch('/api/v1/ext/education/courses', { headers }),
         ]);
         if (tRes.ok) { const d = await tRes.json(); setTimetables(Array.isArray(d) ? d : d?.data || []); }
         if (cRes.ok) { const d = await cRes.json(); setCourses(Array.isArray(d) ? d : d?.data || []); }
@@ -54,7 +54,7 @@ export default function TimetablePage() {
     if (!form.courseId || !form.room) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/education/timetables', {
+      await fetch('/api/v1/ext/education/timetables', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify(form),

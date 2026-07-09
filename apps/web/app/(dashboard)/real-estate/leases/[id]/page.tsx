@@ -10,7 +10,7 @@ const fmtCurrency = (n: number) => `$${Number(n).toLocaleString('en-US', { minim
 export default function LeaseDetailPage() {
   const params = useParams(); const id = params?.id as string;
   const [lease, setLease] = useState<Lease | null>(null); const [loading, setLoading] = useState(true);
-  useEffect(() => { if (!id) return; (async () => { try { const res = await fetch('/api/v1/real-estate/leases', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); const list = Array.isArray(d) ? d : d?.data || []; setLease(list.find((l: Lease) => l.id === id) || null); } } catch {} finally { setLoading(false); } })(); }, [id]);
+  useEffect(() => { if (!id) return; (async () => { try { const res = await fetch('/api/v1/ext/real-estate/leases', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); const list = Array.isArray(d) ? d : d?.data || []; setLease(list.find((l: Lease) => l.id === id) || null); } } catch {} finally { setLoading(false); } })(); }, [id]);
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
   if (!lease) return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)' }}><Key size={64} style={{ color: 'var(--color-text-tertiary)' }} /><h2>Lease Not Found</h2><Link href="/real-estate/leases"><button style={{ padding: '8px 16px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', cursor: 'pointer' }}><ArrowLeft size={14} /> Back</button></Link></div>;
 

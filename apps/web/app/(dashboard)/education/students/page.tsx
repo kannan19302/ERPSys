@@ -33,7 +33,7 @@ export default function StudentRegistryPage() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch('/api/v1/education/students', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+      const res = await fetch('/api/v1/ext/education/students', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
       if (res.ok) { const d = await res.json(); setStudents(Array.isArray(d) ? d : d?.data || []); }
     } catch { /* empty */ }
     finally { setLoading(false); }
@@ -46,7 +46,7 @@ export default function StudentRegistryPage() {
     if (!form.firstName || !form.lastName) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/education/students', {
+      await fetch('/api/v1/ext/education/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify(form),

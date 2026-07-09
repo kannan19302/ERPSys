@@ -17,10 +17,10 @@ export default function RealEstateDashboard() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [pRes, lRes, mRes, cRes] = await Promise.all([
-          fetch('/api/v1/real-estate/properties', { headers }),
-          fetch('/api/v1/real-estate/leases', { headers }),
-          fetch('/api/v1/real-estate/maintenances', { headers }),
-          fetch('/api/v1/real-estate/commissions', { headers }),
+          fetch('/api/v1/ext/real-estate/properties', { headers }),
+          fetch('/api/v1/ext/real-estate/leases', { headers }),
+          fetch('/api/v1/ext/real-estate/maintenances', { headers }),
+          fetch('/api/v1/ext/real-estate/commissions', { headers }),
         ]);
         const p = pRes.ok ? await pRes.json() : []; const l = lRes.ok ? await lRes.json() : [];
         const m = mRes.ok ? await mRes.json() : []; const c = cRes.ok ? await cRes.json() : [];

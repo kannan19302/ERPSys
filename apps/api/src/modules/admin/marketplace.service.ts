@@ -251,29 +251,37 @@ export class MarketplaceService {
       throw new ForbiddenException('This is a core platform module and cannot be uninstalled');
     }
 
-    const installed = await prisma.installedApp.findFirst({
+    // A tenant can hold several rows for the same app (a legacy gating row from
+    // when the module was code-resident plus the marketplace-bundle row), so
+    // tear down every match — otherwise uninstall leaves the app half-alive.
+    const installedRows = await prisma.installedApp.findMany({
       where: { tenantId, OR: [{ appSlug }, { appId: appSlug }, ...(app ? [{ appId: `marketplace:${app.id}` }] : [])] },
     });
-    if (!installed) throw new NotFoundException('App not installed');
+    if (installedRows.length === 0) throw new NotFoundException('App not installed');
 
-    // Bundle apps tear down provisioned rows + files; code-resident business modules
-    // simply drop the install row (data in real Prisma tables is preserved for re-install).
-    if (installed.provisioned || installed.installPath) {
-      try {
-        if (installed.provisioned) await this.provisioning.teardown(tenantId, installed.provisioned as any);
-      } finally {
-        if (installed.installPath) await this.bundleStore.removeDir(installed.installPath);
+    let filesRemoved = false;
+    for (const installed of installedRows) {
+      // Bundle apps tear down provisioned rows + files; code-resident business modules
+      // simply drop the install row (data in real Prisma tables is preserved for re-install).
+      if (installed.provisioned || installed.installPath) {
+        try {
+          if (installed.provisioned) await this.provisioning.teardown(tenantId, installed.provisioned as any);
+        } finally {
+          if (installed.installPath) {
+            await this.bundleStore.removeDir(installed.installPath);
+            filesRemoved = true;
+          }
+        }
       }
+      await prisma.installedApp.delete({ where: { id: installed.id } });
     }
-
-    await prisma.installedApp.delete({ where: { id: installed.id } });
     // Ext-gateway routes for this app 404 from the next request onward.
-    if (installed.appSlug) this.serviceRegistry?.invalidate(tenantId, installed.appSlug);
+    this.serviceRegistry?.invalidate(tenantId, appSlug);
     if (app) {
       await prisma.marketplaceApp.updateMany({ where: { slug: appSlug, installs: { gt: 0 } }, data: { installs: { decrement: 1 } } });
     }
 
-    return { success: true, filesRemoved: !!installed.installPath };
+    return { success: true, filesRemoved };
   }
 
   async getAppConfig(tenantId: string, appSlug: string) {

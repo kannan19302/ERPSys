@@ -48,8 +48,8 @@ export default function LibraryPage() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [bRes, tRes] = await Promise.all([
-          fetch('/api/v1/education/books', { headers }),
-          fetch('/api/v1/education/book-transactions', { headers }),
+          fetch('/api/v1/ext/education/books', { headers }),
+          fetch('/api/v1/ext/education/book-transactions', { headers }),
         ]);
         if (bRes.ok) { const d = await bRes.json(); setBooks(Array.isArray(d) ? d : d?.data || []); }
         if (tRes.ok) { const d = await tRes.json(); setTransactions(Array.isArray(d) ? d : d?.data || []); }
@@ -62,7 +62,7 @@ export default function LibraryPage() {
     if (!bookForm.title || !bookForm.isbn) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/education/books', {
+      await fetch('/api/v1/ext/education/books', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify({ ...bookForm, quantity: Number(bookForm.quantity) }),
@@ -77,7 +77,7 @@ export default function LibraryPage() {
     if (!checkoutForm.studentId || !checkoutForm.bookId) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/education/books/checkout', {
+      await fetch('/api/v1/ext/education/books/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify(checkoutForm),

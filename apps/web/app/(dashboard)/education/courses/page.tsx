@@ -31,7 +31,7 @@ export default function CourseCatalogPage() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch('/api/v1/education/courses', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+      const res = await fetch('/api/v1/ext/education/courses', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
       if (res.ok) { const d = await res.json(); setCourses(Array.isArray(d) ? d : d?.data || []); }
     } catch { /* empty */ }
     finally { setLoading(false); }
@@ -44,7 +44,7 @@ export default function CourseCatalogPage() {
     if (!form.name || !form.code) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/education/courses', {
+      await fetch('/api/v1/ext/education/courses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify({ ...form, credits: Number(form.credits) }),

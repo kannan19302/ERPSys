@@ -30,7 +30,7 @@ export default function StudentDetailPage() {
     if (!id) return;
     (async () => {
       try {
-        const res = await fetch('/api/v1/education/students', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/education/students', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) {
           const data = await res.json();
           const list = Array.isArray(data) ? data : data?.data || [];

@@ -33,7 +33,7 @@ export default function FeePaymentPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/v1/education/student-fees', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/education/student-fees', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const d = await res.json(); setFees(Array.isArray(d) ? d : d?.data || []); }
       } catch { /* empty */ }
       finally { setLoading(false); }
@@ -44,7 +44,7 @@ export default function FeePaymentPage() {
     if (!selectedFee || !paymentAmount) return;
     setProcessing(true);
     try {
-      const res = await fetch('/api/v1/education/student-fees/pay', {
+      const res = await fetch('/api/v1/ext/education/student-fees/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify({ studentFeeId: selectedFee, paymentAmount: Number(paymentAmount) }),

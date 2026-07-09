@@ -24,10 +24,10 @@ export default function EducationDashboard() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [sRes, cRes, fRes, bRes] = await Promise.all([
-          fetch('/api/v1/education/students', { headers }),
-          fetch('/api/v1/education/courses', { headers }),
-          fetch('/api/v1/education/fee-structures', { headers }),
-          fetch('/api/v1/education/books', { headers }),
+          fetch('/api/v1/ext/education/students', { headers }),
+          fetch('/api/v1/ext/education/courses', { headers }),
+          fetch('/api/v1/ext/education/fee-structures', { headers }),
+          fetch('/api/v1/ext/education/books', { headers }),
         ]);
         const students = sRes.ok ? await sRes.json() : [];
         const courses = cRes.ok ? await cRes.json() : [];

@@ -12,9 +12,9 @@ export default function PropertiesPage() {
   const [createOpen, setCreateOpen] = useState(false); const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'RESIDENTIAL', portfolio: '', address: '' });
 
-  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/real-estate/properties', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setProperties(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
+  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/ext/real-estate/properties', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setProperties(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
 
-  const handleCreate = async () => { if (!form.name) return; setCreating(true); try { await fetch('/api/v1/real-estate/properties', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
+  const handleCreate = async () => { if (!form.name) return; setCreating(true); try { await fetch('/api/v1/ext/real-estate/properties', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
 
   const filtered = properties.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()));
   const columns: Column<Property>[] = [

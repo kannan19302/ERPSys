@@ -13,8 +13,8 @@ export default function LeasesPage() {
   const [createOpen, setCreateOpen] = useState(false); const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ propertyId: '', tenantName: '', startDate: '', endDate: '', rentAmount: 0, securityDeposit: 0, billingFrequency: 'MONTHLY' });
 
-  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/real-estate/leases', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setLeases(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
-  const handleCreate = async () => { if (!form.propertyId || !form.tenantName) return; setCreating(true); try { await fetch('/api/v1/real-estate/leases', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({...form, rentAmount: Number(form.rentAmount), securityDeposit: Number(form.securityDeposit)}) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
+  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/ext/real-estate/leases', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setLeases(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
+  const handleCreate = async () => { if (!form.propertyId || !form.tenantName) return; setCreating(true); try { await fetch('/api/v1/ext/real-estate/leases', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({...form, rentAmount: Number(form.rentAmount), securityDeposit: Number(form.securityDeposit)}) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
 
   const totalRent = leases.reduce((a, l) => a + Number(l.rentAmount || 0), 0);
   const columns: Column<Lease>[] = [

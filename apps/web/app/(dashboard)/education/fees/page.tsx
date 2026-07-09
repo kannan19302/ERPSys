@@ -48,8 +48,8 @@ export default function FeeManagementPage() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [fRes, sfRes] = await Promise.all([
-          fetch('/api/v1/education/fee-structures', { headers }),
-          fetch('/api/v1/education/student-fees', { headers }),
+          fetch('/api/v1/ext/education/fee-structures', { headers }),
+          fetch('/api/v1/ext/education/student-fees', { headers }),
         ]);
         if (fRes.ok) { const d = await fRes.json(); setStructures(Array.isArray(d) ? d : d?.data || []); }
         if (sfRes.ok) { const d = await sfRes.json(); setStudentFees(Array.isArray(d) ? d : d?.data || []); }
@@ -62,7 +62,7 @@ export default function FeeManagementPage() {
     if (!form.name || !form.amount) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/education/fee-structures', {
+      await fetch('/api/v1/ext/education/fee-structures', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify({ ...form, amount: Number(form.amount) }),

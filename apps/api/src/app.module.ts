@@ -28,8 +28,6 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { StorageModule } from './modules/storage/storage.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
 import { HealthcareModule } from './modules/healthcare/healthcare.module';
-import { EducationModule } from './modules/education/education.module';
-import { RealEstateModule } from './modules/real-estate/real-estate.module';
 import { ApiPlatformModule } from './modules/api-platform/api-platform.module';
 import { ExtGatewayModule } from './modules/ext-gateway/ext-gateway.module';
 import { LocalizationModule } from './modules/localization/localization.module';
@@ -119,10 +117,10 @@ import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
     HealthcareModule,
 
     // Phase 13 — Education
-    EducationModule,
+    // Education: externalized to unierp-app-education (marketplace + ExtGateway)
 
     // Phase 14 — Real Estate
-    RealEstateModule,
+    // Real Estate: externalized to unierp-app-realestate (marketplace + ExtGateway)
 
     // Phase 15 — Field Service: externalized to unierp-app-fieldservice
     // (installed via marketplace; served through ExtGatewayModule)
