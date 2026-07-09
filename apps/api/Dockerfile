@@ -4,8 +4,11 @@ FROM node:22-alpine AS builder
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 WORKDIR /app
 
-# Install all workspace deps (cached on lockfile changes).
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
+# Install all workspace deps (cached on lockfile changes). .npmrc sets
+# node-linker=hoisted — without it pnpm falls back to its symlink-isolated
+# layout and apps/api's restrictive tsconfig typeRoots (root node_modules/@types
+# only) can't find hoisted-only type packages like @types/multer.
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json .npmrc ./
 COPY apps ./apps
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile
