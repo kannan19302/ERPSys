@@ -232,7 +232,13 @@ jobs:
           PORT: "3001"
           NODE_ENV: test
       - name: Wait for API
-        run: until curl -sf http://localhost:3001/health; do sleep 2; done
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3001/api/v1/health; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::API did not become healthy within 120s"
+          exit 1
       - run: pnpm --filter @unerp/web exec npx -y playwright install --with-deps chromium
       - name: Run e2e
         run: pnpm --filter @unerp/web exec npx -y playwright test
