@@ -2,6 +2,19 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Poly-repo split: industry apps externalized to dedicated GitHub repos (platform)
+
+**Scope**: Convert the monorepo to core + per-industry repos. Core ERP stays here; healthcare, education, real-estate, and field-service now live in `unierp-app-{healthcare,education,realestate,fieldservice}` as `declarative+service` marketplace apps with real-time install/uninstall.
+
+**Accomplished**:
+- **Extension platform (Phase 0)**: `@unerp/service-kit` package (tenant-context HS256 token, health endpoint, error envelope; distributed as a git-subdir dep with committed dist); manifest `runtime: 'declarative+service'` + `service` section + `apiVersion`; `ext-gateway` module proxying `/api/v1/ext/<slug>/*` to registered services with per-request 60s tenant tokens, gated on `InstalledApp` (uninstall → 404 on next request, no restart); install-time service health check; `InstalledApp.serviceConfig` column; `docs/EXTENSION_SERVICE_CONTRACT.md`; 12 gateway unit tests.
+- **Four industry repos**: each a standalone NestJS service with its own Postgres DB (`unierp_<app>`, DB-per-service), bundle manifest, Dockerfile/compose (joins the `unierp` network), CI/release workflows, `publish-bundle.mjs` (vendor API) and `migrate-from-core.mjs` (idempotent copy with count verification). Healthcare additionally: bundle source moved from `healthcare-bundles.ts` → repo builds 3.0.0 with `/ext/` URLs; new core `ext-callback` API lets services read their app's provisioned CustomRecords by echoing the tenant token; PHI audit moved to a service-local table; 308 legacy redirects `/api/v1/healthcare/*` → `/api/v1/ext/healthcare/*`.
+- **Core removals**: four module dirs deleted from `apps/api`, Prisma models extracted (tables archived `_archived_*` via migrations), web pages repointed to `/ext/`, marketplace seed no longer ships healthcare bundles.
+- **Fixes found en route**: tenant-scope Prisma extension now excludes global marketplace catalog models (AppVendor/AppPackage/AppBundle/MarketplaceApp have no `tenantId`); `uninstallApp` tears down ALL InstalledApp rows for a slug (legacy gating row + marketplace row); dev `db:push` made non-interactive.
+- **Verification**: E2E per app — publish → install (health-checked) → CRUD through gateway → uninstall (immediate 404) → re-install (data intact). Healthcare smart endpoints compute from core CustomRecords via ext-callback; FHIR + legacy redirect verified. Typecheck clean; full API suite 2159/2159 passing.
+
+**Caution**: cutover order matters — run `migrate-from-core` BEFORE the archive migration reaches an environment (dev-only seed rows for healthcare were lost to `db push --accept-data-loss`; service DBs start fresh in dev).
+
 ## [2026-07-09] Finance: Spend Management, Allocations & Multi-Book E2E Verification
 
 **Scope**: Finance & Accounting focus module — E2E smoke gate verification.

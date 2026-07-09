@@ -62,6 +62,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
+| antigravity-ide | 2026-07-09T17:11Z | finance-big-phase: 8 batches (Tax Engine, Treasury, AP Intelligence, AR Collections, Fixed Assets, FP&A, Revenue Billing, Compliance Controls) — `advanced-finance.controller.ts`, schema.prisma, new services, new Next.js pages | main | 🔄 IN PROGRESS |
 
 
 
@@ -236,12 +237,18 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 ## Industry Extension Modules (Phase 12–15)
 
-| # | Module | Package Path | Status | Phase | Dependencies | Target Industries |
+> **Poly-repo (2026-07-09)**: all four industry modules were externalized to dedicated
+> GitHub repos as `declarative+service` marketplace apps. Each ships a bundle plus a
+> standalone NestJS service with its own database, reached via core's extension gateway
+> at `/api/v1/ext/<slug>/*` (see `docs/EXTENSION_SERVICE_CONTRACT.md`). Install/uninstall
+> is real-time through the marketplace — no core rebuild.
+
+| # | Module | Repo | Status | Phase | Dependencies | Target Industries |
 |:--|:---|:---|:---|:---|:---|:---|
-| 22 | **Healthcare** | `apps/api/src/modules/healthcare` | 🟢 ACTIVE | 12 | hr, inventory, finance | Hospitals, Clinics, Pharma |
-| 23 | **Education** | `apps/api/src/modules/education` | 🟢 ACTIVE | 13 | hr, finance, communication | Schools, Universities |
-| 24 | **Real Estate** | `apps/api/src/modules/real-estate` | 🟢 ACTIVE | 14 | finance, crm, projects | Property, Construction |
-| 25 | **Field Service** | `apps/api/src/modules/field-service` | 🟢 ACTIVE | 15 | hr, inventory, projects | Maintenance, Utilities |
+| 22 | **Healthcare** | 📦 [unierp-app-healthcare](https://github.com/kannan19302/unierp-app-healthcare) (svc :4104) | 🟢 ACTIVE (ext) | 12 | ext-gateway, ext-callback | Hospitals, Clinics, Pharma |
+| 23 | **Education** | 📦 [unierp-app-education](https://github.com/kannan19302/unierp-app-education) (svc :4101) | 🟢 ACTIVE (ext) | 13 | ext-gateway | Schools, Universities |
+| 24 | **Real Estate** | 📦 [unierp-app-realestate](https://github.com/kannan19302/unierp-app-realestate) (svc :4102) | 🟢 ACTIVE (ext) | 14 | ext-gateway | Property, Construction |
+| 25 | **Field Service** | 📦 [unierp-app-fieldservice](https://github.com/kannan19302/unierp-app-fieldservice) (svc :4103) | 🟢 ACTIVE (ext) | 15 | ext-gateway | Maintenance, Utilities |
 
 ---
 

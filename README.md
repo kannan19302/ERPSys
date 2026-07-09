@@ -52,13 +52,19 @@ A composable, multi-tenant, industry-agnostic ERP system with 33 production-read
 | **DevOps** | CI/CD, monitoring, logging, APM |
 | **AI** | AI copilot, intelligent suggestions |
 
-### Industry Extensions
-| Module | Description |
-|:---|:---|
-| **Healthcare** | Patient records, clinical workflows, SMART/FHIR |
-| **Education** | Student management, courses, grading, LMS |
-| **Real Estate** | Property management, lease accounting |
-| **Field Service** | Dispatch, work orders, mobile technician workflows |
+### Industry Extensions (poly-repo)
+
+Industry apps live in **dedicated GitHub repos** and are installed/uninstalled in real time
+through the marketplace — each ships a declarative bundle plus a standalone service with its
+own database, reached via core's extension gateway at `/api/v1/ext/<slug>/*`
+(contract: [docs/EXTENSION_SERVICE_CONTRACT.md](docs/EXTENSION_SERVICE_CONTRACT.md)).
+
+| Module | Repo | Description |
+|:---|:---|:---|
+| **Healthcare** | [unierp-app-healthcare](https://github.com/kannan19302/unierp-app-healthcare) | Patient records, clinical workflows, SMART/FHIR |
+| **Education** | [unierp-app-education](https://github.com/kannan19302/unierp-app-education) | Student management, courses, grading, LMS |
+| **Real Estate** | [unierp-app-realestate](https://github.com/kannan19302/unierp-app-realestate) | Property management, lease accounting |
+| **Field Service** | [unierp-app-fieldservice](https://github.com/kannan19302/unierp-app-fieldservice) | Dispatch, work orders, mobile technician workflows |
 
 ### Builder Studio
 | Module | Description |

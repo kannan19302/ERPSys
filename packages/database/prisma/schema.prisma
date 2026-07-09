@@ -9128,4 +9128,781 @@ model BudgetReallocationLine {
   @@map("budget_reallocation_lines")
 }
 
+// ════════════════════════════════════════════════
+// BATCH 1 — TAX ENGINE DEEP-DIVE
+// ════════════════════════════════════════════════
+
+model TaxJurisdiction {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  country     String
+  state       String?
+  county      String?
+  taxType     String   @map("tax_type")   // VAT, GST, HST, SALES_TAX, SERVICE_TAX
+  rate        Decimal  @db.Decimal(8, 4)
+  effectiveFrom DateTime @map("effective_from")
+  effectiveTo   DateTime? @map("effective_to")
+  isActive    Boolean  @default(true) @map("is_active")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  exemptionCertificates TaxExemptionCertificate[]
+
+  @@index([tenantId])
+  @@index([tenantId, country])
+  @@map("tax_jurisdictions")
+}
+
+model TaxExemptionCertificate {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  entityType       String    @map("entity_type")  // CUSTOMER, VENDOR
+  entityId         String    @map("entity_id")
+  jurisdictionId   String    @map("jurisdiction_id")
+  certificateNumber String   @map("certificate_number")
+  exemptionType    String    @map("exemption_type")  // FULL, PARTIAL, RESALE
+  exemptionPct     Decimal?  @db.Decimal(8, 4) @map("exemption_pct")
+  validFrom        DateTime  @map("valid_from")
+  validTo          DateTime? @map("valid_to")
+  documentUrl      String?   @map("document_url")
+  status           String    @default("ACTIVE")  // ACTIVE, EXPIRED, REVOKED
+  notes            String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  jurisdiction TaxJurisdiction @relation(fields: [jurisdictionId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([jurisdictionId])
+  @@map("tax_exemption_certificates")
+}
+
+model TaxReconciliation {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  taxType     String   @map("tax_type")
+  outputTax   Decimal  @db.Decimal(15, 2) @map("output_tax")   // tax collected on sales
+  inputTax    Decimal  @db.Decimal(15, 2) @map("input_tax")    // tax paid on purchases
+  netLiability Decimal @db.Decimal(15, 2) @map("net_liability")
+  paymentsMade Decimal @db.Decimal(15, 2) @default(0) @map("payments_made")
+  difference  Decimal  @db.Decimal(15, 2)
+  status      String   @default("DRAFT")  // DRAFT, REVIEWED, FINAL
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, periodStart, periodEnd])
+  @@map("tax_reconciliations")
+}
+
+model WithholdingCertificate {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  vendorId         String    @map("vendor_id")
+  year             Int
+  withholdingTaxId String?   @map("withholding_tax_id")
+  grossAmount      Decimal   @db.Decimal(15, 2) @map("gross_amount")
+  taxWithheld      Decimal   @db.Decimal(15, 2) @map("tax_withheld")
+  certificateNumber String?  @map("certificate_number")
+  status           String    @default("DRAFT")   // DRAFT, ISSUED, FILED
+  issuedAt         DateTime? @map("issued_at")
+  filedAt          DateTime? @map("filed_at")
+  documentUrl      String?   @map("document_url")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("withholding_certificates")
+}
+
+model AmendedTaxFiling {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  originalFilingId String   @map("original_filing_id")
+  amendedReason   String   @map("amended_reason")
+  changes         Json     @default("{}")
+  refundAmount    Decimal? @db.Decimal(15, 2) @map("refund_amount")
+  additionalTax   Decimal? @db.Decimal(15, 2) @map("additional_tax")
+  status          String   @default("DRAFT")   // DRAFT, SUBMITTED, ACCEPTED, REJECTED
+  submittedAt     DateTime? @map("submitted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([originalFilingId])
+  @@map("amended_tax_filings")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 2 — TREASURY MANAGEMENT DEEPENING
+// ════════════════════════════════════════════════
+
+model TreasuryPosition {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  positionDate    DateTime @map("position_date")
+  currency        String   @default("USD")
+  bookBalance     Decimal  @db.Decimal(15, 2) @map("book_balance")
+  availableBalance Decimal @db.Decimal(15, 2) @map("available_balance")
+  floatAmount     Decimal  @db.Decimal(15, 2) @default(0) @map("float_amount")
+  bankAccountId   String?  @map("bank_account_id")
+  source          String   @default("SYSTEM")  // SYSTEM, MANUAL
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, positionDate])
+  @@map("treasury_positions")
+}
+
+model HedgeInstrument {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  instrumentType  String    @map("instrument_type")  // FORWARD, OPTION, SWAP, FUTURE
+  name            String
+  counterparty    String?
+  notionalAmount  Decimal   @db.Decimal(15, 2) @map("notional_amount")
+  currency        String
+  strikeRate      Decimal?  @db.Decimal(12, 6) @map("strike_rate")
+  premium         Decimal?  @db.Decimal(15, 2)
+  tradeDate       DateTime  @map("trade_date")
+  maturityDate    DateTime  @map("maturity_date")
+  settlementDate  DateTime? @map("settlement_date")
+  marketValue     Decimal?  @db.Decimal(15, 2) @map("market_value")
+  unrealizedPnl   Decimal?  @db.Decimal(15, 2) @map("unrealized_pnl")
+  status          String    @default("OPEN")  // OPEN, MATURED, SETTLED, CANCELLED
+  hedgedItemRef   String?   @map("hedged_item_ref")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("hedge_instruments")
+}
+
+model DebtFacility {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  name            String
+  facilityType    String    @map("facility_type")  // REVOLVING, TERM_LOAN, LC, OVERDRAFT
+  lender          String?
+  currency        String    @default("USD")
+  facilityLimit   Decimal   @db.Decimal(15, 2) @map("facility_limit")
+  drawnAmount     Decimal   @db.Decimal(15, 2) @default(0) @map("drawn_amount")
+  availableAmount Decimal   @db.Decimal(15, 2) @default(0) @map("available_amount")
+  interestRate    Decimal   @db.Decimal(8, 4) @map("interest_rate")
+  rateType        String    @default("FIXED") @map("rate_type")  // FIXED, FLOATING
+  startDate       DateTime  @map("start_date")
+  maturityDate    DateTime  @map("maturity_date")
+  covenants       Json      @default("[]")
+  status          String    @default("ACTIVE")  // ACTIVE, EXPIRED, CANCELLED
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("debt_facilities")
+}
+
+model InvestmentHolding {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  securityName    String    @map("security_name")
+  ticker          String?
+  assetClass      String    @map("asset_class")   // EQUITY, FIXED_INCOME, MONEY_MARKET, MUTUAL_FUND
+  units           Decimal   @db.Decimal(15, 4)
+  costBasis       Decimal   @db.Decimal(15, 2) @map("cost_basis")
+  currentPrice    Decimal?  @db.Decimal(15, 4) @map("current_price")
+  currentValue    Decimal?  @db.Decimal(15, 2) @map("current_value")
+  unrealizedPnl   Decimal?  @db.Decimal(15, 2) @map("unrealized_pnl")
+  purchaseDate    DateTime  @map("purchase_date")
+  maturityDate    DateTime? @map("maturity_date")
+  currency        String    @default("USD")
+  custodian       String?
+  glAccountId     String?   @map("gl_account_id")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("investment_holdings")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 3 — ACCOUNTS PAYABLE INTELLIGENCE
+// ════════════════════════════════════════════════
+
+model VendorStatement {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  vendorId     String   @map("vendor_id")
+  periodStart  DateTime @map("period_start")
+  periodEnd    DateTime @map("period_end")
+  openingBalance Decimal @db.Decimal(15, 2) @map("opening_balance")
+  closingBalance Decimal @db.Decimal(15, 2) @map("closing_balance")
+  lineItems    Json     @default("[]") @map("line_items")
+  status       String   @default("IMPORTED")  // IMPORTED, RECONCILED, DISPUTED
+  notes        String?
+  importedAt   DateTime @default(now()) @map("imported_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("vendor_statements")
+}
+
+model APDuplicateFlag {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  invoiceId         String   @map("invoice_id")
+  duplicateInvoiceId String?  @map("duplicate_invoice_id")
+  matchScore        Decimal  @db.Decimal(5, 2) @map("match_score")
+  matchCriteria     Json     @default("{}") @map("match_criteria")
+  status            String   @default("PENDING")  // PENDING, CONFIRMED_DUPLICATE, FALSE_POSITIVE, RESOLVED
+  reviewedBy        String?  @map("reviewed_by")
+  reviewedAt        DateTime? @map("reviewed_at")
+  notes             String?
+  detectedAt        DateTime @default(now()) @map("detected_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("ap_duplicate_flags")
+}
+
+model APApprovalPolicy {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  name           String
+  thresholdMin   Decimal? @db.Decimal(15, 2) @map("threshold_min")
+  thresholdMax   Decimal? @db.Decimal(15, 2) @map("threshold_max")
+  approverRoles  Json     @default("[]") @map("approver_roles")  // array of role IDs/names
+  requiresTwo    Boolean  @default(false) @map("requires_two")
+  departmentCode String?  @map("department_code")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("ap_approval_policies")
+}
+
+model GrniRecord {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  purchaseOrderId String    @map("purchase_order_id")
+  receiptId       String?   @map("receipt_id")
+  vendorId        String    @map("vendor_id")
+  productId       String?   @map("product_id")
+  receivedQty     Decimal   @db.Decimal(15, 4) @map("received_qty")
+  unitCost        Decimal   @db.Decimal(15, 4) @map("unit_cost")
+  totalValue      Decimal   @db.Decimal(15, 2) @map("total_value")
+  receivedDate    DateTime  @map("received_date")
+  invoicedDate    DateTime? @map("invoiced_date")
+  invoiceId       String?   @map("invoice_id")
+  status          String    @default("PENDING")  // PENDING, PARTIALLY_INVOICED, INVOICED, CLEARED
+  agingDays       Int?      @map("aging_days")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([vendorId])
+  @@map("grni_records")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 4 — AR & COLLECTIONS INTELLIGENCE
+// ════════════════════════════════════════════════
+
+model ARPromiseToPay {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  customerId  String    @map("customer_id")
+  invoiceId   String    @map("invoice_id")
+  promisedDate DateTime @map("promised_date")
+  promisedAmount Decimal @db.Decimal(15, 2) @map("promised_amount")
+  receivedAmount Decimal @db.Decimal(15, 2) @default(0) @map("received_amount")
+  status      String   @default("PROMISED")  // PROMISED, KEPT, BROKEN, PARTIAL
+  collectorId String?  @map("collector_id")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, customerId])
+  @@index([invoiceId])
+  @@map("ar_promises_to_pay")
+}
+
+model ARDispute {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  invoiceId       String    @map("invoice_id")
+  customerId      String    @map("customer_id")
+  reason          String
+  disputedAmount  Decimal   @db.Decimal(15, 2) @map("disputed_amount")
+  resolvedAmount  Decimal?  @db.Decimal(15, 2) @map("resolved_amount")
+  openedBy        String    @map("opened_by")
+  assignedTo      String?   @map("assigned_to")
+  linkedCreditNoteId String? @map("linked_credit_note_id")
+  status          String    @default("OPEN")  // OPEN, IN_REVIEW, RESOLVED, ESCALATED
+  resolvedAt      DateTime? @map("resolved_at")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, customerId])
+  @@index([invoiceId])
+  @@map("ar_disputes")
+}
+
+model BadDebtProvision {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  period          String   // e.g. "2026-Q2"
+  method          String   @default("AGING_BUCKET")  // AGING_BUCKET, SPECIFIC_ID, PERCENTAGE_OF_REVENUE
+  provisionPct    Decimal? @db.Decimal(8, 4) @map("provision_pct")
+  provisionAmount Decimal  @db.Decimal(15, 2) @map("provision_amount")
+  details         Json     @default("[]")
+  glJournalId     String?  @map("gl_journal_id")
+  status          String   @default("DRAFT")  // DRAFT, POSTED
+  postedAt        DateTime? @map("posted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, period])
+  @@map("bad_debt_provisions")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 5 — FIXED ASSET DEEPENING
+// ════════════════════════════════════════════════
+
+model AssetInsurance {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  assetId        String    @map("asset_id")
+  policyNumber   String    @map("policy_number")
+  insurer        String
+  coverageType   String    @map("coverage_type")  // FIRE, THEFT, ALL_RISK, LIABILITY
+  coverageAmount Decimal   @db.Decimal(15, 2) @map("coverage_amount")
+  premium        Decimal   @db.Decimal(15, 2)
+  startDate      DateTime  @map("start_date")
+  renewalDate    DateTime  @map("renewal_date")
+  documentUrl    String?   @map("document_url")
+  status         String    @default("ACTIVE")  // ACTIVE, EXPIRED, CANCELLED
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_insurances")
+}
+
+model AssetImpairment {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  assetId           String    @map("asset_id")
+  testDate          DateTime  @map("test_date")
+  carryingAmount    Decimal   @db.Decimal(15, 2) @map("carrying_amount")
+  recoverableAmount Decimal   @db.Decimal(15, 2) @map("recoverable_amount")
+  impairmentLoss    Decimal   @db.Decimal(15, 2) @map("impairment_loss")
+  reason            String?
+  glJournalId       String?   @map("gl_journal_id")
+  status            String    @default("DRAFT")  // DRAFT, POSTED
+  postedAt          DateTime? @map("posted_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_impairments")
+}
+
+model CapitalProject {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  code            String
+  name            String
+  description     String?
+  budgetAmount    Decimal   @db.Decimal(15, 2) @map("budget_amount")
+  actualSpend     Decimal   @db.Decimal(15, 2) @default(0) @map("actual_spend")
+  startDate       DateTime  @map("start_date")
+  expectedCompletion DateTime? @map("expected_completion")
+  completedDate   DateTime? @map("completed_date")
+  costGlAccountId String?   @map("cost_gl_account_id")
+  status          String    @default("PLANNED")  // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  convertedAssets Json      @default("[]") @map("converted_assets")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  costs CapitalProjectCost[]
+
+  @@index([tenantId])
+  @@map("capital_projects")
+}
+
+model CapitalProjectCost {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  capitalProjectId String   @map("capital_project_id")
+  costDate         DateTime @map("cost_date")
+  description      String?
+  costType         String   @map("cost_type")  // MATERIAL, LABOR, CONTRACTOR, OTHER
+  amount           Decimal  @db.Decimal(15, 2)
+  vendorId         String?  @map("vendor_id")
+  invoiceId        String?  @map("invoice_id")
+  glAccountId      String?  @map("gl_account_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  capitalProject CapitalProject @relation(fields: [capitalProjectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([capitalProjectId])
+  @@map("capital_project_costs")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 6 — FP&A DEEPENING
+// ════════════════════════════════════════════════
+
+model RollingForecast {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
+  period      String   // e.g. "2026-07"
+  accountId   String   @map("account_id")
+  costCenterId String? @map("cost_center_id")
+  amount      Decimal  @db.Decimal(15, 2)
+  source      String   @default("FORECAST")  // ACTUAL, FORECAST
+  notes       String?
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, period])
+  @@unique([tenantId, orgId, period, accountId, costCenterId, source])
+  @@map("rolling_forecasts")
+}
+
+model HeadcountPlan {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  orgId          String   @map("org_id")
+  departmentId   String?  @map("department_id")
+  roleName       String   @map("role_name")
+  period         String   // "2026-07"
+  plannedHc      Int      @map("planned_hc")
+  loadedCostRate Decimal  @db.Decimal(15, 2) @map("loaded_cost_rate")
+  projectedCost  Decimal  @db.Decimal(15, 2) @map("projected_cost")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, period])
+  @@map("headcount_plans")
+}
+
+model BudgetComment {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  budgetId    String   @map("budget_id")
+  accountId   String?  @map("account_id")
+  period      String?  // "2026-07"
+  authorId    String   @map("author_id")
+  text        String
+  parentId    String?  @map("parent_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  replies BudgetComment[] @relation("CommentReplies")
+  parent  BudgetComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+
+  @@index([tenantId])
+  @@index([budgetId])
+  @@map("budget_comments")
+}
+
+model ManagementReport {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
+  name        String
+  period      String   // "2026-Q2"
+  sections    Json     @default("[]")  // array of {title, type: PNL|BS|CF|KPI|TEXT, content}
+  status      String   @default("DRAFT")  // DRAFT, PUBLISHED
+  publishedAt DateTime? @map("published_at")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("management_reports")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 7 — REVENUE & BILLING INTELLIGENCE
+// ════════════════════════════════════════════════
+
+model BillingRule {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  name            String
+  ruleType        String    @map("rule_type")  // FIXED_FEE, TIME_AND_MATERIAL, MILESTONE, RETAINER
+  customerId      String?   @map("customer_id")
+  projectId       String?   @map("project_id")
+  contractId      String?   @map("contract_id")
+  currency        String    @default("USD")
+  billingCycle    String?   @map("billing_cycle")  // MONTHLY, QUARTERLY, ON_MILESTONE
+  fixedAmount     Decimal?  @db.Decimal(15, 2) @map("fixed_amount")
+  hourlyRate      Decimal?  @db.Decimal(15, 4) @map("hourly_rate")
+  glRevenueAccountId String? @map("gl_revenue_account_id")
+  isActive        Boolean   @default(true) @map("is_active")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  milestones BillingMilestone[]
+
+  @@index([tenantId])
+  @@map("billing_rules")
+}
+
+model BillingMilestone {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  billingRuleId String    @map("billing_rule_id")
+  name          String
+  description   String?
+  dueDate       DateTime? @map("due_date")
+  amount        Decimal   @db.Decimal(15, 2)
+  completionPct Decimal   @db.Decimal(5, 2) @default(0) @map("completion_pct")
+  status        String    @default("PENDING")  // PENDING, COMPLETED, INVOICED
+  invoiceId     String?   @map("invoice_id")
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  billingRule BillingRule @relation(fields: [billingRuleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([billingRuleId])
+  @@map("billing_milestones")
+}
+
+model ContractModification {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  contractId        String   @map("contract_id")
+  modificationDate  DateTime @map("modification_date")
+  modType           String   @map("mod_type")  // SCOPE_CHANGE, PRICE_CHANGE, EXTENSION, TERMINATION
+  originalValue     Decimal  @db.Decimal(15, 2) @map("original_value")
+  newValue          Decimal  @db.Decimal(15, 2) @map("new_value")
+  cumulativeAdjustment Decimal @db.Decimal(15, 2) @default(0) @map("cumulative_adjustment")
+  revenueScheduleId String?  @map("revenue_schedule_id")
+  glJournalId       String?  @map("gl_journal_id")
+  notes             String?
+  status            String   @default("DRAFT")  // DRAFT, APPROVED, POSTED
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([contractId])
+  @@map("contract_modifications")
+}
+
+model DeferredRevenueRollForward {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  period          String   // "2026-07"
+  openingBalance  Decimal  @db.Decimal(15, 2) @map("opening_balance")
+  addedAmount     Decimal  @db.Decimal(15, 2) @default(0) @map("added_amount")    // new deferrals
+  recognizedAmount Decimal @db.Decimal(15, 2) @default(0) @map("recognized_amount")
+  adjustments     Decimal  @db.Decimal(15, 2) @default(0)
+  closingBalance  Decimal  @db.Decimal(15, 2) @map("closing_balance")
+  generatedAt     DateTime @default(now()) @map("generated_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, period])
+  @@unique([tenantId, orgId, period])
+  @@map("deferred_revenue_roll_forwards")
+}
+
+model TieredPricingTable {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  currency    String   @default("USD")
+  unit        String   @default("unit")  // e.g. API calls, GB, seats
+  tiers       Json     @default("[]")    // [{from, to, ratePerUnit}]
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("tiered_pricing_tables")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 8 — COMPLIANCE, CONTROLS & AUDIT
+// ════════════════════════════════════════════════
+
+model FinancialControl {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  controlCode   String   @map("control_code")
+  name          String
+  description   String?
+  riskLevel     String   @default("MEDIUM") @map("risk_level")  // LOW, MEDIUM, HIGH, CRITICAL
+  controlType   String   @map("control_type")  // PREVENTIVE, DETECTIVE, CORRECTIVE
+  category      String?  // FINANCIAL_REPORTING, OPERATIONS, COMPLIANCE
+  ownerId       String?  @map("owner_id")
+  testFrequency String   @default("QUARTERLY") @map("test_frequency")  // MONTHLY, QUARTERLY, ANNUALLY
+  procedure     String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  tests ControlTest[]
+
+  @@index([tenantId])
+  @@unique([tenantId, controlCode])
+  @@map("financial_controls")
+}
+
+model ControlTest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  controlId       String    @map("control_id")
+  testDate        DateTime  @map("test_date")
+  testerId        String    @map("tester_id")
+  result          String    // EFFECTIVE, DEFICIENT, MATERIAL_WEAKNESS, NOT_TESTED
+  findingNotes    String?   @map("finding_notes")
+  remediationPlan String?   @map("remediation_plan")
+  remediationDue  DateTime? @map("remediation_due")
+  evidenceUrls    Json      @default("[]") @map("evidence_urls")
+  reviewedBy      String?   @map("reviewed_by")
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  control FinancialControl @relation(fields: [controlId], references: [id])
+
+  @@index([tenantId])
+  @@index([controlId])
+  @@map("control_tests")
+}
+
+model SodConflict {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  userId           String    @map("user_id")
+  roleId           String?   @map("role_id")
+  permission1      String    @map("permission_1")
+  permission2      String    @map("permission_2")
+  riskLevel        String    @default("MEDIUM") @map("risk_level")  // LOW, MEDIUM, HIGH
+  detectedAt       DateTime  @default(now()) @map("detected_at")
+  status           String    @default("OPEN")  // OPEN, MITIGATED, ACCEPTED, RESOLVED
+  mitigationNotes  String?   @map("mitigation_notes")
+  resolvedBy       String?   @map("resolved_by")
+  resolvedAt       DateTime? @map("resolved_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("sod_conflicts")
+}
+
+model AuditConfirmation {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  confirmationType String    @map("confirmation_type")  // BANK, CUSTOMER, VENDOR, LEGAL
+  entityType       String    @map("entity_type")
+  entityId         String    @map("entity_id")
+  entityName       String    @map("entity_name")
+  requestDate      DateTime  @map("request_date")
+  responseDate     DateTime? @map("response_date")
+  balanceAsOf      DateTime  @map("balance_as_of")
+  confirmedAmount  Decimal?  @db.Decimal(15, 2) @map("confirmed_amount")
+  bookAmount       Decimal?  @db.Decimal(15, 2) @map("book_amount")
+  difference       Decimal?  @db.Decimal(15, 2)
+  status           String    @default("SENT")  // SENT, RESPONDED, RECONCILED, EXCEPTION, CANCELLED
+  notes            String?
+  documentUrl      String?   @map("document_url")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("audit_confirmations")
+}
+
+model PeriodCertification {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  period          String    // "2026-Q2"
+  certifierRole   String    @map("certifier_role")  // CFO, CONTROLLER, VP_FINANCE
+  certifierId     String    @map("certifier_id")
+  certifierName   String    @map("certifier_name")
+  status          String    @default("PENDING")  // PENDING, CERTIFIED, REJECTED
+  statement       String?   // digital sign-off text
+  ipAddress       String?   @map("ip_address")
+  certifiedAt     DateTime? @map("certified_at")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, period])
+  @@map("period_certifications")
+}
+
+model SodRuleDefinition {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  permission1 String   @map("permission_1")
+  permission2 String   @map("permission_2")
+  riskLevel   String   @default("MEDIUM") @map("risk_level")
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@unique([tenantId, permission1, permission2])
+  @@map("sod_rule_definitions")
+}
+
+
 
