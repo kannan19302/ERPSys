@@ -80,6 +80,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | AP three-way matching (auto-match PO → GR → vendor invoice, tolerance rules, exception queue) | NetSuite, SAP S/4HANA, Dynamics 365, Odoo | MISSING — NetSuite: configurable quantity/price tolerance per vendor, auto-post when matched, exception workflow with re-routing; SAP: match by GR line, LIV posting, price variance GL account | H | M |
 | Financial statement drill-through (click P&L/BS totals → underlying journal entries → source documents) | NetSuite SuiteAnalytics, Sage Intacct, Dynamics 365 | WEAK-UX — GL drilldown endpoint exists; no clickable P&L/BS report with drill path to journal lines and source transactions in one UX flow | H | S |
 | Vendor payment run (batch APR: select open invoices, auto-generate payment batch, print remittances, post payment GL entries) | SAP, NetSuite, Dynamics, Odoo | PARTIAL (individual invoice payment exists; no batch payment run with bank file / ACH export and remittance advice generation) | H | M |
+| Multi-book / multi-GAAP accounting (support multiple standards like US GAAP, IFRS, local tax books in parallel) | NetSuite Multi-Book, Sage Intacct | 🟢 SHIPPED 2026-07-09 (GLBook, book rules, parallel journal auto-post engine, statement book filters) | H | M |
 
 ### CRM & Sales — refs: Salesforce, HubSpot, Dynamics 365, Zoho, Odoo
 | Gap | Who has it | UniERP | Value | Size |
@@ -157,7 +158,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Module | Last benchmarked | Method | Notes |
 |:--|:--|:--|:--|
 | ALL (seed pass) | 2026-07-08 | offline analysis | Initial seed by claude-code; each module still owes a web-verified pass |
-| Finance | 2026-07-09 (pass 3: 2026-07-09) | offline analysis (pass 3) | Pass 1: bank feeds, cash-flow, dunning, expense-mgmt OCR all SHIPPED. Pass 2: lease accounting SHIPPED. Pass 3: unified spend management (real-time card controls) SHIPPED — closed most of the Ramp/Brex parity gap; only card issuing (processor integration, infra-blocked) remains, logged as item 19. Remaining open in Up Next: multi-book/multi-GAAP, dynamic allocation engine, intercompany auto-elimination, virtual card issuance (infra-blocked). project-based accounting is ACTIVE under a separate claim (finance-project-accounting). |
+| Finance | 2026-07-09 (pass 4: 2026-07-09) | offline analysis (pass 4) | Pass 1: bank feeds, cash-flow, dunning, expense-mgmt OCR all SHIPPED. Pass 2: lease accounting SHIPPED. Pass 3: unified spend management (real-time card controls) SHIPPED. Pass 4: multi-book / multi-GAAP accounting SHIPPED. Remaining open in Up Next: virtual card issuance (infra-blocked). project-based accounting is ACTIVE under a separate claim (finance-project-accounting). |
 | CRM & Sales | — (due) | — | |
 | Inventory/Supply Chain | — (due) | — | |
 | Manufacturing | — (due) | — | |
