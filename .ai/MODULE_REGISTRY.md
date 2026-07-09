@@ -61,7 +61,8 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-_(no active claims)_
+| antigravity-win1 | 2026-07-09T18:42:00Z | Finance: Project-based accounting (WIP, job costing, percentage-of-completion) | main | ACTIVE |
+
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
@@ -89,7 +90,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 8. ~~**[benchmark] Finance: batch vendor payment run**~~ ✅ SHIPPED 2026-07-09 (commit 8bfaddc)
 9. ~~**[benchmark] Finance: subscription billing & recurring-revenue metrics (MRR/ARR)**~~ ✅ SHIPPED 2026-07-09 (commit 0d82d4e)
 10. ~~**[benchmark] Finance: continuous close automation (variance flagging + close-task assignment)**~~ ✅ SHIPPED 2026-07-09 (commit ba4d12d)
-11. **[benchmark] Finance: project-based accounting (WIP, job costing, percentage-of-completion revenue recognition)** — tie `ProjectCostEntry` to `Project` for real-time job costing (labour + material + overhead), POC revenue recognition formula (costs-incurred ÷ total-estimated-cost × contract-value), over/under-billing report; leaders: Sage Intacct (construction WIP + POC), NetSuite SRP, Deltek Costpoint. Sub-tasks: `ProjectCostEntry` Prisma model, WIP summary service, POC calc endpoint `/projects/:id/wip`, UI report page. RICE: Reach 40 · Impact 9 · Confidence 70% · Effort 3 = **84**.
+11. ~~**[benchmark] Finance: project-based accounting (WIP, job costing, percentage-of-completion revenue recognition)**~~ 🟡 CLAIMED (antigravity-win1) — tie `ProjectCostEntry` to `Project` for real-time job costing (labour + material + overhead), POC revenue recognition formula (costs-incurred ÷ total-estimated-cost × contract-value), over/under-billing report; leaders: Sage Intacct (construction WIP + POC), NetSuite SRP, Deltek Costpoint. Sub-tasks: `ProjectCostEntry` Prisma model, WIP summary service, POC calc endpoint `/projects/:id/wip`, UI report page. RICE: Reach 40 · Impact 9 · Confidence 70% · Effort 3 = **84**.
 12. ~~**[benchmark] Finance: driver-based budgeting & scenario planning (FP&A)**~~ ✅ SHIPPED 2026-07-09 (commit ba4d12d)
 13. ~~**[benchmark] Finance: AI-powered invoice capture (OCR + auto-coding)**~~ ✅ SHIPPED 2026-07-09 (commit 86023ab)
 14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3)
@@ -174,6 +175,8 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 > how it was resolved (merge, rebase, one side deferred).
 
 | 2026-07-09 | claude-code-cli-c (finance-spend-management claim) discovered a concurrent, unclaimed session actively building the "Dynamic Allocation Engine" (`AllocationRule`/`AllocationRun`, `allocation.service.ts`, `/advanced-finance/allocations/*`) in the same shared hotspot files (`advanced-finance.controller.ts`, `.module.ts`, `services/index.ts`, `schema.prisma`) while this cycle's spend-management batch was in flight. No lock existed for it, so it couldn't be identified up front. Both batches were cleanly appended in their own sections (no line-level overlap), so per § Parallel Agents rule 3 (shared-hotspot append etiquette) they were verified together (`pnpm --filter @unerp/api typecheck` clean, `pnpm --filter @unerp/web typecheck` clean, 335/335 advanced-finance unit tests green including the allocation suite) and shipped in the same commit rather than risk corrupting the shared file with an unsafe manual split. Item 17 (dynamic allocation engine) in Up Next should be marked SHIPPED by whoever owns that work if this matches their intent — flagging here since claude-code-cli-c did not build or review the allocation logic itself, only verified it compiles/tests alongside. |
+| 2026-07-09 | antigravity-win1 took over stale claim lock `finance-project-accounting` from `claude-code-cli-b` (heartbeat 10.5h ago). |
+
 
 ---
 
