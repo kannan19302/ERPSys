@@ -692,3 +692,25 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   { code: 'sales.order.update', module: 'sales', resource: 'order', action: 'update', level: 'endpoint', description: 'Update Order (sales)' },
   { code: 'sales.quotation.update', module: 'sales', resource: 'quotation', action: 'update', level: 'endpoint', description: 'Update Quotation (sales)' },
 ];
+
+// ── Query helpers (role editor / access-control UI) ──
+
+/** Every permission definition registered for a given module. */
+export function getPermissionsByModule(module: string): PermissionDefinition[] {
+  return PERMISSION_REGISTRY.filter((p) => p.module === module);
+}
+
+/** Distinct `category` labels present for a module, in first-seen order. Modules
+ * without categorized permissions (i.e. all `category: undefined`) return []. */
+export function getCategoriesForModule(module: string): string[] {
+  const seen: string[] = [];
+  for (const p of PERMISSION_REGISTRY) {
+    if (p.module === module && p.category && !seen.includes(p.category)) seen.push(p.category);
+  }
+  return seen;
+}
+
+/** Permission definitions for a module scoped to one category. */
+export function getPermissionsByCategory(module: string, category: string): PermissionDefinition[] {
+  return PERMISSION_REGISTRY.filter((p) => p.module === module && p.category === category);
+}

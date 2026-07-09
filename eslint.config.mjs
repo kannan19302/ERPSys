@@ -1,5 +1,7 @@
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import nextPlugin from '@next/eslint-plugin-next';
 import prettierConfig from 'eslint-config-prettier';
 
 export default [
@@ -55,10 +57,16 @@ export default [
   },
   {
     files: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'],
+    plugins: {
+      'react-hooks': reactHooksPlugin,
+      '@next/next': nextPlugin,
+    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       'no-console': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      'react-hooks/exhaustive-deps': 'warn',
+      '@next/next/no-img-element': 'warn',
     },
   },
   prettierConfig,
