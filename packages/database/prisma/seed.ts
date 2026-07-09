@@ -208,6 +208,65 @@ async function main() {
       }
     }
     console.log('HR module initial employees seeded.');
+
+    // Seed Corporate Cards & Spend Limits for Employees (Phase 2 / Spend Management verification)
+    const sarahEmp = await prisma.employee.findFirst({
+      where: { tenantId: tenant.id, employeeCode: 'EMP-002' },
+    });
+    if (sarahEmp) {
+      const card = await prisma.corporateCard.upsert({
+        where: { id: 'corp-card-sarah' },
+        update: {},
+        create: {
+          id: 'corp-card-sarah',
+          tenantId: tenant.id,
+          employeeId: sarahEmp.id,
+          provider: 'VISA',
+          last4: '4321',
+          nickname: 'Sarah Primary Card',
+          isActive: true,
+          isFrozen: false,
+        },
+      });
+
+      const existingLimit = await prisma.cardSpendLimit.findFirst({
+        where: { tenantId: tenant.id, cardId: card.id },
+      });
+      if (!existingLimit) {
+        await prisma.cardSpendLimit.create({
+          data: {
+            tenantId: tenant.id,
+            cardId: card.id,
+            scopeType: 'CARD',
+            scopeId: null,
+            period: 'MONTHLY',
+            amountCap: 5000.00,
+            currentSpend: 1250.00,
+            periodStart: new Date(),
+            periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          },
+        });
+      }
+
+      const existingCatLimit = await prisma.cardCategoryLimit.findFirst({
+        where: { tenantId: tenant.id, cardId: card.id },
+      });
+      if (!existingCatLimit) {
+        await prisma.cardCategoryLimit.create({
+          data: {
+            tenantId: tenant.id,
+            cardId: card.id,
+            mccCategory: 'TRAVEL',
+            amountCap: 1500.00,
+            currentSpend: 420.00,
+            period: 'MONTHLY',
+            periodStart: new Date(),
+            periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+            isActive: true,
+          },
+        });
+      }
+    }
   }
 
   // 7. Create CRM Customers & Vendors

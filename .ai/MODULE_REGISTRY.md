@@ -65,6 +65,7 @@
 
 
 
+
 ### 2. Up Next (unclaimed work, pick from the top)
 
 > Pulled from this file's § Production Readiness & Hardening, § Studio Backlog, and
@@ -94,25 +95,26 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 11. ~~**[benchmark] Finance: project-based accounting (WIP, job costing, percentage-of-completion revenue recognition)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3) — tie `ProjectCostEntry` to `Project` for real-time job costing (labour + material + overhead), POC revenue recognition formula (costs-incurred ÷ total-estimated-cost × contract-value), over/under-billing report; leaders: Sage Intacct (construction WIP + POC), NetSuite SRP, Deltek Costpoint. Sub-tasks: `ProjectCostEntry` Prisma model, WIP summary service, POC calc endpoint `/projects/:id/wip`, UI report page. RICE: Reach 40 · Impact 9 · Confidence 70% · Effort 3 = **84**.
 12. ~~**[benchmark] Finance: driver-based budgeting & scenario planning (FP&A)**~~ ✅ SHIPPED 2026-07-09 (commit ba4d12d)
 13. ~~**[benchmark] Finance: AI-powered invoice capture (OCR + auto-coding)**~~ ✅ SHIPPED 2026-07-09 (commit 86023ab)
-14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3)
+14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit a187199)
 15. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — defer to CRM focus turn.
 16. ~~**[benchmark] Finance: multi-book / multi-GAAP accounting**~~ ✅ SHIPPED 2026-07-09 (commit 8a10611)
 17. ~~**[benchmark] Finance: dynamic allocation engine**~~ ✅ SHIPPED 2026-07-09 (built by a concurrent unclaimed session, landed alongside the spend-management commit — see §4 Conflict Log)
 18. ~~**[benchmark] Finance: consolidation intercompany auto-elimination**~~ ✅ SHIPPED 2026-07-09 (commit 9f0d08a)
 19. **[benchmark] Finance: virtual card issuance** — deferred sub-task from item 14 (needs a card-network processor integration, e.g. Marqeta/Stripe Issuing — infra-blocked, not a pure code gap). Leaders: Ramp, Brex. RICE: Reach 25 · Impact 6 · Confidence 40% · Effort 5 = **12**.
-20. **[e2e-unverified] Finance: unified spend management** — dev stack had a pre-existing pnpm workspace symlink issue (`@unerp/auth`→`@unerp/shared`) blocking a live browser check this cycle; next agent with a working stack should run the E2E smoke gate against the new corporate-card detail page and confirm live.
-21. **[e2e-unverified] Finance: dynamic allocation engine** — dev server not running; next agent with a running stack should run the E2E smoke gate against `/finance/advanced/allocations` and verify CRUD + execution.
-22. **[e2e-unverified] Finance: multi-book / multi-GAAP accounting** — dev stack docker was down; next agent with a running stack should run the E2E smoke gate against `/finance/advanced/accounting-books` and verify book CRUD + mapping rules creation + posting.
+20. ~~**[e2e-unverified] Finance: unified spend management**~~ ✅ VERIFIED 2026-07-09 (card detail page `/finance/advanced/corporate-cards/corp-card-sarah` E2E smoke checked green)
+21. ~~**[e2e-unverified] Finance: dynamic allocation engine**~~ ✅ VERIFIED 2026-07-09 (`/finance/advanced/allocations` E2E smoke checked green)
+22. ~~**[e2e-unverified] Finance: multi-book / multi-GAAP accounting**~~ ✅ VERIFIED 2026-07-09 (`/finance/advanced/accounting-books` E2E smoke checked green)
 
 ### 3. Recently Completed (rolling log, last ~15 — older entries live in `.ai/CHANGELOG.md`)
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-09 | antigravity-ide | Finance: E2E smoke test verification for Spend Management (corporate-cards/corp-card-sarah), Allocations, and Multi-Book accounting surfaces. | commit de8c0fa |
 | 2026-07-09 | antigravity-ide | Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI): BudgetControlConfig enforcement config (ALLOW/WARN/BLOCK), monthly BudgetPeriodAmounts (EVEN/HISTORICAL_PROPORTIONAL spreads), BudgetReallocations draft/submit/approve/reject workflow, 6 tests, spec fixes | commit ed22b5b |
 | 2026-07-09 | antigravity-ide | Finance: Project-Based Accounting WIP, Job Costing & POC (20+ features, DB+API+UI): estimatedCost/contractValue fields, ProjectCostEntry schema + CRUD endpoints, WIP calculation (labor/material/overhead breakdown + POC % + over/under-billing WIP status), WIP summary endpoint, new /projects detail tab and form, new /projects/wip-reports dashboard. | commit cea2b8c |
 | 2026-07-09 | antigravity-ide | Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI): AccountingBookRule DB schema, CRUD endpoints, parallel journal auto-post rules engine, P&L/Balance Sheet/Cash Flow book filters, Next.js mapping rules config. | commit 8a10611 |
 | 2026-07-09 | antigravity-ide | Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI): EliminationRule model, EliminationRun / EliminationRunDetail models, intercompany matching & auto-elimination batch engines, GL draft/posted auto-elimination journal entries, Next.js interactive tabbed dashboard, 5 unit tests, build/tsc clean. | commit 9f0d08a |
-| 2026-07-09 | antigravity-ide | Finance: Dynamic Allocation Engine (12+ features, DB+API+UI): CRUD, static pct allocation, dynamic headcount/revenue ratio calculations, rounding difference adjustments, draft/post allocation runs, Next.js interactive allocations dashboard tabbed list & side drawers, 6 unit tests passed, typecheck green. | commit pending |
+| 2026-07-09 | antigravity-ide | Finance: Dynamic Allocation Engine (12+ features, DB+API+UI): CRUD, static pct allocation, dynamic headcount/revenue ratio calculations, rounding difference adjustments, draft/post allocation runs, Next.js interactive allocations dashboard tabbed list & side drawers, 6 unit tests passed, typecheck green. | commit a187199 |
 | 2026-07-09 | antigravity-ide | Finance: AI-Powered Invoice Capture OCR & Auto-Coding (15+ features, DB+API+UI): OCR regex extractor, PO matching, auto coding based on vendor history, Accrued Liabilities/Expenses GL postings, 11 API endpoints, Next.js review page, 11 unit tests passed, typecheck green. | commit 86023ab |
 | 2026-07-09 | antigravity-ide | Finance: Month-End Continuous Close Automation, Budget Scenarios & Driver-Based FP&A (17+ features, DB+API+UI): close tasks CRUD, template autogen, variance flagging engine, close dashboard, budget scenarios CRUD, locking, cloning, labor/headcount driver computations, actuals vs scenario comparisons, 3 Next.js pages, 13 unit tests passed, typecheck green. | commit ba4d12d |
 | 2026-07-09 | antigravity-ide | Finance: AP Three-Way Matching + Batch Payment Runs + Report Drill-Through (18+ features, DB+API+UI): AP match rules CRUD, three-way match engine, exception queue approve/reject, payment batches with NACHA/SEPA/CSV export, GL posting, report drill-through, payables stats dashboard, 25 unit tests, API+Web typecheck clean. | commit 8bfaddc |

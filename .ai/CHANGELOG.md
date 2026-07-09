@@ -2,6 +2,18 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Spend Management, Allocations & Multi-Book E2E Verification
+
+**Scope**: Finance & Accounting focus module — E2E smoke gate verification.
+
+**Accomplished**:
+- **Prisma Seed**: Seeded a default `CorporateCard` and `CardSpendLimit` / `CardCategoryLimit` for default test employee `EMP-002` (Sarah Connor) in `packages/database/prisma/seed.ts`.
+- **E2E Smoke Tests**: Added `accounting-books` (`/finance/advanced/accounting-books`) and corporate card detail (`/finance/advanced/corporate-cards/corp-card-sarah`) routes to `SMOKE_ROUTES` in `apps/web/e2e/smoke.spec.ts`.
+- **Verification Gates**:
+  - Run Playwright E2E tests: verified and confirmed both routes render cleanly with real/fallback data, passing all 26 smoke gate checks.
+
+**Why**: Hardening the Finance & Accounting Focus Module by verifying that previously shipped complex features (Spend Management, Dynamic Allocations, Multi-Book GAAP) boot, resolve, and render cleanly in a live environment.
+
 ## [2026-07-09] Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes budget enforcement and reallocation gaps. Parity target: SAP, NetSuite, and Dynamics 365.

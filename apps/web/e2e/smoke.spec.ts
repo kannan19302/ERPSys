@@ -23,6 +23,8 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/finance/advanced/expense-reports' },
   { path: '/finance/advanced/expense-policies' },
   { path: '/finance/advanced/allocations' },
+  { path: '/finance/advanced/accounting-books' },
+  { path: '/finance/advanced/corporate-cards/corp-card-sarah' },
   { path: '/crm/contacts' },
   { path: '/crm/leads' },
   { path: '/inventory/products' },
