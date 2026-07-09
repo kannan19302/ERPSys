@@ -85,12 +85,17 @@ exactly **one** item per cycle. Never skip a higher rung because a lower one is 
 | **P6 — Module deepening** | `MODULE_REGISTRY.md` § Module-Specific Completion Notes; run an ad-hoc discovery pass (§ Step 9) on the weakest module to find its gaps. | Deepen one module completely before starting another (module-completion strategy). |
 | **P7 — New capability** | Nothing above applies (rare). Act as product manager: propose a new module/app/integration consistent with the Phase roadmap and the 1M-LOC genuine-capability north star; write it into Up Next, then build the first slice. | Must pass the "does this already exist?" check against `MODULE_REGISTRY.md`. |
 
-**Batch-throughput rule (binding)**: one cycle = one coherent **batch of 10–20+
-distinct features** (per `MODULE_FOCUS.md` § 2 definition) in the focus module — more
-is welcome; fewer only if a single feature is genuinely L-sized (log why). Compose the
-batch around one sub-domain so it shares a schema migration and UI surface (e.g.
+**Batch-throughput rule (binding)**: one cycle = one coherent batch of
+**20–40+ distinct features** (per `MODULE_FOCUS.md` § 2 definition) **or 5,000–10,000+
+lines of genuine delivered code** in the focus module — hit at least one of the two
+floors; exceeding both is welcome; below both only if a single feature is genuinely
+L-sized (log why). Verify against the regenerated `SPRINT_TRACKER.md`/`FEATURE_LEDGER.md`
+numbers at Step 7 — if the batch landed under both floors, extend the cycle with the
+next sub-domain slice before shipping rather than closing small. Compose the batch
+around one or two adjacent sub-domains so it shares migrations and UI surfaces (e.g.
 "Finance/AR: dunning levels + reminder templates + escalation schedule + pause-on-dispute
-+ aging buckets + statement generation + …" ≈ 15 features, one migration, two pages).
++ aging buckets + statement generation + customer portal views + …" ≈ 25 features, one
+migration, three pages).
 Every batch MUST span all three layers: **DB (Prisma) + API (NestJS) + UI (Next.js)** —
 API-only or UI-only cycles don't count toward the ledger. If the top queue item is too
 big, split it; if too small, pull the next items from the same sub-domain until the
@@ -111,9 +116,9 @@ Act as the product manager (Claude Code: invoke the `product-manager` subagent):
 - Confirm the item doesn't already exist — search `.ai/FEATURE_LEDGER.md` (the
   generated single-file inventory of every functionality in the system) and
   `MODULE_REGISTRY.md`. Mandatory.
-- Enumerate the batch as a numbered feature list (10–20+ items, per the batch-throughput
-  rule) grouped under one sub-domain, then write user stories with acceptance criteria
-  and an explicit **Definition of Done**:
+- Enumerate the batch as a numbered feature list (20–40+ items, per the batch-throughput
+  rule) grouped under one/two adjacent sub-domains, then write user stories with
+  acceptance criteria and an explicit **Definition of Done**:
   schema + API + UI + tests + docs + nav/breadcrumbs + RBAC — the full E2E rule.
 - **Competitor-parity depth rule** (for `[benchmark]` items and any feature a market
   leader also ships): acceptance criteria must quote the *actual capability* of the
@@ -433,8 +438,8 @@ Tokens spent re-deriving context are tokens not spent shipping features. Rules:
 
 ## Guardrails (absolute)
 
-- **One coherent batch (10–20+ features) per cycle.** Finish it completely (DB+API+UI)
-  or split and log the remainder — never leave half-wired layers.
+- **One coherent batch (20–40+ features or 5–10k+ LOC) per cycle.** Finish it
+  completely (DB+API+UI) or split and log the remainder — never leave half-wired layers.
 - **Never** force-push, rewrite history, delete migrations, drop/reset databases, or
   modify another agent's claimed scope or uncommitted files.
 - **Never** ship stubs, mocks, dead scaffolding, or padded code — the LOC north star

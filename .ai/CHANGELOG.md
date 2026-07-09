@@ -2,6 +2,12 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Batch Throughput Raised — 20–40+ features OR 5–10k+ LOC per cycle
+
+**Accomplished**: raised the binding batch-throughput floors in `AUTOPILOT.md` (sizing rule, Step 3 enumeration, guardrail) and the start skill from 10–20+ features to **20–40+ distinct features OR 5,000–10,000+ delivered LOC per cycle** (hit at least one floor; both exceeded is welcome; below both only for a genuinely L-sized single feature, logged). New enforcement: at Step 7 the agent verifies the batch against the regenerated SPRINT_TRACKER/FEATURE_LEDGER numbers — if under both floors, the cycle is **extended with the next sub-domain slice before shipping** rather than closed small. Batches may now span one/two adjacent sub-domains to reach the floor while still sharing migrations and UI surfaces.
+
+**Why**: owner directive — increase per-cycle delivery to 5–10k LOC or 20–40+ functionality to reach each module's 500-feature target faster.
+
 ## [2026-07-09] Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: Consolidation Intercompany Auto-Elimination (RICE 120). Parity target: NetSuite OneWorld, FloQast.

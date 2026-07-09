@@ -44,7 +44,9 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    another agent already shipped part of it.
 4. **Plan** with the `product-manager` subagent (registry duplicate-check, stories,
    acceptance criteria, Definition of Done).
-5. **Build a BATCH end-to-end** — minimum **10–20 distinct features per cycle** (more is
+5. **Build a BATCH end-to-end** — minimum **20–40+ distinct features or 5,000–10,000+
+   LOC per cycle** (hit at least one floor; verify vs SPRINT_TRACKER/FEATURE_LEDGER at
+   record time and extend the cycle with the next sub-domain slice if under; more is
    better), composed around one sub-domain of the focus module, always spanning
    **DB + API + UI**. Batch-efficient order: ALL schema changes → one migration → all
    services/controllers → all UI pages → one test pass. Spend ≥ 70% of the cycle
