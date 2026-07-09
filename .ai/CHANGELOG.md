@@ -2,6 +2,24 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Extension platform hardening — 12 improvements to the poly-repo split (platform)
+
+Built on top of the poly-repo split. `@unerp/service-kit` → 0.2.0.
+
+- **#1 RBAC**: tenant token carries scopes; `ScopeGuard` in each service enforces `<slug>:read`/`<slug>:write` per method; manifests grant granular scopes.
+- **#2 Per-service secrets**: core signs with `<SLUG>_EXT_SECRET` (shared fallback); `ext-callback` selects the secret via `decodeTokenUnverified` then verifies.
+- **#3 Resilience**: per-app circuit breaker, streaming proxy responses, `ext_gateway_*` metrics on `/metrics`.
+- **#4 Declarative UI**: manifest `type:"remote"` pages (dataUrl+columns) provisioned into PageRegistry; `RemoteAppPageRenderer` fetches `/ext` live; ships/uninstalls with the app. Applied to field-service, education, real-estate (healthcare already declarative).
+- **#5 Packaging**: changesets + `release-packages.yml` publishing `@unerp/service-kit` to GitHub Packages.
+- **#6 Webhooks**: manifest `service.events`; `ExtEventDispatcherService` POSTs signed events; each service has a verifying `/events` receiver.
+- **#7 Versioning**: manifest `minCoreVersion` install gate; `updateAvailable` on `GET installed`.
+- **#8 Dev orchestration**: `scripts/dev-ext.ps1` runs core + sibling services on the `unierp` network.
+- **#9/#10 Callback**: filtered reads, scoped writes, `records:batch`; `CoreClient` in service-kit; healthcare quality-measures now one round trip.
+- **#11 Cleanup**: dropped `_archived_*` industry tables; removed the legacy healthcare 308 shim.
+- **#12 Contract CI**: `test/contract.mjs` + `contract.yml` per app repo verify the service upholds the contract.
+
+**Also**: fixed a boot-blocking DI bug on main (`AdvancedFinanceController` used inline `import('...').Type` annotations that defeat Nest metadata reflection → deep services resolved null). Verified end-to-end; gateway unit tests 22/22.
+
 ## [2026-07-09] Finance: Complete Deepening & Hardening (Batches 1-8)
 
 **Scope**: Finance & Accounting focus module — comprehensive end-to-end deepening of 8 major batches to achieve 500+ distinct working features. Parity target: SAP, NetSuite, Dynamics 365, Odoo.

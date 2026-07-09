@@ -5,6 +5,16 @@ UniERP industry apps live in their own repos (`unierp-app-<slug>`) and ship two 
 1. **A declarative bundle** (manifest + pages/schemas) published to the marketplace — rendered by core's dynamic runtime, no core rebuild.
 2. **A service** — a standalone NestJS app deployed next to core, reached only through core's extension gateway.
 
+## Contract v0.2 additions (at a glance)
+
+- **RBAC (#1)** — the tenant token carries `scopes`; services enforce them per route (`ScopeGuard`: `<slug>:read` for GET, `<slug>:write` for mutations). Manifest `service.scopes` declares what core embeds.
+- **Per-service secrets (#2)** — core signs each app's token with `<SLUG>_EXT_SECRET` (falls back to shared `EXT_SERVICE_JWT_SECRET`); the service verifies with the same value. A compromised service can only mint/verify its own app's tokens.
+- **Resilience (#3)** — per-app circuit breaker (fast-fail 503 after repeated failures), streaming proxy, and `ext_gateway_*` Prometheus metrics on `/metrics`.
+- **Event webhooks (#6)** — `service.events: [{ event, deliverTo }]` subscribes to core domain events; core POSTs signed (`x-unierp-signature`/`x-unierp-timestamp`) payloads to the service; verify with `verifyWebhook`.
+- **Versioning (#7)** — `minCoreVersion` gates install; `GET installed` returns `updateAvailable` instead of silently upgrading.
+- **Callback API (#9,#10)** — `GET /ext-callback/records/:slug?where=&limit=`, `POST /ext-callback/records:batch`, and scoped `POST /ext-callback/records/:slug` (needs `<slug>:write`). Use `CoreClient` from `@unerp/service-kit`.
+- **Declarative UI (#4)** — bundle pages of `type: "remote"` (`layout: { dataUrl, columns }`) render a live table from `/ext/<slug>/<dataUrl>`; provisioned into `PageRegistry`, removed on uninstall.
+
 ## Manifest
 
 `runtime: "declarative+service"` with a `service` section:
