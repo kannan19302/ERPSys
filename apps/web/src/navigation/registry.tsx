@@ -240,6 +240,10 @@ export const SEGMENT_NAMES: Record<string, string> = {
   subscriptions: 'Subscription Billing',
   leases: 'Lease Accounting',
   new: 'New',
+  // Finance FP&A / Close
+  'close-tasks': 'Close Checklist',
+  'budget-scenarios': 'Budget Scenarios',
+  'scenario-comparison': 'Scenario Comparison',
 };
 
 export const formatSegment = (segment: string): string => {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, UseGuards, Req, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, UseGuards, Req, Param, Query, UseInterceptors, BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -24,6 +24,7 @@ import {
   InterCompanyService,
   FxRevaluationService,
   PayablesService,
+  FpaService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -434,6 +435,7 @@ export class AdvancedFinanceController {
     private readonly interCompanyService: InterCompanyService,
     private readonly fxRevaluationService: FxRevaluationService,
     private readonly payablesService: PayablesService,
+    private readonly fpaService: FpaService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -2455,5 +2457,310 @@ export class AdvancedFinanceController {
     @Query('limit') limit?: string,
   ) {
     return this.payablesService.reportDrilldown(req.user.tenantId, reportType, { accountId, period, limit });
+  }
+
+  // ── FP&A: Close Tasks ──────────────────────────────────────────────────────
+
+  @ApiOperation({ summary: 'List close tasks for a financial period' })
+  @Get('close-tasks')
+  @Permissions('finance.fpa.read')
+  async listCloseTasks(
+    @Req() req: AuthenticatedRequest,
+    @Query('periodId') periodId: string,
+    @Query('status') status?: string,
+  ) {
+    if (!periodId) throw new BadRequestException('periodId query parameter is required');
+    return this.fpaService.listCloseTasks(req.user.tenantId, periodId, status);
+  }
+
+  @ApiOperation({ summary: 'Get a close task by ID' })
+  @Get('close-tasks/:id')
+  @Permissions('finance.fpa.read')
+  async getCloseTask(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaService.getCloseTask(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create a new close task' })
+  @Post('close-tasks')
+  @Permissions('finance.fpa.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CloseTask')
+  async createCloseTask(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      financialPeriodId: z.string().min(1),
+      name: z.string().min(1),
+      description: z.string().optional(),
+      category: z.string().optional(),
+      assigneeId: z.string().optional(),
+      dueDate: z.string().optional(),
+      priority: z.string().optional(),
+      notes: z.string().optional(),
+    })) body: any,
+  ) {
+    return this.fpaService.createCloseTask(req.user.tenantId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Update close task status/assignee' })
+  @Patch('close-tasks/:id')
+  @Permissions('finance.fpa.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CloseTask')
+  async updateCloseTask(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      status: z.string().optional(),
+      assigneeId: z.string().optional(),
+      dueDate: z.string().optional(),
+      priority: z.string().optional(),
+      notes: z.string().optional(),
+    })) body: any,
+  ) {
+    return this.fpaService.updateCloseTask(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Delete a close task' })
+  @Delete('close-tasks/:id')
+  @Permissions('finance.fpa.manage')
+  async deleteCloseTask(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaService.deleteCloseTask(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Generate standard close tasks from templates for a period' })
+  @Post('close-tasks/generate')
+  @Permissions('finance.fpa.run')
+  async generateCloseTasksFromTemplate(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ financialPeriodId: z.string().min(1) })) body: { financialPeriodId: string },
+  ) {
+    return this.fpaService.generateCloseTasksFromTemplate(req.user.tenantId, req.user.userId, body.financialPeriodId);
+  }
+
+  @ApiOperation({ summary: 'Get continuous close dashboard summary' })
+  @Get('close-tasks/dashboard')
+  @Permissions('finance.fpa.read')
+  async getCloseDashboard(
+    @Req() req: AuthenticatedRequest,
+    @Query('periodId') periodId: string,
+  ) {
+    if (!periodId) throw new BadRequestException('periodId query parameter is required');
+    return this.fpaService.getCloseDashboard(req.user.tenantId, periodId);
+  }
+
+  // ── FP&A: Variance Flags ───────────────────────────────────────────────────
+
+  @ApiOperation({ summary: 'Run variance engine comparing current vs prior financial period' })
+  @Post('variance-flags/run')
+  @Permissions('finance.fpa.run')
+  async runVarianceFlagEngine(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      financialPeriodId: z.string().min(1),
+      thresholdPercent: z.number().min(1).max(100).optional(),
+    })) body: { financialPeriodId: string; thresholdPercent?: number },
+  ) {
+    return this.fpaService.runVarianceFlagEngine(
+      req.user.tenantId,
+      body.financialPeriodId,
+      body.thresholdPercent,
+    );
+  }
+
+  @ApiOperation({ summary: 'List variance flags for a financial period' })
+  @Get('variance-flags')
+  @Permissions('finance.fpa.read')
+  async listVarianceFlags(
+    @Req() req: AuthenticatedRequest,
+    @Query('periodId') periodId: string,
+    @Query('status') status?: string,
+  ) {
+    if (!periodId) throw new BadRequestException('periodId query parameter is required');
+    return this.fpaService.listVarianceFlags(req.user.tenantId, periodId, status);
+  }
+
+  @ApiOperation({ summary: 'Acknowledge an open variance flag' })
+  @Post('variance-flags/:id/acknowledge')
+  @Permissions('finance.fpa.manage')
+  async acknowledgeVarianceFlag(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ notes: z.string().optional() })) body: { notes?: string },
+  ) {
+    return this.fpaService.acknowledgeVarianceFlag(req.user.tenantId, id, req.user.userId, body.notes);
+  }
+
+  @ApiOperation({ summary: 'Resolve a variance flag' })
+  @Post('variance-flags/:id/resolve')
+  @Permissions('finance.fpa.manage')
+  async resolveVarianceFlag(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ notes: z.string().optional() })) body: { notes?: string },
+  ) {
+    return this.fpaService.resolveVarianceFlag(req.user.tenantId, id, req.user.userId, body.notes);
+  }
+
+  // ── FP&A: Budget Scenarios ──────────────────────────────────────────────────
+
+  @ApiOperation({ summary: 'List budget scenarios' })
+  @Get('budget-scenarios')
+  @Permissions('finance.fpa.read')
+  async listScenarios(
+    @Req() req: AuthenticatedRequest,
+    @Query('fiscalYear') fiscalYear?: string,
+  ) {
+    const year = fiscalYear ? parseInt(fiscalYear, 10) : undefined;
+    return this.fpaService.listScenarios(req.user.tenantId, year);
+  }
+
+  @ApiOperation({ summary: 'Compare scenarios or scenario vs actuals' })
+  @Get('budget-scenarios/compare')
+  @Permissions('finance.fpa.read')
+  async compareScenarios(
+    @Req() req: AuthenticatedRequest,
+    @Query('scenarioAId') scenarioAId: string,
+    @Query('scenarioBId') scenarioBId: string,
+    @Query('fiscalYear') fiscalYear: string,
+  ) {
+    if (!scenarioAId || !scenarioBId || !fiscalYear) {
+      throw new BadRequestException('scenarioAId, scenarioBId, and fiscalYear parameters are required');
+    }
+    return this.fpaService.compareScenarios(
+      req.user.tenantId,
+      scenarioAId,
+      scenarioBId,
+      parseInt(fiscalYear, 10),
+    );
+  }
+
+  @ApiOperation({ summary: 'Get budget scenario details and monthly lines' })
+  @Get('budget-scenarios/:id')
+  @Permissions('finance.fpa.read')
+  async getScenario(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaService.getScenario(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create a new budget scenario' })
+  @Post('budget-scenarios')
+  @Permissions('finance.fpa.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetScenario')
+  async createScenario(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      type: z.enum(['BASE', 'UPSIDE', 'DOWNSIDE', 'ACTUALS', 'CUSTOM']).optional(),
+      fiscalYear: z.number().int().positive(),
+    })) body: { name: string; description?: string; type?: string; fiscalYear: number },
+  ) {
+    return this.fpaService.createScenario(req.user.tenantId, req.user.userId, {
+      ...body,
+      orgId: req.user.orgId || '',
+    });
+  }
+
+  @ApiOperation({ summary: 'Update a budget scenario' })
+  @Patch('budget-scenarios/:id')
+  @Permissions('finance.fpa.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetScenario')
+  async updateScenario(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      name: z.string().optional(),
+      description: z.string().optional(),
+      status: z.string().optional(),
+    })) body: { name?: string; description?: string; status?: string },
+  ) {
+    return this.fpaService.updateScenario(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Lock a budget scenario (approves it)' })
+  @Post('budget-scenarios/:id/lock')
+  @Permissions('finance.fpa.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetScenario')
+  async lockScenario(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaService.lockScenario(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Unlock a budget scenario' })
+  @Post('budget-scenarios/:id/unlock')
+  @Permissions('finance.fpa.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetScenario')
+  async unlockScenario(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaService.unlockScenario(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Clone a budget scenario' })
+  @Post('budget-scenarios/:id/clone')
+  @Permissions('finance.fpa.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetScenario')
+  async cloneScenario(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      name: z.string().min(1),
+      type: z.string().optional(),
+    })) body: { name: string; type?: string },
+  ) {
+    return this.fpaService.cloneScenario(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Apply driver calculations to generate budget lines in bulk' })
+  @Post('budget-scenarios/:id/driver')
+  @Permissions('finance.fpa.run')
+  async applyDriver(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      accountId: z.string().min(1),
+      driverType: z.enum(['HEADCOUNT', 'UNITS', 'PERCENTAGE']),
+      driverValue: z.number().positive(),
+      driverRate: z.number().positive(),
+      months: z.array(z.number().int().min(1).max(12)).optional(),
+      costCenterId: z.string().optional(),
+    })) body: {
+      accountId: string;
+      driverType: 'HEADCOUNT' | 'UNITS' | 'PERCENTAGE';
+      driverValue: number;
+      driverRate: number;
+      months?: number[];
+      costCenterId?: string;
+    },
+  ) {
+    return this.fpaService.applyDriver(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Delete a budget scenario (archives it)' })
+  @Delete('budget-scenarios/:id')
+  @Permissions('finance.fpa.manage')
+  async deleteScenario(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaService.deleteScenario(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Upsert a single budget scenario line' })
+  @Post('budget-scenarios/:id/lines')
+  @Permissions('finance.fpa.manage')
+  async upsertScenarioLine(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      accountId: z.string().min(1),
+      month: z.number().int().min(1).max(12),
+      amount: z.number(),
+      driverType: z.string().optional(),
+      driverValue: z.number().optional(),
+      driverRate: z.number().optional(),
+      costCenterId: z.string().optional(),
+      notes: z.string().optional(),
+    })) body: any,
+  ) {
+    return this.fpaService.upsertScenarioLine(req.user.tenantId, id, body);
   }
 }

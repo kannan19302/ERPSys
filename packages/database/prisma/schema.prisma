@@ -9005,3 +9005,102 @@ model PaymentBatchLine {
   @@map("payment_batch_lines")
   @@index([tenantId, batchId, status])
 }
+
+// ── Continuous Close Automation ──────────────────────────────────────────────
+
+model CloseTask {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  financialPeriodId String   @map("financial_period_id")
+  name             String
+  description      String?
+  category         String    @default("RECONCILIATION") // RECONCILIATION, ACCRUALS, REPORTING, APPROVAL, OTHER
+  assigneeId       String?   @map("assignee_id")
+  dueDate          DateTime? @map("due_date")
+  status           String    @default("OPEN") // OPEN, IN_PROGRESS, DONE, SKIPPED
+  priority         String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  completedAt      DateTime? @map("completed_at")
+  completedBy      String?   @map("completed_by")
+  notes            String?
+  isTemplate       Boolean   @default(false) @map("is_template")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  createdBy        String    @map("created_by")
+  updatedBy        String    @map("updated_by")
+
+  @@index([tenantId, financialPeriodId, status])
+  @@index([tenantId, assigneeId])
+  @@map("close_tasks")
+}
+
+model VarianceFlag {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  financialPeriodId String  @map("financial_period_id")
+  accountId        String   @map("account_id")
+  currentAmount    Decimal  @map("current_amount") @db.Decimal(15, 2)
+  priorAmount      Decimal  @map("prior_amount") @db.Decimal(15, 2)
+  varianceAmount   Decimal  @map("variance_amount") @db.Decimal(15, 2)
+  variancePercent  Decimal  @map("variance_percent") @db.Decimal(7, 2)
+  thresholdPercent Decimal  @map("threshold_percent") @db.Decimal(5, 2)
+  severity         String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status           String   @default("OPEN") // OPEN, ACKNOWLEDGED, RESOLVED
+  notes            String?
+  resolvedBy       String?  @map("resolved_by")
+  resolvedAt       DateTime? @map("resolved_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, financialPeriodId, status])
+  @@index([tenantId, accountId])
+  @@map("variance_flags")
+}
+
+// ── Driver-Based Budgeting & Scenario Planning ────────────────────────────────
+
+model BudgetScenario {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
+  name        String
+  description String?
+  type        String   @default("BASE") // BASE, UPSIDE, DOWNSIDE, ACTUALS, CUSTOM
+  fiscalYear  Int      @map("fiscal_year")
+  isLocked    Boolean  @default(false) @map("is_locked")
+  isDefault   Boolean  @default(false) @map("is_default")
+  clonedFromId String? @map("cloned_from_id")
+  status      String   @default("DRAFT") // DRAFT, APPROVED, ARCHIVED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   String   @map("created_by")
+  updatedBy   String   @map("updated_by")
+
+  lines       BudgetScenarioLine[]
+  clonedFrom  BudgetScenario? @relation("BudgetScenarioClones", fields: [clonedFromId], references: [id])
+  clones      BudgetScenario[] @relation("BudgetScenarioClones")
+
+  @@index([tenantId, orgId, fiscalYear])
+  @@map("budget_scenarios")
+}
+
+model BudgetScenarioLine {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  scenarioId     String    @map("scenario_id")
+  accountId      String    @map("account_id")
+  costCenterId   String?   @map("cost_center_id")
+  month          Int       // 1-12
+  amount         Decimal   @db.Decimal(15, 2)
+  driverType     String?   @map("driver_type") // HEADCOUNT, UNITS, PERCENTAGE, MANUAL
+  driverValue    Decimal?  @map("driver_value") @db.Decimal(15, 4) // e.g. headcount count
+  driverRate     Decimal?  @map("driver_rate") @db.Decimal(15, 4)  // e.g. salary per head
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  scenario       BudgetScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, scenarioId, accountId, month])
+  @@index([tenantId, scenarioId])
+  @@map("budget_scenario_lines")
+}

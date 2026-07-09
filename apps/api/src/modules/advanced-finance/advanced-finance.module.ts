@@ -18,6 +18,7 @@ import {
   InterCompanyService,
   FxRevaluationService,
   PayablesService,
+  FpaService,
 } from './services';
 
 const domainServices = [
@@ -37,6 +38,7 @@ const domainServices = [
   InterCompanyService,
   FxRevaluationService,
   PayablesService,
+  FpaService,
 ];
 
 @Module({

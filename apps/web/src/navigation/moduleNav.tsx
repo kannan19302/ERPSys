@@ -40,6 +40,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Chart of Accounts', href: '/finance/advanced/chart-of-accounts', icon: CreditCard },
             { name: 'Journal Entries', href: '/finance/advanced/journal-entries', icon: FileSliders },
             { name: 'Financial Periods', href: '/finance/advanced/financial-periods', icon: Activity },
+            { name: 'Close Tasks Checklist', href: '/finance/advanced/close-tasks', icon: ClipboardCheck },
             { name: 'Fixed Assets', href: '/finance/advanced/fixed-assets', icon: Building2 },
             { name: 'Lease Accounting', href: '/finance/advanced/leases', icon: FileText },
             { name: 'Subscription Billing', href: '/finance/advanced/subscriptions', icon: CreditCard },
@@ -80,6 +81,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Budgeting & Planning', href: '/finance/advanced/budgeting', icon: PieChart },
+            { name: 'Budget Scenarios', href: '/finance/advanced/budget-scenarios', icon: Layers },
+            { name: 'Scenario Comparison', href: '/finance/advanced/scenario-comparison', icon: BarChart3 },
             { name: 'Rolling Forecasts (xP&A)', href: '/finance/advanced/forecast-scenarios', icon: TrendingUp },
             { name: 'Accounting Books (Multi-GAAP)', href: '/finance/advanced/accounting-books', icon: BookOpen },
             { name: 'Financial Reports', href: '/finance/advanced/reports', icon: FolderOpen },
