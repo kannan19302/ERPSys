@@ -94,7 +94,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 13. ~~**[benchmark] Finance: AI-powered invoice capture (OCR + auto-coding)**~~ ✅ SHIPPED 2026-07-09 (commit 86023ab)
 14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3)
 15. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — defer to CRM focus turn.
-16. ~~**[benchmark] Finance: multi-book / multi-GAAP accounting**~~ ✅ SHIPPED 2026-07-09 (commit pending)
+16. ~~**[benchmark] Finance: multi-book / multi-GAAP accounting**~~ ✅ SHIPPED 2026-07-09 (commit 8a10611)
 17. ~~**[benchmark] Finance: dynamic allocation engine**~~ ✅ SHIPPED 2026-07-09 (built by a concurrent unclaimed session, landed alongside the spend-management commit — see §4 Conflict Log)
 18. ~~**[benchmark] Finance: consolidation intercompany auto-elimination**~~ ✅ SHIPPED 2026-07-09 (commit 9f0d08a)
 19. **[benchmark] Finance: virtual card issuance** — deferred sub-task from item 14 (needs a card-network processor integration, e.g. Marqeta/Stripe Issuing — infra-blocked, not a pure code gap). Leaders: Ramp, Brex. RICE: Reach 25 · Impact 6 · Confidence 40% · Effort 5 = **12**.
@@ -106,7 +106,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
-| 2026-07-09 | antigravity-ide | Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI): AccountingBookRule DB schema, CRUD endpoints, parallel journal auto-post rules engine, P&L/Balance Sheet/Cash Flow book filters, Next.js mapping rules config. | commit pending |
+| 2026-07-09 | antigravity-ide | Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI): AccountingBookRule DB schema, CRUD endpoints, parallel journal auto-post rules engine, P&L/Balance Sheet/Cash Flow book filters, Next.js mapping rules config. | commit 8a10611 |
 | 2026-07-09 | antigravity-ide | Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI): EliminationRule model, EliminationRun / EliminationRunDetail models, intercompany matching & auto-elimination batch engines, GL draft/posted auto-elimination journal entries, Next.js interactive tabbed dashboard, 5 unit tests, build/tsc clean. | commit 9f0d08a |
 | 2026-07-09 | antigravity-ide | Finance: Dynamic Allocation Engine (12+ features, DB+API+UI): CRUD, static pct allocation, dynamic headcount/revenue ratio calculations, rounding difference adjustments, draft/post allocation runs, Next.js interactive allocations dashboard tabbed list & side drawers, 6 unit tests passed, typecheck green. | commit pending |
 | 2026-07-09 | antigravity-ide | Finance: AI-Powered Invoice Capture OCR & Auto-Coding (15+ features, DB+API+UI): OCR regex extractor, PO matching, auto coding based on vendor history, Accrued Liabilities/Expenses GL postings, 11 API endpoints, Next.js review page, 11 unit tests passed, typecheck green. | commit 86023ab |
