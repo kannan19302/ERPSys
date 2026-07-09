@@ -1,0 +1,8 @@
+{
+  "slug": "finance-spend-management",
+  "agent": "claude-code-cli-c",
+  "scope": "Finance: unified spend management - CardSpendLimit model, pre-auth check, limits CRUD, utilization widget",
+  "acquiredAt": "2026-07-09T02:52:49.544Z",
+  "heartbeatAt": "2026-07-09T02:52:49.555Z",
+  "pid": 28800
+}
