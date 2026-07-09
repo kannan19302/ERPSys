@@ -106,7 +106,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
-| 2026-07-09 | antigravity-ide | Finance: Deepened and hardened intercompany loans, cash pooling sweeps/funding runs, asset revaluations/disposals GL postings, and multi-currency consolidation translation. Added 9 schema models, 36 API endpoints, 10 unit tests, typecheck/vitest green. | commit pending |
+| 2026-07-09 | antigravity-ide | Finance: Deepened and hardened intercompany loans, cash pooling sweeps/funding runs, asset revaluations/disposals GL postings, and multi-currency consolidation translation. Added 9 schema models, 36 API endpoints, 10 unit tests, typecheck/vitest green. | commit 69d174f |
 | 2026-07-09 | antigravity-ide | Finance: Deepened and hardened 8 major batches (Tax Engine, Treasury, AP, AR, Fixed Assets, FP&A, Revenue Billing, Compliance) adding 28 tables, ~200 endpoints, 12 unit tests, compile green. | commit c31e493 |
 | 2026-07-09 | antigravity-ide | Finance: E2E smoke test verification for Spend Management (corporate-cards/corp-card-sarah), Allocations, and Multi-Book accounting surfaces. | commit de8c0fa |
 | 2026-07-09 | antigravity-ide | Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI): BudgetControlConfig enforcement config (ALLOW/WARN/BLOCK), monthly BudgetPeriodAmounts (EVEN/HISTORICAL_PROPORTIONAL spreads), BudgetReallocations draft/submit/approve/reject workflow, 6 tests, spec fixes | commit ed22b5b |
