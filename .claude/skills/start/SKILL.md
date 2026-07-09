@@ -12,6 +12,12 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    `git pull`; read the Collab Board, `SCORECARD.md`, recent `CHANGELOG.md`,
    `MARKET_BENCHMARK.md`; regenerate `.ai/FEEDBACK.md` (`node scripts/feedback-scan.mjs`)
    and start the dev stack if it's down.
+   **Pending-work quarantine**: any work you did not create in THIS session —
+   uncommitted/untracked files, unclaimed half-built batches, unmerged `autopilot/*`
+   branches, code behind stale locks — is PENDING: never finish/commit/stash/revert it,
+   never `git add -A` over it. Log it once as `[pending]` in Up Next, then start a NEW
+   task in a non-overlapping sub-domain. Pending work is completed only when the user
+   explicitly instructs (e.g. "complete pending work").
 2. **Select ONE item** via the priority ladder: P0 broken typecheck/tests → P1 unfinished
    shipped work → P2 conflict log → P3 Collab Board "Up Next" queue → P4 scorecard/
    hardening quality gaps → P5 competitive gaps from `.ai/MARKET_BENCHMARK.md` →

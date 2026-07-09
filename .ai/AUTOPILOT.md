@@ -47,8 +47,19 @@ because all state is in the repo.
    (unresolved runtime errors from `error_logs`, open admin alerts, TODO/FIXME debt).
    If the dev stack is down, start it (`.\scripts\docker-start.ps1`) — the E2E gate in
    Step 5 needs it anyway.
-5. If the working tree has uncommitted changes **you did not make**, do not touch those
-   files; treat them as another agent's in-flight work (Collab Board rules apply).
+5. **Pending-work quarantine (binding).** If the repo contains work you did not create
+   in THIS session — uncommitted/untracked files, an unclaimed half-built batch, an
+   unmerged `autopilot/*` branch, or code behind a stale lock — it is **PENDING** and
+   autonomous cycles must not touch it in any way: do not finish it, commit it, stash
+   it, revert it, review it, or sweep it up with `git add -A`. It may be another
+   session mid-flight or an interrupted run; only its owner (or a human) decides.
+   Instead: (a) note it once as a `[pending]` line in Collab Board §2 (files/branch +
+   date) if not already listed, and (b) **start a NEW task in a sub-domain that does
+   not overlap those files** — if every candidate overlaps, pick from a different
+   sub-domain of the focus module entirely. Pending work is completed ONLY on explicit
+   manual instruction (e.g. the user says "complete pending work"); no autonomous
+   adoption, no matter how finished it looks. A stale-lock takeover (rule 1) releases
+   the *slug* for fresh work — it never adopts the previous holder's pending files.
 
 ## Step 1 — SELECT (the priority ladder)
 
@@ -66,7 +77,7 @@ exactly **one** item per cycle. Never skip a higher rung because a lower one is 
 | Priority | Source | Rule |
 |:--|:--|:--|
 | **P0 — Broken build/tests** | Run `pnpm turbo typecheck` and the API test suite (or read Reality Gates in `SCORECARD.md` and re-verify). | If either fails, fixing it IS the work item. Nothing else ships on a red build. |
-| **P1 — Observed failures & unfinished work** | `.ai/FEEDBACK.md` (regenerated in Step 0): unresolved runtime errors and open admin alerts **outrank everything below** — real users hitting real errors beats any backlog feature. Also: `.ai/CHANGELOG.md` follow-ups, half-wired features (API without UI, UI without API). | Fix the highest-frequency unresolved error first; mark it resolved via the error-reports API when done. Finish or explicitly de-scope unfinished work with a note. |
+| **P1 — Observed failures & unfinished work** | `.ai/FEEDBACK.md` (regenerated in Step 0): unresolved runtime errors and open admin alerts **outrank everything below** — real users hitting real errors beats any backlog feature. Also: `.ai/CHANGELOG.md` follow-ups and half-wired features **that are committed on `main` and not covered by any lock or `[pending]` entry**. | Fix the highest-frequency unresolved error first; mark it resolved via the error-reports API when done. **Never adopt another session's pending/uncommitted/unmerged work here** — that is human-gated (Step 0 rule 5); autonomous cycles start fresh tasks only. |
 | **P2 — Conflict Log** | Collab Board §4. | Resolve any logged conflict before new work. |
 | **P3 — Up Next queue** | Collab Board §2 — pick from the top, skipping items overlapping Active Claims. | This is the primary steady-state source of work. |
 | **P4 — Quality gaps** | `SCORECARD.md` modules/dimensions below 10 (e.g. auth D4/D5, admin D1); `MODULE_REGISTRY.md` § Production Readiness & Hardening open phases; RBAC decorator-stacking defect notes. | Pick the lowest-scoring dimension of the lowest-scoring module. |
@@ -387,6 +398,10 @@ Tokens spent re-deriving context are tokens not spent shipping features. Rules:
 - If blocked (missing credential, ambiguous business decision, environment broken beyond
   repair), record the blocker in Up Next tagged `[blocked]`, release your claim, and
   report — do not thrash.
+- **Pending work is human-gated.** Another session's uncommitted files, unclaimed
+  half-built batches, and unmerged branches are untouchable to autonomous cycles
+  (Step 0 rule 5): log `[pending]`, work elsewhere, and only complete them when the
+  user explicitly instructs it.
 
 ---
 

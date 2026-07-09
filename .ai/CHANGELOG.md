@@ -2,6 +2,33 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Pending-Work Quarantine — autonomous cycles never touch other sessions' work
+
+**Accomplished**: ADP now hard-quarantines pending work. `AUTOPILOT.md` Step 0 rule 5 rewritten: anything not created in the current session — uncommitted/untracked files, unclaimed half-built batches, unmerged `autopilot/*` branches, code behind stale locks — is **PENDING** and untouchable to autonomous cycles (no finishing, committing, stashing, reverting, reviewing, or `git add -A` sweeping). The agent logs it once as `[pending]` in Collab Board §2 and starts a NEW task in a non-overlapping sub-domain. P1 selection now explicitly excludes adopting other sessions' in-flight/orphaned work (only committed-on-main unfinished work not covered by locks/`[pending]` qualifies); stale-lock takeover releases the slug only, never adopts the previous holder's files; new absolute guardrail "Pending work is human-gated" — pending items are completed ONLY on explicit manual instruction (e.g. "complete pending work"). Start skill updated.
+
+**Why**: owner directive — parallel agent runs were leaving unclaimed batches/uncommitted code, and other autonomous sessions were picking them up (or colliding with them); henceforth autonomous cycles always start fresh tasks and pending work waits for a human go-ahead.
+
+## [2026-07-09] Finance: AI-Powered Invoice Capture OCR & Auto-Coding (15+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: AI-powered invoice capture (OCR + auto-coding) (RICE 169). Parity target: NetSuite Bill Capture, Sage Intacct Intelligent AP, SAP Document Management.
+
+**Accomplished**:
+- **Database**: migration `20260709153000_ap_invoice_capture` — `ap_invoice_captures` (captured invoice metadata), `ap_invoice_capture_lines` (individual parsed items). Prisma models generated.
+- **API (InvoiceCaptureService, 11 endpoints)**:
+  - List captures (filtered by status), Get capture (with lines), Create capture (from raw text with simulated OCR regex extraction of vendor, invoice #, dates, PO matching, and confidence score)
+  - Update captured metadata fields, Delete capture (draft only)
+  - Auto-code: suggests matching GL account and cost centers for each invoice line based on historical vendor invoices transaction history (fallback to default expense account)
+  - Approve & Post: updates matching PO to BILLED, posts double-entry GL journal allocations (Accrued Liabilities credit / Expenses debit)
+  - Reject: changes status to REJECTED, adds audit compliance comments
+  - Line items operations: Create manual line, Update quantity/price (recalculates header totals), Delete line (recalculates header totals)
+- **UI (Next.js page)**:
+  - `/finance/advanced/invoice-capture` — stats overview dashboard (Total, Needs Review, Approved, Avg Confidence), OCR document upload simulations dropzone (pre-loaded invoice text stream triggers), custom raw text block parser area, detailed review splitworkspace panel showing confidence rating, extracted fields form, line items accounts mapping table, auto-code suggest triggers, approve/reject/delete actions
+- **Navigation & Breadcrumbs**:
+  - Registered "AI Invoice Capture" under Payables & Treasury in moduleNav.tsx
+  - Added "invoice-capture" segment translation mapping in registry.tsx
+- **Tests**: 11 unit tests (`invoice-capture.service.spec.ts`) covering header list/get/create/patch/delete, OCR parser simulations, auto coding, line items CRUD, and ledger posting transactions. All 11 passing.
+- **Gates**: API typecheck ✅ clean, Web typecheck ✅ clean, 11/11 InvoiceCapture tests green, 253/254 advanced-finance suite green.
+
 ## [2026-07-09] Finance: Month-End Continuous Close Automation, Budget Scenarios & Driver-Based FP&A (17+ features, DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes two high-RICE `[benchmark]` gaps: continuous close automation (RICE 160) and driver-based budgeting & scenario planning (RICE 123.75). Parity target: Sage Intacct (Close Automation + Subledger Reconciliation Assistant), NetSuite (Intelligent Close Manager + Planning & Budgeting NSPB), Microsoft Dynamics 365 Finance.
