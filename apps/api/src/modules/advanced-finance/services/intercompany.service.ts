@@ -306,4 +306,246 @@ export class InterCompanyService {
       pendingMatchVolume,
     };
   }
+
+  // ── Auto-Elimination Rules & Runs ──────────────────────────────────────────
+
+  async getEliminationRules(tenantId: string) {
+    return prisma.eliminationRule.findMany({
+      where: { tenantId },
+      include: { sourceAccount: true, destinationAccount: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getEliminationRuleById(tenantId: string, id: string) {
+    const rule = await prisma.eliminationRule.findFirst({
+      where: { id, tenantId },
+      include: { sourceAccount: true, destinationAccount: true },
+    });
+    if (!rule) throw new NotFoundException('Elimination rule not found');
+    return rule;
+  }
+
+  async createEliminationRule(tenantId: string, dto: any, userId?: string) {
+    const rule = await prisma.eliminationRule.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        description: dto.description || null,
+        isActive: dto.isActive !== false,
+        sourceOrgId: dto.sourceOrgId || null,
+        destinationOrgId: dto.destinationOrgId || null,
+        matchingCriteria: dto.matchingCriteria || 'AMOUNT_CURRENCY_DATE',
+        toleranceDays: dto.toleranceDays !== undefined ? Number(dto.toleranceDays) : 10,
+        sourceAccountId: dto.sourceAccountId,
+        destinationAccountId: dto.destinationAccountId,
+        createdBy: userId || 'system',
+        updatedBy: userId || 'system',
+      },
+    });
+    return rule;
+  }
+
+  async updateEliminationRule(tenantId: string, id: string, dto: any, userId?: string) {
+    const rule = await this.getEliminationRuleById(tenantId, id);
+    return prisma.eliminationRule.update({
+      where: { id: rule.id },
+      data: {
+        name: dto.name !== undefined ? dto.name : undefined,
+        description: dto.description !== undefined ? dto.description : undefined,
+        isActive: dto.isActive !== undefined ? dto.isActive : undefined,
+        sourceOrgId: dto.sourceOrgId !== undefined ? dto.sourceOrgId : undefined,
+        destinationOrgId: dto.destinationOrgId !== undefined ? dto.destinationOrgId : undefined,
+        matchingCriteria: dto.matchingCriteria !== undefined ? dto.matchingCriteria : undefined,
+        toleranceDays: dto.toleranceDays !== undefined ? Number(dto.toleranceDays) : undefined,
+        sourceAccountId: dto.sourceAccountId !== undefined ? dto.sourceAccountId : undefined,
+        destinationAccountId: dto.destinationAccountId !== undefined ? dto.destinationAccountId : undefined,
+        updatedBy: userId || 'system',
+      },
+    });
+  }
+
+  async deleteEliminationRule(tenantId: string, id: string, userId?: string) {
+    const rule = await this.getEliminationRuleById(tenantId, id);
+    return prisma.eliminationRule.delete({
+      where: { id: rule.id },
+    });
+  }
+
+  async getEliminationRuns(tenantId: string) {
+    return prisma.eliminationRun.findMany({
+      where: { tenantId },
+      include: {
+        journal: true,
+        details: {
+          include: {
+            rule: true,
+            transaction: true,
+          },
+        },
+      },
+      orderBy: { runDate: 'desc' },
+    });
+  }
+
+  async executeEliminationRun(tenantId: string, periodStart: string, periodEnd: string, userId?: string) {
+    const start = new Date(periodStart);
+    const end = new Date(periodEnd);
+
+    // 1. Fetch active rules
+    const rules = await prisma.eliminationRule.findMany({
+      where: { tenantId, isActive: true },
+    });
+    if (rules.length === 0) {
+      throw new BadRequestException('No active intercompany elimination rules found.');
+    }
+
+    // 2. Perform auto match to match unmatched AR/AP pairs in database
+    await this.autoMatchTransactions(tenantId);
+
+    // 3. Find matched intercompany transactions in this period
+    const matchedTxs = await prisma.interCompanyTransaction.findMany({
+      where: {
+        tenantId,
+        status: 'MATCHED',
+        date: { gte: start, lte: end },
+      },
+    });
+
+    if (matchedTxs.length === 0) {
+      throw new BadRequestException('No matched intercompany transactions found for this period.');
+    }
+
+    // 4. Apply rules to filter transactions that can be auto-eliminated
+    const eligibleDetails: Array<{ ruleId: string; tx: any }> = [];
+    for (const tx of matchedTxs) {
+      const matchingRule = rules.find(r => {
+        const orgMatch = (!r.sourceOrgId || r.sourceOrgId === tx.fromOrgId) &&
+                         (!r.destinationOrgId || r.destinationOrgId === tx.toOrgId);
+        return orgMatch;
+      });
+
+      if (matchingRule) {
+        eligibleDetails.push({ ruleId: matchingRule.id, tx });
+      }
+    }
+
+    if (eligibleDetails.length === 0) {
+      throw new BadRequestException('No intercompany transactions matched the active elimination rules.');
+    }
+
+    // 5. Build consolidated draft elimination Journal entries
+    const totalEliminated = eligibleDetails.reduce((sum, item) => sum + Number(item.tx.amount), 0);
+
+    const journalEntries: any[] = [];
+    for (const item of eligibleDetails) {
+      const rule = rules.find(r => r.id === item.ruleId)!;
+      journalEntries.push({
+        tenantId,
+        accountId: rule.destinationAccountId,
+        debit: item.tx.amount,
+        credit: new Prisma.Decimal(0),
+        description: `Eliminate Intercompany Payables/Clearing for Tx ${item.tx.id}`,
+      });
+      journalEntries.push({
+        tenantId,
+        accountId: rule.sourceAccountId,
+        debit: new Prisma.Decimal(0),
+        credit: item.tx.amount,
+        description: `Eliminate Intercompany Receivables for Tx ${item.tx.id}`,
+      });
+    }
+
+    const primaryOrgId = eligibleDetails[0].tx.fromOrgId;
+
+    const journal = await prisma.journal.create({
+      data: {
+        tenantId,
+        orgId: primaryOrgId,
+        entryNumber: `AUTO-ELIM-${Date.now().toString().slice(-6)}`,
+        date: new Date(),
+        status: 'DRAFT',
+        notes: `Consolidated Intercompany Auto-Elimination Run from ${periodStart} to ${periodEnd}`,
+        entries: {
+          create: journalEntries,
+        },
+      },
+    });
+
+    const run = await prisma.eliminationRun.create({
+      data: {
+        tenantId,
+        periodStart: start,
+        periodEnd: end,
+        status: 'DRAFT',
+        totalEliminated: new Prisma.Decimal(totalEliminated),
+        rulesAppliedCount: Array.from(new Set(eligibleDetails.map(d => d.ruleId))).length,
+        journalId: journal.id,
+        createdBy: userId || 'system',
+        details: {
+          create: eligibleDetails.map(item => ({
+            ruleId: item.ruleId,
+            transactionId: item.tx.id,
+            amount: item.tx.amount,
+            currency: item.tx.currency,
+          })),
+        },
+      },
+      include: {
+        details: true,
+      },
+    });
+
+    return run;
+  }
+
+  async postEliminationRun(tenantId: string, runId: string, userId?: string) {
+    const run = await prisma.eliminationRun.findFirst({
+      where: { id: runId, tenantId },
+      include: { details: true },
+    });
+    if (!run) throw new NotFoundException('Elimination run not found');
+    if (run.status === 'POSTED') {
+      throw new BadRequestException('Elimination run has already been posted');
+    }
+
+    if (run.journalId) {
+      await prisma.journal.update({
+        where: { id: run.journalId },
+        data: { status: 'POSTED' },
+      });
+    }
+
+    for (const detail of run.details) {
+      const tx = await prisma.interCompanyTransaction.findFirst({
+        where: { id: detail.transactionId },
+      });
+
+      if (tx) {
+        if (tx.fromInvoiceId) {
+          await prisma.invoice.update({
+            where: { id: tx.fromInvoiceId },
+            data: { status: 'PAID', paidAmount: tx.amount, paidAt: new Date() },
+          });
+        }
+        if (tx.toInvoiceId) {
+          await prisma.paymentSchedule.update({
+            where: { id: tx.toInvoiceId },
+            data: { status: 'PAID' },
+          });
+        }
+
+        await prisma.interCompanyTransaction.update({
+          where: { id: tx.id },
+          data: { status: 'ELIMINATED', eliminationJournalId: run.journalId },
+        });
+      }
+    }
+
+    return prisma.eliminationRun.update({
+      where: { id: runId },
+      data: { status: 'POSTED' },
+      include: { journal: true },
+    });
+  }
 }

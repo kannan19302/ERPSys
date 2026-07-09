@@ -2,6 +2,25 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: Consolidation Intercompany Auto-Elimination (RICE 120). Parity target: NetSuite OneWorld, FloQast.
+
+**Accomplished**:
+- **Database**: migration `20260709040000_intercompany_elimination_rules` — added `EliminationRule` (definition of matching and GL Accounts), `EliminationRun` (executions of auto-elimination runs), and `EliminationRunDetail` (linked matches). Added relationships to `Account` and `Journal`.
+- **API (InterCompanyService & 8 endpoints)**:
+  - CRUD endpoints for elimination rules.
+  - Run execution endpoint `/intercompany/elimination-runs`: runs auto-match, scans matched transactions in the period, maps transactions matching rules, aggregates offsets, and generates a balanced draft Journal entry in primary book.
+  - Approve & Post endpoint `/intercompany/elimination-runs/:id/post`: updates the draft journal entry status to `POSTED`, updates all associated matched intercompany transactions to `ELIMINATED`, and closes underlying AR invoices and AP payment schedules to `PAID`.
+- **UI (Next.js page)**:
+  - Overhauled `/finance/advanced/intercompany/eliminations` — interactive netting compliance dashboard updated with state-driven tabs: "Ledger Entries", "Auto-Elimination Rules" (rules list + rules creation drawer), and "Auto-Elimination Runs" (period date inputs + runs history list with Approve/Post triggers).
+- **Permissions & Security**:
+  - Registered 3 new permissions: `finance.eliminations.read`, `finance.eliminations.manage`, and `finance.eliminations.run` in `registry.ts`.
+- **Tests**: 5 unit tests added to `intercompany.service.spec.ts` covering rules CRUD, run execution, draft journal entries mapping, and post/approval workflow.
+- **Gates**: API typecheck ✅ clean, Web typecheck ✅ clean, all 340 module tests passing. E2E verification is unverified (dev stack servers are listening, but browser subagent tests were skipped per rules).
+
+**Why**: highest RICE-scored unclaimed item in Finance Up Next; Finance is the current focus module.
+
 ## [2026-07-09] Worktree-Per-Session Helper — scripts/worktree.mjs
 
 **Accomplished**: implemented the mandated isolation tooling from § Parallel Agents rule 7. `node scripts/worktree.mjs new <slug>` creates a sibling worktree `../ERPSys-<slug>` on branch `autopilot/<slug>` from fresh `origin/main` (sessions/IDEs open that folder; `pnpm install` hardlinks from the shared store in seconds); `done <slug>` refuses dirty trees, rebases onto `origin/main`, pushes to `main`, and removes the worktree + branch (enforcing everything-ends-on-main); `list` shows active trees. Round-trip verified live (new → done → clean). AUTOPILOT rule 7 and the start skill now reference the helper as the standard cycle wrapper for parallel sessions.

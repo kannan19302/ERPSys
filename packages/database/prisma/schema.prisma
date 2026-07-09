@@ -2814,6 +2814,8 @@ model Account {
   investmentPortfolios InvestmentPortfolio[]
   fxRevaluationDetails FxRevaluationDetail[]
   allocationRules      AllocationRule[]
+  eliminationSourceRules      EliminationRule[]      @relation("EliminationSourceAccount")
+  eliminationDestinationRules EliminationRule[]      @relation("EliminationDestinationAccount")
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -2858,6 +2860,7 @@ model Journal {
   book           AccountingBook?     @relation(fields: [bookId], references: [id])
   depreciations  AssetDepreciation[]
   allocationRuns AllocationRun[]
+  eliminationRuns EliminationRun[]
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -8958,6 +8961,7 @@ model InterCompanyTransaction {
   eliminationJournalId String?  @map("elimination_journal_id")
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
+  eliminationRunDetails EliminationRunDetail[]
 
   @@index([tenantId])
   @@map("intercompany_transactions")
@@ -9285,3 +9289,73 @@ model AllocationRun {
   @@index([tenantId])
   @@map("allocation_runs")
 }
+
+// ─────────────────────────────────────────────────
+// CONSOLIDATION INTERCOMPANY AUTO-ELIMINATION RULES (module #2 advanced-finance)
+// ─────────────────────────────────────────────────
+
+model EliminationRule {
+  id                   String                 @id @default(cuid())
+  tenantId             String                 @map("tenant_id")
+  name                 String
+  description          String?
+  isActive             Boolean                @default(true) @map("is_active")
+  sourceOrgId          String?                @map("source_org_id")
+  destinationOrgId     String?                @map("destination_org_id")
+  matchingCriteria     String                 @map("matching_criteria") // AMOUNT_CURRENCY_DATE, AMOUNT_ONLY
+  toleranceDays        Int                    @default(10) @map("tolerance_days")
+  sourceAccountId      String                 @map("source_account_id")
+  destinationAccountId String                 @map("destination_account_id")
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+  createdBy            String?                @map("created_by")
+  updatedBy            String?                @map("updated_by")
+
+  sourceAccount        Account                @relation("EliminationSourceAccount", fields: [sourceAccountId], references: [id])
+  destinationAccount   Account                @relation("EliminationDestinationAccount", fields: [destinationAccountId], references: [id])
+  runDetails           EliminationRunDetail[]
+
+  @@index([tenantId])
+  @@map("elimination_rules")
+}
+
+model EliminationRun {
+  id                String                 @id @default(cuid())
+  tenantId          String                 @map("tenant_id")
+  periodStart       DateTime               @map("period_start")
+  periodEnd         DateTime               @map("period_end")
+  runDate           DateTime               @default(now()) @map("run_date")
+  status            String                 @default("DRAFT") // DRAFT, POSTED
+  totalEliminated   Decimal                @map("total_eliminated") @db.Decimal(15, 2)
+  rulesAppliedCount Int                    @default(0) @map("rules_applied_count")
+  journalId         String?                @map("journal_id")
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+  createdBy         String?                @map("created_by")
+
+  journal           Journal?               @relation(fields: [journalId], references: [id])
+  details           EliminationRunDetail[]
+
+  @@index([tenantId])
+  @@map("elimination_runs")
+}
+
+model EliminationRunDetail {
+  id            String                 @id @default(cuid())
+  runId         String                 @map("run_id")
+  ruleId        String                 @map("rule_id")
+  transactionId String                 @map("transaction_id")
+  amount        Decimal                @db.Decimal(15, 2)
+  currency      String
+  createdAt     DateTime               @default(now()) @map("created_at")
+
+  run           EliminationRun         @relation(fields: [runId], references: [id], onDelete: Cascade)
+  rule          EliminationRule        @relation(fields: [ruleId], references: [id])
+  transaction   InterCompanyTransaction @relation(fields: [transactionId], references: [id])
+
+  @@index([runId])
+  @@index([ruleId])
+  @@index([transactionId])
+  @@map("elimination_run_details")
+}
+

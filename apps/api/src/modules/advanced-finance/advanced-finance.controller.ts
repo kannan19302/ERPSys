@@ -410,6 +410,26 @@ const manualMatchIntercompanySchema = z.object({
   description: z.string().optional(),
 });
 
+const createEliminationRuleSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  isActive: z.boolean().optional(),
+  sourceOrgId: z.string().optional(),
+  destinationOrgId: z.string().optional(),
+  matchingCriteria: z.enum(['AMOUNT_CURRENCY_DATE', 'AMOUNT_ONLY']),
+  toleranceDays: z.number().int().nonnegative().optional(),
+  sourceAccountId: z.string().min(1),
+  destinationAccountId: z.string().min(1),
+});
+
+const updateEliminationRuleSchema = createEliminationRuleSchema.partial();
+
+const executeEliminationRunSchema = z.object({
+  periodStart: z.string().min(1),
+  periodEnd: z.string().min(1),
+});
+
+
 const createFxRevaluationSchema = z.object({
   runDate: z.string(),
   targetCurrency: z.string().min(3).max(3),
@@ -1413,6 +1433,94 @@ export class AdvancedFinanceController {
   async getIntercompanyStats(@Req() req: AuthenticatedRequest) {
     return this.interCompanyService.getConsolidatedStats(req.user.tenantId);
   }
+
+  // ── Auto-Elimination Rules & Runs ──
+
+  @ApiOperation({ summary: 'Get all intercompany elimination rules' })
+  @Get('intercompany/elimination-rules')
+  @Permissions('finance.eliminations.read')
+  async getEliminationRules(@Req() req: AuthenticatedRequest) {
+    return this.interCompanyService.getEliminationRules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get intercompany elimination rule by ID' })
+  @Get('intercompany/elimination-rules/:id')
+  @Permissions('finance.eliminations.read')
+  async getEliminationRuleById(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.interCompanyService.getEliminationRuleById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create intercompany elimination rule' })
+  @Post('intercompany/elimination-rules')
+  @Permissions('finance.eliminations.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EliminationRule')
+  async createEliminationRule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createEliminationRuleSchema) dto: z.infer<typeof createEliminationRuleSchema>,
+  ) {
+    return this.interCompanyService.createEliminationRule(req.user.tenantId, dto, req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Update intercompany elimination rule' })
+  @Patch('intercompany/elimination-rules/:id')
+  @Permissions('finance.eliminations.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EliminationRule', 'id')
+  async updateEliminationRule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateEliminationRuleSchema) dto: z.infer<typeof updateEliminationRuleSchema>,
+  ) {
+    return this.interCompanyService.updateEliminationRule(req.user.tenantId, id, dto, req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Delete intercompany elimination rule' })
+  @Delete('intercompany/elimination-rules/:id')
+  @Permissions('finance.eliminations.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EliminationRule', 'id')
+  async deleteEliminationRule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.interCompanyService.deleteEliminationRule(req.user.tenantId, id, req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Get intercompany elimination runs' })
+  @Get('intercompany/elimination-runs')
+  @Permissions('finance.eliminations.read')
+  async getEliminationRuns(@Req() req: AuthenticatedRequest) {
+    return this.interCompanyService.getEliminationRuns(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Execute intercompany elimination run' })
+  @Post('intercompany/elimination-runs')
+  @Permissions('finance.eliminations.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EliminationRun')
+  async executeEliminationRun(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(executeEliminationRunSchema) dto: z.infer<typeof executeEliminationRunSchema>,
+  ) {
+    return this.interCompanyService.executeEliminationRun(req.user.tenantId, dto.periodStart, dto.periodEnd, req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Post/approve intercompany elimination run' })
+  @Post('intercompany/elimination-runs/:id/post')
+  @Permissions('finance.eliminations.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EliminationRun', 'id')
+  async postEliminationRun(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.interCompanyService.postEliminationRun(req.user.tenantId, id, req.user.id);
+  }
+
 
   @ApiOperation({ summary: 'Get FX revaluation runs list' })
   @Get('fx-revaluation/runs')
