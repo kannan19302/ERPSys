@@ -1,8 +1,0 @@
-{
-  "slug": "finance-payables-ap-matching",
-  "agent": "antigravity-ide-2",
-  "scope": "Finance: AP three-way matching + payment batches + drill-through (completing stale batch from prior session)",
-  "acquiredAt": "2026-07-09T02:07:16.180Z",
-  "heartbeatAt": "2026-07-09T02:07:16.192Z",
-  "pid": 13256
-}
