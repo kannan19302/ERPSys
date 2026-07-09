@@ -14,6 +14,7 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:-|
+| 2026-07-09 | 436,309 | +1,200 | Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI): BudgetControlConfig enforcement config (ALLOW/WARN/BLOCK), monthly BudgetPeriodAmounts (EVEN/HISTORICAL_PROPORTIONAL spreads), BudgetReallocations draft/submit/approve/reject workflow, 6 tests, spec fixes |
 | 2026-07-09 | 435,109 | +1,600 | Finance: AP Three-Way Matching + Batch Payment Runs + Report Drill-Through (18+ features, DB+API+UI): AP match rules, exception queue, payment batches (NACHA/SEPA/CSV export), GL posting, report drill-through, 25 tests |
 | 2026-07-09 | 433,509 | +1,105 | Finance: Subscription Billing & MRR/ARR Dashboard (15+ features, DB+API+UI): MRR/ARR/churn metrics, Run Billing job trigger, DataTable with filter and lifecycle controls, create form, usage tracking logs, spec tests |
 | 2026-07-08 | 432,404 | +1,344 | Finance Lease Accounting full vertical slice (ASC 842/IFRS 16): 17 API endpoints, amortization engine, GL posting, 3 UI pages, 23 tests; subscriptions.service.ts TS fixes |
@@ -61,7 +62,6 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| antigravity-ide | 2026-07-09T21:02:11+05:30 | Finance: Active Budget Control, Spread Methods, and Reallocations | main | 🟡 CLAIMED |
 
 
 
@@ -108,6 +108,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-09 | antigravity-ide | Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI): BudgetControlConfig enforcement config (ALLOW/WARN/BLOCK), monthly BudgetPeriodAmounts (EVEN/HISTORICAL_PROPORTIONAL spreads), BudgetReallocations draft/submit/approve/reject workflow, 6 tests, spec fixes | commit ed22b5b |
 | 2026-07-09 | antigravity-ide | Finance: Project-Based Accounting WIP, Job Costing & POC (20+ features, DB+API+UI): estimatedCost/contractValue fields, ProjectCostEntry schema + CRUD endpoints, WIP calculation (labor/material/overhead breakdown + POC % + over/under-billing WIP status), WIP summary endpoint, new /projects detail tab and form, new /projects/wip-reports dashboard. | commit cea2b8c |
 | 2026-07-09 | antigravity-ide | Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI): AccountingBookRule DB schema, CRUD endpoints, parallel journal auto-post rules engine, P&L/Balance Sheet/Cash Flow book filters, Next.js mapping rules config. | commit 8a10611 |
 | 2026-07-09 | antigravity-ide | Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI): EliminationRule model, EliminationRun / EliminationRunDetail models, intercompany matching & auto-elimination batch engines, GL draft/posted auto-elimination journal entries, Next.js interactive tabbed dashboard, 5 unit tests, build/tsc clean. | commit 9f0d08a |

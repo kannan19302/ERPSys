@@ -28,6 +28,8 @@ import {
   InvoiceCaptureService,
   CardSpendLimitService,
   AllocationService,
+  BudgetControlService,
+  BudgetReallocationService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -499,6 +501,8 @@ export class AdvancedFinanceController {
     private readonly invoiceCaptureService: InvoiceCaptureService,
     private readonly cardSpendLimitService: CardSpendLimitService,
     private readonly allocationService: AllocationService,
+    private readonly budgetControlService: BudgetControlService,
+    private readonly budgetReallocationService: BudgetReallocationService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -3344,5 +3348,105 @@ export class AdvancedFinanceController {
   @TrackChanges('AllocationRun')
   async postRun(@Req() req: AuthenticatedRequest, @Param('id') runId: string) {
     return this.allocationService.postAllocationRun(req.user.tenantId, runId, req.user.userId);
+  }
+
+  // ── BUDGET CONTROL CONFIG ──────────────────────────────────
+  @ApiOperation({ summary: 'Get budget control config' })
+  @Get('budget-control/config')
+  @Permissions('finance.budget.read')
+  async getControlConfig(@Req() req: AuthenticatedRequest) {
+    return this.budgetControlService.getControlConfig(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Update budget control config' })
+  @Patch('budget-control/config')
+  @Permissions('finance.budget.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetControlConfig')
+  async updateControlConfig(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(
+      z.object({
+        enforcementAction: z.enum(['ALLOW', 'WARN', 'BLOCK']).optional(),
+        checkInvoices: z.boolean().optional(),
+        checkJournals: z.boolean().optional(),
+        checkExpenses: z.boolean().optional(),
+        tolerancePercentage: z.number().min(0).max(100).optional(),
+      })
+    )
+    dto: any,
+  ) {
+    return this.budgetControlService.updateControlConfig(req.user.tenantId, dto);
+  }
+
+  // ── BUDGET REALLOCATIONS ──────────────────────────────────
+  @ApiOperation({ summary: 'Get budget reallocations' })
+  @Get('budget-reallocations')
+  @Permissions('finance.budget.read')
+  async getReallocations(@Req() req: AuthenticatedRequest) {
+    return this.budgetReallocationService.getReallocations(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get budget reallocation by ID' })
+  @Get('budget-reallocations/:id')
+  @Permissions('finance.budget.read')
+  async getReallocationById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.budgetReallocationService.getReallocationById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create budget reallocation' })
+  @Post('budget-reallocations')
+  @Permissions('finance.budget.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetReallocation')
+  async createReallocation(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(
+      z.object({
+        description: z.string().optional(),
+        lines: z.array(
+          z.object({
+            budgetId: z.string().min(1),
+            type: z.enum(['SOURCE', 'DESTINATION']),
+            amount: z.number().positive(),
+          })
+        ).min(2),
+      })
+    )
+    dto: any,
+  ) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.budgetReallocationService.createReallocation(req.user.tenantId, orgId, dto, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Submit budget reallocation' })
+  @Post('budget-reallocations/:id/submit')
+  @Permissions('finance.budget.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetReallocation', 'id')
+  async submitReallocation(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.budgetReallocationService.submitReallocation(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Approve budget reallocation' })
+  @Post('budget-reallocations/:id/approve')
+  @Permissions('finance.budget.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetReallocation', 'id')
+  async approveReallocation(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.budgetReallocationService.approveReallocation(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Reject budget reallocation' })
+  @Post('budget-reallocations/:id/reject')
+  @Permissions('finance.budget.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BudgetReallocation', 'id')
+  async rejectReallocation(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ notes: z.string() })) dto: { notes: string },
+  ) {
+    return this.budgetReallocationService.rejectReallocation(req.user.tenantId, id, dto.notes, req.user.userId);
   }
 }

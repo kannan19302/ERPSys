@@ -18,4 +18,7 @@ export { FpaService } from './fpa.service';
 export { InvoiceCaptureService } from './invoice-capture.service';
 export { CardSpendLimitService } from './card-spend-limit.service';
 export { AllocationService } from './allocation.service';
+export { BudgetControlService } from './budget-control.service';
+export { BudgetReallocationService } from './budget-reallocation.service';
+
 

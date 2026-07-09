@@ -99,3 +99,6 @@ CREATE INDEX "budget_scenario_lines_tenant_id_scenario_id_idx" ON "budget_scenar
 -- AddForeignKey
 ALTER TABLE "budget_scenarios" ADD CONSTRAINT "budget_scenarios_cloned_from_id_fkey" FOREIGN KEY ("cloned_from_id") REFERENCES "budget_scenarios"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "budget_scenario_lines" ADD CONSTRAINT "budget_scenario_lines_scenario_id_fkey" FOREIGN KEY ("scenario_id") REFERENCES "budget_scenarios"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- RenameIndex
+ALTER INDEX "budget_scenario_lines_tenant_id_scenario_id_account_id_month_ke" RENAME TO "budget_scenario_lines_tenant_id_scenario_id_account_id_mont_key";

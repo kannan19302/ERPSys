@@ -3,6 +3,7 @@ import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { GlAccountingService } from './gl-accounting.service';
 import { CardSpendLimitService } from './card-spend-limit.service';
+import { BudgetControlService } from './budget-control.service';
 
 const SECOND_APPROVAL_THRESHOLD = 2000;
 
@@ -11,6 +12,7 @@ export class ExpenseManagementService {
   constructor(
     private readonly glService: GlAccountingService,
     private readonly cardSpendLimitService: CardSpendLimitService,
+    private readonly budgetControlService?: BudgetControlService,
   ) {}
 
   // ── Expense Reports ──────────────────────────────────────────
@@ -261,6 +263,26 @@ export class ExpenseManagementService {
     if (itemCount === 0) {
       throw new BadRequestException('Cannot submit an expense report with no line items.');
     }
+
+    // Budget checking
+    if (this.budgetControlService) {
+      const config = await this.budgetControlService.getControlConfig(tenantId);
+      if (config.checkExpenses) {
+        let expenseAccount = await prisma.account.findFirst({
+          where: { tenantId, code: '6100-EXP-REIMB', isActive: true },
+        });
+        if (expenseAccount) {
+          await this.budgetControlService.checkBudgetLimit(
+            tenantId,
+            report.orgId,
+            expenseAccount.id,
+            Number(report.totalAmount),
+            new Date(),
+          );
+        }
+      }
+    }
+
     return prisma.expenseReport.update({
       where: { id: reportId },
       data: { status: 'SUBMITTED' },

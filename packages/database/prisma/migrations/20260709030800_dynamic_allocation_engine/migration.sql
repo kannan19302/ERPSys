@@ -51,6 +51,3 @@ ALTER TABLE "allocation_runs" ADD CONSTRAINT "allocation_runs_rule_id_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "allocation_runs" ADD CONSTRAINT "allocation_runs_journal_id_fkey" FOREIGN KEY ("journal_id") REFERENCES "journals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- RenameIndex
-ALTER INDEX "budget_scenario_lines_tenant_id_scenario_id_account_id_month_ke" RENAME TO "budget_scenario_lines_tenant_id_scenario_id_account_id_mont_key";

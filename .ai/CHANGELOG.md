@@ -2,6 +2,28 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes budget enforcement and reallocation gaps. Parity target: SAP, NetSuite, and Dynamics 365.
+
+**Accomplished**:
+- **Database**: Applied migration `20260709153531_add_budget_control_and_reallocation` adding `BudgetPeriodAmount`, `BudgetControlConfig`, `BudgetReallocation`, and `BudgetReallocationLine` tables.
+- **Prisma Seed**: Updated `seed.ts` to cleanly skip archived industry modules (Healthcare, Education, Real Estate, Field Service) ensuring successful database seeds.
+- **Backend Services**:
+  - Implemented `BudgetControlService` to manage active enforcement checks (`ALLOW`, `WARN`, `BLOCK`) across general ledger journals and expense reports.
+  - Implemented `BudgetReallocationService` to request, submit, approve, and reject budget transfers atomically via database transactions.
+  - Updated `BudgetingService` to support monthly budget spreads (`EVEN` or `HISTORICAL_PROPORTIONAL` calculated from previous fiscal year actuals).
+  - Integrated active budget checks into `GlAccountingService` (journal submission/posting) and `ExpenseManagementService` (expense report submission).
+- **API Controller**: Added REST endpoints under `/advanced-finance/budget-control/config` and `/advanced-finance/budget-reallocations` with Swagger documentation, SwTrackChanges change history tracking, and permissions enforcement.
+- **Frontend UI**:
+  - Upgraded Next.js `/finance/advanced/budgeting` page with a tabbed interface separating Allocated Budgets, Budget Reallocations, and Active Control Config.
+  - Added Spread Method selector dropdown in the budget allocation form.
+  - Added budget reallocation request form and list view with Submit/Approve/Reject controls.
+  - Added Active Control Config settings panel to update enforcement actions, tolerance buffers, and toggle channel verifications.
+- **Verification**: Created and verified 6 unit tests in `budget-control-and-reallocation.spec.ts`. All 350 advanced-finance tests passing, typechecks completely green, and build builds cleanly.
+
+**Why**: Hardening the Finance & Accounting Focus Module with active budget control, spread options, and reallocation workflows.
+
 ## [2026-07-09] Finance: Project-Based Accounting (WIP, Job Costing & POC Revenue Recognition) (20+ features, DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: Project-Based Accounting (RICE 84). Parity target: Sage Intacct (construction WIP + POC), NetSuite SRP, Deltek Costpoint.

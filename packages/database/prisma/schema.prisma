@@ -2987,6 +2987,9 @@ model Budget {
   project          Project?          @relation(fields: [projectId], references: [id])
   forecastScenario ForecastScenario? @relation(fields: [forecastScenarioId], references: [id])
 
+  periodAmounts    BudgetPeriodAmount[]
+  reallocationLines BudgetReallocationLine[]
+
   @@index([tenantId])
   @@map("budgets")
 }
@@ -9053,4 +9056,76 @@ model EliminationRunDetail {
   @@index([transactionId])
   @@map("elimination_run_details")
 }
+
+model BudgetPeriodAmount {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  budgetId  String   @map("budget_id")
+  period    String   // e.g. "2026-07"
+  amount    Decimal  @db.Decimal(15, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, budgetId, period])
+  @@index([tenantId])
+  @@index([budgetId])
+  @@map("budget_period_amounts")
+}
+
+model BudgetControlConfig {
+  id                   String   @id @default(cuid())
+  tenantId             String   @unique @map("tenant_id")
+  enforcementAction    String   @default("WARN") // WARN, BLOCK, ALLOW
+  checkInvoices        Boolean  @default(true) @map("check_invoices")
+  checkJournals        Boolean  @default(true) @map("check_journals")
+  checkExpenses        Boolean  @default(true) @map("check_expenses")
+  tolerancePercentage  Decimal  @default(0.0) @db.Decimal(5, 2) @map("tolerance_percentage")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("budget_control_configs")
+}
+
+model BudgetReallocation {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
+  number      String   @unique // e.g. "BR-2026-0001"
+  description String?
+  status      String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED
+  requestedBy String   @map("requested_by")
+  approvedBy  String?  @map("approved_by")
+  approvedAt  DateTime? @map("approved_at")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lines       BudgetReallocationLine[]
+
+  @@index([tenantId])
+  @@map("budget_reallocations")
+}
+
+model BudgetReallocationLine {
+  id                   String   @id @default(cuid())
+  tenantId             String   @map("tenant_id")
+  budgetReallocationId String   @map("budget_reallocation_id")
+  budgetId             String   @map("budget_id")
+  type                 String   // SOURCE (giving funds), DESTINATION (receiving funds)
+  amount               Decimal  @db.Decimal(15, 2)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  reallocation BudgetReallocation @relation(fields: [budgetReallocationId], references: [id], onDelete: Cascade)
+  budget       Budget             @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([budgetReallocationId])
+  @@index([budgetId])
+  @@map("budget_reallocation_lines")
+}
+
 

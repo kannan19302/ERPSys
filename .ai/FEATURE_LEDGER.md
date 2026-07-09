@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T13:28:06.884Z
+> Last generated: 2026-07-09T15:56:34.375Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1675 features** across 36 modules
+## System total: **1615 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 268 |
+| [advanced-finance](#advanced-finance) | 276 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -26,11 +26,9 @@
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
-| [education](#education) | 20 |
-| [field-service](#field-service) | 13 |
+| [ext-gateway](#ext-gateway) | 1 |
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
-| [healthcare](#healthcare) | 24 |
 | [hr](#hr) | 8 |
 | [inventory](#inventory) | 73 |
 | [localization](#localization) | 4 |
@@ -41,7 +39,6 @@
 | [procurement](#procurement) | 38 |
 | [projects](#projects) | 25 |
 | [pwa](#pwa) | 3 |
-| [real-estate](#real-estate) | 12 |
 | [reporting](#reporting) | 12 |
 | [saas](#saas) | 13 |
 | [sales](#sales) | 29 |
@@ -240,7 +237,7 @@
 
 ## advanced-finance
 
-268 features
+276 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -512,6 +509,14 @@
 | GET | `/advanced-finance/allocations/runs` | List all allocation runs | `finance.allocations.read` |
 | POST | `/advanced-finance/allocations/rules/:id/run` | Execute an allocation run (generate draft journal) | `finance.allocations.read` |
 | POST | `/advanced-finance/allocations/runs/:id/post` | Approve and post allocation run journal entries | `finance.allocations.run` |
+| GET | `/advanced-finance/budget-control/config` | Get budget control config | `finance.budget.read` |
+| PATCH | `/advanced-finance/budget-control/config` | Update budget control config | `finance.budget.read` |
+| GET | `/advanced-finance/budget-reallocations` | Get budget reallocations | `finance.budget.read` |
+| GET | `/advanced-finance/budget-reallocations/:id` | Get budget reallocation by ID | `finance.budget.read` |
+| POST | `/advanced-finance/budget-reallocations` | Create budget reallocation | `finance.budget.read` |
+| POST | `/advanced-finance/budget-reallocations/:id/submit` | Submit budget reallocation | `finance.budget.update` |
+| POST | `/advanced-finance/budget-reallocations/:id/approve` | Approve budget reallocation | `finance.budget.update` |
+| POST | `/advanced-finance/budget-reallocations/:id/reject` | Reject budget reallocation | `finance.budget.update` |
 
 ## advanced-hr
 
@@ -1334,52 +1339,13 @@
 | POST | `/store/:tenantSlug/checkout` | — | — |
 | POST | `/store/:tenantSlug/webhooks/stripe` | [PUBLIC] Stripe Webhook receiver for order payment completions | — |
 
-## education
+## ext-gateway
 
-20 features
-
-| Method | Route | Functionality | Permission |
-|:--|:--|:--|:--|
-| POST | `/education/core/enrol` | Enrol student | `education.create` |
-| POST | `/education/core/grades` | Record grade | `education.create` |
-| GET | `/education/core/transcript/:studentId` | Get transcript | `education.read` |
-| POST | `/education/core/attendance` | Record attendance | `education.create` |
-| POST | `/education/core/fees/invoice` | Generate fee | `education.create` |
-| GET | `/education/students` | Get students | `hr.employee.read` |
-| POST | `/education/students` | Create student | `hr.employee.read` |
-| GET | `/education/courses` | Get courses | `hr.employee.read` |
-| POST | `/education/courses` | Create course | `hr.employee.read` |
-| GET | `/education/timetables` | Get timetables | `hr.employee.read` |
-| POST | `/education/timetables` | Create timetable | `hr.employee.read` |
-| GET | `/education/fee-structures` | Get fee structures | `hr.employee.read` |
-| POST | `/education/fee-structures` | Create fee structure | `hr.employee.read` |
-| GET | `/education/student-fees` | Get student fees | `hr.employee.read` |
-| POST | `/education/student-fees/pay` | Pay student fee | `hr.employee.read` |
-| GET | `/education/books` | Get book register | `hr.employee.read` |
-| POST | `/education/books` | Create book | `hr.employee.read` |
-| GET | `/education/book-transactions` | Get book transactions | `hr.employee.read` |
-| POST | `/education/books/checkout` | Checkout book | `hr.employee.read` |
-| POST | `/education/books/return` | Return book | `hr.employee.read` |
-
-## field-service
-
-13 features
+1 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
-| GET | `/field-service/dispatch/board` | Get board | `field_service.read` |
-| POST | `/field-service/dispatch/assign` | Assign | `field_service.create` |
-| PATCH | `/field-service/dispatch/:id/status` | Update status | `field_service.update` |
-| GET | `/field-service/dispatch/sla` | Get sla status | `field_service.read` |
-| GET | `/field-service/dispatch/preventive-maintenance` | Get upcoming p m | `field_service.read` |
-| GET | `/field-service/tickets` | Get tickets | `hr.employee.read` |
-| POST | `/field-service/tickets` | Create ticket | `hr.employee.read` |
-| GET | `/field-service/dispatches` | Get dispatches | `hr.employee.read` |
-| POST | `/field-service/dispatches` | Create dispatch | `hr.employee.read` |
-| GET | `/field-service/checklists` | Get checklists | `hr.employee.read` |
-| POST | `/field-service/checklists` | Create checklist | `hr.employee.read` |
-| GET | `/field-service/preventative` | Get preventative maintenances | `hr.employee.read` |
-| POST | `/field-service/preventative` | Create preventative maintenance | `hr.employee.read` |
+| GET | `/ext-callback/records/:slug` | Read an extension app | — |
 
 ## finance
 
@@ -1430,37 +1396,6 @@
 | POST | `/fixed-assets/:id/transfer` | Record an asset location or custodian transfer | `assets.transfer.manage` |
 | POST | `/fixed-assets/:id/maintenance` | Log a maintenance event for a fixed asset | `assets.maintenance.manage` |
 | POST | `/fixed-assets/:id/depreciate` | Calculate and post depreciation for a single asset | `assets.depreciation.post` |
-
-## healthcare
-
-24 features
-
-| Method | Route | Functionality | Permission |
-|:--|:--|:--|:--|
-| GET | `/healthcare/clinical/patients/:patientId/summary` | Get patient summary | `healthcare.read` |
-| POST | `/healthcare/clinical/encounters` | Create encounter | `healthcare.create` |
-| PATCH | `/healthcare/clinical/encounters/:id/submit-claim` | Submit claim | `healthcare.update` |
-| POST | `/healthcare/clinical/prescriptions` | Create prescription | `healthcare.create` |
-| GET | `/healthcare/clinical/patients/:patientId/fhir` | Export fhir | `healthcare.read` |
-| POST | `/healthcare/eligibility/check` | Handle request | `hr.employee.read` |
-| POST | `/healthcare/claims/scrub` | Handle request | `hr.employee.read` |
-| POST | `/healthcare/rx/interactions` | Handle request | `hr.employee.read` |
-| POST | `/healthcare/cds/evaluate` | Handle request | `hr.employee.read` |
-| GET | `/healthcare/quality/measures` | Handle request | `hr.employee.read` |
-| GET | `/healthcare/fhir/Patient` | Handle request | `hr.employee.read` |
-| GET | `/healthcare/fhir/Observation` | Handle request | `hr.employee.read` |
-| GET | `/healthcare/patients` | Get patients | `hr.employee.read` |
-| POST | `/healthcare/patients` | Create patient | `hr.employee.read` |
-| GET | `/healthcare/practitioners` | Get practitioners | `hr.employee.read` |
-| POST | `/healthcare/practitioners` | Create practitioner | `hr.employee.read` |
-| GET | `/healthcare/appointments` | Get appointments | `hr.employee.read` |
-| POST | `/healthcare/appointments` | Create appointment | `hr.employee.read` |
-| GET | `/healthcare/prescriptions` | Get prescriptions | `hr.employee.read` |
-| POST | `/healthcare/prescriptions` | Create prescription | `hr.employee.read` |
-| GET | `/healthcare/drugs` | Get drug register | `hr.employee.read` |
-| POST | `/healthcare/drugs` | Log drug register | `hr.employee.read` |
-| GET | `/healthcare/encounters` | Get medical encounters | `hr.employee.read` |
-| POST | `/healthcare/encounters` | Create medical encounter | `hr.employee.read` |
 
 ## hr
 
@@ -1821,25 +1756,6 @@
 | GET | `/admin/pwa-sync/queue` | Get sync queue | `admin.sync.read` |
 | POST | `/admin/pwa-sync/push` | Push offline operations | `admin.sync.read` |
 | PUT | `/admin/pwa-sync/reconcile/:id` | Reconcile operation | `admin.sync.create` |
-
-## real-estate
-
-12 features
-
-| Method | Route | Functionality | Permission |
-|:--|:--|:--|:--|
-| GET | `/real-estate/leasing/schedule/:leaseId` | Get lease schedule | `real_estate.read` |
-| GET | `/real-estate/leasing/portfolio` | Get portfolio | `real_estate.read` |
-| GET | `/real-estate/leasing/rent-roll` | Get rent roll | `real_estate.read` |
-| GET | `/real-estate/leasing/expiring` | Get expiring | `real_estate.read` |
-| GET | `/real-estate/properties` | Get properties | `hr.employee.read` |
-| POST | `/real-estate/properties` | Create property | `hr.employee.read` |
-| GET | `/real-estate/leases` | Get leases | `hr.employee.read` |
-| POST | `/real-estate/leases` | Create lease | `hr.employee.read` |
-| GET | `/real-estate/maintenances` | Get property maintenances | `hr.employee.read` |
-| POST | `/real-estate/maintenances` | Create property maintenance | `hr.employee.read` |
-| GET | `/real-estate/commissions` | Get agent commissions | `hr.employee.read` |
-| POST | `/real-estate/commissions` | Create agent commission | `hr.employee.read` |
 
 ## reporting
 

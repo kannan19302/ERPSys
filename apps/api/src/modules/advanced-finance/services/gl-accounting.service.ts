@@ -1,9 +1,12 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
+import { BudgetControlService } from './budget-control.service';
 
 @Injectable()
 export class GlAccountingService {
+  constructor(private readonly budgetControlService?: BudgetControlService) {}
+
 
   // ── CHART OF ACCOUNTS ──────────────────────────────────
 
@@ -263,11 +266,35 @@ export class GlAccountingService {
   }
 
   async submitJournal(tenantId: string, journalId: string) {
-    const journal = await prisma.journal.findFirst({ where: { id: journalId, tenantId } });
+    const journal = await prisma.journal.findFirst({
+      where: { id: journalId, tenantId },
+      include: { entries: true },
+    });
     if (!journal) throw new NotFoundException('Journal entry not found');
     if (journal.status !== 'DRAFT') {
       throw new BadRequestException('Only DRAFT journals can be submitted for approval.');
     }
+
+    // Budget checking
+    if (this.budgetControlService) {
+      const config = await this.budgetControlService.getControlConfig(tenantId);
+      if (config.checkJournals) {
+        for (const entry of journal.entries) {
+          const account = await prisma.account.findUnique({ where: { id: entry.accountId } });
+          if (account && account.type === 'EXPENSE' && Number(entry.debit) > 0) {
+            await this.budgetControlService.checkBudgetLimit(
+              tenantId,
+              journal.orgId,
+              entry.accountId,
+              Number(entry.debit),
+              journal.date,
+              { costCenterId: entry.costCenterId, projectId: entry.projectId }
+            );
+          }
+        }
+      }
+    }
+
     return prisma.journal.update({ where: { id: journalId }, data: { status: 'SUBMITTED' } });
   }
 
@@ -293,6 +320,26 @@ export class GlAccountingService {
     if (!journal) throw new NotFoundException('Journal entry not found');
     if (journal.status !== 'APPROVED' && journal.status !== 'DRAFT') {
       throw new BadRequestException('Only APPROVED or DRAFT journals can be posted.');
+    }
+
+    // Budget checking
+    if (this.budgetControlService) {
+      const config = await this.budgetControlService.getControlConfig(tenantId);
+      if (config.checkJournals) {
+        for (const entry of journal.entries) {
+          const account = await prisma.account.findUnique({ where: { id: entry.accountId } });
+          if (account && account.type === 'EXPENSE' && Number(entry.debit) > 0) {
+            await this.budgetControlService.checkBudgetLimit(
+              tenantId,
+              journal.orgId,
+              entry.accountId,
+              Number(entry.debit),
+              journal.date,
+              { costCenterId: entry.costCenterId, projectId: entry.projectId }
+            );
+          }
+        }
+      }
     }
 
     return prisma.$transaction(async (tx) => {

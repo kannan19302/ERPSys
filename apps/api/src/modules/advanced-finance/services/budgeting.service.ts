@@ -34,21 +34,121 @@ export class BudgetingService {
       endDate: string;
       costCenterId?: string;
       projectId?: string;
+      spreadMethod?: 'EVEN' | 'HISTORICAL_PROPORTIONAL';
     },
   ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
-    return prisma.budget.create({
-      data: {
-        tenantId,
-        orgId: resolvedOrgId,
-        accountId: dto.accountId,
-        amount: new Prisma.Decimal(dto.amount),
-        startDate: new Date(dto.startDate),
-        endDate: new Date(dto.endDate),
-        costCenterId: dto.costCenterId || null,
-        projectId: dto.projectId || null,
-      },
-      include: { account: true },
+    
+    return prisma.$transaction(async (tx) => {
+      const budget = await tx.budget.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          accountId: dto.accountId,
+          amount: new Prisma.Decimal(dto.amount),
+          startDate: new Date(dto.startDate),
+          endDate: new Date(dto.endDate),
+          costCenterId: dto.costCenterId || null,
+          projectId: dto.projectId || null,
+        },
+        include: { account: true },
+      });
+
+      // Handle monthly period amounts based on spread method
+      const start = new Date(dto.startDate);
+      const end = new Date(dto.endDate);
+      const periods: Array<{ date: Date; periodStr: string; monthVal: number }> = [];
+      
+      let curr = new Date(start.getFullYear(), start.getMonth(), 1);
+      const endLimit = new Date(end.getFullYear(), end.getMonth(), 1);
+      
+      while (curr <= endLimit) {
+        const yr = curr.getFullYear();
+        const mo = String(curr.getMonth() + 1).padStart(2, '0');
+        periods.push({
+          date: new Date(curr),
+          periodStr: `${yr}-${mo}`,
+          monthVal: curr.getMonth() + 1,
+        });
+        curr.setMonth(curr.getMonth() + 1);
+      }
+
+      const totalPeriods = periods.length > 0 ? periods.length : 1;
+      const method = dto.spreadMethod || 'EVEN';
+
+      if (method === 'EVEN') {
+        const monthlyAmount = dto.amount / totalPeriods;
+        for (const p of periods) {
+          await tx.budgetPeriodAmount.create({
+            data: {
+              tenantId,
+              budgetId: budget.id,
+              period: p.periodStr,
+              amount: new Prisma.Decimal(monthlyAmount),
+            },
+          });
+        }
+      } else if (method === 'HISTORICAL_PROPORTIONAL') {
+        // Query previous year actuals for the same account
+        const prevYear = start.getFullYear() - 1;
+        const prevStart = new Date(`${prevYear}-01-01`);
+        const prevEnd = new Date(`${prevYear}-12-31T23:59:59.999Z`);
+
+        const actualEntries = await tx.journalEntry.findMany({
+          where: {
+            tenantId,
+            accountId: dto.accountId,
+            journal: {
+              orgId: resolvedOrgId,
+              date: { gte: prevStart, lte: prevEnd },
+              status: 'POSTED',
+            },
+          },
+          include: { journal: true },
+        });
+
+        const monthlyActuals = new Array(12).fill(0);
+        let totalActuals = 0;
+
+        for (const entry of actualEntries) {
+          const m = entry.journal.date.getMonth(); // 0-11
+          const netDebit = Number(entry.debit) - Number(entry.credit);
+          monthlyActuals[m] += Math.abs(netDebit);
+          totalActuals += Math.abs(netDebit);
+        }
+
+        if (totalActuals === 0) {
+          // Fall back to EVEN if no historical actuals exist
+          const monthlyAmount = dto.amount / totalPeriods;
+          for (const p of periods) {
+            await tx.budgetPeriodAmount.create({
+              data: {
+                tenantId,
+                budgetId: budget.id,
+                period: p.periodStr,
+                amount: new Prisma.Decimal(monthlyAmount),
+              },
+            });
+          }
+        } else {
+          for (const p of periods) {
+            const histMonthIndex = p.monthVal - 1; // 0-11
+            const ratio = monthlyActuals[histMonthIndex] / totalActuals;
+            const periodAmt = dto.amount * ratio;
+            
+            await tx.budgetPeriodAmount.create({
+              data: {
+                tenantId,
+                budgetId: budget.id,
+                period: p.periodStr,
+                amount: new Prisma.Decimal(periodAmt),
+              },
+            });
+          }
+        }
+      }
+
+      return budget;
     });
   }
 

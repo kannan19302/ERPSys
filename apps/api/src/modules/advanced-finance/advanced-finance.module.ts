@@ -22,6 +22,8 @@ import {
   InvoiceCaptureService,
   CardSpendLimitService,
   AllocationService,
+  BudgetControlService,
+  BudgetReallocationService,
 } from './services';
 
 const domainServices = [
@@ -45,6 +47,8 @@ const domainServices = [
   FpaService,
   InvoiceCaptureService,
   AllocationService,
+  BudgetControlService,
+  BudgetReallocationService,
 ];
 
 @Module({

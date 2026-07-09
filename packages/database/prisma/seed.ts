@@ -755,19 +755,19 @@ async function main() {
     console.log('Phase 6-10 (Advanced Finance, HR, Workflows, Notifications) seed data complete.');
   }
 
-  // 14. Create Phase 11 to Phase 15 Seeds
-  const existingPatient = await prisma.patient.findFirst({
+  // 14. Create Phase 11 Seeds (Reporting)
+  const existingReportWidget = await prisma.reportWidget.findFirst({
     where: { tenantId: tenant.id },
   });
-  if (!existingPatient) {
+  if (!existingReportWidget) {
     // Phase 11: Advanced Reporting
     await prisma.reportWidget.create({
       data: {
         tenantId: tenant.id,
         dashboardId: 'main-db',
-        title: 'Weekly Patient Encounters',
+        title: 'Weekly Financial Operations Summary',
         chartType: 'BAR',
-        queryConfig: JSON.stringify({ series: 'encounters', period: 'weekly' }),
+        queryConfig: JSON.stringify({ series: 'financials', period: 'weekly' }),
         position: JSON.stringify({ x: 0, y: 0, w: 6, h: 4 }),
       },
     });
@@ -775,7 +775,7 @@ async function main() {
     await prisma.reportView.create({
       data: {
         tenantId: tenant.id,
-        name: 'Executive Medical Operations Summary',
+        name: 'Executive Financial Operations Summary',
         queryConfig: JSON.stringify({ filter: 'all' }),
         isScheduled: true,
         scheduleCron: '0 8 * * 1',
@@ -783,252 +783,7 @@ async function main() {
       },
     });
 
-    // Phase 12: Healthcare
-    const patientObj = await prisma.patient.create({
-      data: {
-        tenantId: tenant.id,
-        firstName: 'John',
-        lastName: 'Doe',
-        dateOfBirth: new Date('1990-01-01'),
-        gender: 'MALE',
-        email: 'john.doe@gmail.com',
-        phone: '123-456-7890',
-        medicalHistory: JSON.stringify({ history: 'Mild allergies' }),
-        vitalsHistory: JSON.stringify([{ bp: '120/80', pulse: 72 }]),
-        allergies: JSON.stringify(['Peanuts']),
-        status: 'ACTIVE',
-      },
-    });
-
-    const empObj = await prisma.employee.findFirst({ where: { tenantId: tenant.id } });
-    if (empObj) {
-      const practitionerObj = await prisma.practitioner.create({
-        data: {
-          tenantId: tenant.id,
-          employeeId: empObj.id,
-          specialty: 'Cardiology',
-          licenseNumber: 'LIC-98765-USA',
-          status: 'ACTIVE',
-        },
-      });
-
-      await prisma.appointment.create({
-        data: {
-          tenantId: tenant.id,
-          patientId: patientObj.id,
-          practitionerId: practitionerObj.id,
-          startTime: new Date('2026-06-12T09:00:00Z'),
-          endTime: new Date('2026-06-12T10:00:00Z'),
-          status: 'CONFIRMED',
-          notes: 'Routine cardiovascular checkup',
-        },
-      });
-
-      await prisma.prescription.create({
-        data: {
-          tenantId: tenant.id,
-          patientId: patientObj.id,
-          practitionerId: practitionerObj.id,
-          details: JSON.stringify({ medication: 'Aspirin', dosage: '81mg daily' }),
-          status: 'ACTIVE',
-        },
-      });
-
-      await prisma.medicalEncounter.create({
-        data: {
-          tenantId: tenant.id,
-          patientId: patientObj.id,
-          practitionerId: practitionerObj.id,
-          diagnosis: 'Essential hypertension',
-          treatmentCode: 'ICD10-I10',
-          claimStatus: 'SUBMITTED',
-          billingAmount: 150.00,
-        },
-      });
-    }
-
-    await prisma.drugRegister.create({
-      data: {
-        tenantId: tenant.id,
-        name: 'Amoxicillin 500mg',
-        batchNumber: 'BATCH-AMX-001',
-        expiryDate: new Date('2027-12-31'),
-        isControlled: false,
-        quantity: 500,
-      },
-    });
-
-    // Phase 13: Education
-    const studentObj = await prisma.student.create({
-      data: {
-        tenantId: tenant.id,
-        firstName: 'Alice',
-        lastName: 'Smith',
-        dateOfBirth: new Date('2010-05-15'),
-        enrollmentNumber: 'STU-2026-0001',
-        parentContact: JSON.stringify({ mother: 'Jane Smith', phone: '987-654-3210' }),
-      },
-    });
-
-    const courseObj = await prisma.course.create({
-      data: {
-        tenantId: tenant.id,
-        name: 'Introduction to Computer Science',
-        code: 'CS-101',
-        credits: 4,
-        description: 'Foundational programming concepts',
-      },
-    });
-
-    await prisma.timetable.create({
-      data: {
-        tenantId: tenant.id,
-        courseId: courseObj.id,
-        room: 'Lab-A',
-        weekday: 'MONDAY',
-        startTime: '09:00',
-        endTime: '11:00',
-        instructorId: 'inst-001',
-      },
-    });
-
-    const feeObj = await prisma.feeStructure.create({
-      data: {
-        tenantId: tenant.id,
-        name: 'Fall Tuition 2026',
-        amount: 2500.00,
-        dueDate: new Date('2026-09-01'),
-      },
-    });
-
-    await prisma.studentFee.create({
-      data: {
-        tenantId: tenant.id,
-        studentId: studentObj.id,
-        feeStructureId: feeObj.id,
-        amountPaid: 500.00,
-        balance: 2000.00,
-        status: 'PARTIAL',
-      },
-    });
-
-    const bookObj = await prisma.bookRegister.create({
-      data: {
-        tenantId: tenant.id,
-        title: 'Structure and Interpretation of Computer Programs',
-        isbn: '978-0262510875',
-        author: 'Harold Abelson',
-        quantity: 10,
-        available: 9,
-      },
-    });
-
-    await prisma.bookTransaction.create({
-      data: {
-        tenantId: tenant.id,
-        studentId: studentObj.id,
-        bookId: bookObj.id,
-        checkoutDate: new Date('2026-06-10T10:00:00Z'),
-        dueDate: new Date('2026-06-24T10:00:00Z'),
-        status: 'ISSUED',
-      },
-    });
-
-    // Phase 14: Real Estate
-    const propertyObj = await prisma.property.create({
-      data: {
-        tenantId: tenant.id,
-        name: 'Unit 502 - Grand Horizon Plaza',
-        type: 'COMMERCIAL',
-        portfolio: 'Horizon Portfolio',
-        address: JSON.stringify({ street: '100 Business Pkwy', suite: '502', city: 'Seattle' }),
-        status: 'AVAILABLE',
-      },
-    });
-
-    await prisma.lease.create({
-      data: {
-        tenantId: tenant.id,
-        propertyId: propertyObj.id,
-        tenantName: 'TechCorp Solutions Inc.',
-        startDate: new Date('2026-07-01'),
-        endDate: new Date('2027-06-30'),
-        rentAmount: 3200.00,
-        securityDeposit: 6400.00,
-        billingFrequency: 'MONTHLY',
-        status: 'ACTIVE',
-      },
-    });
-
-    await prisma.propertyMaintenance.create({
-      data: {
-        tenantId: tenant.id,
-        propertyId: propertyObj.id,
-        description: 'HVAC system inspection and filter replacement',
-        status: 'OPEN',
-        cost: 120.00,
-      },
-    });
-
-    await prisma.agentCommission.create({
-      data: {
-        tenantId: tenant.id,
-        agentId: 'agent-007',
-        amount: 320.00,
-        splitRatio: 0.10,
-        generalLedgerRef: 'GL-COMM-502',
-        status: 'PENDING',
-      },
-    });
-
-    // Phase 15: Field Service
-    const ticketObj = await prisma.serviceTicket.create({
-      data: {
-        tenantId: tenant.id,
-        title: 'Server Room AC Unit Leaking Water',
-        customerName: 'Acme Corp Office',
-        description: 'Water dripping from unit #3 onto secondary server rack',
-        priority: 'URGENT',
-        slaDeadline: new Date('2026-06-11T22:00:00Z'),
-        status: 'OPEN',
-      },
-    });
-
-    const dispatchObj = await prisma.serviceDispatch.create({
-      data: {
-        tenantId: tenant.id,
-        ticketId: ticketObj.id,
-        technicianId: 'tech-99',
-        scheduledTime: new Date('2026-06-11T19:00:00Z'),
-        routeDetails: JSON.stringify({ startingPoint: 'Main Depot', route: ['1st Ave', 'Business Park Rd'] }),
-        status: 'ASSIGNED',
-      },
-    });
-
-    await prisma.technicianChecklist.create({
-      data: {
-        tenantId: tenant.id,
-        dispatchId: dispatchObj.id,
-        items: JSON.stringify([
-          { task: 'Clean condenser coils', isDone: true },
-          { task: 'Check drain pan line blockages', isDone: false },
-        ]),
-        isOfflineSynced: false,
-      },
-    });
-
-    await prisma.preventativeMaintenance.create({
-      data: {
-        tenantId: tenant.id,
-        customerName: 'Acme HQ Building',
-        description: 'Quarterly facility elevator inspection',
-        recurrenceCron: '0 0 1 */3 *',
-        nextRunDate: new Date('2026-09-01T00:00:00Z'),
-        status: 'ACTIVE',
-      },
-    });
-
-    console.log('Phase 11-15 (Reporting, Healthcare, Education, Real Estate, Field Service) seed data complete.');
+    console.log('Phase 11 (Reporting) seed data complete.');
   }
 
   // 15. Create Phase 16 to Phase 20 Seeds (API Platform, i18n, PWA, SaaS)
