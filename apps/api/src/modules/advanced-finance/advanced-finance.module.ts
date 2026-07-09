@@ -25,6 +25,14 @@ import {
   BudgetControlService,
   BudgetReallocationService,
 } from './services';
+import { TaxEngineDeepService } from './services/tax-engine-deep.service';
+import { TreasuryDeepService } from './services/treasury-deep.service';
+import { ApIntelligenceService } from './services/ap-intelligence.service';
+import { ArCollectionsService } from './services/ar-collections.service';
+import { FixedAssetDeepService } from './services/fixed-asset-deep.service';
+import { FpaDeepService } from './services/fpa-deep.service';
+import { RevenueBillingService } from './services/revenue-billing.service';
+import { ComplianceControlsService } from './services/compliance-controls.service';
 
 const domainServices = [
   GlAccountingService,
@@ -49,6 +57,15 @@ const domainServices = [
   AllocationService,
   BudgetControlService,
   BudgetReallocationService,
+  // Big-phase batch services
+  TaxEngineDeepService,
+  TreasuryDeepService,
+  ApIntelligenceService,
+  ArCollectionsService,
+  FixedAssetDeepService,
+  FpaDeepService,
+  RevenueBillingService,
+  ComplianceControlsService,
 ];
 
 @Module({
@@ -57,3 +74,4 @@ const domainServices = [
   exports: [AdvancedFinanceService, ...domainServices],
 })
 export class AdvancedFinanceModule {}
+

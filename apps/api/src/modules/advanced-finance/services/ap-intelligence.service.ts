@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 
 @Injectable()
@@ -84,8 +84,8 @@ export class ApIntelligenceService {
 
     for (let i = 0; i < invoices.length; i++) {
       for (let j = i + 1; j < invoices.length; j++) {
-        const a = invoices[i];
-        const b = invoices[j];
+        const a = invoices[i]!;
+        const b = invoices[j]!;
         const dateDiff = Math.abs(a.issueDate.getTime() - b.issueDate.getTime());
         const amountMatch = Math.abs(Number(a.totalAmount) - Number(b.totalAmount)) < 0.01;
         const customerMatch = a.customerId === b.customerId;
@@ -183,7 +183,7 @@ export class ApIntelligenceService {
       where: { tenantId, status: { notIn: ['INVOICED', 'CLEARED'] } },
     });
     const now = new Date();
-    const buckets: Record<string, number> = { '0-30': 0, '31-60': 0, '61-90': 0, '91+': 0 };
+    const buckets: { '0-30': number; '31-60': number; '61-90': number; '91+': number } = { '0-30': 0, '31-60': 0, '61-90': 0, '91+': 0 };
     let totalValue = 0;
     for (const r of records) {
       const days = Math.floor((now.getTime() - r.receivedDate.getTime()) / 86400000);
@@ -234,7 +234,7 @@ export class ApIntelligenceService {
         dueDate: { gte: now, lte: end },
       },
     });
-    const buckets: Record<string, number> = { '0-30': 0, '31-60': 0, '61-90': 0 };
+    const buckets: { '0-30': number; '31-60': number; '61-90': number } = { '0-30': 0, '31-60': 0, '61-90': 0 };
     for (const inv of invoices) {
       if (!inv.dueDate) continue;
       const daysTodue = Math.floor((inv.dueDate.getTime() - now.getTime()) / 86400000);
@@ -263,8 +263,8 @@ export class ApIntelligenceService {
   async getVendorScorecard(tenantId: string, vendorId: string) {
     const pos = await prisma.purchaseOrder.findMany({
       where: { tenantId, vendorId, status: 'COMPLETED' },
-      include: { items: true },
     });
+
     const total = pos.length;
     const onTime = pos.filter(p => p.status === 'COMPLETED').length; // simplified
     const invoiceCount = await prisma.invoice.count({ where: { tenantId } });

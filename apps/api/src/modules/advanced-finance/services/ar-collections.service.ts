@@ -139,7 +139,7 @@ export class ArCollectionsService {
     });
   }
 
-  async postBadDebtProvision(tenantId: string, id: string, glAccountId?: string) {
+  async postBadDebtProvision(tenantId: string, id: string, _glAccountId?: string) {
     const prov = await prisma.badDebtProvision.findFirst({ where: { id, tenantId } });
     if (!prov) throw new NotFoundException('Bad debt provision not found');
     if (prov.status !== 'DRAFT') throw new BadRequestException('Only DRAFT provisions can be posted');
@@ -215,12 +215,12 @@ export class ArCollectionsService {
       const paidAgg = await prisma.payment.aggregate({
         where: {
           tenantId,
-          paymentDate: { gte: d, lte: endOfMonth },
+          paidAt: { gte: d, lte: endOfMonth },
         },
         _sum: { amount: true },
       });
       const revenue = Number(agg._sum.totalAmount ?? 0);
-      const collected = Number(paidAgg._sum.amount ?? 0);
+      const collected = Number(paidAgg._sum?.amount ?? 0);
       const dso = revenue > 0 ? Math.round((collected / revenue) * 30) : 0;
       result.push({ month: monthStr, dso });
     }

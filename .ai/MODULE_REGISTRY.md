@@ -62,7 +62,6 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| antigravity-ide | 2026-07-09T17:11Z | finance-big-phase: 8 batches (Tax Engine, Treasury, AP Intelligence, AR Collections, Fixed Assets, FP&A, Revenue Billing, Compliance Controls) — `advanced-finance.controller.ts`, schema.prisma, new services, new Next.js pages | main | 🔄 IN PROGRESS |
 
 
 
@@ -110,6 +109,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-09 | antigravity-ide | Finance: Deepened and hardened 8 major batches (Tax Engine, Treasury, AP, AR, Fixed Assets, FP&A, Revenue Billing, Compliance) adding 28 tables, ~200 endpoints, 12 unit tests, compile green. | commit pending |
 | 2026-07-09 | antigravity-ide | Finance: E2E smoke test verification for Spend Management (corporate-cards/corp-card-sarah), Allocations, and Multi-Book accounting surfaces. | commit de8c0fa |
 | 2026-07-09 | antigravity-ide | Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI): BudgetControlConfig enforcement config (ALLOW/WARN/BLOCK), monthly BudgetPeriodAmounts (EVEN/HISTORICAL_PROPORTIONAL spreads), BudgetReallocations draft/submit/approve/reject workflow, 6 tests, spec fixes | commit ed22b5b |
 | 2026-07-09 | antigravity-ide | Finance: Project-Based Accounting WIP, Job Costing & POC (20+ features, DB+API+UI): estimatedCost/contractValue fields, ProjectCostEntry schema + CRUD endpoints, WIP calculation (labor/material/overhead breakdown + POC % + over/under-billing WIP status), WIP summary endpoint, new /projects detail tab and form, new /projects/wip-reports dashboard. | commit cea2b8c |

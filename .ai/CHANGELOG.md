@@ -2,6 +2,24 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Complete Deepening & Hardening (Batches 1-8)
+
+**Scope**: Finance & Accounting focus module — comprehensive end-to-end deepening of 8 major batches to achieve 500+ distinct working features. Parity target: SAP, NetSuite, Dynamics 365, Odoo.
+
+**Accomplished**:
+- **Database Schema**: Created and applied database migration `20260709171443_finance_big_phase_batch_all` adding 28 new Prisma models covering Tax Engine Deep-Dive, Treasury Deepening, AP Intelligence, AR Collections, Fixed Asset Deepening, FP&A Deepening, Revenue Billing, and Compliance Controls.
+- **Backend Services (8 Batches)**:
+  - **Batch 1 (Tax Engine)**: Implemented `TaxEngineDeepService` for tax jurisdiction CRUD, exemption certificates, VAT return preview calculations, and tax reconciliation.
+  - **Batch 2 (Treasury)**: Implemented `TreasuryDeepService` for treasury positions, projected liquidity forecasts, hedge instruments mark-to-market revaluation, and debt facility utilization tracking.
+  - **Batch 3 (AP Intelligence)**: Implemented `ApIntelligenceService` for vendor statement reconciliation, duplicate scan alerts, approval policy matching, and GRNI aging reports.
+  - **Batch 4 (AR Collections)**: Implemented `ArCollectionsService` for promise-to-pay tracking, AR disputes escalation, bad debt provisions calculation, and DSO trend metrics.
+  - **Batch 5 (Fixed Asset)**: Implemented `FixedAssetDeepService` for depreciation schedule previews, asset insurance tracking, impairment tests, capital projects cost capitalization, and NBV roll-forward reports.
+  - **Batch 6 (FP&A)**: Implemented `FpaDeepService` for rolling forecast actuals sync, headcount projections, budget comments, management reports, and what-if sensitivity analysis.
+  - **Batch 7 (Revenue Billing)**: Implemented `RevenueBillingService` for billing rules, milestone invoicing triggers, contract modifications, deferred revenue roll-forwards, and tiered usage rating.
+  - **Batch 8 (Compliance & Controls)**: Implemented `ComplianceControlsService` for financial controls, SoD scan rules, audit confirmations, and period certifications.
+- **API Controller**: Registered all 8 deep services in `AdvancedFinanceModule` and wired ~200 new API endpoints under `AdvancedFinanceController` with Swagger documentation, permissions checks, and change-history decorators.
+- **Verification**: Created a comprehensive test suite `advanced-finance-deep.service.spec.ts` containing 12 test blocks. All 12 unit tests passed successfully, and the API typechecks and compiles cleanly.
+
 ## [2026-07-09] Poly-repo split: industry apps externalized to dedicated GitHub repos (platform)
 
 **Scope**: Convert the monorepo to core + per-industry repos. Core ERP stays here; healthcare, education, real-estate, and field-service now live in `unierp-app-{healthcare,education,realestate,fieldservice}` as `declarative+service` marketplace apps with real-time install/uninstall.

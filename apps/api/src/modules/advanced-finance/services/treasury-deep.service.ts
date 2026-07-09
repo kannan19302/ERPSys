@@ -75,12 +75,12 @@ export class TreasuryDeepService {
       where: {
         tenantId,
         status: 'APPROVED',
-        expectedDelivery: { gte: now, lte: endDate },
+        expectedDate: { gte: now, lte: endDate },
       },
       _sum: { totalAmount: true },
     });
-    const arInflow = Number(arAgg._sum.totalAmount ?? 0);
-    const apOutflow = Number(apAgg._sum.totalAmount ?? 0);
+    const arInflow = Number(arAgg._sum?.totalAmount ?? 0);
+    const apOutflow = Number(apAgg._sum?.totalAmount ?? 0);
     return {
       horizon,
       endDate: endDate.toISOString(),

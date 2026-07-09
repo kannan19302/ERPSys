@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 
 @Injectable()
@@ -22,20 +22,21 @@ export class FpaDeepService {
     amount: number; source?: string; notes?: string;
   }) {
     const orgId = await this.resolveOrgId(tenantId);
+    const costCenterId = dto.costCenterId || 'all';
     return prisma.rollingForecast.upsert({
       where: {
         tenantId_orgId_period_accountId_costCenterId_source: {
           tenantId, orgId,
           period: dto.period,
           accountId: dto.accountId,
-          costCenterId: dto.costCenterId ?? null,
+          costCenterId,
           source: dto.source ?? 'FORECAST',
         },
       },
       create: {
         tenantId, orgId,
         period: dto.period, accountId: dto.accountId,
-        costCenterId: dto.costCenterId,
+        costCenterId,
         amount: dto.amount,
         source: dto.source ?? 'FORECAST',
         notes: dto.notes,
@@ -46,7 +47,9 @@ export class FpaDeepService {
 
   async syncActualsToRollingForecast(tenantId: string, period: string) {
     const orgId = await this.resolveOrgId(tenantId);
-    const [year, month] = period.split('-').map(Number);
+    const parts = (period || '').split('-');
+    const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
+    const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
     // Pull journal entry lines grouped by account
@@ -63,11 +66,11 @@ export class FpaDeepService {
           tenantId_orgId_period_accountId_costCenterId_source: {
             tenantId, orgId, period,
             accountId: line.accountId,
-            costCenterId: null,
+            costCenterId: 'all',
             source: 'ACTUAL',
           },
         },
-        create: { tenantId, orgId, period, accountId: line.accountId, amount, source: 'ACTUAL' },
+        create: { tenantId, orgId, period, accountId: line.accountId, amount, source: 'ACTUAL', costCenterId: 'all' },
         update: { amount },
       });
       synced.push(rec);
@@ -110,9 +113,12 @@ export class FpaDeepService {
     const plans = await prisma.headcountPlan.findMany({ where: { tenantId, period: { in: periods } } });
     const byPeriod: Record<string, { period: string; totalHc: number; totalCost: number }> = {};
     for (const p of plans) {
-      if (!byPeriod[p.period]) byPeriod[p.period] = { period: p.period, totalHc: 0, totalCost: 0 };
-      byPeriod[p.period].totalHc += p.plannedHc;
-      byPeriod[p.period].totalCost += Number(p.projectedCost);
+      if (!byPeriod[p.period]) {
+        byPeriod[p.period] = { period: p.period, totalHc: 0, totalCost: 0 };
+      }
+      const entry = byPeriod[p.period]!;
+      entry.totalHc += p.plannedHc;
+      entry.totalCost += Number(p.projectedCost);
     }
     return Object.values(byPeriod).sort((a, b) => a.period.localeCompare(b.period));
   }
@@ -192,7 +198,9 @@ export class FpaDeepService {
   async getWaterfallChartData(tenantId: string, budgetId: string, period: string) {
     const budget = await prisma.budget.findFirst({ where: { id: budgetId, tenantId } });
     if (!budget) throw new NotFoundException('Budget not found');
-    const [year, month] = period.split('-').map(Number);
+    const parts = (period || '').split('-');
+    const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
+    const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
     const actualAgg = await prisma.journalEntry.aggregate({
@@ -200,7 +208,7 @@ export class FpaDeepService {
       _sum: { debit: true },
     });
     const budgetAmount = Number(budget.amount);
-    const actualAmount = Number(actualAgg._sum.debit ?? 0);
+    const actualAmount = Number(actualAgg._sum?.debit ?? 0);
     const forecast = (budgetAmount + actualAmount) / 2; // simplified mid-point
     return {
       period,
@@ -218,7 +226,10 @@ export class FpaDeepService {
   async runWhatIfSensitivity(tenantId: string, dto: {
     revenueChangePct: number; costChangePct: number; period?: string;
   }) {
-    const [year, month] = (dto.period ?? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`).split('-').map(Number);
+    const pString = dto.period ?? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const parts = pString.split('-');
+    const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
+    const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
 
@@ -231,8 +242,8 @@ export class FpaDeepService {
       _sum: { totalAmount: true },
     });
 
-    const baseRevenue = Number(revAgg._sum.totalAmount ?? 0);
-    const baseCost = Number(costAgg._sum.totalAmount ?? 0);
+    const baseRevenue = Number(revAgg._sum?.totalAmount ?? 0);
+    const baseCost = Number(costAgg._sum?.totalAmount ?? 0);
     const baseProfit = baseRevenue - baseCost;
 
     const newRevenue = baseRevenue * (1 + dto.revenueChangePct / 100);

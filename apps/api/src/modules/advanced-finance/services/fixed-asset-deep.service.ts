@@ -18,7 +18,7 @@ export class FixedAssetDeepService {
 
   async getDepreciationSchedulePreview(tenantId: string, assetId: string) {
     const asset = await this.getAsset(tenantId, assetId);
-    const costBasis = Number(asset.purchaseCost ?? 0);
+    const costBasis = Number(asset.purchaseValue ?? 0);
     const salvage = Number(asset.salvageValue ?? 0);
     const usefulLifeMonths = (asset.usefulLifeYears ?? 5) * 12;
     const monthlyDepreciation = (costBasis - salvage) / usefulLifeMonths;
@@ -196,21 +196,21 @@ export class FixedAssetDeepService {
     });
   }
 
-  // ── NET BOOK VALUE ROLL-FORWARD ──────────────────────────────────
-
   async getNbvRollForward(tenantId: string, period: string) {
-    const [year, month] = period.split('-').map(Number);
+    const parts = (period || '').split('-');
+    const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
+    const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
 
     const assets = await prisma.fixedAsset.findMany({ where: { tenantId } });
     const depAgg = await prisma.assetDepreciation.aggregate({
-      where: { tenantId, depreciationDate: { gte: start, lte: end } },
-      _sum: { depreciationAmount: true },
+      where: { tenantId, date: { gte: start, lte: end } },
+      _sum: { amount: true },
     });
 
-    const totalCost = assets.reduce((s, a) => s + Number(a.purchaseCost ?? 0), 0);
-    const totalDepreciation = Number(depAgg._sum.depreciationAmount ?? 0);
+    const totalCost = assets.reduce((s, a) => s + Number(a.purchaseValue ?? 0), 0);
+    const totalDepreciation = Number(depAgg._sum?.amount ?? 0);
     const netBookValue = totalCost - totalDepreciation;
 
     return {
@@ -227,21 +227,33 @@ export class FixedAssetDeepService {
   // ── ASSET TAG MANAGEMENT ──────────────────────────────────
 
   async bulkUploadAssets(tenantId: string, rows: {
-    name: string; categoryId: string; purchaseDate: string; purchaseCost: number;
-    salvageValue?: number; usefulLifeYears?: number; locationId?: string;
+    name: string; categoryId?: string; purchaseDate: string; purchaseCost?: number; purchaseValue?: number;
+    salvageValue?: number; usefulLifeYears?: number; locationId?: string; assetCode?: string;
+    depreciationMethod?: string; depreciationRate?: number; accountId?: string; accumDepAccountId?: string;
+    custodianId?: string;
   }[]) {
     const orgId = await this.resolveOrgId(tenantId);
     const created = [];
     for (const row of rows) {
+      const value = row.purchaseCost ?? row.purchaseValue ?? 0;
       const asset = await prisma.fixedAsset.create({
         data: {
-          tenantId, orgId: orgId,
+          tenantId,
+          orgId,
+          assetCode: row.assetCode || `AST-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
           name: row.name,
-          categoryId: row.categoryId,
+          categoryId: row.categoryId || null,
           purchaseDate: new Date(row.purchaseDate),
-          purchaseCost: row.purchaseCost,
+          purchaseValue: value,
           salvageValue: row.salvageValue ?? 0,
           usefulLifeYears: row.usefulLifeYears ?? 5,
+          depreciationMethod: row.depreciationMethod || 'SLM',
+          depreciationRate: row.depreciationRate ?? null,
+          currentValue: value,
+          accountId: row.accountId || 'acc-asset-default',
+          accumDepAccountId: row.accumDepAccountId || 'acc-accum-dep-default',
+          locationId: row.locationId || null,
+          custodianId: row.custodianId || null,
           status: 'ACTIVE',
         },
       });

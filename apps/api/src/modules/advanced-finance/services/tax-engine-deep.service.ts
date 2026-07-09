@@ -128,7 +128,7 @@ export class TaxEngineDeepService {
     });
   }
 
-  async computeTaxReconciliation(tenantId: string, orgId: string, dto: {
+  async computeTaxReconciliation(tenantId: string, _orgId: string, dto: {
     periodStart: string; periodEnd: string; taxType: string;
   }) {
     const start = new Date(dto.periodStart);
@@ -151,11 +151,11 @@ export class TaxEngineDeepService {
         orderDate: { gte: start, lte: end },
         status: { notIn: ['DRAFT', 'CANCELLED'] },
       },
-      _sum: { totalTax: true },
+      _sum: { taxAmount: true },
     });
 
-    const outputTax = Number(invoiceAgg._sum.taxAmount ?? 0);
-    const inputTax = Number(poAgg._sum.totalTax ?? 0);
+    const outputTax = Number(invoiceAgg._sum?.taxAmount ?? 0);
+    const inputTax = Number(poAgg._sum?.taxAmount ?? 0);
     const netLiability = outputTax - inputTax;
 
     return prisma.taxReconciliation.create({
@@ -235,14 +235,15 @@ export class TaxEngineDeepService {
   async bulkGenerateWithholdingCertificates(tenantId: string, year: number) {
     // Group withholding tax payments by vendor for the given year
     const payments = await prisma.payment.findMany({
-      where: { tenantId, paymentDate: { gte: new Date(`${year}-01-01`), lte: new Date(`${year}-12-31`) } },
+      where: { tenantId, paidAt: { gte: new Date(`${year}-01-01`), lte: new Date(`${year}-12-31`) } },
+      include: { invoice: true },
     });
     const vendorMap: Record<string, { gross: number; tax: number }> = {};
     for (const p of payments) {
-      if (!p.customerId) continue; // only vendor payments for WHT
-      const key = p.customerId;
+      if (!p.invoice || !p.invoice.customerId) continue; // only vendor payments for WHT
+      const key = p.invoice.customerId;
       if (!vendorMap[key]) vendorMap[key] = { gross: 0, tax: 0 };
-      vendorMap[key].gross += Number(p.amount);
+      vendorMap[key]!.gross += Number(p.amount);
     }
     const created = [];
     for (const [vendorId, totals] of Object.entries(vendorMap)) {
@@ -296,14 +297,14 @@ export class TaxEngineDeepService {
     });
   }
 
-  async updateAmendedFilingStatus(tenantId: string, id: string, status: string) {
+  async updateAmendedFilingStatus(_tenantId: string, id: string, status: string) {
     if (!['ACCEPTED', 'REJECTED'].includes(status)) throw new BadRequestException('Invalid status');
     return prisma.amendedTaxFiling.update({ where: { id }, data: { status } });
   }
 
   // ── VAT RETURN PREVIEW (pulls from existing TaxFiling computeTaxReturn) ──────────────────────────────────
 
-  async previewVatReturn(tenantId: string, orgId: string, periodStart: string, periodEnd: string) {
+  async previewVatReturn(tenantId: string, _orgId: string, periodStart: string, periodEnd: string) {
     const start = new Date(periodStart);
     const end = new Date(periodEnd);
 
@@ -313,13 +314,13 @@ export class TaxEngineDeepService {
     });
     const poAgg = await prisma.purchaseOrder.aggregate({
       where: { tenantId, orderDate: { gte: start, lte: end }, status: { notIn: ['DRAFT', 'CANCELLED'] } },
-      _sum: { totalTax: true, totalAmount: true },
+      _sum: { taxAmount: true, totalAmount: true },
     });
 
-    const outputTax = Number(invoiceAgg._sum.taxAmount ?? 0);
-    const outputTaxableSupplies = Number(invoiceAgg._sum.totalAmount ?? 0) - outputTax;
-    const inputTax = Number(poAgg._sum.totalTax ?? 0);
-    const inputTaxablePurchases = Number(poAgg._sum.totalAmount ?? 0) - inputTax;
+    const outputTax = Number(invoiceAgg._sum?.taxAmount ?? 0);
+    const outputTaxableSupplies = Number(invoiceAgg._sum?.totalAmount ?? 0) - outputTax;
+    const inputTax = Number(poAgg._sum?.taxAmount ?? 0);
+    const inputTaxablePurchases = Number(poAgg._sum?.totalAmount ?? 0) - inputTax;
     const netLiability = outputTax - inputTax;
 
     return {

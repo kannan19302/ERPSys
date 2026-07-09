@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, UseGuards, Req, Param, Query, UseInterceptors, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, UseGuards, Req, Param, Query, UseInterceptors, BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -503,6 +503,14 @@ export class AdvancedFinanceController {
     private readonly allocationService: AllocationService,
     private readonly budgetControlService: BudgetControlService,
     private readonly budgetReallocationService: BudgetReallocationService,
+    private readonly taxDeepService: import('./services/tax-engine-deep.service').TaxEngineDeepService,
+    private readonly treasuryDeepService: import('./services/treasury-deep.service').TreasuryDeepService,
+    private readonly apIntelligenceService: import('./services/ap-intelligence.service').ApIntelligenceService,
+    private readonly arCollectionsService: import('./services/ar-collections.service').ArCollectionsService,
+    private readonly fixedAssetDeepService: import('./services/fixed-asset-deep.service').FixedAssetDeepService,
+    private readonly fpaDeepService: import('./services/fpa-deep.service').FpaDeepService,
+    private readonly revenueBillingService: import('./services/revenue-billing.service').RevenueBillingService,
+    private readonly complianceControlsService: import('./services/compliance-controls.service').ComplianceControlsService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -3448,5 +3456,1211 @@ export class AdvancedFinanceController {
     @ZodBody(z.object({ notes: z.string() })) dto: { notes: string },
   ) {
     return this.budgetReallocationService.rejectReallocation(req.user.tenantId, id, dto.notes, req.user.userId);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 1 — TAX ENGINE DEEP-DIVE
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List tax jurisdictions' })
+  @Get('tax/jurisdictions')
+  @Permissions('finance.tax.read')
+  async listTaxJurisdictions(@Req() req: AuthenticatedRequest, @Query('country') country?: string, @Query('taxType') taxType?: string) {
+    return this.taxDeepService.listJurisdictions(req.user.tenantId, country, taxType);
+  }
+
+  @ApiOperation({ summary: 'Get tax jurisdiction by ID' })
+  @Get('tax/jurisdictions/:id')
+  @Permissions('finance.tax.read')
+  async getTaxJurisdiction(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.getJurisdiction(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create tax jurisdiction' })
+  @Post('tax/jurisdictions')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TaxJurisdiction')
+  async createTaxJurisdiction(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      name: z.string().min(1), code: z.string().min(1), country: z.string().min(1),
+      state: z.string().optional(), county: z.string().optional(),
+      taxType: z.string().min(1), rate: z.number().nonnegative(),
+      effectiveFrom: z.string().min(1), effectiveTo: z.string().optional(),
+      description: z.string().optional(),
+    })) dto: z.infer<z.ZodObject<z.ZodRawShape>>,
+  ) {
+    return this.taxDeepService.createJurisdiction(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update tax jurisdiction' })
+  @Patch('tax/jurisdictions/:id')
+  @Permissions('finance.tax.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TaxJurisdiction', 'id')
+  async updateTaxJurisdiction(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.taxDeepService.updateJurisdiction(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Delete tax jurisdiction' })
+  @Delete('tax/jurisdictions/:id')
+  @Permissions('finance.tax.delete')
+  async deleteTaxJurisdiction(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.deleteJurisdiction(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List tax exemption certificates' })
+  @Get('tax/exemption-certificates')
+  @Permissions('finance.tax.read')
+  async listExemptionCertificates(@Req() req: AuthenticatedRequest, @Query('entityType') entityType?: string, @Query('entityId') entityId?: string) {
+    return this.taxDeepService.listExemptionCertificates(req.user.tenantId, entityType, entityId);
+  }
+
+  @ApiOperation({ summary: 'Get exemption certificate by ID' })
+  @Get('tax/exemption-certificates/:id')
+  @Permissions('finance.tax.read')
+  async getExemptionCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.getExemptionCertificate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create tax exemption certificate' })
+  @Post('tax/exemption-certificates')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TaxExemptionCertificate')
+  async createExemptionCertificate(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.taxDeepService.createExemptionCertificate(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update exemption certificate' })
+  @Patch('tax/exemption-certificates/:id')
+  @Permissions('finance.tax.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TaxExemptionCertificate', 'id')
+  async updateExemptionCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.taxDeepService.updateExemptionCertificate(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Revoke exemption certificate' })
+  @Post('tax/exemption-certificates/:id/revoke')
+  @Permissions('finance.tax.update')
+  async revokeExemptionCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.revokeExemptionCertificate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Preview VAT return' })
+  @Get('tax/vat-return/preview')
+  @Permissions('finance.tax.read')
+  async previewVatReturn(
+    @Req() req: AuthenticatedRequest,
+    @Query('periodStart') periodStart: string,
+    @Query('periodEnd') periodEnd: string,
+  ) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.taxDeepService.previewVatReturn(req.user.tenantId, orgId, periodStart, periodEnd);
+  }
+
+  @ApiOperation({ summary: 'List tax reconciliations' })
+  @Get('tax/reconciliations')
+  @Permissions('finance.tax.read')
+  async listTaxReconciliations(@Req() req: AuthenticatedRequest) {
+    return this.taxDeepService.listTaxReconciliations(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Compute tax reconciliation' })
+  @Post('tax/reconciliations/compute')
+  @Permissions('finance.tax.create')
+  async computeTaxReconciliation(@Req() req: AuthenticatedRequest, @Body() dto: { periodStart: string; periodEnd: string; taxType: string }) {
+    return this.taxDeepService.computeTaxReconciliation(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
+  }
+
+  @ApiOperation({ summary: 'Update tax reconciliation' })
+  @Patch('tax/reconciliations/:id')
+  @Permissions('finance.tax.update')
+  async updateTaxReconciliation(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.taxDeepService.updateTaxReconciliation(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'List withholding certificates' })
+  @Get('tax/withholding-certificates')
+  @Permissions('finance.tax.read')
+  async listWithholdingCertificates(@Req() req: AuthenticatedRequest, @Query('vendorId') vendorId?: string, @Query('year') year?: string) {
+    return this.taxDeepService.listWithholdingCertificates(req.user.tenantId, vendorId, year ? parseInt(year) : undefined);
+  }
+
+  @ApiOperation({ summary: 'Get withholding certificate by ID' })
+  @Get('tax/withholding-certificates/:id')
+  @Permissions('finance.tax.read')
+  async getWithholdingCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.getWithholdingCertificate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create withholding certificate' })
+  @Post('tax/withholding-certificates')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('WithholdingCertificate')
+  async createWithholdingCertificate(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.taxDeepService.createWithholdingCertificate(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Issue withholding certificate' })
+  @Post('tax/withholding-certificates/:id/issue')
+  @Permissions('finance.tax.update')
+  async issueWithholdingCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.issueWithholdingCertificate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'File withholding certificate' })
+  @Post('tax/withholding-certificates/:id/file')
+  @Permissions('finance.tax.update')
+  async fileWithholdingCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.fileWithholdingCertificate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Bulk generate withholding certificates for a year' })
+  @Post('tax/withholding-certificates/bulk-generate')
+  @Permissions('finance.tax.create')
+  async bulkGenerateWithholdingCertificates(@Req() req: AuthenticatedRequest, @Body() dto: { year: number }) {
+    return this.taxDeepService.bulkGenerateWithholdingCertificates(req.user.tenantId, dto.year);
+  }
+
+  @ApiOperation({ summary: 'List amended tax filings' })
+  @Get('tax/amended-filings')
+  @Permissions('finance.tax.read')
+  async listAmendedFilings(@Req() req: AuthenticatedRequest) {
+    return this.taxDeepService.listAmendedFilings(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create amended tax filing' })
+  @Post('tax/amended-filings')
+  @Permissions('finance.tax.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AmendedTaxFiling')
+  async createAmendedFiling(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.taxDeepService.createAmendedFiling(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Submit amended tax filing' })
+  @Post('tax/amended-filings/:id/submit')
+  @Permissions('finance.tax.update')
+  async submitAmendedFiling(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taxDeepService.submitAmendedFiling(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Update amended filing status (accept/reject)' })
+  @Patch('tax/amended-filings/:id/status')
+  @Permissions('finance.tax.update')
+  async updateAmendedFilingStatus(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { status: string }) {
+    return this.taxDeepService.updateAmendedFilingStatus(req.user.tenantId, id, dto.status);
+  }
+
+  @ApiOperation({ summary: 'Tax engine dashboard' })
+  @Get('tax/dashboard')
+  @Permissions('finance.tax.read')
+  async getTaxDashboard(@Req() req: AuthenticatedRequest) {
+    return this.taxDeepService.getTaxDashboard(req.user.tenantId);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 2 — TREASURY MANAGEMENT DEEPENING
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List treasury positions' })
+  @Get('treasury/positions')
+  @Permissions('finance.treasury.read')
+  async listTreasuryPositions(@Req() req: AuthenticatedRequest, @Query('currency') currency?: string) {
+    return this.treasuryDeepService.listPositions(req.user.tenantId, currency);
+  }
+
+  @ApiOperation({ summary: 'Get treasury position summary by currency' })
+  @Get('treasury/positions/summary')
+  @Permissions('finance.treasury.read')
+  async getTreasuryPositionSummary(@Req() req: AuthenticatedRequest) {
+    return this.treasuryDeepService.getPositionSummary(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create treasury position (manual entry)' })
+  @Post('treasury/positions')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TreasuryPosition')
+  async createTreasuryPosition(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.treasuryDeepService.createPosition(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Get liquidity forecast' })
+  @Get('treasury/liquidity-forecast')
+  @Permissions('finance.treasury.read')
+  async getLiquidityForecast(@Req() req: AuthenticatedRequest, @Query('horizon') horizon?: string) {
+    return this.treasuryDeepService.getLiquidityForecast(req.user.tenantId, horizon ? parseInt(horizon) : 30);
+  }
+
+  @ApiOperation({ summary: 'List hedge instruments' })
+  @Get('treasury/hedge-instruments')
+  @Permissions('finance.treasury.read')
+  async listHedgeInstruments(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.treasuryDeepService.listHedgeInstruments(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get hedge instrument by ID' })
+  @Get('treasury/hedge-instruments/:id')
+  @Permissions('finance.treasury.read')
+  async getHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.treasuryDeepService.getHedgeInstrument(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create hedge instrument' })
+  @Post('treasury/hedge-instruments')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('HedgeInstrument')
+  async createHedgeInstrument(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.treasuryDeepService.createHedgeInstrument(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Revalue hedge instrument (mark-to-market)' })
+  @Post('treasury/hedge-instruments/:id/revalue')
+  @Permissions('finance.treasury.update')
+  async revalueHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { marketValue: number }) {
+    return this.treasuryDeepService.revalueHedgeInstrument(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Update hedge instrument' })
+  @Patch('treasury/hedge-instruments/:id')
+  @Permissions('finance.treasury.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('HedgeInstrument', 'id')
+  async updateHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.treasuryDeepService.updateHedgeInstrument(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'List debt facilities' })
+  @Get('treasury/debt-facilities')
+  @Permissions('finance.treasury.read')
+  async listDebtFacilities(@Req() req: AuthenticatedRequest) {
+    return this.treasuryDeepService.listDebtFacilities(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get debt facility by ID' })
+  @Get('treasury/debt-facilities/:id')
+  @Permissions('finance.treasury.read')
+  async getDebtFacility(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.treasuryDeepService.getDebtFacility(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create debt facility' })
+  @Post('treasury/debt-facilities')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DebtFacility')
+  async createDebtFacility(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.treasuryDeepService.createDebtFacility(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Record debt drawdown' })
+  @Post('treasury/debt-facilities/:id/drawdown')
+  @Permissions('finance.treasury.update')
+  async recordDebtDrawdown(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { amount: number }) {
+    return this.treasuryDeepService.recordDebtDrawdown(req.user.tenantId, id, dto.amount);
+  }
+
+  @ApiOperation({ summary: 'Update debt facility' })
+  @Patch('treasury/debt-facilities/:id')
+  @Permissions('finance.treasury.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DebtFacility', 'id')
+  async updateDebtFacility(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.treasuryDeepService.updateDebtFacility(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Get debt facility utilization report' })
+  @Get('treasury/debt-facilities/utilization')
+  @Permissions('finance.treasury.read')
+  async getDebtUtilizationReport(@Req() req: AuthenticatedRequest) {
+    return this.treasuryDeepService.getDebtUtilizationReport(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'List investment holdings' })
+  @Get('treasury/investments')
+  @Permissions('finance.treasury.read')
+  async listInvestmentHoldings(@Req() req: AuthenticatedRequest) {
+    return this.treasuryDeepService.listInvestmentHoldings(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get investment holding by ID' })
+  @Get('treasury/investments/:id')
+  @Permissions('finance.treasury.read')
+  async getInvestmentHolding(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.treasuryDeepService.getInvestmentHolding(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create investment holding' })
+  @Post('treasury/investments')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('InvestmentHolding')
+  async createInvestmentHolding(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.treasuryDeepService.createInvestmentHolding(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Mark investment holding to market' })
+  @Post('treasury/investments/:id/mark-to-market')
+  @Permissions('finance.treasury.update')
+  async markToMarket(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { currentPrice: number }) {
+    return this.treasuryDeepService.markToMarket(req.user.tenantId, id, dto.currentPrice);
+  }
+
+  @ApiOperation({ summary: 'Get investment portfolio return' })
+  @Get('treasury/investments/portfolio-return')
+  @Permissions('finance.treasury.read')
+  async getPortfolioReturn(@Req() req: AuthenticatedRequest) {
+    return this.treasuryDeepService.getPortfolioReturn(req.user.tenantId);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 3 — AP INTELLIGENCE
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List vendor statements' })
+  @Get('ap/vendor-statements')
+  @Permissions('finance.payables.read')
+  async listVendorStatements(@Req() req: AuthenticatedRequest, @Query('vendorId') vendorId?: string) {
+    return this.apIntelligenceService.listVendorStatements(req.user.tenantId, vendorId);
+  }
+
+  @ApiOperation({ summary: 'Import vendor statement' })
+  @Post('ap/vendor-statements')
+  @Permissions('finance.payables.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('VendorStatement')
+  async importVendorStatement(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.apIntelligenceService.importVendorStatement(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Reconcile vendor statement' })
+  @Post('ap/vendor-statements/:id/reconcile')
+  @Permissions('finance.payables.update')
+  async reconcileVendorStatement(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.apIntelligenceService.reconcileVendorStatement(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get vendor statement reconciliation diff' })
+  @Get('ap/vendor-statements/:id/diff')
+  @Permissions('finance.payables.read')
+  async getVendorStatementDiff(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.apIntelligenceService.getVendorStatementDiff(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List AP duplicate flags' })
+  @Get('ap/duplicate-flags')
+  @Permissions('finance.payables.read')
+  async listDuplicateFlags(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.apIntelligenceService.listDuplicateFlags(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Run AP duplicate invoice scan' })
+  @Post('ap/duplicate-flags/scan')
+  @Permissions('finance.payables.create')
+  async runDuplicateScan(@Req() req: AuthenticatedRequest) {
+    return this.apIntelligenceService.runDuplicateScan(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Review AP duplicate flag' })
+  @Patch('ap/duplicate-flags/:id/review')
+  @Permissions('finance.payables.update')
+  async reviewDuplicateFlag(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { status: string; notes?: string; reviewedBy: string }) {
+    return this.apIntelligenceService.reviewDuplicateFlag(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'List AP approval policies' })
+  @Get('ap/approval-policies')
+  @Permissions('finance.payables.read')
+  async listApApprovalPolicies(@Req() req: AuthenticatedRequest) {
+    return this.apIntelligenceService.listApprovalPolicies(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create AP approval policy' })
+  @Post('ap/approval-policies')
+  @Permissions('finance.payables.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APApprovalPolicy')
+  async createApApprovalPolicy(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.apIntelligenceService.createApprovalPolicy(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update AP approval policy' })
+  @Patch('ap/approval-policies/:id')
+  @Permissions('finance.payables.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APApprovalPolicy', 'id')
+  async updateApApprovalPolicy(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.apIntelligenceService.updateApprovalPolicy(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Delete AP approval policy' })
+  @Delete('ap/approval-policies/:id')
+  @Permissions('finance.payables.delete')
+  async deleteApApprovalPolicy(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.apIntelligenceService.deleteApprovalPolicy(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get AP approval policy for a given invoice amount' })
+  @Get('ap/approval-policies/match')
+  @Permissions('finance.payables.read')
+  async getApprovalPolicyForAmount(@Req() req: AuthenticatedRequest, @Query('amount') amount: string) {
+    return this.apIntelligenceService.getApprovalPolicyForAmount(req.user.tenantId, parseFloat(amount));
+  }
+
+  @ApiOperation({ summary: 'List GRNI records' })
+  @Get('ap/grni')
+  @Permissions('finance.payables.read')
+  async listGrni(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.apIntelligenceService.listGrni(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get GRNI aging report' })
+  @Get('ap/grni/aging')
+  @Permissions('finance.payables.read')
+  async getGrniAging(@Req() req: AuthenticatedRequest) {
+    return this.apIntelligenceService.getGrniAging(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create GRNI record' })
+  @Post('ap/grni')
+  @Permissions('finance.payables.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('GrniRecord')
+  async createGrniRecord(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.apIntelligenceService.createGrniRecord(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Mark GRNI record as invoiced' })
+  @Post('ap/grni/:id/mark-invoiced')
+  @Permissions('finance.payables.update')
+  async markGrniInvoiced(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { invoiceId: string }) {
+    return this.apIntelligenceService.markGrniInvoiced(req.user.tenantId, id, dto.invoiceId);
+  }
+
+  @ApiOperation({ summary: 'Get AP cash flow obligation forecast' })
+  @Get('ap/cash-flow-obligation')
+  @Permissions('finance.payables.read')
+  async getApCashFlowObligation(@Req() req: AuthenticatedRequest, @Query('days') days?: string) {
+    return this.apIntelligenceService.getApCashFlowObligation(req.user.tenantId, days ? parseInt(days) : 90);
+  }
+
+  @ApiOperation({ summary: 'Calculate early payment discount savings' })
+  @Post('ap/early-payment-discount')
+  @Permissions('finance.payables.read')
+  async getEarlyPaymentDiscountSavings(@Req() req: AuthenticatedRequest, @Body() dto: { invoiceIds: string[] }) {
+    return this.apIntelligenceService.getEarlyPaymentDiscountSavings(req.user.tenantId, dto.invoiceIds);
+  }
+
+  @ApiOperation({ summary: 'Get vendor scorecard' })
+  @Get('ap/vendor-scorecard/:vendorId')
+  @Permissions('finance.payables.read')
+  async getVendorScorecard(@Req() req: AuthenticatedRequest, @Param('vendorId') vendorId: string) {
+    return this.apIntelligenceService.getVendorScorecard(req.user.tenantId, vendorId);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 4 — AR & COLLECTIONS INTELLIGENCE
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List promises to pay' })
+  @Get('ar/promises-to-pay')
+  @Permissions('finance.receivables.read')
+  async listPromisesToPay(@Req() req: AuthenticatedRequest, @Query('customerId') customerId?: string, @Query('status') status?: string) {
+    return this.arCollectionsService.listPromisesToPay(req.user.tenantId, customerId, status);
+  }
+
+  @ApiOperation({ summary: 'Create promise to pay' })
+  @Post('ar/promises-to-pay')
+  @Permissions('finance.receivables.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ARPromiseToPay')
+  async createPromiseToPay(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.arCollectionsService.createPromiseToPay(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update promise to pay' })
+  @Patch('ar/promises-to-pay/:id')
+  @Permissions('finance.receivables.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ARPromiseToPay', 'id')
+  async updatePromiseToPay(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.arCollectionsService.updatePromiseToPay(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Check and mark broken promises to pay' })
+  @Post('ar/promises-to-pay/check-broken')
+  @Permissions('finance.receivables.update')
+  async checkBrokenPromises(@Req() req: AuthenticatedRequest) {
+    return this.arCollectionsService.checkBrokenPromises(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'List AR disputes' })
+  @Get('ar/disputes')
+  @Permissions('finance.receivables.read')
+  async listArDisputes(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.arCollectionsService.listDisputes(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get AR dispute by ID' })
+  @Get('ar/disputes/:id')
+  @Permissions('finance.receivables.read')
+  async getArDispute(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.arCollectionsService.getDispute(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create AR dispute' })
+  @Post('ar/disputes')
+  @Permissions('finance.receivables.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ARDispute')
+  async createArDispute(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.arCollectionsService.createDispute(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update AR dispute' })
+  @Patch('ar/disputes/:id')
+  @Permissions('finance.receivables.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ARDispute', 'id')
+  async updateArDispute(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.arCollectionsService.updateDispute(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Escalate AR dispute' })
+  @Post('ar/disputes/:id/escalate')
+  @Permissions('finance.receivables.update')
+  async escalateArDispute(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.arCollectionsService.escalateDispute(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List bad debt provisions' })
+  @Get('ar/bad-debt-provisions')
+  @Permissions('finance.receivables.read')
+  async listBadDebtProvisions(@Req() req: AuthenticatedRequest) {
+    return this.arCollectionsService.listBadDebtProvisions(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Compute bad debt provision' })
+  @Post('ar/bad-debt-provisions/compute')
+  @Permissions('finance.receivables.create')
+  async computeBadDebtProvision(@Req() req: AuthenticatedRequest, @Body() dto: { period: string }) {
+    return this.arCollectionsService.computeBadDebtProvision(req.user.tenantId, dto.period);
+  }
+
+  @ApiOperation({ summary: 'Post bad debt provision to GL' })
+  @Post('ar/bad-debt-provisions/:id/post')
+  @Permissions('finance.receivables.update')
+  async postBadDebtProvision(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { glAccountId?: string }) {
+    return this.arCollectionsService.postBadDebtProvision(req.user.tenantId, id, dto.glAccountId);
+  }
+
+  @ApiOperation({ summary: 'Get collector workbench' })
+  @Get('ar/collector-workbench')
+  @Permissions('finance.receivables.read')
+  async getCollectorWorkbench(@Req() req: AuthenticatedRequest, @Query('collectorId') collectorId?: string) {
+    return this.arCollectionsService.getCollectorWorkbench(req.user.tenantId, collectorId);
+  }
+
+  @ApiOperation({ summary: 'Get DSO trend (last N months)' })
+  @Get('ar/dso-trend')
+  @Permissions('finance.receivables.read')
+  async getDsoTrend(@Req() req: AuthenticatedRequest, @Query('months') months?: string) {
+    return this.arCollectionsService.getDsoTrend(req.user.tenantId, months ? parseInt(months) : 12);
+  }
+
+  @ApiOperation({ summary: 'Get AR performance dashboard' })
+  @Get('ar/performance-dashboard')
+  @Permissions('finance.receivables.read')
+  async getArPerformanceDashboard(@Req() req: AuthenticatedRequest) {
+    return this.arCollectionsService.getArPerformanceDashboard(req.user.tenantId);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 5 — FIXED ASSET DEEPENING
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'Get depreciation schedule preview for an asset' })
+  @Get('assets/:id/depreciation-schedule')
+  @Permissions('finance.assets.read')
+  async getDepreciationSchedulePreview(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fixedAssetDeepService.getDepreciationSchedulePreview(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List asset insurance policies' })
+  @Get('assets/insurances')
+  @Permissions('finance.assets.read')
+  async listAssetInsurances(@Req() req: AuthenticatedRequest, @Query('assetId') assetId?: string) {
+    return this.fixedAssetDeepService.listInsurances(req.user.tenantId, assetId);
+  }
+
+  @ApiOperation({ summary: 'Create asset insurance policy' })
+  @Post('assets/insurances')
+  @Permissions('finance.assets.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AssetInsurance')
+  async createAssetInsurance(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fixedAssetDeepService.createInsurance(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update asset insurance policy' })
+  @Patch('assets/insurances/:id')
+  @Permissions('finance.assets.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AssetInsurance', 'id')
+  async updateAssetInsurance(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.fixedAssetDeepService.updateInsurance(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Get expiring asset insurances' })
+  @Get('assets/insurances/expiring')
+  @Permissions('finance.assets.read')
+  async getExpiringInsurances(@Req() req: AuthenticatedRequest, @Query('daysAhead') daysAhead?: string) {
+    return this.fixedAssetDeepService.getExpiringInsurances(req.user.tenantId, daysAhead ? parseInt(daysAhead) : 30);
+  }
+
+  @ApiOperation({ summary: 'List asset impairments' })
+  @Get('assets/impairments')
+  @Permissions('finance.assets.read')
+  async listAssetImpairments(@Req() req: AuthenticatedRequest) {
+    return this.fixedAssetDeepService.listImpairments(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create asset impairment test' })
+  @Post('assets/impairments')
+  @Permissions('finance.assets.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AssetImpairment')
+  async createAssetImpairment(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fixedAssetDeepService.createImpairment(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Post asset impairment to GL' })
+  @Post('assets/impairments/:id/post')
+  @Permissions('finance.assets.update')
+  async postAssetImpairment(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fixedAssetDeepService.postImpairment(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List capital projects' })
+  @Get('assets/capital-projects')
+  @Permissions('finance.assets.read')
+  async listCapitalProjects(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.fixedAssetDeepService.listCapitalProjects(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get capital project by ID' })
+  @Get('assets/capital-projects/:id')
+  @Permissions('finance.assets.read')
+  async getCapitalProject(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fixedAssetDeepService.getCapitalProject(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create capital project' })
+  @Post('assets/capital-projects')
+  @Permissions('finance.assets.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CapitalProject')
+  async createCapitalProject(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fixedAssetDeepService.createCapitalProject(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Add cost to capital project' })
+  @Post('assets/capital-projects/:id/costs')
+  @Permissions('finance.assets.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CapitalProjectCost')
+  async addCapitalProjectCost(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.fixedAssetDeepService.addProjectCost(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update capital project' })
+  @Patch('assets/capital-projects/:id')
+  @Permissions('finance.assets.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CapitalProject', 'id')
+  async updateCapitalProject(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.fixedAssetDeepService.updateCapitalProject(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Convert capital project to fixed asset' })
+  @Post('assets/capital-projects/:id/convert-to-asset')
+  @Permissions('finance.assets.create')
+  async convertCapitalProjectToAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { assetName: string; categoryId: string; assetDate: string }) {
+    return this.fixedAssetDeepService.convertProjectToAsset(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Get net book value roll-forward report' })
+  @Get('assets/nbv-roll-forward')
+  @Permissions('finance.assets.read')
+  async getNbvRollForward(@Req() req: AuthenticatedRequest, @Query('period') period: string) {
+    return this.fixedAssetDeepService.getNbvRollForward(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Bulk upload fixed assets from CSV data' })
+  @Post('assets/bulk-upload')
+  @Permissions('finance.assets.create')
+  async bulkUploadAssets(@Req() req: AuthenticatedRequest, @Body() dto: { rows: Record<string, unknown>[] }) {
+    return this.fixedAssetDeepService.bulkUploadAssets(req.user.tenantId, dto.rows as never);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 6 — FP&A DEEPENING
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List rolling forecast lines' })
+  @Get('fpa/rolling-forecast')
+  @Permissions('finance.budget.read')
+  async listRollingForecast(@Req() req: AuthenticatedRequest, @Query('period') period?: string) {
+    return this.fpaDeepService.listRollingForecast(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Upsert rolling forecast line' })
+  @Post('fpa/rolling-forecast')
+  @Permissions('finance.budget.update')
+  async upsertRollingForecastLine(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fpaDeepService.upsertRollingForecastLine(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Sync actuals into rolling forecast' })
+  @Post('fpa/rolling-forecast/sync-actuals')
+  @Permissions('finance.budget.update')
+  async syncActualsToRollingForecast(@Req() req: AuthenticatedRequest, @Body() dto: { period: string }) {
+    return this.fpaDeepService.syncActualsToRollingForecast(req.user.tenantId, dto.period);
+  }
+
+  @ApiOperation({ summary: 'List headcount plans' })
+  @Get('fpa/headcount-plans')
+  @Permissions('finance.budget.read')
+  async listHeadcountPlans(@Req() req: AuthenticatedRequest, @Query('period') period?: string) {
+    return this.fpaDeepService.listHeadcountPlans(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Create headcount plan' })
+  @Post('fpa/headcount-plans')
+  @Permissions('finance.budget.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('HeadcountPlan')
+  async createHeadcountPlan(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fpaDeepService.createHeadcountPlan(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update headcount plan' })
+  @Patch('fpa/headcount-plans/:id')
+  @Permissions('finance.budget.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('HeadcountPlan', 'id')
+  async updateHeadcountPlan(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.fpaDeepService.updateHeadcountPlan(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Get headcount cost projection' })
+  @Post('fpa/headcount-plans/cost-projection')
+  @Permissions('finance.budget.read')
+  async getHeadcountCostProjection(@Req() req: AuthenticatedRequest, @Body() dto: { periods: string[] }) {
+    return this.fpaDeepService.getHeadcountCostProjection(req.user.tenantId, dto.periods);
+  }
+
+  @ApiOperation({ summary: 'List budget comments' })
+  @Get('fpa/budget-comments')
+  @Permissions('finance.budget.read')
+  async listBudgetComments(@Req() req: AuthenticatedRequest, @Query('budgetId') budgetId: string, @Query('period') period?: string) {
+    return this.fpaDeepService.listBudgetComments(req.user.tenantId, budgetId, period);
+  }
+
+  @ApiOperation({ summary: 'Add budget comment' })
+  @Post('fpa/budget-comments')
+  @Permissions('finance.budget.create')
+  async addBudgetComment(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fpaDeepService.addBudgetComment(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update budget comment' })
+  @Patch('fpa/budget-comments/:id')
+  @Permissions('finance.budget.update')
+  async updateBudgetComment(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { text: string }) {
+    return this.fpaDeepService.updateBudgetComment(req.user.tenantId, id, dto.text);
+  }
+
+  @ApiOperation({ summary: 'Delete budget comment' })
+  @Delete('fpa/budget-comments/:id')
+  @Permissions('finance.budget.delete')
+  async deleteBudgetComment(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaDeepService.deleteBudgetComment(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List management reports' })
+  @Get('fpa/management-reports')
+  @Permissions('finance.reports.read')
+  async listManagementReports(@Req() req: AuthenticatedRequest) {
+    return this.fpaDeepService.listManagementReports(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get management report by ID' })
+  @Get('fpa/management-reports/:id')
+  @Permissions('finance.reports.read')
+  async getManagementReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaDeepService.getManagementReport(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create management report' })
+  @Post('fpa/management-reports')
+  @Permissions('finance.reports.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ManagementReport')
+  async createManagementReport(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.fpaDeepService.createManagementReport(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update management report' })
+  @Patch('fpa/management-reports/:id')
+  @Permissions('finance.reports.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ManagementReport', 'id')
+  async updateManagementReport(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.fpaDeepService.updateManagementReport(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Delete management report' })
+  @Delete('fpa/management-reports/:id')
+  @Permissions('finance.reports.delete')
+  async deleteManagementReport(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.fpaDeepService.deleteManagementReport(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get variance waterfall chart data' })
+  @Get('fpa/waterfall-chart')
+  @Permissions('finance.reports.read')
+  async getWaterfallChartData(@Req() req: AuthenticatedRequest, @Query('budgetId') budgetId: string, @Query('period') period: string) {
+    return this.fpaDeepService.getWaterfallChartData(req.user.tenantId, budgetId, period);
+  }
+
+  @ApiOperation({ summary: 'Run what-if sensitivity analysis' })
+  @Post('fpa/sensitivity-analysis')
+  @Permissions('finance.budget.read')
+  async runWhatIfSensitivity(@Req() req: AuthenticatedRequest, @Body() dto: { revenueChangePct: number; costChangePct: number; period?: string }) {
+    return this.fpaDeepService.runWhatIfSensitivity(req.user.tenantId, dto);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 7 — REVENUE & BILLING INTELLIGENCE
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List billing rules' })
+  @Get('billing/rules')
+  @Permissions('finance.revenue.read')
+  async listBillingRules(@Req() req: AuthenticatedRequest) {
+    return this.revenueBillingService.listBillingRules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get billing rule by ID' })
+  @Get('billing/rules/:id')
+  @Permissions('finance.revenue.read')
+  async getBillingRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.revenueBillingService.getBillingRule(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create billing rule' })
+  @Post('billing/rules')
+  @Permissions('finance.revenue.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BillingRule')
+  async createBillingRule(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.revenueBillingService.createBillingRule(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update billing rule' })
+  @Patch('billing/rules/:id')
+  @Permissions('finance.revenue.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BillingRule', 'id')
+  async updateBillingRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.revenueBillingService.updateBillingRule(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Delete billing rule' })
+  @Delete('billing/rules/:id')
+  @Permissions('finance.revenue.delete')
+  async deleteBillingRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.revenueBillingService.deleteBillingRule(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List billing milestones' })
+  @Get('billing/milestones')
+  @Permissions('finance.revenue.read')
+  async listBillingMilestones(@Req() req: AuthenticatedRequest, @Query('billingRuleId') billingRuleId?: string) {
+    return this.revenueBillingService.listMilestones(req.user.tenantId, billingRuleId);
+  }
+
+  @ApiOperation({ summary: 'Add milestone to billing rule' })
+  @Post('billing/rules/:id/milestones')
+  @Permissions('finance.revenue.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('BillingMilestone')
+  async addBillingMilestone(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.revenueBillingService.addMilestone(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Complete billing milestone' })
+  @Post('billing/milestones/:id/complete')
+  @Permissions('finance.revenue.update')
+  async completeBillingMilestone(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.revenueBillingService.completeMilestone(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Trigger invoice from completed milestone' })
+  @Post('billing/milestones/:id/trigger-invoice')
+  @Permissions('finance.revenue.create')
+  async triggerMilestoneInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.revenueBillingService.triggerMilestoneInvoice(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List contract modifications' })
+  @Get('billing/contract-modifications')
+  @Permissions('finance.revenue.read')
+  async listContractModifications(@Req() req: AuthenticatedRequest, @Query('contractId') contractId?: string) {
+    return this.revenueBillingService.listContractModifications(req.user.tenantId, contractId);
+  }
+
+  @ApiOperation({ summary: 'Create contract modification' })
+  @Post('billing/contract-modifications')
+  @Permissions('finance.revenue.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ContractModification')
+  async createContractModification(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.revenueBillingService.createContractModification(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Approve contract modification' })
+  @Post('billing/contract-modifications/:id/approve')
+  @Permissions('finance.revenue.update')
+  async approveContractModification(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.revenueBillingService.approveContractModification(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List deferred revenue roll-forwards' })
+  @Get('billing/deferred-revenue-roll-forwards')
+  @Permissions('finance.revenue.read')
+  async listDeferredRevenueRollForwards(@Req() req: AuthenticatedRequest) {
+    return this.revenueBillingService.listDeferredRevenueRollForwards(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Compute deferred revenue roll-forward for a period' })
+  @Post('billing/deferred-revenue-roll-forwards/compute')
+  @Permissions('finance.revenue.create')
+  async computeDeferredRevenueRollForward(@Req() req: AuthenticatedRequest, @Body() dto: { period: string }) {
+    return this.revenueBillingService.computeDeferredRevenueRollForward(req.user.tenantId, dto.period);
+  }
+
+  @ApiOperation({ summary: 'List tiered pricing tables' })
+  @Get('billing/tiered-pricing')
+  @Permissions('finance.revenue.read')
+  async listTieredPricingTables(@Req() req: AuthenticatedRequest) {
+    return this.revenueBillingService.listTieredPricingTables(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create tiered pricing table' })
+  @Post('billing/tiered-pricing')
+  @Permissions('finance.revenue.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('TieredPricingTable')
+  async createTieredPricingTable(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.revenueBillingService.createTieredPricingTable(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Rate usage against a tiered pricing table' })
+  @Post('billing/tiered-pricing/:id/rate')
+  @Permissions('finance.revenue.read')
+  async rateUsage(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { usage: number }) {
+    return this.revenueBillingService.rateUsage(req.user.tenantId, id, dto.usage);
+  }
+
+  @ApiOperation({ summary: 'Get revenue backlog (remaining performance obligations)' })
+  @Get('billing/revenue-backlog')
+  @Permissions('finance.revenue.read')
+  async getRevenueBacklog(@Req() req: AuthenticatedRequest) {
+    return this.revenueBillingService.getRevenueBacklog(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get revenue forecast vs actual' })
+  @Post('billing/revenue-forecast-vs-actual')
+  @Permissions('finance.revenue.read')
+  async getRevenueForecastVsActual(@Req() req: AuthenticatedRequest, @Body() dto: { periods: string[] }) {
+    return this.revenueBillingService.getRevenueForecastVsActual(req.user.tenantId, dto.periods);
+  }
+
+  // ════════════════════════════════════════════════
+  // BATCH 8 — COMPLIANCE, CONTROLS & AUDIT
+  // ════════════════════════════════════════════════
+
+  @ApiOperation({ summary: 'List financial controls' })
+  @Get('compliance/controls')
+  @Permissions('finance.compliance.read')
+  async listFinancialControls(@Req() req: AuthenticatedRequest, @Query('riskLevel') riskLevel?: string) {
+    return this.complianceControlsService.listControls(req.user.tenantId, riskLevel);
+  }
+
+  @ApiOperation({ summary: 'Get financial control by ID' })
+  @Get('compliance/controls/:id')
+  @Permissions('finance.compliance.read')
+  async getFinancialControl(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.complianceControlsService.getControl(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create financial control' })
+  @Post('compliance/controls')
+  @Permissions('finance.compliance.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FinancialControl')
+  async createFinancialControl(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.createControl(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update financial control' })
+  @Patch('compliance/controls/:id')
+  @Permissions('finance.compliance.update')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('FinancialControl', 'id')
+  async updateFinancialControl(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.updateControl(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Deactivate financial control' })
+  @Delete('compliance/controls/:id')
+  @Permissions('finance.compliance.delete')
+  async deactivateFinancialControl(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.complianceControlsService.deleteControl(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List control tests' })
+  @Get('compliance/control-tests')
+  @Permissions('finance.compliance.read')
+  async listControlTests(@Req() req: AuthenticatedRequest, @Query('controlId') controlId?: string) {
+    return this.complianceControlsService.listControlTests(req.user.tenantId, controlId);
+  }
+
+  @ApiOperation({ summary: 'Create control test' })
+  @Post('compliance/control-tests')
+  @Permissions('finance.compliance.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ControlTest')
+  async createControlTest(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.createControlTest(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Review control test result' })
+  @Post('compliance/control-tests/:id/review')
+  @Permissions('finance.compliance.update')
+  async reviewControlTest(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { reviewedBy: string }) {
+    return this.complianceControlsService.reviewControlTest(req.user.tenantId, id, dto.reviewedBy);
+  }
+
+  @ApiOperation({ summary: 'Get control effectiveness dashboard' })
+  @Get('compliance/control-effectiveness')
+  @Permissions('finance.compliance.read')
+  async getControlEffectivenessDashboard(@Req() req: AuthenticatedRequest) {
+    return this.complianceControlsService.getControlEffectivenessDashboard(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'List SoD rule definitions' })
+  @Get('compliance/sod-rules')
+  @Permissions('finance.compliance.read')
+  async listSodRules(@Req() req: AuthenticatedRequest) {
+    return this.complianceControlsService.listSodRules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create SoD rule definition' })
+  @Post('compliance/sod-rules')
+  @Permissions('finance.compliance.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('SodRuleDefinition')
+  async createSodRule(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.createSodRule(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Update SoD rule definition' })
+  @Patch('compliance/sod-rules/:id')
+  @Permissions('finance.compliance.update')
+  async updateSodRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.updateSodRule(req.user.tenantId, id, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Run SoD conflict scan across all users' })
+  @Post('compliance/sod-scan')
+  @Permissions('finance.compliance.create')
+  async runSodScan(@Req() req: AuthenticatedRequest) {
+    return this.complianceControlsService.runSodScan(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'List SoD conflicts' })
+  @Get('compliance/sod-conflicts')
+  @Permissions('finance.compliance.read')
+  async listSodConflicts(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.complianceControlsService.listSodConflicts(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Resolve SoD conflict' })
+  @Patch('compliance/sod-conflicts/:id/resolve')
+  @Permissions('finance.compliance.update')
+  async resolveSodConflict(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { status: string; resolvedBy: string; mitigationNotes?: string }) {
+    return this.complianceControlsService.resolveSodConflict(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'List audit confirmations' })
+  @Get('compliance/audit-confirmations')
+  @Permissions('finance.compliance.read')
+  async listAuditConfirmations(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.complianceControlsService.listAuditConfirmations(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Create audit confirmation request' })
+  @Post('compliance/audit-confirmations')
+  @Permissions('finance.compliance.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AuditConfirmation')
+  async createAuditConfirmation(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.createAuditConfirmation(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Record audit confirmation response' })
+  @Post('compliance/audit-confirmations/:id/respond')
+  @Permissions('finance.compliance.update')
+  async recordAuditConfirmationResponse(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { confirmedAmount: number; responseDate?: string; notes?: string }) {
+    return this.complianceControlsService.recordAuditConfirmationResponse(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'List period certifications' })
+  @Get('compliance/period-certifications')
+  @Permissions('finance.compliance.read')
+  async listPeriodCertifications(@Req() req: AuthenticatedRequest, @Query('period') period?: string) {
+    return this.complianceControlsService.listPeriodCertifications(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Create period certification request' })
+  @Post('compliance/period-certifications')
+  @Permissions('finance.compliance.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PeriodCertification')
+  async createPeriodCertification(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+    return this.complianceControlsService.createPeriodCertification(req.user.tenantId, dto as never);
+  }
+
+  @ApiOperation({ summary: 'Certify (sign off) a period' })
+  @Post('compliance/period-certifications/:id/certify')
+  @Permissions('finance.compliance.update')
+  async certifyPeriod(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { statement: string; ipAddress?: string }) {
+    return this.complianceControlsService.certifyPeriod(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Reject period certification' })
+  @Post('compliance/period-certifications/:id/reject')
+  @Permissions('finance.compliance.update')
+  async rejectPeriodCertification(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { notes: string }) {
+    return this.complianceControlsService.rejectPeriodCertification(req.user.tenantId, id, dto.notes);
   }
 }

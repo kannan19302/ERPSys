@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T17:08:06.667Z
+> Last generated: 2026-07-09T17:32:13.076Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1615 features** across 33 modules
+## System total: **1769 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 276 |
+| [advanced-finance](#advanced-finance) | 430 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -237,7 +237,7 @@
 
 ## advanced-finance
 
-276 features
+430 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -517,6 +517,160 @@
 | POST | `/advanced-finance/budget-reallocations/:id/submit` | Submit budget reallocation | `finance.budget.update` |
 | POST | `/advanced-finance/budget-reallocations/:id/approve` | Approve budget reallocation | `finance.budget.update` |
 | POST | `/advanced-finance/budget-reallocations/:id/reject` | Reject budget reallocation | `finance.budget.update` |
+| GET | `/advanced-finance/tax/jurisdictions` | List tax jurisdictions | `finance.tax.read` |
+| GET | `/advanced-finance/tax/jurisdictions/:id` | Get tax jurisdiction by ID | `finance.tax.read` |
+| POST | `/advanced-finance/tax/jurisdictions` | Create tax jurisdiction | `finance.tax.read` |
+| PATCH | `/advanced-finance/tax/jurisdictions/:id` | Update tax jurisdiction | `finance.tax.update` |
+| DELETE | `/advanced-finance/tax/jurisdictions/:id` | Delete tax jurisdiction | `finance.tax.delete` |
+| GET | `/advanced-finance/tax/exemption-certificates` | List tax exemption certificates | `finance.tax.delete` |
+| GET | `/advanced-finance/tax/exemption-certificates/:id` | Get exemption certificate by ID | `finance.tax.read` |
+| POST | `/advanced-finance/tax/exemption-certificates` | Create tax exemption certificate | `finance.tax.read` |
+| PATCH | `/advanced-finance/tax/exemption-certificates/:id` | Update exemption certificate | `finance.tax.update` |
+| POST | `/advanced-finance/tax/exemption-certificates/:id/revoke` | Revoke exemption certificate | `finance.tax.update` |
+| GET | `/advanced-finance/tax/vat-return/preview` | Preview VAT return | `finance.tax.update` |
+| GET | `/advanced-finance/tax/reconciliations` | List tax reconciliations | `finance.tax.read` |
+| POST | `/advanced-finance/tax/reconciliations/compute` | Compute tax reconciliation | `finance.tax.read` |
+| PATCH | `/advanced-finance/tax/reconciliations/:id` | Update tax reconciliation | `finance.tax.create` |
+| GET | `/advanced-finance/tax/withholding-certificates` | List withholding certificates | `finance.tax.update` |
+| GET | `/advanced-finance/tax/withholding-certificates/:id` | Get withholding certificate by ID | `finance.tax.read` |
+| POST | `/advanced-finance/tax/withholding-certificates` | Create withholding certificate | `finance.tax.read` |
+| POST | `/advanced-finance/tax/withholding-certificates/:id/issue` | Issue withholding certificate | `finance.tax.update` |
+| POST | `/advanced-finance/tax/withholding-certificates/:id/file` | File withholding certificate | `finance.tax.update` |
+| POST | `/advanced-finance/tax/withholding-certificates/bulk-generate` | Bulk generate withholding certificates for a year | `finance.tax.update` |
+| GET | `/advanced-finance/tax/amended-filings` | List amended tax filings | `finance.tax.create` |
+| POST | `/advanced-finance/tax/amended-filings` | Create amended tax filing | `finance.tax.read` |
+| POST | `/advanced-finance/tax/amended-filings/:id/submit` | Submit amended tax filing | `finance.tax.update` |
+| PATCH | `/advanced-finance/tax/amended-filings/:id/status` | Update amended filing status (accept/reject) | `finance.tax.update` |
+| GET | `/advanced-finance/tax/dashboard` | Tax engine dashboard | `finance.tax.update` |
+| GET | `/advanced-finance/treasury/positions` | List treasury positions | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/positions/summary` | Get treasury position summary by currency | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/positions` | Create treasury position (manual entry) | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/liquidity-forecast` | Get liquidity forecast | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/hedge-instruments` | List hedge instruments | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/hedge-instruments/:id` | Get hedge instrument by ID | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/hedge-instruments` | Create hedge instrument | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/hedge-instruments/:id/revalue` | Revalue hedge instrument (mark-to-market) | `finance.treasury.update` |
+| PATCH | `/advanced-finance/treasury/hedge-instruments/:id` | Update hedge instrument | `finance.treasury.update` |
+| GET | `/advanced-finance/treasury/debt-facilities` | List debt facilities | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/debt-facilities/:id` | Get debt facility by ID | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/debt-facilities` | Create debt facility | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/debt-facilities/:id/drawdown` | Record debt drawdown | `finance.treasury.update` |
+| PATCH | `/advanced-finance/treasury/debt-facilities/:id` | Update debt facility | `finance.treasury.update` |
+| GET | `/advanced-finance/treasury/debt-facilities/utilization` | Get debt facility utilization report | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/investments` | List investment holdings | `finance.treasury.read` |
+| GET | `/advanced-finance/treasury/investments/:id` | Get investment holding by ID | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/investments` | Create investment holding | `finance.treasury.read` |
+| POST | `/advanced-finance/treasury/investments/:id/mark-to-market` | Mark investment holding to market | `finance.treasury.update` |
+| GET | `/advanced-finance/treasury/investments/portfolio-return` | Get investment portfolio return | `finance.treasury.update` |
+| GET | `/advanced-finance/ap/vendor-statements` | List vendor statements | `finance.payables.read` |
+| POST | `/advanced-finance/ap/vendor-statements` | Import vendor statement | `finance.payables.read` |
+| POST | `/advanced-finance/ap/vendor-statements/:id/reconcile` | Reconcile vendor statement | `finance.payables.update` |
+| GET | `/advanced-finance/ap/vendor-statements/:id/diff` | Get vendor statement reconciliation diff | `finance.payables.update` |
+| GET | `/advanced-finance/ap/duplicate-flags` | List AP duplicate flags | `finance.payables.read` |
+| POST | `/advanced-finance/ap/duplicate-flags/scan` | Run AP duplicate invoice scan | `finance.payables.read` |
+| PATCH | `/advanced-finance/ap/duplicate-flags/:id/review` | Review AP duplicate flag | `finance.payables.create` |
+| GET | `/advanced-finance/ap/approval-policies` | List AP approval policies | `finance.payables.update` |
+| POST | `/advanced-finance/ap/approval-policies` | Create AP approval policy | `finance.payables.read` |
+| PATCH | `/advanced-finance/ap/approval-policies/:id` | Update AP approval policy | `finance.payables.update` |
+| DELETE | `/advanced-finance/ap/approval-policies/:id` | Delete AP approval policy | `finance.payables.delete` |
+| GET | `/advanced-finance/ap/approval-policies/match` | Get AP approval policy for a given invoice amount | `finance.payables.delete` |
+| GET | `/advanced-finance/ap/grni` | List GRNI records | `finance.payables.read` |
+| GET | `/advanced-finance/ap/grni/aging` | Get GRNI aging report | `finance.payables.read` |
+| POST | `/advanced-finance/ap/grni` | Create GRNI record | `finance.payables.read` |
+| POST | `/advanced-finance/ap/grni/:id/mark-invoiced` | Mark GRNI record as invoiced | `finance.payables.update` |
+| GET | `/advanced-finance/ap/cash-flow-obligation` | Get AP cash flow obligation forecast | `finance.payables.update` |
+| POST | `/advanced-finance/ap/early-payment-discount` | Calculate early payment discount savings | `finance.payables.read` |
+| GET | `/advanced-finance/ap/vendor-scorecard/:vendorId` | Get vendor scorecard | `finance.payables.read` |
+| GET | `/advanced-finance/ar/promises-to-pay` | List promises to pay | `finance.receivables.read` |
+| POST | `/advanced-finance/ar/promises-to-pay` | Create promise to pay | `finance.receivables.read` |
+| PATCH | `/advanced-finance/ar/promises-to-pay/:id` | Update promise to pay | `finance.receivables.update` |
+| POST | `/advanced-finance/ar/promises-to-pay/check-broken` | Check and mark broken promises to pay | `finance.receivables.update` |
+| GET | `/advanced-finance/ar/disputes` | List AR disputes | `finance.receivables.update` |
+| GET | `/advanced-finance/ar/disputes/:id` | Get AR dispute by ID | `finance.receivables.read` |
+| POST | `/advanced-finance/ar/disputes` | Create AR dispute | `finance.receivables.read` |
+| PATCH | `/advanced-finance/ar/disputes/:id` | Update AR dispute | `finance.receivables.update` |
+| POST | `/advanced-finance/ar/disputes/:id/escalate` | Escalate AR dispute | `finance.receivables.update` |
+| GET | `/advanced-finance/ar/bad-debt-provisions` | List bad debt provisions | `finance.receivables.update` |
+| POST | `/advanced-finance/ar/bad-debt-provisions/compute` | Compute bad debt provision | `finance.receivables.read` |
+| POST | `/advanced-finance/ar/bad-debt-provisions/:id/post` | Post bad debt provision to GL | `finance.receivables.create` |
+| GET | `/advanced-finance/ar/collector-workbench` | Get collector workbench | `finance.receivables.update` |
+| GET | `/advanced-finance/ar/dso-trend` | Get DSO trend (last N months) | `finance.receivables.read` |
+| GET | `/advanced-finance/ar/performance-dashboard` | Get AR performance dashboard | `finance.receivables.read` |
+| GET | `/advanced-finance/assets/:id/depreciation-schedule` | Get depreciation schedule preview for an asset | `finance.assets.read` |
+| GET | `/advanced-finance/assets/insurances` | List asset insurance policies | `finance.assets.read` |
+| POST | `/advanced-finance/assets/insurances` | Create asset insurance policy | `finance.assets.read` |
+| PATCH | `/advanced-finance/assets/insurances/:id` | Update asset insurance policy | `finance.assets.update` |
+| GET | `/advanced-finance/assets/insurances/expiring` | Get expiring asset insurances | `finance.assets.read` |
+| GET | `/advanced-finance/assets/impairments` | List asset impairments | `finance.assets.read` |
+| POST | `/advanced-finance/assets/impairments` | Create asset impairment test | `finance.assets.read` |
+| POST | `/advanced-finance/assets/impairments/:id/post` | Post asset impairment to GL | `finance.assets.update` |
+| GET | `/advanced-finance/assets/capital-projects` | List capital projects | `finance.assets.update` |
+| GET | `/advanced-finance/assets/capital-projects/:id` | Get capital project by ID | `finance.assets.read` |
+| POST | `/advanced-finance/assets/capital-projects` | Create capital project | `finance.assets.read` |
+| POST | `/advanced-finance/assets/capital-projects/:id/costs` | Add cost to capital project | `finance.assets.update` |
+| PATCH | `/advanced-finance/assets/capital-projects/:id` | Update capital project | `finance.assets.update` |
+| POST | `/advanced-finance/assets/capital-projects/:id/convert-to-asset` | Convert capital project to fixed asset | `finance.assets.create` |
+| GET | `/advanced-finance/assets/nbv-roll-forward` | Get net book value roll-forward report | `finance.assets.create` |
+| POST | `/advanced-finance/assets/bulk-upload` | Bulk upload fixed assets from CSV data | `finance.assets.read` |
+| GET | `/advanced-finance/fpa/rolling-forecast` | List rolling forecast lines | `finance.budget.read` |
+| POST | `/advanced-finance/fpa/rolling-forecast` | Upsert rolling forecast line | `finance.budget.read` |
+| POST | `/advanced-finance/fpa/rolling-forecast/sync-actuals` | Sync actuals into rolling forecast | `finance.budget.update` |
+| GET | `/advanced-finance/fpa/headcount-plans` | List headcount plans | `finance.budget.update` |
+| POST | `/advanced-finance/fpa/headcount-plans` | Create headcount plan | `finance.budget.read` |
+| PATCH | `/advanced-finance/fpa/headcount-plans/:id` | Update headcount plan | `finance.budget.update` |
+| POST | `/advanced-finance/fpa/headcount-plans/cost-projection` | Get headcount cost projection | `finance.budget.read` |
+| GET | `/advanced-finance/fpa/budget-comments` | List budget comments | `finance.budget.read` |
+| POST | `/advanced-finance/fpa/budget-comments` | Add budget comment | `finance.budget.read` |
+| PATCH | `/advanced-finance/fpa/budget-comments/:id` | Update budget comment | `finance.budget.create` |
+| DELETE | `/advanced-finance/fpa/budget-comments/:id` | Delete budget comment | `finance.budget.update` |
+| GET | `/advanced-finance/fpa/management-reports` | List management reports | `finance.budget.delete` |
+| GET | `/advanced-finance/fpa/management-reports/:id` | Get management report by ID | `finance.reports.read` |
+| POST | `/advanced-finance/fpa/management-reports` | Create management report | `finance.reports.read` |
+| PATCH | `/advanced-finance/fpa/management-reports/:id` | Update management report | `finance.reports.update` |
+| DELETE | `/advanced-finance/fpa/management-reports/:id` | Delete management report | `finance.reports.delete` |
+| GET | `/advanced-finance/fpa/waterfall-chart` | Get variance waterfall chart data | `finance.reports.delete` |
+| POST | `/advanced-finance/fpa/sensitivity-analysis` | Run what-if sensitivity analysis | `finance.reports.read` |
+| GET | `/advanced-finance/billing/rules` | List billing rules | `finance.revenue.read` |
+| GET | `/advanced-finance/billing/rules/:id` | Get billing rule by ID | `finance.revenue.read` |
+| POST | `/advanced-finance/billing/rules` | Create billing rule | `finance.revenue.read` |
+| PATCH | `/advanced-finance/billing/rules/:id` | Update billing rule | `finance.revenue.update` |
+| DELETE | `/advanced-finance/billing/rules/:id` | Delete billing rule | `finance.revenue.delete` |
+| GET | `/advanced-finance/billing/milestones` | List billing milestones | `finance.revenue.delete` |
+| POST | `/advanced-finance/billing/rules/:id/milestones` | Add milestone to billing rule | `finance.revenue.read` |
+| POST | `/advanced-finance/billing/milestones/:id/complete` | Complete billing milestone | `finance.revenue.update` |
+| POST | `/advanced-finance/billing/milestones/:id/trigger-invoice` | Trigger invoice from completed milestone | `finance.revenue.update` |
+| GET | `/advanced-finance/billing/contract-modifications` | List contract modifications | `finance.revenue.create` |
+| POST | `/advanced-finance/billing/contract-modifications` | Create contract modification | `finance.revenue.read` |
+| POST | `/advanced-finance/billing/contract-modifications/:id/approve` | Approve contract modification | `finance.revenue.update` |
+| GET | `/advanced-finance/billing/deferred-revenue-roll-forwards` | List deferred revenue roll-forwards | `finance.revenue.update` |
+| POST | `/advanced-finance/billing/deferred-revenue-roll-forwards/compute` | Compute deferred revenue roll-forward for a period | `finance.revenue.read` |
+| GET | `/advanced-finance/billing/tiered-pricing` | List tiered pricing tables | `finance.revenue.create` |
+| POST | `/advanced-finance/billing/tiered-pricing` | Create tiered pricing table | `finance.revenue.read` |
+| POST | `/advanced-finance/billing/tiered-pricing/:id/rate` | Rate usage against a tiered pricing table | `finance.revenue.read` |
+| GET | `/advanced-finance/billing/revenue-backlog` | Get revenue backlog (remaining performance obligations) | `finance.revenue.read` |
+| POST | `/advanced-finance/billing/revenue-forecast-vs-actual` | Get revenue forecast vs actual | `finance.revenue.read` |
+| GET | `/advanced-finance/compliance/controls` | List financial controls | `finance.compliance.read` |
+| GET | `/advanced-finance/compliance/controls/:id` | Get financial control by ID | `finance.compliance.read` |
+| POST | `/advanced-finance/compliance/controls` | Create financial control | `finance.compliance.read` |
+| PATCH | `/advanced-finance/compliance/controls/:id` | Update financial control | `finance.compliance.update` |
+| DELETE | `/advanced-finance/compliance/controls/:id` | Deactivate financial control | `finance.compliance.delete` |
+| GET | `/advanced-finance/compliance/control-tests` | List control tests | `finance.compliance.delete` |
+| POST | `/advanced-finance/compliance/control-tests` | Create control test | `finance.compliance.read` |
+| POST | `/advanced-finance/compliance/control-tests/:id/review` | Review control test result | `finance.compliance.update` |
+| GET | `/advanced-finance/compliance/control-effectiveness` | Get control effectiveness dashboard | `finance.compliance.update` |
+| GET | `/advanced-finance/compliance/sod-rules` | List SoD rule definitions | `finance.compliance.read` |
+| POST | `/advanced-finance/compliance/sod-rules` | Create SoD rule definition | `finance.compliance.read` |
+| PATCH | `/advanced-finance/compliance/sod-rules/:id` | Update SoD rule definition | `finance.compliance.update` |
+| POST | `/advanced-finance/compliance/sod-scan` | Run SoD conflict scan across all users | `finance.compliance.update` |
+| GET | `/advanced-finance/compliance/sod-conflicts` | List SoD conflicts | `finance.compliance.create` |
+| PATCH | `/advanced-finance/compliance/sod-conflicts/:id/resolve` | Resolve SoD conflict | `finance.compliance.read` |
+| GET | `/advanced-finance/compliance/audit-confirmations` | List audit confirmations | `finance.compliance.update` |
+| POST | `/advanced-finance/compliance/audit-confirmations` | Create audit confirmation request | `finance.compliance.read` |
+| POST | `/advanced-finance/compliance/audit-confirmations/:id/respond` | Record audit confirmation response | `finance.compliance.update` |
+| GET | `/advanced-finance/compliance/period-certifications` | List period certifications | `finance.compliance.update` |
+| POST | `/advanced-finance/compliance/period-certifications` | Create period certification request | `finance.compliance.read` |
+| POST | `/advanced-finance/compliance/period-certifications/:id/certify` | Certify (sign off) a period | `finance.compliance.update` |
+| POST | `/advanced-finance/compliance/period-certifications/:id/reject` | Reject period certification | `finance.compliance.update` |
 
 ## advanced-hr
 
