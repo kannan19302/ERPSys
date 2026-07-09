@@ -7,7 +7,13 @@
 // Platform-level tables that are tenant-agnostic (no tenantId column).
 // UserRole is a pure join table (userId + roleId) — tenant scoping is
 // enforced transitively through the related, tenant-scoped Role row.
-export const MODELS_WITHOUT_TENANT = new Set(['Tenant', 'SaaSPlan', 'LanguageOverride', 'UserRole']);
+export const MODELS_WITHOUT_TENANT = new Set([
+  'Tenant', 'SaaSPlan', 'LanguageOverride', 'UserRole',
+  // Global marketplace catalog — vendor/package/bundle/listing rows are
+  // platform-wide, not per-tenant (AppVendor scopes by ownerTenantId instead).
+  'AppVendor', 'AppPackage', 'AppBundle', 'MarketplaceApp',
+  'AppChangelog', 'AppCollection', 'AppCollectionItem',
+]);
 
 const READ_OPS = new Set([
   'findFirst',

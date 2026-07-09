@@ -12,8 +12,8 @@ export default function ServiceTicketsPage() {
   const [createOpen, setCreateOpen] = useState(false); const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ title: '', customerName: '', priority: 'MEDIUM', description: '', slaDeadline: '' });
 
-  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/field-service/tickets', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setTickets(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
-  const handleCreate = async () => { if (!form.title || !form.customerName) return; setCreating(true); try { await fetch('/api/v1/field-service/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
+  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/ext/field-service/tickets', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setTickets(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
+  const handleCreate = async () => { if (!form.title || !form.customerName) return; setCreating(true); try { await fetch('/api/v1/ext/field-service/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
 
   const filtered = tickets.filter(t => !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.customerName.toLowerCase().includes(search.toLowerCase()));
   const getPriorityVariant = (p: string) => p === 'CRITICAL' ? 'danger' : p === 'HIGH' ? 'warning' : 'info';

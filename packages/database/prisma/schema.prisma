@@ -4241,72 +4241,9 @@ model AgentCommission {
 // FIELD SERVICE MODULE (Phase 15)
 // ════════════════════════════════════════════════
 
-model ServiceTicket {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  title        String
-  customerName String   @map("customer_name")
-  description  String
-  priority     String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  slaDeadline  DateTime @map("sla_deadline")
-  status       String   @default("OPEN") // OPEN, ASSIGNED, RESOLVED
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  dispatches ServiceDispatch[]
-
-  @@index([tenantId])
-  @@map("service_tickets")
-}
-
-model ServiceDispatch {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  ticketId      String   @map("ticket_id")
-  technicianId  String   @map("technician_id")
-  scheduledTime DateTime @map("scheduled_time")
-  routeDetails  Json     @map("route_details")
-  status        String   @default("ASSIGNED") // ASSIGNED, EN_ROUTE, IN_PROGRESS, COMPLETED
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  ticket     ServiceTicket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  checklists TechnicianChecklist[]
-
-  @@index([tenantId])
-  @@map("service_dispatches")
-}
-
-model TechnicianChecklist {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  dispatchId      String   @map("dispatch_id")
-  items           Json
-  signatureUrl    String?  @map("signature_url")
-  isOfflineSynced Boolean  @default(false) @map("is_offline_synced")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  dispatch ServiceDispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@map("technician_checklists")
-}
-
-model PreventativeMaintenance {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  customerName   String   @map("customer_name")
-  description    String
-  recurrenceCron String   @map("recurrence_cron")
-  nextRunDate    DateTime @map("next_run_date")
-  status         String   @default("ACTIVE") // ACTIVE, SUSPENDED
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  @@index([tenantId])
-  @@map("preventative_maintenances")
-}
+// Field Service models moved to unierp-app-fieldservice (own database).
+// Core tables archived as _archived_* by 20260709100000_archive_field_service_tables;
+// dropped one release later once cutover is verified.
 
 // ════════════════════════════════════════════════
 // API PLATFORM & INTEGRATIONS (Phase 16)

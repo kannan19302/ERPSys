@@ -11,8 +11,8 @@ export default function DispatchBoardPage() {
   const [createOpen, setCreateOpen] = useState(false); const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ ticketId: '', technicianId: '', scheduledTime: '', status: 'SCHEDULED' });
 
-  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/field-service/dispatches', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setDispatches(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
-  const handleCreate = async () => { if (!form.ticketId || !form.technicianId) return; setCreating(true); try { await fetch('/api/v1/field-service/dispatches', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
+  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/ext/field-service/dispatches', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setDispatches(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
+  const handleCreate = async () => { if (!form.ticketId || !form.technicianId) return; setCreating(true); try { await fetch('/api/v1/ext/field-service/dispatches', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
 
   const columns: Column<ServiceDispatch>[] = [
     { key: 'ticket', header: 'Ticket', render: (row) => (<div><span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.ticket?.title || row.ticketId.slice(0, 8)}</span><div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>{row.ticket?.customerName}</div></div>) },

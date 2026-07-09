@@ -9,7 +9,7 @@ function getToken() { return typeof window !== 'undefined' ? localStorage.getIte
 export default function ServiceTicketDetailPage() {
   const params = useParams(); const id = params?.id as string;
   const [ticket, setTicket] = useState<ServiceTicket | null>(null); const [loading, setLoading] = useState(true);
-  useEffect(() => { if (!id) return; (async () => { try { const res = await fetch('/api/v1/field-service/tickets', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); const list = Array.isArray(d) ? d : d?.data || []; setTicket(list.find((t: ServiceTicket) => t.id === id) || null); } } catch {} finally { setLoading(false); } })(); }, [id]);
+  useEffect(() => { if (!id) return; (async () => { try { const res = await fetch('/api/v1/ext/field-service/tickets', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); const list = Array.isArray(d) ? d : d?.data || []; setTicket(list.find((t: ServiceTicket) => t.id === id) || null); } } catch {} finally { setLoading(false); } })(); }, [id]);
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}><Spinner size="lg" /></div>;
   if (!ticket) return (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)' }}><ClipboardList size={64} style={{ color: 'var(--color-text-tertiary)' }} /><h2>Ticket Not Found</h2><Link href="/field-service/tickets"><button style={{ padding: '8px 16px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', cursor: 'pointer' }}><ArrowLeft size={14} /> Back</button></Link></div>);

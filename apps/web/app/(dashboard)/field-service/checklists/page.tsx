@@ -10,8 +10,8 @@ export default function ChecklistsPage() {
   const [createOpen, setCreateOpen] = useState(false); const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: '', itemsRaw: '' });
 
-  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/field-service/checklists', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setChecklists(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
-  const handleCreate = async () => { if (!form.name) return; setCreating(true); const items = form.itemsRaw.split('\n').filter(Boolean); try { await fetch('/api/v1/field-service/checklists', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({ name: form.name, items }) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
+  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/ext/field-service/checklists', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setChecklists(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
+  const handleCreate = async () => { if (!form.name) return; setCreating(true); const items = form.itemsRaw.split('\n').filter(Boolean); try { await fetch('/api/v1/ext/field-service/checklists', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({ name: form.name, items }) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
 
   const columns: Column<Checklist>[] = [
     { key: 'name', header: 'Template Name', render: (row) => <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.name}</span> },

@@ -17,10 +17,10 @@ export default function FieldServiceDashboard() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [tRes, dRes, cRes, pRes] = await Promise.all([
-          fetch('/api/v1/field-service/tickets', { headers }),
-          fetch('/api/v1/field-service/dispatches', { headers }),
-          fetch('/api/v1/field-service/checklists', { headers }),
-          fetch('/api/v1/field-service/preventive-maintenances', { headers }),
+          fetch('/api/v1/ext/field-service/tickets', { headers }),
+          fetch('/api/v1/ext/field-service/dispatches', { headers }),
+          fetch('/api/v1/ext/field-service/checklists', { headers }),
+          fetch('/api/v1/ext/field-service/preventive-maintenances', { headers }),
         ]);
         const t = tRes.ok ? await tRes.json() : [];
         const d = dRes.ok ? await dRes.json() : [];

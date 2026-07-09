@@ -10,8 +10,8 @@ export default function PreventiveMaintenancePage() {
   const [createOpen, setCreateOpen] = useState(false); const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: '', intervalDays: 30 });
 
-  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/field-service/preventive-maintenances', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setRules(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
-  const handleCreate = async () => { if (!form.name) return; setCreating(true); try { await fetch('/api/v1/field-service/preventive-maintenances', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({...form, intervalDays: Number(form.intervalDays)}) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
+  useEffect(() => { (async () => { try { const res = await fetch('/api/v1/ext/field-service/preventive-maintenances', { headers: { Authorization: `Bearer ${getToken() || ''}` } }); if (res.ok) { const d = await res.json(); setRules(Array.isArray(d) ? d : d?.data || []); } } catch {} finally { setLoading(false); } })(); }, []);
+  const handleCreate = async () => { if (!form.name) return; setCreating(true); try { await fetch('/api/v1/ext/field-service/preventive-maintenances', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({...form, intervalDays: Number(form.intervalDays)}) }); setCreateOpen(false); window.location.reload(); } catch {} finally { setCreating(false); } };
 
   const columns: Column<PMRule>[] = [
     { key: 'name', header: 'Maintenance Plan', render: (row) => <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-sm)' }}>{row.name}</span> },
