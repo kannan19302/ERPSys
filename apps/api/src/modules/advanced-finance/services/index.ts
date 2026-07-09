@@ -20,5 +20,9 @@ export { CardSpendLimitService } from './card-spend-limit.service';
 export { AllocationService } from './allocation.service';
 export { BudgetControlService } from './budget-control.service';
 export { BudgetReallocationService } from './budget-reallocation.service';
+export { IntercompanyLoansService } from './intercompany-loans.service';
+export { AssetLifecycleService } from './asset-lifecycle.service';
+export { CashPoolingService } from './cash-pooling.service';
+export { ConsolidationDeepService } from './consolidation-deep.service';
 
 

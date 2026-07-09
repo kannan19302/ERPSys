@@ -4470,6 +4470,9 @@ model ConsolidationRun {
   runDate          DateTime @default(now()) @map("run_date")
   periodStart      DateTime @map("period_start")
   periodEnd        DateTime @map("period_end")
+  period           String?
+  targetCurrency   String?  @default("USD") @map("target_currency")
+  ctaAmount        Decimal? @default(0) @db.Decimal(15, 2) @map("cta_amount")
   status           String   @default("DRAFT") // DRAFT, COMPLETED
   totalAssets      Decimal  @default(0) @map("total_assets") @db.Decimal(15, 2)
   totalLiabilities Decimal  @default(0) @map("total_liabilities") @db.Decimal(15, 2)
@@ -9902,6 +9905,179 @@ model SodRuleDefinition {
   @@index([tenantId])
   @@unique([tenantId, permission1, permission2])
   @@map("sod_rule_definitions")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 9 — INTERCOMPANY LOANS
+// ════════════════════════════════════════════════
+
+model IntercompanyLoan {
+  id              String         @id @default(cuid())
+  tenantId        String         @map("tenant_id")
+  lenderOrgId     String         @map("lender_org_id")
+  borrowerOrgId   String         @map("borrower_org_id")
+  loanNumber      String         @map("loan_number")
+  principalAmount Decimal        @db.Decimal(15, 2) @map("principal_amount")
+  interestRate    Decimal        @db.Decimal(5, 2) @map("interest_rate")
+  startDate       DateTime       @map("start_date")
+  endDate         DateTime       @map("end_date")
+  interestType    String         @default("SIMPLE") @map("interest_type")
+  status          String         @default("DRAFT")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  drawdowns       LoanDrawdown[]
+  repayments      LoanRepayment[]
+
+  @@unique([tenantId, loanNumber])
+  @@index([tenantId])
+  @@map("intercompany_loans")
+}
+
+model LoanDrawdown {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  loanId      String   @map("loan_id")
+  amount      Decimal  @db.Decimal(15, 2)
+  drawdownDate DateTime @map("drawdown_date")
+  reference   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  loan IntercompanyLoan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([loanId])
+  @@map("loan_drawdowns")
+}
+
+model LoanRepayment {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  loanId      String   @map("loan_id")
+  principal   Decimal  @db.Decimal(15, 2)
+  interest    Decimal  @db.Decimal(15, 2)
+  repaymentDate DateTime @map("repayment_date")
+  reference   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  loan IntercompanyLoan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([loanId])
+  @@map("loan_repayments")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 10 — ASSET LIFECYCLE EXTENSIONS
+// ════════════════════════════════════════════════
+
+model AssetRevaluation {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  assetId          String   @map("asset_id")
+  revaluationDate  DateTime @map("revaluation_date")
+  carryingValueBefore Decimal @db.Decimal(15, 2) @map("carrying_value_before")
+  revaluedValue    Decimal  @db.Decimal(15, 2) @map("revalued_value")
+  gainLoss         Decimal  @db.Decimal(15, 2) @map("gain_loss")
+  glJournalId      String?  @map("gl_journal_id")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_revaluations")
+}
+
+model AssetDisposal {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assetId      String   @map("asset_id")
+  disposalDate DateTime @map("disposal_date")
+  disposalType String   @map("disposal_type")
+  salePrice    Decimal  @db.Decimal(15, 2) @default(0) @map("sale_price")
+  gainLoss     Decimal  @db.Decimal(15, 2) @map("gain_loss")
+  glJournalId  String?  @map("gl_journal_id")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@map("asset_disposals")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 11 — CASH POOLING & VARIANCE CONFIGS
+// ════════════════════════════════════════════════
+
+model CashPool {
+  id                 String        @id @default(cuid())
+  tenantId           String        @map("tenant_id")
+  orgId              String        @map("org_id")
+  name               String
+  poolType           String        @default("PHYSICAL") @map("pool_type")
+  headerAccountId    String        @map("header_account_id")
+  participantAccountIds Json       @default("[]") @map("participant_account_ids")
+  targetBalance      Decimal       @db.Decimal(15, 2) @default(0) @map("target_balance")
+  isActive           Boolean       @default(true) @map("is_active")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  runs               CashPoolRun[]
+
+  @@index([tenantId])
+  @@map("cash_pools")
+}
+
+model CashPoolRun {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  cashPoolId   String   @map("cash_pool_id")
+  runDate      DateTime @default(now()) @map("run_date")
+  runType      String   @map("run_type")
+  totalSwept   Decimal  @db.Decimal(15, 2) @map("total_swept")
+  details      Json     @default("[]")
+  glJournalId  String?  @map("gl_journal_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  cashPool CashPool @relation(fields: [cashPoolId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([cashPoolId])
+  @@map("cash_pool_runs")
+}
+
+model VarianceAlertConfig {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  accountId      String   @map("account_id")
+  thresholdPct   Decimal  @db.Decimal(5, 2) @map("threshold_pct")
+  ownerId        String   @map("owner_id")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, accountId])
+  @@index([tenantId])
+  @@map("variance_alert_configs")
+}
+
+// ════════════════════════════════════════════════
+// BATCH 12 — CONSOLIDATION RATE & RUNS
+// ════════════════════════════════════════════════
+
+model ConsolidationRate {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  period        String
+  fromCurrency  String   @map("from_currency")
+  toCurrency    String   @map("to_currency")
+  averageRate   Decimal  @db.Decimal(15, 6) @map("average_rate")
+  closingRate   Decimal  @db.Decimal(15, 6) @map("closing_rate")
+  historicalRate Decimal @db.Decimal(15, 6) @map("historical_rate")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, period, fromCurrency, toCurrency])
+  @@index([tenantId])
+  @@map("consolidation_rates")
 }
 
 

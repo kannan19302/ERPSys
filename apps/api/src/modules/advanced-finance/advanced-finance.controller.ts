@@ -38,6 +38,10 @@ import {
   AllocationService,
   BudgetControlService,
   BudgetReallocationService,
+  IntercompanyLoansService,
+  AssetLifecycleService,
+  CashPoolingService,
+  ConsolidationDeepService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -519,6 +523,10 @@ export class AdvancedFinanceController {
     private readonly fpaDeepService: FpaDeepService,
     private readonly revenueBillingService: RevenueBillingService,
     private readonly complianceControlsService: ComplianceControlsService,
+    private readonly intercompanyLoansService: IntercompanyLoansService,
+    private readonly assetLifecycleService: AssetLifecycleService,
+    private readonly cashPoolingService: CashPoolingService,
+    private readonly consolidationDeepService: ConsolidationDeepService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -4671,4 +4679,345 @@ export class AdvancedFinanceController {
   async rejectPeriodCertification(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { notes: string }) {
     return this.complianceControlsService.rejectPeriodCertification(req.user.tenantId, id, dto.notes);
   }
+
+  // ── Intercompany Loans & Credit Facilities ──
+
+  @ApiOperation({ summary: 'Create intercompany loan agreement' })
+  @Post('intercompany-loans')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('IntercompanyLoan')
+  async createLoanAgreement(@Req() req: AuthenticatedRequest, @Body() dto: {
+    lenderOrgId: string; borrowerOrgId: string; loanNumber: string;
+    principalAmount: number; interestRate: number; startDate: string;
+    endDate: string; interestType?: string;
+  }) {
+    return this.intercompanyLoansService.createLoanAgreement(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Get intercompany loan agreement details' })
+  @Get('intercompany-loans/:id')
+  @Permissions('finance.treasury.read')
+  async getLoanAgreement(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.intercompanyLoansService.getLoanAgreement(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List all intercompany loan agreements' })
+  @Get('intercompany-loans')
+  @Permissions('finance.treasury.read')
+  async listLoanAgreements(@Req() req: AuthenticatedRequest) {
+    return this.intercompanyLoansService.listLoanAgreements(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Record loan drawdown against facility' })
+  @Post('intercompany-loans/:id/drawdown')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('LoanDrawdown')
+  async recordLoanDrawdown(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { amount: number; drawdownDate: string; reference?: string },
+  ) {
+    return this.intercompanyLoansService.recordLoanDrawdown(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Record loan repayment of principal/interest' })
+  @Post('intercompany-loans/:id/repayment')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('LoanRepayment')
+  async recordLoanRepayment(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { principal: number; interest: number; repaymentDate: string; reference?: string },
+  ) {
+    return this.intercompanyLoansService.recordLoanRepayment(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Calculate accrued interest for period' })
+  @Get('intercompany-loans/:id/accrued-interest')
+  @Permissions('finance.treasury.read')
+  async calculateAccruedInterest(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('asOfDate') asOfDate: string,
+  ) {
+    return this.intercompanyLoansService.calculateAccruedInterest(req.user.tenantId, id, asOfDate);
+  }
+
+  @ApiOperation({ summary: 'Post accrued interest GL journal entry' })
+  @Post('intercompany-loans/:id/post-interest')
+  @Permissions('finance.journal.create')
+  async postAccruedInterestGL(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() dto: { asOfDate: string },
+  ) {
+    return this.intercompanyLoansService.postAccruedInterestGL(req.user.tenantId, id, dto.asOfDate);
+  }
+
+  @ApiOperation({ summary: 'Generate loan amortization schedule' })
+  @Get('intercompany-loans/:id/amortization')
+  @Permissions('finance.treasury.read')
+  async amortizeLoanSchedule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.intercompanyLoansService.amortizeLoanSchedule(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get intercompany loan analytics' })
+  @Get('intercompany-loans/analytics/summary')
+  @Permissions('finance.treasury.read')
+  async getLoanAnalytics(@Req() req: AuthenticatedRequest) {
+    return this.intercompanyLoansService.getLoanAnalytics(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Close loan agreement' })
+  @Post('intercompany-loans/:id/close')
+  @Permissions('finance.treasury.create')
+  async closeLoanAgreement(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.intercompanyLoansService.closeLoanAgreement(req.user.tenantId, id);
+  }
+
+  // ── Asset Lifecycle Extensions ──
+
+  @ApiOperation({ summary: 'Record asset revaluation' })
+  @Post('assets/revaluations')
+  @Permissions('finance.fixed-asset.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AssetRevaluation')
+  async createAssetRevaluation(@Req() req: AuthenticatedRequest, @Body() dto: {
+    assetId: string; revaluationDate: string; revaluedValue: number; notes?: string;
+  }) {
+    return this.assetLifecycleService.createAssetRevaluation(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'List asset revaluations history' })
+  @Get('assets/:assetId/revaluations')
+  @Permissions('finance.fixed-asset.read')
+  async listAssetRevaluations(
+    @Req() req: AuthenticatedRequest,
+    @Param('assetId') assetId: string,
+  ) {
+    return this.assetLifecycleService.listAssetRevaluations(req.user.tenantId, assetId);
+  }
+
+  @ApiOperation({ summary: 'Post asset revaluation adjustments to GL' })
+  @Post('assets/revaluations/:id/post')
+  @Permissions('finance.journal.create')
+  async postAssetRevaluationGL(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.assetLifecycleService.postAssetRevaluationGL(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Record asset disposal' })
+  @Post('assets/disposals')
+  @Permissions('finance.fixed-asset.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AssetDisposal')
+  async createAssetDisposal(@Req() req: AuthenticatedRequest, @Body() dto: {
+    assetId: string; disposalDate: string; disposalType: string; salePrice?: number; notes?: string;
+  }) {
+    return this.assetLifecycleService.createAssetDisposal(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'List asset disposals' })
+  @Get('assets/disposals/list')
+  @Permissions('finance.fixed-asset.read')
+  async listAssetDisposals(@Req() req: AuthenticatedRequest) {
+    return this.assetLifecycleService.listAssetDisposals(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Post asset disposal write-off to GL' })
+  @Post('assets/disposals/:id/post')
+  @Permissions('finance.journal.create')
+  async postAssetDisposalGL(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.assetLifecycleService.postAssetDisposalGL(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Post asset impairment write-off to GL' })
+  @Post('assets/impairments/:id/post')
+  @Permissions('finance.journal.create')
+  async triggerImpairmentPostGL(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.assetLifecycleService.triggerImpairmentPostGL(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Calculate monthly depreciation after revaluation' })
+  @Get('assets/:assetId/depreciation-post-reval')
+  @Permissions('finance.fixed-asset.read')
+  async calculateDepreciationAfterReval(
+    @Req() req: AuthenticatedRequest,
+    @Param('assetId') assetId: string,
+  ) {
+    return this.assetLifecycleService.calculateDepreciationAfterReval(req.user.tenantId, assetId);
+  }
+
+  @ApiOperation({ summary: 'Get asset audit report' })
+  @Get('assets/:assetId/audit-report')
+  @Permissions('finance.fixed-asset.read')
+  async getAssetAuditReport(
+    @Req() req: AuthenticatedRequest,
+    @Param('assetId') assetId: string,
+  ) {
+    return this.assetLifecycleService.getAssetAuditReport(req.user.tenantId, assetId);
+  }
+
+  @ApiOperation({ summary: 'Bulk dispose assets' })
+  @Post('assets/disposals/bulk')
+  @Permissions('finance.fixed-asset.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AssetDisposal')
+  async bulkDisposeAssets(@Req() req: AuthenticatedRequest, @Body() dto: {
+    assetIds: string[]; disposalDate: string; disposalType: string;
+  }) {
+    return this.assetLifecycleService.bulkDisposeAssets(req.user.tenantId, dto);
+  }
+
+  // ── Cash Pooling & Variance Alerts ──
+
+  @ApiOperation({ summary: 'Create concentration cash pool' })
+  @Post('cash-pools')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CashPool')
+  async createCashPool(@Req() req: AuthenticatedRequest, @Body() dto: {
+    orgId: string; name: string; poolType?: string;
+    headerAccountId: string; participantAccountIds: string[]; targetBalance?: number;
+  }) {
+    return this.cashPoolingService.createCashPool(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Get cash pool details and balances' })
+  @Get('cash-pools/:id')
+  @Permissions('finance.treasury.read')
+  async getCashPool(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.cashPoolingService.getCashPool(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List concentration cash pools' })
+  @Get('cash-pools')
+  @Permissions('finance.treasury.read')
+  async listCashPools(@Req() req: AuthenticatedRequest) {
+    return this.cashPoolingService.listCashPools(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Execute concentration cash pool sweep' })
+  @Post('cash-pools/:id/sweep')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CashPoolRun')
+  async poolConcentrationRun(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.cashPoolingService.poolConcentrationRun(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Execute cash pool redistribution funding' })
+  @Post('cash-pools/:id/fund')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('CashPoolRun')
+  async poolRedistributionRun(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.cashPoolingService.poolRedistributionRun(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List runs of cash pool' })
+  @Get('cash-pools/:id/runs')
+  @Permissions('finance.treasury.read')
+  async listPoolRuns(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.cashPoolingService.listPoolRuns(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get accounts exceeding budget variance thresholds' })
+  @Get('budget-variance/alerts')
+  @Permissions('finance.report.read')
+  async getBudgetVarianceAlerts(@Req() req: AuthenticatedRequest) {
+    return this.cashPoolingService.getBudgetVarianceAlerts(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Configure budget variance alert config' })
+  @Post('budget-variance/configs')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('VarianceAlertConfig')
+  async createVarianceAlertConfig(@Req() req: AuthenticatedRequest, @Body() dto: {
+    accountId: string; thresholdPct: number; ownerId: string;
+  }) {
+    return this.cashPoolingService.createVarianceAlertConfig(req.user.tenantId, dto);
+  }
+
+  // ── Multi-Currency Financial Consolidation ──
+
+  @ApiOperation({ summary: 'Configure exchange rates for period consolidation' })
+  @Post('consolidation/rates')
+  @Permissions('finance.treasury.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ConsolidationRate')
+  async createConsolidationRate(@Req() req: AuthenticatedRequest, @Body() dto: {
+    period: string; fromCurrency: string; toCurrency: string;
+    averageRate: number; closingRate: number; historicalRate: number;
+  }) {
+    return this.consolidationDeepService.createConsolidationRate(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Get consolidation rates for period' })
+  @Get('consolidation/rates/:period')
+  @Permissions('finance.treasury.read')
+  async getConsolidationRates(
+    @Req() req: AuthenticatedRequest,
+    @Param('period') period: string,
+  ) {
+    return this.consolidationDeepService.getConsolidationRates(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Execute multi-currency consolidation translation' })
+  @Post('consolidation/translations')
+  @Permissions('finance.report.create')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('ConsolidationRun')
+  async runConsolidatedTranslation(@Req() req: AuthenticatedRequest, @Body() dto: {
+    period: string; targetCurrency: string;
+  }) {
+    return this.consolidationDeepService.runConsolidatedTranslation(req.user.tenantId, dto.period, dto.targetCurrency);
+  }
+
+  @ApiOperation({ summary: 'Calculate cumulative translation adjustment (CTA) amount' })
+  @Get('consolidation/cta/:period')
+  @Permissions('finance.report.read')
+  async calculateCumulativeTranslationAdjustment(
+    @Req() req: AuthenticatedRequest,
+    @Param('period') period: string,
+  ) {
+    return this.consolidationDeepService.calculateCumulativeTranslationAdjustment(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Post intercompany consolidation eliminations' })
+  @Post('consolidation/runs/:id/eliminations')
+  @Permissions('finance.report.create')
+  async runConsolidationEliminations(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: {
+    eliminations: { fromOrgId: string; toOrgId: string; amount: number; accountType: string; description?: string }[];
+  }) {
+    return this.consolidationDeepService.runConsolidationEliminations(req.user.tenantId, id, dto.eliminations);
+  }
+
+  @ApiOperation({ summary: 'Get consolidated P&L and Balance Sheet financial statements' })
+  @Get('consolidation/statements/:period')
+  @Permissions('finance.report.read')
+  async getConsolidatedFinancialStatements(
+    @Req() req: AuthenticatedRequest,
+    @Param('period') period: string,
+  ) {
+    return this.consolidationDeepService.getConsolidatedFinancialStatements(req.user.tenantId, period);
+  }
+
+  @ApiOperation({ summary: 'Lock consolidated book period' })
+  @Post('consolidation/runs/:id/lock')
+  @Permissions('finance.report.create')
+  async lockConsolidationPeriod(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.consolidationDeepService.lockConsolidationPeriod(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'List consolidated book runs' })
+  @Get('consolidation/runs')
+  @Permissions('finance.report.read')
+  async listConsolidationRuns(@Req() req: AuthenticatedRequest) {
+    return this.consolidationDeepService.listConsolidationRuns(req.user.tenantId);
+  }
+
 }

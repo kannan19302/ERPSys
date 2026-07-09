@@ -2,6 +2,20 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Hardening & Milestones (Batches 9-12)
+
+**Scope**: Finance & Accounting focus module — final deepening batch to cross the **500+ features** threshold (reached **502 total features**).
+
+**Accomplished**:
+- **Database Schema**: Created and applied database migrations adding 9 new Prisma models: `IntercompanyLoan`, `LoanDrawdown`, `LoanRepayment`, `AssetRevaluation`, `AssetDisposal`, `CashPool`, `CashPoolRun`, `VarianceAlertConfig`, `ConsolidationRate`.
+- **Backend Services**:
+  - `IntercompanyLoansService`: Intercompany loan agreements tracking, simple/compound interest accruals, repayments, amortization schedules, and GL journal entry generation.
+  - `AssetLifecycleService`: Fixed asset upward/downward revaluations, scrap/sale disposals, gain/loss calculation, subsequent depreciation adjustments, audit history report, and GL write-off postings.
+  - `CashPoolingService`: Physical and virtual cash pools sweeps/funding runs, target balances, and budget variance alert configs.
+  - `ConsolidationDeepService`: Average/closing consolidation exchange rates, multi-currency translations, Cumulative Translation Adjustment (CTA) math, and consolidated reporting locks.
+- **API Endpoints**: Integrated 36 new endpoints under `AdvancedFinanceController` with Swagger, permissions, and change history.
+- **Verification**: Created unit test suite with 10 passed tests. API typecheck and workspace compile 100% green.
+
 ## [2026-07-09] Extension platform hardening — 12 improvements to the poly-repo split (platform)
 
 Built on top of the poly-repo split. `@unerp/service-kit` → 0.2.0.

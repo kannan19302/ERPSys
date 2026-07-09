@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T18:04:35.329Z
+> Last generated: 2026-07-09T18:26:09.441Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1771 features** across 33 modules
+## System total: **1807 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 430 |
+| [advanced-finance](#advanced-finance) | 466 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -237,7 +237,7 @@
 
 ## advanced-finance
 
-430 features
+466 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -671,6 +671,42 @@
 | POST | `/advanced-finance/compliance/period-certifications` | Create period certification request | `finance.compliance.read` |
 | POST | `/advanced-finance/compliance/period-certifications/:id/certify` | Certify (sign off) a period | `finance.compliance.update` |
 | POST | `/advanced-finance/compliance/period-certifications/:id/reject` | Reject period certification | `finance.compliance.update` |
+| POST | `/advanced-finance/intercompany-loans` | Create intercompany loan agreement | `finance.treasury.create` |
+| GET | `/advanced-finance/intercompany-loans/:id` | Get intercompany loan agreement details | `finance.treasury.read` |
+| GET | `/advanced-finance/intercompany-loans` | List all intercompany loan agreements | `finance.treasury.read` |
+| POST | `/advanced-finance/intercompany-loans/:id/drawdown` | Record loan drawdown against facility | `finance.treasury.read` |
+| POST | `/advanced-finance/intercompany-loans/:id/repayment` | Record loan repayment of principal/interest | `finance.treasury.create` |
+| GET | `/advanced-finance/intercompany-loans/:id/accrued-interest` | Calculate accrued interest for period | `finance.treasury.read` |
+| POST | `/advanced-finance/intercompany-loans/:id/post-interest` | Post accrued interest GL journal entry | `finance.journal.create` |
+| GET | `/advanced-finance/intercompany-loans/:id/amortization` | Generate loan amortization schedule | `finance.treasury.read` |
+| GET | `/advanced-finance/intercompany-loans/analytics/summary` | Get intercompany loan analytics | `finance.treasury.read` |
+| POST | `/advanced-finance/intercompany-loans/:id/close` | Close loan agreement | `finance.treasury.read` |
+| POST | `/advanced-finance/assets/revaluations` | Record asset revaluation | `finance.fixed-asset.create` |
+| GET | `/advanced-finance/assets/:assetId/revaluations` | List asset revaluations history | `finance.fixed-asset.read` |
+| POST | `/advanced-finance/assets/revaluations/:id/post` | Post asset revaluation adjustments to GL | `finance.journal.create` |
+| POST | `/advanced-finance/assets/disposals` | Record asset disposal | `finance.journal.create` |
+| GET | `/advanced-finance/assets/disposals/list` | List asset disposals | `finance.fixed-asset.read` |
+| POST | `/advanced-finance/assets/disposals/:id/post` | Post asset disposal write-off to GL | `finance.fixed-asset.read` |
+| POST | `/advanced-finance/assets/impairments/:id/post` | Post asset impairment write-off to GL | `finance.journal.create` |
+| GET | `/advanced-finance/assets/:assetId/depreciation-post-reval` | Calculate monthly depreciation after revaluation | `finance.journal.create` |
+| GET | `/advanced-finance/assets/:assetId/audit-report` | Get asset audit report | `finance.fixed-asset.read` |
+| POST | `/advanced-finance/assets/disposals/bulk` | Bulk dispose assets | `finance.fixed-asset.create` |
+| POST | `/advanced-finance/cash-pools` | Create concentration cash pool | `finance.treasury.create` |
+| GET | `/advanced-finance/cash-pools/:id` | Get cash pool details and balances | `finance.treasury.read` |
+| GET | `/advanced-finance/cash-pools` | List concentration cash pools | `finance.treasury.read` |
+| POST | `/advanced-finance/cash-pools/:id/sweep` | Execute concentration cash pool sweep | `finance.treasury.read` |
+| POST | `/advanced-finance/cash-pools/:id/fund` | Execute cash pool redistribution funding | `finance.treasury.create` |
+| GET | `/advanced-finance/cash-pools/:id/runs` | List runs of cash pool | `finance.treasury.read` |
+| GET | `/advanced-finance/budget-variance/alerts` | Get accounts exceeding budget variance thresholds | `finance.treasury.read` |
+| POST | `/advanced-finance/budget-variance/configs` | Configure budget variance alert config | `finance.report.read` |
+| POST | `/advanced-finance/consolidation/rates` | Configure exchange rates for period consolidation | `finance.treasury.create` |
+| GET | `/advanced-finance/consolidation/rates/:period` | Get consolidation rates for period | `finance.treasury.read` |
+| POST | `/advanced-finance/consolidation/translations` | Execute multi-currency consolidation translation | `finance.report.create` |
+| GET | `/advanced-finance/consolidation/cta/:period` | Calculate cumulative translation adjustment (CTA) amount | `finance.report.read` |
+| POST | `/advanced-finance/consolidation/runs/:id/eliminations` | Post intercompany consolidation eliminations | `finance.report.create` |
+| GET | `/advanced-finance/consolidation/statements/:period` | Get consolidated P&L and Balance Sheet financial statements | `finance.report.read` |
+| POST | `/advanced-finance/consolidation/runs/:id/lock` | Lock consolidated book period | `finance.report.create` |
+| GET | `/advanced-finance/consolidation/runs` | List consolidated book runs | `finance.report.create` |
 
 ## advanced-hr
 

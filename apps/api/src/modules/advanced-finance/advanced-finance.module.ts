@@ -24,6 +24,10 @@ import {
   AllocationService,
   BudgetControlService,
   BudgetReallocationService,
+  IntercompanyLoansService,
+  AssetLifecycleService,
+  CashPoolingService,
+  ConsolidationDeepService,
 } from './services';
 import { TaxEngineDeepService } from './services/tax-engine-deep.service';
 import { TreasuryDeepService } from './services/treasury-deep.service';
@@ -66,6 +70,11 @@ const domainServices = [
   FpaDeepService,
   RevenueBillingService,
   ComplianceControlsService,
+  // Hardening services
+  IntercompanyLoansService,
+  AssetLifecycleService,
+  CashPoolingService,
+  ConsolidationDeepService,
 ];
 
 @Module({

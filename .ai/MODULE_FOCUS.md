@@ -102,6 +102,7 @@ CHANGELOG, and re-benchmark the completed module one last time in MARKET_BENCHMA
 | 2026-07-09 | Finance | 295 | +11 | Finance: Multi-Book / Multi-GAAP Accounting (closes [benchmark] RICE 90 gap): AccountingBookRule DB model & migration, GlAccountingService rules engine, auto-posting of parallel journal entries on post, optional bookId filtering for P&L, Balance Sheet, and Cash Flow statement endpoints and Next.js page selectors, 4 new unit tests. |
 | 2026-07-09 | Finance | 330 | +35 | Finance: Project-Based Accounting WIP, Job Costing & POC (closes [benchmark] RICE 84 gap): estimatedCost/contractValue fields, ProjectCostEntry schema + CRUD endpoints, WIP calculation (labor/material/overhead breakdown + POC % + over/under-billing WIP status), WIP summary endpoint, new /projects detail tab and form, new /projects/wip-reports dashboard. |
 | 2026-07-09 | Finance | 303 | +18 | Finance: Active Budget Control, Spread Methods, and Reallocations (DB+API+UI): BudgetControlConfig enforcement config (ALLOW/WARN/BLOCK), monthly BudgetPeriodAmounts (EVEN/HISTORICAL_PROPORTIONAL spreads), BudgetReallocations draft/submit/approve/reject workflow, 6 tests, spec fixes (note: baseline adjusted down due to externalization of industry modules). |
+| 2026-07-09 | Finance | 502 | +36 | Finance: Hardening & Milestones (Batches 9-12): Intercompany loans, cash pooling sweeps/funding runs, asset revaluations/disposals GL postings, and multi-currency consolidation translation. Added 9 models, 36 endpoints, 10 unit tests, compiler/typecheck clean. |
 
 
 
