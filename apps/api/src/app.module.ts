@@ -32,6 +32,7 @@ import { EducationModule } from './modules/education/education.module';
 import { RealEstateModule } from './modules/real-estate/real-estate.module';
 import { FieldServiceModule } from './modules/field-service/field-service.module';
 import { ApiPlatformModule } from './modules/api-platform/api-platform.module';
+import { ExtGatewayModule } from './modules/ext-gateway/ext-gateway.module';
 import { LocalizationModule } from './modules/localization/localization.module';
 import { PwaModule } from './modules/pwa/pwa.module';
 import { DevopsModule } from './modules/devops/devops.module';
@@ -129,6 +130,9 @@ import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
 
     // Phase 16 — API Platform & Integrations
     ApiPlatformModule,
+
+    // Extension gateway — proxies /ext/<appSlug>/* to out-of-process industry app services
+    ExtGatewayModule,
 
     // Phase 17 — Localization (i18n)
     LocalizationModule,

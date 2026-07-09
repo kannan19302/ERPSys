@@ -46,8 +46,10 @@ import { StorefrontController } from '../marketplace/storefront.controller';
 import { DeveloperController } from '../marketplace/developer.controller';
 import { ErrorReportsController } from './error-reports.controller';
 import { ErrorReportsService } from './error-reports.service';
+import { ExtGatewayModule } from '../ext-gateway/ext-gateway.module';
 
 @Module({
+  imports: [ExtGatewayModule],
   controllers: [
     AdminController,
     SuperAdminController,

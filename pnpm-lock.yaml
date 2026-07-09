@@ -107,6 +107,9 @@ importers:
       '@unerp/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@unerp/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
       '@unerp/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -366,6 +369,21 @@ importers:
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.17
+      '@unerp/config':
+        specifier: workspace:*
+        version: link:../config
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.20)(terser@5.48.0)
+
+  packages/service-kit:
+    devDependencies:
       '@unerp/config':
         specifier: workspace:*
         version: link:../config

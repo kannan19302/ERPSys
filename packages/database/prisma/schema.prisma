@@ -4466,6 +4466,7 @@ model InstalledApp {
   installPath      String? @map("install_path") // absolute path of extracted bundle dir (deleted on uninstall)
   installedVersion String? @map("installed_version")
   provisioned      Json    @default("{}") // {pageRegistryIds:[], schemaRegistryIds:[], automationRuleIds:[]} for teardown on uninstall
+  serviceConfig    Json?   @map("service_config") // manifest `service` section for declarative+service apps (ext-gateway routing)
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 

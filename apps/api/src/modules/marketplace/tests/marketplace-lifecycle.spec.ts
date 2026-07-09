@@ -7,6 +7,8 @@ import { VendorService } from '../vendor.service';
 import { MarketplaceService } from '../../admin/marketplace.service';
 import { HEALTHCARE_BUNDLES } from '../healthcare-bundles';
 import { validateManifest } from '../manifest';
+import { ServiceRegistryService } from '../../ext-gateway/service-registry.service';
+import { ExtProxyService } from '../../ext-gateway/ext-proxy.service';
 
 /**
  * End-to-end proof of the bundle lifecycle: publishing a third-party bundle, then
@@ -17,7 +19,13 @@ describe('marketplace bundle lifecycle', () => {
   const bundleStore = new BundleStoreService();
   const provisioning = new AppProvisioningService();
   const vendors = new VendorService(bundleStore);
-  const service = new MarketplaceService(bundleStore, provisioning, vendors);
+  const service = new MarketplaceService(
+    bundleStore,
+    provisioning,
+    vendors,
+    new ServiceRegistryService(),
+    new ExtProxyService(),
+  );
 
   // The Healthcare industry app (single bundle with toggleable modules).
   const manifest = validateManifest(HEALTHCARE_BUNDLES.find((m) => m.slug === 'healthcare')!);

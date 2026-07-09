@@ -6,6 +6,8 @@ import { VendorService } from '../marketplace/vendor.service';
 import { validateManifest } from '../marketplace/manifest';
 import { HEALTHCARE_BUNDLES } from '../marketplace/healthcare-bundles';
 import { isUninstallable } from '../../common/module-tiers';
+import { ServiceRegistryService } from '../ext-gateway/service-registry.service';
+import { ExtProxyService } from '../ext-gateway/ext-proxy.service';
 
 @Injectable()
 export class MarketplaceService {
@@ -13,6 +15,8 @@ export class MarketplaceService {
     private readonly bundleStore: BundleStoreService,
     private readonly provisioning: AppProvisioningService,
     private readonly vendors: VendorService,
+    private readonly serviceRegistry: ServiceRegistryService,
+    private readonly extProxy: ExtProxyService,
   ) {}
 
   // ─── App Browsing ───
@@ -168,6 +172,31 @@ export class MarketplaceService {
     const archive = await this.bundleStore.getBundle(bundle.blobKey);
     const manifest = validateManifest(archive.manifest);
 
+    // Out-of-process service apps: verify the service is reachable before
+    // provisioning, so a broken install never leaves dead routes in the UI.
+    let serviceConfig: any = null;
+    if (manifest.runtime === 'declarative+service' && manifest.service) {
+      serviceConfig = { ...manifest.service, routePrefix: manifest.service.routePrefix || manifest.slug };
+      const baseUrl =
+        (serviceConfig.baseUrlEnv && process.env[serviceConfig.baseUrlEnv]) ||
+        process.env[`${appSlug.replace(/-/g, '_').toUpperCase()}_SERVICE_URL`] ||
+        serviceConfig.defaultBaseUrl;
+      if (!baseUrl) {
+        throw new BadRequestException(
+          `App "${appSlug}" requires its service to be deployed (set ${serviceConfig.baseUrlEnv || 'its service URL env var'})`,
+        );
+      }
+      const healthy = await this.extProxy.healthCheck({
+        appSlug, baseUrl: String(baseUrl).replace(/\/+$/, ''), scopes: serviceConfig.scopes || [],
+        timeoutMs: serviceConfig.timeoutMs || 15000, healthcheck: serviceConfig.healthcheck,
+      });
+      if (!healthy) {
+        throw new BadRequestException(
+          `App "${appSlug}" service at ${baseUrl} failed its health check (${serviceConfig.healthcheck}). Start the service and retry.`,
+        );
+      }
+    }
+
     // Clean any prior provisioning + files (idempotent re-install / update).
     const prior = await prisma.installedApp.findUnique({ where: { tenantId_appId: { tenantId, appId } } });
     if (prior) {
@@ -194,14 +223,15 @@ export class MarketplaceService {
       update: {
         appSlug, appName: app.name, installedVersion: bundle.version, status: 'ACTIVE', installedBy: userId,
         source: 'MARKETPLACE', bundleId: bundle.id, installPath, config: config as any,
-        provisioned: provisionedJson as any,
+        provisioned: provisionedJson as any, serviceConfig,
       },
       create: {
         tenantId, appId, appSlug, appName: app.name, installedVersion: bundle.version, status: 'ACTIVE', installedBy: userId,
         source: 'MARKETPLACE', bundleId: bundle.id, installPath, config: config as any,
-        provisioned: provisionedJson as any,
+        provisioned: provisionedJson as any, serviceConfig,
       },
     });
+    this.serviceRegistry?.invalidate(tenantId, appSlug);
 
     if (!prior) await prisma.marketplaceApp.update({ where: { slug: appSlug }, data: { installs: { increment: 1 } } });
 
@@ -237,6 +267,8 @@ export class MarketplaceService {
     }
 
     await prisma.installedApp.delete({ where: { id: installed.id } });
+    // Ext-gateway routes for this app 404 from the next request onward.
+    if (installed.appSlug) this.serviceRegistry?.invalidate(tenantId, installed.appSlug);
     if (app) {
       await prisma.marketplaceApp.updateMany({ where: { slug: appSlug, installs: { gt: 0 } }, data: { installs: { decrement: 1 } } });
     }

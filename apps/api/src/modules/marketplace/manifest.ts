@@ -59,6 +59,20 @@ export interface ManifestAutomation {
   enabled?: boolean;
 }
 
+/**
+ * Out-of-process service section (runtime: 'declarative+service'). The service
+ * lives in its own repo/deployment; core proxies /api/v1/ext/<routePrefix>/* to
+ * it while the app is installed. See @unerp/service-kit for the shared contract.
+ */
+export interface ManifestService {
+  routePrefix?: string; // defaults to the app slug
+  baseUrlEnv?: string; // env var core reads for the service base URL
+  defaultBaseUrl?: string; // fallback (e.g. docker-compose hostname)
+  healthcheck: string; // path on the service, e.g. /svc/health
+  scopes?: string[];
+  timeoutMs?: number;
+}
+
 export interface ManifestAsset {
   path: string; // relative path inside the bundle, e.g. "assets/logo.png"
   contentBase64?: string;
@@ -71,7 +85,11 @@ export interface AppManifest {
   version: string; // semver
   category: string;
   vendor: string; // vendor slug
-  runtime: 'declarative'; // future: 'sandboxed-js'
+  runtime: 'declarative' | 'declarative+service';
+  /** Contract version between bundle and core (see EXT_API_VERSION). */
+  apiVersion?: number;
+  /** Required when runtime is 'declarative+service'. */
+  service?: ManifestService;
   /**
    * When set, this bundle *extends* an existing app instead of creating a new
    * /app/<slug> shell: its pages are provisioned under the target app's module
@@ -111,8 +129,25 @@ export function validateManifest(manifest: any): AppManifest {
 
   if (!SLUG.test(manifest.slug)) throw new Error(`Invalid app slug "${manifest.slug}" (use lowercase letters, numbers, hyphens)`);
   if (!SEMVER.test(manifest.version)) throw new Error(`Invalid version "${manifest.version}" (expected semver like 1.0.0)`);
-  if (manifest.runtime && manifest.runtime !== 'declarative') {
-    throw new Error(`Unsupported runtime "${manifest.runtime}" (only "declarative" is supported)`);
+  const SUPPORTED_RUNTIMES = ['declarative', 'declarative+service'];
+  if (manifest.runtime && !SUPPORTED_RUNTIMES.includes(manifest.runtime)) {
+    throw new Error(`Unsupported runtime "${manifest.runtime}" (supported: ${SUPPORTED_RUNTIMES.join(', ')})`);
+  }
+  const SUPPORTED_API_VERSION = 1;
+  if (manifest.apiVersion !== undefined && (typeof manifest.apiVersion !== 'number' || manifest.apiVersion > SUPPORTED_API_VERSION)) {
+    throw new Error(`Manifest apiVersion ${manifest.apiVersion} is not supported by this core (max ${SUPPORTED_API_VERSION})`);
+  }
+  if (manifest.runtime === 'declarative+service') {
+    const svc = manifest.service;
+    if (!svc || typeof svc !== 'object') throw new Error('runtime "declarative+service" requires a "service" section');
+    if (!svc.healthcheck || typeof svc.healthcheck !== 'string' || !svc.healthcheck.startsWith('/')) {
+      throw new Error('service.healthcheck must be an absolute path like "/svc/health"');
+    }
+    if (svc.routePrefix && !SLUG.test(svc.routePrefix)) {
+      throw new Error(`Invalid service.routePrefix "${svc.routePrefix}" (use lowercase letters, numbers, hyphens)`);
+    }
+  } else if (manifest.service) {
+    throw new Error('Manifest declares a "service" section but runtime is not "declarative+service"');
   }
   if (manifest.targetApp && !SLUG.test(manifest.targetApp)) {
     throw new Error(`Invalid targetApp slug "${manifest.targetApp}" (use lowercase letters, numbers, hyphens)`);
@@ -156,11 +191,14 @@ export function validateManifest(manifest: any): AppManifest {
     pageSlugs.add(p.slug);
   }
 
-  if (pages.length === 0) throw new Error('Manifest must declare at least one page');
+  // Service-backed bundles may ship zero declarative pages (API-only extension).
+  if (pages.length === 0 && manifest.runtime !== 'declarative+service') {
+    throw new Error('Manifest must declare at least one page');
+  }
 
   return {
     ...manifest,
-    runtime: 'declarative',
+    runtime: manifest.runtime === 'declarative+service' ? 'declarative+service' : 'declarative',
     modules: normalizedModules,
     schemas,
     pages,
