@@ -23,6 +23,7 @@ import {
   CashFlowForecastService,
   InterCompanyService,
   FxRevaluationService,
+  PayablesService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -432,6 +433,7 @@ export class AdvancedFinanceController {
     private readonly cashFlowForecastService: CashFlowForecastService,
     private readonly interCompanyService: InterCompanyService,
     private readonly fxRevaluationService: FxRevaluationService,
+    private readonly payablesService: PayablesService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -2259,5 +2261,199 @@ export class AdvancedFinanceController {
   @Permissions('finance.credit.read')
   async getCustomersCreditRisk(@Req() req: AuthenticatedRequest) {
     return this.taxService.getCustomersCreditRisk(req.user.tenantId);
+  }
+
+  // ── Payables: AP Three-Way Matching ─────────────────────────────────────────
+
+  @ApiOperation({ summary: 'Payables stats dashboard' })
+  @Get('payables/stats')
+  @Permissions('finance.payables.read')
+  async getPayablesStats(@Req() req: AuthenticatedRequest) {
+    return this.payablesService.getPayablesStats(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'List AP match rules' })
+  @Get('payables/match-rules')
+  @Permissions('finance.payables.read')
+  async listMatchRules(@Req() req: AuthenticatedRequest) {
+    return this.payablesService.listMatchRules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create AP match rule' })
+  @Post('payables/match-rules')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APMatchRule')
+  async createMatchRule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      vendorId: z.string().optional(),
+      quantityTolerancePercent: z.number().min(0).max(100),
+      priceTolerancePercent: z.number().min(0).max(100),
+      effectiveDate: z.string(),
+    })) body: { vendorId?: string; quantityTolerancePercent: number; priceTolerancePercent: number; effectiveDate: string },
+  ) {
+    return this.payablesService.createMatchRule(req.user.tenantId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Update AP match rule' })
+  @Patch('payables/match-rules/:id')
+  @Permissions('finance.payables.manage')
+  async updateMatchRule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      quantityTolerancePercent: z.number().min(0).max(100).optional(),
+      priceTolerancePercent: z.number().min(0).max(100).optional(),
+      effectiveDate: z.string().optional(),
+      status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+    })) body: { quantityTolerancePercent?: number; priceTolerancePercent?: number; effectiveDate?: string; status?: string },
+  ) {
+    return this.payablesService.updateMatchRule(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Delete AP match rule (soft delete)' })
+  @Delete('payables/match-rules/:id')
+  @Permissions('finance.payables.manage')
+  async deleteMatchRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.payablesService.deleteMatchRule(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Run three-way match on a purchase order' })
+  @Post('payables/invoices/:id/match')
+  @Permissions('finance.payables.match')
+  async runMatch(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') purchaseOrderId: string,
+    @ZodBody(z.object({ notes: z.string().optional() })) body: { notes?: string },
+  ) {
+    return this.payablesService.runMatch(req.user.tenantId, req.user.userId, { purchaseOrderId, ...body });
+  }
+
+  @ApiOperation({ summary: 'List AP match exceptions (out-of-tolerance invoices)' })
+  @Get('payables/exceptions')
+  @Permissions('finance.payables.read')
+  async listExceptions(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.payablesService.listExceptions(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Approve an AP match exception' })
+  @Post('payables/exceptions/:id/approve')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APMatchException')
+  async approveException(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ notes: z.string().optional() })) body: { notes?: string },
+  ) {
+    return this.payablesService.approveException(req.user.tenantId, id, req.user.userId, body.notes);
+  }
+
+  @ApiOperation({ summary: 'Reject an AP match exception' })
+  @Post('payables/exceptions/:id/reject')
+  @Permissions('finance.payables.manage')
+  async rejectException(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ notes: z.string().optional() })) body: { notes?: string },
+  ) {
+    return this.payablesService.rejectException(req.user.tenantId, id, req.user.userId, body.notes);
+  }
+
+  // ── Payables: Payment Batches ────────────────────────────────────────────────
+
+  @ApiOperation({ summary: 'List vendor payment batches' })
+  @Get('payables/payment-batches')
+  @Permissions('finance.payables.read')
+  async listPaymentBatches(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.payablesService.listPaymentBatches(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get a payment batch by ID' })
+  @Get('payables/payment-batches/:id')
+  @Permissions('finance.payables.read')
+  async getPaymentBatch(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.payablesService.getPaymentBatch(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create a new vendor payment batch' })
+  @Post('payables/payment-batches')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentBatch')
+  async createPaymentBatch(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      paymentMethod: z.enum(['ACH', 'WIRE', 'CHECK', 'SEPA']),
+      settlementDate: z.string().optional(),
+      bankAccountId: z.string().optional(),
+      currency: z.string().length(3).optional(),
+      notes: z.string().optional(),
+    })) body: { paymentMethod: string; settlementDate?: string; bankAccountId?: string; currency?: string; notes?: string },
+  ) {
+    return this.payablesService.createPaymentBatch(req.user.tenantId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Add an invoice/PO to a payment batch' })
+  @Post('payables/payment-batches/:id/lines')
+  @Permissions('finance.payables.manage')
+  async addLineToBatch(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') batchId: string,
+    @ZodBody(z.object({
+      referenceId: z.string().min(1),
+      amount: z.number().positive(),
+      scheduledPaymentDate: z.string(),
+      notes: z.string().optional(),
+    })) body: { referenceId: string; amount: number; scheduledPaymentDate: string; notes?: string },
+  ) {
+    return this.payablesService.addLineToBatch(req.user.tenantId, batchId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Remove a line from a payment batch' })
+  @Delete('payables/payment-batches/:id/lines/:lineId')
+  @Permissions('finance.payables.manage')
+  async removeLineFromBatch(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') batchId: string,
+    @Param('lineId') lineId: string,
+  ) {
+    return this.payablesService.removeLineFromBatch(req.user.tenantId, batchId, lineId, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Execute (run) a payment batch — settle lines and post GL journal' })
+  @Post('payables/payment-batches/:id/run')
+  @Permissions('finance.payables.run')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('PaymentBatch')
+  async runPaymentBatch(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.payablesService.runPaymentBatch(req.user.tenantId, id, req.user.userId, req.user.orgId || '');
+  }
+
+  @ApiOperation({ summary: 'Export payment batch as NACHA / SEPA XML / CSV' })
+  @Get('payables/payment-batches/:id/export')
+  @Permissions('finance.payables.read')
+  async exportPaymentBatch(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('format') format = 'NACHA',
+  ) {
+    return this.payablesService.exportPaymentBatch(req.user.tenantId, id, format);
+  }
+
+  // ── Financial Statement Drill-Through ────────────────────────────────────────
+
+  @ApiOperation({ summary: 'Drill through a P&L or Balance Sheet line to underlying journal entries' })
+  @Get('reports/:reportType/drilldown')
+  @Permissions('finance.reports.read')
+  async reportDrilldown(
+    @Req() req: AuthenticatedRequest,
+    @Param('reportType') reportType: string,
+    @Query('accountId') accountId?: string,
+    @Query('period') period?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.payablesService.reportDrilldown(req.user.tenantId, reportType, { accountId, period, limit });
   }
 }

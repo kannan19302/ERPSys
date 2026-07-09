@@ -327,8 +327,8 @@ export class PayablesService {
     const journalEntries: Prisma.JournalEntryCreateWithoutJournalInput[] = [];
     if (apAccount && bankAccount) {
       journalEntries.push(
-        { tenantId, accountId: apAccount.id, description: `AP clearing — batch ${batch.batchNumber}`, debit: batch.totalAmount, credit: new Prisma.Decimal(0) },
-        { tenantId, accountId: bankAccount.id, description: `Bank payment — batch ${batch.batchNumber}`, debit: new Prisma.Decimal(0), credit: batch.totalAmount },
+        { tenantId, account: { connect: { id: apAccount.id } }, description: `AP clearing — batch ${batch.batchNumber}`, debit: batch.totalAmount, credit: new Prisma.Decimal(0) },
+        { tenantId, account: { connect: { id: bankAccount.id } }, description: `Bank payment — batch ${batch.batchNumber}`, debit: new Prisma.Decimal(0), credit: batch.totalAmount },
       );
     }
 
@@ -431,35 +431,30 @@ export class PayablesService {
     const where: Prisma.JournalEntryWhereInput = { tenantId };
     if (query.accountId) where.accountId = query.accountId;
     if (query.period) {
-      // period = YYYY-MM
-      const [y, m] = query.period.split('-').map(Number);
+      const parts = query.period.split('-');
+      const y = parseInt(parts[0] ?? '2024', 10);
+      const m = parseInt(parts[1] ?? '1', 10);
       const start = new Date(y, m - 1, 1);
       const end = new Date(y, m, 1);
-      where.createdAt = { gte: start, lt: end };
+      where.journal = { date: { gte: start, lt: end } };
     }
-    if (reportType === 'profit_loss') {
-      where.account = {
-        type: { in: ['REVENUE', 'EXPENSE'] },
-        tenantId,
-      };
-    } else if (reportType === 'balance_sheet') {
-      where.account = {
-        type: { in: ['ASSET', 'LIABILITY', 'EQUITY'] },
-        tenantId,
-      };
-    }
+    let accountTypeFilter: string[] | undefined;
+    if (reportType === 'profit_loss') accountTypeFilter = ['REVENUE', 'EXPENSE'];
+    else if (reportType === 'balance_sheet') accountTypeFilter = ['ASSET', 'LIABILITY', 'EQUITY'];
 
     const entries = await prisma.journalEntry.findMany({
       where,
       include: {
-        journal: {
-          select: { reference: true, description: true, status: true, postedAt: true, currency: true },
-        },
+        journal: { select: { entryNumber: true, notes: true, status: true, date: true } },
         account: { select: { code: true, name: true, type: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
+
+    const filteredEntries = accountTypeFilter
+      ? entries.filter((e) => e.account && accountTypeFilter!.includes(e.account.type))
+      : entries;
 
     const total = await prisma.journalEntry.count({ where });
 
@@ -467,17 +462,16 @@ export class PayablesService {
       reportType,
       filters: query,
       total,
-      entries: entries.map((e) => ({
+      entries: filteredEntries.map((e) => ({
         id: e.id,
-        journalRef: e.journal.reference,
-        journalDesc: e.journal.description,
+        journalRef: e.journal.entryNumber,
+        journalDesc: e.journal.notes,
         journalStatus: e.journal.status,
-        postedAt: e.journal.postedAt,
+        postedAt: e.journal.date,
         account: e.account ? { code: e.account.code, name: e.account.name, type: e.account.type } : null,
         debit: e.debit,
         credit: e.credit,
         description: e.description,
-        currency: e.journal.currency,
         date: e.createdAt,
       })),
     };

@@ -231,6 +231,15 @@ export const SEGMENT_NAMES: Record<string, string> = {
   journey: 'Attribution & Journey',
   sentiment: 'Sentiment & Health',
   campaigns: 'Campaign Analytics',
+  // Finance Payables & AP matching
+  'ap-match-rules': 'AP Match Rules',
+  'exception-queue': 'AP Exception Queue',
+  'payment-batches': 'Payment Batches',
+  payables: 'Payables',
+  // Finance Subscriptions & Leases
+  subscriptions: 'Subscription Billing',
+  leases: 'Lease Accounting',
+  new: 'New',
 };
 
 export const formatSegment = (segment: string): string => {
