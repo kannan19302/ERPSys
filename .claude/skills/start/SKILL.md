@@ -69,8 +69,8 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
 9. **Ship** (only after the step-8 documentation gate passes): in parallel mode run in
    your **own git worktree** (`git worktree add ../ERPSys-<slug> main`; remove after
    merging) so commits never entangle other sessions' files. Sharing one checkout:
-   stage explicit paths only, verify `git diff --cached --stat` shows only your scope
-   + doc set, edit shared hotspots (CHANGELOG/REGISTRY/schema/permissions/moduleNav)
+   commit with an explicit pathspec — `git commit -m "..." -- <your files>` — never a
+   bare `git commit` (a shared index may hold another session's staged files), edit shared hotspots (CHANGELOG/REGISTRY/schema/permissions/moduleNav)
    only at ship time just before staging, never commit a file containing another
    session's hunks (defer + Conflict Log), never stash/reset foreign changes. Push
    rejected → `git fetch && git rebase --autostash origin/main`, re-typecheck, retry

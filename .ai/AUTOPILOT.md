@@ -359,9 +359,12 @@ else's half-done hunks, and `pull --rebase` refuses to run over foreign changes.
   the whole problem disappears. Remove the worktree at cycle end after the merge to
   `main`.
 - **Fallback (sessions genuinely sharing one checkout)**:
-  a. Stage by explicit path list only (already rule); before committing, verify the
-     staged diff is exclusively yours: `git diff --cached --stat` must contain only
-     files from your claimed scope + your Step 7 doc set.
+  a. **Commit with an explicit pathspec, not the index**: in a shared checkout another
+     session may have already STAGED its files — `git add <yours>` + `git commit`
+     would sweep the entire index (foreign staged files included) into your commit.
+     Always commit as `git commit -m "..." -- <your file list>`: the pathspec form
+     commits ONLY the listed paths regardless of what else is staged. Verify first
+     with `git status --short` that none of your listed paths carry foreign hunks.
   b. **Late-edit window for shared hotspots**: do NOT edit CHANGELOG /
      MODULE_REGISTRY / schema.prisma / permissions registry / moduleNav during
      Step 4 — make those edits at Step 7/8, immediately before staging, and commit
