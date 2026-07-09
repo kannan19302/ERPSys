@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T02:16:33.821Z
+> Last generated: 2026-07-09T02:38:02.463Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1604 features** across 36 modules
+## System total: **1626 features** across 36 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 202 |
+| [advanced-finance](#advanced-finance) | 224 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -240,7 +240,7 @@
 
 ## advanced-finance
 
-202 features
+224 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -446,6 +446,28 @@
 | POST | `/advanced-finance/payables/payment-batches/:id/run` | Execute (run) a payment batch — settle lines and post GL journal | `finance.payables.run` |
 | GET | `/advanced-finance/payables/payment-batches/:id/export` | Export payment batch as NACHA / SEPA XML / CSV | `finance.payables.read` |
 | GET | `/advanced-finance/reports/:reportType/drilldown` | Drill through a P&L or Balance Sheet line to underlying journal entries | `finance.reports.read` |
+| GET | `/advanced-finance/close-tasks` | List close tasks for a financial period | `finance.fpa.read` |
+| GET | `/advanced-finance/close-tasks/:id` | Get a close task by ID | `finance.fpa.read` |
+| POST | `/advanced-finance/close-tasks` | Create a new close task | `finance.fpa.read` |
+| PATCH | `/advanced-finance/close-tasks/:id` | Update close task status/assignee | `finance.fpa.manage` |
+| DELETE | `/advanced-finance/close-tasks/:id` | Delete a close task | `finance.fpa.manage` |
+| POST | `/advanced-finance/close-tasks/generate` | Generate standard close tasks from templates for a period | `finance.fpa.manage` |
+| GET | `/advanced-finance/close-tasks/dashboard` | Get continuous close dashboard summary | `finance.fpa.read` |
+| POST | `/advanced-finance/variance-flags/run` | Run variance engine comparing current vs prior financial period | `finance.fpa.run` |
+| GET | `/advanced-finance/variance-flags` | List variance flags for a financial period | `finance.fpa.read` |
+| POST | `/advanced-finance/variance-flags/:id/acknowledge` | Acknowledge an open variance flag | `finance.fpa.manage` |
+| POST | `/advanced-finance/variance-flags/:id/resolve` | Resolve a variance flag | `finance.fpa.manage` |
+| GET | `/advanced-finance/budget-scenarios` | List budget scenarios | `finance.fpa.read` |
+| GET | `/advanced-finance/budget-scenarios/compare` | Compare scenarios or scenario vs actuals | `finance.fpa.read` |
+| GET | `/advanced-finance/budget-scenarios/:id` | Get budget scenario details and monthly lines | `finance.fpa.read` |
+| POST | `/advanced-finance/budget-scenarios` | Create a new budget scenario | `finance.fpa.read` |
+| PATCH | `/advanced-finance/budget-scenarios/:id` | Update a budget scenario | `finance.fpa.manage` |
+| POST | `/advanced-finance/budget-scenarios/:id/lock` | Lock a budget scenario (approves it) | `finance.fpa.run` |
+| POST | `/advanced-finance/budget-scenarios/:id/unlock` | Unlock a budget scenario | `finance.fpa.run` |
+| POST | `/advanced-finance/budget-scenarios/:id/clone` | Clone a budget scenario | `finance.fpa.manage` |
+| POST | `/advanced-finance/budget-scenarios/:id/driver` | Apply driver calculations to generate budget lines in bulk | `finance.fpa.run` |
+| DELETE | `/advanced-finance/budget-scenarios/:id` | Delete a budget scenario (archives it) | `finance.fpa.manage` |
+| POST | `/advanced-finance/budget-scenarios/:id/lines` | Upsert a single budget scenario line | `finance.fpa.manage` |
 
 ## advanced-hr
 

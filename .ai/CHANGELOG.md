@@ -2,6 +2,33 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Month-End Continuous Close Automation, Budget Scenarios & Driver-Based FP&A (17+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes two high-RICE `[benchmark]` gaps: continuous close automation (RICE 160) and driver-based budgeting & scenario planning (RICE 123.75). Parity target: Sage Intacct (Close Automation + Subledger Reconciliation Assistant), NetSuite (Intelligent Close Manager + Planning & Budgeting NSPB), Microsoft Dynamics 365 Finance.
+
+**Accomplished**:
+- **Database**: migration `20260709143000_fpa_close_budget_scenarios` — `close_tasks` (closing checklist entries), `variance_flags` (PoP anomaly alerts), `budget_scenarios` (planning scenario metadata), `budget_scenario_lines` (monthly account budget amounts). Prisma models generated.
+- **API (FpaService, 17 endpoints)**:
+  - Close Tasks: listCloseTasks (filtered by status/period), getCloseTask, createCloseTask (sign-off/reconciliations category), updateCloseTask (DONE toggles completedAt/By), deleteCloseTask
+  - Checklist Templates: `POST /close-tasks/generate` — generates 13 industry-standard close items (bank recon, subledger review, CFO sign-off) with computed deadlines
+  - Close Dashboard: `GET /close-tasks/dashboard` — progress metrics, completion %, overdue counts, open flags
+  - Variance Engine: `POST /variance-flags/run` — PoP scan of GL accounts vs prior period, flags deviations &gt; threshold %, severity categorization
+  - Variance Management: acknowledgeVarianceFlag (adds audit notes), resolveVarianceFlag (assigns resolvedBy/resolvedAt)
+  - Budget Scenarios: listScenarios, getScenario (with monthly lines), createScenario (BASE/UPSIDE/DOWNSIDE/CUSTOM), updateScenario
+  - Scenario Branching: `POST /budget-scenarios/:id/clone` — duplicates metadata and all budget lines into a new branch
+  - Scenario Control: lockScenario (marks status APPROVED, prevents edits), unlockScenario
+  - Driver Budgeting: `POST /budget-scenarios/:id/driver` — bulk-computes budget lines from workforce headcount (FTE count × salary) or sales volume (units × price) across months
+  - Variance Analysis: `GET /budget-scenarios/compare` — side-by-side comparison of scenario A vs scenario B or vs actual general ledger balances
+- **Permissions**: 3 new (`finance.fpa.read`, `manage`, `run`) registered in registry.ts
+- **UI (3 Next.js pages)**:
+  - `/finance/advanced/close-tasks` — select financial period, overview metrics banner, generate templates, CRUD tasks checklist, variance flag scanning list with acknowledge/resolve buttons
+  - `/finance/advanced/budget-scenarios` — create scenarios, branch off copies, locking toggles, direct grid editing of monthly values with blur-save, and driver pop-up calculation wizard
+  - `/finance/advanced/scenario-comparison` — baseline vs comparative scenario side-by-side table, summary KPI cards, account deviation percentages
+- **Navigation**: added "Close Tasks Checklist", "Budget Scenarios", "Scenario Comparison" links to moduleNav.tsx
+- **Breadcrumbs**: registered segment names close-tasks, budget-scenarios, scenario-comparison in registry.tsx
+- **Tests**: 13 unit tests (`fpa.service.spec.ts`) — close tasks CRUD, template autogen, variance flagging engine, budget scenario creation, locking/unlocking, scenario cloning, driver computations, scenario comparison. All 13 passing.
+- **Gates**: API typecheck ✅ clean, Web typecheck ✅ clean, 13/13 Vitest fpa tests green, 242/243 advanced-finance suite green.
+
 ## [2026-07-09] Finance: AP Three-Way Matching, Batch Payment Runs & Financial Statement Drill-Through (18+ features, DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes three `[benchmark]` gaps: AP three-way matching (RICE 110), batch vendor payment run (RICE 100), financial statement drill-through (RICE 441). Parity target: NetSuite, SAP S/4HANA, Dynamics 365, Odoo.
