@@ -235,6 +235,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'ap-match-rules': 'AP Match Rules',
   'exception-queue': 'AP Exception Queue',
   'payment-batches': 'Payment Batches',
+  'invoice-capture': 'AI Invoice Capture',
   payables: 'Payables',
   // Finance Subscriptions & Leases
   subscriptions: 'Subscription Billing',

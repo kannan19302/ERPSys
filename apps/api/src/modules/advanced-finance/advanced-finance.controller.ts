@@ -25,6 +25,7 @@ import {
   FxRevaluationService,
   PayablesService,
   FpaService,
+  InvoiceCaptureService,
 } from './services';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -436,6 +437,7 @@ export class AdvancedFinanceController {
     private readonly fxRevaluationService: FxRevaluationService,
     private readonly payablesService: PayablesService,
     private readonly fpaService: FpaService,
+    private readonly invoiceCaptureService: InvoiceCaptureService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -2762,5 +2764,143 @@ export class AdvancedFinanceController {
     })) body: any,
   ) {
     return this.fpaService.upsertScenarioLine(req.user.tenantId, id, body);
+  }
+
+  // ── FP&A / Payables: AI Invoice Capture ────────────────────────────────────
+
+  @ApiOperation({ summary: 'List captured invoices' })
+  @Get('payables/invoices/capture')
+  @Permissions('finance.payables.read')
+  async listCaptures(@Req() req: AuthenticatedRequest, @Query('status') status?: string) {
+    return this.invoiceCaptureService.listCaptures(req.user.tenantId, status);
+  }
+
+  @ApiOperation({ summary: 'Get captured invoice details' })
+  @Get('payables/invoices/capture/:id')
+  @Permissions('finance.payables.read')
+  async getCapture(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.invoiceCaptureService.getCapture(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create (upload) invoice capture record' })
+  @Post('payables/invoices/capture')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APInvoiceCapture')
+  async createCapture(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({
+      fileName: z.string().min(1),
+      rawText: z.string().optional(),
+    })) body: { fileName: string; rawText?: string },
+  ) {
+    return this.invoiceCaptureService.createCapture(req.user.tenantId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Update captured invoice metadata manually' })
+  @Patch('payables/invoices/capture/:id')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APInvoiceCapture')
+  async updateCapture(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      vendorName: z.string().optional(),
+      invoiceNumber: z.string().optional(),
+      invoiceDate: z.string().optional(),
+      dueDate: z.string().optional(),
+      totalAmount: z.number().optional(),
+      currency: z.string().optional(),
+      matchingPurchaseOrderId: z.string().optional(),
+      notes: z.string().optional(),
+      status: z.string().optional(),
+    })) body: any,
+  ) {
+    return this.invoiceCaptureService.updateCapture(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Delete captured invoice record' })
+  @Delete('payables/invoices/capture/:id')
+  @Permissions('finance.payables.manage')
+  async deleteCapture(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.invoiceCaptureService.deleteCapture(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Auto-code GL account suggestions based on vendor history' })
+  @Post('payables/invoices/capture/:id/auto-code')
+  @Permissions('finance.payables.manage')
+  async autoCode(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.invoiceCaptureService.autoCode(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Approve and post captured invoice' })
+  @Post('payables/invoices/capture/:id/approve')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APInvoiceCapture')
+  async approveCapture(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.invoiceCaptureService.approveCapture(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Reject captured invoice' })
+  @Post('payables/invoices/capture/:id/reject')
+  @Permissions('finance.payables.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('APInvoiceCapture')
+  async rejectCapture(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ notes: z.string().optional() })) body: { notes?: string },
+  ) {
+    return this.invoiceCaptureService.rejectCapture(req.user.tenantId, id, req.user.userId, body.notes);
+  }
+
+  // ── Captured Invoice Lines Operations ──────────────────────────────────────
+
+  @ApiOperation({ summary: 'Add a line item manually to captured invoice' })
+  @Post('payables/invoices/capture/:id/lines')
+  @Permissions('finance.payables.manage')
+  async createCaptureLine(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') captureId: string,
+    @ZodBody(z.object({
+      description: z.string().min(1),
+      quantity: z.number().positive(),
+      unitPrice: z.number().positive(),
+      suggestedAccountId: z.string().optional(),
+      suggestedCostCenterId: z.string().optional(),
+    })) body: any,
+  ) {
+    return this.invoiceCaptureService.createLine(req.user.tenantId, captureId, body);
+  }
+
+  @ApiOperation({ summary: 'Update captured invoice line item' })
+  @Patch('payables/invoices/capture/:id/lines/:lineId')
+  @Permissions('finance.payables.manage')
+  async updateCaptureLine(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') captureId: string,
+    @Param('lineId') lineId: string,
+    @ZodBody(z.object({
+      description: z.string().optional(),
+      quantity: z.number().positive().optional(),
+      unitPrice: z.number().positive().optional(),
+      suggestedAccountId: z.string().optional(),
+      suggestedCostCenterId: z.string().optional(),
+    })) body: any,
+  ) {
+    return this.invoiceCaptureService.updateLine(req.user.tenantId, captureId, lineId, body);
+  }
+
+  @ApiOperation({ summary: 'Delete captured invoice line item' })
+  @Delete('payables/invoices/capture/:id/lines/:lineId')
+  @Permissions('finance.payables.manage')
+  async deleteCaptureLine(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') captureId: string,
+    @Param('lineId') lineId: string,
+  ) {
+    return this.invoiceCaptureService.deleteLine(req.user.tenantId, captureId, lineId);
   }
 }

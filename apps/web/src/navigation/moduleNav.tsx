@@ -55,6 +55,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Bank Accounts', href: '/finance/advanced/bank-accounts', icon: Wallet },
             { name: 'Bank Reconciliation', href: '/finance/advanced/reconciliations', icon: GitFork },
             { name: 'AP Automation', href: '/finance/advanced/ap-automation', icon: ShoppingCart },
+            { name: 'AI Invoice Capture', href: '/finance/advanced/invoice-capture', icon: FileText },
             { name: 'AP Match Rules', href: '/finance/advanced/ap-match-rules', icon: ShoppingCart },
             { name: 'AP Exception Queue', href: '/finance/advanced/exception-queue', icon: AlertTriangle },
             { name: 'Payment Batches', href: '/finance/advanced/payment-batches', icon: CreditCard },

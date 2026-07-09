@@ -9104,3 +9104,53 @@ model BudgetScenarioLine {
   @@index([tenantId, scenarioId])
   @@map("budget_scenario_lines")
 }
+
+// ── AI-Powered AP Invoice Capture ────────────────────────────────────────────
+
+model APInvoiceCapture {
+  id                      String   @id @default(cuid())
+  tenantId                String   @map("tenant_id")
+  fileName                String   @map("file_name")
+  vendorName              String?  @map("vendor_name")
+  invoiceNumber           String?  @map("invoice_number")
+  invoiceDate             DateTime? @map("invoice_date")
+  dueDate                 DateTime? @map("due_date")
+  totalAmount             Decimal?  @map("total_amount") @db.Decimal(15, 2)
+  currency                String   @default("USD")
+  confidenceScore         Decimal  @default(0.0) @map("confidence_score") @db.Decimal(5, 4)
+  status                  String   @default("QUEUED") // DRAFT, QUEUED, REVIEW_REQUIRED, PROCESSED, REJECTED
+  rawText                 String?  @map("raw_text") @db.Text
+  matchingPurchaseOrderId String?  @map("matching_purchase_order_id")
+  notes                   String?
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  createdBy               String   @map("created_by")
+  updatedBy               String   @map("updated_by")
+
+  lines                   APInvoiceCaptureLine[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, matchingPurchaseOrderId])
+  @@map("ap_invoice_captures")
+}
+
+model APInvoiceCaptureLine {
+  id                     String   @id @default(cuid())
+  tenantId               String   @map("tenant_id")
+  captureId              String   @map("capture_id")
+  description            String
+  quantity               Decimal  @db.Decimal(15, 4)
+  unitPrice              Decimal  @map("unit_price") @db.Decimal(15, 4)
+  amount                 Decimal  @db.Decimal(15, 2)
+  suggestedAccountId     String?  @map("suggested_account_id")
+  suggestedCostCenterId  String?  @map("suggested_cost_center_id")
+  matchingPOLineId       String?  @map("matching_po_line_id")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  capture                APInvoiceCapture @relation(fields: [captureId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, captureId])
+  @@map("ap_invoice_capture_lines")
+}
+
