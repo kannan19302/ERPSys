@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T17:32:13.076Z
+> Last generated: 2026-07-09T18:04:35.329Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1769 features** across 33 modules
+## System total: **1771 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -26,7 +26,7 @@
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
-| [ext-gateway](#ext-gateway) | 1 |
+| [ext-gateway](#ext-gateway) | 3 |
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
@@ -1495,11 +1495,13 @@
 
 ## ext-gateway
 
-1 features
+3 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
 | GET | `/ext-callback/records/:slug` | Read an extension app | — |
+| POST | `/ext-callback/records:batch` | Read several schemas in one round trip | — |
+| POST | `/ext-callback/records/:slug` | Create a record in the app | — |
 
 ## finance
 

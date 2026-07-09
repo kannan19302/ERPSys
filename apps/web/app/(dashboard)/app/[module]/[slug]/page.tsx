@@ -208,6 +208,11 @@ export default function CustomAppPage() {
     );
   }
 
+  // ── Remote Page Render (data lives in the app's out-of-process service) ──
+  if (mapping.type === 'REMOTE') {
+    return <RemoteAppPageRenderer mapping={mapping} moduleName={moduleName} />;
+  }
+
   // ── Form view (create or edit) ──
   if (view === 'form') {
     return (
@@ -1023,4 +1028,83 @@ function RuntimeChartWidget({ widget, schemas, moduleName }: { widget: any, sche
       )}
     </div>
   );
+}
+
+// ── Remote page: renders a table from the app's out-of-process service (#4) ──
+// The bundle ships this page (nav + columns + data endpoint); data is fetched
+// live from /api/v1/ext/<module>/<endpoint>. Uninstalling the app removes the
+// PageRegistry row, so the UI disappears with it — no core deploy needed.
+function RemoteAppPageRenderer({ mapping, moduleName }: { mapping: any; moduleName: string }) {
+  const layout = typeof mapping.layout === 'string' ? JSON.parse(mapping.layout) : (mapping.layout || {});
+  const endpoint: string = layout.dataUrl || layout.endpoint || '';
+  const columns: { key: string; label?: string }[] = Array.isArray(layout.columns) ? layout.columns : [];
+  const [rows, setRows] = useState<any[]>([]);
+  const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch(`/api/v1/ext/${moduleName}/${endpoint.replace(/^\//, '')}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!mounted) return;
+        if (res.status === 503) { setState('error'); setMessage(`The ${moduleName} app service is unavailable. Try again shortly.`); return; }
+        if (!res.ok) { setState('error'); setMessage(`Failed to load (${res.status}).`); return; }
+        const data = await res.json();
+        setRows(Array.isArray(data) ? data : data?.data || data?.items || []);
+        setState('ok');
+      } catch {
+        if (mounted) { setState('error'); setMessage('Network error contacting the app service.'); }
+      }
+    })();
+    return () => { mounted = false; };
+  }, [moduleName, endpoint]);
+
+  const cols: { key: string; label?: string }[] = columns.length ? columns : (rows[0] ? Object.keys(rows[0]).filter((k) => !k.startsWith('_')).slice(0, 6).map((k) => ({ key: k })) : []);
+
+  return (
+    <div style={{ padding: 'var(--space-6)' }}>
+      <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-4)' }}>{mapping.title}</h1>
+      {state === 'loading' && <p style={{ color: 'var(--color-text-secondary)' }}>Loading…</p>}
+      {state === 'error' && <p style={{ color: 'var(--color-danger, #dc2626)' }}>{message}</p>}
+      {state === 'ok' && (
+        <div style={{ overflowX: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {cols.map((c) => (
+                  <th key={c.key} style={{ textAlign: 'left', padding: 'var(--space-3)', borderBottom: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                    {c.label || c.key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr><td colSpan={cols.length || 1} style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>No records.</td></tr>
+              )}
+              {rows.map((r, i) => (
+                <tr key={r.id || r._id || i}>
+                  {cols.map((c) => (
+                    <td key={c.key} style={{ padding: 'var(--space-3)', borderBottom: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }}>
+                      {formatRemoteCell(r[c.key])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatRemoteCell(v: any): string {
+  if (v == null) return '';
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
 }

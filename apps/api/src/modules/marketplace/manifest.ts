@@ -29,9 +29,9 @@ export interface ManifestSchema {
 export interface ManifestPage {
   slug: string; // url segment under /app/<appSlug>/
   title: string;
-  type?: 'form' | 'list' | 'dashboard' | 'report' | 'custom';
+  type?: 'form' | 'list' | 'dashboard' | 'report' | 'custom' | 'remote';
   schema?: string; // references a ManifestSchema.slug (the backing entity)
-  layout?: any; // for custom pages
+  layout?: any; // for custom pages; for `remote` pages: { dataUrl, columns:[{key,label}] }
   module?: string; // owning module slug (set when flattened from a ManifestModule)
 }
 

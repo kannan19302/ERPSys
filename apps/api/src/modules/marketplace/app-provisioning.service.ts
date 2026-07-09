@@ -75,7 +75,11 @@ export class AppProvisioningService {
       const fields = backingSchema?.fields || [];
       const settings = backingSchema?.settings || {};
       const type = (p.type || 'form');
-      const pageLayout = type === 'custom' ? (p.layout || []) : { fields, settings };
+      // `custom` keeps its widget array; `remote` keeps its { dataUrl, columns }
+      // object (data lives in the app's service); others store the backing schema.
+      const pageLayout = type === 'custom' ? (p.layout || [])
+        : type === 'remote' ? (p.layout || {})
+        : { fields, settings };
 
       // For an app extension, tag each page with its submodule group so the
       // host app's sidebar can render it under a labelled section.
