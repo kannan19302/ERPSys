@@ -2,7 +2,33 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: AP Three-Way Matching, Batch Payment Runs & Financial Statement Drill-Through (18+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes three `[benchmark]` gaps: AP three-way matching (RICE 110), batch vendor payment run (RICE 100), financial statement drill-through (RICE 441). Parity target: NetSuite, SAP S/4HANA, Dynamics 365, Odoo.
+
+**Accomplished**:
+- **Database**: migration `20260709120000_ap_matching_payment_batches` — `ap_match_rules` (per-vendor or global tolerance configs), `ap_match_exceptions` (variance queue), `payment_batches` + `payment_batch_lines` (batch payment assembly + GL settlement). Prisma models already wired in schema.
+- **API (PayablesService, 18 endpoints)**:
+  - AP Match Rules: list, get, create, update (tolerances), delete (soft)
+  - Three-Way Match Engine: `POST /payables/match-rules/:id/match` — auto-matches PO → goods receipts → invoice using configurable quantity/price tolerance, creates exception records for out-of-tolerance variances, auto-posts when matched
+  - Exception Queue: list by status, approve (with resolution notes), reject — assigns resolvedBy/resolvedAt
+  - Payment Batches: list, get, create (DRAFT), add line, remove line, run batch (settles lines + posts GL double-entry journal), export (NACHA ACH, SEPA XML, CSV)
+  - Report Drill-Through: `GET /reports/:reportType/drilldown` — click any P&L or Balance Sheet aggregate → underlying JournalEntry rows with source document refs
+  - Payables Dashboard Stats: aggregated KPIs (open POs, pending exceptions, draft/completed batch counts+totals, active match rules)
+- **Permissions**: 4 new (`finance.payables.read`, `manage`, `match`, `run`) registered in `packages/shared/src/permissions/registry.ts`
+- **UI (3 Next.js pages)**:
+  - `/finance/advanced/ap-match-rules` — CRUD form for tolerance rules, inline edit/delete, status badges
+  - `/finance/advanced/exception-queue` — sortable exception list, approve/reject modal with notes, status filter
+  - `/finance/advanced/payment-batches` — create batch, add/remove lines, run + export (NACHA/SEPA/CSV), status progression
+- **Navigation**: added "Payables & Treasury" section in `moduleNav.tsx` with AP Match Rules, AP Exception Queue, Payment Batches links
+- **Breadcrumbs**: added `ap-match-rules`, `exception-queue`, `payment-batches`, `payables`, `subscriptions`, `leases`, `new` to `SEGMENT_NAMES` in `registry.tsx`
+- **Tests**: 25 unit tests (`payables.service.spec.ts`) — match rules CRUD, three-way match engine (PENDING/MATCHED/EXCEPTION scenarios), exception approve/reject, batch lifecycle (create/add/run/export), report drilldown, stats. All 25 passing.
+- **Gates**: API typecheck ✅ clean, Web typecheck ✅ clean, 25/25 Vitest payables tests green, 229/229 advanced-finance suite green.
+
+**Why**: three high-RICE `[benchmark]` items from the Up Next queue — drill-through was the highest RICE (441) in the queue. Completes the stale prior session's work which had DB+service scaffolded but no tests or breadcrumbs.
+
 ## [2026-07-09] Finance: Subscription Billing & MRR/ARR Dashboard (15+ features, DB+API+UI)
+
 
 **Scope**: Finance & Accounting focus module - Subscription Billing & MRR/ARR analytics dashboard. Closes the `[benchmark]` subscription billing gap (Up Next item #9, RICE 94.5). Parity target: Sage Intacct / Zuora / NetSuite SuiteBilling.
 
