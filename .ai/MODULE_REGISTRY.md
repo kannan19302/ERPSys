@@ -61,7 +61,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| antigravity-win1 | 2026-07-09T18:42:00Z | Finance: Project-based accounting (WIP, job costing, percentage-of-completion) | main | ACTIVE |
+_(no active claims)_
 
 
 ### 2. Up Next (unclaimed work, pick from the top)
@@ -90,7 +90,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 8. ~~**[benchmark] Finance: batch vendor payment run**~~ ✅ SHIPPED 2026-07-09 (commit 8bfaddc)
 9. ~~**[benchmark] Finance: subscription billing & recurring-revenue metrics (MRR/ARR)**~~ ✅ SHIPPED 2026-07-09 (commit 0d82d4e)
 10. ~~**[benchmark] Finance: continuous close automation (variance flagging + close-task assignment)**~~ ✅ SHIPPED 2026-07-09 (commit ba4d12d)
-11. ~~**[benchmark] Finance: project-based accounting (WIP, job costing, percentage-of-completion revenue recognition)**~~ 🟡 CLAIMED (antigravity-win1) — tie `ProjectCostEntry` to `Project` for real-time job costing (labour + material + overhead), POC revenue recognition formula (costs-incurred ÷ total-estimated-cost × contract-value), over/under-billing report; leaders: Sage Intacct (construction WIP + POC), NetSuite SRP, Deltek Costpoint. Sub-tasks: `ProjectCostEntry` Prisma model, WIP summary service, POC calc endpoint `/projects/:id/wip`, UI report page. RICE: Reach 40 · Impact 9 · Confidence 70% · Effort 3 = **84**.
+11. ~~**[benchmark] Finance: project-based accounting (WIP, job costing, percentage-of-completion revenue recognition)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3) — tie `ProjectCostEntry` to `Project` for real-time job costing (labour + material + overhead), POC revenue recognition formula (costs-incurred ÷ total-estimated-cost × contract-value), over/under-billing report; leaders: Sage Intacct (construction WIP + POC), NetSuite SRP, Deltek Costpoint. Sub-tasks: `ProjectCostEntry` Prisma model, WIP summary service, POC calc endpoint `/projects/:id/wip`, UI report page. RICE: Reach 40 · Impact 9 · Confidence 70% · Effort 3 = **84**.
 12. ~~**[benchmark] Finance: driver-based budgeting & scenario planning (FP&A)**~~ ✅ SHIPPED 2026-07-09 (commit ba4d12d)
 13. ~~**[benchmark] Finance: AI-powered invoice capture (OCR + auto-coding)**~~ ✅ SHIPPED 2026-07-09 (commit 86023ab)
 14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3)
@@ -107,6 +107,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-09 | antigravity-ide | Finance: Project-Based Accounting WIP, Job Costing & POC (20+ features, DB+API+UI): estimatedCost/contractValue fields, ProjectCostEntry schema + CRUD endpoints, WIP calculation (labor/material/overhead breakdown + POC % + over/under-billing WIP status), WIP summary endpoint, new /projects detail tab and form, new /projects/wip-reports dashboard. | commit pending |
 | 2026-07-09 | antigravity-ide | Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI): AccountingBookRule DB schema, CRUD endpoints, parallel journal auto-post rules engine, P&L/Balance Sheet/Cash Flow book filters, Next.js mapping rules config. | commit 8a10611 |
 | 2026-07-09 | antigravity-ide | Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI): EliminationRule model, EliminationRun / EliminationRunDetail models, intercompany matching & auto-elimination batch engines, GL draft/posted auto-elimination journal entries, Next.js interactive tabbed dashboard, 5 unit tests, build/tsc clean. | commit 9f0d08a |
 | 2026-07-09 | antigravity-ide | Finance: Dynamic Allocation Engine (12+ features, DB+API+UI): CRUD, static pct allocation, dynamic headcount/revenue ratio calculations, rounding difference adjustments, draft/post allocation runs, Next.js interactive allocations dashboard tabbed list & side drawers, 6 unit tests passed, typecheck green. | commit pending |

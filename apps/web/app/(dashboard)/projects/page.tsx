@@ -67,12 +67,45 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Tab & sub-feature states
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tasks' | 'evm' | 'risks' | 'changes'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'tasks' | 'evm' | 'risks' | 'changes' | 'job-costing'>('dashboard');
   const [criticalPathIds, setCriticalPathIds] = useState<string[]>([]);
   const [projectHealth, setProjectHealth] = useState<string>('HEALTHY');
   const [evmMetrics, setEvmMetrics] = useState<EVMMetrics | null>(null);
   const [risks, setRisks] = useState<ProjectRisk[]>([]);
   const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
+
+  // Job Costing & WIP States
+  interface ProjectCostEntry {
+    id: string;
+    type: string;
+    amount: number;
+    date: string;
+    description: string | null;
+  }
+
+  interface WipData {
+    laborCost: number;
+    materialCost: number;
+    overheadCost: number;
+    totalCost: number;
+    estimatedCost: number;
+    contractValue: number;
+    percentComplete: number;
+    recognizedRevenue: number;
+    billedAmount: number;
+    overUnderBilling: number;
+    billingStatus: string;
+  }
+
+  const [costEntries, setCostEntries] = useState<ProjectCostEntry[]>([]);
+  const [wipData, setWipData] = useState<WipData | null>(null);
+  const [isLogCostModalOpen, setIsLogCostModalOpen] = useState(false);
+  const [newCost, setNewCost] = useState({
+    type: 'LABOR',
+    amount: '',
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+  });
 
   // New Project Form State
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
@@ -83,6 +116,8 @@ export default function ProjectsPage() {
     budget: '',
     startDate: '',
     endDate: '',
+    estimatedCost: '',
+    contractValue: '',
   });
 
   // New Task Form State
@@ -170,6 +205,8 @@ export default function ProjectsPage() {
         fetchEVMData(projectId);
         fetchRisksData(projectId);
         fetchChangesData(projectId);
+        fetchWipData(projectId);
+        fetchCostEntries(projectId);
       }
     } catch {
       // Ignored
@@ -208,6 +245,30 @@ export default function ProjectsPage() {
       });
       if (res.ok) {
         (async () => { const _d = await res.json(); setChangeRequests(Array.isArray(_d) ? _d : (_d?.data || [])); })();
+      }
+    } catch {}
+  };
+
+  const fetchWipData = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/v1/projects/${projectId}/wip`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setWipData(await res.json());
+      }
+    } catch {}
+  };
+
+  const fetchCostEntries = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/v1/projects/${projectId}/costs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setCostEntries(await res.json());
       }
     } catch {}
   };
@@ -269,6 +330,8 @@ export default function ProjectsPage() {
         body: JSON.stringify({
           ...newProject,
           budget: newProject.budget ? parseFloat(newProject.budget) : undefined,
+          estimatedCost: newProject.estimatedCost ? parseFloat(newProject.estimatedCost) : undefined,
+          contractValue: newProject.contractValue ? parseFloat(newProject.contractValue) : undefined,
         }),
       });
 
@@ -278,7 +341,7 @@ export default function ProjectsPage() {
       }
 
       setIsNewProjectModalOpen(false);
-      setNewProject({ name: '', code: '', description: '', budget: '', startDate: '', endDate: '' });
+      setNewProject({ name: '', code: '', description: '', budget: '', startDate: '', endDate: '', estimatedCost: '', contractValue: '' });
       fetchProjects();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to create project');
@@ -438,6 +501,65 @@ export default function ProjectsPage() {
       }
     } catch {
       alert('Error generating invoice');
+    }
+  };
+
+  const handleLogCost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProject) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/v1/projects/${selectedProject.id}/costs`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: newCost.type,
+          amount: parseFloat(newCost.amount),
+          date: newCost.date,
+          description: newCost.description || undefined,
+        }),
+      });
+      if (res.ok) {
+        setIsLogCostModalOpen(false);
+        setNewCost({
+          type: 'LABOR',
+          amount: '',
+          date: new Date().toISOString().split('T')[0],
+          description: '',
+        });
+        fetchWipData(selectedProject.id);
+        fetchCostEntries(selectedProject.id);
+        alert('Cost entry logged successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to log cost');
+      }
+    } catch {
+      alert('Error logging cost');
+    }
+  };
+
+  const handleDeleteCostEntry = async (id: string) => {
+    if (!selectedProject || !confirm('Are you sure you want to delete this cost entry?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/v1/projects/costs/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        fetchWipData(selectedProject.id);
+        fetchCostEntries(selectedProject.id);
+        alert('Cost entry deleted!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to delete');
+      }
+    } catch {
+      alert('Error deleting cost entry');
     }
   };
 
@@ -609,6 +731,7 @@ export default function ProjectsPage() {
               <button onClick={() => setActiveTab('evm')} style={{ background: 'none', border: 'none', color: activeTab === 'evm' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'evm' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>EVM & Billing</button>
               <button onClick={() => setActiveTab('risks')} style={{ background: 'none', border: 'none', color: activeTab === 'risks' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'risks' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Risk Register</button>
               <button onClick={() => setActiveTab('changes')} style={{ background: 'none', border: 'none', color: activeTab === 'changes' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'changes' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Change Control</button>
+              <button onClick={() => setActiveTab('job-costing')} style={{ background: 'none', border: 'none', color: activeTab === 'job-costing' ? 'var(--color-primary)' : 'var(--color-text-secondary)', borderBottom: activeTab === 'job-costing' ? '2px solid var(--color-primary)' : '2px solid transparent', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer' }}>Job Costing & WIP</button>
             </div>
 
             {/* TAB 0: DASHBOARD */}
@@ -932,6 +1055,91 @@ export default function ProjectsPage() {
               </div>
             )}
 
+            {/* TAB 5: JOB COSTING & WIP */}
+            {activeTab === 'job-costing' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.3s ease-out' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 'bold' }}>Job Costing & Work-in-Progress (POC)</h3>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                    <button onClick={() => setIsLogCostModalOpen(true)} style={{ background: 'var(--color-primary)', color: 'white', border: 'none', padding: 'var(--space-1.5) var(--space-3)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-xs)', fontWeight: 'bold', cursor: 'pointer' }}>Log Project Cost</button>
+                  </div>
+                </div>
+
+                {wipData && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+                    <div style={{ padding: 'var(--space-4)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+                      <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold' }}>ESTIMATED COST</p>
+                      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: 'var(--color-text-primary)', marginTop: '4px' }}>${wipData.estimatedCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+                      <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold' }}>TOTAL COST INCURRED</p>
+                      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: 'var(--color-text-primary)', marginTop: '4px' }}>${wipData.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                      <div style={{ display: 'flex', gap: '8px', fontSize: '9px', marginTop: '6px', color: 'var(--color-text-secondary)' }}>
+                        <span>L: ${wipData.laborCost.toLocaleString()}</span>
+                        <span>M: ${wipData.materialCost.toLocaleString()}</span>
+                        <span>O: ${wipData.overheadCost.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+                      <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold' }}>CONTRACT VALUE</p>
+                      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: 'var(--color-text-primary)', marginTop: '4px' }}>${wipData.contractValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+                      <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold' }}>REVENUE RECOGNIZED</p>
+                      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: 'var(--color-success)', marginTop: '4px' }}>${wipData.recognizedRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                      <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>POC: {wipData.percentComplete}%</span>
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+                      <p style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold' }}>TOTAL BILLED</p>
+                      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: 'var(--color-primary)', marginTop: '4px' }}>${wipData.billedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                    </div>
+                    <div style={{ padding: 'var(--space-4)', background: wipData.overUnderBilling >= 0 ? '#ecfdf5' : '#fef2f2', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+                      <p style={{ fontSize: '10px', color: wipData.overUnderBilling >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{wipData.overUnderBilling >= 0 ? 'UNDERBILLED (WIP ASSET)' : 'OVERBILLED (DEFERRED LIAB)'}</p>
+                      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold', color: wipData.overUnderBilling >= 0 ? '#10b981' : '#ef4444', marginTop: '4px' }}>${Math.abs(wipData.overUnderBilling).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-4)' }}>
+                  <h4 style={{ fontWeight: 'bold', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>Project Cost Ledger</h4>
+                  {costEntries.length > 0 ? (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)', textAlign: 'left' }}>
+                            <th style={{ padding: '12px' }}>Date</th>
+                            <th style={{ padding: '12px' }}>Cost Type</th>
+                            <th style={{ padding: '12px' }}>Description</th>
+                            <th style={{ padding: '12px', textAlign: 'right' }}>Amount</th>
+                            <th style={{ padding: '12px', textAlign: 'center' }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {costEntries.map((ce) => (
+                            <tr key={ce.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <td style={{ padding: '12px' }}>{new Date(ce.date).toLocaleDateString()}</td>
+                              <td style={{ padding: '12px' }}>
+                                <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px', background: ce.type === 'LABOR' ? '#e0f2fe' : ce.type === 'MATERIAL' ? '#fef3c7' : '#f3e8ff', color: ce.type === 'LABOR' ? '#0369a1' : ce.type === 'MATERIAL' ? '#b45309' : '#6b21a8' }}>
+                                  {ce.type}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px', color: 'var(--color-text-secondary)' }}>{ce.description || '—'}</td>
+                              <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>${Number(ce.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <button onClick={() => handleDeleteCostEntry(ce.id)} style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>Delete</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-tertiary)' }}>No cost entries logged for this project yet.</p>
+                  )}
+                </div>
+              </div>
+            )}
+
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-elevated)', border: '1px dashed var(--color-border)', borderRadius: 'var(--radius-2xl)', minHeight: '300px' }}>
@@ -973,14 +1181,63 @@ export default function ProjectsPage() {
               </div>
             </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Budget</label>
+                <input type="number" placeholder="Budget allocation" value={newProject.budget} onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Estimated Cost</label>
+                <input type="number" placeholder="Internal est. cost" value={newProject.estimatedCost} onChange={(e) => setNewProject({ ...newProject, estimatedCost: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+              </div>
+            </div>
+
             <div>
-              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Budget</label>
-              <input type="number" placeholder="Budget allocation" value={newProject.budget} onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
+              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' }}>Contract Value</label>
+              <input type="number" placeholder="Total contract value" value={newProject.contractValue} onChange={(e) => setNewProject({ ...newProject, contractValue: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', marginTop: '4px' }} />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
               <button type="button" onClick={() => setIsNewProjectModalOpen(false)} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-text)' }}>Cancel</button>
               <button type="submit" style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-lg)', border: 'none', background: 'var(--color-primary)', color: 'white', cursor: 'pointer', fontWeight: 'var(--weight-semibold)' }}>Save Project</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Log Project Cost Modal */}
+      {isLogCostModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
+          <form onSubmit={handleLogCost} style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', width: '400px', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'bold' }}>Log Project Cost</h3>
+            
+            <div>
+              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'semibold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Cost Type</label>
+              <select value={newCost.type} onChange={(e) => setNewCost({ ...newCost, type: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+                <option value="LABOR">Labor Cost</option>
+                <option value="MATERIAL">Material Cost</option>
+                <option value="OVERHEAD">Overhead Cost</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'semibold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Amount ($)</label>
+              <input type="number" step="0.01" required value={newCost.amount} onChange={(e) => setNewCost({ ...newCost, amount: e.target.value })} placeholder="e.g. 250.00" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'semibold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Date</label>
+              <input type="date" required value={newCost.date} onChange={(e) => setNewCost({ ...newCost, date: e.target.value })} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'semibold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Description</label>
+              <input type="text" value={newCost.description} onChange={(e) => setNewCost({ ...newCost, description: e.target.value })} placeholder="e.g. Subcontractor invoice #12" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+              <button type="button" onClick={() => setIsLogCostModalOpen(false)} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-text)' }}>Cancel</button>
+              <button type="submit" style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-lg)', border: 'none', background: 'var(--color-primary)', color: 'white', cursor: 'pointer', fontWeight: 'semibold' }}>Submit Cost</button>
             </div>
           </form>
         </div>

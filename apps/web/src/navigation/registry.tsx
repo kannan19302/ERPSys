@@ -94,6 +94,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   portfolios: 'Portfolios',
   workloads: 'Workloads',
   'revenue-recognition': 'Revenue Recognition',
+  'wip-reports': 'WIP & Job Costing',
   boms: 'BOMs',
   configurator: 'Configurator',
   diagnostics: 'Diagnostics',

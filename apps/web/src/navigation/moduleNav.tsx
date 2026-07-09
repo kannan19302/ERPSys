@@ -371,6 +371,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Resource Workloads', href: '/projects/workloads', icon: Clock },
             { name: 'Project Health & CPM', href: '/projects/health', icon: Activity },
             { name: 'Revenue Recognition', href: '/projects/revenue-recognition', icon: DollarSign },
+            { name: 'WIP & Job Costing', href: '/projects/wip-reports', icon: DollarSign },
           ]
         }
       ]

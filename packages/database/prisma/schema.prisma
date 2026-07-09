@@ -811,11 +811,14 @@ model Invoice {
   creditNotes          CreditNote[]
   dunningLogs          InvoiceDunningLog[]
   subscriptionInvoices SubscriptionInvoice[]
+  projectId            String?               @map("project_id")
+  project              Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, orgId, invoiceNumber])
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, customerId])
+  @@index([projectId])
   @@map("invoices")
 }
 
@@ -1321,6 +1324,8 @@ model Project {
   startDate        DateTime? @map("start_date")
   endDate          DateTime? @map("end_date")
   budget           Decimal?  @db.Decimal(15, 2)
+  estimatedCost    Decimal?  @map("estimated_cost") @db.Decimal(15, 2)
+  contractValue    Decimal?  @map("contract_value") @db.Decimal(15, 2)
   baselineSchedule String?   @map("baseline_schedule") @db.Text
   criticalPath     String?   @map("critical_path") @db.Text
   overallHealth    String?   @map("overall_health")
@@ -1338,6 +1343,9 @@ model Project {
   budgets        Budget[]
   risks          ProjectRisk[]
   changeRequests ChangeRequest[]
+  costEntries    ProjectCostEntry[]
+  invoices       Invoice[]
+
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -1453,10 +1461,27 @@ model Milestone {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
-  @@index([projectId])
   @@map("milestones")
 }
+
+model ProjectCostEntry {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  projectId   String   @map("project_id")
+  type        String   // LABOR, MATERIAL, OVERHEAD
+  amount      Decimal  @db.Decimal(15, 2)
+  date        DateTime
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("project_cost_entries")
+}
+
 
 // ════════════════════════════════════════════════
 // MANUFACTURING MODULE (Phase 3)

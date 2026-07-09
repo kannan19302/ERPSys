@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -64,6 +64,13 @@ export class ProjectsController {
     return this.projectsService.createPortfolio(req.user.tenantId, orgId, dto);
   }
 
+  @ApiOperation({ summary: 'Get WIP summary across all projects' })
+  @Get('wip-summary')
+  @Permissions('projects.project.read')
+  async getWipSummary(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.projectsService.getWipSummary(req.user.tenantId);
+  }
+
   @ApiOperation({ summary: 'Get project by id' })
   @Get(':id')
   @Permissions('projects.project.read')
@@ -76,7 +83,7 @@ export class ProjectsController {
   @Permissions('projects.project.create')
   async createProject(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.any()) dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string }
+    @ZodBody(z.any()) dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string; estimatedCost?: number; contractValue?: number }
   ): Promise<unknown> {
     const orgId = req.user.orgId || 'org-system-default';
     return this.projectsService.createProject(req.user.tenantId, orgId, dto, req.user.userId || 'system');
@@ -206,4 +213,39 @@ export class ProjectsController {
   async generateProjectInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
     return this.projectsService.generateProjectInvoice(req.user.tenantId, id, req.user.userId || 'system');
   }
+
+  // --- Project Costing & WIP Valuation (POC) ---
+
+  @ApiOperation({ summary: 'Get project WIP details' })
+  @Get(':id/wip')
+  @Permissions('projects.project.read')
+  async getProjectWip(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getProjectWip(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create cost entry for project' })
+  @Post(':id/costs')
+  @Permissions('projects.project.create')
+  async createCostEntry(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.any()) dto: { type: string; amount: number; date: string; description?: string }
+  ): Promise<unknown> {
+    return this.projectsService.createCostEntry(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Get cost entries for project' })
+  @Get(':id/costs')
+  @Permissions('projects.project.read')
+  async getCostEntries(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getCostEntries(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Delete cost entry' })
+  @Delete('costs/:costEntryId')
+  @Permissions('projects.project.create')
+  async deleteCostEntry(@Req() req: AuthenticatedRequest, @Param('costEntryId') costEntryId: string): Promise<unknown> {
+    return this.projectsService.deleteCostEntry(req.user.tenantId, costEntryId);
+  }
 }
+

@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T12:15:47.048Z
+> Last generated: 2026-07-09T13:28:06.884Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1670 features** across 36 modules
+## System total: **1675 features** across 36 modules
 
 | Module | Features |
 |:--|--:|
@@ -39,7 +39,7 @@
 | [notifications](#notifications) | 6 |
 | [pos](#pos) | 73 |
 | [procurement](#procurement) | 38 |
-| [projects](#projects) | 20 |
+| [projects](#projects) | 25 |
 | [pwa](#pwa) | 3 |
 | [real-estate](#real-estate) | 12 |
 | [reporting](#reporting) | 12 |
@@ -1782,7 +1782,7 @@
 
 ## projects
 
-20 features
+25 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1791,6 +1791,7 @@
 | GET | `/projects/revenue-recognition` | Get project revenue recognition schedule (time-based percentage-of-completion) | `projects.project.read` |
 | GET | `/projects/portfolios` | Get portfolios | `projects.project.read` |
 | POST | `/projects/portfolios` | Create portfolio | `projects.project.read` |
+| GET | `/projects/wip-summary` | Get WIP summary across all projects | `projects.project.read` |
 | GET | `/projects/:id` | Get project by id | `projects.project.read` |
 | POST | `/projects` | Create project | `projects.project.read` |
 | GET | `/projects/:id/tasks` | Get tasks | `projects.project.read` |
@@ -1806,6 +1807,10 @@
 | PUT | `/projects/change-requests/:changeRequestId/approve` | Approve change request | `projects.project.create` |
 | GET | `/projects/:id/evm` | Get project e v m | `projects.project.read` |
 | POST | `/projects/:id/invoice` | Generate project invoice | `finance.invoice.create` |
+| GET | `/projects/:id/wip` | Get project WIP details | `projects.project.read` |
+| POST | `/projects/:id/costs` | Create cost entry for project | `projects.project.read` |
+| GET | `/projects/:id/costs` | Get cost entries for project | `projects.project.read` |
+| DELETE | `/projects/costs/:costEntryId` | Delete cost entry | `projects.project.read` |
 
 ## pwa
 

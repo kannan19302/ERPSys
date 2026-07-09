@@ -30,7 +30,7 @@ export class ProjectsService {
   async createProject(
     tenantId: string,
     orgId: string,
-    dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string },
+    dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string; estimatedCost?: number; contractValue?: number },
     _createdBy: string
   ) {
     let resolvedOrgId = orgId;
@@ -53,6 +53,8 @@ export class ProjectsService {
         code: dto.code,
         description: dto.description || null,
         budget: dto.budget ? new Prisma.Decimal(dto.budget) : null,
+        estimatedCost: dto.estimatedCost ? new Prisma.Decimal(dto.estimatedCost) : null,
+        contractValue: dto.contractValue ? new Prisma.Decimal(dto.contractValue) : null,
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
         status: 'PLANNED',
@@ -575,6 +577,7 @@ export class ProjectsService {
         orgId,
         customerId,
         invoiceNumber,
+        projectId: project.id,
         status: 'DRAFT',
         dueDate: new Date(new Date().setDate(new Date().getDate() + 30)),
         subtotal: new Prisma.Decimal(subtotal),
@@ -604,4 +607,176 @@ export class ProjectsService {
 
     return invoice;
   }
+
+  // --- Project Costing & WIP Valuation (POC) ---
+
+  async createCostEntry(
+    tenantId: string,
+    projectId: string,
+    dto: { type: string; amount: number; date: string; description?: string }
+  ) {
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId, deletedAt: null },
+    });
+    if (!project) throw new NotFoundException('Project not found');
+
+    if (!['LABOR', 'MATERIAL', 'OVERHEAD'].includes(dto.type)) {
+      throw new BadRequestException('Invalid cost entry type. Must be LABOR, MATERIAL, or OVERHEAD.');
+    }
+
+    return prisma.projectCostEntry.create({
+      data: {
+        tenantId,
+        projectId,
+        type: dto.type,
+        amount: new Prisma.Decimal(dto.amount),
+        date: new Date(dto.date),
+        description: dto.description || null,
+      },
+    });
+  }
+
+  async getCostEntries(tenantId: string, projectId: string) {
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId, deletedAt: null },
+    });
+    if (!project) throw new NotFoundException('Project not found');
+
+    return prisma.projectCostEntry.findMany({
+      where: { tenantId, projectId },
+      orderBy: { date: 'desc' },
+    });
+  }
+
+  async deleteCostEntry(tenantId: string, id: string) {
+    const entry = await prisma.projectCostEntry.findFirst({
+      where: { id, tenantId },
+    });
+    if (!entry) throw new NotFoundException('Cost entry not found');
+
+    return prisma.projectCostEntry.delete({
+      where: { id },
+    });
+  }
+
+  async getProjectWip(tenantId: string, projectId: string) {
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId, deletedAt: null },
+      include: {
+        costEntries: true,
+        invoices: {
+          where: { deletedAt: null },
+        },
+      },
+    });
+    if (!project) throw new NotFoundException('Project not found');
+
+    const laborCost = project.costEntries
+      .filter((e) => e.type === 'LABOR')
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+
+    const materialCost = project.costEntries
+      .filter((e) => e.type === 'MATERIAL')
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+
+    const overheadCost = project.costEntries
+      .filter((e) => e.type === 'OVERHEAD')
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+
+    const totalCost = laborCost + materialCost + overheadCost;
+    const estimatedCost = Number(project.estimatedCost || 0);
+    const contractValue = Number(project.contractValue || project.budget || 0);
+
+    let percentComplete = 0;
+    if (project.status === 'COMPLETED') {
+      percentComplete = 100;
+    } else if (estimatedCost > 0) {
+      percentComplete = Math.min(100, Math.max(0, (totalCost / estimatedCost) * 100));
+    }
+
+    const recognizedRevenue = Math.round((percentComplete / 100) * contractValue * 100) / 100;
+
+    const billedAmount = project.invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+    const overUnderBilling = Math.round((recognizedRevenue - billedAmount) * 100) / 100;
+
+    return {
+      projectId: project.id,
+      name: project.name,
+      code: project.code,
+      status: project.status,
+      laborCost,
+      materialCost,
+      overheadCost,
+      totalCost,
+      estimatedCost,
+      contractValue,
+      percentComplete: Math.round(percentComplete * 10) / 10,
+      recognizedRevenue,
+      billedAmount,
+      overUnderBilling,
+      billingStatus: overUnderBilling > 0 ? 'UNDERBILLED' : overUnderBilling < 0 ? 'OVERBILLED' : 'IN_BALANCE',
+    };
+  }
+
+  async getWipSummary(tenantId: string) {
+    const projects = await prisma.project.findMany({
+      where: { tenantId, deletedAt: null },
+      include: {
+        costEntries: true,
+        invoices: {
+          where: { deletedAt: null },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return projects.map((project) => {
+      const laborCost = project.costEntries
+        .filter((e) => e.type === 'LABOR')
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      const materialCost = project.costEntries
+        .filter((e) => e.type === 'MATERIAL')
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      const overheadCost = project.costEntries
+        .filter((e) => e.type === 'OVERHEAD')
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      const totalCost = laborCost + materialCost + overheadCost;
+      const estimatedCost = Number(project.estimatedCost || 0);
+      const contractValue = Number(project.contractValue || project.budget || 0);
+
+      let percentComplete = 0;
+      if (project.status === 'COMPLETED') {
+        percentComplete = 100;
+      } else if (estimatedCost > 0) {
+        percentComplete = Math.min(100, Math.max(0, (totalCost / estimatedCost) * 100));
+      }
+
+      const recognizedRevenue = Math.round((percentComplete / 100) * contractValue * 100) / 100;
+
+      const billedAmount = project.invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+      const overUnderBilling = Math.round((recognizedRevenue - billedAmount) * 100) / 100;
+
+      return {
+        projectId: project.id,
+        name: project.name,
+        code: project.code,
+        status: project.status,
+        laborCost,
+        materialCost,
+        overheadCost,
+        totalCost,
+        estimatedCost,
+        contractValue,
+        percentComplete: Math.round(percentComplete * 10) / 10,
+        recognizedRevenue,
+        billedAmount,
+        overUnderBilling,
+        billingStatus: overUnderBilling > 0 ? 'UNDERBILLED' : overUnderBilling < 0 ? 'OVERBILLED' : 'IN_BALANCE',
+      };
+    });
+  }
 }
+
