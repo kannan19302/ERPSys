@@ -61,7 +61,8 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-_(no active claims)_
+| antigravity-ide | 2026-07-09T21:02:11+05:30 | Finance: Active Budget Control, Spread Methods, and Reallocations | main | 🟡 CLAIMED |
+
 
 
 ### 2. Up Next (unclaimed work, pick from the top)
