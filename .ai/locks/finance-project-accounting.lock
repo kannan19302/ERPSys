@@ -1,8 +1,8 @@
 {
   "slug": "finance-project-accounting",
-  "agent": "antigravity-win1",
+  "agent": "antigravity-ide",
   "scope": "Finance: Project-based accounting (WIP, job costing, percentage-of-completion)",
-  "acquiredAt": "2026-07-09T13:11:42.972Z",
-  "heartbeatAt": "2026-07-09T13:11:42.973Z",
-  "pid": 11692
+  "acquiredAt": "2026-07-09T13:13:25.414Z",
+  "heartbeatAt": "2026-07-09T13:13:25.415Z",
+  "pid": 17600
 }
