@@ -25,7 +25,7 @@ export default function PatientDetailPage() {
     if (!id) return;
     (async () => {
       try {
-        const res = await fetch('/api/v1/healthcare/patients', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/healthcare/patients', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const data = await res.json(); const list = Array.isArray(data) ? data : data?.data || []; setPatient(list.find((p: Patient) => p.id === id) || null); }
       } catch { /* empty */ } finally { setLoading(false); }
     })();

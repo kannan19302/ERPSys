@@ -17,7 +17,7 @@ export default function PrescriptionsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/v1/healthcare/prescriptions', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/healthcare/prescriptions', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const d = await res.json(); setPrescriptions(Array.isArray(d) ? d : d?.data || []); }
       } catch { /* empty */ } finally { setLoading(false); }
     })();
@@ -27,7 +27,7 @@ export default function PrescriptionsPage() {
     if (!form.patientId || !form.details) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/healthcare/prescriptions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) });
+      await fetch('/api/v1/ext/healthcare/prescriptions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) });
       setCreateOpen(false); window.location.reload();
     } catch { /* handled */ } finally { setCreating(false); }
   };

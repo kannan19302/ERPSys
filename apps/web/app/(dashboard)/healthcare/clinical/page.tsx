@@ -18,7 +18,7 @@ export default function ClinicalNotesPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/v1/healthcare/encounters', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/healthcare/encounters', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const d = await res.json(); setEncounters(Array.isArray(d) ? d : d?.data || []); }
       } catch { /* empty */ } finally { setLoading(false); }
     })();
@@ -28,7 +28,7 @@ export default function ClinicalNotesPage() {
     if (!form.patientId || !form.diagnosis) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/healthcare/encounters', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({ ...form, billingAmount: Number(form.billingAmount) }) });
+      await fetch('/api/v1/ext/healthcare/encounters', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify({ ...form, billingAmount: Number(form.billingAmount) }) });
       setCreateOpen(false); window.location.reload();
     } catch { /* handled */ } finally { setCreating(false); }
   };

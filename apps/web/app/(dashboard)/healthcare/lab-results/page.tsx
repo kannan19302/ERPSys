@@ -15,7 +15,7 @@ export default function LabResultsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/v1/healthcare/drugs', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/healthcare/drugs', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const d = await res.json(); setDrugs(Array.isArray(d) ? d : d?.data || []); }
       } catch { /* empty */ } finally { setLoading(false); }
     })();

@@ -17,7 +17,7 @@ export default function PractitionersPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/v1/healthcare/practitioners', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/healthcare/practitioners', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const d = await res.json(); setPractitioners(Array.isArray(d) ? d : d?.data || []); }
       } catch { /* empty */ } finally { setLoading(false); }
     })();
@@ -27,7 +27,7 @@ export default function PractitionersPage() {
     if (!form.employeeId || !form.specialty) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/healthcare/practitioners', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) });
+      await fetch('/api/v1/ext/healthcare/practitioners', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) });
       setCreateOpen(false); window.location.reload();
     } catch { /* handled */ } finally { setCreating(false); }
   };

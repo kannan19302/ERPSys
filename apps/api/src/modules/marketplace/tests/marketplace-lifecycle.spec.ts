@@ -5,7 +5,6 @@ import { BundleStoreService } from '../bundle-store.service';
 import { AppProvisioningService } from '../app-provisioning.service';
 import { VendorService } from '../vendor.service';
 import { MarketplaceService } from '../../admin/marketplace.service';
-import { HEALTHCARE_BUNDLES } from '../healthcare-bundles';
 import { validateManifest } from '../manifest';
 import { ServiceRegistryService } from '../../ext-gateway/service-registry.service';
 import { ExtProxyService } from '../../ext-gateway/ext-proxy.service';
@@ -27,8 +26,20 @@ describe('marketplace bundle lifecycle', () => {
     new ExtProxyService(),
   );
 
-  // The Healthcare industry app (single bundle with toggleable modules).
-  const manifest = validateManifest(HEALTHCARE_BUNDLES.find((m) => m.slug === 'healthcare')!);
+  // A representative declarative industry bundle (toggleable modules), inline
+  // now that industry bundles live in their own unierp-app-* repos.
+  const manifest = validateManifest({
+    name: 'Lifecycle Test App', slug: 'lifecycle-test-app', version: '1.0.0',
+    category: 'Industry', vendor: 'healthtech', runtime: 'declarative',
+    modules: [{
+      slug: 'main', name: 'Main',
+      schemas: [{ slug: 'thing', name: 'Thing', fields: [{ name: 'title', type: 'text', required: true }], sampleData: [{ title: 'First' }] }],
+      pages: [
+        { slug: 'things', title: 'Things', type: 'list', schema: 'thing' },
+        { slug: 'thing-form', title: 'New Thing', type: 'form', schema: 'thing' },
+      ],
+    }],
+  });
   let tenantId: string;
 
   beforeAll(async () => {

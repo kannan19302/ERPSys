@@ -10,7 +10,7 @@ import {
   BarChart3, Network, Loader2, AlertTriangle, CheckCircle2, XCircle, Search,
 } from 'lucide-react';
 
-const API = '/api/v1/healthcare';
+const API = '/api/v1/ext/healthcare';
 
 function authHeaders(): HeadersInit {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;

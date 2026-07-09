@@ -34,7 +34,7 @@ export default function PatientRegistryPage() {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch('/api/v1/healthcare/patients', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+      const res = await fetch('/api/v1/ext/healthcare/patients', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
       if (res.ok) { const d = await res.json(); setPatients(Array.isArray(d) ? d : d?.data || []); }
     } catch { /* empty */ }
     finally { setLoading(false); }
@@ -47,7 +47,7 @@ export default function PatientRegistryPage() {
     if (!form.firstName || !form.lastName) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/healthcare/patients', {
+      await fetch('/api/v1/ext/healthcare/patients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
         body: JSON.stringify(form),

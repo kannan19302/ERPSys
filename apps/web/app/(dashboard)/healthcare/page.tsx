@@ -24,10 +24,10 @@ export default function HealthcareDashboard() {
         const token = getToken();
         const headers = { Authorization: `Bearer ${token || ''}` };
         const [pRes, prRes, aRes, rxRes] = await Promise.all([
-          fetch('/api/v1/healthcare/patients', { headers }),
-          fetch('/api/v1/healthcare/practitioners', { headers }),
-          fetch('/api/v1/healthcare/appointments', { headers }),
-          fetch('/api/v1/healthcare/prescriptions', { headers }),
+          fetch('/api/v1/ext/healthcare/patients', { headers }),
+          fetch('/api/v1/ext/healthcare/practitioners', { headers }),
+          fetch('/api/v1/ext/healthcare/appointments', { headers }),
+          fetch('/api/v1/ext/healthcare/prescriptions', { headers }),
         ]);
         const patients = pRes.ok ? await pRes.json() : [];
         const practitioners = prRes.ok ? await prRes.json() : [];

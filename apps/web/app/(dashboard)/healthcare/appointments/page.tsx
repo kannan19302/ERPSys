@@ -18,7 +18,7 @@ export default function AppointmentsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/v1/healthcare/appointments', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
+        const res = await fetch('/api/v1/ext/healthcare/appointments', { headers: { Authorization: `Bearer ${getToken() || ''}` } });
         if (res.ok) { const d = await res.json(); setAppointments(Array.isArray(d) ? d : d?.data || []); }
       } catch { /* empty */ } finally { setLoading(false); }
     })();
@@ -28,7 +28,7 @@ export default function AppointmentsPage() {
     if (!form.patientId || !form.practitionerId) return;
     setCreating(true);
     try {
-      await fetch('/api/v1/healthcare/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) });
+      await fetch('/api/v1/ext/healthcare/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` }, body: JSON.stringify(form) });
       setCreateOpen(false); window.location.reload();
     } catch { /* handled */ } finally { setCreating(false); }
   };

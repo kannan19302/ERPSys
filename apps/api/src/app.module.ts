@@ -27,7 +27,6 @@ import { WorkflowModule } from './modules/workflow/workflow.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
-import { HealthcareModule } from './modules/healthcare/healthcare.module';
 import { ApiPlatformModule } from './modules/api-platform/api-platform.module';
 import { ExtGatewayModule } from './modules/ext-gateway/ext-gateway.module';
 import { LocalizationModule } from './modules/localization/localization.module';
@@ -114,7 +113,7 @@ import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
     ReportingModule,
 
     // Phase 12 — Healthcare
-    HealthcareModule,
+    // Healthcare: externalized to unierp-app-healthcare (marketplace + ExtGateway)
 
     // Phase 13 — Education
     // Education: externalized to unierp-app-education (marketplace + ExtGateway)

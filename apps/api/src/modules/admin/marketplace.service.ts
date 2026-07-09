@@ -4,7 +4,6 @@ import { BundleStoreService } from '../marketplace/bundle-store.service';
 import { AppProvisioningService } from '../marketplace/app-provisioning.service';
 import { VendorService } from '../marketplace/vendor.service';
 import { validateManifest } from '../marketplace/manifest';
-import { HEALTHCARE_BUNDLES } from '../marketplace/healthcare-bundles';
 import { isUninstallable } from '../../common/module-tiers';
 import { ServiceRegistryService } from '../ext-gateway/service-registry.service';
 import { ExtProxyService } from '../ext-gateway/ext-proxy.service';
@@ -14,7 +13,8 @@ export class MarketplaceService {
   constructor(
     private readonly bundleStore: BundleStoreService,
     private readonly provisioning: AppProvisioningService,
-    private readonly vendors: VendorService,
+    // kept in the DI signature for spec compatibility; used again when core seeds vendor apps
+    readonly vendors: VendorService,
     private readonly serviceRegistry: ServiceRegistryService,
     private readonly extProxy: ExtProxyService,
   ) {}
@@ -928,16 +928,9 @@ export class MarketplaceService {
       });
     }
 
-    // ── Publish the Healthcare vertical as real third-party bundles ──
-    const healthtech = await this.vendors.ensureVendor('healthtech', {
-      name: 'HealthTech', description: 'Healthcare applications for clinics and hospitals.', websiteUrl: 'https://healthtech.example', verified: true,
-    });
-    for (const manifest of HEALTHCARE_BUNDLES) {
-      await this.vendors.seedPublishedApp(
-        { id: healthtech.id, slug: healthtech.slug, name: healthtech.name, websiteUrl: healthtech.websiteUrl, verified: healthtech.verified },
-        manifest,
-      );
-    }
+    // Industry apps (healthcare, education, real-estate, field-service) are no
+    // longer seeded here — each lives in its own unierp-app-* repo and is
+    // published to the marketplace via the vendor API (scripts/publish-bundle.mjs).
 
     // Auto-install seeded system apps for all existing tenants
     const tenants = await prisma.tenant.findMany();
@@ -977,6 +970,6 @@ export class MarketplaceService {
       }
     }
 
-    return { message: `Seeded ${apps.length} core modules and ${HEALTHCARE_BUNDLES.length} healthcare apps (published as bundles)` };
+    return { message: `Seeded ${apps.length} core modules` };
   }
 }

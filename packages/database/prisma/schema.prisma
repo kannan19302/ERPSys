@@ -237,7 +237,6 @@ model Employee {
   deletedAt      DateTime? @map("deleted_at")
 
   department          Department?          @relation(fields: [departmentId], references: [id])
-  practitioners       Practitioner[]
   trainingEnrollments TrainingEnrollment[]
   fixedAssets         FixedAsset[]
 
@@ -3915,118 +3914,11 @@ model ReportView {
 // HEALTHCARE MODULE (Phase 12)
 // ════════════════════════════════════════════════
 
-model Patient {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  firstName      String   @map("first_name")
-  lastName       String   @map("last_name")
-  dateOfBirth    DateTime @map("date_of_birth")
-  gender         String
-  email          String?
-  phone          String?
-  medicalHistory Json?    @map("medical_history")
-  vitalsHistory  Json?    @map("vitals_history")
-  allergies      Json?
-  status         String   @default("ACTIVE")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  appointments      Appointment[]
-  prescriptions     Prescription[]
-  medicalEncounters MedicalEncounter[]
 
-  @@index([tenantId])
-  @@map("patients")
-}
 
-model Practitioner {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  employeeId    String   @map("employee_id")
-  specialty     String
-  licenseNumber String   @map("license_number")
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  employee          Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  appointments      Appointment[]
-  prescriptions     Prescription[]
-  medicalEncounters MedicalEncounter[]
 
-  @@index([tenantId])
-  @@map("practitioners")
-}
-
-model Appointment {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  patientId      String   @map("patient_id")
-  practitionerId String   @map("practitioner_id")
-  startTime      DateTime @map("start_time")
-  endTime        DateTime @map("end_time")
-  status         String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
-  notes          String?
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  practitioner Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@map("appointments")
-}
-
-model Prescription {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  patientId      String   @map("patient_id")
-  practitionerId String   @map("practitioner_id")
-  details        Json
-  status         String   @default("ACTIVE") // ACTIVE, DISPENSED
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  practitioner Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@map("prescriptions")
-}
-
-model DrugRegister {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  name         String
-  batchNumber  String   @map("batch_number")
-  expiryDate   DateTime @map("expiry_date")
-  isControlled Boolean  @default(false) @map("is_controlled")
-  quantity     Int
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  @@index([tenantId])
-  @@map("drug_register")
-}
-
-model MedicalEncounter {
-  id             String   @id @default(cuid())
-  tenantId       String   @map("tenant_id")
-  patientId      String   @map("patient_id")
-  practitionerId String   @map("practitioner_id")
-  diagnosis      String
-  treatmentCode  String   @map("treatment_code")
-  claimStatus    String   @default("DRAFT") // DRAFT, SUBMITTED, PAID, REJECTED
-  billingAmount  Decimal  @map("billing_amount") @db.Decimal(15, 2)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  practitioner Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@map("medical_encounters")
-}
 
 // ════════════════════════════════════════════════
 // EDUCATION MODULE (Phase 13)
