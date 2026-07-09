@@ -32,6 +32,7 @@ jobs:
       - run: pnpm --filter @unerp/shared build
       - run: pnpm --filter @unerp/auth build
       - run: pnpm --filter @unerp/ui build
+      - run: pnpm --filter @unerp/service-kit build
       - run: pnpm --filter @unerp/api build
       # Real type-check gate: next build ignores type errors, so tsc --noEmit
       # is the only thing that actually fails CI on a web type regression.
@@ -56,6 +57,7 @@ jobs:
       - run: pnpm --filter @unerp/database build
       - run: pnpm --filter @unerp/shared build
       - run: pnpm --filter @unerp/auth build
+      - run: pnpm --filter @unerp/service-kit build
       - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test:coverage
 
   build-web:
@@ -216,7 +218,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @unerp/database exec prisma generate
       - run: pnpm --filter @unerp/database exec prisma migrate deploy
-      - run: pnpm --filter @unerp/database build && pnpm --filter @unerp/shared build && pnpm --filter @unerp/auth build && pnpm --filter @unerp/api build
+      - run: pnpm --filter @unerp/database build && pnpm --filter @unerp/shared build && pnpm --filter @unerp/auth build && pnpm --filter @unerp/service-kit build && pnpm --filter @unerp/api build
       - name: Start API server
         run: node apps/api/dist/main.js &
         env:

@@ -15,6 +15,7 @@ RUN pnpm --filter @unerp/database exec prisma generate \
  && pnpm --filter @unerp/database build \
  && pnpm --filter @unerp/shared build \
  && pnpm --filter @unerp/auth build \
+ && pnpm --filter @unerp/service-kit build \
  && pnpm --filter @unerp/api build
 
 FROM node:22-alpine AS runner
