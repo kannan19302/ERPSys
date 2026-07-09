@@ -352,12 +352,15 @@ The commit-time failure mode is parallel sessions sharing ONE checkout: the tree
 holds several sessions' uncommitted edits, staging a shared file sweeps in someone
 else's half-done hunks, and `pull --rebase` refuses to run over foreign changes.
 
-- **Mandated setup**: every parallel session gets its **own git worktree** —
-  `git worktree add ../ERPSys-<slug> main` (Claude Code: use its worktree isolation;
-  IDE sessions: open the worktree folder, not the main checkout). Own tree = your
-  `git add`/`commit`/`rebase`/`push` can never entangle another session's files, and
-  the whole problem disappears. Remove the worktree at cycle end after the merge to
-  `main`.
+- **Mandated setup**: every parallel session gets its **own git worktree** via the
+  helper — `node scripts/worktree.mjs new <slug>` creates `../ERPSys-<slug>` on branch
+  `autopilot/<slug>` from fresh `origin/main` (open THAT folder in your session/IDE;
+  `pnpm install` there once — the shared pnpm store hardlinks it in seconds). Own tree
+  + own index = your `add`/`commit`/`rebase`/`push` can never entangle another
+  session's files. At cycle end, after the Step 7 docs gate:
+  `node scripts/worktree.mjs done <slug>` — refuses on uncommitted changes, rebases
+  onto `origin/main`, pushes to `main`, removes the worktree and branch (satisfying
+  the everything-ends-on-main rule). `worktree.mjs list` shows all active trees.
 - **Fallback (sessions genuinely sharing one checkout)**:
   a. **Commit with an explicit pathspec, not the index**: in a shared checkout another
      session may have already STAGED its files — `git add <yours>` + `git commit`

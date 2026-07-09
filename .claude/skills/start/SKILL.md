@@ -67,8 +67,10 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    Self-check: `git status --short .ai/` must show the expected set. Quote today's
    SPRINT_TRACKER row and 500-target progress in the final report.
 9. **Ship** (only after the step-8 documentation gate passes): in parallel mode run in
-   your **own git worktree** (`git worktree add ../ERPSys-<slug> main`; remove after
-   merging) so commits never entangle other sessions' files. Sharing one checkout:
+   your **own git worktree** — `node scripts/worktree.mjs new <slug>` at cycle start
+   (open that folder; `pnpm install` once), `node scripts/worktree.mjs done <slug>` at
+   cycle end (refuses dirty trees; rebases, pushes to main, removes worktree+branch) —
+   so commits never entangle other sessions' files. Sharing one checkout:
    commit with an explicit pathspec — `git commit -m "..." -- <your files>` — never a
    bare `git commit` (a shared index may hold another session's staged files), edit shared hotspots (CHANGELOG/REGISTRY/schema/permissions/moduleNav)
    only at ship time just before staging, never commit a file containing another

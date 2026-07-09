@@ -2,6 +2,12 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Worktree-Per-Session Helper — scripts/worktree.mjs
+
+**Accomplished**: implemented the mandated isolation tooling from § Parallel Agents rule 7. `node scripts/worktree.mjs new <slug>` creates a sibling worktree `../ERPSys-<slug>` on branch `autopilot/<slug>` from fresh `origin/main` (sessions/IDEs open that folder; `pnpm install` hardlinks from the shared store in seconds); `done <slug>` refuses dirty trees, rebases onto `origin/main`, pushes to `main`, and removes the worktree + branch (enforcing everything-ends-on-main); `list` shows active trees. Round-trip verified live (new → done → clean). AUTOPILOT rule 7 and the start skill now reference the helper as the standard cycle wrapper for parallel sessions.
+
+**Why**: owner approved the worktree-per-session recommendation — one isolated tree+index per session makes commit/push entanglement between parallel agents structurally impossible.
+
 ## [2026-07-09] Finance: Dynamic Allocation Engine (12+ features, DB+API+UI)
 
 **Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: Dynamic Allocation Engine (RICE 144). Parity target: SAP ERP Allocation Engine, NetSuite Financial Allocations.
