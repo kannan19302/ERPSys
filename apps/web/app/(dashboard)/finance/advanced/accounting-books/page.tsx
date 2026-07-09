@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { BookOpen, Plus, BarChart2, ArrowLeftRight, CheckCircle } from 'lucide-react';
+import { BookOpen, Plus, BarChart2, ArrowLeftRight, CheckCircle, Trash2, Settings, HelpCircle, AlertCircle } from 'lucide-react';
 import { Card, Button, Badge } from '@unerp/ui';
 
 const API = 'http://localhost:3001/api/v1/advanced-finance';
@@ -80,6 +80,38 @@ export default function AccountingBooksPage() {
   const [newPrimary, setNewPrimary] = useState(false);
   const [creating, setCreating] = useState(false);
 
+  // Mapping rules states
+  const [rules, setRules] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [showCreateRule, setShowCreateRule] = useState(false);
+  const [creatingRule, setCreatingRule] = useState(false);
+  const [newRule, setNewRule] = useState({
+    sourceBookId: '',
+    destinationBookId: '',
+    sourceAccountId: '',
+    destinationAccountId: '',
+    ruleType: 'MAP_ACCOUNT',
+    multiplier: 1.0,
+  });
+
+  const loadRules = useCallback(async () => {
+    try {
+      const d = await apiFetch('/accounting-books/rules');
+      setRules(Array.isArray(d) ? d : []);
+    } catch (e) {
+      console.error('Failed to load mapping rules', e);
+    }
+  }, []);
+
+  const loadAccounts = useCallback(async () => {
+    try {
+      const d = await apiFetch('/accounts');
+      setAccounts(Array.isArray(d) ? d : []);
+    } catch (e) {
+      console.error('Failed to load accounts', e);
+    }
+  }, []);
+
   const loadBooks = useCallback(async () => {
     try {
       const d = await apiFetch('/accounting-books');
@@ -89,7 +121,11 @@ export default function AccountingBooksPage() {
     }
   }, []);
 
-  useEffect(() => { loadBooks(); }, [loadBooks]);
+  useEffect(() => {
+    loadBooks();
+    loadRules();
+    loadAccounts();
+  }, [loadBooks, loadRules, loadAccounts]);
 
   const createBook = async () => {
     if (!newName.trim()) return;
@@ -141,6 +177,58 @@ export default function AccountingBooksPage() {
     }
   };
 
+  const handleCreateRule = async () => {
+    if (!newRule.sourceBookId || !newRule.destinationBookId) {
+      alert('Please select both source and destination books.');
+      return;
+    }
+    if (newRule.sourceBookId === newRule.destinationBookId) {
+      alert('Source and destination books cannot be the same.');
+      return;
+    }
+    setCreatingRule(true);
+    setError(null);
+    try {
+      await apiFetch('/accounting-books/rules', {
+        method: 'POST',
+        body: JSON.stringify({
+          sourceBookId: newRule.sourceBookId,
+          destinationBookId: newRule.destinationBookId,
+          sourceAccountId: newRule.sourceAccountId || null,
+          destinationAccountId: newRule.destinationAccountId || null,
+          ruleType: newRule.ruleType,
+          multiplier: Number(newRule.multiplier) || 1.0,
+        }),
+      });
+      setShowCreateRule(false);
+      setNewRule({
+        sourceBookId: '',
+        destinationBookId: '',
+        sourceAccountId: '',
+        destinationAccountId: '',
+        ruleType: 'MAP_ACCOUNT',
+        multiplier: 1.0,
+      });
+      loadRules();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to create rule');
+    } finally {
+      setCreatingRule(false);
+    }
+  };
+
+  const handleDeleteRule = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this mapping rule?')) return;
+    try {
+      await apiFetch(`/accounting-books/rules/${id}`, {
+        method: 'DELETE',
+      });
+      loadRules();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to delete rule');
+    }
+  };
+
   return (
     <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* Header */}
@@ -155,6 +243,9 @@ export default function AccountingBooksPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <Button onClick={() => setShowCreateRule(s => !s)} variant="secondary">
+            <Settings size={14} style={{ marginRight: 'var(--space-1)' }} /> Mapping Rules
+          </Button>
           <Button onClick={() => setShowCreate(s => !s)}>
             <Plus size={14} style={{ marginRight: 'var(--space-1)' }} /> New Book
           </Button>
@@ -202,6 +293,111 @@ export default function AccountingBooksPage() {
                 {creating ? 'Creating…' : 'Create Book'}
               </Button>
               <button onClick={() => setShowCreate(false)} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Create Rule Form */}
+      {showCreateRule && (
+        <Card>
+          <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Settings size={18} style={{ color: 'var(--color-primary)' }} /> Configure Multi-Book Parallel Mapping Rule
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', display: 'block', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Source Book (From)</label>
+                <select
+                  value={newRule.sourceBookId}
+                  onChange={e => setNewRule({ ...newRule, sourceBookId: e.target.value })}
+                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="">Select source book…</option>
+                  {books.map(b => (
+                    <option key={b.id} value={b.id}>{b.name} ({b.standard})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', display: 'block', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Destination Book (To)</label>
+                <select
+                  value={newRule.destinationBookId}
+                  onChange={e => setNewRule({ ...newRule, destinationBookId: e.target.value })}
+                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="">Select destination book…</option>
+                  {books.map(b => (
+                    <option key={b.id} value={b.id}>{b.name} ({b.standard})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', display: 'block', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Rule Type</label>
+                <select
+                  value={newRule.ruleType}
+                  onChange={e => setNewRule({ ...newRule, ruleType: e.target.value })}
+                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="MAP_ACCOUNT">Map to specific Account</option>
+                  <option value="POST_DIRECTLY">Post directly to same Account Code</option>
+                  <option value="EXCLUDE_ACCOUNT">Exclude Account (Do not post)</option>
+                </select>
+              </div>
+
+              {newRule.ruleType === 'MAP_ACCOUNT' && (
+                <>
+                  <div>
+                    <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', display: 'block', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Source Account</label>
+                    <select
+                      value={newRule.sourceAccountId}
+                      onChange={e => setNewRule({ ...newRule, sourceAccountId: e.target.value })}
+                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                    >
+                      <option value="">Select source account (optional)…</option>
+                      {accounts.map(a => (
+                        <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', display: 'block', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Destination Account</label>
+                    <select
+                      value={newRule.destinationAccountId}
+                      onChange={e => setNewRule({ ...newRule, destinationAccountId: e.target.value })}
+                      style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                    >
+                      <option value="">Select destination account…</option>
+                      {accounts.map(a => (
+                        <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              <div>
+                <label style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', display: 'block', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Multiplier (Amount Scale)</label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={newRule.multiplier}
+                  onChange={e => setNewRule({ ...newRule, multiplier: parseFloat(e.target.value) || 1.0 })}
+                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+              <Button onClick={handleCreateRule} disabled={creatingRule}>
+                {creatingRule ? 'Saving Rule…' : 'Save Rule'}
+              </Button>
+              <button onClick={() => setShowCreateRule(false)} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
                 Cancel
               </button>
             </div>
@@ -373,6 +569,68 @@ export default function AccountingBooksPage() {
                   ))}
                 </tbody>
               </table>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Mapping Rules List */}
+      {view === 'list' && (
+        <Card>
+          <div style={{ padding: 'var(--space-5)' }}>
+            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Settings size={16} style={{ color: 'var(--color-primary)' }} /> Parallel Ledger Posting & Mapping Rules
+            </h3>
+            {rules.length === 0 ? (
+              <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
+                <HelpCircle size={32} style={{ margin: '0 auto var(--space-2)', opacity: 0.3 }} />
+                <p style={{ fontSize: 'var(--text-xs)' }}>No mapping rules configured yet. Create one to automatically map journal entries across books.</p>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
+                      {['Source Book', 'Destination Book', 'Rule Type', 'Source Account', 'Destination Account', 'Multiplier', 'Actions'].map(h => (
+                        <th key={h} style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-xs)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rules.map(r => (
+                      <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                          <span style={{ fontWeight: 'var(--weight-semibold)' }}>{r.sourceBook.name}</span> <span style={{ fontSize: 'var(--text-xxs)', color: 'var(--color-text-tertiary)' }}>({r.sourceBook.standard})</span>
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                          <span style={{ fontWeight: 'var(--weight-semibold)' }}>{r.destinationBook.name}</span> <span style={{ fontSize: 'var(--text-xxs)', color: 'var(--color-text-tertiary)' }}>({r.destinationBook.standard})</span>
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                          <Badge variant="info" size="sm">{r.ruleType}</Badge>
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontFamily: 'monospace', fontSize: 'var(--text-xs)' }}>
+                          {r.sourceAccount ? `${r.sourceAccount.code} - ${r.sourceAccount.name}` : 'All Accounts (Fallback)'}
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontFamily: 'monospace', fontSize: 'var(--text-xs)' }}>
+                          {r.destinationAccount ? `${r.destinationAccount.code} - ${r.destinationAccount.name}` : (r.ruleType === 'EXCLUDE_ACCOUNT' ? '—' : 'Same Account Code')}
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontFamily: 'monospace' }}>
+                          {Number(r.multiplier)}x
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                          <button
+                            onClick={() => handleDeleteRule(r.id)}
+                            style={{ color: 'var(--color-danger-text)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+                            title="Delete Mapping Rule"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </Card>

@@ -6,10 +6,31 @@ import { GlAccountingService } from './gl-accounting.service';
 export class FinancialReportingService {
   constructor(private readonly glService: GlAccountingService) {}
 
-  async getProfitAndLoss(tenantId: string, orgId: string, startDate: string, endDate: string) {
+  async getProfitAndLoss(tenantId: string, orgId: string, startDate: string, endDate: string, bookId?: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const start = new Date(startDate);
     const end = new Date(endDate);
+
+    const journalFilter: any = {
+      orgId: resolvedOrgId,
+      date: { gte: start, lte: end },
+      status: 'POSTED',
+    };
+    if (bookId) {
+      journalFilter.bookId = bookId;
+    } else {
+      const primaryBook = await prisma.accountingBook.findFirst({
+        where: { tenantId, orgId: resolvedOrgId, isPrimary: true },
+      });
+      if (primaryBook) {
+        journalFilter.OR = [
+          { bookId: primaryBook.id },
+          { bookId: null }
+        ];
+      } else {
+        journalFilter.bookId = null;
+      }
+    }
 
     const revenueAccounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, type: 'REVENUE', isActive: true },
@@ -21,11 +42,7 @@ export class FinancialReportingService {
     const revenueEntries = await prisma.journalEntry.findMany({
       where: {
         tenantId,
-        journal: {
-          orgId: resolvedOrgId,
-          date: { gte: start, lte: end },
-          status: 'POSTED',
-        },
+        journal: journalFilter,
         accountId: { in: revenueAccounts.map((a) => a.id) },
       },
     });
@@ -33,11 +50,7 @@ export class FinancialReportingService {
     const expenseEntries = await prisma.journalEntry.findMany({
       where: {
         tenantId,
-        journal: {
-          orgId: resolvedOrgId,
-          date: { gte: start, lte: end },
-          status: 'POSTED',
-        },
+        journal: journalFilter,
         accountId: { in: expenseAccounts.map((a) => a.id) },
       },
     });
@@ -75,22 +88,73 @@ export class FinancialReportingService {
     };
   }
 
+  // Helper to compute account balances dynamically for a specific book
+  async getComputedBalances(tenantId: string, resolvedOrgId: string, asOfDate: string | Date, bookId?: string): Promise<Map<string, number>> {
+    const asOf = new Date(asOfDate);
+    const journalFilter: any = {
+      orgId: resolvedOrgId,
+      date: { lte: asOf },
+      status: 'POSTED',
+    };
+    if (bookId) {
+      journalFilter.bookId = bookId;
+    } else {
+      const primaryBook = await prisma.accountingBook.findFirst({
+        where: { tenantId, orgId: resolvedOrgId, isPrimary: true },
+      });
+      if (primaryBook) {
+        journalFilter.OR = [
+          { bookId: primaryBook.id },
+          { bookId: null }
+        ];
+      } else {
+        journalFilter.bookId = null;
+      }
+    }
+
+    const entries = await prisma.journalEntry.findMany({
+      where: {
+        tenantId,
+        journal: journalFilter,
+      },
+    });
+
+    const balances = new Map<string, number>();
+    for (const e of entries) {
+      const current = balances.get(e.accountId) || 0;
+      balances.set(e.accountId, current + Number(e.debit) - Number(e.credit));
+    }
+    return balances;
+  }
+
   // ── BALANCE SHEET ──────────────────────────────────
 
-  async getBalanceSheet(tenantId: string, orgId: string, asOfDate: string) {
+  async getBalanceSheet(tenantId: string, orgId: string, asOfDate: string, bookId?: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const accounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, isActive: true },
     });
 
-    const currentAssets = accounts.filter((a) => a.type === 'ASSET' && a.code.startsWith('1'));
-    const nonCurrentAssets = accounts.filter((a) => a.type === 'ASSET' && !a.code.startsWith('1'));
-    const currentLiabilities = accounts.filter((a) => a.type === 'LIABILITY' && a.code.startsWith('2'));
-    const nonCurrentLiabilities = accounts.filter((a) => a.type === 'LIABILITY' && !a.code.startsWith('2'));
-    const equityAccounts = accounts.filter((a) => a.type === 'EQUITY');
+    const computedBalances = await this.getComputedBalances(tenantId, resolvedOrgId, asOfDate, bookId);
 
-    const sum = (accs: typeof accounts) => accs.reduce((s, a) => s + Number(a.balance), 0);
-    const fmt = (accs: typeof accounts) => accs.map((a) => ({ code: a.code, name: a.name, balance: Number(a.balance) }));
+    const accountsMapped = accounts.map(a => {
+      const bal = computedBalances.get(a.id) || 0;
+      let balanceVal = bal;
+      if (['LIABILITY', 'EQUITY', 'REVENUE'].includes(a.type)) {
+        balanceVal = -bal;
+      }
+      const finalBalance = computedBalances.has(a.id) ? balanceVal : Number(a.balance);
+      return { ...a, balance: finalBalance };
+    });
+
+    const currentAssets = accountsMapped.filter((a) => a.type === 'ASSET' && a.code.startsWith('1'));
+    const nonCurrentAssets = accountsMapped.filter((a) => a.type === 'ASSET' && !a.code.startsWith('1'));
+    const currentLiabilities = accountsMapped.filter((a) => a.type === 'LIABILITY' && a.code.startsWith('2'));
+    const nonCurrentLiabilities = accountsMapped.filter((a) => a.type === 'LIABILITY' && !a.code.startsWith('2'));
+    const equityAccounts = accountsMapped.filter((a) => a.type === 'EQUITY');
+
+    const sum = (accs: typeof accountsMapped) => accs.reduce((s, a) => s + Number(a.balance), 0);
+    const fmt = (accs: typeof accountsMapped) => accs.map((a) => ({ code: a.code, name: a.name, balance: Number(a.balance) }));
 
     const totalAssets = sum(currentAssets) + sum(nonCurrentAssets);
     const totalLiabilities = sum(currentLiabilities) + sum(nonCurrentLiabilities);
@@ -115,23 +179,31 @@ export class FinancialReportingService {
 
   // ── CASH FLOW ──────────────────────────────────
 
-  async getCashFlowStatement(tenantId: string, orgId: string, startDate: string, endDate: string) {
+  async getCashFlowStatement(tenantId: string, orgId: string, startDate: string, endDate: string, bookId?: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const accounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, isActive: true },
     });
 
-    const operatingAccounts = accounts.filter(
+    const computedBalances = await this.getComputedBalances(tenantId, resolvedOrgId, endDate, bookId);
+
+    const accountsMapped = accounts.map(a => {
+      const bal = computedBalances.get(a.id) || 0;
+      const finalBalance = computedBalances.has(a.id) ? bal : Number(a.balance);
+      return { ...a, balance: finalBalance };
+    });
+
+    const operatingAccounts = accountsMapped.filter(
       (a) => a.type === 'REVENUE' || (a.type === 'EXPENSE' && !a.code.startsWith('8')),
     );
-    const investingAccounts = accounts.filter(
+    const investingAccounts = accountsMapped.filter(
       (a) => a.type === 'ASSET' && (a.code.startsWith('15') || a.code.startsWith('16')),
     );
-    const financingAccounts = accounts.filter(
+    const financingAccounts = accountsMapped.filter(
       (a) => a.type === 'LIABILITY' || a.type === 'EQUITY',
     );
 
-    const mapAccts = (accs: typeof accounts) =>
+    const mapAccts = (accs: typeof accountsMapped) =>
       accs.map((a) => ({ accountName: a.name, amount: Number(a.balance) }));
 
     return {

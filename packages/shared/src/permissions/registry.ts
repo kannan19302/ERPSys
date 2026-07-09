@@ -124,6 +124,7 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('finance', 'einvoice', 'read', 'endpoint', 'View e-invoices'),
   p('finance', 'einvoice', 'generate', 'endpoint', 'Generate e-invoices'),
   p('finance', 'audit', 'read', 'endpoint', 'View finance audit logs'),
+  p('finance', 'books', 'manage', 'endpoint', 'Manage accounting books and mapping rules'),
   p('finance', 'revenue', 'read', 'endpoint', 'View revenue schedules'),
   p('finance', 'revenue', 'create', 'endpoint', 'Create revenue schedules'),
   p('finance', 'revenue', 'recognize', 'endpoint', 'Recognize revenue'),

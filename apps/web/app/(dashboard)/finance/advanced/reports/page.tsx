@@ -46,24 +46,46 @@ export default function AdvancedReportsPage() {
   const [endDate, setEndDate] = useState('2026-12-31');
   const [asOfDate, setAsOfDate] = useState(new Date().toISOString().split('T')[0]);
   const [agingType, setAgingType] = useState<'AR' | 'AP'>('AR');
+  const [bookId, setBookId] = useState('');
+  const [books, setBooks] = useState<any[]>([]);
+
+  // Fetch accounting books for filtering
+  React.useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const token = localStorage.getItem('token') || localStorage.getItem('admin_token') || '';
+        const res = await fetch('http://localhost:3001/api/v1/advanced-finance/accounting-books', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setBooks(Array.isArray(data) ? data : []);
+        }
+      } catch (e) {
+        console.error('Failed to load accounting books', e);
+      }
+    };
+    fetchBooks();
+  }, []);
 
   const buildUrl = useCallback(() => {
-    const base = '/api/v1/advanced-finance/reports';
+    const base = 'http://localhost:3001/api/v1/advanced-finance/reports';
+    const bookQuery = bookId ? `&bookId=${bookId}` : '';
     switch (activeReport) {
       case 'pnl':
-        return `${base}/pnl?startDate=${startDate}&endDate=${endDate}`;
+        return `${base}/pnl?startDate=${startDate}&endDate=${endDate}${bookQuery}`;
       case 'balance-sheet':
-        return `${base}/balance-sheet?asOfDate=${asOfDate}`;
+        return `${base}/balance-sheet?asOfDate=${asOfDate}${bookQuery}`;
       case 'cash-flow':
-        return `${base}/cash-flow?startDate=${startDate}&endDate=${endDate}`;
+        return `${base}/cash-flow?startDate=${startDate}&endDate=${endDate}${bookQuery}`;
       case 'trial-balance':
-        return `${base}/trial-balance?asOfDate=${asOfDate}`;
+        return `${base}/trial-balance?asOfDate=${asOfDate}${bookQuery}`;
       case 'aging':
         return `${base}/aging?type=${agingType}&asOfDate=${asOfDate}`;
       default:
         return '';
     }
-  }, [activeReport, startDate, endDate, asOfDate, agingType]);
+  }, [activeReport, startDate, endDate, asOfDate, agingType, bookId]);
 
   const generateReport = async () => {
     setLoading(true);
@@ -626,6 +648,22 @@ export default function AdvancedReportsPage() {
                       />
                     </div>
                   </>
+                )}
+                {activeReport !== 'aging' && books.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
+                    <BookOpen style={{ color: 'var(--color-text-secondary)', height: '16px', width: '16px' }} />
+                    <span style={{ color: 'var(--color-text-secondary)' }}>Book:</span>
+                    <select
+                      style={{ fontSize: 'var(--text-sm)', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+                      value={bookId}
+                      onChange={(e) => setBookId(e.target.value)}
+                    >
+                      <option value="">Primary Book (Default)</option>
+                      {books.map(b => (
+                        <option key={b.id} value={b.id}>{b.name} ({b.standard})</option>
+                      ))}
+                    </select>
+                  </div>
                 )}
               </div>
 

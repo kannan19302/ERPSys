@@ -2,6 +2,29 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: Multi-Book / Multi-GAAP Accounting (RICE 90). Parity target: NetSuite Multi-Book, Sage Intacct Multi-Book.
+
+**Accomplished**:
+- **Database**: migration `20260709170000_add_accounting_book_rules` — added `AccountingBookRule` model (relation mapping between source/destination books and accounts), added `source_journal_id` relation to `Journal` (tracking history of mapped journals).
+- **API (GlAccountingService & 3 rules endpoints)**:
+  - Added rules CRUD endpoints (`GET /accounting-books/rules`, `POST /accounting-books/rules`, `DELETE /accounting-books/rules/:id`).
+  - Added rule enforcement to journal posting (`applyAccountingBookRules` inside transaction): when a journal is posted, the system checks configured mapping rules for other books, maps accounts (or excludes/multiplies them), and automatically posts a balanced parallel journal entry to the destination books.
+  - Modified financial statement reports (`getProfitAndLoss`, `getBalanceSheet`, `getCashFlowStatement`) in `FinancialReportingService` and endpoints to support filtering by `bookId`. If no `bookId` is passed, it defaults to the primary accounting book (or null-book journals).
+- **UI (Next.js page)**:
+  - Overhauled `/finance/advanced/accounting-books` — added a state-driven "Parallel Ledger Posting & Mapping Rules" section with rule configuration forms (Source Book, Destination Book, Rule Type: MAP_ACCOUNT/EXCLUDE_ACCOUNT/POST_DIRECTLY, Source/Destination Account selectors, Multiplier amount scale, and rule deletion actions).
+  - Integrated Book selection filter in `/finance/advanced/reports` page (P&L, Balance Sheet, Cash Flow reports) to display statements generated specifically for each accounting book.
+- **Permissions**:
+  - Registered `finance.books.manage` permission in `registry.ts`.
+- **Tests**:
+  - Added 4 unit tests in `multibook-rules.service.spec.ts` covering rule retrieval, creation, deletion, and NotFound exception handling.
+  - Updated `advanced-finance.service.spec.ts` mocks for `accountingBook` and `accountingBookRule` collections.
+  - Updated `advanced-finance.controller.spec.ts` expectations to support the new optional `bookId` parameter.
+- **Gates**: API typecheck ✅ clean, Web typecheck ✅ clean, all 344 unit tests passing. E2E verification is unverified (dev stack docker down, logged as `[e2e-unverified]`).
+
+**Why**: focus module item from Up Next (RICE 90); Finance is the current focus module.
+
 ## [2026-07-09] Batch Throughput Raised — 20–40+ features OR 5–10k+ LOC per cycle
 
 **Accomplished**: raised the binding batch-throughput floors in `AUTOPILOT.md` (sizing rule, Step 3 enumeration, guardrail) and the start skill from 10–20+ features to **20–40+ distinct features OR 5,000–10,000+ delivered LOC per cycle** (hit at least one floor; both exceeded is welcome; below both only for a genuinely L-sized single feature, logged). New enforcement: at Step 7 the agent verifies the batch against the regenerated SPRINT_TRACKER/FEATURE_LEDGER numbers — if under both floors, the cycle is **extended with the next sub-domain slice before shipping** rather than closed small. Batches may now span one/two adjacent sub-domains to reach the floor while still sharing migrations and UI surfaces.

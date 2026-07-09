@@ -314,6 +314,7 @@ export class GlAccountingService {
         where: { id: journalId },
         data: { status: 'POSTED' },
       });
+      await this.applyAccountingBookRules(tx, tenantId, journalId);
       await this.logAudit(tx, tenantId, 'Journal', journalId, 'POST', { status: 'POSTED' }, 'system');
       return updated;
     });
@@ -612,6 +613,161 @@ export class GlAccountingService {
       } catch (err) { results.push({ id: rj.id, status: `ERROR: ${err instanceof Error ? err.message : 'Unknown'}` }); }
     }
     return { processed: recurringJournals.length, results };
+  }
+
+  // ── MAPPED JOURNAL POSTING & MAPPING RULES ───────────────────────
+
+  async applyAccountingBookRules(tx: any, tenantId: string, journalId: string) {
+    const journal = await tx.journal.findFirst({
+      where: { id: journalId, tenantId },
+      include: { entries: true },
+    });
+    if (!journal) return;
+
+    // Determine the source book ID
+    let sourceBookId = journal.bookId;
+    if (!sourceBookId) {
+      const primaryBook = await tx.accountingBook.findFirst({
+        where: { tenantId, orgId: journal.orgId, isPrimary: true },
+      });
+      if (!primaryBook) return;
+      sourceBookId = primaryBook.id;
+    }
+
+    // Fetch active mapping rules for this source book
+    const rules = await tx.accountingBookRule.findMany({
+      where: { tenantId, sourceBookId, isActive: true },
+    });
+    if (rules.length === 0) return;
+
+    // Group rules by destinationBookId
+    const rulesByDest: Record<string, typeof rules> = {};
+    for (const rule of rules) {
+      if (!rulesByDest[rule.destinationBookId]) {
+        rulesByDest[rule.destinationBookId] = [];
+      }
+      rulesByDest[rule.destinationBookId].push(rule);
+    }
+
+    // For each destination book, translate and post
+    for (const [destBookId, destRules] of Object.entries(rulesByDest)) {
+      const mappedEntries: any[] = [];
+
+      for (const entry of journal.entries) {
+        // Find matching rule for this account
+        const matchingRule = destRules.find((r: any) => r.sourceAccountId === entry.accountId) ||
+                             destRules.find((r: any) => !r.sourceAccountId); // fallback rule with no specific account mapping
+
+        if (!matchingRule) {
+          // If no matching rule exists, default to posting directly to the same account
+          mappedEntries.push({
+            tenantId,
+            accountId: entry.accountId,
+            debit: entry.debit,
+            credit: entry.credit,
+            description: entry.description || '',
+          });
+          continue;
+        }
+
+        if (matchingRule.ruleType === 'EXCLUDE_ACCOUNT') {
+          // Skip this entry
+          continue;
+        }
+
+        let targetAccountId = entry.accountId;
+        if (matchingRule.ruleType === 'MAP_ACCOUNT' && matchingRule.destinationAccountId) {
+          targetAccountId = matchingRule.destinationAccountId;
+        }
+
+        let multiplier = Number(matchingRule.multiplier) || 1.0;
+        let debit = Number(entry.debit) * multiplier;
+        let credit = Number(entry.credit) * multiplier;
+
+        mappedEntries.push({
+          tenantId,
+          accountId: targetAccountId,
+          debit: new Prisma.Decimal(debit),
+          credit: new Prisma.Decimal(credit),
+          description: `${entry.description || ''} (Auto-mapped via Rule ${matchingRule.id})`.trim(),
+        });
+      }
+
+      if (mappedEntries.length === 0) continue;
+
+      // Verify mapped journal is balanced
+      const totalDebit = mappedEntries.reduce((s, e) => s + Number(e.debit), 0);
+      const totalCredit = mappedEntries.reduce((s, e) => s + Number(e.credit), 0);
+      if (Math.abs(totalDebit - totalCredit) > 0.01) {
+        console.warn(`Parallel journal for book ${destBookId} is unbalanced: ${totalDebit} vs ${totalCredit}. Skipping.`);
+        continue;
+      }
+
+      // Create the mapped journal
+      const mappedJournal = await tx.journal.create({
+        data: {
+          tenantId,
+          orgId: journal.orgId,
+          bookId: destBookId,
+          sourceJournalId: journal.id,
+          entryNumber: `${journal.entryNumber}-M-${destBookId.slice(-4)}`,
+          date: journal.date,
+          status: 'POSTED', // Auto-post the mapped entries
+          notes: `Auto-posted from Journal ${journal.entryNumber} via Mapping Rules.`,
+          entries: {
+            create: mappedEntries,
+          },
+        },
+      });
+
+      await this.logAudit(tx, tenantId, 'Journal', mappedJournal.id, 'AUTO_POST', { sourceJournalId: journal.id }, 'system');
+    }
+  }
+
+  async getAccountingBookRules(tenantId: string) {
+    return prisma.accountingBookRule.findMany({
+      where: { tenantId },
+      include: {
+        sourceBook: { select: { id: true, name: true, standard: true } },
+        destinationBook: { select: { id: true, name: true, standard: true } },
+        sourceAccount: { select: { id: true, name: true, code: true } },
+        destinationAccount: { select: { id: true, name: true, code: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createAccountingBookRule(tenantId: string, orgId: string, dto: {
+    sourceBookId: string;
+    destinationBookId: string;
+    sourceAccountId?: string | null;
+    destinationAccountId?: string | null;
+    ruleType: string;
+    multiplier?: number | null;
+  }) {
+    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
+    return prisma.accountingBookRule.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        sourceBookId: dto.sourceBookId,
+        destinationBookId: dto.destinationBookId,
+        sourceAccountId: dto.sourceAccountId || null,
+        destinationAccountId: dto.destinationAccountId || null,
+        ruleType: dto.ruleType,
+        multiplier: (dto.multiplier !== null && dto.multiplier !== undefined) ? dto.multiplier : 1.0,
+        isActive: true,
+      },
+    });
+  }
+
+  async deleteAccountingBookRule(tenantId: string, id: string) {
+    const rule = await prisma.accountingBookRule.findFirst({ where: { id, tenantId } });
+    if (!rule) throw new NotFoundException('Accounting book rule not found');
+
+    return prisma.accountingBookRule.delete({
+      where: { id },
+    });
   }
 
   // ── AUDIT LOGS ──────────────────────────────────────

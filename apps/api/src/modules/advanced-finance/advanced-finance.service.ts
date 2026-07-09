@@ -105,9 +105,9 @@ export class AdvancedFinanceService {
   async createForecastScenario(tenantId: string, orgId: string, dto: any) { return this.treasuryService.createForecastScenario(tenantId, orgId, dto); }
 
   // reports
-  async getProfitAndLoss(tenantId: string, orgId: string, startDate: string, endDate: string) { return this.reportingService.getProfitAndLoss(tenantId, orgId, startDate, endDate); }
-  async getBalanceSheet(tenantId: string, orgId: string, asOfDate: string) { return this.reportingService.getBalanceSheet(tenantId, orgId, asOfDate); }
-  async getCashFlow(tenantId: string, orgId: string, startDate: string, endDate: string) { return this.reportingService.getCashFlowStatement(tenantId, orgId, startDate, endDate); }
+  async getProfitAndLoss(tenantId: string, orgId: string, startDate: string, endDate: string, bookId?: string) { return this.reportingService.getProfitAndLoss(tenantId, orgId, startDate, endDate, bookId); }
+  async getBalanceSheet(tenantId: string, orgId: string, asOfDate: string, bookId?: string) { return this.reportingService.getBalanceSheet(tenantId, orgId, asOfDate, bookId); }
+  async getCashFlow(tenantId: string, orgId: string, startDate: string, endDate: string, bookId?: string) { return this.reportingService.getCashFlowStatement(tenantId, orgId, startDate, endDate, bookId); }
   async getTrialBalance(tenantId: string, orgId: string, asOfDate: string) { return this.reportingService.getTrialBalance(tenantId, orgId, asOfDate); }
   async getAgingReport(tenantId: string, orgId: string, type: 'AR' | 'AP', asOfDate: string) { return this.reportingService.getAgingReport(tenantId, orgId, type, asOfDate); }
   async getCashPosition(tenantId: string, orgId: string) { return this.reportingService.getCashPosition(tenantId, orgId); }
@@ -175,4 +175,7 @@ export class AdvancedFinanceService {
   async postJournalToBook(tenantId: string, orgId: string, bookId: string, dto: any) { return this.glService.postJournalToBook(tenantId, orgId, bookId, dto); }
   async getBookTrialBalance(tenantId: string, bookId: string, asOf?: string) { return this.glService.getBookTrialBalance(tenantId, bookId, asOf); }
   async crossBookVarianceReport(tenantId: string, book1: string, book2: string, asOf?: string) { return this.glService.crossBookVarianceReport(tenantId, book1, book2, asOf); }
+  async getAccountingBookRules(tenantId: string) { return this.glService.getAccountingBookRules(tenantId); }
+  async createAccountingBookRule(tenantId: string, orgId: string, dto: any) { return this.glService.createAccountingBookRule(tenantId, orgId, dto); }
+  async deleteAccountingBookRule(tenantId: string, id: string) { return this.glService.deleteAccountingBookRule(tenantId, id); }
 }

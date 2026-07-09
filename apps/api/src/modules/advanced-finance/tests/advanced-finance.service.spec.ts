@@ -62,6 +62,8 @@ vi.mock('@unerp/database', () => {
     investmentPortfolio: createGenericPrismaMock(),
     treasuryTransaction: createGenericPrismaMock(),
     interCompanyTransfer: createGenericPrismaMock(),
+    accountingBook: createGenericPrismaMock(),
+    accountingBookRule: createGenericPrismaMock(),
   };
 
   return {
@@ -99,6 +101,8 @@ vi.mock('@unerp/database', () => {
       organization: {
         findFirst: vi.fn().mockResolvedValue({ id: 'org-1', name: 'Seller Inc' }),
       },
+      accountingBook: createGenericPrismaMock(),
+      accountingBookRule: createGenericPrismaMock(),
       $transaction: vi.fn(async (cb) => {
         return cb(txMocks);
       }),

@@ -125,17 +125,17 @@ describe('AdvancedFinanceController', () => {
 
   it('should call getProfitAndLoss', async () => {
     await controller.getProfitAndLoss(mockReq, "start", "end");
-    expect(reportingService.getProfitAndLoss).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
+    expect(reportingService.getProfitAndLoss).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end', undefined);
   });
 
   it('should call getBalanceSheet', async () => {
     await controller.getBalanceSheet(mockReq, "date");
-    expect(reportingService.getBalanceSheet).toHaveBeenCalledWith('tenant-1', 'org-1', 'date');
+    expect(reportingService.getBalanceSheet).toHaveBeenCalledWith('tenant-1', 'org-1', 'date', undefined);
   });
 
   it('should call getCashFlow', async () => {
     await controller.getCashFlow(mockReq, "start", "end");
-    expect(reportingService.getCashFlowStatement).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end');
+    expect(reportingService.getCashFlowStatement).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end', undefined);
   });
 
   it('should call getCashFlowProjections via cashFlowForecastService.get13WeekForecast', async () => {

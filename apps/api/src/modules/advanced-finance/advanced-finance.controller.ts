@@ -310,6 +310,15 @@ const createAccountingBookSchema = z.object({
   isPrimary: z.boolean().optional(),
 });
 
+const createAccountingBookRuleSchema = z.object({
+  sourceBookId: z.string().min(1),
+  destinationBookId: z.string().min(1),
+  sourceAccountId: z.string().optional().nullable(),
+  destinationAccountId: z.string().optional().nullable(),
+  ruleType: z.string().min(1), // POST_DIRECTLY, MAP_ACCOUNT, EXCLUDE_ACCOUNT, REVAL_MULTIPLIER
+  multiplier: z.number().optional().nullable(),
+});
+
 const postJournalToBookSchema = z.object({
   entryNumber: z.string().min(1),
   date: z.string().min(1),
@@ -969,15 +978,16 @@ export class AdvancedFinanceController {
     @Req() req: AuthenticatedRequest,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
+    @Query('bookId') bookId?: string,
   ) {
-    return this.reportingService.getProfitAndLoss(req.user.tenantId, req.user.orgId || '', startDate, endDate);
+    return this.reportingService.getProfitAndLoss(req.user.tenantId, req.user.orgId || '', startDate, endDate, bookId);
   }
 
   @ApiOperation({ summary: 'Get balance sheet' })
   @Get('reports/balance-sheet')
   @Permissions('finance.report.read')
-  async getBalanceSheet(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string) {
-    return this.reportingService.getBalanceSheet(req.user.tenantId, req.user.orgId || '', asOfDate);
+  async getBalanceSheet(@Req() req: AuthenticatedRequest, @Query('asOfDate') asOfDate: string, @Query('bookId') bookId?: string) {
+    return this.reportingService.getBalanceSheet(req.user.tenantId, req.user.orgId || '', asOfDate, bookId);
   }
 
   @ApiOperation({ summary: 'Get cash flow' })
@@ -987,8 +997,9 @@ export class AdvancedFinanceController {
     @Req() req: AuthenticatedRequest,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
+    @Query('bookId') bookId?: string,
   ) {
-    return this.reportingService.getCashFlowStatement(req.user.tenantId, req.user.orgId || '', startDate, endDate);
+    return this.reportingService.getCashFlowStatement(req.user.tenantId, req.user.orgId || '', startDate, endDate, bookId);
   }
 
   @ApiOperation({ summary: 'Get trial balance' })
@@ -1462,7 +1473,7 @@ export class AdvancedFinanceController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createEliminationRuleSchema) dto: z.infer<typeof createEliminationRuleSchema>,
   ) {
-    return this.interCompanyService.createEliminationRule(req.user.tenantId, dto, req.user.id);
+    return this.interCompanyService.createEliminationRule(req.user.tenantId, dto, req.user.userId);
   }
 
   @ApiOperation({ summary: 'Update intercompany elimination rule' })
@@ -1475,7 +1486,7 @@ export class AdvancedFinanceController {
     @Param('id') id: string,
     @ZodBody(updateEliminationRuleSchema) dto: z.infer<typeof updateEliminationRuleSchema>,
   ) {
-    return this.interCompanyService.updateEliminationRule(req.user.tenantId, id, dto, req.user.id);
+    return this.interCompanyService.updateEliminationRule(req.user.tenantId, id, dto, req.user.userId);
   }
 
   @ApiOperation({ summary: 'Delete intercompany elimination rule' })
@@ -1487,7 +1498,7 @@ export class AdvancedFinanceController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ) {
-    return this.interCompanyService.deleteEliminationRule(req.user.tenantId, id, req.user.id);
+    return this.interCompanyService.deleteEliminationRule(req.user.tenantId, id, req.user.userId);
   }
 
   @ApiOperation({ summary: 'Get intercompany elimination runs' })
@@ -1506,7 +1517,7 @@ export class AdvancedFinanceController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(executeEliminationRunSchema) dto: z.infer<typeof executeEliminationRunSchema>,
   ) {
-    return this.interCompanyService.executeEliminationRun(req.user.tenantId, dto.periodStart, dto.periodEnd, req.user.id);
+    return this.interCompanyService.executeEliminationRun(req.user.tenantId, dto.periodStart, dto.periodEnd, req.user.userId);
   }
 
   @ApiOperation({ summary: 'Post/approve intercompany elimination run' })
@@ -1518,7 +1529,7 @@ export class AdvancedFinanceController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ) {
-    return this.interCompanyService.postEliminationRun(req.user.tenantId, id, req.user.id);
+    return this.interCompanyService.postEliminationRun(req.user.tenantId, id, req.user.userId);
   }
 
 
@@ -2272,6 +2283,34 @@ export class AdvancedFinanceController {
   @Get('accounting-books/variance')
   async crossBookVarianceReport(@Req() req: AuthenticatedRequest, @Query('book1') book1: string, @Query('book2') book2: string, @Query('asOf') asOf?: string) {
     return this.glService.crossBookVarianceReport(req.user.tenantId, book1, book2, asOf);
+  }
+
+  @ApiOperation({ summary: 'List accounting book rules' })
+  @Permissions('finance.books.manage')
+  @Get('accounting-books/rules')
+  async getAccountingBookRules(@Req() req: AuthenticatedRequest) {
+    return this.glService.getAccountingBookRules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create an accounting book rule' })
+  @Permissions('finance.books.manage')
+  @Post('accounting-books/rules')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AccountingBookRule')
+  async createAccountingBookRule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createAccountingBookRuleSchema) body: z.infer<typeof createAccountingBookRuleSchema>,
+  ) {
+    return this.glService.createAccountingBookRule(req.user.tenantId, req.user.orgId || 'org-system-default', body);
+  }
+
+  @ApiOperation({ summary: 'Delete an accounting book rule' })
+  @Permissions('finance.books.manage')
+  @Delete('accounting-books/rules/:id')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('AccountingBookRule', 'id')
+  async deleteAccountingBookRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.glService.deleteAccountingBookRule(req.user.tenantId, id);
   }
 
   // ── DUNNING MANAGEMENT (extended) ──────────────────────────────────

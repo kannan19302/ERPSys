@@ -2816,6 +2816,8 @@ model Account {
   allocationRules      AllocationRule[]
   eliminationSourceRules      EliminationRule[]      @relation("EliminationSourceAccount")
   eliminationDestinationRules EliminationRule[]      @relation("EliminationDestinationAccount")
+  ruleSourceAccounts      AccountingBookRule[] @relation("RuleSourceAccount")
+  ruleDestinationAccounts AccountingBookRule[] @relation("RuleDestinationAccount")
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -2844,23 +2846,26 @@ model CostCenter {
 }
 
 model Journal {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  orgId       String   @map("org_id")
-  entryNumber String   @map("entry_number")
-  date        DateTime @default(now())
-  status      String   @default("DRAFT") // DRAFT, POSTED
-  notes       String?
-  createdBy   String?  @map("created_by")
-  bookId      String?  @map("book_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  entryNumber     String   @map("entry_number")
+  date            DateTime @default(now())
+  status          String   @default("DRAFT") // DRAFT, POSTED
+  notes           String?
+  createdBy       String?  @map("created_by")
+  bookId          String?  @map("book_id")
+  sourceJournalId String?  @map("source_journal_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  entries        JournalEntry[]
-  book           AccountingBook?     @relation(fields: [bookId], references: [id])
-  depreciations  AssetDepreciation[]
-  allocationRuns AllocationRun[]
+  entries         JournalEntry[]
+  book            AccountingBook?     @relation(fields: [bookId], references: [id])
+  depreciations   AssetDepreciation[]
+  allocationRuns  AllocationRun[]
   eliminationRuns EliminationRun[]
+  sourceJournal   Journal?            @relation("JournalHistory", fields: [sourceJournalId], references: [id])
+  mappedJournals  Journal[]           @relation("JournalHistory")
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -8545,12 +8550,37 @@ model AccountingBook {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  journals     Journal[]
+  organization         Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  journals             Journal[]
+  sourceBookRules      AccountingBookRule[]  @relation("SourceBookRules")
+  destinationBookRules AccountingBookRule[]  @relation("DestinationBookRules")
 
   @@unique([tenantId, orgId, name])
   @@index([tenantId])
   @@map("accounting_books")
+}
+
+model AccountingBookRule {
+  id                   String   @id @default(cuid())
+  tenantId             String   @map("tenant_id")
+  orgId                String   @map("org_id")
+  sourceBookId         String   @map("source_book_id")
+  destinationBookId    String   @map("destination_book_id")
+  sourceAccountId      String?  @map("source_account_id")
+  destinationAccountId String?  @map("destination_account_id")
+  ruleType             String   @map("rule_type") // POST_DIRECTLY, MAP_ACCOUNT, EXCLUDE_ACCOUNT, REVAL_MULTIPLIER
+  multiplier           Decimal  @default(1.0) @db.Decimal(15, 4)
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  sourceBook         AccountingBook @relation("SourceBookRules", fields: [sourceBookId], references: [id], onDelete: Cascade)
+  destinationBook    AccountingBook @relation("DestinationBookRules", fields: [destinationBookId], references: [id], onDelete: Cascade)
+  sourceAccount      Account?       @relation("RuleSourceAccount", fields: [sourceAccountId], references: [id])
+  destinationAccount Account?       @relation("RuleDestinationAccount", fields: [destinationAccountId], references: [id])
+
+  @@index([tenantId])
+  @@map("accounting_book_rules")
 }
 
 // ════════════════════════════════════════════════

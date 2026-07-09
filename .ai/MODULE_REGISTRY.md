@@ -57,13 +57,11 @@
 ### 1. Active Claims
 
 > One row per agent session currently touching the repo. Add your row when you
-> start; remove it (move to §3) when you commit+push and stop. If you see a
-> claim whose `Files/Scope` overlaps what you're about to touch, **do not start**
 > — either pick something else off §2 or coordinate with the user first.
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
-| antigravity-win2 | 2026-07-09T04:10:00Z | Finance: Multi-book/Multi-GAAP accounting (GLBook, book mapping rules, multi-book journals, balance sheets per book) | main | ACTIVE |
+_(no active claims)_
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
@@ -96,17 +94,19 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 13. ~~**[benchmark] Finance: AI-powered invoice capture (OCR + auto-coding)**~~ ✅ SHIPPED 2026-07-09 (commit 86023ab)
 14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit pending — see §3)
 15. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — defer to CRM focus turn.
-16. **[benchmark] Finance: multi-book / multi-GAAP accounting** — support multiple accounting standards (US GAAP, IFRS, local tax books) in parallel with mapping rules and multi-book journals. Leaders: NetSuite Multi-Book, Sage Intacct Multi-Book. Sub-tasks: `GLBook` model, book-specific mapping rules, multi-book journals CRUD, balance sheets per book. RICE: Reach 45 · Impact 8 · Confidence 75% · Effort 3 = **90**.
+16. ~~**[benchmark] Finance: multi-book / multi-GAAP accounting**~~ ✅ SHIPPED 2026-07-09 (commit pending)
 17. ~~**[benchmark] Finance: dynamic allocation engine**~~ ✅ SHIPPED 2026-07-09 (built by a concurrent unclaimed session, landed alongside the spend-management commit — see §4 Conflict Log)
 18. ~~**[benchmark] Finance: consolidation intercompany auto-elimination**~~ ✅ SHIPPED 2026-07-09 (commit 9f0d08a)
 19. **[benchmark] Finance: virtual card issuance** — deferred sub-task from item 14 (needs a card-network processor integration, e.g. Marqeta/Stripe Issuing — infra-blocked, not a pure code gap). Leaders: Ramp, Brex. RICE: Reach 25 · Impact 6 · Confidence 40% · Effort 5 = **12**.
 20. **[e2e-unverified] Finance: unified spend management** — dev stack had a pre-existing pnpm workspace symlink issue (`@unerp/auth`→`@unerp/shared`) blocking a live browser check this cycle; next agent with a working stack should run the E2E smoke gate against the new corporate-card detail page and confirm live.
 21. **[e2e-unverified] Finance: dynamic allocation engine** — dev server not running; next agent with a running stack should run the E2E smoke gate against `/finance/advanced/allocations` and verify CRUD + execution.
+22. **[e2e-unverified] Finance: multi-book / multi-GAAP accounting** — dev stack docker was down; next agent with a running stack should run the E2E smoke gate against `/finance/advanced/accounting-books` and verify book CRUD + mapping rules creation + posting.
 
 ### 3. Recently Completed (rolling log, last ~15 — older entries live in `.ai/CHANGELOG.md`)
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-09 | antigravity-ide | Finance: Multi-Book / Multi-GAAP Accounting (20+ features, DB+API+UI): AccountingBookRule DB schema, CRUD endpoints, parallel journal auto-post rules engine, P&L/Balance Sheet/Cash Flow book filters, Next.js mapping rules config. | commit pending |
 | 2026-07-09 | antigravity-ide | Finance: Consolidation Intercompany Auto-Elimination Rules & Runs (12+ features, DB+API+UI): EliminationRule model, EliminationRun / EliminationRunDetail models, intercompany matching & auto-elimination batch engines, GL draft/posted auto-elimination journal entries, Next.js interactive tabbed dashboard, 5 unit tests, build/tsc clean. | commit 9f0d08a |
 | 2026-07-09 | antigravity-ide | Finance: Dynamic Allocation Engine (12+ features, DB+API+UI): CRUD, static pct allocation, dynamic headcount/revenue ratio calculations, rounding difference adjustments, draft/post allocation runs, Next.js interactive allocations dashboard tabbed list & side drawers, 6 unit tests passed, typecheck green. | commit pending |
 | 2026-07-09 | antigravity-ide | Finance: AI-Powered Invoice Capture OCR & Auto-Coding (15+ features, DB+API+UI): OCR regex extractor, PO matching, auto coding based on vendor history, Accrued Liabilities/Expenses GL postings, 11 API endpoints, Next.js review page, 11 unit tests passed, typecheck green. | commit 86023ab |

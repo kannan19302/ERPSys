@@ -365,7 +365,7 @@ export class InterCompanyService {
     });
   }
 
-  async deleteEliminationRule(tenantId: string, id: string, userId?: string) {
+  async deleteEliminationRule(tenantId: string, id: string, _userId?: string) {
     const rule = await this.getEliminationRuleById(tenantId, id);
     return prisma.eliminationRule.delete({
       where: { id: rule.id },
@@ -456,7 +456,7 @@ export class InterCompanyService {
       });
     }
 
-    const primaryOrgId = eligibleDetails[0].tx.fromOrgId;
+    const primaryOrgId = eligibleDetails[0]!.tx.fromOrgId;
 
     const journal = await prisma.journal.create({
       data: {
@@ -499,7 +499,7 @@ export class InterCompanyService {
     return run;
   }
 
-  async postEliminationRun(tenantId: string, runId: string, userId?: string) {
+  async postEliminationRun(tenantId: string, runId: string, _userId?: string) {
     const run = await prisma.eliminationRun.findFirst({
       where: { id: runId, tenantId },
       include: { details: true },

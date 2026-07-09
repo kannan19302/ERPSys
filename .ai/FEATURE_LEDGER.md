@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T03:27:54.158Z
+> Last generated: 2026-07-09T12:15:47.048Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1659 features** across 36 modules
+## System total: **1670 features** across 36 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 257 |
+| [advanced-finance](#advanced-finance) | 268 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -240,7 +240,7 @@
 
 ## advanced-finance
 
-257 features
+268 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -337,6 +337,14 @@
 | POST | `/advanced-finance/intercompany/manual-match` | Manually match intercompany transaction pair | `finance.report.create` |
 | POST | `/advanced-finance/intercompany/eliminate/:id` | Run netting elimination entry for intercompany matched transaction | `finance.report.create` |
 | GET | `/advanced-finance/intercompany/stats` | Get intercompany netting consolidated stats | `finance.report.read` |
+| GET | `/advanced-finance/intercompany/elimination-rules` | Get all intercompany elimination rules | `finance.eliminations.read` |
+| GET | `/advanced-finance/intercompany/elimination-rules/:id` | Get intercompany elimination rule by ID | `finance.eliminations.read` |
+| POST | `/advanced-finance/intercompany/elimination-rules` | Create intercompany elimination rule | `finance.eliminations.manage` |
+| PATCH | `/advanced-finance/intercompany/elimination-rules/:id` | Update intercompany elimination rule | `finance.eliminations.manage` |
+| DELETE | `/advanced-finance/intercompany/elimination-rules/:id` | Delete intercompany elimination rule | `finance.eliminations.manage` |
+| GET | `/advanced-finance/intercompany/elimination-runs` | Get intercompany elimination runs | `finance.eliminations.read` |
+| POST | `/advanced-finance/intercompany/elimination-runs` | Execute intercompany elimination run | `finance.eliminations.read` |
+| POST | `/advanced-finance/intercompany/elimination-runs/:id/post` | Post/approve intercompany elimination run | `finance.eliminations.run` |
 | GET | `/advanced-finance/fx-revaluation/runs` | Get FX revaluation runs list | `finance.report.read` |
 | POST | `/advanced-finance/fx-revaluation/runs` | Create draft FX revaluation run | `finance.report.read` |
 | POST | `/advanced-finance/fx-revaluation/runs/:id/post` | Post FX revaluation run adjustments to GL ledger | `finance.report.create` |
@@ -415,6 +423,9 @@
 | POST | `/advanced-finance/accounting-books/:bookId/journals` | Post a journal entry to a specific accounting book | `finance.accounting-book.create` |
 | GET | `/advanced-finance/accounting-books/:bookId/trial-balance` | Trial balance for an accounting book | `finance.accounting-book.read` |
 | GET | `/advanced-finance/accounting-books/variance` | Cross-book variance report (e.g. LOCAL_GAAP vs IFRS) | `finance.accounting-book.read` |
+| GET | `/advanced-finance/accounting-books/rules` | List accounting book rules | `finance.books.manage` |
+| POST | `/advanced-finance/accounting-books/rules` | Create an accounting book rule | `finance.books.manage` |
+| DELETE | `/advanced-finance/accounting-books/rules/:id` | Delete an accounting book rule | `finance.books.manage` |
 | GET | `/advanced-finance/dunning-levels/:id` | Get a single dunning level by ID | `finance.tax.read` |
 | PATCH | `/advanced-finance/dunning-levels/:id` | Update a dunning level | `finance.tax.read` |
 | DELETE | `/advanced-finance/dunning-levels/:id` | Delete a dunning level | `finance.tax.delete` |
