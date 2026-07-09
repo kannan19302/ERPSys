@@ -43,3 +43,7 @@ pnpm-debug.log*
 # Docker
 docker/data/
 var/
+
+# service-kit ships its compiled contract for git-subdir installs by app repos
+!packages/service-kit/dist
+!packages/service-kit/dist/**

@@ -384,9 +384,9 @@ importers:
 
   packages/service-kit:
     devDependencies:
-      '@unerp/config':
-        specifier: workspace:*
-        version: link:../config
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
       rimraf:
         specifier: ^6.0.0
         version: 6.1.3
