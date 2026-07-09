@@ -7,6 +7,14 @@ import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
 import { TrackChanges } from '../../common/decorators/track-changes.decorator';
+import { TaxEngineDeepService } from './services/tax-engine-deep.service';
+import { TreasuryDeepService } from './services/treasury-deep.service';
+import { ApIntelligenceService } from './services/ap-intelligence.service';
+import { ArCollectionsService } from './services/ar-collections.service';
+import { FixedAssetDeepService } from './services/fixed-asset-deep.service';
+import { FpaDeepService } from './services/fpa-deep.service';
+import { RevenueBillingService } from './services/revenue-billing.service';
+import { ComplianceControlsService } from './services/compliance-controls.service';
 import {
   GlAccountingService,
   BudgetingService,
@@ -503,14 +511,14 @@ export class AdvancedFinanceController {
     private readonly allocationService: AllocationService,
     private readonly budgetControlService: BudgetControlService,
     private readonly budgetReallocationService: BudgetReallocationService,
-    private readonly taxDeepService: import('./services/tax-engine-deep.service').TaxEngineDeepService,
-    private readonly treasuryDeepService: import('./services/treasury-deep.service').TreasuryDeepService,
-    private readonly apIntelligenceService: import('./services/ap-intelligence.service').ApIntelligenceService,
-    private readonly arCollectionsService: import('./services/ar-collections.service').ArCollectionsService,
-    private readonly fixedAssetDeepService: import('./services/fixed-asset-deep.service').FixedAssetDeepService,
-    private readonly fpaDeepService: import('./services/fpa-deep.service').FpaDeepService,
-    private readonly revenueBillingService: import('./services/revenue-billing.service').RevenueBillingService,
-    private readonly complianceControlsService: import('./services/compliance-controls.service').ComplianceControlsService,
+    private readonly taxDeepService: TaxEngineDeepService,
+    private readonly treasuryDeepService: TreasuryDeepService,
+    private readonly apIntelligenceService: ApIntelligenceService,
+    private readonly arCollectionsService: ArCollectionsService,
+    private readonly fixedAssetDeepService: FixedAssetDeepService,
+    private readonly fpaDeepService: FpaDeepService,
+    private readonly revenueBillingService: RevenueBillingService,
+    private readonly complianceControlsService: ComplianceControlsService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
