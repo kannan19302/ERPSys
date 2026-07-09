@@ -71,6 +71,8 @@ export interface ManifestService {
   healthcheck: string; // path on the service, e.g. /svc/health
   scopes?: string[];
   timeoutMs?: number;
+  /** Core domain events this app subscribes to (delivered as signed webhooks). */
+  events?: { event: string; deliverTo: string }[];
 }
 
 export interface ManifestAsset {
@@ -88,6 +90,8 @@ export interface AppManifest {
   runtime: 'declarative' | 'declarative+service';
   /** Contract version between bundle and core (see EXT_API_VERSION). */
   apiVersion?: number;
+  /** Minimum core semver this bundle requires; install refuses older cores. */
+  minCoreVersion?: string;
   /** Required when runtime is 'declarative+service'. */
   service?: ManifestService;
   /**
@@ -146,11 +150,23 @@ export function validateManifest(manifest: any): AppManifest {
     if (svc.routePrefix && !SLUG.test(svc.routePrefix)) {
       throw new Error(`Invalid service.routePrefix "${svc.routePrefix}" (use lowercase letters, numbers, hyphens)`);
     }
+    if (svc.events !== undefined) {
+      if (!Array.isArray(svc.events)) throw new Error('service.events must be an array');
+      for (const e of svc.events) {
+        if (!e?.event || typeof e.event !== 'string') throw new Error('each service.events entry needs an "event" name');
+        if (!e?.deliverTo || typeof e.deliverTo !== 'string' || !e.deliverTo.startsWith('/')) {
+          throw new Error(`service.events "${e?.event}" needs a "deliverTo" path starting with /`);
+        }
+      }
+    }
   } else if (manifest.service) {
     throw new Error('Manifest declares a "service" section but runtime is not "declarative+service"');
   }
   if (manifest.targetApp && !SLUG.test(manifest.targetApp)) {
     throw new Error(`Invalid targetApp slug "${manifest.targetApp}" (use lowercase letters, numbers, hyphens)`);
+  }
+  if (manifest.minCoreVersion !== undefined && !SEMVER.test(manifest.minCoreVersion)) {
+    throw new Error(`Invalid minCoreVersion "${manifest.minCoreVersion}" (expected semver like 2.1.0)`);
   }
 
   // Flatten any modules into combined schemas/pages, tagging each page with its

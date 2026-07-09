@@ -8,6 +8,7 @@ import { MarketplaceService } from '../../admin/marketplace.service';
 import { validateManifest } from '../manifest';
 import { ServiceRegistryService } from '../../ext-gateway/service-registry.service';
 import { ExtProxyService } from '../../ext-gateway/ext-proxy.service';
+import { CircuitBreakerService } from '../../ext-gateway/circuit-breaker.service';
 
 /**
  * End-to-end proof of the bundle lifecycle: publishing a third-party bundle, then
@@ -23,7 +24,7 @@ describe('marketplace bundle lifecycle', () => {
     provisioning,
     vendors,
     new ServiceRegistryService(),
-    new ExtProxyService(),
+    new ExtProxyService(new CircuitBreakerService()),
   );
 
   // A representative declarative industry bundle (toggleable modules), inline

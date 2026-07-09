@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { signTenantToken, verifyTenantToken } from '@unerp/service-kit';
 import { validateManifest } from '../../marketplace/manifest';
 import { ExtProxyService } from '../ext-proxy.service';
+import { CircuitBreakerService } from '../circuit-breaker.service';
 
 vi.mock('@unerp/database', () => ({
   prisma: {
@@ -126,7 +127,7 @@ describe('ServiceRegistryService gating', () => {
 
 describe('ExtProxyService', () => {
   it('maps connection failure to a 503 envelope', async () => {
-    const proxy = new ExtProxyService();
+    const proxy = new ExtProxyService(new CircuitBreakerService());
     const req: any = {
       method: 'GET', path: '/api/v1/ext/field-service/tickets',
       originalUrl: '/api/v1/ext/field-service/tickets', headers: {},

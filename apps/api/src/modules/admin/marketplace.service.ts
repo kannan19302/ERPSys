@@ -7,6 +7,10 @@ import { validateManifest } from '../marketplace/manifest';
 import { isUninstallable } from '../../common/module-tiers';
 import { ServiceRegistryService } from '../ext-gateway/service-registry.service';
 import { ExtProxyService } from '../ext-gateway/ext-proxy.service';
+import { satisfiesMinCoreVersion, compareSemver } from '@unerp/service-kit';
+
+/** Core platform version for bundle minCoreVersion checks (#7). */
+const CORE_VERSION = process.env.CORE_VERSION || '2.0.0';
 
 @Injectable()
 export class MarketplaceService {
@@ -121,9 +125,21 @@ export class MarketplaceService {
   // ─── Install / Uninstall ───
 
   async getInstalledApps(tenantId: string) {
-    return prisma.installedApp.findMany({
+    const installed = await prisma.installedApp.findMany({
       where: { tenantId },
       orderBy: { installedAt: 'desc' },
+    });
+    // Flag update-available per install by comparing the installed version to the
+    // app's current published version (#7 — surfaced to the UI instead of silent upgrade).
+    const slugs = installed.map((i) => i.appSlug).filter(Boolean) as string[];
+    const apps = slugs.length
+      ? await prisma.marketplaceApp.findMany({ where: { slug: { in: slugs } }, select: { slug: true, version: true } })
+      : [];
+    const latest = new Map(apps.map((a) => [a.slug, a.version]));
+    return installed.map((i) => {
+      const current = i.appSlug ? latest.get(i.appSlug) : undefined;
+      const updateAvailable = !!(current && i.installedVersion && compareSemver(current, i.installedVersion) > 0);
+      return { ...i, latestVersion: current || i.installedVersion, updateAvailable };
     });
   }
 
@@ -171,6 +187,13 @@ export class MarketplaceService {
 
     const archive = await this.bundleStore.getBundle(bundle.blobKey);
     const manifest = validateManifest(archive.manifest);
+
+    // Refuse a bundle that needs a newer core than we are (#7).
+    if (!satisfiesMinCoreVersion(CORE_VERSION, manifest.minCoreVersion)) {
+      throw new BadRequestException(
+        `App "${appSlug}" requires core >= ${manifest.minCoreVersion} but this core is ${CORE_VERSION}. Upgrade core first.`,
+      );
+    }
 
     // Out-of-process service apps: verify the service is reachable before
     // provisioning, so a broken install never leaves dead routes in the UI.

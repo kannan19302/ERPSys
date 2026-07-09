@@ -15,9 +15,20 @@ export const EXT_API_VERSION = 1;
 export const TENANT_TOKEN_HEADER = 'x-unierp-tenant-token';
 /** Correlation id propagated from the gateway. */
 export const REQUEST_ID_HEADER = 'x-request-id';
+/** Signature + timestamp headers on core→service event webhooks. */
+export const WEBHOOK_SIGNATURE_HEADER = 'x-unierp-signature';
+export const WEBHOOK_TIMESTAMP_HEADER = 'x-unierp-timestamp';
 
 /** Default TTL for tenant-context tokens (seconds). */
 export const TENANT_TOKEN_TTL_SECONDS = 60;
+
+/** A core domain event a bundle subscribes to (delivered as a signed webhook). */
+export interface ManifestEventSubscription {
+  /** Event name, e.g. "invoice.paid" or "crm.contact.created". Supports trailing ".*". */
+  event: string;
+  /** Path on the service the event is POSTed to, e.g. "/events". */
+  deliverTo: string;
+}
 
 /** `service` section of an AppManifest (runtime: 'declarative+service'). */
 export interface ManifestService {
@@ -33,6 +44,8 @@ export interface ManifestService {
   scopes?: string[];
   /** Per-request proxy timeout (ms). Default 15000. */
   timeoutMs?: number;
+  /** Core domain events this app receives as signed webhooks. */
+  events?: ManifestEventSubscription[];
 }
 
 /** Claims inside the tenant-context token. */
@@ -79,6 +92,13 @@ function hs256(input: string, secret: string): Buffer {
   return createHmac('sha256', secret).update(input).digest();
 }
 
+/** Constant-time compare of two hex/base64url strings of the same intent. */
+function safeEqualStr(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
+}
+
 /** Sign a tenant-context token (HS256). Used by core's gateway. */
 export function signTenantToken(
   claims: Omit<TenantContextClaims, 'iat' | 'exp'>,
@@ -92,6 +112,21 @@ export function signTenantToken(
   const payload = b64url(Buffer.from(JSON.stringify(full)));
   const sig = b64url(hs256(`${header}.${payload}`, secret));
   return `${header}.${payload}.${sig}`;
+}
+
+/**
+ * Decode a token's claims WITHOUT verifying the signature. Only for selecting
+ * which per-app secret to verify with — never trust the result before calling
+ * verifyTenantToken.
+ */
+export function decodeTokenUnverified(token: string): Partial<TenantContextClaims> | null {
+  const parts = (token || '').split('.');
+  if (parts.length !== 3) return null;
+  try {
+    return JSON.parse(fromB64url(parts[1]!).toString('utf8'));
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -130,6 +165,8 @@ export function verifyTenantToken(
 /**
  * Express-style middleware factory for extension services: verifies the token
  * and attaches `req.tenantContext`. Skips paths in `publicPaths` (health checks).
+ * `resolveSecret` lets a service look up a per-app secret; a plain string uses
+ * one secret.
  */
 export function tenantContextMiddleware(options: {
   secret: string;
@@ -154,4 +191,173 @@ export function tenantContextMiddleware(options: {
       } satisfies ExtErrorEnvelope);
     }
   };
+}
+
+// ─── RBAC (#1): pure checks + a Nest-compatible guard factory ───
+
+export function hasRole(claims: TenantContextClaims | undefined, role: string): boolean {
+  return !!claims && Array.isArray(claims.roles) && claims.roles.includes(role);
+}
+export function hasScope(claims: TenantContextClaims | undefined, scope: string): boolean {
+  return !!claims && Array.isArray(claims.scopes) && claims.scopes.includes(scope);
+}
+
+/** Error carrying an HTTP status so services can map it to a 403 response. */
+export class ExtForbiddenError extends Error {
+  statusCode = 403;
+  constructor(message: string) {
+    super(message);
+    this.name = 'ExtForbiddenError';
+  }
+}
+
+/**
+ * Assert the token carries every required scope (or, if `mode: "any"`, at least
+ * one). Throws ExtForbiddenError otherwise.
+ */
+export function assertScopes(
+  claims: TenantContextClaims | undefined,
+  required: string[],
+  mode: 'all' | 'any' = 'all',
+): void {
+  if (!claims) throw new ExtForbiddenError('No tenant context');
+  if (required.length === 0) return;
+  const have = new Set(claims.scopes || []);
+  const ok = mode === 'any' ? required.some((s) => have.has(s)) : required.every((s) => have.has(s));
+  if (!ok) {
+    throw new ExtForbiddenError(
+      `Missing required scope(s): ${required.join(mode === 'any' ? ' | ' : ', ')}`,
+    );
+  }
+}
+
+/**
+ * A Nest-compatible guard factory (implemented without importing @nestjs/*).
+ * Usage in a service controller:  @UseGuards(RequireScopes('healthcare:write'))
+ */
+export function RequireScopes(...scopes: string[]) {
+  return class ScopeGuard {
+    canActivate(context: any): boolean {
+      const req = context.switchToHttp().getRequest();
+      assertScopes(req.tenantContext, scopes, 'all');
+      return true;
+    }
+  };
+}
+export function RequireAnyScope(...scopes: string[]) {
+  return class AnyScopeGuard {
+    canActivate(context: any): boolean {
+      const req = context.switchToHttp().getRequest();
+      assertScopes(req.tenantContext, scopes, 'any');
+      return true;
+    }
+  };
+}
+
+// ─── Webhooks (#6): sign/verify core→service event deliveries ───
+
+/** Sign a webhook body. Returns the value for WEBHOOK_SIGNATURE_HEADER. */
+export function signWebhook(rawBody: string, secret: string, timestamp: number): string {
+  return 'v1=' + hs256(`${timestamp}.${rawBody}`, secret).toString('hex');
+}
+
+/**
+ * Verify a webhook signature within `toleranceSec` of the timestamp. Throws on
+ * mismatch or stale timestamp (replay protection).
+ */
+export function verifyWebhook(
+  rawBody: string,
+  signatureHeader: string,
+  timestampHeader: string | number,
+  secret: string,
+  toleranceSec = 300,
+): void {
+  const ts = Number(timestampHeader);
+  if (!ts || Number.isNaN(ts)) throw new Error('Missing/invalid webhook timestamp');
+  if (Math.abs(Math.floor(Date.now() / 1000) - ts) > toleranceSec) {
+    throw new Error('Webhook timestamp outside tolerance (possible replay)');
+  }
+  const expected = signWebhook(rawBody, secret, ts);
+  if (!signatureHeader || !safeEqualStr(signatureHeader, expected)) {
+    throw new Error('Invalid webhook signature');
+  }
+}
+
+// ─── Versioning (#7): semver compare for minCoreVersion checks ───
+
+export function compareSemver(a: string, b: string): number {
+  const pa = a.split('-')[0]!.split('.').map(Number);
+  const pb = b.split('-')[0]!.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d !== 0) return d > 0 ? 1 : -1;
+  }
+  return 0;
+}
+/** True when `coreVersion` >= `minCoreVersion`. */
+export function satisfiesMinCoreVersion(coreVersion: string, minCoreVersion?: string): boolean {
+  if (!minCoreVersion) return true;
+  return compareSemver(coreVersion, minCoreVersion) >= 0;
+}
+
+// ─── Core client (#9, #10): read/write provisioned records via ext-callback ───
+
+export interface CoreRecordFilter {
+  /** Equality filters on record data fields, e.g. { patient_mrn: "MRN1" }. */
+  where?: Record<string, unknown>;
+  limit?: number;
+}
+
+/**
+ * Typed client for the core ext-callback API. Services construct it per request
+ * with the raw tenant token they received, and core authorizes by that token
+ * (scoped to the app's own schemas).
+ */
+export class CoreClient {
+  constructor(
+    private readonly opts: { coreApiUrl: string; token: string },
+  ) {}
+
+  private base(): string {
+    return `${this.opts.coreApiUrl.replace(/\/+$/, '')}/api/v1/ext-callback`;
+  }
+  private headers(): Record<string, string> {
+    return { 'content-type': 'application/json', [TENANT_TOKEN_HEADER]: this.opts.token };
+  }
+
+  /** Read all/filtered records for one provisioned schema slug. */
+  async records(schemaSlug: string, filter?: CoreRecordFilter): Promise<any[]> {
+    const qs = new URLSearchParams();
+    if (filter?.where) qs.set('where', JSON.stringify(filter.where));
+    if (filter?.limit) qs.set('limit', String(filter.limit));
+    const q = qs.toString();
+    const res = await fetch(`${this.base()}/records/${schemaSlug}${q ? `?${q}` : ''}`, {
+      headers: this.headers(),
+    });
+    if (!res.ok) return [];
+    const rows = await res.json().catch(() => []);
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  /** Fetch several schemas at once (one round trip). Returns a slug→rows map. */
+  async recordsBatch(schemaSlugs: string[]): Promise<Record<string, any[]>> {
+    const res = await fetch(`${this.base()}/records:batch`, {
+      method: 'POST',
+      headers: this.headers(),
+      body: JSON.stringify({ slugs: schemaSlugs }),
+    });
+    if (!res.ok) return Object.fromEntries(schemaSlugs.map((s) => [s, []]));
+    return (await res.json().catch(() => ({}))) as Record<string, any[]>;
+  }
+
+  /** Create a record in a provisioned schema (requires a *:write* scope in the token). */
+  async createRecord(schemaSlug: string, data: Record<string, unknown>): Promise<any> {
+    const res = await fetch(`${this.base()}/records/${schemaSlug}`, {
+      method: 'POST',
+      headers: this.headers(),
+      body: JSON.stringify({ data }),
+    });
+    if (!res.ok) throw new Error(`createRecord ${schemaSlug} failed: ${res.status}`);
+    return res.json();
+  }
 }

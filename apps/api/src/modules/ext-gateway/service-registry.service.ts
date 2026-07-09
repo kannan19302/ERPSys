@@ -7,6 +7,7 @@ export interface ResolvedService {
   scopes: string[];
   timeoutMs: number;
   healthcheck: string;
+  events?: { event: string; deliverTo: string }[];
 }
 
 interface CacheEntry {
@@ -55,6 +56,7 @@ export class ServiceRegistryService {
           scopes: Array.isArray(serviceConfig.scopes) ? serviceConfig.scopes : [],
           timeoutMs: Number(serviceConfig.timeoutMs) || 15_000,
           healthcheck: serviceConfig.healthcheck || '/svc/health',
+          events: Array.isArray(serviceConfig.events) ? serviceConfig.events : [],
         };
       }
     }
@@ -62,5 +64,29 @@ export class ServiceRegistryService {
     this.cache.set(key, { value, expires: Date.now() + CACHE_TTL_MS });
     if (!value) throw new NotFoundException(`App "${appSlug}" is not installed or has no service`);
     return value;
+  }
+
+  /** Like resolve() but returns null instead of throwing (used by the event dispatcher). */
+  async resolveOrNull(tenantId: string, appSlug: string): Promise<ResolvedService | null> {
+    try {
+      return await this.resolve(tenantId, appSlug);
+    } catch {
+      return null;
+    }
+  }
+
+  /** All service-backed apps installed for a tenant (for event fan-out). */
+  async listServiceApps(tenantId: string): Promise<ResolvedService[]> {
+    const rows = await prisma.installedApp.findMany({
+      where: { tenantId, status: 'ACTIVE', NOT: { serviceConfig: { equals: null as any } } },
+      select: { appSlug: true },
+    });
+    const out: ResolvedService[] = [];
+    for (const r of rows) {
+      if (!r.appSlug) continue;
+      const svc = await this.resolveOrNull(tenantId, r.appSlug);
+      if (svc) out.push(svc);
+    }
+    return out;
   }
 }
