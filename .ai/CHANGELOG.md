@@ -2,6 +2,25 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-09] Finance: Dynamic Allocation Engine (12+ features, DB+API+UI)
+
+**Scope**: Finance & Accounting focus module — closes high-RICE `[benchmark]` gap: Dynamic Allocation Engine (RICE 144). Parity target: SAP ERP Allocation Engine, NetSuite Financial Allocations.
+
+**Accomplished**:
+- **Database**: migration `20260709030800_dynamic_allocation_engine` — added `AllocationRule` (allocations config) and `AllocationRun` (execution logs). Wired relations with `Account` and `Journal`.
+- **API (AllocationService & 7 endpoints)**:
+  - CRUD endpoints for allocation rules.
+  - Run execution endpoint: computes pool balance in the target period from GL accounting transactions. If `STATIC_PCT`, distributes using specified percentages. If `DYNAMIC_STAT`, dynamically computes ratios based on basis type (e.g. `HEADCOUNT` of active employees grouped by department, or `REVENUE` account net balances over the period). Adjusts for rounding discrepancies.
+  - Approve & Post endpoint: drafts and posts a balanced journal entry to the general ledger, transferring funds from the source pool account to target accounts.
+- **UI (Next.js page)**:
+  - `/finance/advanced/allocations` — interactive allocations dashboard. Tabbed view showing Allocation Rules and Run Logs. Side drawers for creating rules (with multi-target dynamic fields) and executing runs. Handles status badges and post actions.
+- **Navigation & Breadcrumbs**:
+  - Registered "Dynamic Allocations" under Core Accounting in moduleNav.tsx.
+  - Added "allocations" segment translation mapping in registry.tsx.
+  - Added route to E2E smoke tests.
+- **Tests**: 6 unit tests (`allocation.service.spec.ts`) covering CRUD, static percentage allocations, dynamic headcount ratio calculations, rounding difference adjustments, and audit trail logging.
+- **Gates**: API typecheck ✅ clean, Web typecheck ✅ clean, all 6 unit tests passing. E2E verification is unverified (dev stack servers not running).
+
 ## [2026-07-09] Commit/Push Isolation for Parallel Sessions — worktree-per-session + shared-checkout fallback
 
 **Accomplished**: `AUTOPILOT.md` § Parallel Agents gained rule 7 (old rule 7 → 8), fixing the commit-time entanglement when parallel sessions share one checkout (staging a shared file sweeps in another session's half-done hunks; rebase refuses over foreign changes):
