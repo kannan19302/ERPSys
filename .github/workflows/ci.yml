@@ -148,8 +148,15 @@ jobs:
         run: pnpm audit --audit-level high || echo "::warning::Dependency audit found vulnerabilities — review pnpm audit output above"
       - name: Check for leaked secrets
         run: |
-          if git log --diff-filter=A --name-only --pretty="" -1 | grep -qiE '\.env$|\.env\.local|credentials|secret'; then
-            echo "::error::Potential secret file committed"
+          # Match actual credential-file shapes (.env, key/pem files, a file
+          # literally named credentials/secrets.*) — not any source file whose
+          # name merely contains "secret" (e.g. ext-secret.util.ts, which
+          # implements per-app secret *selection*, not a leaked credential).
+          ADDED=$(git log --diff-filter=A --name-only --pretty="" -1)
+          HIT=$(echo "$ADDED" | grep -viE '\.env\.example$' | grep -iE '(^|/)\.env(\..+)?$|(^|/)credentials\.(json|ya?ml|txt)$|(^|/)secrets?\.(json|ya?ml|txt)$|\.(pem|key|p12|pfx)$|(^|/)id_(rsa|ed25519|ecdsa)(\.pub)?$' || true)
+          if [ -n "$HIT" ]; then
+            echo "::error::Potential secret file committed:"
+            echo "$HIT"
             exit 1
           fi
       - name: Validate no console.log in production code
