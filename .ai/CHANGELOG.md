@@ -2,6 +2,30 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] Dev-workflow streamlining: cycle tiers, CI fixes, issue-scout agent
+
+Branch `claude/streamline-dev-workflow-fqn7ky`, merged to main.
+
+- **AUTOPILOT two-tier cycles** (`.ai/AUTOPILOT.md` § Cycle Tiers): FAST cycles
+  (default) run only scoped typecheck + touched-module vitest, self-review, and the
+  cheap doc rows; MILESTONE cycles (every ≤4 fast cycles, module exit criteria,
+  risky surface, gate debt, or user request) settle all deferred gates at once —
+  full typecheck/tests/E2E, accumulated-diff review, full docs, market discovery.
+  Debt tracked in `.ai/gates-status.json` (`fastCyclesSinceFullGate`,
+  `deferredScopes`, `lastMilestoneCommit`). security-auditor stays mandatory on
+  sensitive surfaces in every tier. `/start` skill updated to match.
+- **CI fixed** (`.github/workflows/ci.yml`): the E2E job had failed on every run
+  (141/146 tests `ERR_CONNECTION_REFUSED` on :3000) because the web app was never
+  built/seeded/started — now seeds the DB, builds web, and Playwright starts
+  `next start` in CI; PRs run smoke-only, full e2e on main pushes. Removed the
+  permanently-red report-only scorecard job (still generated at milestones);
+  docker-build is PR-only; `publish-image` needs updated.
+- **New `issue-scout` agent** (`.claude/agents/issue-scout.md`) + `/issue-scan`
+  skill: sweeps 7 sources (broken gates, runtime errors, CI breakage, overdue gate
+  debt, security smells, TODO debt, doc drift) and files each verified finding as a
+  deduplicated, severity-labeled GitHub issue (max 10/run). Files cases only —
+  fixes flow through the AUTOPILOT P1 rung.
+
 ## [2026-07-11] CRM & Sales DECLARED COMPLETE — smoke-sweep-completion cycle
 
 **Claim**: `crm-smoke-sweep-completion`, released at cycle end.

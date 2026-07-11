@@ -17,6 +17,8 @@
 Start
   └─▶ 0. BOOTSTRAP   → read context, sync git, verify environment
   └─▶ 1. SELECT      → pick exactly ONE work item via the priority ladder
+  │                     + decide the cycle tier: FAST (default) or MILESTONE
+  │                       (see § Cycle Tiers — gates/review/docs/discovery depth)
   └─▶ 2. CLAIM       → register the claim on the Collab Board
   └─▶ 3. PLAN        → scope it like a product manager (stories, acceptance criteria)
   └─▶ 4. BUILD       → implement end-to-end (DB → API → UI → tests)
@@ -32,6 +34,80 @@ Start
 An agent that can loop (scheduler, `/loop`, cron) repeats from step 0. An agent that
 cannot loop stops after step 10 — the next "Start" from any agent resumes seamlessly
 because all state is in the repo.
+
+---
+
+## Cycle Tiers — FAST vs MILESTONE (binding; read before Steps 5–9)
+
+The heavy costs of a cycle — full turbo typecheck, the full API test suite, the
+Playwright E2E gate, agent review passes, scorecard/benchmark regeneration, and market
+discovery — are **amortized costs**, not per-cycle costs. Paying all of them on every
+100-feature batch spends more time verifying than building. Cycles therefore run in
+two tiers:
+
+### FAST cycle (the default — pure building)
+
+Everything in Steps 0–4 and 8 unchanged, but:
+- **Verify (Step 5)**: scoped gates only — `pnpm --filter @unerp/api typecheck` +
+  `pnpm --filter @unerp/web typecheck` (zero errors) and the batch's own module vitest
+  files (`npx vitest run src/modules/<module>` for each touched module). **No** full
+  turbo typecheck, **no** full API suite, **no** E2E, **no** manual walkthrough ritual
+  (a quick HMR glance at the new pages while building suffices).
+- **Review (Step 6)**: self-review of `git diff --stat` + a skim of the riskiest files
+  against the AGENTS.md Critical Rules. **No** code-reviewer subagent pass — EXCEPT
+  auth/tenancy/permissions/payments/file-upload changes, which always get the
+  `security-auditor` pass regardless of tier (security is never deferred).
+- **Record (Step 7)**: only the cheap always-rows — CHANGELOG entry, MODULE_REGISTRY
+  claim move, `feature-ledger.mjs` + `sprint-tracker.mjs` regeneration (seconds),
+  MODULE_FOCUS § 6 progress row, lock release. Skip scorecard, benchmark marks,
+  contract statuses.
+- **Refill & discover (Step 9)**: SKIP discovery (9a) entirely; run refill (9b) only
+  if Up Next has dropped below 5 groomed items — otherwise skip.
+- **Bookkeeping**: increment the counter — in `.ai/gates-status.json` set
+  `fastCyclesSinceFullGate` to previous value + 1 (create the key at 1 if absent) and
+  append the cycle's scope to `deferredScopes` (array of strings) so the milestone
+  cycle knows what accumulated. Commit it with the batch.
+
+### MILESTONE cycle (the settlement — pay all deferred costs at once)
+
+Run a MILESTONE cycle instead of a FAST one when **any** of these is true at Step 1:
+1. `fastCyclesSinceFullGate` in `.ai/gates-status.json` is **≥ 4** (so at most 4 fast
+   cycles ride between full verifications);
+2. the focus module is approaching or claiming its **exit criteria** (`MODULE_FOCUS.md`
+   § 5) — a module is NEVER declared done, and the focus NEVER advances, without a
+   green milestone;
+3. the batch includes **risky surface**: Prisma migration touching existing tables'
+   data, auth/tenancy/RBAC changes, or edits to shared hotspot files beyond appends;
+4. the previous cycle logged `[e2e-unverified]` or any gate debt;
+5. the user explicitly asks for a verified/hardened state.
+
+A milestone cycle = a normal cycle (it still ships a batch — usually a smaller one)
+**plus** the full deferred gate set:
+- Full `pnpm turbo typecheck`, full API test suite, the binding E2E smoke gate
+  (`npx playwright test smoke`), and one manual pass over the **accumulated**
+  `deferredScopes` primary workflows (one representative pass per scope).
+- `code-reviewer` subagent over `git diff origin/main...` covering the accumulated
+  fast-cycle diff range since the last milestone (use the commit hash stamped in
+  `gates-status.json.lastMilestoneCommit`), not just this cycle's diff.
+- Full Step 7 checklist including `scorecard.mjs`, MARKET_BENCHMARK marks,
+  MODULE_FOCUS § 7 contract statuses.
+- Step 9a market discovery (the only cycle type that does web research).
+- On green: reset `fastCyclesSinceFullGate` to 0, clear `deferredScopes`, stamp
+  `lastMilestoneCommit` with the HEAD hash and `ranAt` with now, in
+  `.ai/gates-status.json`.
+
+**Anything a milestone gate finds is P0 for that same milestone cycle** — the cycle
+does not ship until green. This is the price of deferral and it is non-negotiable:
+fast cycles are only allowed BECAUSE the milestone settles the debt. If a milestone
+repeatedly finds breakage introduced by fast cycles (2 milestones in a row with >3
+regressions), drop the threshold in rule 1 from 4 to 2 and note it in HANDBOOK.md.
+
+**Why this is safe**: scoped typecheck catches ~all compile breakage the full graph
+would (the graph only adds cross-package drift, which shared-hotspot discipline
+already minimizes); module-scoped vitest covers the code actually touched; and the
+smoke suite's job — "the app boots" — degrades gracefully across 4 batches because
+fast cycles still append their routes to `SMOKE_ROUTES` as they build (the milestone
+then exercises them all).
 
 ---
 
@@ -156,7 +232,11 @@ fast feedback loops: scoped `--filter` typecheck, the single module's vitest fil
 (`npx vitest run src/modules/<module>`), and HMR in the already-running dev stack
 (never restart docker; never re-seed unless schema demands it).
 
-## Step 5 — VERIFY (reality gates — binding)
+## Step 5 — VERIFY (reality gates — binding; tier-dependent)
+
+**FAST cycle**: run only the scoped gates from § Cycle Tiers (scoped typecheck +
+touched-module vitest) and skip the rest of this step. **MILESTONE cycle**: run the
+full list below.
 
 Run this step **exactly once per cycle**, after the whole batch is built (Step 4) — not
 per feature. All must pass before anything is recorded or shipped:
@@ -182,7 +262,12 @@ per feature. All must pass before anything is recorded or shipped:
 If a gate fails, fix it in this cycle. Never commit a red build; never weaken a test to
 make it pass.
 
-## Step 6 — REVIEW
+## Step 6 — REVIEW (tier-dependent)
+
+**FAST cycle**: self-review per § Cycle Tiers (diff-stat + riskiest files vs Critical
+Rules); the `security-auditor` pass still applies to sensitive surfaces in every tier.
+**MILESTONE cycle**: run the full checklist below over the accumulated diff since
+`lastMilestoneCommit`.
 
 Run the Code Review checklist from `MASTER_PROMPT.md` § Code Review against your own
 diff (`git diff`). Claude Code: use the `code-reviewer` subagent; touches to auth,
@@ -196,6 +281,10 @@ done.** Updating only `CHANGELOG.md` and `MODULE_REGISTRY.md` is a protocol viol
 the generated trackers and focus ledger are equally mandatory, and the documentation
 must land **in the same commit/push as the code** so `main` never shows code whose
 docs lag behind.
+
+**FAST cycle**: only rows 1, 2, 3, 4, the § 6 half of 5, and 9 apply (plus 7 if a P1
+error was fixed) — rows 6, 8, and the § 7 half of 5 are milestone-only.
+**MILESTONE cycle**: every applicable row.
 
 **The checklist (tick every row; "n/a" only where the condition genuinely doesn't apply):**
 
@@ -231,10 +320,15 @@ in another agent's uncommitted work with `git add -A`.
 and deleting the branch (see § Parallel Agents rule 2). Leaving shipped work stranded
 on a branch violates the protocol.
 
-## Step 9 — REFILL & DISCOVER (mandatory every cycle — this generates NEW requirements)
+## Step 9 — REFILL & DISCOVER (tier-dependent — this generates NEW requirements)
 
-The system must never merely consume its backlog; every cycle must also **create**
-requirements by looking outward at the market. Two mandatory sub-steps:
+**FAST cycle**: skip 9a entirely; run 9b only if Up Next < 5 groomed items (grooming
+from already-logged Gap Backlog rows, no web research). **MILESTONE cycle**: both
+sub-steps are mandatory as written — discovery is a milestone activity because the
+Gap Backlog holds enough groomed work to feed 4+ fast cycles between passes.
+
+The system must never merely consume its backlog; it must also **create**
+requirements by looking outward at the market. Two sub-steps:
 
 **9a. Market discovery (one module per cycle).** Run the Discovery Protocol in
 [`.ai/MARKET_BENCHMARK.md`](MARKET_BENCHMARK.md) § 2:
@@ -263,7 +357,8 @@ priority class — P0–P2 emergencies always outrank RICE.
 
 ## Step 10 — REPORT
 
-End with a short human-readable summary: item chosen + why (which priority rung),
+End with a short human-readable summary: **cycle tier** (FAST n/4 or MILESTONE) and,
+if fast, the current `fastCyclesSinceFullGate` count; item chosen + why (which priority rung),
 what shipped (commits), gate results, **today's delivery line from
 `SPRINT_TRACKER.md`** (features + net LOC so far today), the focus module's progress
 toward 500 (from `MODULE_FOCUS.md` § 6), and the top 3 Up Next items.
@@ -439,6 +534,9 @@ Tokens spent re-deriving context are tokens not spent shipping features. Rules:
 
 ## Guardrails (absolute)
 
+- **Gate debt is bounded, never forgiven.** Max 4 fast cycles between milestones;
+  no module completion / focus advance / risky surface ships without a green
+  milestone; a red milestone gate is P0 within that same cycle.
 - **One coherent batch (100+ features or 15k+ LOC) per cycle.** Finish it
   completely (DB+API+UI) or split and log the remainder — never leave half-wired layers.
 - **Never** force-push, rewrite history, delete migrations, drop/reset databases, or
