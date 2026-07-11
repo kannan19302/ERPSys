@@ -1,8 +1,0 @@
-{
-  "slug": "scorecard-heuristic-fix",
-  "agent": "claude-code-cli-autopilot",
-  "scope": "Fix advanced-finance scorecard D1 false-positive (placeholder comment wording) + regen FEEDBACK.md + verify",
-  "acquiredAt": "2026-07-11T05:31:31.648Z",
-  "heartbeatAt": "2026-07-11T05:31:31.649Z",
-  "pid": 2882
-}

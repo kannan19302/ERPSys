@@ -1,7 +1,7 @@
 # Production-Readiness Scorecard
 
 > **Generated file** — produced by `node scripts/scorecard.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T05:27:44.642Z
+> Last generated: 2026-07-11T05:31:42.569Z
 
 ## System score (heuristic): 9.9 / 10
 
@@ -54,11 +54,11 @@ system reaches 10 only when every module and every platform dimension is 10.
 | subscriptions  | **8.6** | 10 | 0 | 10 | 10 | 10 | 10 | 10 |
 | auth  | **9.3** | 10 | 10 | 10 | 5 | 10 | 10 | 10 |
 | admin  | **9.4** | 6 | 10 | 10 | 10 | 10 | 10 | 10 |
-| advanced-finance  | **9.4** | 6 | 10 | 10 | 10 | 10 | 10 | 10 |
 | ecommerce  | **9.4** | 10 | 10 | 10 | 6 | 10 | 10 | 10 |
 | crm  | **9.6** | 10 | 9 | 10 | 10 | 10 | 8 | 10 |
 | sales  | **9.7** | 10 | 10 | 10 | 10 | 10 | 8 | 10 |
 | procurement  | **9.9** | 10 | 10 | 10 | 9 | 10 | 10 | 10 |
+| advanced-finance ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | advanced-hr ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | ai ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
 | analytics ✅ | **10** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
