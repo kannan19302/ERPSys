@@ -1,0 +1,8 @@
+{
+  "slug": "crm-portal-payment-pipeline-risk",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "CRM: portal PDF download + portal online payment collection + pipeline inspection/stage-risk alerts",
+  "acquiredAt": "2026-07-11T10:50:51.122Z",
+  "heartbeatAt": "2026-07-11T10:50:51.122Z",
+  "pid": 19030
+}
