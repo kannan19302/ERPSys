@@ -170,6 +170,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Products', href: '/crm/products', icon: Package },
             { name: 'Price Books', href: '/crm/price-books', icon: BookOpen },
             { name: 'Quotations', href: '/crm/quotations', icon: FileText },
+            { name: 'E-Signatures', href: '/crm/quotations/signatures', icon: FileText },
             { name: 'Sales Orders', href: '/crm/sales-orders', icon: ClipboardList },
           ]
         },
@@ -211,7 +212,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Territories', href: '/crm/territories', icon: MapPin },
+            { name: 'Assignment Rules', href: '/crm/territories/assignment-rules', icon: MapPin },
             { name: 'Commissions', href: '/crm/commissions', icon: DollarSign },
+            { name: 'Sales Cadences', href: '/crm/sequences/cadences', icon: BookOpen },
           ]
         },
         {

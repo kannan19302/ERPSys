@@ -2,6 +2,76 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales: Sales Ops Automation batch — territory assignment rules engine + multi-channel cadences + quote e-signature audit certificate
+
+**Why**: second cycle of the CRM & Sales focus (baseline 367 → 385 after the customer
+portal batch). Batched the top 3 RICE-ranked Up Next items together since they share
+one "sales ops automation" surface (territory routing, outbound engagement, deal
+closing) — territory assignment rules (RICE 53), multi-channel sales cadences (RICE
+42), quote e-signature certificate (RICE 43).
+
+**What shipped**:
+- **Schema** (migration `20260711101654_crm_sales_ops_automation`): `Lead.country`/
+  `Lead.region` (geo routing needs a real field to match against); `EmailSequenceStep`
+  gained `channel` (EMAIL/CALL/TASK/LINKEDIN), optional `templateId`, `subject`,
+  `instructions` — deepening the existing sequence model into a real cadence;
+  new `CadenceAutoEnrollRule`, `CadenceStepTask`, `TerritoryAssignmentRule`,
+  `TerritoryAssignmentLog`, `TerritoryRoundRobinState`, `QuotationSignatureCertificate`.
+- **Territory Assignment Rules Engine** (`crm-territory-rules.service.ts`/`.controller.ts`,
+  `/crm/territory-rules/*`): prioritized rule evaluation (GEOGRAPHY/INDUSTRY/
+  COMPANY_SIZE/ROUND_ROBIN) against `SalesTerritory`, a persisted round-robin cursor
+  (`TerritoryRoundRobinState`) so reps get evenly distributed leads, a full audit log
+  (`TerritoryAssignmentLog`) recording every decision including "no rule matched", and
+  a bulk `reassign-all` for open leads. UI: `/crm/territories/assignment-rules`.
+- **Multi-channel Sales Cadences** (`crm-cadences.service.ts`/`.controller.ts`,
+  `/crm/cadences/*`): cadences with mixed EMAIL/CALL/TASK/LINKEDIN steps,
+  `CadenceAutoEnrollRule` to auto-enroll matching Leads/Contacts, a due-step processor
+  that advances EMAIL steps automatically but materializes a `CadenceStepTask` for a
+  rep to manually complete non-email touchpoints (mirrors Salesforce Sales Engagement /
+  HubSpot Sequences — no `@Cron` infra exists in this codebase yet, so it's exposed as
+  a callable + a manual "process now" endpoint, same convention as
+  `card-spend-limit.service.ts`). UI: `/crm/sequences/cadences` (my-tasks queue +
+  cadence builder).
+- **Quote E-Signature Audit Certificate** (`crm-quote-signature.service.ts`/
+  `.controller.ts`, `/crm/quote-signature/*` + public `/public/quote-signature/*`):
+  request/sign flow on top of the existing `QuotationSignature` model, issuing a
+  `QuotationSignatureCertificate` on signing with a SHA-256 tamper-evident document
+  hash, a unique certificate number, and a structured audit trail (requested/viewed/
+  signed events with IP). Public sign + certificate-document endpoints use the
+  signature token/cuid as the credential (same pattern as the customer portal), so no
+  RBAC guard blocks the external signer. UI: `/crm/quotations/signatures`.
+- **Bug fix found and fixed while building this** (`packages/database/src/tenant-scope.ts`):
+  the tenant-scoping Prisma extension injected a `tenantId` filter into every model's
+  queries except a small allow-list — but `EmailSequenceStep` has no `tenantId` column
+  (it's scoped transitively via its parent `EmailSequence`), so any direct
+  `prisma.emailSequenceStep.*` call under a real request-scoped tenant session threw
+  `PrismaClientValidationError`. This was a **pre-existing latent bug** (the sequence
+  auto-enroll code path in `crm-marketing.service.ts` had never been exercised live —
+  the `/crm/sequences` page had no nav link). Unit tests never caught it because they
+  never set a tenant session. Added `EmailSequenceStep` to `MODELS_WITHOUT_TENANT`.
+  Discovered via live E2E verification of the new cadence auto-enroll endpoint, not by
+  spec inspection — confirms the value of the mandatory live-verify step.
+- **Tested**: 18 new unit tests (territory rules 6, cadences 6, quote signature 6) +
+  full API suite 172 files / 2268 tests passing. `pnpm turbo typecheck`: zero errors,
+  10/10 packages.
+- **Verified live**: dev stack up (Postgres/Redis + API :3001 + Next :3000). Manually
+  drove the real primary workflows via authenticated + CSRF-tokened requests: created a
+  territory + GEOGRAPHY rule, created a lead with `country: "US"`, ran
+  `/crm/territory-rules/assign` → correctly matched and logged; created a mixed-channel
+  cadence + auto-enroll rule, ran `/evaluate/:leadId` → enrolled; ran
+  `/process-due-steps` → advanced the EMAIL step. Added all 3 new pages to
+  `SMOKE_ROUTES` and ran `npx playwright test smoke -g "assignment-rules|cadences|signatures"`
+  — 3/3 passing.
+- **Batch-size note (honest)**: ~2,000 real new lines across 3 tightly-scoped but
+  genuinely complete features (schema + service + controller + UI + tests each) — below
+  the 100-feature/15k-LOC aspirational floor. Chose depth (a real round-robin cursor,
+  a real tamper-evident hash, a real due-step state machine) over padding unrelated
+  CRM sub-domains into the same migration to hit a number.
+- **Follow-ups queued**: conversation intelligence (RICE 14, still open), a real PDF
+  renderer for the signature certificate (currently renders the certificate content as
+  structured text — a PDF binary export is a further step), a real `@Cron`/scheduler
+  wiring for `processDueSteps` (currently manual-trigger only, documented as such).
+
 ## [2026-07-11] Finance & Accounting: FINAL UAT/E2E CLOSEOUT — module declared COMPLETE, focus advances to CRM & Sales
 
 **Why**: the only remaining blocker to closing out Finance & Accounting (5 of 6

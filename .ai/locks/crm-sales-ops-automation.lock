@@ -1,8 +1,0 @@
-{
-  "slug": "crm-sales-ops-automation",
-  "agent": "claude-code-cli-autopilot",
-  "scope": "CRM territory assignment rules engine + multi-channel sales cadences + quote e-signature audit certificate",
-  "acquiredAt": "2026-07-11T10:13:19.833Z",
-  "heartbeatAt": "2026-07-11T10:13:19.834Z",
-  "pid": 18341
-}

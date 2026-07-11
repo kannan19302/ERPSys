@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T10:08:17.642Z
+> Last generated: 2026-07-11T10:46:42.623Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1861 features** across 33 modules
+## System total: **1886 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 356 |
+| [crm](#crm) | 381 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,10 +1154,20 @@
 
 ## crm
 
-356 features
+381 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
+| POST | `/crm/cadences` | Create a multi-channel sales cadence | `crm.settings.create` |
+| GET | `/crm/cadences/:id` | Get a cadence with steps and auto-enroll rules | `crm.settings.read` |
+| GET | `/crm/cadences/auto-enroll-rules/list` | List auto-enroll rules | `crm.settings.read` |
+| POST | `/crm/cadences/auto-enroll-rules` | Create an auto-enroll rule | `crm.settings.read` |
+| PUT | `/crm/cadences/auto-enroll-rules/:id` | Update an auto-enroll rule | `crm.settings.update` |
+| DELETE | `/crm/cadences/auto-enroll-rules/:id` | Delete an auto-enroll rule | `crm.settings.delete` |
+| POST | `/crm/cadences/auto-enroll-rules/evaluate/:leadId` | Evaluate auto-enroll rules for a lead | `crm.lead.update` |
+| POST | `/crm/cadences/process-due-steps` | Process all due cadence steps now (manual trigger; scheduler-ready) | `crm.lead.update` |
+| GET | `/crm/cadences/step-tasks/mine` | List my pending cadence step tasks (call/task/LinkedIn touchpoints) | `crm.settings.update` |
+| POST | `/crm/cadences/step-tasks/:id/complete` | Complete (or skip) a cadence step task | `crm.lead.read` |
 | GET | `/crm/contracts` | List contracts (paginated, searchable, sortable) | `crm.contracts.read` |
 | GET | `/crm/contracts/stats` | Contract KPI stats (active/expiring-soon/expired/total value) | `crm.contracts.read` |
 | POST | `/crm/contracts/scan-renewals` | Scan and auto-transition contracts nearing renewal/expiry | `crm.contracts.read` |
@@ -1259,6 +1269,13 @@
 | PUT | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.update` |
 | DELETE | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.delete` |
 | POST | `/crm/pipelines/:pipelineId/stages/reorder` | — | `crm.pipelines.delete` |
+| GET | `/crm/quote-signature/quotations/:quotationId` | List signature requests for a quotation | `crm.opportunity.read` |
+| POST | `/crm/quote-signature/request` | Request an e-signature for a quotation | `crm.opportunity.read` |
+| GET | `/crm/quote-signature/certificates/:signatureId` | Get the signature audit certificate | `crm.opportunity.read` |
+| GET | `/crm/quote-signature/certificates/:signatureId/document` | Render the certificate document (text content a PDF export would embed) | `crm.opportunity.read` |
+| GET | `/crm/quote-signature/:token` | Look up a pending signature request by token | — |
+| POST | `/crm/quote-signature/sign` | Sign the quotation via the emailed token | — |
+| GET | `/crm/quote-signature/certificates/:signatureId/document` | Public: fetch the issued certificate document for a signed quotation | — |
 | GET | `/crm/segments` | — | `crm.segments.read` |
 | GET | `/crm/segments/:id` | — | `crm.segments.read` |
 | POST | `/crm/segments` | — | `crm.segments.read` |
@@ -1273,6 +1290,14 @@
 | DELETE | `/crm/sla-policies/:id` | — | `crm.sla-policies.update` |
 | GET | `/crm/sla/breaches` | — | `crm.sla-policies.delete` |
 | POST | `/crm/sla/detect-breaches` | — | `crm.sla-policies.read` |
+| GET | `/crm/territory-rules` | List territory assignment rules | `crm.settings.read` |
+| GET | `/crm/territory-rules/:id` | Get a territory assignment rule | `crm.settings.read` |
+| POST | `/crm/territory-rules` | Create a territory assignment rule | `crm.settings.read` |
+| PUT | `/crm/territory-rules/:id` | Update a territory assignment rule | `crm.settings.update` |
+| DELETE | `/crm/territory-rules/:id` | Delete a territory assignment rule | `crm.settings.delete` |
+| GET | `/crm/territory-rules/log/entries` | Get territory assignment audit log | `crm.report.read` |
+| POST | `/crm/territory-rules/assign` | Run territory assignment rules against a lead | `crm.report.read` |
+| POST | `/crm/territory-rules/reassign-all` | Bulk re-run territory assignment for all open leads | `crm.lead.update` |
 | GET | `/crm/customers` | Get customers | `crm.contact.read` |
 | GET | `/crm/customers/tags` | Get customer tags | `crm.contact.read` |
 | POST | `/crm/customers/tags` | Create customer tag | `crm.contact.read` |

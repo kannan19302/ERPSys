@@ -43,6 +43,12 @@ import { CrmEnablementService } from './crm-enablement.service';
 import { CrmRevOpsService } from './crm-revops.service';
 import { CrmPartnersService } from './crm-partners.service';
 import { CrmAutomationService } from './crm-automation.service';
+import { CrmTerritoryRulesService } from './crm-territory-rules.service';
+import { CrmTerritoryRulesController } from './crm-territory-rules.controller';
+import { CrmCadencesService } from './crm-cadences.service';
+import { CrmCadencesController } from './crm-cadences.controller';
+import { CrmQuoteSignatureService } from './crm-quote-signature.service';
+import { CrmQuoteSignatureController, CrmQuoteSignaturePublicController } from './crm-quote-signature.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -76,6 +82,9 @@ const CRM_SERVICES = [
   CrmPartnersService,
   CrmAutomationService,
   CustomerPortalService,
+  CrmTerritoryRulesService,
+  CrmCadencesService,
+  CrmQuoteSignatureService,
 ];
 
 @Module({
@@ -92,6 +101,10 @@ const CRM_SERVICES = [
     CrmExpansionController,
     CustomerPortalAdminController,
     CustomerPortalController,
+    CrmTerritoryRulesController,
+    CrmCadencesController,
+    CrmQuoteSignatureController,
+    CrmQuoteSignaturePublicController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

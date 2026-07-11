@@ -251,6 +251,13 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'close-tasks': 'Close Checklist',
   'budget-scenarios': 'Budget Scenarios',
   'scenario-comparison': 'Scenario Comparison',
+  // CRM Sales Ops Automation (territory rules, cadences, e-signature certs)
+  territories: 'Territories',
+  'assignment-rules': 'Assignment Rules',
+  sequences: 'Sequences',
+  cadences: 'Sales Cadences',
+  'auto-enroll': 'Auto-Enroll Rules',
+  signatures: 'E-Signatures',
 };
 
 export const formatSegment = (segment: string): string => {
