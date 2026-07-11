@@ -57,6 +57,18 @@ import { CrmRevenueIntelligenceService } from './crm-revenue-intelligence.servic
 import { CrmRevenueIntelligenceController } from './crm-revenue-intelligence.controller';
 import { CrmConversationIntelligenceService } from './crm-conversation-intelligence.service';
 import { CrmConversationIntelligenceController } from './crm-conversation-intelligence.controller';
+import { CrmConversionAnalyticsService } from './crm-conversion-analytics.service';
+import { CrmConversionAnalyticsController } from './crm-conversion-analytics.controller';
+import { CrmAiDraftingService } from './crm-ai-drafting.service';
+import { CrmAiDraftingController } from './crm-ai-drafting.controller';
+import { CrmGamificationService } from './crm-gamification.service';
+import { CrmGamificationController } from './crm-gamification.controller';
+import { CrmCommissionAutomationService } from './crm-commission-automation.service';
+import { CrmCommissionAutomationController } from './crm-commission-automation.controller';
+import { CrmCoachingService } from './crm-coaching.service';
+import { CrmCoachingController } from './crm-coaching.controller';
+import { CrmDealRoomService } from './crm-deal-room.service';
+import { CrmDealRoomController, CrmDealRoomPublicController } from './crm-deal-room.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -98,6 +110,12 @@ const CRM_SERVICES = [
   CrmPortalDocumentsService,
   CrmRevenueIntelligenceService,
   CrmConversationIntelligenceService,
+  CrmConversionAnalyticsService,
+  CrmAiDraftingService,
+  CrmGamificationService,
+  CrmCommissionAutomationService,
+  CrmCoachingService,
+  CrmDealRoomService,
 ];
 
 @Module({
@@ -121,6 +139,13 @@ const CRM_SERVICES = [
     CrmPipelineRiskController,
     CrmRevenueIntelligenceController,
     CrmConversationIntelligenceController,
+    CrmConversionAnalyticsController,
+    CrmAiDraftingController,
+    CrmGamificationController,
+    CrmCommissionAutomationController,
+    CrmCoachingController,
+    CrmDealRoomController,
+    CrmDealRoomPublicController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

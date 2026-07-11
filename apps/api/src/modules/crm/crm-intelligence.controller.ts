@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Param, Query, Req, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { z } from 'zod';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { CrmIntelligenceService } from './crm-intelligence.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -9,6 +11,17 @@ import { Request } from 'express';
 interface AuthenticatedRequest extends Request {
     user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
 }
+
+const registerPartnerLeadSchema = z.object({
+    partnerId: z.string(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    company: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    notes: z.string().optional(),
+});
+type RegisterPartnerLeadInput = z.infer<typeof registerPartnerLeadSchema>;
 
 @ApiTags('crm-intelligence')
 @ApiBearerAuth()
@@ -152,7 +165,7 @@ export class CrmIntelligenceController {
     @Permissions('crm.lead.create')
     async registerPartnerLead(
         @Req() req: AuthenticatedRequest,
-        @Body() body: { partnerId: string; firstName: string; lastName: string; company: string; email: string; phone?: string; notes?: string }
+        @ZodBody(registerPartnerLeadSchema) body: RegisterPartnerLeadInput
     ) {
         return { data: await this.intelligenceService.registerPartnerLead(req.user.tenantId, req.user.orgId || 'org-system-default', body) };
     }

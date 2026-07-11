@@ -696,6 +696,16 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   { code: 'sales.order.create', module: 'sales', resource: 'order', action: 'create', level: 'endpoint', description: 'Create Order (sales)' },
   { code: 'sales.order.update', module: 'sales', resource: 'order', action: 'update', level: 'endpoint', description: 'Update Order (sales)' },
   { code: 'sales.quotation.update', module: 'sales', resource: 'quotation', action: 'update', level: 'endpoint', description: 'Update Quotation (sales)' },
+  { code: 'crm.commission.read', module: 'crm', resource: 'commission', action: 'read', level: 'endpoint', description: 'View commission plans, gamification leaderboards/badges/streaks, and payouts (crm)' },
+  { code: 'crm.commission.update', module: 'crm', resource: 'commission', action: 'update', level: 'endpoint', description: 'Recompute gamification leaderboards/streaks and evaluate badge awards (crm)' },
+  { code: 'crm.commission.manage', module: 'crm', resource: 'commission', action: 'update', level: 'endpoint', description: 'Manage commission plans, tiers, SPIFFs, badges, and payout approval/payment (crm)' },
+  { code: 'crm.coaching.read', module: 'crm', resource: 'coaching', action: 'read', level: 'endpoint', description: 'View coaching rubrics, call scorecards, and coaching dashboards (crm)' },
+  { code: 'crm.coaching.create', module: 'crm', resource: 'coaching', action: 'create', level: 'endpoint', description: 'Score a call against a coaching rubric (crm)' },
+  { code: 'crm.coaching.update', module: 'crm', resource: 'coaching', action: 'update', level: 'endpoint', description: 'Acknowledge a coaching scorecard (rep-side) (crm)' },
+  { code: 'crm.coaching.manage', module: 'crm', resource: 'coaching', action: 'update', level: 'endpoint', description: 'Manage coaching rubrics and the coaching library (crm)' },
+  { code: 'crm.dealroom.read', module: 'crm', resource: 'dealroom', action: 'read', level: 'endpoint', description: 'View deal rooms, mutual action plan milestones, and stakeholder maps (crm)' },
+  { code: 'crm.dealroom.create', module: 'crm', resource: 'dealroom', action: 'create', level: 'endpoint', description: 'Create a deal room for an opportunity (crm)' },
+  { code: 'crm.dealroom.update', module: 'crm', resource: 'dealroom', action: 'update', level: 'endpoint', description: 'Manage deal room milestones, stakeholders, documents, and archival (crm)' },
 ];
 
 // ── Query helpers (role editor / access-control UI) ──

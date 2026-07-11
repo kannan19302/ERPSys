@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T11:26:27.373Z
+> Last generated: 2026-07-11T15:39:53.568Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1905 features** across 33 modules
+## System total: **1979 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 400 |
+| [crm](#crm) | 474 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,10 +1154,19 @@
 
 ## crm
 
-400 features
+474 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
+| POST | `/crm/ai-drafting/opportunities/:opportunityId/followup` | Generate a follow-up email draft for an opportunity/deal | `crm.opportunity.update` |
+| POST | `/crm/ai-drafting/quotations/:quotationId/cover-note` | Generate an AI cover note draft for a quotation | `crm.opportunity.update` |
+| POST | `/crm/ai-drafting/leads/:leadId/outreach` | Generate an AI outreach email draft for a lead | `crm.lead.update` |
+| POST | `/crm/ai-drafting/:draftId/regenerate` | Regenerate an existing draft (same context, optionally a new tone) | `crm.opportunity.update` |
+| GET | `/crm/ai-drafting` | List drafts, optionally scoped to a context (opportunity/quotation/lead) | `crm.opportunity.read` |
+| GET | `/crm/ai-drafting/:draftId` | Get a single draft | `crm.opportunity.read` |
+| PATCH | `/crm/ai-drafting/:draftId` | Edit a draft\ | `crm.opportunity.read` |
+| POST | `/crm/ai-drafting/:draftId/mark-used` | Mark a draft as used (sent by the rep through their own email client) | `crm.opportunity.update` |
+| POST | `/crm/ai-drafting/:draftId/discard` | Discard a draft | `crm.opportunity.update` |
 | POST | `/crm/cadences` | Create a multi-channel sales cadence | `crm.settings.create` |
 | GET | `/crm/cadences/:id` | Get a cadence with steps and auto-enroll rules | `crm.settings.read` |
 | GET | `/crm/cadences/auto-enroll-rules/list` | List auto-enroll rules | `crm.settings.read` |
@@ -1168,6 +1177,35 @@
 | POST | `/crm/cadences/process-due-steps` | Process all due cadence steps now (manual trigger; scheduler-ready) | `crm.lead.update` |
 | GET | `/crm/cadences/step-tasks/mine` | List my pending cadence step tasks (call/task/LinkedIn touchpoints) | `crm.settings.update` |
 | POST | `/crm/cadences/step-tasks/:id/complete` | Complete (or skip) a cadence step task | `crm.lead.read` |
+| POST | `/crm/coaching/rubrics` | Create a coaching scorecard rubric | `crm.coaching.manage` |
+| GET | `/crm/coaching/rubrics` | List coaching rubrics | `crm.coaching.read` |
+| GET | `/crm/coaching/rubrics/:id` | Get one coaching rubric | `crm.coaching.read` |
+| PUT | `/crm/coaching/rubrics/:id` | Update a coaching rubric | `crm.coaching.read` |
+| POST | `/crm/coaching/scorecards` | Score a logged call against a rubric (manager review) | `crm.coaching.create` |
+| GET | `/crm/coaching/calls/:activityId/scorecards` | List scorecards for a given call activity | `crm.coaching.read` |
+| GET | `/crm/coaching/scorecards/:id` | Get one scorecard | `crm.coaching.read` |
+| PUT | `/crm/coaching/scorecards/:id/acknowledge` | Rep acknowledges a coaching scorecard (closes the review loop) | `crm.coaching.read` |
+| GET | `/crm/coaching/reps/:repUserId/summary` | Per-rep coaching summary: average score, talk ratio, trend | `crm.coaching.read` |
+| GET | `/crm/coaching/dashboard` | Team-wide coaching dashboard: per-rep averages | `crm.coaching.read` |
+| POST | `/crm/coaching/library` | Add an exemplar call/note to the coaching library | `crm.coaching.read` |
+| GET | `/crm/coaching/library` | List coaching library items | `crm.coaching.read` |
+| DELETE | `/crm/coaching/library/:id` | Remove a coaching library item | `crm.coaching.read` |
+| GET | `/crm/commission-plans` | List commission plans | `crm.commission.read` |
+| GET | `/crm/commission-plans/:id` | Get a commission plan with tiers and SPIFFs | `crm.commission.read` |
+| POST | `/crm/commission-plans` | Create a commission plan | `crm.commission.read` |
+| PATCH | `/crm/commission-plans/:id` | Update a commission plan | `crm.commission.manage` |
+| DELETE | `/crm/commission-plans/:id` | Soft-delete a commission plan | `crm.commission.manage` |
+| POST | `/crm/commission-plans/:id/tiers` | Add a quota-attainment accelerator tier to a plan | `crm.commission.manage` |
+| DELETE | `/crm/commission-plans/tiers/:tierId` | Remove a tier from a plan | `crm.commission.manage` |
+| GET | `/crm/commission-plans/spiffs/all` | List SPIFF bonus rules | `crm.commission.read` |
+| POST | `/crm/commission-plans/spiffs` | Create a SPIFF bonus rule | `crm.commission.read` |
+| PATCH | `/crm/commission-plans/spiffs/:id` | Update a SPIFF bonus rule | `crm.commission.manage` |
+| DELETE | `/crm/commission-plans/spiffs/:id` | Delete a SPIFF bonus rule | `crm.commission.manage` |
+| POST | `/crm/commission-plans/calculate-payouts` | Calculate quota-attainment-tiered + SPIFF payouts for a plan/period | `crm.commission.manage` |
+| GET | `/crm/commission-plans/payouts/all` | List calculated payouts | `crm.commission.read` |
+| GET | `/crm/commission-plans/payouts/:id` | Get a single payout with SPIFF detail lines | `crm.commission.read` |
+| POST | `/crm/commission-plans/payouts/:id/approve` | Approve a draft payout | `crm.commission.read` |
+| POST | `/crm/commission-plans/payouts/:id/mark-paid` | Mark an approved payout as paid | `crm.commission.manage` |
 | GET | `/crm/contracts` | List contracts (paginated, searchable, sortable) | `crm.contracts.read` |
 | GET | `/crm/contracts/stats` | Contract KPI stats (active/expiring-soon/expired/total value) | `crm.contracts.read` |
 | POST | `/crm/contracts/scan-renewals` | Scan and auto-transition contracts nearing renewal/expiry | `crm.contracts.read` |
@@ -1192,51 +1230,87 @@
 | GET | `/crm/conversation-intelligence/calls/:id` | Get one logged call with its full transcript + AI analysis | `crm.activity.read` |
 | GET | `/crm/conversation-intelligence/calls` | List logged calls, optionally filtered by deal/lead/customer/sentiment | `crm.activity.read` |
 | GET | `/crm/conversation-intelligence/insights/summary` | Tenant-wide conversation intelligence rollup (sentiment mix, avg engagement score) | `crm.activity.read` |
-| GET | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
-| GET | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.read` |
-| POST | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
-| PUT | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.create` |
-| DELETE | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.update` |
+| GET | `/crm/conversion-analytics/summary` | Overall lead-to-opportunity-to-won funnel summary, with average cycle time | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/by-source` | Funnel conversion rates broken down by lead source | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/by-campaign` | Funnel conversion rates broken down by campaign | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/by-rep` | Funnel conversion-rate leaderboard broken down by assigned rep | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/trend` | Trailing weekly time-series of leads created vs. converted vs. opportunities won | `crm.lead.read` |
+| POST | `/crm/deal-rooms` | Create a deal room for an opportunity | `crm.dealroom.create` |
+| GET | `/crm/deal-rooms` | List deal rooms | `crm.dealroom.read` |
+| GET | `/crm/deal-rooms/:id` | Get one deal room with milestones/stakeholders/documents | `crm.dealroom.read` |
+| GET | `/crm/deal-rooms/by-opportunity/:opportunityId` | Get the deal room for a given opportunity (null if none exists) | `crm.dealroom.read` |
+| PUT | `/crm/deal-rooms/:id/archive` | Archive a deal room | `crm.dealroom.read` |
+| POST | `/crm/deal-rooms/:id/milestones` | Add a mutual action plan milestone | `crm.dealroom.update` |
+| PUT | `/crm/deal-rooms/milestones/:milestoneId` | Update a milestone (status, owner, due date) | `crm.dealroom.update` |
+| DELETE | `/crm/deal-rooms/milestones/:milestoneId` | Delete a milestone | `crm.dealroom.update` |
+| POST | `/crm/deal-rooms/:id/stakeholders` | Add a stakeholder to the deal room stakeholder map | `crm.dealroom.update` |
+| DELETE | `/crm/deal-rooms/stakeholders/:stakeholderId` | Remove a stakeholder | `crm.dealroom.update` |
+| POST | `/crm/deal-rooms/:id/documents` | Share a document into the deal room | `crm.dealroom.update` |
+| DELETE | `/crm/deal-rooms/documents/:documentId` | Remove a shared document | `crm.dealroom.update` |
+| GET | `/crm/deal-rooms/:token` | Buyer: view the deal room via their access token | — |
+| POST | `/crm/deal-rooms/:token/milestones/:milestoneId/complete` | Buyer: mark a buyer/mutual-owned milestone complete | — |
+| POST | `/crm/deal-rooms/:token/documents/:documentId/view` | Buyer: record that a shared document was viewed | — |
+| GET | `/crm/duplicate-rules` | List | `crm.duplicate-rules.read` |
+| GET | `/crm/duplicate-rules/:id` | Get One | `crm.duplicate-rules.read` |
+| POST | `/crm/duplicate-rules` | Create | `crm.duplicate-rules.read` |
+| PUT | `/crm/duplicate-rules/:id` | Update | `crm.duplicate-rules.create` |
+| DELETE | `/crm/duplicate-rules/:id` | Remove | `crm.duplicate-rules.update` |
 | GET | `/crm/duplicates/scan` | Scan all records for an entity, group duplicates | `crm.duplicate-rules.delete` |
 | POST | `/crm/duplicates/find` | Scan all records for an entity, group duplicates | `crm.duplicates.scan` |
-| POST | `/crm/leads/merge` | — | `crm.duplicates.scan` |
-| POST | `/crm/contacts/merge` | — | `crm.duplicates.merge` |
-| POST | `/crm/customers/merge` | — | `crm.duplicates.merge` |
-| POST | `/crm/accounts/merge` | — | `crm.duplicates.merge` |
-| GET | `/crm/expansion/deal-score/:id` | — | `crm.opportunity.read` |
-| GET | `/crm/expansion/rotting-deals` | — | `crm.opportunity.read` |
-| GET | `/crm/expansion/deal-velocity` | — | `crm.opportunity.read` |
-| GET | `/crm/expansion/revenue-waterfall` | — | `crm.opportunity.read` |
-| GET | `/crm/expansion/influence-map/:customerId` | — | `crm.opportunity.read` |
-| GET | `/crm/expansion/health-score/:customerId` | — | `crm.contact.read` |
-| GET | `/crm/expansion/risk-alerts` | — | `crm.customer.read` |
-| GET | `/crm/expansion/marketing-funnel` | — | `crm.customer.read` |
-| GET | `/crm/expansion/marketing-dashboard` | — | `crm.campaign.read` |
-| GET | `/crm/expansion/sla-calendar` | — | `crm.campaign.read` |
-| GET | `/crm/expansion/ticket-analytics` | — | `crm.case.read` |
-| GET | `/crm/expansion/objection-database` | — | `crm.case.read` |
-| GET | `/crm/expansion/gamification-leaderboard` | — | `crm.playbook.read` |
-| GET | `/crm/expansion/revops-metrics` | — | `crm.sales-target.read` |
-| GET | `/crm/expansion/commissions` | — | `crm.sales-target.read` |
-| GET | `/crm/expansion/partners` | — | `crm.commission.read` |
-| GET | `/crm/expansion/workflows` | — | `crm.partner.read` |
-| POST | `/crm/expansion/forecast-snapshots` | — | `crm.opportunity.update` |
-| GET | `/crm/expansion/forecast-snapshots` | — | `crm.opportunity.update` |
-| PUT | `/crm/expansion/forecast-snapshots/:id/freeze` | — | `crm.opportunity.read` |
-| PUT | `/crm/expansion/forecast-snapshots/:id/adjust` | — | `crm.opportunity.update` |
-| POST | `/crm/expansion/quotas` | — | `crm.opportunity.update` |
-| GET | `/crm/expansion/quotas` | — | `crm.sales-target.update` |
-| POST | `/crm/expansion/opportunities/:id/tags` | — | `crm.opportunity.update` |
-| DELETE | `/crm/expansion/opportunities/:id/tags/:tag` | — | `crm.opportunity.update` |
-| POST | `/crm/expansion/opportunities/:id/team` | — | `crm.opportunity.update` |
-| DELETE | `/crm/expansion/opportunities/:id/team/:userId` | — | `crm.opportunity.update` |
-| POST | `/crm/expansion/account-plans` | — | `crm.opportunity.update` |
-| GET | `/crm/expansion/account-plans` | — | `crm.customer.update` |
-| POST | `/crm/expansion/opportunities/:id/contact-roles` | — | `crm.opportunity.update` |
-| DELETE | `/crm/expansion/opportunities/:id/contact-roles/:contactId` | — | `crm.opportunity.update` |
-| POST | `/crm/expansion/customers/:id/health` | — | `crm.opportunity.update` |
-| GET | `/crm/expansion/customers/:id/health` | — | `crm.customer.update` |
-| POST | `/crm/expansion/customers/merge` | — | `crm.customer.read` |
+| POST | `/crm/leads/merge` | Merge Leads | `crm.duplicates.scan` |
+| POST | `/crm/contacts/merge` | Merge Contacts | `crm.duplicates.merge` |
+| POST | `/crm/customers/merge` | Merge Customers | `crm.duplicates.merge` |
+| POST | `/crm/accounts/merge` | Merge Accounts | `crm.duplicates.merge` |
+| GET | `/crm/expansion/deal-score/:id` | Get Deal Score | `crm.opportunity.read` |
+| GET | `/crm/expansion/rotting-deals` | Get Rotting Deals | `crm.opportunity.read` |
+| GET | `/crm/expansion/deal-velocity` | Get Deal Velocity | `crm.opportunity.read` |
+| GET | `/crm/expansion/revenue-waterfall` | Get Revenue Waterfall | `crm.opportunity.read` |
+| GET | `/crm/expansion/influence-map/:customerId` | Get Influence Map | `crm.contact.read` |
+| GET | `/crm/expansion/health-score/:customerId` | Get Health Score | `crm.contact.read` |
+| GET | `/crm/expansion/risk-alerts` | Get Risk Alerts | `crm.customer.read` |
+| GET | `/crm/expansion/marketing-funnel` | Get Marketing Funnel | `crm.campaign.read` |
+| GET | `/crm/expansion/marketing-dashboard` | Get Marketing Dashboard | `crm.campaign.read` |
+| GET | `/crm/expansion/sla-calendar` | Get Sla Calendar | `crm.case.read` |
+| GET | `/crm/expansion/ticket-analytics` | Get Ticket Analytics | `crm.case.read` |
+| GET | `/crm/expansion/objection-database` | Get Objections | `crm.playbook.read` |
+| GET | `/crm/expansion/gamification-leaderboard` | Get Leaderboard | `crm.playbook.read` |
+| GET | `/crm/expansion/revops-metrics` | Get Rev Ops Metrics | `crm.sales-target.read` |
+| GET | `/crm/expansion/commissions` | Get Commissions | `crm.sales-target.read` |
+| GET | `/crm/expansion/partners` | Get Partners | `crm.partner.read` |
+| GET | `/crm/expansion/workflows` | Get Workflows | `crm.workflow.read` |
+| POST | `/crm/expansion/forecast-snapshots` | Create Forecast Snapshot | `crm.opportunity.update` |
+| GET | `/crm/expansion/forecast-snapshots` | Get Forecast Snapshots | `crm.opportunity.read` |
+| PUT | `/crm/expansion/forecast-snapshots/:id/freeze` | Freeze Forecast Snapshot | `crm.opportunity.update` |
+| PUT | `/crm/expansion/forecast-snapshots/:id/adjust` | Adjust Forecast | `crm.opportunity.update` |
+| POST | `/crm/expansion/quotas` | Create Quota | `crm.sales-target.update` |
+| GET | `/crm/expansion/quotas` | Get Quotas | `crm.sales-target.read` |
+| POST | `/crm/expansion/opportunities/:id/tags` | Add Deal Tag | `crm.opportunity.update` |
+| DELETE | `/crm/expansion/opportunities/:id/tags/:tag` | Remove Deal Tag | `crm.opportunity.update` |
+| POST | `/crm/expansion/opportunities/:id/team` | Add Deal Team Member | `crm.opportunity.update` |
+| DELETE | `/crm/expansion/opportunities/:id/team/:userId` | Remove Deal Team Member | `crm.opportunity.update` |
+| POST | `/crm/expansion/account-plans` | Create Account Plan | `crm.customer.update` |
+| GET | `/crm/expansion/account-plans` | Get Account Plans | `crm.customer.read` |
+| POST | `/crm/expansion/opportunities/:id/contact-roles` | Assign Contact Role | `crm.opportunity.update` |
+| DELETE | `/crm/expansion/opportunities/:id/contact-roles/:contactId` | Remove Contact Role | `crm.opportunity.update` |
+| POST | `/crm/expansion/customers/:id/health` | Log Customer Health | `crm.customer.update` |
+| GET | `/crm/expansion/customers/:id/health` | Get Customer Health Logs | `crm.customer.update` |
+| POST | `/crm/expansion/customers/merge` | Merge Accounts | `crm.customer.update` |
+| GET | `/crm/expansion/customers/:customerId/hierarchy` | Get Account Hierarchy Real | `crm.customer.read` |
+| PUT | `/crm/expansion/customers/:customerId/parent` | Set Parent Account | `crm.customer.read` |
+| GET | `/crm/expansion/customers/:customerId/hierarchy-tree` | Get Hierarchy Tree | `crm.customer.update` |
+| GET | `/crm/expansion/customers/:customerId/hierarchy-rollup` | Get Hierarchy Rollup | `crm.customer.read` |
+| POST | `/crm/gamification/leaderboard/recompute` | Recompute + persist the leaderboard snapshot for a period | `crm.commission.update` |
+| GET | `/crm/gamification/leaderboard` | Get the leaderboard for a period | `crm.commission.read` |
+| GET | `/crm/gamification/leaderboard/periods` | List periods that have a computed leaderboard | `crm.commission.read` |
+| POST | `/crm/gamification/streaks/recompute` | Recompute activity/deals-won streaks for every rep | `crm.commission.read` |
+| GET | `/crm/gamification/streaks` | List current rep streaks | `crm.commission.read` |
+| GET | `/crm/gamification/badges` | List badge definitions | `crm.commission.read` |
+| POST | `/crm/gamification/badges` | Create a badge definition | `crm.commission.read` |
+| PATCH | `/crm/gamification/badges/:id` | Update a badge definition | `crm.commission.manage` |
+| DELETE | `/crm/gamification/badges/:id` | Soft-delete a badge definition | `crm.commission.manage` |
+| POST | `/crm/gamification/badges/evaluate` | Evaluate every active badge against current deal/activity data and award new ones | `crm.commission.update` |
+| GET | `/crm/gamification/badges/awards` | List badge awards (optionally for one user) | `crm.commission.read` |
+| GET | `/crm/gamification/me` | Get my own gamification summary (rank, badges, streaks) | `crm.commission.read` |
 | GET | `/crm/ml-models` | Get ML models | `crm.lead-scoring.read` |
 | POST | `/crm/ml-models/train` | Train lead scoring ML model | `crm.lead-scoring.read` |
 | GET | `/crm/leads/:id/scoring-factors` | Get lead scoring factors (top-3) | `crm.lead-scoring.create` |
@@ -1258,11 +1332,11 @@
 | GET | `/crm/campaigns-analytics/:id/ab-test` | Get email A/B test results | `crm.report.read` |
 | GET | `/crm/lead-scoring/rules` | List lead scoring rules | `crm.lead-scoring.read` |
 | GET | `/crm/lead-scoring/rules/:id` | List lead scoring rules | `crm.lead-scoring.read` |
-| POST | `/crm/lead-scoring/rules` | — | `crm.lead-scoring.read` |
-| PUT | `/crm/lead-scoring/rules/:id` | — | `crm.lead-scoring.create` |
-| DELETE | `/crm/lead-scoring/rules/:id` | — | `crm.lead-scoring.update` |
-| POST | `/crm/leads/:id/recalculate-score` | — | `crm.lead-scoring.delete` |
-| POST | `/crm/lead-scoring/recalculate-all` | — | `crm.lead-scoring.recalculate` |
+| POST | `/crm/lead-scoring/rules` | Create | `crm.lead-scoring.read` |
+| PUT | `/crm/lead-scoring/rules/:id` | Update | `crm.lead-scoring.create` |
+| DELETE | `/crm/lead-scoring/rules/:id` | Remove | `crm.lead-scoring.update` |
+| POST | `/crm/leads/:id/recalculate-score` | Recalc One | `crm.lead-scoring.delete` |
+| POST | `/crm/lead-scoring/recalculate-all` | Recalc All | `crm.lead-scoring.recalculate` |
 | GET | `/crm/mailbox-connections` | List mailbox connections for the current user | `crm.mailbox.read` |
 | POST | `/crm/mailbox-connections/connect` | Begin OAuth consent flow for a mailbox provider | `crm.mailbox.read` |
 | POST | `/crm/mailbox-connections/callback` | Handle OAuth callback: exchange code for tokens and store the connection | `crm.mailbox.create` |
@@ -1275,12 +1349,12 @@
 | POST | `/crm/pipeline-risk/:id/acknowledge` | Acknowledge a risk alert | `crm.opportunity.read` |
 | POST | `/crm/pipeline-risk/:id/snooze` | Snooze a risk alert for N days | `crm.opportunity.update` |
 | POST | `/crm/pipeline-risk/:id/resolve` | Resolve a risk alert | `crm.opportunity.update` |
-| GET | `/crm/pipelines/:pipelineId/stages` | — | `crm.pipelines.read` |
-| GET | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.read` |
-| POST | `/crm/pipelines/:pipelineId/stages` | — | `crm.pipelines.read` |
-| PUT | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.update` |
-| DELETE | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.delete` |
-| POST | `/crm/pipelines/:pipelineId/stages/reorder` | — | `crm.pipelines.delete` |
+| GET | `/crm/pipelines/:pipelineId/stages` | List | `crm.pipelines.read` |
+| GET | `/crm/pipelines/:pipelineId/stages/:id` | Get One | `crm.pipelines.read` |
+| POST | `/crm/pipelines/:pipelineId/stages` | Create | `crm.pipelines.read` |
+| PUT | `/crm/pipelines/:pipelineId/stages/:id` | Update | `crm.pipelines.update` |
+| DELETE | `/crm/pipelines/:pipelineId/stages/:id` | Remove | `crm.pipelines.delete` |
+| POST | `/crm/pipelines/:pipelineId/stages/reorder` | Reorder | `crm.pipelines.delete` |
 | GET | `/crm/quote-signature/quotations/:quotationId` | List signature requests for a quotation | `crm.opportunity.read` |
 | POST | `/crm/quote-signature/request` | Request an e-signature for a quotation | `crm.opportunity.read` |
 | GET | `/crm/quote-signature/certificates/:signatureId` | Get the signature audit certificate | `crm.opportunity.read` |
@@ -1290,20 +1364,20 @@
 | GET | `/crm/quote-signature/certificates/:signatureId/document` | Public: fetch the issued certificate document for a signed quotation | — |
 | POST | `/crm/revenue-intelligence/digest/generate` | Generate and send the deal-risk digest to reps + managers (admin/scheduler-triggered) | `crm.opportunity.update` |
 | GET | `/crm/revenue-intelligence/digest/runs` | List past digest runs (audit history), optionally scoped to one recipient | `crm.opportunity.read` |
-| GET | `/crm/segments` | — | `crm.segments.read` |
-| GET | `/crm/segments/:id` | — | `crm.segments.read` |
-| POST | `/crm/segments` | — | `crm.segments.read` |
-| PUT | `/crm/segments/:id` | — | `crm.segments.create` |
-| DELETE | `/crm/segments/:id` | — | `crm.segments.update` |
-| POST | `/crm/segments/:id/refresh` | — | `crm.segments.delete` |
-| GET | `/crm/segments/:id/members` | — | `crm.segments.update` |
-| GET | `/crm/sla-policies` | — | `crm.sla-policies.read` |
-| GET | `/crm/sla-policies/:id` | — | `crm.sla-policies.read` |
-| POST | `/crm/sla-policies` | — | `crm.sla-policies.read` |
-| PUT | `/crm/sla-policies/:id` | — | `crm.sla-policies.create` |
-| DELETE | `/crm/sla-policies/:id` | — | `crm.sla-policies.update` |
-| GET | `/crm/sla/breaches` | — | `crm.sla-policies.delete` |
-| POST | `/crm/sla/detect-breaches` | — | `crm.sla-policies.read` |
+| GET | `/crm/segments` | List | `crm.segments.read` |
+| GET | `/crm/segments/:id` | Get One | `crm.segments.read` |
+| POST | `/crm/segments` | Create | `crm.segments.read` |
+| PUT | `/crm/segments/:id` | Update | `crm.segments.create` |
+| DELETE | `/crm/segments/:id` | Remove | `crm.segments.update` |
+| POST | `/crm/segments/:id/refresh` | Refresh | `crm.segments.delete` |
+| GET | `/crm/segments/:id/members` | Members | `crm.segments.update` |
+| GET | `/crm/sla-policies` | List SLA policies for the tenant. | `crm.sla-policies.read` |
+| GET | `/crm/sla-policies/:id` | Get a single SLA policy by id. | `crm.sla-policies.read` |
+| POST | `/crm/sla-policies` | Create a new SLA policy. | `crm.sla-policies.read` |
+| PUT | `/crm/sla-policies/:id` | Update an existing SLA policy. | `crm.sla-policies.create` |
+| DELETE | `/crm/sla-policies/:id` | Delete an SLA policy. | `crm.sla-policies.update` |
+| GET | `/crm/sla/breaches` | List detected SLA breaches. | `crm.sla-policies.delete` |
+| POST | `/crm/sla/detect-breaches` | Run SLA breach detection now. | `crm.sla-policies.read` |
 | GET | `/crm/territory-rules` | List territory assignment rules | `crm.settings.read` |
 | GET | `/crm/territory-rules/:id` | Get a territory assignment rule | `crm.settings.read` |
 | POST | `/crm/territory-rules` | Create a territory assignment rule | `crm.settings.read` |
@@ -2094,12 +2168,12 @@
 |:--|:--|:--|:--|
 | POST | `/sales/pricing/calculate` | Calculate price for a product/quantity/customer | `sales.quotation.create` |
 | GET | `/sales/pricing/availability/:productId` | Calculate price for a product/quantity/customer | `sales.quotation.create` |
-| GET | `/sales/expansion/product-configuration/:productId` | — | `sales.quotation.read` |
-| GET | `/sales/expansion/quote-margin-analysis/:quotationId` | — | `sales.quotation.read` |
-| GET | `/sales/expansion/quote-profitability` | — | `sales.quotation.read` |
-| GET | `/sales/expansion/backorders` | — | `sales.quotation.read` |
-| GET | `/sales/expansion/order-sla-status` | — | `sales.order.read` |
-| GET | `/sales/expansion/order-profitability` | — | `sales.order.read` |
+| GET | `/sales/expansion/product-configuration/:productId` | Get Product Configuration | `sales.quotation.read` |
+| GET | `/sales/expansion/quote-margin-analysis/:quotationId` | Get Quote Margin Analysis | `sales.quotation.read` |
+| GET | `/sales/expansion/quote-profitability` | Get Quote Profitability | `sales.quotation.read` |
+| GET | `/sales/expansion/backorders` | Get Backorders | `sales.order.read` |
+| GET | `/sales/expansion/order-sla-status` | Get Order Sla Status | `sales.order.read` |
+| GET | `/sales/expansion/order-profitability` | Get Order Profitability | `sales.order.read` |
 | GET | `/sales/quotations` | List quotations | `sales.quotation.read` |
 | POST | `/sales/quotations` | List quotations | `sales.quotation.read` |
 | GET | `/sales/orders` | List sales orders | `sales.order.read` |

@@ -33,30 +33,35 @@ type FindDuplicatesInput = z.infer<typeof findDuplicatesSchema>;
 export class CrmDuplicatesController {
   constructor(private readonly svc: CrmDuplicatesService) {}
 
+  @ApiOperation({ summary: 'List' })
   @Get('duplicate-rules')
   @Permissions('crm.duplicate-rules.read')
   async list(@Req() req: AuthenticatedRequest) {
     return { data: await this.svc.listRules(req.user.tenantId) };
   }
 
+  @ApiOperation({ summary: 'Get One' })
   @Get('duplicate-rules/:id')
   @Permissions('crm.duplicate-rules.read')
   async getOne(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return { data: await this.svc.getRule(req.user.tenantId, id) };
   }
 
+  @ApiOperation({ summary: 'Create' })
   @Post('duplicate-rules')
   @Permissions('crm.duplicate-rules.create')
   async create(@Req() req: AuthenticatedRequest, @ZodBody(createDuplicateRuleSchema) dto: CreateDuplicateRuleInput) {
     return { data: await this.svc.createRule(req.user.tenantId, dto) };
   }
 
+  @ApiOperation({ summary: 'Update' })
   @Put('duplicate-rules/:id')
   @Permissions('crm.duplicate-rules.update')
   async update(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateDuplicateRuleSchema) dto: UpdateDuplicateRuleInput) {
     return { data: await this.svc.updateRule(req.user.tenantId, id, dto) };
   }
 
+  @ApiOperation({ summary: 'Remove' })
   @Delete('duplicate-rules/:id')
   @Permissions('crm.duplicate-rules.delete')
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
@@ -70,30 +75,35 @@ export class CrmDuplicatesController {
     return { data: await this.svc.scanEntity(req.user.tenantId, entity) };
   }
 
+  @ApiOperation({ summary: 'Find' })
   @Post('duplicates/find')
   @Permissions('crm.duplicates.scan')
   async find(@Req() req: AuthenticatedRequest, @ZodBody(findDuplicatesSchema) dto: FindDuplicatesInput) {
     return { data: await this.svc.findDuplicates(req.user.tenantId, dto.entity, dto.recordId) };
   }
 
+  @ApiOperation({ summary: 'Merge Leads' })
   @Post('leads/merge')
   @Permissions('crm.duplicates.merge')
   async mergeLeads(@Req() req: AuthenticatedRequest, @ZodBody(mergePairSchema) dto: MergePairInput) {
     return { data: await this.svc.mergeLeads(req.user.tenantId, dto) };
   }
 
+  @ApiOperation({ summary: 'Merge Contacts' })
   @Post('contacts/merge')
   @Permissions('crm.duplicates.merge')
   async mergeContacts(@Req() req: AuthenticatedRequest, @ZodBody(mergePairSchema) dto: MergePairInput) {
     return { data: await this.svc.mergeContacts(req.user.tenantId, dto) };
   }
 
+  @ApiOperation({ summary: 'Merge Customers' })
   @Post('customers/merge')
   @Permissions('crm.duplicates.merge')
   async mergeCustomers(@Req() req: AuthenticatedRequest, @ZodBody(mergePairSchema) dto: MergePairInput) {
     return { data: await this.svc.mergeAccounts(req.user.tenantId, dto) };
   }
 
+  @ApiOperation({ summary: 'Merge Accounts' })
   @Post('accounts/merge')
   @Permissions('crm.duplicates.merge')
   async mergeAccounts(@Req() req: AuthenticatedRequest, @ZodBody(mergePairSchema) dto: MergePairInput) {

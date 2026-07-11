@@ -262,6 +262,13 @@ export const SEGMENT_NAMES: Record<string, string> = {
   forecasting: 'Forecasting',
   'revenue-intelligence': 'Revenue Intelligence',
   'conversation-intelligence': 'Conversation Intelligence',
+  'conversion-analytics': 'Conversion Analytics',
+  'ai-drafting': 'AI Drafting',
+  gamification: 'Gamification & Leaderboards',
+  'commission-plans': 'Commission Plans',
+  coaching: 'Sales Coaching',
+  'deal-rooms': 'Deal Rooms',
+  'account-hierarchy': 'Account Hierarchy',
 };
 
 export const formatSegment = (segment: string): string => {

@@ -1640,7 +1640,7 @@ export class CrmForecastingService {
   // ForecastSnapshot
   async createForecastSnapshot(tenantId: string, orgId: string, data: any) {
     return prisma.forecastSnapshot.create({
-      data: { tenantId, orgId, ...data },
+      data: { ...data, tenantId, orgId, status: 'DRAFT' },
     });
   }
   
@@ -1661,7 +1661,7 @@ export class CrmForecastingService {
   // Quota
   async createQuota(tenantId: string, orgId: string, data: any) {
     return prisma.quota.create({
-      data: { tenantId, orgId, ...data },
+      data: { ...data, tenantId, orgId },
     });
   }
 

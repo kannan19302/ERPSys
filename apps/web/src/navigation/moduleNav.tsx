@@ -175,6 +175,10 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Pipeline Risk Alerts', href: '/crm/forecasting/pipeline-risk', icon: TrendingUp },
             { name: 'Revenue Intelligence', href: '/crm/forecasting/revenue-intelligence', icon: TrendingUp },
             { name: 'Conversation Intelligence', href: '/crm/conversation-intelligence', icon: Phone },
+            { name: 'Conversion Analytics', href: '/crm/forecasting/conversion-analytics', icon: BarChart3 },
+            { name: 'AI Drafting', href: '/crm/ai-drafting', icon: FileText },
+            { name: 'Sales Coaching', href: '/crm/coaching', icon: Phone },
+            { name: 'Deal Rooms', href: '/crm/deal-rooms', icon: FileText },
           ]
         },
         {
@@ -217,7 +221,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Territories', href: '/crm/territories', icon: MapPin },
             { name: 'Assignment Rules', href: '/crm/territories/assignment-rules', icon: MapPin },
             { name: 'Commissions', href: '/crm/commissions', icon: DollarSign },
+            { name: 'Commission Plans', href: '/crm/commission-plans', icon: DollarSign },
             { name: 'Sales Cadences', href: '/crm/sequences/cadences', icon: BookOpen },
+            { name: 'Gamification & Leaderboards', href: '/crm/gamification', icon: TrendingUp },
           ]
         },
         {
@@ -226,6 +232,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Forecasting', href: '/crm/forecasting', icon: TrendingUp },
             { name: 'Account Plans', href: '/crm/account-plans', icon: Shield },
+            { name: 'Account Hierarchy', href: '/crm/account-hierarchy', icon: Building2 },
             { name: 'Reports', href: '/crm/reports', icon: PieChart },
             { name: 'Dashboards', href: '/crm/dashboards', icon: Layers },
             { name: 'Advanced', href: '/crm/advanced', icon: Settings },
