@@ -4,10 +4,16 @@ import { NotificationPreferencesController } from './notification-preferences.co
 import { NotificationsService } from './notifications.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { NotificationsGateway } from './notifications.gateway';
+import { InvoiceOverdueNotificationService } from './invoice-overdue-notification.service';
 
 @Module({
   controllers: [NotificationsController, NotificationPreferencesController],
-  providers: [NotificationsService, NotificationDeliveryService, NotificationsGateway],
+  providers: [
+    NotificationsService,
+    NotificationDeliveryService,
+    NotificationsGateway,
+    InvoiceOverdueNotificationService,
+  ],
   exports: [NotificationsService, NotificationDeliveryService, NotificationsGateway],
 })
 export class NotificationsModule {}
