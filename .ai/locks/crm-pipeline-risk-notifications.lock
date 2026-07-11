@@ -1,0 +1,8 @@
+{
+  "slug": "crm-pipeline-risk-notifications",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "CRM: pipeline.deal.at_risk notification consumer + revenue-intelligence deal-risk digest + conversation intelligence (call logging/summary)",
+  "acquiredAt": "2026-07-11T11:08:45.681Z",
+  "heartbeatAt": "2026-07-11T11:08:45.681Z",
+  "pid": 32332
+}
