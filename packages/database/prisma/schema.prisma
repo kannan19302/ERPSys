@@ -685,6 +685,18 @@ model Activity {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
+  // Conversation intelligence (Up Next item 35): call logging + AI-generated
+  // summary auto-attached to CALL-type activities. Nullable/no-op for every
+  // other activity type.
+  callDurationSec      Int?      @map("call_duration_sec")
+  callRecordingUrl     String?   @map("call_recording_url")
+  transcriptText       String?   @map("transcript_text")
+  aiSummary            String?   @map("ai_summary")
+  aiSentiment          String?   @map("ai_sentiment") // POSITIVE, NEUTRAL, NEGATIVE
+  aiActionItems        Json?     @map("ai_action_items")
+  aiTalkTrackScore     Int?      @map("ai_talk_track_score") // 0-100 heuristic engagement score
+  aiSummaryGeneratedAt DateTime? @map("ai_summary_generated_at")
+
   lead        Lead?        @relation(fields: [leadId], references: [id])
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
   customer    Customer?    @relation(fields: [customerId], references: [id])
@@ -695,6 +707,28 @@ model Activity {
   @@index([opportunityId])
   @@index([customerId])
   @@map("activities")
+}
+
+model DealRiskDigestRun {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  orgId               String   @map("org_id")
+  recipientUserId     String   @map("recipient_user_id")
+  scope               String   @default("REP") // REP (own deals) or MANAGER (team rollup)
+  periodStart         DateTime @map("period_start")
+  periodEnd           DateTime @map("period_end")
+  newAlertCount       Int      @default(0) @map("new_alert_count")
+  openAlertCount      Int      @default(0) @map("open_alert_count")
+  criticalCount       Int      @default(0) @map("critical_count")
+  atRiskDealCount     Int      @default(0) @map("at_risk_deal_count")
+  atRiskPipelineValue Decimal  @default(0) @map("at_risk_pipeline_value") @db.Decimal(18, 2)
+  sentAt              DateTime @default(now()) @map("sent_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, recipientUserId])
+  @@index([tenantId, sentAt])
+  @@map("deal_risk_digest_runs")
 }
 
 model EmailTemplate {

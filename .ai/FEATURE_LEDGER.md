@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T11:05:27.530Z
+> Last generated: 2026-07-11T11:26:27.373Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1898 features** across 33 modules
+## System total: **1905 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 393 |
+| [crm](#crm) | 400 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,7 +1154,7 @@
 
 ## crm
 
-393 features
+400 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1187,6 +1187,11 @@
 | POST | `/crm/contracts/:contractId/milestones` | Add a billing milestone to a contract | `crm.contracts.update` |
 | DELETE | `/crm/contracts/:contractId/milestones/:id` | Delete a billing milestone | `crm.contracts.update` |
 | POST | `/crm/contracts/:contractId/milestones/:id/invoice` | Trigger milestone invoicing (generates a draft Invoice in Finance module) | `crm.contracts.update` |
+| POST | `/crm/conversation-intelligence/calls` | Log a call and auto-generate its AI summary/sentiment/action items | `crm.activity.create` |
+| POST | `/crm/conversation-intelligence/calls/:id/regenerate-summary` | Re-run AI analysis on a logged call (e.g. after a transcript correction) | `crm.activity.update` |
+| GET | `/crm/conversation-intelligence/calls/:id` | Get one logged call with its full transcript + AI analysis | `crm.activity.read` |
+| GET | `/crm/conversation-intelligence/calls` | List logged calls, optionally filtered by deal/lead/customer/sentiment | `crm.activity.read` |
+| GET | `/crm/conversation-intelligence/insights/summary` | Tenant-wide conversation intelligence rollup (sentiment mix, avg engagement score) | `crm.activity.read` |
 | GET | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
 | GET | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.read` |
 | POST | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
@@ -1283,6 +1288,8 @@
 | GET | `/crm/quote-signature/:token` | Look up a pending signature request by token | — |
 | POST | `/crm/quote-signature/sign` | Sign the quotation via the emailed token | — |
 | GET | `/crm/quote-signature/certificates/:signatureId/document` | Public: fetch the issued certificate document for a signed quotation | — |
+| POST | `/crm/revenue-intelligence/digest/generate` | Generate and send the deal-risk digest to reps + managers (admin/scheduler-triggered) | `crm.opportunity.update` |
+| GET | `/crm/revenue-intelligence/digest/runs` | List past digest runs (audit history), optionally scoped to one recipient | `crm.opportunity.read` |
 | GET | `/crm/segments` | — | `crm.segments.read` |
 | GET | `/crm/segments/:id` | — | `crm.segments.read` |
 | POST | `/crm/segments` | — | `crm.segments.read` |

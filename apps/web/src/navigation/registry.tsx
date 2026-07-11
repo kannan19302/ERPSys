@@ -260,6 +260,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   signatures: 'E-Signatures',
   'pipeline-risk': 'Pipeline Risk Alerts',
   forecasting: 'Forecasting',
+  'revenue-intelligence': 'Revenue Intelligence',
+  'conversation-intelligence': 'Conversation Intelligence',
 };
 
 export const formatSegment = (segment: string): string => {

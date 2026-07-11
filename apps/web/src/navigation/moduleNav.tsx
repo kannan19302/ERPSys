@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle,
+  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -173,6 +173,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'E-Signatures', href: '/crm/quotations/signatures', icon: FileText },
             { name: 'Sales Orders', href: '/crm/sales-orders', icon: ClipboardList },
             { name: 'Pipeline Risk Alerts', href: '/crm/forecasting/pipeline-risk', icon: TrendingUp },
+            { name: 'Revenue Intelligence', href: '/crm/forecasting/revenue-intelligence', icon: TrendingUp },
+            { name: 'Conversation Intelligence', href: '/crm/conversation-intelligence', icon: Phone },
           ]
         },
         {

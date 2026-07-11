@@ -2,6 +2,72 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales, cycle 4 — pipeline-risk notification consumer + revenue-intelligence digest + conversation intelligence
+
+- **Added**: `PipelineRiskNotificationService` (`apps/api/src/modules/notifications/pipeline-risk-notification.service.ts`,
+  registered in `notifications.module.ts`) — the real consumer for `pipeline.deal.at_risk`,
+  which `CrmPipelineRiskService` had emitted since last cycle with zero listeners (Up
+  Next item 39, same fix pattern as `InvoiceOverdueNotificationService`). Notifies the
+  opportunity's assigned rep directly when there is one; falls back to every tenant user
+  holding a CRM opportunity permission (`crm.opportunity.update`/`read`/`*`) when the
+  deal is unassigned or the rep is no longer active, so a HIGH/CRITICAL risk alert is
+  never silently dropped.
+- **Added**: `DealRiskDigestRun` Prisma model + `CrmRevenueIntelligenceService`/
+  `CrmRevenueIntelligenceController` (`/crm/revenue-intelligence/digest/generate`,
+  `/crm/revenue-intelligence/digest/runs`) — Up Next item 42, Gong/Clari-style deal-risk
+  digest: an admin- or scheduler-triggered rollup (`windowHours` query param, 24=daily/
+  168=weekly) of open `PipelineRiskAlert` rows per assigned rep (rep digest) plus every
+  CRM-manager-permissioned user (team rollup), each persisted as an auditable digest-run
+  row (new/open/critical alert counts, distinct at-risk deal count, total pipeline value
+  at risk) and delivered via the existing `notification.send` event.
+- **Added**: `Activity` model extended with call-intelligence columns (`callDurationSec`,
+  `callRecordingUrl`, `transcriptText`, `aiSummary`, `aiSentiment`, `aiActionItems`,
+  `aiTalkTrackScore`, `aiSummaryGeneratedAt`) + `CrmConversationIntelligenceService`/
+  `CrmConversationIntelligenceController` (`/crm/conversation-intelligence/*`) — Up Next
+  item 35, Salesforce Einstein Conversation Insights / HubSpot Breeze-style conversation
+  intelligence: logs a call as a CALL `Activity` and deterministically analyzes the
+  transcript (keyword-scored POSITIVE/NEUTRAL/NEGATIVE sentiment, regex-extracted action
+  items from "will"/"follow up"/"I'll" phrasing, a 0-100 heuristic talk-track engagement
+  score from sentence/question density), the same "simulated-AI" pattern already used by
+  `InvoiceCaptureService`'s OCR simulation — a swappable seam for a real NLP/LLM provider
+  later without changing the API contract. Includes `regenerateSummary` (re-run analysis
+  after a transcript correction) and a tenant-wide insights rollup endpoint.
+- **Added** (UI): `/crm/forecasting/revenue-intelligence` (digest history table + Send
+  Daily/Weekly Digest actions) and `/crm/conversation-intelligence` (call log form +
+  sentiment/engagement-score/action-items table + tenant-wide insights summary tiles).
+  Both registered in `moduleNav.tsx`, `registry.tsx` `SEGMENT_NAMES`, and
+  `e2e/smoke.spec.ts` `SMOKE_ROUTES`.
+- **Migration**: `20260711111133_crm_conversation_intelligence_and_risk_digest`.
+- **Tested**: 19 new unit tests — 6 for `PipelineRiskNotificationService` (assigned-rep
+  direct notify, CRM-permission fallback for unassigned/inactive-rep deals, tenant
+  isolation, missing-field no-op, no-recipient no-op), 4 for `CrmRevenueIntelligenceService`
+  (rep + manager digest fan-out, zero-alerts no-op, unassigned-opportunity handling,
+  digest-run history listing), 9 for `CrmConversationIntelligenceService` (positive/
+  negative sentiment classification, action-item extraction, missing-CRM-link rejection,
+  regenerate-summary success/not-found/no-transcript, tenant-wide insights aggregation,
+  filtered call listing). Full API suite: 180/180 files, 2321/2321 tests passing.
+  `pnpm turbo typecheck`: zero errors (API + web).
+- **Verified live**: dev stack (Postgres/Redis + API :3001 + Next dev server :3000) —
+  Playwright smoke suite run against the 3 relevant routes (`pipeline-risk`,
+  `revenue-intelligence`, `conversation-intelligence`): 3/3 passing. Manually drove the
+  primary workflow in a real authenticated browser session: created a real `Opportunity`
+  via the app's own session/CSRF, recomputed pipeline risk, sent a daily digest, then
+  logged a call with a positive transcript and confirmed the UI rendered the AI-generated
+  POSITIVE sentiment badge and "Positive call…" summary text live from the API response.
+- **Why this item**: top of the CRM Up Next queue per RICE — item 39 (RICE 135) closes a
+  real dead-event gap identical to the `finance.invoice.overdue` fix from Finance's focus
+  turn; items 42 (RICE 37) and 35 (RICE 14) were the next-cheapest queued benchmark items
+  and share the same `PipelineRiskAlert`/notification-event surface, so batching them
+  avoided three separate migrations/context-switches.
+- **Batch-size note (honest)**: ~1,500 LOC, 3 features (2 new API surfaces + 1 event
+  consumer) — below the 100-feature/15k-LOC aspirational floor. These were genuinely the
+  three cheapest remaining high-RICE items in the CRM Up Next queue; the alternative was
+  padding the batch with unrelated CRM sub-domains just to hit a number, which the
+  guardrail explicitly allows skipping when the queue's real next items are this small.
+- **Follow-ups queued**: real payment gateway wiring for portal payments (item 40,
+  infra-blocked), AI-assisted email/quote drafting (item 41), lead-to-opportunity funnel
+  analytics dashboard (item 43) — see Up Next.
+
 ## [2026-07-11] CRM & Sales, cycle 3 — pipeline inspection risk alerts + portal online payment collection + portal PDF download
 
 **Why**: third CRM & Sales focus cycle. Batched Up Next items 37, 38, and 36 together
