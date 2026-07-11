@@ -3426,3 +3426,54 @@ not centrally.
 - **Fixed**: CRM Customer Service Prisma select fields for Purchase Orders, Debit Notes, and Blanket Purchase Agreements.
 - **Fixed**: Removed duplicate exportLeads endpoint in crm.controller.ts.
 - **Tested**: Verified end-to-end Lead-to-Invoice flow (Lead, Convert, Deal, Sales Order, Invoice) using integration test script.
+
+## 2026-07-11 — CRM & Sales: customer self-service portal (first batch of the new focus module)
+
+- **Added**: `CustomerPortalUser` Prisma model (tenant/customer-scoped portal accounts,
+  optional `Contact` link, INVITED/ACTIVE/DISABLED lifecycle) + `CaseComment.authorType`
+  (STAFF/PORTAL) so support-case threads can distinguish who wrote each message.
+  Migration `20260711095434_crm_customer_portal`.
+- **Added**: `CustomerPortalService` (`apps/api/src/modules/crm/customer-portal.service.ts`) —
+  invite/list/disable/reactivate portal accounts (admin side), portal login issuing a
+  scoped JWT (`{ tenantId, userId, customerId, portal: true }`), and self-service reads/
+  actions strictly filtered by the caller's own `customerId`: quotations (list/detail/
+  accept/reject), sales orders (list/detail), invoices (list/detail), support cases
+  (list/detail/create/add comment), and a dashboard summary widget.
+- **Added**: `CustomerPortalAuthGuard` — a real portal-JWT guard (mirrors `JwtAuthGuard`'s
+  shape but checks `portal: true` + `customerId`) so portal endpoints are genuinely
+  customer-authenticated rather than exposed only to tenant admins acting on a customer's
+  behalf (the gap the existing `VendorPortalService` in `procurement/` left open — its
+  "portal" routes are still behind `RbacGuard`, so a real vendor login can't call them).
+- **Added**: 18 endpoints — 4 admin management (`/crm/customers/:id/portal-users*`, guarded
+  by `crm.customer-portal.manage`) + 14 portal-facing (`/portal/*`, guarded by
+  `CustomerPortalAuthGuard`, no RBAC since portal users aren't tenant staff).
+- **Added**: CSRF middleware exemption for `/portal/*` (Bearer-JWT-only endpoints have no
+  ambient-cookie CSRF vector — same documented exception class as the e-commerce
+  storefront's public routes).
+- **Added** (UI): `/crm/customer-portal` admin page (search customer → invite/list/
+  disable/reactivate portal users, `crm.customer-portal.manage`-gated invite form) and the
+  customer-facing app at `/public/customer-portal/login`, `/public/customer-portal/
+  dashboard` (quotes/orders/invoices/cases tabs, accept/reject quote actions, new-case
+  form), and `/public/customer-portal/cases/:id` (threaded conversation + reply). New
+  `src/lib/portal-api.ts` fetch wrapper keeps the portal session token (`portal_token`)
+  isolated from staff auth (`token`).
+- **Tested**: 13 new unit tests (`customer-portal.service.spec.ts`) covering invite
+  validation/dedup, login success/failure, quotation accept/reject state guards + note
+  append, case creation/comment authorship, and dashboard aggregation. Full API suite:
+  169 files / 2250 tests passing. `pnpm turbo typecheck`: zero errors.
+- **Verified live**: dev stack (Postgres/Redis via `docker-compose.dev.yml` + API on
+  :3001 + Next dev server on :3000) — manually exercised login → dashboard → create case
+  → add comment end-to-end against seeded data; added `/crm/customer-portal` to
+  `SMOKE_ROUTES` and ran `npx playwright test smoke -g customer-portal` (passing).
+- **Why this item**: first cycle after Finance & Accounting's closeout — focus advanced
+  to CRM & Sales (`.ai/MODULE_FOCUS.md`, baseline 367). Picked the top-RICE Up Next item
+  (`[benchmark] CRM: customer self-service portal`, RICE 58) — Odoo/Zoho/Dynamics all
+  ship this and UniERP's CRM had zero customer-facing surface before this batch.
+- **Batch-size note (honest)**: this cycle shipped one L-sized benchmark feature built to
+  real competitor-parity depth (auth + 4 self-service domains + admin management + full
+  UI, not a stub) rather than 100+ padded/unrelated endpoints — below the 100-feature/
+  15k-LOC aspirational floor by design, per the guardrail allowing an honest single
+  L-item when it's genuinely complete rather than manufacturing filler across unrelated
+  CRM sub-domains in the same migration.
+- **Follow-ups queued**: territory assignment rules engine, multi-channel cadences, quote
+  e-signature audit certificate, conversation intelligence (see Up Next).

@@ -287,6 +287,7 @@ model Customer {
   contracts     Contract[]
   accountPlans  AccountPlan[]
   healthLogs    CustomerHealthLog[]
+  portalUsers   CustomerPortalUser[]
 
   @@index([tenantId])
   @@index([tenantId, orgId])
@@ -368,6 +369,7 @@ model Contact {
   tags             ContactTagLink[]
   cases            Case[]
   opportunityRoles ContactRole[]
+  portalUsers      CustomerPortalUser[]
 
   @@unique([tenantId, orgId, email])
   @@index([tenantId])
@@ -8005,6 +8007,7 @@ model CaseComment {
   tenantId   String   @map("tenant_id")
   caseId     String   @map("case_id")
   authorId   String?  @map("author_id")
+  authorType String   @default("STAFF") @map("author_type") // STAFF, PORTAL
   body       String
   isInternal Boolean  @default(false) @map("is_internal")
   createdAt  DateTime @default(now()) @map("created_at")
@@ -8014,6 +8017,31 @@ model CaseComment {
   @@index([tenantId])
   @@index([caseId])
   @@map("crm_case_comments")
+}
+
+// ════════════════════════════════════════════════
+// CRM — CUSTOMER SELF-SERVICE PORTAL
+// ════════════════════════════════════════════════
+
+model CustomerPortalUser {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  customerId   String    @map("customer_id")
+  contactId    String?   @map("contact_id")
+  email        String
+  passwordHash String    @map("password_hash")
+  status       String    @default("INVITED") // INVITED, ACTIVE, DISABLED
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contact  Contact? @relation(fields: [contactId], references: [id])
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("customer_portal_users")
 }
 
 // ════════════════════════════════════════════════

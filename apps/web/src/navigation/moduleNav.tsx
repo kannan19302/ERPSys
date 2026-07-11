@@ -158,6 +158,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Vendors', href: '/crm/vendors', icon: Building },
             { name: 'Contacts', href: '/crm/contacts', icon: Users },
             { name: 'Contracts', href: '/crm/contracts', icon: FileText },
+            { name: 'Customer Portal', href: '/crm/customer-portal', icon: Users },
           ]
         },
         {

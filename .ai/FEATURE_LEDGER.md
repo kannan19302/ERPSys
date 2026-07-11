@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T09:16:45.355Z
+> Last generated: 2026-07-11T10:08:17.642Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1843 features** across 33 modules
+## System total: **1861 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 338 |
+| [crm](#crm) | 356 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,7 +1154,7 @@
 
 ## crm
 
-338 features
+356 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1496,6 +1496,24 @@
 | POST | `/crm/cases/:id/comments` | Add a comment to a case | `crm.case.update` |
 | POST | `/crm/cases/bulk-status` | Bulk update case status | `crm.case.update` |
 | GET | `/crm/cases-export` | Export cases (CSV-ready JSON) | `crm.case.read` |
+| POST | `/crm/customers/:customerId/portal-users` | Invite a customer portal user | `crm.customer-portal.manage` |
+| GET | `/crm/customers/:customerId/portal-users` | List customer portal users | `crm.customer-portal.manage` |
+| PATCH | `/crm/customers/:customerId/portal-users/:userId/disable` | Disable a customer portal user | `crm.customer-portal.manage` |
+| PATCH | `/crm/customers/:customerId/portal-users/:userId/reactivate` | Reactivate a customer portal user | `crm.customer-portal.manage` |
+| POST | `/portal/auth/login` | Customer portal login | — |
+| GET | `/portal/dashboard` | Portal dashboard summary | — |
+| GET | `/portal/quotations` | List my quotations | — |
+| GET | `/portal/quotations/:id` | Get one of my quotations | — |
+| POST | `/portal/quotations/:id/accept` | Accept one of my quotations | — |
+| POST | `/portal/quotations/:id/reject` | Reject one of my quotations | — |
+| GET | `/portal/orders` | List my sales orders | — |
+| GET | `/portal/orders/:id` | Get one of my sales orders | — |
+| GET | `/portal/invoices` | List my invoices | — |
+| GET | `/portal/invoices/:id` | Get one of my invoices | — |
+| GET | `/portal/cases` | List my support cases | — |
+| GET | `/portal/cases/:id` | Get one of my support cases with public comments | — |
+| POST | `/portal/cases` | Submit a new support case | — |
+| POST | `/portal/cases/:id/comments` | Add a comment to one of my support cases | — |
 
 ## devops
 

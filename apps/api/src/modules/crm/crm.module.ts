@@ -30,6 +30,9 @@ import { CrmContractsController } from './crm-contracts.controller';
 import { CrmMailboxService } from './crm-mailbox.service';
 import { CrmMailboxController } from './crm-mailbox.controller';
 import { CrmExpansionController } from './crm-expansion.controller';
+import { CustomerPortalService } from './customer-portal.service';
+import { CustomerPortalAdminController } from './customer-portal-admin.controller';
+import { CustomerPortalController } from './customer-portal.controller';
 
 // New expansion services
 import { CrmForecastingService } from './crm-forecasting.service';
@@ -72,6 +75,7 @@ const CRM_SERVICES = [
   CrmRevOpsService,
   CrmPartnersService,
   CrmAutomationService,
+  CustomerPortalService,
 ];
 
 @Module({
@@ -86,6 +90,8 @@ const CRM_SERVICES = [
     CrmContractsController,
     CrmMailboxController,
     CrmExpansionController,
+    CustomerPortalAdminController,
+    CustomerPortalController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

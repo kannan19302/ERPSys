@@ -189,6 +189,7 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('crm', 'mailbox', 'update', 'endpoint', 'Update crm mailbox items'),
   p('crm', 'customer', 'read', 'endpoint', 'View customers'),
   p('crm', 'customer', 'update', 'endpoint', 'Update customers'),
+  p('crm', 'customer-portal', 'manage', 'endpoint', 'Manage customer self-service portal accounts'),
   p('crm', 'campaign', 'read', 'endpoint', 'View marketing campaigns'),
   p('crm', 'playbook', 'read', 'endpoint', 'View sales enablement playbooks'),
   p('crm', 'sales-target', 'read', 'endpoint', 'View sales targets'),

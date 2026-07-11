@@ -79,6 +79,7 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/finance/advanced/treasury' },
   { path: '/crm/contacts' },
   { path: '/crm/leads' },
+  { path: '/crm/customer-portal' },
   { path: '/inventory/products' },
   { path: '/hr/employees' },
   { path: '/procurement/purchase-orders' },

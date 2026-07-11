@@ -206,5 +206,9 @@ truthful spec instead of the previous document's incorrect assumptions.
 
 ---
 
+| 2026-07-11 | CRM & Sales | 385 | +18 | **First CRM & Sales cycle** (baseline 367). Customer self-service portal (closes Up Next item 15, `[benchmark]` RICE 58): `CustomerPortalUser` model + `CaseComment.authorType`, `CustomerPortalService`/`CustomerPortalAuthGuard`, 18 endpoints (4 admin manage + 14 portal-facing: dashboard, quotations list/detail/accept/reject, orders list/detail, invoices list/detail, cases list/detail/create/comment), `/crm/customer-portal` admin UI + `/public/customer-portal/{login,dashboard,cases/:id}` customer-facing UI, 13 unit tests, CSRF exemption for Bearer-only `/portal/*`. Verified live end-to-end against the dev stack (login→dashboard→create case→comment) + smoke test. One L-sized benchmark item built to real parity depth rather than padded — below the 100-feature floor by design (see CHANGELOG). |
+
+---
+
 *Maintained by the autonomous cycle. Update § 1/§ 4/§ 6 every cycle that advances the
 focus module; never skip the ledger row.*

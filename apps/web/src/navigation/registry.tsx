@@ -65,6 +65,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'operations-service': 'Operations & Service',
   operations: 'Operations',
   customers: 'Customers',
+  'customer-portal': 'Customer Portal',
   vendors: 'Vendors',
   contacts: 'Contacts',
   contracts: 'Contracts',

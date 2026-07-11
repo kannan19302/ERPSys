@@ -92,7 +92,9 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Conversation intelligence (call logging + AI summary into Activity) | Salesforce Einstein, HubSpot | MISSING | M | M |
 | Quote e-signature with legally-binding audit certificate | HubSpot, Zoho Sign, Odoo Sign | PARTIAL (QuotationSignature model; no cert/audit doc) | M | S |
 | Territory assignment rules engine (auto-routing by geo/size/round-robin) | Salesforce, Dynamics | PARTIAL (Territory model exists; no auto-assignment rules) | H | M |
-| Customer portal (self-service: view quotes/orders/invoices/tickets) | Odoo, Zoho, Dynamics | MISSING | H | L |
+| Customer portal (self-service: view quotes/orders/invoices/tickets) | Odoo, Zoho, Dynamics | ✅ SHIPPED 2026-07-11 (login, dashboard, quote accept/reject, orders/invoices read, case create+thread — 18 endpoints, see CHANGELOG) | H | L |
+| Customer portal: document/PDF download (quote/invoice PDF from the portal, not just structured data) | Odoo, Zoho, Dynamics | MISSING (portal returns JSON; no PDF render endpoint reused from Finance's invoice PDF, if one exists) | M | S |
+| Customer portal: payment collection (pay an invoice online from the portal via a payment gateway) | Zoho, Dynamics, Odoo | MISSING | H | M |
 
 ### Inventory / Supply Chain — refs: NetSuite, SAP, Odoo, Acumatica, Epicor
 | Gap | Who has it | UniERP | Value | Size |
@@ -162,7 +164,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 |:--|:--|:--|:--|
 | ALL (seed pass) | 2026-07-08 | offline analysis | Initial seed by claude-code; each module still owes a web-verified pass |
 | Finance | 2026-07-11 (pass 6) | offline analysis (pass 6 — no WebSearch tool available this session) | Pass 1: bank feeds, cash-flow, dunning, expense-mgmt OCR all SHIPPED. Pass 2: lease accounting SHIPPED. Pass 3: spend management SHIPPED. Pass 4: multi-book SHIPPED. Pass 5: intercompany loans, cash pooling, asset revaluations, multi-currency translation consolidation all SHIPPED. Pass 6 (2026-07-11): 1099/vendor tax reporting SHIPPED; feature ledger crosses 500 (515). New gaps logged: sales/use-tax nexus monitoring (Avalara/Vertex-style), e-invoicing (PEPPOL/UBL/ViDA). Full exit-criteria checklist (scorecard 10/10, E2E smoke, UAT) still needs confirmation before advancing focus to CRM. |
-| CRM & Sales | — (due) | — | |
+| CRM & Sales | 2026-07-11 (pass 1) | offline analysis (no WebSearch tool available this session) | Pass 1: customer self-service portal SHIPPED. New sub-gaps logged: portal PDF download, portal online payment collection. Remaining open: territory assignment engine, multi-channel cadences, e-sig audit cert, conversation intelligence (all already in Up Next). |
 | Inventory/Supply Chain | — (due) | — | |
 | Manufacturing | — (due) | — | |
 | HR | — (due) | — | |
