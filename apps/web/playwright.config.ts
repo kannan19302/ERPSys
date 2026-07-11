@@ -23,6 +23,12 @@ export default defineConfig({
             PORT: '3001',
           },
         },
+        {
+          command: 'pnpm start',
+          port: 3000,
+          timeout: 120_000,
+          reuseExistingServer: true,
+        },
       ]
     : undefined,
 });
