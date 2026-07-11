@@ -49,6 +49,10 @@ import { CrmCadencesService } from './crm-cadences.service';
 import { CrmCadencesController } from './crm-cadences.controller';
 import { CrmQuoteSignatureService } from './crm-quote-signature.service';
 import { CrmQuoteSignatureController, CrmQuoteSignaturePublicController } from './crm-quote-signature.controller';
+import { CrmPipelineRiskService } from './crm-pipeline-risk.service';
+import { CrmPipelineRiskController } from './crm-pipeline-risk.controller';
+import { CrmPortalPaymentGatewayService } from './crm-portal-payment-gateway.service';
+import { CrmPortalDocumentsService } from './crm-portal-documents.service';
 
 const CRM_SERVICES = [
   CrmService,
@@ -85,6 +89,9 @@ const CRM_SERVICES = [
   CrmTerritoryRulesService,
   CrmCadencesService,
   CrmQuoteSignatureService,
+  CrmPipelineRiskService,
+  CrmPortalPaymentGatewayService,
+  CrmPortalDocumentsService,
 ];
 
 @Module({
@@ -105,6 +112,7 @@ const CRM_SERVICES = [
     CrmCadencesController,
     CrmQuoteSignatureController,
     CrmQuoteSignaturePublicController,
+    CrmPipelineRiskController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

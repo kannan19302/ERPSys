@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Spinner, StatusBadge, useToast } from '@unerp/ui';
-import { FileText, ShoppingCart, Receipt, Ticket, LogOut, Check, X as XIcon, Plus } from 'lucide-react';
-import { portalGet, portalPost, clearPortalToken, getPortalToken, PortalApiError } from '../../../../src/lib/portal-api';
+import { FileText, ShoppingCart, Receipt, Ticket, LogOut, Check, X as XIcon, Plus, Download, CreditCard } from 'lucide-react';
+import { portalGet, portalPost, portalDownload, clearPortalToken, getPortalToken, PortalApiError } from '../../../../src/lib/portal-api';
 
 type Tab = 'quotations' | 'orders' | 'invoices' | 'cases';
 
@@ -66,6 +66,9 @@ export default function CustomerPortalDashboardPage() {
   const [showNewCase, setShowNewCase] = useState(false);
   const [newCaseSubject, setNewCaseSubject] = useState('');
   const [newCaseDescription, setNewCaseDescription] = useState('');
+  const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null);
+  const [payAmount, setPayAmount] = useState('');
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     if (!getPortalToken()) {
@@ -129,6 +132,40 @@ export default function CustomerPortalDashboardPage() {
     }
   };
 
+  const handleDownloadQuotationPdf = async (id: string, number: string) => {
+    try {
+      await portalDownload(`/portal/quotations/${id}/pdf`, `quotation-${number}.pdf`);
+    } catch (e) {
+      toastError(e instanceof PortalApiError ? e.message : 'Failed to download quotation PDF');
+    }
+  };
+
+  const handleDownloadInvoicePdf = async (id: string, number: string) => {
+    try {
+      await portalDownload(`/portal/invoices/${id}/pdf`, `invoice-${number}.pdf`);
+    } catch (e) {
+      toastError(e instanceof PortalApiError ? e.message : 'Failed to download invoice PDF');
+    }
+  };
+
+  const handlePayInvoice = async (id: string) => {
+    const amount = Number(payAmount);
+    if (!amount || amount <= 0) return;
+    setProcessingPayment(true);
+    try {
+      const intent = await portalPost<{ intentId: string }>(`/portal/invoices/${id}/pay`, { amount });
+      await portalPost(`/portal/payments/${intent.intentId}/confirm`, { simulateDecline: false });
+      success('Payment received — thank you!');
+      setPayingInvoiceId(null);
+      setPayAmount('');
+      loadAll();
+    } catch (e) {
+      toastError(e instanceof PortalApiError ? e.message : 'Payment failed');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
   const handleCreateCase = async () => {
     if (!newCaseSubject.trim()) return;
     try {
@@ -188,12 +225,17 @@ export default function CustomerPortalDashboardPage() {
                     <td>{q.currency} {Number(q.totalAmount).toFixed(2)}</td>
                     <td>{new Date(q.validUntil).toLocaleDateString()}</td>
                     <td>
-                      {q.status === 'SENT' && (
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <Button size="sm" onClick={() => handleAccept(q.id)}><Check size={14} /> Accept</Button>
-                          <Button size="sm" variant="danger" onClick={() => handleReject(q.id)}><XIcon size={14} /> Reject</Button>
-                        </div>
-                      )}
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {q.status === 'SENT' && (
+                          <>
+                            <Button size="sm" onClick={() => handleAccept(q.id)}><Check size={14} /> Accept</Button>
+                            <Button size="sm" variant="danger" onClick={() => handleReject(q.id)}><XIcon size={14} /> Reject</Button>
+                          </>
+                        )}
+                        <Button size="sm" variant="secondary" onClick={() => handleDownloadQuotationPdf(q.id, q.quotationNumber)}>
+                          <Download size={14} /> PDF
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -223,17 +265,61 @@ export default function CustomerPortalDashboardPage() {
         {tab === 'invoices' && (
           invoices.length === 0 ? <p className="frappe-empty-state">No invoices yet.</p> : (
             <table className="frappe-table">
-              <thead><tr><th>Number</th><th>Status</th><th>Total</th><th>Paid</th><th>Due date</th></tr></thead>
+              <thead><tr><th>Number</th><th>Status</th><th>Total</th><th>Paid</th><th>Due date</th><th>Actions</th></tr></thead>
               <tbody>
-                {invoices.map((i) => (
-                  <tr key={i.id}>
-                    <td>{i.invoiceNumber}</td>
-                    <td><StatusBadge status={i.status} /></td>
-                    <td>{i.currency} {Number(i.totalAmount).toFixed(2)}</td>
-                    <td>{i.currency} {Number(i.paidAmount).toFixed(2)}</td>
-                    <td>{new Date(i.dueDate).toLocaleDateString()}</td>
-                  </tr>
-                ))}
+                {invoices.map((i) => {
+                  const outstanding = Number(i.totalAmount) - Number(i.paidAmount);
+                  return (
+                    <React.Fragment key={i.id}>
+                      <tr>
+                        <td>{i.invoiceNumber}</td>
+                        <td><StatusBadge status={i.status} /></td>
+                        <td>{i.currency} {Number(i.totalAmount).toFixed(2)}</td>
+                        <td>{i.currency} {Number(i.paidAmount).toFixed(2)}</td>
+                        <td>{new Date(i.dueDate).toLocaleDateString()}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            {i.status !== 'PAID' && outstanding > 0 && (
+                              <Button
+                                size="sm"
+                                onClick={() => { setPayingInvoiceId(i.id); setPayAmount(outstanding.toFixed(2)); }}
+                              >
+                                <CreditCard size={14} /> Pay Now
+                              </Button>
+                            )}
+                            <Button size="sm" variant="secondary" onClick={() => handleDownloadInvoicePdf(i.id, i.invoiceNumber)}>
+                              <Download size={14} /> PDF
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                      {payingInvoiceId === i.id && (
+                        <tr>
+                          <td colSpan={6}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: 8 }}>
+                              <span>Amount:</span>
+                              <input
+                                className="frappe-input"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                max={outstanding}
+                                value={payAmount}
+                                onChange={(e) => setPayAmount(e.target.value)}
+                                style={{ width: 120 }}
+                              />
+                              <span>{i.currency}</span>
+                              <Button size="sm" onClick={() => handlePayInvoice(i.id)} disabled={processingPayment}>
+                                {processingPayment ? 'Processing…' : 'Confirm Payment'}
+                              </Button>
+                              <Button size="sm" variant="secondary" onClick={() => setPayingInvoiceId(null)}>Cancel</Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           )

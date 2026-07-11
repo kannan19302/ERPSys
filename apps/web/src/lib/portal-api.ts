@@ -58,3 +58,30 @@ export async function portalApi<T = unknown>(path: string, options: RequestInit 
 export const portalGet = <T = unknown>(path: string) => portalApi<T>(path);
 export const portalPost = <T = unknown>(path: string, body?: unknown) =>
   portalApi<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
+
+/**
+ * Downloads a binary response (PDF) from a portal endpoint and opens it in a
+ * new browser tab. Used by the portal quote/invoice PDF download buttons
+ * (Up Next item 36) — separate from `portalApi` since the response is a
+ * blob, not JSON.
+ */
+export async function portalDownload(path: string, filename: string): Promise<void> {
+  const url = `${API_BASE}${path}`;
+  const token = getPortalToken();
+  const headers = new Headers();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    throw new PortalApiError(`Download failed (${res.status})`, res.status);
+  }
+  const blob = await res.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}

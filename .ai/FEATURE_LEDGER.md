@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T10:46:42.623Z
+> Last generated: 2026-07-11T11:05:27.530Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1886 features** across 33 modules
+## System total: **1898 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 381 |
+| [crm](#crm) | 393 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,7 +1154,7 @@
 
 ## crm
 
-381 features
+393 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1263,6 +1263,13 @@
 | POST | `/crm/mailbox-connections/callback` | Handle OAuth callback: exchange code for tokens and store the connection | `crm.mailbox.create` |
 | DELETE | `/crm/mailbox-connections/:id` | Disconnect a mailbox | `crm.mailbox.create` |
 | POST | `/crm/mailbox-connections/:id/sync` | Manually trigger a sync for a connected mailbox | `crm.mailbox.delete` |
+| POST | `/crm/pipeline-risk/recompute` | Recompute stage-change risk alerts across the whole pipeline | `crm.opportunity.update` |
+| GET | `/crm/pipeline-risk` | List open risk alerts (dashboard) | `crm.opportunity.read` |
+| GET | `/crm/pipeline-risk/summary` | Risk alert summary counts (by risk level / type) | `crm.opportunity.read` |
+| GET | `/crm/pipeline-risk/opportunities/:opportunityId` | List risk alerts for one opportunity | `crm.opportunity.read` |
+| POST | `/crm/pipeline-risk/:id/acknowledge` | Acknowledge a risk alert | `crm.opportunity.read` |
+| POST | `/crm/pipeline-risk/:id/snooze` | Snooze a risk alert for N days | `crm.opportunity.update` |
+| POST | `/crm/pipeline-risk/:id/resolve` | Resolve a risk alert | `crm.opportunity.update` |
 | GET | `/crm/pipelines/:pipelineId/stages` | — | `crm.pipelines.read` |
 | GET | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.read` |
 | POST | `/crm/pipelines/:pipelineId/stages` | — | `crm.pipelines.read` |
@@ -1535,6 +1542,11 @@
 | GET | `/portal/orders/:id` | Get one of my sales orders | — |
 | GET | `/portal/invoices` | List my invoices | — |
 | GET | `/portal/invoices/:id` | Get one of my invoices | — |
+| GET | `/portal/quotations/:id/pdf` | Download a PDF of one of my quotations | — |
+| GET | `/portal/invoices/:id/pdf` | Download a PDF of one of my invoices | — |
+| GET | `/portal/payments` | List my invoice payment intents | — |
+| POST | `/portal/invoices/:id/pay` | Initiate an online payment for one of my invoices | — |
+| POST | `/portal/payments/:intentId/confirm` | Confirm an initiated invoice payment | — |
 | GET | `/portal/cases` | List my support cases | — |
 | GET | `/portal/cases/:id` | Get one of my support cases with public comments | — |
 | POST | `/portal/cases` | Submit a new support case | — |

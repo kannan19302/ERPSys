@@ -483,6 +483,7 @@ model Opportunity {
   tags         DealTag[]
   teamMembers  DealTeamMember[]
   contactRoles ContactRole[]
+  riskAlerts   PipelineRiskAlert[]
 
   @@index([tenantId])
   @@index([tenantId, stage])
@@ -553,6 +554,69 @@ model DealTeamMember {
   @@unique([tenantId, opportunityId, userId])
   @@index([tenantId])
   @@map("deal_team_members")
+}
+
+/// Pipeline Inspection / stage-change risk alerts (Einstein Pipeline Inspection /
+/// HubSpot Breeze-style). Persisted risk records surfaced tenant-wide on a
+/// dashboard, distinct from the existing on-demand `getRottingDeals`/
+/// `getDealRiskIndicators` analysis in `crm-forecasting.service.ts` — those
+/// compute risk when asked about ONE deal; this recomputes + PERSISTS an
+/// alert row per at-risk deal across the WHOLE pipeline so alerts can be
+/// listed, acknowledged/snoozed, and (via the `pipeline.deal.at_risk` event)
+/// drive notifications.
+model PipelineRiskAlert {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  opportunityId  String    @map("opportunity_id")
+  alertType      String    @map("alert_type") // STAGE_STALL, CLOSE_DATE_SLIPPED, LOW_CONFIDENCE, NO_ACTIVITY
+  riskLevel      String    @default("MEDIUM") @map("risk_level") // LOW, MEDIUM, HIGH, CRITICAL
+  daysInStage    Int?      @map("days_in_stage")
+  message        String
+  status         String    @default("OPEN") // OPEN, ACKNOWLEDGED, SNOOZED, RESOLVED
+  snoozedUntil   DateTime? @map("snoozed_until")
+  acknowledgedBy String?   @map("acknowledged_by")
+  acknowledgedAt DateTime? @map("acknowledged_at")
+  resolvedAt     DateTime? @map("resolved_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, opportunityId, alertType])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([opportunityId])
+  @@map("pipeline_risk_alerts")
+}
+
+/// Customer-portal online invoice payment collection (Up Next item 37).
+/// Records a payment attempt initiated by a portal customer via the mock
+/// gateway seam (mirrors `PaymentGatewayAdapter` in ecommerce/payments —
+/// re-implemented here, not cross-imported, since CRM cannot depend on the
+/// ecommerce module). On `succeeded`, a real `Payment` row is created against
+/// the invoice, same as staff-recorded payments.
+model PortalPaymentIntent {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  invoiceId       String    @map("invoice_id")
+  customerId      String    @map("customer_id")
+  portalUserId    String    @map("portal_user_id")
+  amount          Decimal   @db.Decimal(15, 2)
+  currency        String    @default("USD")
+  provider        String    @default("mock_gateway")
+  gatewayIntentId String    @map("gateway_intent_id")
+  status          String    @default("REQUIRES_CONFIRMATION") // REQUIRES_CONFIRMATION, SUCCEEDED, FAILED
+  paymentId       String?   @map("payment_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  confirmedAt     DateTime? @map("confirmed_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@index([tenantId, customerId])
+  @@map("portal_payment_intents")
 }
 
 model AccountPlan {
@@ -816,6 +880,7 @@ model Invoice {
   creditNotes          CreditNote[]
   dunningLogs          InvoiceDunningLog[]
   subscriptionInvoices SubscriptionInvoice[]
+  portalPaymentIntents PortalPaymentIntent[]
   projectId            String?               @map("project_id")
   project              Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
 

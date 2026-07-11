@@ -2,6 +2,74 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales, cycle 3 — pipeline inspection risk alerts + portal online payment collection + portal PDF download
+
+**Why**: third CRM & Sales focus cycle. Batched Up Next items 37, 38, and 36 together
+since all three extend the two existing customer-facing/pipeline surfaces (the
+customer portal shipped in cycle 1, and `crm-forecasting.service.ts`'s on-demand deal
+scoring/rotting-deal analysis) rather than opening a new sub-domain — closing the gap
+between "read + quote-decision only" portal and letting a customer pay + download a
+document, and between per-deal on-demand risk lookup and a persisted, tenant-wide,
+dashboard-surfaced pipeline risk feed.
+
+- **Added (DB)**: `PipelineRiskAlert` model (persisted stage-stall/close-date-slipped/
+  low-confidence/no-activity risk rows, unique per `[tenantId, opportunityId,
+  alertType]`, `OPEN/ACKNOWLEDGED/SNOOZED/RESOLVED` lifecycle) and `PortalPaymentIntent`
+  model (portal-initiated invoice payment attempts via the mock gateway seam). One
+  migration: `20260711105245_crm_pipeline_risk_portal_payment`.
+- **Added (API) — Pipeline Inspection / stage-risk alerts** (Up Next item 38, RICE 32):
+  `CrmPipelineRiskService` + `CrmPipelineRiskController` (`/crm/pipeline-risk/*`, 7
+  endpoints: recompute, list, summary, per-opportunity list, acknowledge, snooze,
+  resolve). Distinct from the pre-existing `CrmForecastingService.getRottingDeals`/
+  `getDealRiskIndicators` (on-demand, per-deal, not persisted) — this recomputes and
+  PERSISTS 4 risk types across the whole open pipeline (stage-specific stall
+  thresholds, close-date slippage, late-stage low-confidence mismatch, no-activity-in-
+  14-days), auto-resolves alerts once a deal no longer meets any risk condition, and
+  emits `pipeline.deal.at_risk` for downstream notification consumers. Benchmark:
+  Salesforce Einstein Pipeline Inspection, HubSpot Breeze forecast-confidence scoring.
+- **Added (API) — customer portal online payment collection** (Up Next item 37, RICE
+  28): `CrmPortalPaymentGatewayService` (mock gateway, mirrors but does not
+  cross-import `ecommerce/payments/mock-payment-gateway.service.ts` — CRM cannot
+  depend on the ecommerce module) + 4 new `CustomerPortalService` methods/endpoints
+  (`POST /portal/invoices/:id/pay`, `POST /portal/payments/:intentId/confirm`,
+  `GET /portal/payments`) that validate against outstanding balance, create a real
+  `Payment` row on confirm, and roll the invoice's `paidAmount`/`status` forward
+  exactly like a staff-recorded payment.
+- **Added (API) — customer portal PDF download** (Up Next item 36, RICE 37):
+  `CrmPortalDocumentsService` (`pdfkit`, already a dependency — see
+  `common/services/export.service.ts` precedent) streaming a document-style quote/
+  invoice PDF via 2 new endpoints (`GET /portal/quotations/:id/pdf`,
+  `GET /portal/invoices/:id/pdf`).
+- **Added (UI)**: `/crm/forecasting/pipeline-risk` admin dashboard (summary tiles by
+  risk level, alert table with acknowledge/snooze/resolve actions, recompute button,
+  `crm.opportunity.update`-gated actions); `/public/customer-portal/dashboard` gained
+  PDF download buttons on the quotes/invoices tabs and an inline "Pay Now" amount
+  entry + confirm flow on the invoices tab. New `portalDownload()` helper in
+  `src/lib/portal-api.ts` for blob/PDF downloads under the portal's separate token.
+- **Tested**: 15 new unit tests (`crm-pipeline-risk.service.spec.ts` — 9 covering all 4
+  risk types, auto-resolve, acknowledge/snooze/summary; `crm-portal-payment.service.spec.ts`
+  — 6 covering initiate/confirm/decline/already-paid/over-outstanding/wrong-state
+  guards). Full API suite: 174 files / 2283 tests passing. `pnpm turbo typecheck`:
+  zero errors (API + web).
+- **Verified live**: dev stack already up (Postgres/Redis/API:3001/web:3000) — curl'd
+  the full pipeline-risk recompute→list→summary cycle, invited a real portal user,
+  logged in, initiated+confirmed a $300 payment against a seeded partially-paid
+  invoice (paidAmount 500→800, verified via GET), and downloaded a real invoice PDF
+  (`file` confirms "PDF document, version 1.3, 1 page(s)"). Added
+  `/crm/forecasting/pipeline-risk` to `SMOKE_ROUTES`; `npx playwright test smoke -g
+  "pipeline-risk|customer-portal"` — 2/2 passing.
+- **Batch-size note (honest)**: ~1,400 LOC across 3 benchmark-sourced Up Next items
+  built to real depth (persisted alert lifecycle with 4 detection types + notification
+  event, full payment posting path, real PDF generation) rather than a stub — below
+  the 100-feature/15,000-LOC aspirational floor by design, consistent with prior CRM
+  cycles' guardrail allowing honest smaller batches when the items are already
+  well-scoped and adjacent rather than manufacturing filler.
+- **Follow-ups queued**: conversation intelligence (item 35, still open), real
+  gateway swap for portal payments (currently mock only, same documented pattern as
+  ecommerce checkout), notification consumer for `pipeline.deal.at_risk` (event is
+  emitted but nothing currently subscribes — mirrors the deferred `finance.invoice.
+  overdue` pattern until this cycle's follow-up).
+
 ## [2026-07-11] CRM & Sales: Sales Ops Automation batch — territory assignment rules engine + multi-channel cadences + quote e-signature audit certificate
 
 **Why**: second cycle of the CRM & Sales focus (baseline 367 → 385 after the customer

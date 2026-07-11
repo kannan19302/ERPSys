@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Param, Req, UseGuards } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Get, Post, Param, Req, Res, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CustomerPortalAuthGuard } from './customer-portal-auth.guard';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
@@ -13,7 +13,12 @@ import {
   PortalCaseCommentInput,
   portalQuotationDecisionSchema,
   PortalQuotationDecisionInput,
+  portalInitiatePaymentSchema,
+  PortalInitiatePaymentInput,
+  portalConfirmPaymentSchema,
+  PortalConfirmPaymentInput,
 } from './customer-portal.service';
+import { CrmPortalDocumentsService } from './crm-portal-documents.service';
 
 interface PortalRequest extends Request {
   user: { tenantId: string; userId: string; customerId: string; portal: true; email: string };
@@ -30,7 +35,10 @@ interface PortalRequest extends Request {
 @ApiTags('crm-customer-portal')
 @Controller('portal')
 export class CustomerPortalController {
-  constructor(private readonly svc: CustomerPortalService) {}
+  constructor(
+    private readonly svc: CustomerPortalService,
+    private readonly documents: CrmPortalDocumentsService,
+  ) {}
 
   @ApiOperation({ summary: 'Customer portal login' })
   @Post('auth/login')
@@ -103,6 +111,49 @@ export class CustomerPortalController {
   @Get('invoices/:id')
   async invoiceDetail(@Req() req: PortalRequest, @Param('id') id: string) {
     return this.svc.getMyInvoiceDetail(req.user.tenantId, req.user.customerId, id);
+  }
+
+  @ApiOperation({ summary: 'Download a PDF of one of my quotations' })
+  @UseGuards(CustomerPortalAuthGuard)
+  @Get('quotations/:id/pdf')
+  async quotationPdf(@Req() req: PortalRequest, @Res() res: Response, @Param('id') id: string) {
+    return this.documents.streamQuotationPdf(res, req.user.tenantId, req.user.customerId, id);
+  }
+
+  @ApiOperation({ summary: 'Download a PDF of one of my invoices' })
+  @UseGuards(CustomerPortalAuthGuard)
+  @Get('invoices/:id/pdf')
+  async invoicePdf(@Req() req: PortalRequest, @Res() res: Response, @Param('id') id: string) {
+    return this.documents.streamInvoicePdf(res, req.user.tenantId, req.user.customerId, id);
+  }
+
+  @ApiOperation({ summary: 'List my invoice payment intents' })
+  @UseGuards(CustomerPortalAuthGuard)
+  @Get('payments')
+  async myPayments(@Req() req: PortalRequest) {
+    return this.svc.listMyPaymentIntents(req.user.tenantId, req.user.customerId);
+  }
+
+  @ApiOperation({ summary: 'Initiate an online payment for one of my invoices' })
+  @UseGuards(CustomerPortalAuthGuard)
+  @Post('invoices/:id/pay')
+  async initiatePayment(
+    @Req() req: PortalRequest,
+    @Param('id') id: string,
+    @ZodBody(portalInitiatePaymentSchema) dto: PortalInitiatePaymentInput,
+  ) {
+    return this.svc.initiateInvoicePayment(req.user.tenantId, req.user.customerId, req.user.userId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Confirm an initiated invoice payment' })
+  @UseGuards(CustomerPortalAuthGuard)
+  @Post('payments/:intentId/confirm')
+  async confirmPayment(
+    @Req() req: PortalRequest,
+    @Param('intentId') intentId: string,
+    @ZodBody(portalConfirmPaymentSchema) dto: PortalConfirmPaymentInput,
+  ) {
+    return this.svc.confirmInvoicePayment(req.user.tenantId, req.user.customerId, intentId, dto);
   }
 
   @ApiOperation({ summary: 'List my support cases' })

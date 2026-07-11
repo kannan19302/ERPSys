@@ -3,6 +3,7 @@ import { prisma } from '@unerp/database';
 import { hashPassword, comparePassword, signToken } from '@unerp/auth';
 import { randomBytes } from 'crypto';
 import { z } from 'zod';
+import { CrmPortalPaymentGatewayService } from './crm-portal-payment-gateway.service';
 
 export const inviteCustomerPortalUserSchema = z.object({
   email: z.string().email(),
@@ -33,6 +34,16 @@ export const portalQuotationDecisionSchema = z.object({
 });
 export type PortalQuotationDecisionInput = z.infer<typeof portalQuotationDecisionSchema>;
 
+export const portalInitiatePaymentSchema = z.object({
+  amount: z.number().positive(),
+});
+export type PortalInitiatePaymentInput = z.infer<typeof portalInitiatePaymentSchema>;
+
+export const portalConfirmPaymentSchema = z.object({
+  simulateDecline: z.boolean().optional().default(false),
+});
+export type PortalConfirmPaymentInput = z.infer<typeof portalConfirmPaymentSchema>;
+
 /**
  * CRM customer self-service portal: lets a customer's own staff log in
  * (separately from tenant staff — no Role/Permission records, no RbacGuard)
@@ -49,6 +60,8 @@ export type PortalQuotationDecisionInput = z.infer<typeof portalQuotationDecisio
  */
 @Injectable()
 export class CustomerPortalService {
+  constructor(private readonly paymentGateway: CrmPortalPaymentGatewayService) {}
+
   // ── ADMIN: manage portal accounts ──────────────────────────────────────
 
   async inviteUser(tenantId: string, customerId: string, dto: InviteCustomerPortalUserInput) {
@@ -258,6 +271,104 @@ export class CustomerPortalService {
         body: dto.body,
         isInternal: false,
       },
+    });
+  }
+
+  // ── PORTAL: online invoice payment collection (Up Next item 37) ─────────
+
+  /** Initiate a payment intent for an open invoice via the mock gateway. */
+  async initiateInvoicePayment(
+    tenantId: string,
+    customerId: string,
+    portalUserId: string,
+    invoiceId: string,
+    dto: PortalInitiatePaymentInput,
+  ) {
+    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId, customerId, deletedAt: null } });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+    if (invoice.status === 'PAID') throw new BadRequestException('This invoice is already paid');
+
+    const outstanding = Number(invoice.totalAmount) - Number(invoice.paidAmount);
+    if (outstanding <= 0) throw new BadRequestException('This invoice has no outstanding balance');
+    if (dto.amount > outstanding + 0.01) {
+      throw new BadRequestException(`Payment amount (${dto.amount}) exceeds outstanding balance (${outstanding})`);
+    }
+
+    const intent = await this.paymentGateway.createIntent(dto.amount, invoice.currency, { invoiceId, customerId });
+
+    const record = await prisma.portalPaymentIntent.create({
+      data: {
+        tenantId,
+        invoiceId,
+        customerId,
+        portalUserId,
+        amount: dto.amount,
+        currency: invoice.currency,
+        provider: this.paymentGateway.provider,
+        gatewayIntentId: intent.id,
+        status: 'REQUIRES_CONFIRMATION',
+      },
+    });
+
+    return { intentId: record.id, gatewayIntentId: intent.id, status: record.status, amount: dto.amount };
+  }
+
+  /** List payment intents the portal customer has initiated for their invoices. */
+  async listMyPaymentIntents(tenantId: string, customerId: string) {
+    return prisma.portalPaymentIntent.findMany({
+      where: { tenantId, customerId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Confirm a previously-created payment intent. On success, creates a real
+   * `Payment` row against the invoice and rolls the invoice's `paidAmount`/
+   * `status` forward — same posting path a staff-recorded payment takes.
+   */
+  async confirmInvoicePayment(tenantId: string, customerId: string, intentId: string, dto: PortalConfirmPaymentInput) {
+    const record = await prisma.portalPaymentIntent.findFirst({ where: { id: intentId, tenantId, customerId } });
+    if (!record) throw new NotFoundException('Payment intent not found');
+    if (record.status !== 'REQUIRES_CONFIRMATION') {
+      throw new BadRequestException(`Payment intent is already ${record.status}`);
+    }
+
+    const result = await this.paymentGateway.confirmIntent(record.gatewayIntentId, dto.simulateDecline);
+
+    if (result.status === 'failed') {
+      await prisma.portalPaymentIntent.update({ where: { id: intentId }, data: { status: 'FAILED' } });
+      throw new BadRequestException('Payment was declined by the gateway (mock)');
+    }
+
+    const invoice = await prisma.invoice.findFirst({ where: { id: record.invoiceId, tenantId } });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+
+    const payment = await prisma.payment.create({
+      data: {
+        tenantId,
+        invoiceId: record.invoiceId,
+        amount: record.amount,
+        currency: record.currency,
+        method: 'ONLINE_PORTAL',
+        reference: record.gatewayIntentId,
+        notes: 'Paid via customer portal (mock gateway)',
+      },
+    });
+
+    const newPaidAmount = Number(invoice.paidAmount) + Number(record.amount);
+    const newStatus = newPaidAmount >= Number(invoice.totalAmount) - 0.01 ? 'PAID' : invoice.status;
+    await prisma.invoice.update({
+      where: { id: record.invoiceId },
+      data: {
+        paidAmount: newPaidAmount,
+        status: newStatus,
+        paidAt: newStatus === 'PAID' ? new Date() : invoice.paidAt,
+      },
+    });
+
+    return prisma.portalPaymentIntent.update({
+      where: { id: intentId },
+      data: { status: 'SUCCEEDED', paymentId: payment.id, confirmedAt: new Date() },
     });
   }
 }
