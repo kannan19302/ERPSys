@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+
+export interface HierarchyTreeNode {
+  id: string;
+  name: string;
+  children: HierarchyTreeNode[];
+}
 
 /**
  * CRM Account Plan, Map & Strategic Contacts service.
@@ -124,6 +130,13 @@ export class CrmAccountManagementService {
   }
 
   // ── F48: Account Hierarchy ─────────────────────────
+  /**
+   * Real parent/child account hierarchy (Up Next item 49, benchmark:
+   * Salesforce Account Hierarchy, Dynamics 365) — reads the genuine
+   * `Customer.parentCustomerId` self-relation. Replaces the previous
+   * mock implementation, which parsed a `[PARENT:id]` tag out of the
+   * free-text `notes` field instead of using a real column.
+   */
   async getAccountHierarchy(tenantId: string, customerId: string): Promise<{
     parent: { id: string; name: string } | null;
     current: { id: string; name: string };
@@ -131,29 +144,125 @@ export class CrmAccountManagementService {
   }> {
     const customer = await prisma.customer.findFirst({
       where: { id: customerId, tenantId, deletedAt: null },
+      include: { parentCustomer: { select: { id: true, name: true } } },
     });
     if (!customer) throw new NotFoundException('Customer not found');
 
-    // Parse notes to check for parent-child link (mocking relationship hierarchy)
-    const notes = customer.notes || '';
-    const parentMatch = notes.match(/\[PARENT:([^\]]+)\]/);
-    const parentId = parentMatch ? parentMatch[1] : null;
-
-    let parent = null;
-    if (parentId) {
-      const pCust = await prisma.customer.findFirst({ where: { id: parentId, tenantId } });
-      if (pCust) parent = { id: pCust.id, name: pCust.name };
-    }
-
-    // Find children (subsidiaries)
     const subs = await prisma.customer.findMany({
-      where: { tenantId, notes: { contains: `[PARENT:${customerId}]` } },
+      where: { tenantId, parentCustomerId: customerId, deletedAt: null },
     });
 
     return {
-      parent,
+      parent: customer.parentCustomer ? { id: customer.parentCustomer.id, name: customer.parentCustomer.name } : null,
       current: { id: customer.id, name: customer.name },
       subsidiaries: subs.map((s) => ({ id: s.id, name: s.name, type: s.customerType || 'RECURRING' })),
+    };
+  }
+
+  /** Set (or clear) a customer's parent account. Rejects cycles. */
+  async setParentAccount(tenantId: string, customerId: string, parentCustomerId: string | null) {
+    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    if (parentCustomerId) {
+      if (parentCustomerId === customerId) {
+        throw new BadRequestException('A customer cannot be its own parent');
+      }
+      const parent = await prisma.customer.findFirst({ where: { id: parentCustomerId, tenantId, deletedAt: null } });
+      if (!parent) throw new NotFoundException('Parent customer not found');
+
+      // Walk up the proposed parent's chain to reject cycles (A->B->C->A).
+      let cursor: string | null = parent.parentCustomerId;
+      const seen = new Set<string>([customerId]);
+      while (cursor) {
+        if (seen.has(cursor)) throw new BadRequestException('This assignment would create a circular account hierarchy');
+        seen.add(cursor);
+        const next: { parentCustomerId: string | null } | null = await prisma.customer.findFirst({
+          where: { id: cursor, tenantId },
+          select: { parentCustomerId: true },
+        });
+        cursor = next?.parentCustomerId ?? null;
+      }
+    }
+
+    return prisma.customer.update({ where: { id: customerId }, data: { parentCustomerId } });
+  }
+
+  /** Full descendant tree (unlimited depth) for a top-level (or any) account. */
+  async getHierarchyTree(tenantId: string, customerId: string): Promise<HierarchyTreeNode> {
+    const buildNode = async (id: string): Promise<HierarchyTreeNode> => {
+      const node = await prisma.customer.findFirst({ where: { id, tenantId, deletedAt: null }, select: { id: true, name: true } });
+      if (!node) throw new NotFoundException('Customer not found');
+      const children = await prisma.customer.findMany({ where: { tenantId, parentCustomerId: id, deletedAt: null }, select: { id: true } });
+      const childNodes = await Promise.all(children.map((c) => buildNode(c.id)));
+      return { id: node.id, name: node.name, children: childNodes };
+    };
+    return buildNode(customerId);
+  }
+
+  /**
+   * Rollup of opportunity pipeline + closed-won revenue across an account
+   * and every descendant subsidiary (deepens item 49's parity with
+   * Salesforce Account Hierarchy rollups).
+   */
+  async getHierarchyRollup(tenantId: string, customerId: string): Promise<{
+    accountCount: number;
+    totalOpenPipeline: number;
+    totalWonRevenue: number;
+    openOpportunityCount: number;
+    wonOpportunityCount: number;
+    byAccount: Array<{ customerId: string; name: string; openPipeline: number; wonRevenue: number }>;
+  }> {
+    const collectIds = async (id: string): Promise<string[]> => {
+      const children = await prisma.customer.findMany({ where: { tenantId, parentCustomerId: id, deletedAt: null }, select: { id: true } });
+      const nested = await Promise.all(children.map((c) => collectIds(c.id)));
+      return [id, ...nested.flat()];
+    };
+    const root = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
+    if (!root) throw new NotFoundException('Customer not found');
+
+    const ids = await collectIds(customerId);
+    const opportunities = await prisma.opportunity.findMany({
+      where: { tenantId, customerId: { in: ids }, deletedAt: null },
+      select: { customerId: true, amount: true, stage: true },
+    });
+    const customers = await prisma.customer.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } });
+    const nameById = new Map(customers.map((c) => [c.id, c.name]));
+
+    const byAccountMap = new Map<string, { openPipeline: number; wonRevenue: number }>();
+    let totalOpenPipeline = 0;
+    let totalWonRevenue = 0;
+    let openOpportunityCount = 0;
+    let wonOpportunityCount = 0;
+
+    for (const opp of opportunities) {
+      const cid = opp.customerId ?? 'unknown';
+      const entry = byAccountMap.get(cid) ?? { openPipeline: 0, wonRevenue: 0 };
+      const amount = Number(opp.amount ?? 0);
+      if (opp.stage === 'CLOSED_WON') {
+        entry.wonRevenue += amount;
+        totalWonRevenue += amount;
+        wonOpportunityCount += 1;
+      } else if (opp.stage !== 'CLOSED_LOST') {
+        entry.openPipeline += amount;
+        totalOpenPipeline += amount;
+        openOpportunityCount += 1;
+      }
+      byAccountMap.set(cid, entry);
+    }
+
+    return {
+      accountCount: ids.length,
+      totalOpenPipeline,
+      totalWonRevenue,
+      openOpportunityCount,
+      wonOpportunityCount,
+      byAccount: Array.from(byAccountMap.entries()).map(([cid, v]) => ({
+        customerId: cid,
+        name: nameById.get(cid) ?? 'Unknown',
+        openPipeline: v.openPipeline,
+        wonRevenue: v.wonRevenue,
+      })),
     };
   }
 

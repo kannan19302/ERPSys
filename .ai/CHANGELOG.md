@@ -2,6 +2,103 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales, cycle 7 — sales coaching/call-scoring + deal room/mutual action plan + account hierarchy rollups
+
+- **Added** (Up Next item 47, benchmark: Gong, Chorus.ai, Salesloft — "structured
+  scorecards: talk-ratio, objection-handling, next-steps-set"): `CoachingRubric`/
+  `CallScorecard`/`CoachingLibraryItem` Prisma models; `CrmCoachingService`/
+  `CrmCoachingController` at `/crm/coaching/*` (14 endpoints) — manager-defined weighted
+  rubrics, scoring a logged call `Activity` against a rubric (validates every criterion
+  key exists on the rubric and no score exceeds its max), computed total/max score,
+  talk-ratio + objection-handling-score + next-steps-set fields, rep acknowledge
+  workflow (DRAFT is implicit via SUBMITTED→ACKNOWLEDGED), per-rep coaching summary
+  (average score %, average talk ratio, next-steps-set rate, 10-point trend), team-wide
+  coaching dashboard (per-rep averages), and a coaching library (exemplar calls tagged
+  by category: objection-handling/discovery/closing/negotiation/demo). Extends the
+  pre-existing `CrmConversationIntelligenceService` call log rather than duplicating it
+  — a scorecard is a manager's structured evaluation layered on top of the AI-derived
+  sentiment/summary that service already attaches to CALL activities.
+- **Added** (Up Next item 48, benchmark: DealHub, Recapped, Salesforce Digital Sales
+  Room — "shared buyer-seller collaborative workspace: milestones, shared documents,
+  stakeholder tracking"): `DealRoom`/`DealRoomMilestone`/`DealRoomStakeholder`/
+  `DealRoomDocument` Prisma models (one deal room per `Opportunity`, unique constraint);
+  `CrmDealRoomService`/`CrmDealRoomController` at `/crm/deal-rooms/*` (12
+  authenticated endpoints) — mutual action plan milestones with SELLER/BUYER/MUTUAL
+  ownership + due dates + status lifecycle (PENDING→IN_PROGRESS→DONE/BLOCKED),
+  stakeholder map (ECONOMIC_BUYER/CHAMPION/INFLUENCER/BLOCKER/LEGAL/TECHNICAL roles +
+  BUYER/SELLER side + sentiment), shared documents (category-tagged, buyer-view tracked).
+  `CrmDealRoomPublicController` at `/public/deal-rooms/*` (3 unauthenticated,
+  token-gated endpoints, mirroring the existing `CrmQuoteSignaturePublicController`
+  pattern — the 24-byte random hex token is the credential) — buyer views the room,
+  marks a buyer/mutual-owned milestone complete (rejects seller-owned milestones with a
+  400), and records document-view engagement signals.
+- **Added** (Up Next item 49, benchmark: Salesforce Account Hierarchy, Dynamics 365 —
+  "parent/child account hierarchy with automatic rollup of opportunity/revenue metrics"):
+  replaced `CrmAccountManagementService.getAccountHierarchy`'s previous **mock**
+  implementation (it parsed a `[PARENT:id]` tag out of the free-text `notes` field —
+  found during dedupe-check, not duplicated) with a real `Customer.parentCustomerId`
+  self-relation column + migration. New methods: `setParentAccount` (cycle-rejecting —
+  walks the proposed parent's chain and 400s on both self-parenting and A→B→A cycles),
+  `getHierarchyTree` (unlimited-depth descendant tree), `getHierarchyRollup` (sums open
+  pipeline + closed-won revenue across an account and every descendant subsidiary, with
+  a by-account breakdown). 4 new endpoints on the existing `crm-expansion` controller
+  (`/crm/expansion/customers/:id/{hierarchy,parent,hierarchy-tree,hierarchy-rollup}`).
+- **Schema**: migration `20260711145751_crm_coaching_dealroom_hierarchy` — 7 new models
+  (`CoachingRubric`, `CallScorecard`, `CoachingLibraryItem`, `DealRoom`,
+  `DealRoomMilestone`, `DealRoomStakeholder`, `DealRoomDocument`) + `Customer
+  .parentCustomerId` self-relation + `Activity.callScorecards` back-relation +
+  `Opportunity.dealRoom` back-relation.
+- **UI**: 3 new Next.js pages — `/crm/coaching` (dashboard/rubrics/library tabs),
+  `/crm/deal-rooms` (list) + `/crm/deal-rooms/[id]` (mutual action plan + stakeholder
+  map + documents + buyer share link), `/crm/account-hierarchy` (customer-ID lookup tool:
+  hierarchy tree, set/clear parent, rollup totals). Registered in `moduleNav.tsx`,
+  `registry.tsx` `SEGMENT_NAMES`, and `SMOKE_ROUTES`.
+- **Permissions**: registered `crm.coaching.{read,create,update,manage}` and
+  `crm.dealroom.{read,create,update}` in `packages/shared/src/permissions/registry.ts`
+  (caught immediately by the RBAC drift-check test, which reads the **built** `dist/`
+  of `@unerp/shared` — rebuilding that package before rerunning the drift test is a
+  repeatable gotcha worth remembering for the next cycle).
+- **Bug found + fixed during live verification**: `setParentAccount`'s cycle/self-parent
+  guards threw plain `Error`, which the global exception filter maps to a bare 500
+  instead of a proper 400 — switched both to `BadRequestException`. Caught via a real
+  curl call against the live stack (`PUT .../parent` with `parentCustomerId` set to the
+  same customer returned `500 INTERNAL_ERROR` before the fix, `400 BAD_REQUEST
+  A customer cannot be its own parent` after), not by a unit test alone (the unit test
+  asserted on the thrown message, which passed either way — a good reminder that
+  service-level tests don't catch HTTP-status-mapping bugs).
+- **Tested**: 23 new unit tests (8 coaching, 10 deal-room, 5 account-hierarchy). Full
+  API suite: 184 files / 2359 tests passing, zero failures. `pnpm turbo typecheck`:
+  zero errors (API + web).
+- **Verified live**: rebuilt + restarted the API (`dist/main.js`) against the running
+  Postgres/Redis stack, confirmed all new routes mapped, logged in for a real JWT +
+  CSRF token, and manually walked the primary workflow for all three features end-to-
+  end via curl: (a) coaching — create rubric → log a call → score it against the rubric
+  → team dashboard reflects the new average; (b) deal room — create room for a real
+  opportunity → add a BUYER-owned milestone → fetch the buyer's token-gated public view
+  (no auth) → buyer marks the milestone complete via the public endpoint (no auth); (c)
+  account hierarchy — set customer B's parent to customer A → hierarchy endpoint shows
+  the real parent/subsidiary relationship → rollup endpoint sums both accounts →
+  self-parent assignment correctly rejected with 400 (post-fix). All 3 new UI pages
+  (`/crm/coaching`, `/crm/deal-rooms`, `/crm/account-hierarchy`) return HTTP 200 on the
+  live Next.js dev server; `npx playwright test smoke -g "coaching|deal-rooms|account-
+  hierarchy"` — 3/3 passing.
+- **Why these items**: #47 and #48 were the top two RICE-scored `[benchmark]` items in
+  Up Next (47, 32) and both explicitly deepen surfaces already shipped in prior cycles
+  (conversation intelligence → coaching; pipeline-risk/revenue-intelligence → deal
+  room), matching the pairing suggestion in this cycle's brief. #49 was pulled in
+  alongside because dedupe-check surfaced that its "existing" implementation was a
+  regex-on-notes mock, not a real gap-closing duplicate — replacing a stub with real
+  code is exactly the kind of pushback-protocol case this project's conventions call
+  out explicitly, and it shared the same migration/typecheck/test pass as the other two.
+- **Batch-size note (honest)**: ~2,600 LOC across 3 closely-related sub-domains within
+  the CRM focus module, all three genuinely-complete (DB+API+UI+tests+docs, no stubs) —
+  under the 100-feature/15,000-LOC aspirational floor by design, consistent with every
+  other CRM & Sales cycle since focus advanced (this module's remaining Up Next gaps are
+  individually smaller than Finance's were).
+- **Follow-ups queued**: item 45 (third-party lead/contact enrichment — still deferred,
+  needs a real provider integration design); item 27 e-invoicing-style deeper i18n/tax
+  work remains Finance-scoped and out of turn.
+
 ## [2026-07-11] CRM & Sales, cycle 6 — sales gamification/leaderboards + commission plan automation deepening
 
 - **Added** (Up Next item 44, benchmark: SalesScreen, Ambition, Spinify): `CrmGamificationService`/

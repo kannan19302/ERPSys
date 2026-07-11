@@ -261,4 +261,29 @@ export class CrmExpansionController {
   async mergeAccounts(@Req() req: AuthenticatedRequest, @Body() body: any) {
     return this.accountService.mergeAccounts(req.user.tenantId, body.sourceCustomerId, body.targetCustomerId);
   }
+
+  // ── Account hierarchy & rollups (Up Next item 49) ────
+  @Get('customers/:customerId/hierarchy')
+  @Permissions('crm.customer.read')
+  async getAccountHierarchyReal(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string) {
+    return this.accountService.getAccountHierarchy(req.user.tenantId, customerId);
+  }
+
+  @Put('customers/:customerId/parent')
+  @Permissions('crm.customer.update')
+  async setParentAccount(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string, @Body('parentCustomerId') parentCustomerId: string | null) {
+    return this.accountService.setParentAccount(req.user.tenantId, customerId, parentCustomerId ?? null);
+  }
+
+  @Get('customers/:customerId/hierarchy-tree')
+  @Permissions('crm.customer.read')
+  async getHierarchyTree(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string) {
+    return this.accountService.getHierarchyTree(req.user.tenantId, customerId);
+  }
+
+  @Get('customers/:customerId/hierarchy-rollup')
+  @Permissions('crm.customer.read')
+  async getHierarchyRollup(@Req() req: AuthenticatedRequest, @Param('customerId') customerId: string) {
+    return this.accountService.getHierarchyRollup(req.user.tenantId, customerId);
+  }
 }

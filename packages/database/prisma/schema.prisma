@@ -268,11 +268,14 @@ model Customer {
   creditHold       Boolean   @default(false) @map("credit_hold")
   creditHoldReason String?   @map("credit_hold_reason")
   riskRating       String    @default("LOW") @map("risk_rating")
+  parentCustomerId String?   @map("parent_customer_id")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
   organization  Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  parentCustomer   Customer?         @relation("CustomerHierarchy", fields: [parentCustomerId], references: [id])
+  childCustomers   Customer[]        @relation("CustomerHierarchy")
   invoices      Invoice[]
   quotations    Quotation[]
   salesOrders   SalesOrder[]
@@ -291,6 +294,7 @@ model Customer {
 
   @@index([tenantId])
   @@index([tenantId, orgId])
+  @@index([parentCustomerId])
   @@map("customers")
 }
 
@@ -484,6 +488,7 @@ model Opportunity {
   teamMembers  DealTeamMember[]
   contactRoles ContactRole[]
   riskAlerts   PipelineRiskAlert[]
+  dealRoom     DealRoom?
 
   @@index([tenantId])
   @@index([tenantId, stage])
@@ -701,12 +706,160 @@ model Activity {
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
   customer    Customer?    @relation(fields: [customerId], references: [id])
   contact     Contact?     @relation(fields: [contactId], references: [id])
+  callScorecards CallScorecard[]
 
   @@index([tenantId])
   @@index([leadId])
   @@index([opportunityId])
   @@index([customerId])
   @@map("activities")
+}
+
+/// Sales coaching / call-scoring (Up Next item 47, benchmark: Gong, Chorus.ai,
+/// Salesloft): manager-defined scorecard rubrics applied to logged calls
+/// (Activity type=CALL), plus a coaching-library of exemplar clips/notes.
+model CoachingRubric {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  orgId       String   @map("org_id")
+  name        String
+  description String?
+  criteria    Json // [{ key, label, weight, maxScore }]
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  scorecards CallScorecard[]
+
+  @@index([tenantId])
+  @@map("coaching_rubrics")
+}
+
+model CallScorecard {
+  id                     String    @id @default(cuid())
+  tenantId               String    @map("tenant_id")
+  orgId                  String    @map("org_id")
+  activityId             String    @map("activity_id")
+  rubricId               String    @map("rubric_id")
+  reviewerId             String    @map("reviewer_id")
+  criteriaScores         Json      @map("criteria_scores") // [{ key, label, score, maxScore, notes }]
+  totalScore             Int       @map("total_score")
+  maxScore               Int       @map("max_score")
+  talkRatio              Int?      @map("talk_ratio") // rep talk-time %, 0-100
+  objectionHandlingScore Int?      @map("objection_handling_score")
+  nextStepsSet           Boolean   @default(false) @map("next_steps_set")
+  managerNotes           String?   @map("manager_notes")
+  status                 String    @default("DRAFT") // DRAFT, SUBMITTED, ACKNOWLEDGED
+  acknowledgedAt         DateTime? @map("acknowledged_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  activity Activity       @relation(fields: [activityId], references: [id])
+  rubric   CoachingRubric @relation(fields: [rubricId], references: [id])
+
+  @@index([tenantId])
+  @@index([activityId])
+  @@index([rubricId])
+  @@map("call_scorecards")
+}
+
+model CoachingLibraryItem {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  orgId            String   @map("org_id")
+  title            String
+  category         String // OBJECTION_HANDLING, DISCOVERY, CLOSING, NEGOTIATION, DEMO
+  sourceActivityId String?  @map("source_activity_id")
+  notes            String?
+  tags             String[]
+  createdById      String?  @map("created_by_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("coaching_library_items")
+}
+
+/// Deal room / mutual action plan (Up Next item 48, benchmark: DealHub,
+/// Recapped, Salesforce Digital Sales Room): shared buyer-seller collaborative
+/// workspace attached to an Opportunity — milestones (mutual action plan),
+/// stakeholder map, and shared documents, plus a token-gated buyer view.
+model DealRoom {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  orgId            String   @map("org_id")
+  opportunityId    String   @unique @map("opportunity_id")
+  name             String
+  status           String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  buyerAccessToken String   @unique @map("buyer_access_token")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  opportunity  Opportunity           @relation(fields: [opportunityId], references: [id])
+  milestones   DealRoomMilestone[]
+  stakeholders DealRoomStakeholder[]
+  documents    DealRoomDocument[]
+
+  @@index([tenantId])
+  @@map("deal_rooms")
+}
+
+model DealRoomMilestone {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  dealRoomId  String    @map("deal_room_id")
+  title       String
+  description String?
+  ownerType   String    @default("SELLER") // SELLER, BUYER, MUTUAL
+  dueDate     DateTime? @map("due_date")
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, DONE, BLOCKED
+  completedAt DateTime? @map("completed_at")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  dealRoom DealRoom @relation(fields: [dealRoomId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([dealRoomId])
+  @@map("deal_room_milestones")
+}
+
+model DealRoomStakeholder {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  dealRoomId String   @map("deal_room_id")
+  contactId  String?  @map("contact_id")
+  name       String
+  role       String // ECONOMIC_BUYER, CHAMPION, INFLUENCER, BLOCKER, LEGAL, TECHNICAL
+  side       String   @default("BUYER") // BUYER, SELLER
+  sentiment  String? // SUPPORTIVE, NEUTRAL, RESISTANT
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  dealRoom DealRoom @relation(fields: [dealRoomId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([dealRoomId])
+  @@map("deal_room_stakeholders")
+}
+
+model DealRoomDocument {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  dealRoomId      String    @map("deal_room_id")
+  title           String
+  url             String
+  category        String    @default("GENERAL") // PROPOSAL, CONTRACT, SECURITY_REVIEW, ROI, GENERAL
+  uploadedById    String?   @map("uploaded_by_id")
+  viewedByBuyerAt DateTime? @map("viewed_by_buyer_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  dealRoom DealRoom @relation(fields: [dealRoomId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([dealRoomId])
+  @@map("deal_room_documents")
 }
 
 model DealRiskDigestRun {

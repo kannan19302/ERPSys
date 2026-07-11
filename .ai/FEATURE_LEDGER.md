@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T14:51:20.216Z
+> Last generated: 2026-07-11T15:15:51.430Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1947 features** across 33 modules
+## System total: **1979 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 442 |
+| [crm](#crm) | 474 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,7 +1154,7 @@
 
 ## crm
 
-442 features
+474 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1177,6 +1177,19 @@
 | POST | `/crm/cadences/process-due-steps` | Process all due cadence steps now (manual trigger; scheduler-ready) | `crm.lead.update` |
 | GET | `/crm/cadences/step-tasks/mine` | List my pending cadence step tasks (call/task/LinkedIn touchpoints) | `crm.settings.update` |
 | POST | `/crm/cadences/step-tasks/:id/complete` | Complete (or skip) a cadence step task | `crm.lead.read` |
+| POST | `/crm/coaching/rubrics` | Create a coaching scorecard rubric | `crm.coaching.manage` |
+| GET | `/crm/coaching/rubrics` | List coaching rubrics | `crm.coaching.read` |
+| GET | `/crm/coaching/rubrics/:id` | Get one coaching rubric | `crm.coaching.read` |
+| PUT | `/crm/coaching/rubrics/:id` | Update a coaching rubric | `crm.coaching.read` |
+| POST | `/crm/coaching/scorecards` | Score a logged call against a rubric (manager review) | `crm.coaching.create` |
+| GET | `/crm/coaching/calls/:activityId/scorecards` | List scorecards for a given call activity | `crm.coaching.read` |
+| GET | `/crm/coaching/scorecards/:id` | Get one scorecard | `crm.coaching.read` |
+| PUT | `/crm/coaching/scorecards/:id/acknowledge` | Rep acknowledges a coaching scorecard (closes the review loop) | `crm.coaching.read` |
+| GET | `/crm/coaching/reps/:repUserId/summary` | Per-rep coaching summary: average score, talk ratio, trend | `crm.coaching.read` |
+| GET | `/crm/coaching/dashboard` | Team-wide coaching dashboard: per-rep averages | `crm.coaching.read` |
+| POST | `/crm/coaching/library` | Add an exemplar call/note to the coaching library | `crm.coaching.read` |
+| GET | `/crm/coaching/library` | List coaching library items | `crm.coaching.read` |
+| DELETE | `/crm/coaching/library/:id` | Remove a coaching library item | `crm.coaching.read` |
 | GET | `/crm/commission-plans` | List commission plans | `crm.commission.read` |
 | GET | `/crm/commission-plans/:id` | Get a commission plan with tiers and SPIFFs | `crm.commission.read` |
 | POST | `/crm/commission-plans` | Create a commission plan | `crm.commission.read` |
@@ -1222,6 +1235,21 @@
 | GET | `/crm/conversion-analytics/by-campaign` | Funnel conversion rates broken down by campaign | `crm.lead.read` |
 | GET | `/crm/conversion-analytics/by-rep` | Funnel conversion-rate leaderboard broken down by assigned rep | `crm.lead.read` |
 | GET | `/crm/conversion-analytics/trend` | Trailing weekly time-series of leads created vs. converted vs. opportunities won | `crm.lead.read` |
+| POST | `/crm/deal-rooms` | Create a deal room for an opportunity | `crm.dealroom.create` |
+| GET | `/crm/deal-rooms` | List deal rooms | `crm.dealroom.read` |
+| GET | `/crm/deal-rooms/:id` | Get one deal room with milestones/stakeholders/documents | `crm.dealroom.read` |
+| GET | `/crm/deal-rooms/by-opportunity/:opportunityId` | Get the deal room for a given opportunity (null if none exists) | `crm.dealroom.read` |
+| PUT | `/crm/deal-rooms/:id/archive` | Archive a deal room | `crm.dealroom.read` |
+| POST | `/crm/deal-rooms/:id/milestones` | Add a mutual action plan milestone | `crm.dealroom.update` |
+| PUT | `/crm/deal-rooms/milestones/:milestoneId` | Update a milestone (status, owner, due date) | `crm.dealroom.update` |
+| DELETE | `/crm/deal-rooms/milestones/:milestoneId` | Delete a milestone | `crm.dealroom.update` |
+| POST | `/crm/deal-rooms/:id/stakeholders` | Add a stakeholder to the deal room stakeholder map | `crm.dealroom.update` |
+| DELETE | `/crm/deal-rooms/stakeholders/:stakeholderId` | Remove a stakeholder | `crm.dealroom.update` |
+| POST | `/crm/deal-rooms/:id/documents` | Share a document into the deal room | `crm.dealroom.update` |
+| DELETE | `/crm/deal-rooms/documents/:documentId` | Remove a shared document | `crm.dealroom.update` |
+| GET | `/crm/deal-rooms/:token` | Buyer: view the deal room via their access token | — |
+| POST | `/crm/deal-rooms/:token/milestones/:milestoneId/complete` | Buyer: mark a buyer/mutual-owned milestone complete | — |
+| POST | `/crm/deal-rooms/:token/documents/:documentId/view` | Buyer: record that a shared document was viewed | — |
 | GET | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
 | GET | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.read` |
 | POST | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
@@ -1267,6 +1295,10 @@
 | POST | `/crm/expansion/customers/:id/health` | — | `crm.opportunity.update` |
 | GET | `/crm/expansion/customers/:id/health` | — | `crm.customer.update` |
 | POST | `/crm/expansion/customers/merge` | — | `crm.customer.read` |
+| GET | `/crm/expansion/customers/:customerId/hierarchy` | — | `crm.customer.update` |
+| PUT | `/crm/expansion/customers/:customerId/parent` | — | `crm.customer.read` |
+| GET | `/crm/expansion/customers/:customerId/hierarchy-tree` | — | `crm.customer.update` |
+| GET | `/crm/expansion/customers/:customerId/hierarchy-rollup` | — | `crm.customer.read` |
 | POST | `/crm/gamification/leaderboard/recompute` | Recompute + persist the leaderboard snapshot for a period | `crm.commission.update` |
 | GET | `/crm/gamification/leaderboard` | Get the leaderboard for a period | `crm.commission.read` |
 | GET | `/crm/gamification/leaderboard/periods` | List periods that have a computed leaderboard | `crm.commission.read` |
