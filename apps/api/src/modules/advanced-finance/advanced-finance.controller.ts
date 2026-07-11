@@ -15,6 +15,7 @@ import { FixedAssetDeepService } from './services/fixed-asset-deep.service';
 import { FpaDeepService } from './services/fpa-deep.service';
 import { RevenueBillingService } from './services/revenue-billing.service';
 import { ComplianceControlsService } from './services/compliance-controls.service';
+import { Form1099Service } from './services/form-1099.service';
 import {
   GlAccountingService,
   BudgetingService,
@@ -527,6 +528,7 @@ export class AdvancedFinanceController {
     private readonly assetLifecycleService: AssetLifecycleService,
     private readonly cashPoolingService: CashPoolingService,
     private readonly consolidationDeepService: ConsolidationDeepService,
+    private readonly form1099Service: Form1099Service,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -5018,6 +5020,225 @@ export class AdvancedFinanceController {
   @Permissions('finance.report.read')
   async listConsolidationRuns(@Req() req: AuthenticatedRequest) {
     return this.consolidationDeepService.listConsolidationRuns(req.user.tenantId);
+  }
+
+  // ── 1099 / Vendor Tax Reporting ──────────────────────────────────────────────
+
+  @ApiOperation({ summary: 'List vendors with 1099 profiles and YTD reportable payments' })
+  @Get('1099/vendors')
+  @Permissions('finance.tax1099.read')
+  async list1099Vendors(@Req() req: AuthenticatedRequest, @Query('taxYear') taxYear?: string) {
+    return this.form1099Service.listVendorsWithProfiles(req.user.tenantId, Number(taxYear) || new Date().getFullYear());
+  }
+
+  @ApiOperation({ summary: 'Get a vendor 1099 profile' })
+  @Get('1099/vendor-profiles/:vendorId')
+  @Permissions('finance.tax1099.read')
+  async get1099VendorProfile(@Req() req: AuthenticatedRequest, @Param('vendorId') vendorId: string) {
+    return this.form1099Service.getVendorProfile(req.user.tenantId, vendorId);
+  }
+
+  @ApiOperation({ summary: 'Create or update a vendor 1099 profile' })
+  @Patch('1099/vendor-profiles/:vendorId')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Vendor1099Profile')
+  async upsert1099VendorProfile(
+    @Req() req: AuthenticatedRequest,
+    @Param('vendorId') vendorId: string,
+    @ZodBody(z.object({
+      is1099Vendor: z.boolean().optional(),
+      formType: z.enum(['NEC', 'MISC', 'INT', 'DIV']).optional(),
+      defaultBox: z.string().optional(),
+      taxIdType: z.enum(['EIN', 'SSN']).optional(),
+      taxIdMasked: z.string().optional(),
+      w9OnFile: z.boolean().optional(),
+      w9ReceivedDate: z.string().optional(),
+      stateFilingRequired: z.boolean().optional(),
+      state: z.string().optional(),
+      stateTaxId: z.string().optional(),
+    })) body: {
+      is1099Vendor?: boolean; formType?: string; defaultBox?: string; taxIdType?: string;
+      taxIdMasked?: string; w9OnFile?: boolean; w9ReceivedDate?: string;
+      stateFilingRequired?: boolean; state?: string; stateTaxId?: string;
+    },
+  ) {
+    return this.form1099Service.upsertVendorProfile(req.user.tenantId, vendorId, body);
+  }
+
+  @ApiOperation({ summary: 'Run a simulated TIN match check for a vendor' })
+  @Post('1099/vendor-profiles/:vendorId/tin-match')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Vendor1099Profile')
+  async run1099TinMatch(@Req() req: AuthenticatedRequest, @Param('vendorId') vendorId: string) {
+    return this.form1099Service.runTinMatch(req.user.tenantId, vendorId);
+  }
+
+  @ApiOperation({ summary: 'Toggle backup withholding for a vendor' })
+  @Post('1099/vendor-profiles/:vendorId/backup-withholding')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Vendor1099Profile')
+  async set1099BackupWithholding(
+    @Req() req: AuthenticatedRequest,
+    @Param('vendorId') vendorId: string,
+    @ZodBody(z.object({ active: z.boolean(), rate: z.number().min(0).max(100).optional() })) body: { active: boolean; rate?: number },
+  ) {
+    return this.form1099Service.setBackupWithholding(req.user.tenantId, vendorId, body.active, body.rate);
+  }
+
+  @ApiOperation({ summary: 'W-9 / TIN compliance checklist for a vendor' })
+  @Get('1099/vendors/:vendorId/w9-checklist')
+  @Permissions('finance.tax1099.read')
+  async get1099W9Checklist(@Req() req: AuthenticatedRequest, @Param('vendorId') vendorId: string) {
+    return this.form1099Service.getW9Checklist(req.user.tenantId, vendorId);
+  }
+
+  @ApiOperation({ summary: '$600 IRS threshold report — vendors crossing the 1099 reporting threshold' })
+  @Get('1099/threshold-report')
+  @Permissions('finance.tax1099.read')
+  async get1099ThresholdReport(@Req() req: AuthenticatedRequest, @Query('taxYear') taxYear?: string) {
+    return this.form1099Service.getThresholdReport(req.user.tenantId, Number(taxYear) || new Date().getFullYear());
+  }
+
+  @ApiOperation({ summary: 'Generate draft 1099 forms for all eligible vendors in a tax year' })
+  @Post('1099/generate')
+  @Permissions('finance.tax1099.manage')
+  async generate1099Forms(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ taxYear: z.number().int() })) body: { taxYear: number },
+  ) {
+    return this.form1099Service.generateForms(req.user.tenantId, req.user.userId, body.taxYear);
+  }
+
+  @ApiOperation({ summary: 'List 1099 forms' })
+  @Get('1099/forms')
+  @Permissions('finance.tax1099.read')
+  async list1099Forms(@Req() req: AuthenticatedRequest, @Query('taxYear') taxYear?: string, @Query('status') status?: string) {
+    return this.form1099Service.listForms(req.user.tenantId, taxYear ? Number(taxYear) : undefined, status);
+  }
+
+  @ApiOperation({ summary: 'Get a 1099 form by ID' })
+  @Get('1099/forms/:id')
+  @Permissions('finance.tax1099.read')
+  async get1099Form(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.getForm(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Edit box amounts on a draft 1099 form' })
+  @Patch('1099/forms/:id')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099')
+  async update1099Form(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({
+      boxAmounts: z.record(z.string(), z.number()).optional(),
+      federalWithholding: z.number().optional(),
+      state: z.string().optional(),
+      stateWithholding: z.number().optional(),
+      notes: z.string().optional(),
+    })) body: { boxAmounts?: Record<string, number>; federalWithholding?: number; state?: string; stateWithholding?: number; notes?: string },
+  ) {
+    return this.form1099Service.updateForm(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Mark a 1099 form ready for filing' })
+  @Post('1099/forms/:id/mark-ready')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099')
+  async mark1099FormReady(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.markReady(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'File a 1099 form (outside of a batch)' })
+  @Post('1099/forms/:id/file')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099')
+  async file1099Form(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.fileForm(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Void a 1099 form' })
+  @Post('1099/forms/:id/void')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099')
+  async void1099Form(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.voidForm(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Create a corrected 1099 form linked to the original filed form' })
+  @Post('1099/forms/:id/correct')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099')
+  async correct1099Form(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.object({ boxAmounts: z.record(z.string(), z.number()), notes: z.string().optional() })) body: { boxAmounts: Record<string, number>; notes?: string },
+  ) {
+    return this.form1099Service.correctForm(req.user.tenantId, id, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Printable/e-file summary payload for a 1099 form' })
+  @Get('1099/forms/:id/pdf-data')
+  @Permissions('finance.tax1099.read')
+  async get1099FormPdfData(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.getPrintableSummary(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Bundle READY 1099 forms into an e-file batch' })
+  @Post('1099/batches')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099Batch')
+  async create1099Batch(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ taxYear: z.number().int(), name: z.string().min(1), formIds: z.array(z.string()).min(1) })) body: { taxYear: number; name: string; formIds: string[] },
+  ) {
+    return this.form1099Service.createBatch(req.user.tenantId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'List 1099 e-file batches' })
+  @Get('1099/batches')
+  @Permissions('finance.tax1099.read')
+  async list1099Batches(@Req() req: AuthenticatedRequest, @Query('taxYear') taxYear?: string) {
+    return this.form1099Service.listBatches(req.user.tenantId, taxYear ? Number(taxYear) : undefined);
+  }
+
+  @ApiOperation({ summary: 'Get a 1099 e-file batch with its forms' })
+  @Get('1099/batches/:id')
+  @Permissions('finance.tax1099.read')
+  async get1099Batch(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.getBatch(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Submit a 1099 batch to the simulated IRS FIRE e-file system' })
+  @Post('1099/batches/:id/efile')
+  @Permissions('finance.tax1099.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('Form1099Batch')
+  async efile1099Batch(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.form1099Service.efileBatch(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: '1099 dashboard summary stats for a tax year' })
+  @Get('1099/summary')
+  @Permissions('finance.tax1099.read')
+  async get1099Summary(@Req() req: AuthenticatedRequest, @Query('taxYear') taxYear?: string) {
+    return this.form1099Service.getSummary(req.user.tenantId, Number(taxYear) || new Date().getFullYear());
+  }
+
+  @ApiOperation({ summary: 'Reference: state 1099 filing requirements (CFS program participation)' })
+  @Get('1099/state-filing-requirements')
+  @Permissions('finance.tax1099.read')
+  get1099StateFilingRequirements() {
+    return this.form1099Service.getStateFilingRequirements();
   }
 
 }

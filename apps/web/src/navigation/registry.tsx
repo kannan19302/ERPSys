@@ -114,6 +114,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'eliminations': 'Eliminations',
   'fx-revaluation': 'FX Revaluation',
   'corporate-cards': 'Corporate Cards',
+  '1099-reporting': '1099 / Vendor Tax Reporting',
   'payment-terms': 'Payment Terms',
   'invoice-analytics': 'Invoice Analytics',
   'tax-filing-summary': 'Tax Filing Summary',

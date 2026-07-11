@@ -327,6 +327,8 @@ model Vendor {
   portalUsers               VendorPortalUser[]
   auctionBids               RFQAuctionBid[]
   contracts                 Contract[]
+  vendor1099Profile         Vendor1099Profile?
+  form1099s                 Form1099[]
 
   @@index([tenantId])
   @@map("vendors")
@@ -10078,6 +10080,96 @@ model ConsolidationRate {
   @@unique([tenantId, period, fromCurrency, toCurrency])
   @@index([tenantId])
   @@map("consolidation_rates")
+}
+
+// ─────────────────────────────────────────────────
+// 1099 / VENDOR TAX REPORTING (module #29 advanced-finance)
+// ─────────────────────────────────────────────────
+
+model Vendor1099Profile {
+  id                      String    @id @default(cuid())
+  tenantId                String    @map("tenant_id")
+  vendorId                String    @unique @map("vendor_id")
+  is1099Vendor            Boolean   @default(false) @map("is_1099_vendor")
+  formType                String    @default("NEC") @map("form_type") // NEC, MISC, INT, DIV
+  defaultBox              String    @default("1") @map("default_box")
+  taxIdType                String   @default("EIN") @map("tax_id_type") // EIN, SSN
+  taxIdMasked             String?   @map("tax_id_masked") // e.g. XX-XXX1234
+  w9OnFile                Boolean   @default(false) @map("w9_on_file")
+  w9ReceivedDate          DateTime? @map("w9_received_date")
+  tinMatchStatus          String    @default("NOT_CHECKED") @map("tin_match_status") // NOT_CHECKED, PENDING, MATCHED, MISMATCH
+  tinMatchCheckedAt       DateTime? @map("tin_match_checked_at")
+  backupWithholdingActive Boolean   @default(false) @map("backup_withholding_active")
+  backupWithholdingRate   Decimal   @default(24.0) @db.Decimal(5, 2) @map("backup_withholding_rate")
+  stateFilingRequired     Boolean   @default(false) @map("state_filing_required")
+  state                   String?
+  stateTaxId              String?   @map("state_tax_id")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  vendor                  Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, is1099Vendor])
+  @@map("vendor_1099_profiles")
+}
+
+model Form1099 {
+  id                    String    @id @default(cuid())
+  tenantId              String    @map("tenant_id")
+  vendorId              String    @map("vendor_id")
+  taxYear               Int       @map("tax_year")
+  formType              String    @default("NEC") @map("form_type") // NEC, MISC, INT, DIV
+  boxAmounts            Json      @map("box_amounts") // { "1": 1200.00, "4": 288.00 }
+  totalAmount           Decimal   @default(0) @db.Decimal(15, 2) @map("total_amount")
+  federalWithholding    Decimal   @default(0) @db.Decimal(15, 2) @map("federal_withholding")
+  state                 String?
+  stateId               String?   @map("state_id")
+  stateWithholding      Decimal   @default(0) @db.Decimal(15, 2) @map("state_withholding")
+  status                String    @default("DRAFT") @map("status") // DRAFT, READY, FILED, CORRECTED, VOID
+  batchId               String?   @map("batch_id")
+  correctedFromId       String?   @unique @map("corrected_from_id")
+  isCorrection          Boolean   @default(false) @map("is_correction")
+  filedAt               DateTime? @map("filed_at")
+  voidedAt              DateTime? @map("voided_at")
+  efileSubmissionId     String?   @map("efile_submission_id")
+  notes                 String?
+  createdBy             String?   @map("created_by")
+  updatedBy             String?   @map("updated_by")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  vendor                Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  batch                 Form1099Batch? @relation(fields: [batchId], references: [id])
+  correctedFrom         Form1099?      @relation("Form1099Correction", fields: [correctedFromId], references: [id])
+  correction            Form1099?      @relation("Form1099Correction")
+
+  @@unique([tenantId, vendorId, taxYear, formType, isCorrection])
+  @@index([tenantId])
+  @@index([tenantId, taxYear])
+  @@index([tenantId, status])
+  @@map("form_1099s")
+}
+
+model Form1099Batch {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  taxYear           Int       @map("tax_year")
+  name              String
+  status            String    @default("DRAFT") @map("status") // DRAFT, GENERATED, SUBMITTED
+  formCount         Int       @default(0) @map("form_count")
+  totalAmount       Decimal   @default(0) @db.Decimal(15, 2) @map("total_amount")
+  submittedAt       DateTime? @map("submitted_at")
+  efileConfirmation String?   @map("efile_confirmation")
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  forms             Form1099[]
+
+  @@index([tenantId])
+  @@index([tenantId, taxYear])
+  @@map("form_1099_batches")
 }
 
 

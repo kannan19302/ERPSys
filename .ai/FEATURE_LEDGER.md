@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T18:26:09.441Z
+> Last generated: 2026-07-11T04:34:38.415Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1807 features** across 33 modules
+## System total: **1829 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 466 |
+| [advanced-finance](#advanced-finance) | 488 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -237,7 +237,7 @@
 
 ## advanced-finance
 
-466 features
+488 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -707,6 +707,28 @@
 | GET | `/advanced-finance/consolidation/statements/:period` | Get consolidated P&L and Balance Sheet financial statements | `finance.report.read` |
 | POST | `/advanced-finance/consolidation/runs/:id/lock` | Lock consolidated book period | `finance.report.create` |
 | GET | `/advanced-finance/consolidation/runs` | List consolidated book runs | `finance.report.create` |
+| GET | `/advanced-finance/1099/vendors` | List vendors with 1099 profiles and YTD reportable payments | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/vendor-profiles/:vendorId` | Get a vendor 1099 profile | `finance.tax1099.read` |
+| PATCH | `/advanced-finance/1099/vendor-profiles/:vendorId` | Create or update a vendor 1099 profile | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/vendor-profiles/:vendorId/tin-match` | Run a simulated TIN match check for a vendor | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/vendor-profiles/:vendorId/backup-withholding` | Toggle backup withholding for a vendor | `finance.tax1099.manage` |
+| GET | `/advanced-finance/1099/vendors/:vendorId/w9-checklist` | W-9 / TIN compliance checklist for a vendor | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/threshold-report` | $600 IRS threshold report — vendors crossing the 1099 reporting threshold | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/generate` | Generate draft 1099 forms for all eligible vendors in a tax year | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/forms` | List 1099 forms | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/forms/:id` | Get a 1099 form by ID | `finance.tax1099.read` |
+| PATCH | `/advanced-finance/1099/forms/:id` | Edit box amounts on a draft 1099 form | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/forms/:id/mark-ready` | Mark a 1099 form ready for filing | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/forms/:id/file` | File a 1099 form (outside of a batch) | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/forms/:id/void` | Void a 1099 form | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/forms/:id/correct` | Create a corrected 1099 form linked to the original filed form | `finance.tax1099.manage` |
+| GET | `/advanced-finance/1099/forms/:id/pdf-data` | Printable/e-file summary payload for a 1099 form | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/batches` | Bundle READY 1099 forms into an e-file batch | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/batches` | List 1099 e-file batches | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/batches/:id` | Get a 1099 e-file batch with its forms | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/batches/:id/efile` | Submit a 1099 batch to the simulated IRS FIRE e-file system | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/summary` | 1099 dashboard summary stats for a tax year | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/state-filing-requirements` | Reference: state 1099 filing requirements (CFS program participation) | `finance.tax1099.read` |
 
 ## advanced-hr
 

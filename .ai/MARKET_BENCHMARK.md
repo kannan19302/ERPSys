@@ -81,6 +81,9 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Financial statement drill-through (click P&L/BS totals → underlying journal entries → source documents) | NetSuite SuiteAnalytics, Sage Intacct, Dynamics 365 | 🟢 SHIPPED 2026-07-09 (AP three-way matching + batch payment runs + report drill-through) | H | S |
 | Vendor payment run (batch APR: select open invoices, auto-generate payment batch, print remittances, post payment GL entries) | SAP, NetSuite, Dynamics, Odoo | 🟢 SHIPPED 2026-07-09 (AP three-way matching + batch payment runs + report drill-through) | H | M |
 | Multi-book / multi-GAAP accounting (support multiple standards like US GAAP, IFRS, local tax books in parallel) | NetSuite Multi-Book, Sage Intacct | 🟢 SHIPPED 2026-07-09 (GLBook, book rules, parallel journal auto-post engine, statement book filters) | H | M |
+| 1099 / vendor tax reporting (US IRS Form 1099-NEC/MISC/INT/DIV: eligibility tracking, TIN match, backup withholding, e-file batches) | NetSuite 1099 Reporting, Sage Intacct 1099 Processing, QuickBooks Contractor Payments | 🟢 SHIPPED 2026-07-11 (Vendor1099Profile/Form1099/Form1099Batch models, 27 endpoints, `/finance/advanced/1099-reporting` UI, 21 tests) | M | M |
+| Automated sales/use-tax nexus & economic-nexus monitoring (per-state registration thresholds, real-time multi-jurisdiction rate lookup) | Avalara AvaTax, Vertex, NetSuite SuiteTax | MISSING (existing `TaxEngineService`/`TaxEngineDeepService` compute flat/withholding tax; no nexus threshold tracking or jurisdiction-rate API integration) | H | M |
+| E-invoicing / structured e-invoice compliance (PEPPOL/UBL, EU ViDA, Latin America CFDI-style mandates) | SAP, NetSuite, Sage Intacct (regional add-ons) | MISSING | M | L |
 
 ### CRM & Sales — refs: Salesforce, HubSpot, Dynamics 365, Zoho, Odoo
 | Gap | Who has it | UniERP | Value | Size |
@@ -158,7 +161,7 @@ named competitor* — not generic "improve X". Improvements to existing UniERP f
 | Module | Last benchmarked | Method | Notes |
 |:--|:--|:--|:--|
 | ALL (seed pass) | 2026-07-08 | offline analysis | Initial seed by claude-code; each module still owes a web-verified pass |
-| Finance | 2026-07-09 (pass 4: 2026-07-09) | offline analysis (pass 4) | Pass 1: bank feeds, cash-flow, dunning, expense-mgmt OCR all SHIPPED. Pass 2: lease accounting SHIPPED. Pass 3: spend management SHIPPED. Pass 4: multi-book SHIPPED. Pass 5: intercompany loans, cash pooling, asset revaluations, multi-currency translation consolidation all SHIPPED. Finance module is fully complete at 500+ features. |
+| Finance | 2026-07-11 (pass 6) | offline analysis (pass 6 — no WebSearch tool available this session) | Pass 1: bank feeds, cash-flow, dunning, expense-mgmt OCR all SHIPPED. Pass 2: lease accounting SHIPPED. Pass 3: spend management SHIPPED. Pass 4: multi-book SHIPPED. Pass 5: intercompany loans, cash pooling, asset revaluations, multi-currency translation consolidation all SHIPPED. Pass 6 (2026-07-11): 1099/vendor tax reporting SHIPPED; feature ledger crosses 500 (515). New gaps logged: sales/use-tax nexus monitoring (Avalara/Vertex-style), e-invoicing (PEPPOL/UBL/ViDA). Full exit-criteria checklist (scorecard 10/10, E2E smoke, UAT) still needs confirmation before advancing focus to CRM. |
 | CRM & Sales | — (due) | — | |
 | Inventory/Supply Chain | — (due) | — | |
 | Manufacturing | — (due) | — | |

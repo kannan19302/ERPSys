@@ -2,6 +2,66 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] Finance: 1099 / Vendor Tax Reporting (module deepening, focus module crosses 500-feature target)
+
+**Why**: with the `MARKET_BENCHMARK.md` Finance Gap Backlog fully closed (all seeded
+gaps `SHIPPED` except the infra-blocked virtual-card-issuance item), this cycle's P0-P3
+ladder yielded no open Finance work, so it fell to P6 (module deepening) — a genuine,
+previously-missing AP tax-compliance capability that NetSuite, Sage Intacct, and
+QuickBooks Contractor Payments all ship: US 1099-NEC/MISC/INT/DIV vendor tax reporting.
+
+**What shipped (DB + API + UI + tests)**:
+- Schema (migration `20260711041855_finance_1099_vendor_tax_reporting`): `Vendor1099Profile`
+  (is1099Vendor flag, form type/box, TIN type + masked TIN, W-9 on-file tracking, TIN-match
+  status, backup withholding config, state filing config), `Form1099` (per-vendor per-tax-year
+  form with JSON box amounts, federal/state withholding, DRAFT/READY/FILED/CORRECTED/VOID
+  lifecycle, self-referencing correction chain), `Form1099Batch` (e-file bundle with
+  formCount/totalAmount/submission confirmation); `Vendor` gained `vendor1099Profile` +
+  `form1099s` relations.
+- API (`Form1099Service`, 27 endpoints on `AdvancedFinanceController` under `/advanced-finance/1099/*`):
+  vendor eligibility list with YTD-paid computed from `PurchaseOrder.paidAmount` and $600
+  IRS-threshold flagging, vendor profile upsert, simulated TIN-match check, backup-withholding
+  toggle, W-9/TIN compliance checklist, threshold report (eligible vs. flagged-but-unmarked),
+  draft form generation from eligible vendors, form CRUD (edit box amounts while DRAFT,
+  mark-ready, file, void, correct-a-filed-form), printable/e-file summary payload, e-file
+  batch create/list/get/submit (simulated IRS FIRE confirmation number), dashboard summary
+  (by status/form type), and a static state combined-federal-state-filing-program reference
+  endpoint. New permissions `finance.tax1099.read` / `finance.tax1099.manage` registered in
+  `packages/shared/src/permissions/registry.ts`.
+- UI: new page `/finance/advanced/1099-reporting` (three tabs — Vendor Eligibility, Forms,
+  Batches; summary stat cards; mark-1099/TIN-match actions; generate/mark-ready/file/e-file
+  workflows) wired to the new endpoints; nav entry under Finance → Tax & Compliance;
+  `SEGMENT_NAMES` breadcrumb registered.
+- Tests: 21 new unit tests (`form-1099.service.spec.ts`) covering threshold computation,
+  profile upsert, TIN-match, backup-withholding validation, form lifecycle guards
+  (DRAFT-only edit, READY-only file, FILED-only correct, no double-correction), batch
+  creation/validation, and e-file submission.
+
+**Code review (2 independent passes)**: fixed both rounds' Blockers before shipping —
+added `@TrackChanges`/`ChangeHistoryInterceptor` to the 6 mutation endpoints that were
+missing it (TIN match, backup withholding, mark-ready, file, void, e-file batch submit);
+replaced all three hand-rolled `<table>` UI sections with the shared `@unerp/ui`
+`DataTable` component per AGENTS.md rule 16a/16c (sortable columns, Actions column with
+`e.stopPropagation()`); added `tenantId` to both `form1099.updateMany` calls (defense in
+depth); replaced `catch (err: any)` with `catch (err: unknown)` + a typed `errorMessage()`
+helper across the new page; documented the YTD cash-basis approximation as a known
+limitation in both the service code and `MODULE_REGISTRY.md` (item 24a); added a
+tenant-isolation unit test for `getForm`.
+
+**Gates**: `pnpm turbo typecheck` — 10/10 packages green. Full API test suite — 166 test
+files / 2215 tests passing (2193 pre-existing + 22 new), zero failures. Web typecheck
+green. `[e2e-unverified] Finance: 1099 vendor tax reporting` — logged in Up Next; Docker/
+Postgres were bootstrapped in this session for the Prisma migration only, not the full
+stack, so the Playwright smoke gate was not run this cycle.
+
+**Milestone**: `FEATURE_LEDGER.md` now counts 515 Finance + Advanced-Finance features
+(488 + 27), crossing the 500-feature exit-criteria threshold in `MODULE_FOCUS.md` § 5 for
+the first time. Remaining exit criteria (scorecard 10/10 all dimensions, E2E smoke green,
+UAT pass) are not yet all confirmed — see `MODULE_FOCUS.md` § 6.
+
+**Also**: released a 49h-stale `finance-dynamic-allocations` claim lock (that work already
+shipped 2026-07-09 under a different commit) as bootstrap cleanup.
+
 ## [2026-07-09] Finance: Hardening & Milestones (Batches 9-12)
 
 **Scope**: Finance & Accounting focus module — final deepening batch to cross the **500+ features** threshold (reached **502 total features**).

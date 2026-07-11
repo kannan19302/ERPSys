@@ -28,6 +28,7 @@ import {
   AssetLifecycleService,
   CashPoolingService,
   ConsolidationDeepService,
+  Form1099Service,
 } from './services';
 import { TaxEngineDeepService } from './services/tax-engine-deep.service';
 import { TreasuryDeepService } from './services/treasury-deep.service';
@@ -75,6 +76,7 @@ const domainServices = [
   AssetLifecycleService,
   CashPoolingService,
   ConsolidationDeepService,
+  Form1099Service,
 ];
 
 @Module({

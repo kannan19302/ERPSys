@@ -499,6 +499,8 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   { code: 'finance.payables.manage', module: 'finance', resource: 'payables', action: 'manage', level: 'endpoint', description: 'Manage Payables (finance)' },
   { code: 'finance.payables.match', module: 'finance', resource: 'payables', action: 'match', level: 'endpoint', description: 'Reconcile Payables (finance)' },
   { code: 'finance.payables.run', module: 'finance', resource: 'payables', action: 'run', level: 'endpoint', description: 'Run Payables (finance)' },
+  { code: 'finance.tax1099.read', module: 'finance', resource: 'tax1099', action: 'read', level: 'endpoint', description: 'View 1099 vendor tax reporting (finance)' },
+  { code: 'finance.tax1099.manage', module: 'finance', resource: 'tax1099', action: 'manage', level: 'endpoint', description: 'Manage 1099 vendor tax reporting (finance)' },
   { code: 'finance.fpa.read', module: 'finance', resource: 'fpa', action: 'read', level: 'endpoint', description: 'View Fpa (finance)' },
   { code: 'finance.fpa.manage', module: 'finance', resource: 'fpa', action: 'manage', level: 'endpoint', description: 'Manage Fpa (finance)' },
   { code: 'finance.fpa.run', module: 'finance', resource: 'fpa', action: 'run', level: 'endpoint', description: 'Run Fpa (finance)' },

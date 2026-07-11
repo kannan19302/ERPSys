@@ -74,6 +74,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork },
             { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert },
+            { name: '1099 / Vendor Tax Reporting', href: '/finance/advanced/1099-reporting', icon: FileText },
             { name: 'Finance Audit Trail', href: '/finance/advanced/audit-logs', icon: Eye },
             { name: 'Account Reconciliation', href: '/finance/advanced/account-reconciliation', icon: GitFork },
           ]
