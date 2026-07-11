@@ -1,0 +1,8 @@
+{
+  "slug": "crm-coaching-dealroom-hierarchy",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "CRM: sales coaching/call-scoring (#47), deal room/MAP (#48), account hierarchy rollups (#49)",
+  "acquiredAt": "2026-07-11T14:54:22.743Z",
+  "heartbeatAt": "2026-07-11T14:54:22.744Z",
+  "pid": 28725
+}
