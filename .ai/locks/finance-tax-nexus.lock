@@ -1,0 +1,8 @@
+{
+  "slug": "finance-tax-nexus",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "Finance: sales/use-tax nexus monitoring + 1099 E2E verification",
+  "acquiredAt": "2026-07-11T04:45:44.165Z",
+  "heartbeatAt": "2026-07-11T04:45:44.165Z",
+  "pid": 12508
+}
