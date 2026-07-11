@@ -53,19 +53,27 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    writing code: during build use only fast scoped checks (`pnpm --filter @unerp/api
    typecheck`, single-module vitest, HMR in the running stack) — never the full
    suite/typecheck/E2E per feature, and never restart docker or re-seed needlessly.
-6. **Verify gates ONCE per cycle** (after the whole batch, never per feature):
-   `pnpm turbo typecheck`, the full API test suite, AND the binding E2E smoke gate
-   (`npx playwright test smoke` in apps/web against the running stack; add new pages
-   to `SMOKE_ROUTES`). Manually exercise the batch's primary workflow once.
-7. **Review** the diff with the `code-reviewer` subagent (plus `security-auditor` for
-   auth/tenancy/permission-sensitive changes).
-8. **Record (documentation gate — commit is FORBIDDEN until ALL done)**: updating only
-   CHANGELOG + MODULE_REGISTRY is a violation. Full checklist (AUTOPILOT Step 7):
-   CHANGELOG entry; MODULE_REGISTRY (status/Growth Tracker/claim → Recently Completed);
-   regenerate `feature-ledger.mjs`, `sprint-tracker.mjs`; MODULE_FOCUS § 6 row + § 7
-   contract statuses; MARKET_BENCHMARK `✅ SHIPPED` marks + discovery rows;
-   `feedback-scan.mjs` if a P1 error was fixed; `scorecard.mjs` if substantial;
-   release the lock (`claim.mjs release`); HANDBOOK only if conventions changed.
+6. **Verify gates ONCE per cycle, per tier** (AUTOPILOT § Cycle Tiers — binding).
+   **FAST cycle (default)**: scoped typecheck (`--filter @unerp/api` + `@unerp/web`)
+   and touched-module vitest only — no full suite, no E2E, no manual ritual; still
+   append new pages to `SMOKE_ROUTES`; increment `fastCyclesSinceFullGate` and append
+   the scope to `deferredScopes` in `.ai/gates-status.json`.
+   **MILESTONE cycle** (when `fastCyclesSinceFullGate` ≥ 4, module exit criteria,
+   risky surface — data migrations/auth/tenancy/RBAC — logged gate debt, or user
+   request): `pnpm turbo typecheck`, the full API test suite, the binding E2E smoke
+   gate (`npx playwright test smoke`), and one manual pass over the accumulated
+   deferred scopes; on green, reset the counter and stamp `lastMilestoneCommit`.
+   A red milestone gate is P0 within that same cycle.
+7. **Review** per tier: FAST → self-review of the diff vs the Critical Rules;
+   MILESTONE → `code-reviewer` subagent over the accumulated diff since
+   `lastMilestoneCommit`. The `security-auditor` pass on auth/tenancy/permission-
+   sensitive changes applies in EVERY tier.
+8. **Record (documentation gate — commit is FORBIDDEN until the tier's set is done)**:
+   FAST cycle: CHANGELOG entry; MODULE_REGISTRY claim move; regenerate
+   `feature-ledger.mjs`, `sprint-tracker.mjs`; MODULE_FOCUS § 6 row; release the lock
+   (`claim.mjs release`); `feedback-scan.mjs` if a P1 error was fixed.
+   MILESTONE cycle additionally: MODULE_FOCUS § 7 contract statuses; MARKET_BENCHMARK
+   `✅ SHIPPED` marks + discovery rows; `scorecard.mjs`; HANDBOOK if conventions changed.
    Self-check: `git status --short .ai/` must show the expected set. Quote today's
    SPRINT_TRACKER row and 500-target progress in the final report.
 9. **Ship** (only after the step-8 documentation gate passes): in parallel mode run in
@@ -84,7 +92,8 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    end with the changes on `origin/main`. If on an `autopilot/*` branch: rebase onto origin/main,
    re-run scoped typecheck, merge to main, push, delete the branch. Never leave
    shipped work stranded on a branch.
-10. **Refill & discover** (mandatory): run the Discovery Protocol in
+10. **Refill & discover** (MILESTONE cycles only; FAST cycles skip discovery and
+    refill from the existing Gap Backlog only if Up Next < 5): run the Discovery Protocol in
     `.ai/MARKET_BENCHMARK.md` — benchmark the most-overdue module against its top
     market-leader competitors (use WebSearch/WebFetch), log new gaps/improvements in
     the Gap Backlog, promote the best 1–3 into Up Next as `[benchmark]` items, and keep

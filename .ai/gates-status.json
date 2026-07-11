@@ -1,5 +1,8 @@
 {
   "ranAt": "2026-07-04T04:24:19.536Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "9884ffb",
   "typecheck": {
     "label": "Typecheck (tsc --noEmit, all packages)",
     "pass": true,
