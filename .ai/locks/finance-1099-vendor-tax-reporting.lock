@@ -1,0 +1,8 @@
+{
+  "slug": "finance-1099-vendor-tax-reporting",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "Finance: 1099/vendor tax reporting - Form1099 model, TIN tracking, box categorization, e-file batch export, year-end summary, DB+API+UI",
+  "acquiredAt": "2026-07-11T04:16:26.681Z",
+  "heartbeatAt": "2026-07-11T04:16:26.682Z",
+  "pid": 17169
+}
