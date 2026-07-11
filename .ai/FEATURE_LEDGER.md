@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T11:26:27.373Z
+> Last generated: 2026-07-11T11:49:26.737Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1905 features** across 33 modules
+## System total: **1919 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 400 |
+| [crm](#crm) | 414 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,10 +1154,19 @@
 
 ## crm
 
-400 features
+414 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
+| POST | `/crm/ai-drafting/opportunities/:opportunityId/followup` | Generate a follow-up email draft for an opportunity/deal | `crm.opportunity.update` |
+| POST | `/crm/ai-drafting/quotations/:quotationId/cover-note` | Generate an AI cover note draft for a quotation | `crm.opportunity.update` |
+| POST | `/crm/ai-drafting/leads/:leadId/outreach` | Generate an AI outreach email draft for a lead | `crm.lead.update` |
+| POST | `/crm/ai-drafting/:draftId/regenerate` | Regenerate an existing draft (same context, optionally a new tone) | `crm.opportunity.update` |
+| GET | `/crm/ai-drafting` | List drafts, optionally scoped to a context (opportunity/quotation/lead) | `crm.opportunity.read` |
+| GET | `/crm/ai-drafting/:draftId` | Get a single draft | `crm.opportunity.read` |
+| PATCH | `/crm/ai-drafting/:draftId` | Edit a draft\ | `crm.opportunity.read` |
+| POST | `/crm/ai-drafting/:draftId/mark-used` | Mark a draft as used (sent by the rep through their own email client) | `crm.opportunity.update` |
+| POST | `/crm/ai-drafting/:draftId/discard` | Discard a draft | `crm.opportunity.update` |
 | POST | `/crm/cadences` | Create a multi-channel sales cadence | `crm.settings.create` |
 | GET | `/crm/cadences/:id` | Get a cadence with steps and auto-enroll rules | `crm.settings.read` |
 | GET | `/crm/cadences/auto-enroll-rules/list` | List auto-enroll rules | `crm.settings.read` |
@@ -1192,6 +1201,11 @@
 | GET | `/crm/conversation-intelligence/calls/:id` | Get one logged call with its full transcript + AI analysis | `crm.activity.read` |
 | GET | `/crm/conversation-intelligence/calls` | List logged calls, optionally filtered by deal/lead/customer/sentiment | `crm.activity.read` |
 | GET | `/crm/conversation-intelligence/insights/summary` | Tenant-wide conversation intelligence rollup (sentiment mix, avg engagement score) | `crm.activity.read` |
+| GET | `/crm/conversion-analytics/summary` | Overall lead-to-opportunity-to-won funnel summary, with average cycle time | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/by-source` | Funnel conversion rates broken down by lead source | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/by-campaign` | Funnel conversion rates broken down by campaign | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/by-rep` | Funnel conversion-rate leaderboard broken down by assigned rep | `crm.lead.read` |
+| GET | `/crm/conversion-analytics/trend` | Trailing weekly time-series of leads created vs. converted vs. opportunities won | `crm.lead.read` |
 | GET | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
 | GET | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.read` |
 | POST | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |

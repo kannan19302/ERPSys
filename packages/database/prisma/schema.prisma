@@ -731,6 +731,29 @@ model DealRiskDigestRun {
   @@map("deal_risk_digest_runs")
 }
 
+model CrmAiDraft {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  draftType   String    @map("draft_type") // FOLLOWUP_EMAIL, QUOTE_COVER_NOTE, LEAD_OUTREACH_EMAIL
+  contextType String    @map("context_type") // OPPORTUNITY, QUOTATION, LEAD
+  contextId   String    @map("context_id")
+  tone        String    @default("PROFESSIONAL") // PROFESSIONAL, FRIENDLY, URGENT, CONCISE
+  subject     String?
+  body        String
+  status      String    @default("DRAFT") // DRAFT, USED, DISCARDED
+  generatedBy String?   @map("generated_by")
+  usedAt      DateTime? @map("used_at")
+  discardedAt DateTime? @map("discarded_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, contextType, contextId])
+  @@index([tenantId, status])
+  @@map("crm_ai_drafts")
+}
+
 model EmailTemplate {
   id        String   @id @default(cuid())
   tenantId  String   @map("tenant_id")

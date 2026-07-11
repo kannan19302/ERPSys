@@ -175,6 +175,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Pipeline Risk Alerts', href: '/crm/forecasting/pipeline-risk', icon: TrendingUp },
             { name: 'Revenue Intelligence', href: '/crm/forecasting/revenue-intelligence', icon: TrendingUp },
             { name: 'Conversation Intelligence', href: '/crm/conversation-intelligence', icon: Phone },
+            { name: 'Conversion Analytics', href: '/crm/forecasting/conversion-analytics', icon: BarChart3 },
+            { name: 'AI Drafting', href: '/crm/ai-drafting', icon: FileText },
           ]
         },
         {

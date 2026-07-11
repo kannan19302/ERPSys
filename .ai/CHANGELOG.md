@@ -2,6 +2,77 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales, cycle 5 — lead-to-opportunity conversion analytics + AI-assisted email/quote drafting
+
+- **Added** (Up Next item 43, benchmark: Salesforce/HubSpot funnel reporting):
+  `CrmConversionAnalyticsService`/`CrmConversionAnalyticsController` at
+  `/crm/conversion-analytics/*` — overall funnel summary (Lead → Qualified → Converted →
+  Closed-Won conversion rates + average sales-cycle days), breakdowns by lead source,
+  campaign, and assigned rep (leaderboard), plus a trailing 12-week time-series. No schema
+  change — reuses existing `Lead`/`Opportunity`/`LeadSource`/`Campaign` relations. New UI
+  page `/crm/forecasting/conversion-analytics` (KPI tiles, source/campaign/rep breakdown
+  toggle, weekly trend table).
+- **Added** (Up Next item 41, benchmark: Salesforce Einstein GPT / HubSpot Breeze Copilot):
+  `CrmAiDraftingService`/`CrmAiDraftingController` at `/crm/ai-drafting/*` — deterministic
+  template-driven draft generation (same sanctioned pattern as conversation intelligence's
+  "AI" summary, not a call into the `ai` module's self-hosted-Ollama service, to avoid a
+  cross-module import) for three draft types: opportunity follow-up email (deal
+  stage/amount/close-date aware), quotation cover note (line items/total/valid-until
+  aware), and lead outreach email (source-aware), each with 4 tone variants
+  (professional/friendly/urgent/concise). New `CrmAiDraft` Prisma model
+  (migration `20260711113359_crm_ai_drafts`) persists every draft with a
+  draft/used/discarded lifecycle for audit — the review/edit/send step always stays a
+  human action, nothing is auto-sent. New UI page `/crm/ai-drafting` (generate, edit,
+  regenerate, mark-used, discard).
+- **Bugfix found during manual verification**: initial draft used the schema comment's
+  Title-Case `'Closed Won'`/`'Proposal'` stage labels; the actual codebase-wide convention
+  (confirmed via `crm-deals.service.ts`, `crm-forecasting.service.ts`,
+  `crm-pipeline-risk.service.ts`, etc.) is uppercase-snake `'CLOSED_WON'`/`'PROPOSAL'`.
+  Fixed in `crm-conversion-analytics.service.ts` (funnel-won detection) and
+  `crm-ai-drafting.service.ts` (stage-aware follow-up line, case-insensitive match) before
+  this was caught by the live-stack manual check, not by unit tests (mocks used
+  whatever casing was passed in) — a reminder that mocked-prisma tests alone don't catch
+  data-convention drift.
+- **Tested**: 22 new unit tests (`crm-conversion-analytics.service.spec.ts` — funnel math,
+  zero-lead edge case, average cycle-time computation, per-source/campaign/rep grouping;
+  `crm-ai-drafting.service.spec.ts` — all 3 generators, NotFound guards, draft lifecycle
+  transitions incl. double-use/double-discard rejection, edit validation, regenerate).
+  Full API suite: 179 files / 2324 tests passing. `pnpm turbo typecheck`: zero errors
+  (API + web).
+- **Verified live**: dev stack (Postgres/Redis + rebuilt API dist on :3001 + Next dev on
+  :3000). Real JWT login, then exercised via curl with a real CSRF token:
+  `/crm/conversion-analytics/summary|by-source|by-rep|trend` against seeded leads (5
+  leads, 0 qualified — correctly showed 0% rates and a `null` average cycle, not a crash);
+  `/crm/ai-drafting/opportunities/:id/followup` against a real opportunity (draft
+  referencing real stage/amount); `/crm/ai-drafting/leads/:id/outreach` against a real
+  lead (draft referencing real first name/source); `/crm/ai-drafting/quotations/:id/
+  cover-note` against a nonexistent ID correctly 404s ("Quotation not found" — no
+  quotations seeded in this environment to test the happy path, covered instead by the
+  unit test); full draft lifecycle generate → mark-used → reject re-use (400) confirmed
+  live. Both new pages (`/crm/forecasting/conversion-analytics`, `/crm/ai-drafting`)
+  return HTTP 200 from the Next.js dev server. Added both routes to `SMOKE_ROUTES`
+  (`apps/web/e2e/smoke.spec.ts`); the full Playwright smoke suite (79 routes) was
+  launched against the live stack and reached 67/79 (through
+  `/crm/forecasting/pipeline-risk`, all rendering without console errors) before the
+  captured log cuts off with no final pass/fail summary — inconclusive on the remaining
+  12 routes including the 2 new ones added this cycle. **`[e2e-unverified]`**, honestly
+  logged rather than claimed passing; the manual curl-based verification above (which
+  did complete) and the direct HTTP 200 checks on both new routes are the real evidence
+  for this cycle. Next cycle should re-run `npx playwright test smoke` to get a clean
+  full-suite signal.
+- **Skipped** (Up Next item 40, real payment gateway wiring for portal payments):
+  genuinely infra-blocked — needs real Stripe/PayPal processor credentials, not
+  obtainable in this sandbox. Left queued, not attempted.
+- **Why this item**: `crm-dashboards.service.ts` had a generic widget-dashboard builder
+  but no dedicated funnel-conversion reporting (item 43, RICE 40); no AI-assisted content
+  drafting existed anywhere in CRM (item 41, RICE 18) despite it being a standard
+  Salesforce/HubSpot capability. Both were the next-highest-RICE unclaimed CRM items
+  after cycle 4 closed out items 35/39/42.
+- **Batch-size note (honest)**: ~1,600 LOC / 2 features (each competitor-parity depth,
+  not stubs) — under the 100-feature/15k-LOC aspirational floor. The CRM Up Next queue is
+  now down to 1 non-infra-blocked item before requiring a fresh market-discovery pass
+  (done in this cycle's Refill & Discover — see below).
+
 ## [2026-07-11] CRM & Sales, cycle 4 — pipeline-risk notification consumer + revenue-intelligence digest + conversation intelligence
 
 - **Added**: `PipelineRiskNotificationService` (`apps/api/src/modules/notifications/pipeline-risk-notification.service.ts`,

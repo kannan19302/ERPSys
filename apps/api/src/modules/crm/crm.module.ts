@@ -57,6 +57,10 @@ import { CrmRevenueIntelligenceService } from './crm-revenue-intelligence.servic
 import { CrmRevenueIntelligenceController } from './crm-revenue-intelligence.controller';
 import { CrmConversationIntelligenceService } from './crm-conversation-intelligence.service';
 import { CrmConversationIntelligenceController } from './crm-conversation-intelligence.controller';
+import { CrmConversionAnalyticsService } from './crm-conversion-analytics.service';
+import { CrmConversionAnalyticsController } from './crm-conversion-analytics.controller';
+import { CrmAiDraftingService } from './crm-ai-drafting.service';
+import { CrmAiDraftingController } from './crm-ai-drafting.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -98,6 +102,8 @@ const CRM_SERVICES = [
   CrmPortalDocumentsService,
   CrmRevenueIntelligenceService,
   CrmConversationIntelligenceService,
+  CrmConversionAnalyticsService,
+  CrmAiDraftingService,
 ];
 
 @Module({
@@ -121,6 +127,8 @@ const CRM_SERVICES = [
     CrmPipelineRiskController,
     CrmRevenueIntelligenceController,
     CrmConversationIntelligenceController,
+    CrmConversionAnalyticsController,
+    CrmAiDraftingController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,
