@@ -1,0 +1,8 @@
+{
+  "slug": "crm-exit-criteria-closeout",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "CRM & Sales scorecard/UAT/E2E/contracts closeout",
+  "acquiredAt": "2026-07-11T15:30:30.221Z",
+  "heartbeatAt": "2026-07-11T15:30:30.221Z",
+  "pid": 21545
+}
