@@ -1,0 +1,8 @@
+{
+  "slug": "crm-customer-portal",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "CRM customer self-service portal: portal auth, quotes/orders/invoices/tickets views",
+  "acquiredAt": "2026-07-11T09:50:44.498Z",
+  "heartbeatAt": "2026-07-11T09:50:44.498Z",
+  "pid": 31345
+}
