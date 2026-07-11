@@ -10490,3 +10490,205 @@ model NexusRegistration {
   @@index([tenantId])
   @@map("nexus_registrations")
 }
+
+// ════════════════════════════════════════════════
+// CRM & Sales: Gamification / Leaderboards (Up Next item 44)
+// ════════════════════════════════════════════════
+
+/// Badge definitions a tenant can award reps for (SalesScreen/Ambition-style
+/// recognition). Criteria is evaluated by `CrmGamificationService.evaluateBadges`.
+model GamificationBadge {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  name          String
+  description   String?
+  icon          String    @default("award")
+  criteriaType  String    @map("criteria_type") // DEALS_WON_COUNT, REVENUE_TOTAL, ACTIVITY_STREAK, FIRST_DEAL, DEAL_SIZE_ABOVE
+  criteriaValue Decimal   @default(0) @map("criteria_value") @db.Decimal(15, 2)
+  periodScope   String    @default("ALL_TIME") @map("period_scope") // ALL_TIME, MONTHLY, QUARTERLY
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  awards GamificationBadgeAward[]
+
+  @@index([tenantId])
+  @@map("gamification_badges")
+}
+
+/// A single badge award to a rep, with the point-in-time context that earned it.
+model GamificationBadgeAward {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  orgId      String   @map("org_id")
+  badgeId    String   @map("badge_id")
+  userId     String   @map("user_id")
+  context    Json     @default("{}")
+  awardedAt  DateTime @default(now()) @map("awarded_at")
+
+  badge GamificationBadge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, badgeId, userId])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("gamification_badge_awards")
+}
+
+/// Per-rep activity streak tracking (consecutive days with a logged Activity
+/// or a closed-won deal) — drives the "streak" recognition mechanic.
+model SalesStreak {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  orgId            String    @map("org_id")
+  userId           String    @map("user_id")
+  streakType       String    @default("ACTIVITY") @map("streak_type") // ACTIVITY, DEALS_WON
+  currentStreak    Int       @default(0) @map("current_streak")
+  bestStreak       Int       @default(0) @map("best_streak")
+  lastCountedDate  DateTime? @map("last_counted_date")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, streakType])
+  @@index([tenantId])
+  @@map("sales_streaks")
+}
+
+/// Persisted leaderboard snapshot for a given period, so rankings survive
+/// across requests and support historical "leaderboard of the month" views.
+model LeaderboardSnapshot {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  orgId          String   @map("org_id")
+  period         String // e.g. "2026-07", "2026-Q3", "ALL_TIME"
+  userId         String   @map("user_id")
+  rank           Int
+  points         Int      @default(0)
+  dealsWon       Int      @default(0) @map("deals_won")
+  revenue        Decimal  @default(0) @map("revenue") @db.Decimal(15, 2)
+  activityCount  Int      @default(0) @map("activity_count")
+  generatedAt    DateTime @default(now()) @map("generated_at")
+
+  @@unique([tenantId, period, userId])
+  @@index([tenantId])
+  @@index([tenantId, period])
+  @@map("leaderboard_snapshots")
+}
+
+// ════════════════════════════════════════════════
+// CRM & Sales: Commission Plan Automation deepening (Up Next item 46)
+// Quota-attainment tiered/accelerator plans + SPIFF bonuses, additive to the
+// existing per-deal `CommissionRule`/`CommissionEntry` (flat/tiered-by-deal-size).
+// ════════════════════════════════════════════════
+
+model CommissionPlan {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  name            String
+  description     String?
+  effectiveStart  DateTime  @map("effective_start")
+  effectiveEnd    DateTime? @map("effective_end")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  tiers    CommissionPlanTier[]
+  spiffs   CommissionSpiff[]
+  payouts  CommissionPayout[]
+
+  @@index([tenantId])
+  @@map("commission_plans")
+}
+
+/// Quota-attainment accelerator band, e.g. 0-70% -> 5%, 70-100% -> 8%, 100%+ -> 12%.
+model CommissionPlanTier {
+  id               String  @id @default(cuid())
+  tenantId         String  @map("tenant_id")
+  planId           String  @map("plan_id")
+  minAttainmentPct Decimal @map("min_attainment_pct") @db.Decimal(6, 2)
+  maxAttainmentPct Decimal? @map("max_attainment_pct") @db.Decimal(6, 2)
+  commissionRate   Decimal @map("commission_rate") @db.Decimal(6, 3) // % applied to attained revenue in this band
+  sortOrder        Int     @default(0) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  plan CommissionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([planId])
+  @@map("commission_plan_tiers")
+}
+
+/// SPIFF (Sales Performance Incentive Fund) bonus rule — flat or % bonus
+/// triggered by deal-size, product line, new-logo, or attainment criteria.
+model CommissionSpiff {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  planId        String?   @map("plan_id")
+  name          String
+  criteriaType  String    @map("criteria_type") // DEAL_SIZE_ABOVE, PRODUCT_LINE, NEW_LOGO, ATTAINMENT_ABOVE
+  criteriaValue Json      @default("{}") @map("criteria_value")
+  bonusType     String    @default("FLAT") @map("bonus_type") // FLAT, PERCENTAGE
+  bonusAmount   Decimal   @map("bonus_amount") @db.Decimal(15, 2)
+  startDate     DateTime? @map("start_date")
+  endDate       DateTime? @map("end_date")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  plan       CommissionPlan?             @relation(fields: [planId], references: [id], onDelete: SetNull)
+  payoutLines CommissionPayoutSpiffLine[]
+
+  @@index([tenantId])
+  @@map("commission_spiffs")
+}
+
+/// Calculated payout for one rep/period under a quota-attainment plan.
+model CommissionPayout {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  planId            String    @map("plan_id")
+  userId            String    @map("user_id")
+  period            String // e.g. "2026-Q3"
+  quotaAmount        Decimal  @default(0) @map("quota_amount") @db.Decimal(15, 2)
+  attainedAmount     Decimal  @default(0) @map("attained_amount") @db.Decimal(15, 2)
+  attainmentPct      Decimal  @default(0) @map("attainment_pct") @db.Decimal(6, 2)
+  appliedTierRate    Decimal  @default(0) @map("applied_tier_rate") @db.Decimal(6, 3)
+  tieredCommission   Decimal  @default(0) @map("tiered_commission") @db.Decimal(15, 2)
+  spiffBonus         Decimal  @default(0) @map("spiff_bonus") @db.Decimal(15, 2)
+  totalPayout        Decimal  @default(0) @map("total_payout") @db.Decimal(15, 2)
+  status             String   @default("DRAFT") @map("status") // DRAFT, APPROVED, PAID
+  calculatedAt       DateTime @default(now()) @map("calculated_at")
+  approvedBy         String?  @map("approved_by")
+  approvedAt         DateTime? @map("approved_at")
+  paidAt             DateTime? @map("paid_at")
+
+  plan       CommissionPlan              @relation(fields: [planId], references: [id])
+  spiffLines CommissionPayoutSpiffLine[]
+
+  @@unique([tenantId, planId, userId, period])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("commission_payouts")
+}
+
+/// Line-item detail of which SPIFF bonuses contributed to a payout.
+model CommissionPayoutSpiffLine {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  payoutId  String   @map("payout_id")
+  spiffId   String   @map("spiff_id")
+  amount    Decimal  @db.Decimal(15, 2)
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  payout CommissionPayout @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+  spiff  CommissionSpiff  @relation(fields: [spiffId], references: [id])
+
+  @@index([tenantId])
+  @@index([payoutId])
+  @@map("commission_payout_spiff_lines")
+}

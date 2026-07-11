@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T11:49:26.737Z
+> Last generated: 2026-07-11T14:51:20.216Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1919 features** across 33 modules
+## System total: **1947 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 414 |
+| [crm](#crm) | 442 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -1154,7 +1154,7 @@
 
 ## crm
 
-414 features
+442 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1177,6 +1177,22 @@
 | POST | `/crm/cadences/process-due-steps` | Process all due cadence steps now (manual trigger; scheduler-ready) | `crm.lead.update` |
 | GET | `/crm/cadences/step-tasks/mine` | List my pending cadence step tasks (call/task/LinkedIn touchpoints) | `crm.settings.update` |
 | POST | `/crm/cadences/step-tasks/:id/complete` | Complete (or skip) a cadence step task | `crm.lead.read` |
+| GET | `/crm/commission-plans` | List commission plans | `crm.commission.read` |
+| GET | `/crm/commission-plans/:id` | Get a commission plan with tiers and SPIFFs | `crm.commission.read` |
+| POST | `/crm/commission-plans` | Create a commission plan | `crm.commission.read` |
+| PATCH | `/crm/commission-plans/:id` | Update a commission plan | `crm.commission.manage` |
+| DELETE | `/crm/commission-plans/:id` | Soft-delete a commission plan | `crm.commission.manage` |
+| POST | `/crm/commission-plans/:id/tiers` | Add a quota-attainment accelerator tier to a plan | `crm.commission.manage` |
+| DELETE | `/crm/commission-plans/tiers/:tierId` | Remove a tier from a plan | `crm.commission.manage` |
+| GET | `/crm/commission-plans/spiffs/all` | List SPIFF bonus rules | `crm.commission.read` |
+| POST | `/crm/commission-plans/spiffs` | Create a SPIFF bonus rule | `crm.commission.read` |
+| PATCH | `/crm/commission-plans/spiffs/:id` | Update a SPIFF bonus rule | `crm.commission.manage` |
+| DELETE | `/crm/commission-plans/spiffs/:id` | Delete a SPIFF bonus rule | `crm.commission.manage` |
+| POST | `/crm/commission-plans/calculate-payouts` | Calculate quota-attainment-tiered + SPIFF payouts for a plan/period | `crm.commission.manage` |
+| GET | `/crm/commission-plans/payouts/all` | List calculated payouts | `crm.commission.read` |
+| GET | `/crm/commission-plans/payouts/:id` | Get a single payout with SPIFF detail lines | `crm.commission.read` |
+| POST | `/crm/commission-plans/payouts/:id/approve` | Approve a draft payout | `crm.commission.read` |
+| POST | `/crm/commission-plans/payouts/:id/mark-paid` | Mark an approved payout as paid | `crm.commission.manage` |
 | GET | `/crm/contracts` | List contracts (paginated, searchable, sortable) | `crm.contracts.read` |
 | GET | `/crm/contracts/stats` | Contract KPI stats (active/expiring-soon/expired/total value) | `crm.contracts.read` |
 | POST | `/crm/contracts/scan-renewals` | Scan and auto-transition contracts nearing renewal/expiry | `crm.contracts.read` |
@@ -1251,6 +1267,18 @@
 | POST | `/crm/expansion/customers/:id/health` | — | `crm.opportunity.update` |
 | GET | `/crm/expansion/customers/:id/health` | — | `crm.customer.update` |
 | POST | `/crm/expansion/customers/merge` | — | `crm.customer.read` |
+| POST | `/crm/gamification/leaderboard/recompute` | Recompute + persist the leaderboard snapshot for a period | `crm.commission.update` |
+| GET | `/crm/gamification/leaderboard` | Get the leaderboard for a period | `crm.commission.read` |
+| GET | `/crm/gamification/leaderboard/periods` | List periods that have a computed leaderboard | `crm.commission.read` |
+| POST | `/crm/gamification/streaks/recompute` | Recompute activity/deals-won streaks for every rep | `crm.commission.read` |
+| GET | `/crm/gamification/streaks` | List current rep streaks | `crm.commission.read` |
+| GET | `/crm/gamification/badges` | List badge definitions | `crm.commission.read` |
+| POST | `/crm/gamification/badges` | Create a badge definition | `crm.commission.read` |
+| PATCH | `/crm/gamification/badges/:id` | Update a badge definition | `crm.commission.manage` |
+| DELETE | `/crm/gamification/badges/:id` | Soft-delete a badge definition | `crm.commission.manage` |
+| POST | `/crm/gamification/badges/evaluate` | Evaluate every active badge against current deal/activity data and award new ones | `crm.commission.update` |
+| GET | `/crm/gamification/badges/awards` | List badge awards (optionally for one user) | `crm.commission.read` |
+| GET | `/crm/gamification/me` | Get my own gamification summary (rank, badges, streaks) | `crm.commission.read` |
 | GET | `/crm/ml-models` | Get ML models | `crm.lead-scoring.read` |
 | POST | `/crm/ml-models/train` | Train lead scoring ML model | `crm.lead-scoring.read` |
 | GET | `/crm/leads/:id/scoring-factors` | Get lead scoring factors (top-3) | `crm.lead-scoring.create` |

@@ -264,6 +264,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'conversation-intelligence': 'Conversation Intelligence',
   'conversion-analytics': 'Conversion Analytics',
   'ai-drafting': 'AI Drafting',
+  gamification: 'Gamification & Leaderboards',
+  'commission-plans': 'Commission Plans',
 };
 
 export const formatSegment = (segment: string): string => {

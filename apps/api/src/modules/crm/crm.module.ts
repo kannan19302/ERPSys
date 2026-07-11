@@ -61,6 +61,10 @@ import { CrmConversionAnalyticsService } from './crm-conversion-analytics.servic
 import { CrmConversionAnalyticsController } from './crm-conversion-analytics.controller';
 import { CrmAiDraftingService } from './crm-ai-drafting.service';
 import { CrmAiDraftingController } from './crm-ai-drafting.controller';
+import { CrmGamificationService } from './crm-gamification.service';
+import { CrmGamificationController } from './crm-gamification.controller';
+import { CrmCommissionAutomationService } from './crm-commission-automation.service';
+import { CrmCommissionAutomationController } from './crm-commission-automation.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -104,6 +108,8 @@ const CRM_SERVICES = [
   CrmConversationIntelligenceService,
   CrmConversionAnalyticsService,
   CrmAiDraftingService,
+  CrmGamificationService,
+  CrmCommissionAutomationService,
 ];
 
 @Module({
@@ -129,6 +135,8 @@ const CRM_SERVICES = [
     CrmConversationIntelligenceController,
     CrmConversionAnalyticsController,
     CrmAiDraftingController,
+    CrmGamificationController,
+    CrmCommissionAutomationController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

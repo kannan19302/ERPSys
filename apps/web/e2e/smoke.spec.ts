@@ -88,6 +88,8 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/crm/conversation-intelligence' },
   { path: '/crm/forecasting/conversion-analytics' },
   { path: '/crm/ai-drafting' },
+  { path: '/crm/gamification' },
+  { path: '/crm/commission-plans' },
   { path: '/inventory/products' },
   { path: '/hr/employees' },
   { path: '/procurement/purchase-orders' },

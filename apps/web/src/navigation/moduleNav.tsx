@@ -219,7 +219,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Territories', href: '/crm/territories', icon: MapPin },
             { name: 'Assignment Rules', href: '/crm/territories/assignment-rules', icon: MapPin },
             { name: 'Commissions', href: '/crm/commissions', icon: DollarSign },
+            { name: 'Commission Plans', href: '/crm/commission-plans', icon: DollarSign },
             { name: 'Sales Cadences', href: '/crm/sequences/cadences', icon: BookOpen },
+            { name: 'Gamification & Leaderboards', href: '/crm/gamification', icon: TrendingUp },
           ]
         },
         {

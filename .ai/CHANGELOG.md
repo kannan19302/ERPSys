@@ -2,6 +2,65 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales, cycle 6 — sales gamification/leaderboards + commission plan automation deepening
+
+- **Added** (Up Next item 44, benchmark: SalesScreen, Ambition, Spinify): `CrmGamificationService`/
+  `CrmGamificationController` at `/crm/gamification/*` — deepens the pre-existing point-in-time
+  `CrmEnablementService.getLeaderboard` widget (`/crm/expansion/gamification-leaderboard`, still
+  in use for the quick standings view) with genuinely new persisted state: `LeaderboardSnapshot`
+  (per-period rank/points/deals-won/revenue/activity-count, historical, points formula weights
+  deals won highest then revenue then activity volume), `GamificationBadge`/
+  `GamificationBadgeAward` (5 criteria types — DEALS_WON_COUNT, REVENUE_TOTAL, ACTIVITY_STREAK,
+  FIRST_DEAL, DEAL_SIZE_ABOVE — evaluated against real `Opportunity`/`Activity` data, idempotent
+  award-once-per-badge), and `SalesStreak` (consecutive-day activity/deals-won streak tracking
+  with current + best streak). 11 endpoints (recompute/get leaderboard, list periods, recompute/
+  list streaks, badge CRUD + evaluate + list awards, my-summary). New Prisma migration
+  `20260711143449_crm_gamification_commission_automation`.
+- **Added** (Up Next item 46, benchmark: Xactly, CaptivateIQ, Spiff): `CrmCommissionAutomationService`/
+  `CrmCommissionAutomationController` at `/crm/commission-plans/*` — additive to the pre-existing
+  per-deal `CommissionRule`/`CommissionEntry` (flat/%/tiered-by-deal-size, in
+  `CrmSalesOpsService`). Adds the genuinely missing capability: quota-ATTAINMENT-based
+  accelerator tiers (`CommissionPlan`/`CommissionPlanTier` — e.g. 0-70% attainment → 5% rate,
+  70-100% → 8%, 100%+ → 12%, applied to the rep's whole period bookings against their `Quota`
+  row) plus SPIFF bonus rules (`CommissionSpiff` — DEAL_SIZE_ABOVE/NEW_LOGO/ATTAINMENT_ABOVE
+  criteria, flat or % bonus, with line-item detail persisted in `CommissionPayoutSpiffLine`).
+  `calculatePayouts` computes attainment % from closed-won `Opportunity` revenue against `Quota`
+  per rep/period, selects the matching tier, evaluates every active SPIFF, and upserts a
+  `CommissionPayout` (DRAFT → APPROVED → PAID lifecycle). 16 endpoints (plan/tier/SPIFF CRUD,
+  calculate-payouts, payout list/get/approve/mark-paid).
+- **Added** (UI): `/crm/gamification` (leaderboard/streaks/badges tabs, recompute + evaluate
+  actions, new-badge modal) and `/crm/commission-plans` (plans/payouts tabs, new-plan + add-tier +
+  calculate-payouts modals, approve/mark-paid actions) — both registered in `moduleNav.tsx` under
+  "Teams & Territories" and in `registry.tsx` `SEGMENT_NAMES` for breadcrumbs, and added to
+  `SMOKE_ROUTES` (`e2e/smoke.spec.ts`).
+- **Added**: 3 new permission codes to `packages/shared/src/permissions/registry.ts` —
+  `crm.commission.read`/`.update`/`.manage` (the drift-check test caught these as missing on
+  first run; registered with matching descriptions, `pnpm --filter @unerp/shared build` rerun).
+- **Tested**: 12 new unit tests (`crm-gamification.service.spec.ts` — leaderboard compute/rank,
+  badge create/award/no-duplicate-award, streak computation, my-summary guard;
+  `crm-commission-automation.service.spec.ts` — tier validation, tiered-payout accelerator-band
+  selection, NEW_LOGO SPIFF bonus, missing-quota guard, approve/mark-paid state guards). Full API
+  suite: 181 files / 2336 tests passing. `pnpm turbo typecheck` (api + web): zero errors.
+- **Verified live**: dev stack (Postgres/Redis, API rebuilt + run on :3001, Next dev server on
+  :3000) — logged in, exercised `/crm/gamification/leaderboard/recompute`,
+  `/crm/commission-plans` (create plan → add tier → list), and `/crm/gamification/badges`
+  (create → list) via curl with real CSRF-cookie handling; both new UI pages return 200 and
+  `npx playwright test smoke -g "gamification|commission-plans"` passed (2/2).
+- **Why these items**: top two RICE-ranked Up Next items for the CRM & Sales focus module
+  (RICE 58 and 18) that share one sub-domain ("sales performance surfaces" — the cycle brief
+  explicitly called these out as adjacent/combinable). Deferred item 45 (third-party lead/contact
+  enrichment, RICE 24) — it's a separate sub-domain (lead data quality, not sales performance)
+  and genuinely needs a real enrichment provider integration seam design; queued next.
+- **Batch-size note (honest)**: two M-sized benchmark features (2 Prisma model groups, 2
+  services, 2 controllers, 27 endpoints total, 2 UI pages, 12 unit tests, ~1,900 LOC) built to
+  real competitor-parity depth rather than the 100+-feature/15k-LOC aspirational floor — sized to
+  what the two RICE-selected items genuinely required without padding with unrelated CRM
+  sub-domains.
+- **Follow-ups queued**: third-party lead/contact enrichment (item 45), PRODUCT_LINE SPIFF
+  criteria (deferred — `Opportunity` has no product-line field yet, needs a line-item join),
+  gamification points-formula configurability (currently a fixed weighting), commission payout
+  CSV export.
+
 ## [2026-07-11] CRM & Sales, cycle 5 — lead-to-opportunity conversion analytics + AI-assisted email/quote drafting
 
 - **Added** (Up Next item 43, benchmark: Salesforce/HubSpot funnel reporting):
