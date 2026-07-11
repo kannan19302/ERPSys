@@ -2,6 +2,70 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] Finance & Accounting: FINAL UAT/E2E CLOSEOUT — module declared COMPLETE, focus advances to CRM & Sales
+
+**Why**: the only remaining blocker to closing out Finance & Accounting (5 of 6
+`MODULE_FOCUS.md` §5 exit criteria already met) was criterion 6 — a genuine live UAT
+pass + E2E smoke confirmation. The prior cycle's attempt was cut short when the
+sandbox's Docker daemon crashed mid-run, producing 70/70 infra-down failures
+(`ERR_CONNECTION_REFUSED`), not app bugs. This cycle's job was solely to get a clean,
+real, live verification — no new features.
+
+**What happened**:
+- **Docker recovery**: `docker ps`/`docker info` confirmed the daemon was down
+  (`Cannot connect to the Docker daemon`). `sudo service docker start` failed with a
+  sandbox `ulimit` permission error inside `/etc/init.d/docker`. Ran `sudo dockerd`
+  directly instead — came up clean in ~5s. Brought up `postgres` + `redis` via
+  `docker-compose.dev.yml` (skipped the `dev` app container profile — its Dockerfile
+  build fails on `apk add` TLS-through-proxy issues unrelated to this task; ran
+  API/web directly on the host instead, which is the same approach the prior cycle
+  used and works fine).
+- **Stack**: `npx prisma migrate deploy` (clean, all migrations incl. the two newest
+  2026-07-11 Finance ones), `pnpm --filter @unerp/api build` (clean), booted
+  `node apps/api/dist/main.js` (:3001, all routes mapped), started
+  `pnpm --filter @unerp/web dev` (:3000), reseeded via `db:seed`, verified admin
+  login (`admin@unerp.dev`/`admin123`) returns a real signed JWT (200).
+- **Live Playwright E2E smoke**: `npx playwright test e2e/smoke.spec.ts --workers=2`
+  (browsers resolved via `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, since the
+  default cache dir wasn't populated in this sandbox). **69/70 passed.** All 66
+  Finance/advanced-finance routes green — zero 5xx, zero Next.js error-boundary
+  renders. The 1 failure (`/reporting`, 500) is the Reporting/BI platform module
+  (Focus Order §4 row 9, not yet in focus) — logged as a real bug for that module's
+  future turn, out of scope for Finance's gate.
+- **Manual business-workflow UAT** (live API, real JWT + CSRF token, real Postgres
+  writes — not mocks):
+  1. **Invoice create → send → pay**: `POST /finance/invoices` → DRAFT ($500) →
+     `POST .../send` → `POST /finance/payments` (BANK_TRANSFER) → re-fetched invoice:
+     `status=PAID`, `paidAmount=500`. **PASS.**
+  2. **Journal entry post**: `POST /advanced-finance/journals` (balanced 2-line
+     entry, Depreciation Expense debit $100 / Cash Account credit $100) → DRAFT →
+     `.../submit` → SUBMITTED → `.../approve` → APPROVED → `.../post` → POSTED;
+     re-fetched Chart of Accounts: Cash Account balance moved `5000` → `4900`,
+     exactly the posted amount. **PASS.**
+  3. **1099 report**: `GET /advanced-finance/1099/summary` and `.../threshold-report`
+     both 200 with correctly-shaped (legitimately empty on fresh seed data)
+     payloads. UI page also passed in the Playwright sweep. **PASS.**
+  4. **Tax-nexus dashboard**: `GET /advanced-finance/tax/nexus/dashboard` and
+     `.../thresholds` both 200 with correct (legitimately empty) shapes. UI page also
+     passed in the Playwright sweep. **PASS.**
+  - Full evidence recorded in `.ai/UAT_FINANCE_2026-07-11.md`.
+- **Gates**: `pnpm --filter @unerp/api typecheck` clean.
+
+**Result**: `MODULE_FOCUS.md` §5 criterion 6 is now **MET** with real, non-fabricated
+evidence — all 6 exit criteria are closed. **Finance & Accounting is declared
+COMPLETE.** `MODULE_FOCUS.md` §1/§4/§6 updated accordingly; focus advances to
+**CRM & Sales** (Focus Order row 2, baseline 367 features). Seeded 5 `[benchmark]`
+CRM items in `MODULE_REGISTRY.md` § Up Next per `AUTOPILOT.md` Step 9 (customer
+self-service portal, territory assignment rules, multi-channel sales cadences, quote
+e-signature audit certificates, conversation intelligence) so the next cycle has
+work queued immediately.
+
+**Files touched**: `.ai/MODULE_FOCUS.md`, `.ai/MODULE_REGISTRY.md`,
+`.ai/UAT_FINANCE_2026-07-11.md` (new), `.ai/locks/finance-uat-final.lock`. No
+application code changed this cycle — pure verification + documentation.
+
+---
+
 ## [2026-07-11] Finance: E2E smoke sweep (25a), invoice.overdue consumer (25d), UAT pass attempt (25c) — closing the last exit-criteria gaps
 
 **Why**: `.ai/MODULE_FOCUS.md` §5 had 3 open sub-items blocking advancing focus off

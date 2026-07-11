@@ -71,10 +71,12 @@
 > link to the commit.
 >
 > **Focus filter (binding, per `.ai/MODULE_FOCUS.md`)**: feature items are only
-> pickable if they belong to the **Current Focus Module** (now: **Finance &
-> Accounting** — drive it to 500+ distinct working features). Non-focus feature items
-> (e.g. `[benchmark]` CRM items below) stay queued for their module's turn. P0/P1/P2
-> items (broken build, runtime failures, conflicts, cross-cutting hardening) are exempt.
+> pickable if they belong to the **Current Focus Module** (now: **CRM & Sales** —
+> drive it to 500+ distinct working features; Finance & Accounting is DONE as of
+> 2026-07-11, see `.ai/MODULE_FOCUS.md` §5/§6 and `.ai/UAT_FINANCE_2026-07-11.md`).
+> Non-focus feature items (e.g. `[benchmark]` HR/Inventory items below) stay queued
+> for their module's turn. P0/P1/P2 items (broken build, runtime failures, conflicts,
+> cross-cutting hardening) are exempt.
 
 1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
 2. **`dependency-cruiser`/ESLint module-boundary lint** — enforce "no cross-module deep imports, no business logic in controllers" in CI (Enterprise Hardening Phase 1 exit criteria).
@@ -93,7 +95,11 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 12. ~~**[benchmark] Finance: driver-based budgeting & scenario planning (FP&A)**~~ ✅ SHIPPED 2026-07-09 (commit ba4d12d)
 13. ~~**[benchmark] Finance: AI-powered invoice capture (OCR + auto-coding)**~~ ✅ SHIPPED 2026-07-09 (commit 86023ab)
 14. ~~**[benchmark] Finance: unified spend management (real-time card spend limits)**~~ ✅ SHIPPED 2026-07-09 (commit a187199)
-15. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — defer to CRM focus turn.
+15. **[benchmark] CRM: customer self-service portal** — customer login to view quotes/orders/invoices/tickets; leaders: Odoo, Zoho, Dynamics (see `.ai/MARKET_BENCHMARK.md` § CRM). Value H, Size L — **CRM is now the current focus module (2026-07-11); pickable.** RICE: Reach 60 · Impact 8 · Confidence 60% · Effort 5 = **58**.
+32. **[benchmark] CRM: territory assignment rules engine** — auto-routing of leads/accounts by geo/size/round-robin; `Territory` model already exists but has no assignment-rule engine. Leaders: Salesforce, Dynamics. RICE: Reach 50 · Impact 7 · Confidence 60% · Effort 4 = **53**.
+33. **[benchmark] CRM: multi-channel sales cadences/sequences** — extend the existing `EmailSequence` model into a full cadence engine with call/task/email auto-enrolled touchpoints. Leaders: Salesforce Sales Engagement, HubSpot. RICE: Reach 55 · Impact 7 · Confidence 55% · Effort 5 = **42**.
+34. **[benchmark] CRM: quote e-signature audit certificate** — `QuotationSignature` model exists but has no legally-binding certificate/audit document generation. Leaders: HubSpot, Zoho Sign, Odoo Sign. RICE: Reach 40 · Impact 5 · Confidence 65% · Effort 3 = **43**.
+35. **[benchmark] CRM: conversation intelligence** — call logging + AI-generated summary auto-attached to Activity records. Leaders: Salesforce Einstein, HubSpot. RICE: Reach 35 · Impact 6 · Confidence 40% · Effort 6 = **14**.
 16. ~~**[benchmark] Finance: multi-book / multi-GAAP accounting**~~ ✅ SHIPPED 2026-07-09 (commit 8a10611)
 17. ~~**[benchmark] Finance: dynamic allocation engine**~~ ✅ SHIPPED 2026-07-09 (built by a concurrent unclaimed session, landed alongside the spend-management commit — see §4 Conflict Log)
 18. ~~**[benchmark] Finance: consolidation intercompany auto-elimination**~~ ✅ SHIPPED 2026-07-09 (commit 9f0d08a)
@@ -120,6 +126,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-11 | claude-code-cli-autopilot | **Finance & Accounting DECLARED COMPLETE.** Final UAT/E2E closeout: restarted the sandbox's Docker daemon (was down), brought up Postgres+Redis, migrated, rebuilt+booted the API, started Next.js dev, reseeded, verified admin JWT login. Ran live Playwright `smoke.spec.ts` across all 66 Finance/advanced-finance routes: 69/70 passed (1 unrelated `/reporting` 500, out-of-scope Reporting/BI module). Manually walked 4 core workflows against the live API: invoice create→send→pay (PASS), journal entry draft→submit→approve→post with real GL balance movement 5000→4900 (PASS), 1099 summary/threshold-report (PASS), tax-nexus dashboard (PASS). Evidence: `.ai/UAT_FINANCE_2026-07-11.md`. All 6 `MODULE_FOCUS.md` §5 exit criteria now MET. Focus advanced to **CRM & Sales** (Focus Order row 2); seeded 5 `[benchmark]` CRM items in Up Next (§2, items 32-35 + reactivated item 15). | see CHANGELOG 2026-07-11 |
 | 2026-07-11 | claude-code-cli-autopilot | Finance: exit-criteria hardening #2 — (a) fixed the confirmed scorecard heuristic false positive by rewording the `cash-flow-forecast.service.ts:95` comment (not a stub, just a misleading word); re-verified `advanced-finance` is genuinely 10/10. (b) Re-ran `feedback-scan.mjs`: 0 unresolved errors/alerts/TODOs — §5 criterion 4 MET. (c) Audited all 8 §7 integration-contract lines against real code (emit/listen grep); corrected 2 factually wrong claims (`finance.invoice.posted` never existed — real names are `created`/`sent`; `sales.order.confirmed` does not drive auto-invoice — real trigger is `sales.delivery.created`), published 2 verified contracts, marked 1 partial, honestly deferred 4 unimplemented ones to their own module's focus turn. See `MODULE_FOCUS.md` §5/§7 for full detail. Gates: typecheck clean. | see CHANGELOG 2026-07-11 |
 | 2026-07-11 | claude-code-cli-autopilot | Finance: Scorecard hardening — closed `advanced-finance` D2 Validation (6→10, 81 endpoints converted `@Body() Record<string,unknown>` → real field-typed `@ZodBody` schemas) + D5 Observability (4→10, removed stray `console.warn`), and `finance` D6 Docs/API (4→10, added missing `@ApiOperation`). `advanced-finance` 8→9.4/10, `finance` →10/10, system 9.8→9.9/10. Directly serves MODULE_FOCUS.md §5 exit criterion 3. Gates: typecheck clean, advanced-finance 412/412, finance 464/464, auth 8/8. | see CHANGELOG 2026-07-11 |
 | 2026-07-11 | claude-code-cli-autopilot | Finance: Economic Nexus Monitoring (DB+API+UI+tests, 12 endpoints) + 1099 E2E smoke verification closeout. Batch intentionally sized under the new 100+/15,000+ LOC floor — see CHANGELOG for the explicit "why". Gates: typecheck 10/10, API suite 167/167 files / 2233/2233 tests, Playwright smoke 20/20 (live stack). | see CHANGELOG 2026-07-11 |

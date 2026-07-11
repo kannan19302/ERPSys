@@ -1,8 +1,0 @@
-{
-  "slug": "finance-uat-final",
-  "agent": "claude-code-cli-autopilot",
-  "scope": "Final Finance UAT/E2E verification",
-  "acquiredAt": "2026-07-11T09:22:34.584Z",
-  "heartbeatAt": "2026-07-11T09:22:34.584Z",
-  "pid": 22092
-}
