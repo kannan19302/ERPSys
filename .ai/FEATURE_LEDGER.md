@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T05:11:45.528Z
+> Last generated: 2026-07-11T05:27:57.029Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -704,7 +704,7 @@
 | POST | `/advanced-finance/consolidation/translations` | Execute multi-currency consolidation translation | `finance.report.create` |
 | GET | `/advanced-finance/consolidation/cta/:period` | Calculate cumulative translation adjustment (CTA) amount | `finance.report.read` |
 | POST | `/advanced-finance/consolidation/runs/:id/eliminations` | Post intercompany consolidation eliminations | `finance.report.create` |
-| GET | `/advanced-finance/consolidation/statements/:period` | Get consolidated P&L and Balance Sheet financial statements | `finance.report.read` |
+| GET | `/advanced-finance/consolidation/statements/:period` | Get consolidated P&L and Balance Sheet financial statements | `finance.report.create` |
 | POST | `/advanced-finance/consolidation/runs/:id/lock` | Lock consolidated book period | `finance.report.create` |
 | GET | `/advanced-finance/consolidation/runs` | List consolidated book runs | `finance.report.create` |
 | GET | `/advanced-finance/1099/vendors` | List vendors with 1099 profiles and YTD reportable payments | `finance.tax1099.read` |
@@ -1592,22 +1592,22 @@
 | POST | `/finance/invoices/bulk` | Bulk action | `finance.invoice.update` |
 | POST | `/finance/payments` | Create payment | `finance.payment.create` |
 | GET | `/finance/invoices/:id/payments` | Get payments | `finance.payment.read` |
-| GET | `/finance/leases` | — | `finance.leases.read` |
-| GET | `/finance/leases/summary` | — | `finance.leases.read` |
-| GET | `/finance/leases/upcoming-payments` | — | `finance.leases.read` |
-| GET | `/finance/leases/expiring-soon` | — | `finance.leases.read` |
-| GET | `/finance/leases/analytics` | — | `finance.leases.read` |
-| POST | `/finance/leases/bulk-post` | — | `finance.leases.read` |
-| GET | `/finance/leases/:id` | — | `finance.leases.post` |
-| GET | `/finance/leases/:id/schedule` | — | `finance.leases.read` |
-| GET | `/finance/leases/:id/journal-entries` | — | `finance.leases.read` |
-| POST | `/finance/leases` | — | `finance.leases.read` |
-| PATCH | `/finance/leases/:id` | — | `finance.leases.create` |
-| PATCH | `/finance/leases/:id/status` | — | `finance.leases.update` |
-| DELETE | `/finance/leases/:id` | — | `finance.leases.delete` |
-| POST | `/finance/leases/:id/post-month` | — | `finance.leases.delete` |
-| POST | `/finance/leases/:id/terminate` | — | `finance.leases.update` |
-| POST | `/finance/leases/:id/renew` | — | `finance.leases.update` |
+| GET | `/finance/leases` | List leases with pagination, search, and filters | `finance.leases.read` |
+| GET | `/finance/leases/summary` | Get aggregate lease portfolio summary | `finance.leases.read` |
+| GET | `/finance/leases/upcoming-payments` | Get upcoming lease payments within a day window | `finance.leases.read` |
+| GET | `/finance/leases/expiring-soon` | Get leases expiring within a day window | `finance.leases.read` |
+| GET | `/finance/leases/analytics` | Get lease analytics (cost trends, breakdowns) | `finance.leases.read` |
+| POST | `/finance/leases/bulk-post` | Bulk post monthly lease journal entries for a period | `finance.leases.read` |
+| GET | `/finance/leases/:id` | Get a lease by id | `finance.leases.read` |
+| GET | `/finance/leases/:id/schedule` | Get the amortization schedule for a lease | `finance.leases.read` |
+| GET | `/finance/leases/:id/journal-entries` | Get journal entries posted for a lease | `finance.leases.read` |
+| POST | `/finance/leases` | Create a new lease | `finance.leases.read` |
+| PATCH | `/finance/leases/:id` | Update lease details | `finance.leases.update` |
+| PATCH | `/finance/leases/:id/status` | Update the status of a lease | `finance.leases.update` |
+| DELETE | `/finance/leases/:id` | Delete a lease | `finance.leases.delete` |
+| POST | `/finance/leases/:id/post-month` | Post the monthly journal entry for a lease period | `finance.leases.post` |
+| POST | `/finance/leases/:id/terminate` | Terminate a lease early | `finance.leases.update` |
+| POST | `/finance/leases/:id/renew` | Renew a lease with a new end date and present value | `finance.leases.update` |
 
 ## fixed-assets
 

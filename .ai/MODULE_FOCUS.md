@@ -68,16 +68,35 @@ existing functionality — it multiplies value only once the functionality is co
 
 ## 5. Module Exit Criteria (all required before advancing to the next row)
 
-1. Feature count ≥ 500 (§ 3 proxy) with no padding.
-2. All `MARKET_BENCHMARK.md` gaps for the module closed (`✅ SHIPPED`) or explicitly
-   deferred with a written reason (kept `PARTIAL` with a note).
-3. Scorecard: module at 10/10 on all seven dimensions; module pages in the E2E
-   smoke suite (`SMOKE_ROUTES`) and green.
-4. Zero unresolved `FEEDBACK.md` runtime errors sourced from the module.
-5. **Integration contracts published** (§ 7) for every planned cross-module touchpoint,
-   and the *next* focus module's inbound contract drafted before the switch.
-6. UAT pass: `business-analyst-uat`-style walkthrough of the module's top 10 business
-   workflows in the running app, recorded in CHANGELOG.
+**Status as of 2026-07-11 (scorecard hardening cycle):**
+
+1. ✅ **MET** — Feature count ≥ 500 (§ 3 proxy) with no padding. (527, ledger row 2026-07-11.)
+2. ✅ **MET** — All `MARKET_BENCHMARK.md` gaps for the module closed (`✅ SHIPPED`) or
+   explicitly deferred with a written reason (kept `PARTIAL` with a note).
+3. 🟡 **PARTIAL** — Scorecard: module at 10/10 on all seven dimensions; module pages in
+   the E2E smoke suite (`SMOKE_ROUTES`) and green. `finance` module is now **10/10**.
+   `advanced-finance` is 9.4/10 — the one open point (D1 Functionality = 6) is a
+   confirmed heuristic false positive (`scripts/scorecard.mjs`'s stub-marker regex
+   matching the word "placeholders" in a `cash-flow-forecast.service.ts` code comment
+   that describes legitimate dynamic-calculation logic, not an actual stub/TODO) — not
+   a genuine functionality gap, but the automated gate will not read 10/10 until the
+   comment wording is changed or the heuristic is refined. E2E smoke: only the
+   1099-reporting and tax-nexus pages have been added to `SMOKE_ROUTES` and verified;
+   a full sweep of every Finance/advanced-finance page has NOT yet been run — **still open**.
+4. ⬜ **NOT RE-VERIFIED** — Zero unresolved `FEEDBACK.md` runtime errors sourced from
+   the module. Not re-scanned this cycle; carried from prior state.
+5. ⬜ **OPEN** — Integration contracts published (§ 7) for every planned cross-module
+   touchpoint. The § 7 table below still lists all Finance-emitted/consumed events as
+   "planned" or "partially wired" — none have been implemented-and-verified as
+   published contracts yet.
+6. ⬜ **OPEN** — UAT pass: `business-analyst-uat`-style walkthrough of the module's top
+   10 business workflows in the running app, recorded in CHANGELOG. Not run yet.
+
+**Finance is NOT yet fully DONE.** The feature-count and benchmark-gap criteria are
+met; the remaining blockers to advancing focus to CRM & Sales are: (a) a full E2E
+smoke sweep across all Finance/advanced-finance pages, (b) publishing the § 7
+integration contracts, and (c) a UAT pass. These are the top-priority items for the
+next Finance cycle before any further new-feature work.
 
 On exit: update § 1 and § 4, append the final § 6 ledger row, note the handover in
 CHANGELOG, and re-benchmark the completed module one last time in MARKET_BENCHMARK.
@@ -105,6 +124,7 @@ CHANGELOG, and re-benchmark the completed module one last time in MARKET_BENCHMA
 | 2026-07-09 | Finance | 502 | +36 | Finance: Hardening & Milestones (Batches 9-12): Intercompany loans, cash pooling sweeps/funding runs, asset revaluations/disposals GL postings, and multi-currency consolidation translation. Added 9 models, 36 endpoints, 10 unit tests, compiler/typecheck clean. |
 | 2026-07-11 | Finance | 515 | +13 | Finance: 1099 / Vendor Tax Reporting (closes [benchmark] gap, module deepening — P0-P3 ladder had no open Finance item so this cycle fell to P6): Vendor1099Profile/Form1099/Form1099Batch models, 27 API endpoints (eligibility+threshold report, TIN match, backup withholding, W-9 checklist, form generate/edit/mark-ready/file/void/correct, e-file batches, dashboard summary, state filing reference data), `/finance/advanced/1099-reporting` UI, 21 unit tests. **Feature count crosses the 500-target exit criterion (§5) for the first time** — other exit criteria (scorecard 10/10, E2E smoke, UAT) still need confirmation before advancing focus. |
 | 2026-07-11 | Finance | 527 | +12 | Finance: Economic Nexus Monitoring (closes [benchmark] RICE-72 gap) + 1099 E2E closeout: EconomicNexusThreshold/NexusMonitoringSnapshot/NexusRegistration models, 12 API endpoints (threshold CRUD + 20-state reference seed, trailing-12-month monitoring recompute + dashboard + per-state history, registration lifecycle CRUD), `/finance/advanced/tax-nexus` UI, 18 unit tests incl. tenant-isolation. `/finance/advanced/1099-reporting` E2E-verified (added to `SMOKE_ROUTES`, 20/20 Playwright smoke passing on a live stack). **Batch intentionally under the new 100+/15,000+ LOC per-cycle floor** — sized to genuine, fully-verified DB+API+UI+test work achievable in one session without padding; remainder queued as Up Next items 28-31 for subsequent cycles. Exit criteria (§5) still open: scorecard 10/10, full E2E smoke across all Finance pages, integration contracts, UAT pass. |
+| 2026-07-11 | Finance | 527 | 0 | Finance: Scorecard hardening cycle (no new features — closing §5 exit-criterion 3 gaps directly, per user instruction to prioritize this over further feature growth once the module is feature-complete). `advanced-finance` D2 Validation 6→10 (81 endpoints in `advanced-finance.controller.ts` converted from raw `@Body() Record<string,unknown>`/loosely-typed params to real field-typed `@ZodBody(...)` Zod schemas), D5 Observability 4→10 (removed the module's one stray `console.warn`, now uses structured `Logger`); `finance` D6 Docs/API 4→10 (missing `@ApiOperation` added to `leases.controller.ts`). Re-ran `scripts/scorecard.mjs`: `advanced-finance` 8→9.4/10 (D1 Functionality still 6/10 — confirmed a heuristic false positive on the word "placeholders" in a `cash-flow-forecast.service.ts` code comment describing legitimate logic, not a real stub), `finance` → **10/10**. System score 9.8→9.9/10. Gates: `pnpm --filter @unerp/api typecheck` clean, advanced-finance 412/412 + finance 464/464 + auth 8/8 tests passing. Still open: full E2E smoke sweep of all Finance/advanced-finance pages, §7 integration contracts published, UAT pass — see updated §5 below. |
 
 
 

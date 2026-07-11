@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, NotFoundException, Logger } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { UserRole, Role } from '@prisma/client';
 import { hashPassword, comparePassword, signToken, verifyToken } from '@unerp/auth';
@@ -6,6 +6,7 @@ import { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } fr
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   /**
    * Registers a new tenant along with its organization, default roles, and super admin user.
    */
@@ -375,11 +376,11 @@ export class AuthService {
     const resetLink = `http://localhost:3000/reset-password?token=${token}`;
     
     // Log to NestJS logger and terminal
-    console.log('\n========================================================================');
-    console.log('📬 [SIMULATED EMAIL SYSTEM] PASSWORD RECOVERY');
-    console.log(`To: ${user.email}`);
-    console.log(`Reset Link: ${resetLink}`);
-    console.log('========================================================================\n');
+    this.logger.log('========================================================================');
+    this.logger.log('📬 [SIMULATED EMAIL SYSTEM] PASSWORD RECOVERY');
+    this.logger.log(`To: ${user.email}`);
+    this.logger.log(`Reset Link: ${resetLink}`);
+    this.logger.log('========================================================================');
 
     return {
       message: 'Password reset link generated.',

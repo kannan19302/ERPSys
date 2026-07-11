@@ -1,10 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { BudgetControlService } from './budget-control.service';
 
 @Injectable()
 export class GlAccountingService {
+  private readonly logger = new Logger(GlAccountingService.name);
   constructor(private readonly budgetControlService?: BudgetControlService) {}
 
 
@@ -746,7 +747,7 @@ export class GlAccountingService {
       const totalDebit = mappedEntries.reduce((s, e) => s + Number(e.debit), 0);
       const totalCredit = mappedEntries.reduce((s, e) => s + Number(e.credit), 0);
       if (Math.abs(totalDebit - totalCredit) > 0.01) {
-        console.warn(`Parallel journal for book ${destBookId} is unbalanced: ${totalDebit} vs ${totalCredit}. Skipping.`);
+        this.logger.warn(`Parallel journal for book ${destBookId} is unbalanced: ${totalDebit} vs ${totalCredit}. Skipping.`);
         continue;
       }
 

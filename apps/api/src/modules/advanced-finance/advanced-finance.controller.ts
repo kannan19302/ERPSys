@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, UseGuards, Req, Param, Query, UseInterceptors, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, UseGuards, Req, Param, Query, UseInterceptors, BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -531,6 +531,577 @@ const updateCardCategoryLimitSchema = z.object({
 const requestLimitIncreaseSchema = z.object({
   requestedCap: z.number().positive(),
   reason: z.string().optional(),
+});
+
+const updateTaxJurisdictionSchema = z.object({
+  name: z.string().optional(),
+  rate: z.number().optional(),
+  effectiveTo: z.string().optional(),
+  isActive: z.boolean().optional(),
+  description: z.string().optional(),
+});
+
+const createExemptionCertificateSchema = z.object({
+  entityType: z.string(),
+  entityId: z.string(),
+  jurisdictionId: z.string(),
+  certificateNumber: z.string(),
+  exemptionType: z.string(),
+  exemptionPct: z.number().optional(),
+  validFrom: z.string(),
+  validTo: z.string().optional(),
+  documentUrl: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateExemptionCertificateSchema = z.object({
+  status: z.string().optional(),
+  validTo: z.string().optional(),
+  documentUrl: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const computeTaxReconciliationSchema = z.object({
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  taxType: z.string(),
+});
+
+const updateTaxReconciliationSchema = z.object({
+  paymentsMade: z.number().optional(),
+  status: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const createWithholdingCertificateSchema = z.object({
+  vendorId: z.string(),
+  year: z.number(),
+  grossAmount: z.number(),
+  taxWithheld: z.number(),
+  withholdingTaxId: z.string().optional(),
+  certificateNumber: z.string().optional(),
+});
+
+const bulkGenerateWithholdingCertificatesSchema = z.object({ year: z.number() });
+
+const createAmendedFilingSchema = z.object({
+  originalFilingId: z.string(),
+  amendedReason: z.string(),
+  changes: z.record(z.unknown()).optional(),
+  refundAmount: z.number().optional(),
+  additionalTax: z.number().optional(),
+});
+
+const updateAmendedFilingStatusSchema = z.object({ status: z.string() });
+
+const createTreasuryPositionSchema = z.object({
+  currency: z.string(),
+  bookBalance: z.number(),
+  availableBalance: z.number(),
+  floatAmount: z.number().optional(),
+  bankAccountId: z.string().optional(),
+  positionDate: z.string().optional(),
+});
+
+const revalueHedgeInstrumentSchema = z.object({ marketValue: z.number() });
+const recordDebtDrawdownSchema = z.object({ amount: z.number() });
+const markToMarketSchema = z.object({ currentPrice: z.number() });
+
+const createHedgeInstrumentSchema = z.object({
+  instrumentType: z.string(),
+  name: z.string(),
+  counterparty: z.string().optional(),
+  notionalAmount: z.number(),
+  currency: z.string(),
+  strikeRate: z.number().optional(),
+  premium: z.number().optional(),
+  tradeDate: z.string(),
+  maturityDate: z.string(),
+  hedgedItemRef: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateHedgeInstrumentSchema = z.object({
+  status: z.string().optional(),
+  settlementDate: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const createDebtFacilitySchema = z.object({
+  name: z.string(),
+  facilityType: z.string(),
+  lender: z.string().optional(),
+  currency: z.string(),
+  facilityLimit: z.number(),
+  interestRate: z.number(),
+  rateType: z.string().optional(),
+  startDate: z.string(),
+  maturityDate: z.string(),
+  covenants: z.array(z.record(z.unknown())).optional(),
+  notes: z.string().optional(),
+});
+
+const updateDebtFacilitySchema = z.object({
+  status: z.string().optional(),
+  notes: z.string().optional(),
+  covenants: z.array(z.record(z.unknown())).optional(),
+});
+
+const importVendorStatementSchema = z.object({
+  vendorId: z.string(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  openingBalance: z.number(),
+  closingBalance: z.number(),
+  lineItems: z.array(z.record(z.unknown())).optional(),
+});
+
+const reviewDuplicateFlagSchema = z.object({
+  status: z.string(),
+  notes: z.string().optional(),
+  reviewedBy: z.string(),
+});
+
+const createApApprovalPolicySchema = z.object({
+  name: z.string(),
+  thresholdMin: z.number().optional(),
+  thresholdMax: z.number().optional(),
+  approverRoles: z.array(z.string()),
+  requiresTwo: z.boolean().optional(),
+  departmentCode: z.string().optional(),
+});
+
+const updateApApprovalPolicySchema = z.object({
+  name: z.string().optional(),
+  thresholdMin: z.number().optional(),
+  thresholdMax: z.number().optional(),
+  approverRoles: z.array(z.string()).optional(),
+  requiresTwo: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createGrniRecordSchema = z.object({
+  purchaseOrderId: z.string(),
+  receiptId: z.string().optional(),
+  vendorId: z.string(),
+  productId: z.string().optional(),
+  receivedQty: z.number(),
+  unitCost: z.number(),
+  receivedDate: z.string(),
+});
+
+const markGrniInvoicedSchema = z.object({ invoiceId: z.string() });
+
+const createPromiseToPaySchema = z.object({
+  customerId: z.string(),
+  invoiceId: z.string(),
+  promisedDate: z.string(),
+  promisedAmount: z.number(),
+  collectorId: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updatePromiseToPaySchema = z.object({
+  status: z.string().optional(),
+  receivedAmount: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const createArDisputeSchema = z.object({
+  invoiceId: z.string(),
+  customerId: z.string(),
+  reason: z.string(),
+  disputedAmount: z.number(),
+  openedBy: z.string(),
+  assignedTo: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateArDisputeSchema = z.object({
+  status: z.string().optional(),
+  assignedTo: z.string().optional(),
+  resolvedAmount: z.number().optional(),
+  linkedCreditNoteId: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const computeBadDebtProvisionSchema = z.object({ period: z.string() });
+const postBadDebtProvisionSchema = z.object({ glAccountId: z.string().optional() });
+
+const createAssetInsuranceSchema = z.object({
+  assetId: z.string(),
+  policyNumber: z.string(),
+  insurer: z.string(),
+  coverageType: z.string(),
+  coverageAmount: z.number(),
+  premium: z.number(),
+  startDate: z.string(),
+  renewalDate: z.string(),
+  documentUrl: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateAssetInsuranceSchema = z.object({
+  status: z.string().optional(),
+  renewalDate: z.string().optional(),
+  premium: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const createAssetImpairmentSchema = z.object({
+  assetId: z.string(),
+  testDate: z.string(),
+  carryingAmount: z.number(),
+  recoverableAmount: z.number(),
+  reason: z.string().optional(),
+});
+
+const createCapitalProjectSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  budgetAmount: z.number(),
+  startDate: z.string(),
+  expectedCompletion: z.string().optional(),
+  costGlAccountId: z.string().optional(),
+});
+
+const addCapitalProjectCostSchema = z.object({
+  costDate: z.string(),
+  description: z.string().optional(),
+  costType: z.string(),
+  amount: z.number(),
+  vendorId: z.string().optional(),
+  invoiceId: z.string().optional(),
+  glAccountId: z.string().optional(),
+});
+
+const updateCapitalProjectSchema = z.object({
+  status: z.string().optional(),
+  completedDate: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const convertCapitalProjectToAssetSchema = z.object({
+  assetName: z.string(),
+  categoryId: z.string(),
+  assetDate: z.string(),
+});
+
+const bulkUploadAssetsSchema = z.object({
+  rows: z.array(z.object({
+    name: z.string(),
+    categoryId: z.string().optional(),
+    purchaseDate: z.string(),
+    purchaseCost: z.number().optional(),
+    purchaseValue: z.number().optional(),
+    salvageValue: z.number().optional(),
+    usefulLifeYears: z.number().optional(),
+    locationId: z.string().optional(),
+    assetCode: z.string().optional(),
+    depreciationMethod: z.string().optional(),
+    depreciationRate: z.number().optional(),
+    accountId: z.string().optional(),
+    accumDepAccountId: z.string().optional(),
+    custodianId: z.string().optional(),
+  })),
+});
+
+const upsertRollingForecastLineSchema = z.object({
+  period: z.string(),
+  accountId: z.string(),
+  costCenterId: z.string().optional(),
+  amount: z.number(),
+  source: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const syncActualsToRollingForecastSchema = z.object({ period: z.string() });
+
+const createHeadcountPlanSchema = z.object({
+  departmentId: z.string().optional(),
+  roleName: z.string(),
+  period: z.string(),
+  plannedHc: z.number(),
+  loadedCostRate: z.number(),
+});
+
+const updateHeadcountPlanSchema = z.object({
+  plannedHc: z.number().optional(),
+  loadedCostRate: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const getHeadcountCostProjectionSchema = z.object({ periods: z.array(z.string()) });
+
+const addBudgetCommentSchema = z.object({
+  budgetId: z.string(),
+  accountId: z.string().optional(),
+  period: z.string().optional(),
+  authorId: z.string(),
+  text: z.string(),
+  parentId: z.string().optional(),
+});
+
+const updateBudgetCommentSchema = z.object({ text: z.string() });
+
+const createManagementReportSchema = z.object({
+  name: z.string(),
+  period: z.string(),
+  sections: z.array(z.record(z.unknown())).optional(),
+  createdBy: z.string().optional(),
+});
+
+const updateManagementReportSchema = z.object({
+  name: z.string().optional(),
+  sections: z.array(z.record(z.unknown())).optional(),
+  status: z.string().optional(),
+});
+
+const runWhatIfSensitivitySchema = z.object({
+  revenueChangePct: z.number(),
+  costChangePct: z.number(),
+  period: z.string().optional(),
+});
+
+const createBillingRuleSchema = z.object({
+  name: z.string(),
+  ruleType: z.string(),
+  customerId: z.string().optional(),
+  projectId: z.string().optional(),
+  contractId: z.string().optional(),
+  currency: z.string().optional(),
+  billingCycle: z.string().optional(),
+  fixedAmount: z.number().optional(),
+  hourlyRate: z.number().optional(),
+  glRevenueAccountId: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateBillingRuleSchema = z.object({
+  name: z.string().optional(),
+  isActive: z.boolean().optional(),
+  fixedAmount: z.number().optional(),
+  hourlyRate: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const addBillingMilestoneSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  dueDate: z.string().optional(),
+  amount: z.number(),
+});
+
+const computeDeferredRevenueRollForwardSchema = z.object({ period: z.string() });
+
+const createTieredPricingTableSchema = z.object({
+  name: z.string(),
+  currency: z.string().optional(),
+  unit: z.string().optional(),
+  tiers: z.array(z.object({ from: z.number(), to: z.number().optional(), ratePerUnit: z.number() })),
+});
+
+const rateUsageSchema = z.object({ usage: z.number() });
+
+const getRevenueForecastVsActualSchema = z.object({ periods: z.array(z.string()) });
+
+const createFinancialControlSchema = z.object({
+  controlCode: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  riskLevel: z.string().optional(),
+  controlType: z.string(),
+  category: z.string().optional(),
+  ownerId: z.string().optional(),
+  testFrequency: z.string().optional(),
+  procedure: z.string().optional(),
+});
+
+const updateFinancialControlSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  riskLevel: z.string().optional(),
+  ownerId: z.string().optional(),
+  testFrequency: z.string().optional(),
+  procedure: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createControlTestSchema = z.object({
+  controlId: z.string(),
+  testDate: z.string(),
+  testerId: z.string(),
+  result: z.string(),
+  findingNotes: z.string().optional(),
+  remediationPlan: z.string().optional(),
+  remediationDue: z.string().optional(),
+  evidenceUrls: z.array(z.string()).optional(),
+});
+
+const reviewControlTestSchema = z.object({ reviewedBy: z.string() });
+
+const createSodRuleSchema = z.object({
+  name: z.string(),
+  permission1: z.string(),
+  permission2: z.string(),
+  riskLevel: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const updateSodRuleSchema = z.object({
+  isActive: z.boolean().optional(),
+  riskLevel: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const resolveSodConflictSchema = z.object({
+  status: z.string(),
+  resolvedBy: z.string(),
+  mitigationNotes: z.string().optional(),
+});
+
+const createAuditConfirmationSchema = z.object({
+  confirmationType: z.string(),
+  entityType: z.string(),
+  entityId: z.string(),
+  entityName: z.string(),
+  requestDate: z.string(),
+  balanceAsOf: z.string(),
+  bookAmount: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const recordAuditConfirmationResponseSchema = z.object({
+  confirmedAmount: z.number(),
+  responseDate: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const createPeriodCertificationSchema = z.object({
+  period: z.string(),
+  certifierRole: z.string(),
+  certifierId: z.string(),
+  certifierName: z.string(),
+});
+
+const certifyPeriodSchema = z.object({
+  statement: z.string(),
+  ipAddress: z.string().optional(),
+});
+
+const rejectPeriodCertificationSchema = z.object({ notes: z.string() });
+
+const createLoanAgreementSchema = z.object({
+  lenderOrgId: z.string(),
+  borrowerOrgId: z.string(),
+  loanNumber: z.string(),
+  principalAmount: z.number(),
+  interestRate: z.number(),
+  startDate: z.string(),
+  endDate: z.string(),
+  interestType: z.string().optional(),
+});
+
+const recordLoanDrawdownSchema = z.object({
+  amount: z.number(),
+  drawdownDate: z.string(),
+  reference: z.string().optional(),
+});
+
+const recordLoanRepaymentSchema = z.object({
+  principal: z.number(),
+  interest: z.number(),
+  repaymentDate: z.string(),
+  reference: z.string().optional(),
+});
+
+const postAccruedInterestGLSchema = z.object({ asOfDate: z.string() });
+
+const createAssetRevaluationSchema = z.object({
+  assetId: z.string(),
+  revaluationDate: z.string(),
+  revaluedValue: z.number(),
+  notes: z.string().optional(),
+});
+
+const createAssetDisposalSchema = z.object({
+  assetId: z.string(),
+  disposalDate: z.string(),
+  disposalType: z.string(),
+  salePrice: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const bulkDisposeAssetsSchema = z.object({
+  assetIds: z.array(z.string()),
+  disposalDate: z.string(),
+  disposalType: z.string(),
+});
+
+const createCashPoolSchema = z.object({
+  orgId: z.string(),
+  name: z.string(),
+  poolType: z.string().optional(),
+  headerAccountId: z.string(),
+  participantAccountIds: z.array(z.string()),
+  targetBalance: z.number().optional(),
+});
+
+const createVarianceAlertConfigSchema = z.object({
+  accountId: z.string(),
+  thresholdPct: z.number(),
+  ownerId: z.string(),
+});
+
+const createConsolidationRateSchema = z.object({
+  period: z.string(),
+  fromCurrency: z.string(),
+  toCurrency: z.string(),
+  averageRate: z.number(),
+  closingRate: z.number(),
+  historicalRate: z.number(),
+});
+
+const runConsolidatedTranslationSchema = z.object({
+  period: z.string(),
+  targetCurrency: z.string(),
+});
+
+const runConsolidationEliminationsSchema = z.object({
+  eliminations: z.array(z.object({
+    fromOrgId: z.string(),
+    toOrgId: z.string(),
+    amount: z.number(),
+    accountType: z.string(),
+    description: z.string().optional(),
+  })),
+});
+
+const createContractModificationSchema = z.object({
+  contractId: z.string(),
+  modificationDate: z.string(),
+  modType: z.string(),
+  originalValue: z.number(),
+  newValue: z.number(),
+  notes: z.string().optional(),
+});
+
+const getEarlyPaymentDiscountSavingsSchema = z.object({ invoiceIds: z.array(z.string()) });
+
+const createInvestmentHoldingSchema = z.object({
+  securityName: z.string(),
+  ticker: z.string().optional(),
+  assetClass: z.string(),
+  units: z.number(),
+  costBasis: z.number(),
+  currentPrice: z.number().optional(),
+  purchaseDate: z.string(),
+  maturityDate: z.string().optional(),
+  currency: z.string(),
+  custodian: z.string().optional(),
+  glAccountId: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 @ApiTags('advanced-finance')
@@ -3563,7 +4134,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.tax.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('TaxJurisdiction', 'id')
-  async updateTaxJurisdiction(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateTaxJurisdiction(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateTaxJurisdictionSchema) dto: z.infer<typeof updateTaxJurisdictionSchema>) {
     return this.taxDeepService.updateJurisdiction(req.user.tenantId, id, dto as never);
   }
 
@@ -3593,7 +4164,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.tax.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('TaxExemptionCertificate')
-  async createExemptionCertificate(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createExemptionCertificate(@Req() req: AuthenticatedRequest, @ZodBody(createExemptionCertificateSchema) dto: z.infer<typeof createExemptionCertificateSchema>) {
     return this.taxDeepService.createExemptionCertificate(req.user.tenantId, dto as never);
   }
 
@@ -3602,7 +4173,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.tax.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('TaxExemptionCertificate', 'id')
-  async updateExemptionCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateExemptionCertificate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateExemptionCertificateSchema) dto: z.infer<typeof updateExemptionCertificateSchema>) {
     return this.taxDeepService.updateExemptionCertificate(req.user.tenantId, id, dto as never);
   }
 
@@ -3635,14 +4206,14 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Compute tax reconciliation' })
   @Post('tax/reconciliations/compute')
   @Permissions('finance.tax.create')
-  async computeTaxReconciliation(@Req() req: AuthenticatedRequest, @Body() dto: { periodStart: string; periodEnd: string; taxType: string }) {
+  async computeTaxReconciliation(@Req() req: AuthenticatedRequest, @ZodBody(computeTaxReconciliationSchema) dto: z.infer<typeof computeTaxReconciliationSchema>) {
     return this.taxDeepService.computeTaxReconciliation(req.user.tenantId, req.user.orgId || 'org-system-default', dto);
   }
 
   @ApiOperation({ summary: 'Update tax reconciliation' })
   @Patch('tax/reconciliations/:id')
   @Permissions('finance.tax.update')
-  async updateTaxReconciliation(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateTaxReconciliation(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateTaxReconciliationSchema) dto: z.infer<typeof updateTaxReconciliationSchema>) {
     return this.taxDeepService.updateTaxReconciliation(req.user.tenantId, id, dto as never);
   }
 
@@ -3665,7 +4236,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.tax.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('WithholdingCertificate')
-  async createWithholdingCertificate(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createWithholdingCertificate(@Req() req: AuthenticatedRequest, @ZodBody(createWithholdingCertificateSchema) dto: z.infer<typeof createWithholdingCertificateSchema>) {
     return this.taxDeepService.createWithholdingCertificate(req.user.tenantId, dto as never);
   }
 
@@ -3686,7 +4257,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Bulk generate withholding certificates for a year' })
   @Post('tax/withholding-certificates/bulk-generate')
   @Permissions('finance.tax.create')
-  async bulkGenerateWithholdingCertificates(@Req() req: AuthenticatedRequest, @Body() dto: { year: number }) {
+  async bulkGenerateWithholdingCertificates(@Req() req: AuthenticatedRequest, @ZodBody(bulkGenerateWithholdingCertificatesSchema) dto: z.infer<typeof bulkGenerateWithholdingCertificatesSchema>) {
     return this.taxDeepService.bulkGenerateWithholdingCertificates(req.user.tenantId, dto.year);
   }
 
@@ -3702,7 +4273,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.tax.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AmendedTaxFiling')
-  async createAmendedFiling(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createAmendedFiling(@Req() req: AuthenticatedRequest, @ZodBody(createAmendedFilingSchema) dto: z.infer<typeof createAmendedFilingSchema>) {
     return this.taxDeepService.createAmendedFiling(req.user.tenantId, dto as never);
   }
 
@@ -3716,7 +4287,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Update amended filing status (accept/reject)' })
   @Patch('tax/amended-filings/:id/status')
   @Permissions('finance.tax.update')
-  async updateAmendedFilingStatus(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { status: string }) {
+  async updateAmendedFilingStatus(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateAmendedFilingStatusSchema) dto: z.infer<typeof updateAmendedFilingStatusSchema>) {
     return this.taxDeepService.updateAmendedFilingStatus(req.user.tenantId, id, dto.status);
   }
 
@@ -3750,7 +4321,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('TreasuryPosition')
-  async createTreasuryPosition(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createTreasuryPosition(@Req() req: AuthenticatedRequest, @ZodBody(createTreasuryPositionSchema) dto: z.infer<typeof createTreasuryPositionSchema>) {
     return this.treasuryDeepService.createPosition(req.user.tenantId, dto as never);
   }
 
@@ -3780,14 +4351,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('HedgeInstrument')
-  async createHedgeInstrument(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createHedgeInstrument(@Req() req: AuthenticatedRequest, @ZodBody(createHedgeInstrumentSchema) dto: z.infer<typeof createHedgeInstrumentSchema>) {
     return this.treasuryDeepService.createHedgeInstrument(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Revalue hedge instrument (mark-to-market)' })
   @Post('treasury/hedge-instruments/:id/revalue')
   @Permissions('finance.treasury.update')
-  async revalueHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { marketValue: number }) {
+  async revalueHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(revalueHedgeInstrumentSchema) dto: z.infer<typeof revalueHedgeInstrumentSchema>) {
     return this.treasuryDeepService.revalueHedgeInstrument(req.user.tenantId, id, dto);
   }
 
@@ -3796,7 +4367,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('HedgeInstrument', 'id')
-  async updateHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateHedgeInstrument(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateHedgeInstrumentSchema) dto: z.infer<typeof updateHedgeInstrumentSchema>) {
     return this.treasuryDeepService.updateHedgeInstrument(req.user.tenantId, id, dto as never);
   }
 
@@ -3819,14 +4390,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('DebtFacility')
-  async createDebtFacility(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createDebtFacility(@Req() req: AuthenticatedRequest, @ZodBody(createDebtFacilitySchema) dto: z.infer<typeof createDebtFacilitySchema>) {
     return this.treasuryDeepService.createDebtFacility(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Record debt drawdown' })
   @Post('treasury/debt-facilities/:id/drawdown')
   @Permissions('finance.treasury.update')
-  async recordDebtDrawdown(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { amount: number }) {
+  async recordDebtDrawdown(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(recordDebtDrawdownSchema) dto: z.infer<typeof recordDebtDrawdownSchema>) {
     return this.treasuryDeepService.recordDebtDrawdown(req.user.tenantId, id, dto.amount);
   }
 
@@ -3835,7 +4406,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('DebtFacility', 'id')
-  async updateDebtFacility(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateDebtFacility(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateDebtFacilitySchema) dto: z.infer<typeof updateDebtFacilitySchema>) {
     return this.treasuryDeepService.updateDebtFacility(req.user.tenantId, id, dto as never);
   }
 
@@ -3865,14 +4436,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('InvestmentHolding')
-  async createInvestmentHolding(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createInvestmentHolding(@Req() req: AuthenticatedRequest, @ZodBody(createInvestmentHoldingSchema) dto: z.infer<typeof createInvestmentHoldingSchema>) {
     return this.treasuryDeepService.createInvestmentHolding(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Mark investment holding to market' })
   @Post('treasury/investments/:id/mark-to-market')
   @Permissions('finance.treasury.update')
-  async markToMarket(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { currentPrice: number }) {
+  async markToMarket(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(markToMarketSchema) dto: z.infer<typeof markToMarketSchema>) {
     return this.treasuryDeepService.markToMarket(req.user.tenantId, id, dto.currentPrice);
   }
 
@@ -3899,7 +4470,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.payables.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('VendorStatement')
-  async importVendorStatement(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async importVendorStatement(@Req() req: AuthenticatedRequest, @ZodBody(importVendorStatementSchema) dto: z.infer<typeof importVendorStatementSchema>) {
     return this.apIntelligenceService.importVendorStatement(req.user.tenantId, dto as never);
   }
 
@@ -3934,7 +4505,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Review AP duplicate flag' })
   @Patch('ap/duplicate-flags/:id/review')
   @Permissions('finance.payables.update')
-  async reviewDuplicateFlag(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { status: string; notes?: string; reviewedBy: string }) {
+  async reviewDuplicateFlag(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(reviewDuplicateFlagSchema) dto: z.infer<typeof reviewDuplicateFlagSchema>) {
     return this.apIntelligenceService.reviewDuplicateFlag(req.user.tenantId, id, dto);
   }
 
@@ -3950,7 +4521,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.payables.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('APApprovalPolicy')
-  async createApApprovalPolicy(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createApApprovalPolicy(@Req() req: AuthenticatedRequest, @ZodBody(createApApprovalPolicySchema) dto: z.infer<typeof createApApprovalPolicySchema>) {
     return this.apIntelligenceService.createApprovalPolicy(req.user.tenantId, dto as never);
   }
 
@@ -3959,7 +4530,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.payables.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('APApprovalPolicy', 'id')
-  async updateApApprovalPolicy(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateApApprovalPolicy(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateApApprovalPolicySchema) dto: z.infer<typeof updateApApprovalPolicySchema>) {
     return this.apIntelligenceService.updateApprovalPolicy(req.user.tenantId, id, dto as never);
   }
 
@@ -3996,14 +4567,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.payables.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('GrniRecord')
-  async createGrniRecord(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createGrniRecord(@Req() req: AuthenticatedRequest, @ZodBody(createGrniRecordSchema) dto: z.infer<typeof createGrniRecordSchema>) {
     return this.apIntelligenceService.createGrniRecord(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Mark GRNI record as invoiced' })
   @Post('ap/grni/:id/mark-invoiced')
   @Permissions('finance.payables.update')
-  async markGrniInvoiced(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { invoiceId: string }) {
+  async markGrniInvoiced(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(markGrniInvoicedSchema) dto: z.infer<typeof markGrniInvoicedSchema>) {
     return this.apIntelligenceService.markGrniInvoiced(req.user.tenantId, id, dto.invoiceId);
   }
 
@@ -4017,7 +4588,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Calculate early payment discount savings' })
   @Post('ap/early-payment-discount')
   @Permissions('finance.payables.read')
-  async getEarlyPaymentDiscountSavings(@Req() req: AuthenticatedRequest, @Body() dto: { invoiceIds: string[] }) {
+  async getEarlyPaymentDiscountSavings(@Req() req: AuthenticatedRequest, @ZodBody(getEarlyPaymentDiscountSavingsSchema) dto: z.infer<typeof getEarlyPaymentDiscountSavingsSchema>) {
     return this.apIntelligenceService.getEarlyPaymentDiscountSavings(req.user.tenantId, dto.invoiceIds);
   }
 
@@ -4044,7 +4615,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.receivables.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ARPromiseToPay')
-  async createPromiseToPay(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createPromiseToPay(@Req() req: AuthenticatedRequest, @ZodBody(createPromiseToPaySchema) dto: z.infer<typeof createPromiseToPaySchema>) {
     return this.arCollectionsService.createPromiseToPay(req.user.tenantId, dto as never);
   }
 
@@ -4053,7 +4624,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.receivables.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ARPromiseToPay', 'id')
-  async updatePromiseToPay(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updatePromiseToPay(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updatePromiseToPaySchema) dto: z.infer<typeof updatePromiseToPaySchema>) {
     return this.arCollectionsService.updatePromiseToPay(req.user.tenantId, id, dto as never);
   }
 
@@ -4083,7 +4654,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.receivables.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ARDispute')
-  async createArDispute(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createArDispute(@Req() req: AuthenticatedRequest, @ZodBody(createArDisputeSchema) dto: z.infer<typeof createArDisputeSchema>) {
     return this.arCollectionsService.createDispute(req.user.tenantId, dto as never);
   }
 
@@ -4092,7 +4663,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.receivables.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ARDispute', 'id')
-  async updateArDispute(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateArDispute(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateArDisputeSchema) dto: z.infer<typeof updateArDisputeSchema>) {
     return this.arCollectionsService.updateDispute(req.user.tenantId, id, dto as never);
   }
 
@@ -4113,14 +4684,14 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Compute bad debt provision' })
   @Post('ar/bad-debt-provisions/compute')
   @Permissions('finance.receivables.create')
-  async computeBadDebtProvision(@Req() req: AuthenticatedRequest, @Body() dto: { period: string }) {
+  async computeBadDebtProvision(@Req() req: AuthenticatedRequest, @ZodBody(computeBadDebtProvisionSchema) dto: z.infer<typeof computeBadDebtProvisionSchema>) {
     return this.arCollectionsService.computeBadDebtProvision(req.user.tenantId, dto.period);
   }
 
   @ApiOperation({ summary: 'Post bad debt provision to GL' })
   @Post('ar/bad-debt-provisions/:id/post')
   @Permissions('finance.receivables.update')
-  async postBadDebtProvision(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { glAccountId?: string }) {
+  async postBadDebtProvision(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(postBadDebtProvisionSchema) dto: z.infer<typeof postBadDebtProvisionSchema>) {
     return this.arCollectionsService.postBadDebtProvision(req.user.tenantId, id, dto.glAccountId);
   }
 
@@ -4168,7 +4739,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.assets.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AssetInsurance')
-  async createAssetInsurance(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createAssetInsurance(@Req() req: AuthenticatedRequest, @ZodBody(createAssetInsuranceSchema) dto: z.infer<typeof createAssetInsuranceSchema>) {
     return this.fixedAssetDeepService.createInsurance(req.user.tenantId, dto as never);
   }
 
@@ -4177,7 +4748,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.assets.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AssetInsurance', 'id')
-  async updateAssetInsurance(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateAssetInsurance(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateAssetInsuranceSchema) dto: z.infer<typeof updateAssetInsuranceSchema>) {
     return this.fixedAssetDeepService.updateInsurance(req.user.tenantId, id, dto as never);
   }
 
@@ -4200,7 +4771,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.assets.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AssetImpairment')
-  async createAssetImpairment(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createAssetImpairment(@Req() req: AuthenticatedRequest, @ZodBody(createAssetImpairmentSchema) dto: z.infer<typeof createAssetImpairmentSchema>) {
     return this.fixedAssetDeepService.createImpairment(req.user.tenantId, dto as never);
   }
 
@@ -4230,7 +4801,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.assets.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('CapitalProject')
-  async createCapitalProject(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createCapitalProject(@Req() req: AuthenticatedRequest, @ZodBody(createCapitalProjectSchema) dto: z.infer<typeof createCapitalProjectSchema>) {
     return this.fixedAssetDeepService.createCapitalProject(req.user.tenantId, dto as never);
   }
 
@@ -4239,7 +4810,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.assets.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('CapitalProjectCost')
-  async addCapitalProjectCost(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async addCapitalProjectCost(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(addCapitalProjectCostSchema) dto: z.infer<typeof addCapitalProjectCostSchema>) {
     return this.fixedAssetDeepService.addProjectCost(req.user.tenantId, id, dto as never);
   }
 
@@ -4248,14 +4819,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.assets.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('CapitalProject', 'id')
-  async updateCapitalProject(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateCapitalProject(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateCapitalProjectSchema) dto: z.infer<typeof updateCapitalProjectSchema>) {
     return this.fixedAssetDeepService.updateCapitalProject(req.user.tenantId, id, dto as never);
   }
 
   @ApiOperation({ summary: 'Convert capital project to fixed asset' })
   @Post('assets/capital-projects/:id/convert-to-asset')
   @Permissions('finance.assets.create')
-  async convertCapitalProjectToAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { assetName: string; categoryId: string; assetDate: string }) {
+  async convertCapitalProjectToAsset(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(convertCapitalProjectToAssetSchema) dto: z.infer<typeof convertCapitalProjectToAssetSchema>) {
     return this.fixedAssetDeepService.convertProjectToAsset(req.user.tenantId, id, dto);
   }
 
@@ -4269,7 +4840,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Bulk upload fixed assets from CSV data' })
   @Post('assets/bulk-upload')
   @Permissions('finance.assets.create')
-  async bulkUploadAssets(@Req() req: AuthenticatedRequest, @Body() dto: { rows: Record<string, unknown>[] }) {
+  async bulkUploadAssets(@Req() req: AuthenticatedRequest, @ZodBody(bulkUploadAssetsSchema) dto: z.infer<typeof bulkUploadAssetsSchema>) {
     return this.fixedAssetDeepService.bulkUploadAssets(req.user.tenantId, dto.rows as never);
   }
 
@@ -4287,14 +4858,14 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Upsert rolling forecast line' })
   @Post('fpa/rolling-forecast')
   @Permissions('finance.budget.update')
-  async upsertRollingForecastLine(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async upsertRollingForecastLine(@Req() req: AuthenticatedRequest, @ZodBody(upsertRollingForecastLineSchema) dto: z.infer<typeof upsertRollingForecastLineSchema>) {
     return this.fpaDeepService.upsertRollingForecastLine(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Sync actuals into rolling forecast' })
   @Post('fpa/rolling-forecast/sync-actuals')
   @Permissions('finance.budget.update')
-  async syncActualsToRollingForecast(@Req() req: AuthenticatedRequest, @Body() dto: { period: string }) {
+  async syncActualsToRollingForecast(@Req() req: AuthenticatedRequest, @ZodBody(syncActualsToRollingForecastSchema) dto: z.infer<typeof syncActualsToRollingForecastSchema>) {
     return this.fpaDeepService.syncActualsToRollingForecast(req.user.tenantId, dto.period);
   }
 
@@ -4310,7 +4881,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.budget.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('HeadcountPlan')
-  async createHeadcountPlan(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createHeadcountPlan(@Req() req: AuthenticatedRequest, @ZodBody(createHeadcountPlanSchema) dto: z.infer<typeof createHeadcountPlanSchema>) {
     return this.fpaDeepService.createHeadcountPlan(req.user.tenantId, dto as never);
   }
 
@@ -4319,14 +4890,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.budget.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('HeadcountPlan', 'id')
-  async updateHeadcountPlan(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateHeadcountPlan(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateHeadcountPlanSchema) dto: z.infer<typeof updateHeadcountPlanSchema>) {
     return this.fpaDeepService.updateHeadcountPlan(req.user.tenantId, id, dto as never);
   }
 
   @ApiOperation({ summary: 'Get headcount cost projection' })
   @Post('fpa/headcount-plans/cost-projection')
   @Permissions('finance.budget.read')
-  async getHeadcountCostProjection(@Req() req: AuthenticatedRequest, @Body() dto: { periods: string[] }) {
+  async getHeadcountCostProjection(@Req() req: AuthenticatedRequest, @ZodBody(getHeadcountCostProjectionSchema) dto: z.infer<typeof getHeadcountCostProjectionSchema>) {
     return this.fpaDeepService.getHeadcountCostProjection(req.user.tenantId, dto.periods);
   }
 
@@ -4340,14 +4911,14 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Add budget comment' })
   @Post('fpa/budget-comments')
   @Permissions('finance.budget.create')
-  async addBudgetComment(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async addBudgetComment(@Req() req: AuthenticatedRequest, @ZodBody(addBudgetCommentSchema) dto: z.infer<typeof addBudgetCommentSchema>) {
     return this.fpaDeepService.addBudgetComment(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Update budget comment' })
   @Patch('fpa/budget-comments/:id')
   @Permissions('finance.budget.update')
-  async updateBudgetComment(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { text: string }) {
+  async updateBudgetComment(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateBudgetCommentSchema) dto: z.infer<typeof updateBudgetCommentSchema>) {
     return this.fpaDeepService.updateBudgetComment(req.user.tenantId, id, dto.text);
   }
 
@@ -4377,7 +4948,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.reports.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ManagementReport')
-  async createManagementReport(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createManagementReport(@Req() req: AuthenticatedRequest, @ZodBody(createManagementReportSchema) dto: z.infer<typeof createManagementReportSchema>) {
     return this.fpaDeepService.createManagementReport(req.user.tenantId, dto as never);
   }
 
@@ -4386,7 +4957,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.reports.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ManagementReport', 'id')
-  async updateManagementReport(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateManagementReport(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateManagementReportSchema) dto: z.infer<typeof updateManagementReportSchema>) {
     return this.fpaDeepService.updateManagementReport(req.user.tenantId, id, dto as never);
   }
 
@@ -4407,7 +4978,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Run what-if sensitivity analysis' })
   @Post('fpa/sensitivity-analysis')
   @Permissions('finance.budget.read')
-  async runWhatIfSensitivity(@Req() req: AuthenticatedRequest, @Body() dto: { revenueChangePct: number; costChangePct: number; period?: string }) {
+  async runWhatIfSensitivity(@Req() req: AuthenticatedRequest, @ZodBody(runWhatIfSensitivitySchema) dto: z.infer<typeof runWhatIfSensitivitySchema>) {
     return this.fpaDeepService.runWhatIfSensitivity(req.user.tenantId, dto);
   }
 
@@ -4434,7 +5005,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.revenue.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('BillingRule')
-  async createBillingRule(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createBillingRule(@Req() req: AuthenticatedRequest, @ZodBody(createBillingRuleSchema) dto: z.infer<typeof createBillingRuleSchema>) {
     return this.revenueBillingService.createBillingRule(req.user.tenantId, dto as never);
   }
 
@@ -4443,7 +5014,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.revenue.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('BillingRule', 'id')
-  async updateBillingRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateBillingRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateBillingRuleSchema) dto: z.infer<typeof updateBillingRuleSchema>) {
     return this.revenueBillingService.updateBillingRule(req.user.tenantId, id, dto as never);
   }
 
@@ -4466,7 +5037,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.revenue.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('BillingMilestone')
-  async addBillingMilestone(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async addBillingMilestone(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(addBillingMilestoneSchema) dto: z.infer<typeof addBillingMilestoneSchema>) {
     return this.revenueBillingService.addMilestone(req.user.tenantId, id, dto as never);
   }
 
@@ -4496,7 +5067,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.revenue.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ContractModification')
-  async createContractModification(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createContractModification(@Req() req: AuthenticatedRequest, @ZodBody(createContractModificationSchema) dto: z.infer<typeof createContractModificationSchema>) {
     return this.revenueBillingService.createContractModification(req.user.tenantId, dto as never);
   }
 
@@ -4517,7 +5088,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Compute deferred revenue roll-forward for a period' })
   @Post('billing/deferred-revenue-roll-forwards/compute')
   @Permissions('finance.revenue.create')
-  async computeDeferredRevenueRollForward(@Req() req: AuthenticatedRequest, @Body() dto: { period: string }) {
+  async computeDeferredRevenueRollForward(@Req() req: AuthenticatedRequest, @ZodBody(computeDeferredRevenueRollForwardSchema) dto: z.infer<typeof computeDeferredRevenueRollForwardSchema>) {
     return this.revenueBillingService.computeDeferredRevenueRollForward(req.user.tenantId, dto.period);
   }
 
@@ -4533,14 +5104,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.revenue.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('TieredPricingTable')
-  async createTieredPricingTable(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createTieredPricingTable(@Req() req: AuthenticatedRequest, @ZodBody(createTieredPricingTableSchema) dto: z.infer<typeof createTieredPricingTableSchema>) {
     return this.revenueBillingService.createTieredPricingTable(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Rate usage against a tiered pricing table' })
   @Post('billing/tiered-pricing/:id/rate')
   @Permissions('finance.revenue.read')
-  async rateUsage(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { usage: number }) {
+  async rateUsage(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(rateUsageSchema) dto: z.infer<typeof rateUsageSchema>) {
     return this.revenueBillingService.rateUsage(req.user.tenantId, id, dto.usage);
   }
 
@@ -4554,7 +5125,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Get revenue forecast vs actual' })
   @Post('billing/revenue-forecast-vs-actual')
   @Permissions('finance.revenue.read')
-  async getRevenueForecastVsActual(@Req() req: AuthenticatedRequest, @Body() dto: { periods: string[] }) {
+  async getRevenueForecastVsActual(@Req() req: AuthenticatedRequest, @ZodBody(getRevenueForecastVsActualSchema) dto: z.infer<typeof getRevenueForecastVsActualSchema>) {
     return this.revenueBillingService.getRevenueForecastVsActual(req.user.tenantId, dto.periods);
   }
 
@@ -4581,7 +5152,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.compliance.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('FinancialControl')
-  async createFinancialControl(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createFinancialControl(@Req() req: AuthenticatedRequest, @ZodBody(createFinancialControlSchema) dto: z.infer<typeof createFinancialControlSchema>) {
     return this.complianceControlsService.createControl(req.user.tenantId, dto as never);
   }
 
@@ -4590,7 +5161,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.compliance.update')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('FinancialControl', 'id')
-  async updateFinancialControl(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateFinancialControl(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateFinancialControlSchema) dto: z.infer<typeof updateFinancialControlSchema>) {
     return this.complianceControlsService.updateControl(req.user.tenantId, id, dto as never);
   }
 
@@ -4613,14 +5184,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.compliance.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ControlTest')
-  async createControlTest(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createControlTest(@Req() req: AuthenticatedRequest, @ZodBody(createControlTestSchema) dto: z.infer<typeof createControlTestSchema>) {
     return this.complianceControlsService.createControlTest(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Review control test result' })
   @Post('compliance/control-tests/:id/review')
   @Permissions('finance.compliance.update')
-  async reviewControlTest(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { reviewedBy: string }) {
+  async reviewControlTest(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(reviewControlTestSchema) dto: z.infer<typeof reviewControlTestSchema>) {
     return this.complianceControlsService.reviewControlTest(req.user.tenantId, id, dto.reviewedBy);
   }
 
@@ -4643,14 +5214,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.compliance.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('SodRuleDefinition')
-  async createSodRule(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createSodRule(@Req() req: AuthenticatedRequest, @ZodBody(createSodRuleSchema) dto: z.infer<typeof createSodRuleSchema>) {
     return this.complianceControlsService.createSodRule(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Update SoD rule definition' })
   @Patch('compliance/sod-rules/:id')
   @Permissions('finance.compliance.update')
-  async updateSodRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: Record<string, unknown>) {
+  async updateSodRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateSodRuleSchema) dto: z.infer<typeof updateSodRuleSchema>) {
     return this.complianceControlsService.updateSodRule(req.user.tenantId, id, dto as never);
   }
 
@@ -4671,7 +5242,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Resolve SoD conflict' })
   @Patch('compliance/sod-conflicts/:id/resolve')
   @Permissions('finance.compliance.update')
-  async resolveSodConflict(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { status: string; resolvedBy: string; mitigationNotes?: string }) {
+  async resolveSodConflict(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(resolveSodConflictSchema) dto: z.infer<typeof resolveSodConflictSchema>) {
     return this.complianceControlsService.resolveSodConflict(req.user.tenantId, id, dto);
   }
 
@@ -4687,14 +5258,14 @@ export class AdvancedFinanceController {
   @Permissions('finance.compliance.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AuditConfirmation')
-  async createAuditConfirmation(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createAuditConfirmation(@Req() req: AuthenticatedRequest, @ZodBody(createAuditConfirmationSchema) dto: z.infer<typeof createAuditConfirmationSchema>) {
     return this.complianceControlsService.createAuditConfirmation(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Record audit confirmation response' })
   @Post('compliance/audit-confirmations/:id/respond')
   @Permissions('finance.compliance.update')
-  async recordAuditConfirmationResponse(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { confirmedAmount: number; responseDate?: string; notes?: string }) {
+  async recordAuditConfirmationResponse(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(recordAuditConfirmationResponseSchema) dto: z.infer<typeof recordAuditConfirmationResponseSchema>) {
     return this.complianceControlsService.recordAuditConfirmationResponse(req.user.tenantId, id, dto);
   }
 
@@ -4710,21 +5281,21 @@ export class AdvancedFinanceController {
   @Permissions('finance.compliance.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('PeriodCertification')
-  async createPeriodCertification(@Req() req: AuthenticatedRequest, @Body() dto: Record<string, unknown>) {
+  async createPeriodCertification(@Req() req: AuthenticatedRequest, @ZodBody(createPeriodCertificationSchema) dto: z.infer<typeof createPeriodCertificationSchema>) {
     return this.complianceControlsService.createPeriodCertification(req.user.tenantId, dto as never);
   }
 
   @ApiOperation({ summary: 'Certify (sign off) a period' })
   @Post('compliance/period-certifications/:id/certify')
   @Permissions('finance.compliance.update')
-  async certifyPeriod(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { statement: string; ipAddress?: string }) {
+  async certifyPeriod(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(certifyPeriodSchema) dto: z.infer<typeof certifyPeriodSchema>) {
     return this.complianceControlsService.certifyPeriod(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Reject period certification' })
   @Post('compliance/period-certifications/:id/reject')
   @Permissions('finance.compliance.update')
-  async rejectPeriodCertification(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: { notes: string }) {
+  async rejectPeriodCertification(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(rejectPeriodCertificationSchema) dto: z.infer<typeof rejectPeriodCertificationSchema>) {
     return this.complianceControlsService.rejectPeriodCertification(req.user.tenantId, id, dto.notes);
   }
 
@@ -4735,11 +5306,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('IntercompanyLoan')
-  async createLoanAgreement(@Req() req: AuthenticatedRequest, @Body() dto: {
-    lenderOrgId: string; borrowerOrgId: string; loanNumber: string;
-    principalAmount: number; interestRate: number; startDate: string;
-    endDate: string; interestType?: string;
-  }) {
+  async createLoanAgreement(@Req() req: AuthenticatedRequest, @ZodBody(createLoanAgreementSchema) dto: z.infer<typeof createLoanAgreementSchema>) {
     return this.intercompanyLoansService.createLoanAgreement(req.user.tenantId, dto);
   }
 
@@ -4765,7 +5332,7 @@ export class AdvancedFinanceController {
   async recordLoanDrawdown(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { amount: number; drawdownDate: string; reference?: string },
+    @ZodBody(recordLoanDrawdownSchema) dto: z.infer<typeof recordLoanDrawdownSchema>,
   ) {
     return this.intercompanyLoansService.recordLoanDrawdown(req.user.tenantId, id, dto);
   }
@@ -4778,7 +5345,7 @@ export class AdvancedFinanceController {
   async recordLoanRepayment(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { principal: number; interest: number; repaymentDate: string; reference?: string },
+    @ZodBody(recordLoanRepaymentSchema) dto: z.infer<typeof recordLoanRepaymentSchema>,
   ) {
     return this.intercompanyLoansService.recordLoanRepayment(req.user.tenantId, id, dto);
   }
@@ -4800,7 +5367,7 @@ export class AdvancedFinanceController {
   async postAccruedInterestGL(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() dto: { asOfDate: string },
+    @ZodBody(postAccruedInterestGLSchema) dto: z.infer<typeof postAccruedInterestGLSchema>,
   ) {
     return this.intercompanyLoansService.postAccruedInterestGL(req.user.tenantId, id, dto.asOfDate);
   }
@@ -4833,9 +5400,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.fixed-asset.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AssetRevaluation')
-  async createAssetRevaluation(@Req() req: AuthenticatedRequest, @Body() dto: {
-    assetId: string; revaluationDate: string; revaluedValue: number; notes?: string;
-  }) {
+  async createAssetRevaluation(@Req() req: AuthenticatedRequest, @ZodBody(createAssetRevaluationSchema) dto: z.infer<typeof createAssetRevaluationSchema>) {
     return this.assetLifecycleService.createAssetRevaluation(req.user.tenantId, dto);
   }
 
@@ -4861,9 +5426,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.fixed-asset.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AssetDisposal')
-  async createAssetDisposal(@Req() req: AuthenticatedRequest, @Body() dto: {
-    assetId: string; disposalDate: string; disposalType: string; salePrice?: number; notes?: string;
-  }) {
+  async createAssetDisposal(@Req() req: AuthenticatedRequest, @ZodBody(createAssetDisposalSchema) dto: z.infer<typeof createAssetDisposalSchema>) {
     return this.assetLifecycleService.createAssetDisposal(req.user.tenantId, dto);
   }
 
@@ -4913,9 +5476,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.fixed-asset.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('AssetDisposal')
-  async bulkDisposeAssets(@Req() req: AuthenticatedRequest, @Body() dto: {
-    assetIds: string[]; disposalDate: string; disposalType: string;
-  }) {
+  async bulkDisposeAssets(@Req() req: AuthenticatedRequest, @ZodBody(bulkDisposeAssetsSchema) dto: z.infer<typeof bulkDisposeAssetsSchema>) {
     return this.assetLifecycleService.bulkDisposeAssets(req.user.tenantId, dto);
   }
 
@@ -4926,10 +5487,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('CashPool')
-  async createCashPool(@Req() req: AuthenticatedRequest, @Body() dto: {
-    orgId: string; name: string; poolType?: string;
-    headerAccountId: string; participantAccountIds: string[]; targetBalance?: number;
-  }) {
+  async createCashPool(@Req() req: AuthenticatedRequest, @ZodBody(createCashPoolSchema) dto: z.infer<typeof createCashPoolSchema>) {
     return this.cashPoolingService.createCashPool(req.user.tenantId, dto);
   }
 
@@ -4984,9 +5542,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.report.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('VarianceAlertConfig')
-  async createVarianceAlertConfig(@Req() req: AuthenticatedRequest, @Body() dto: {
-    accountId: string; thresholdPct: number; ownerId: string;
-  }) {
+  async createVarianceAlertConfig(@Req() req: AuthenticatedRequest, @ZodBody(createVarianceAlertConfigSchema) dto: z.infer<typeof createVarianceAlertConfigSchema>) {
     return this.cashPoolingService.createVarianceAlertConfig(req.user.tenantId, dto);
   }
 
@@ -4997,10 +5553,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.treasury.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ConsolidationRate')
-  async createConsolidationRate(@Req() req: AuthenticatedRequest, @Body() dto: {
-    period: string; fromCurrency: string; toCurrency: string;
-    averageRate: number; closingRate: number; historicalRate: number;
-  }) {
+  async createConsolidationRate(@Req() req: AuthenticatedRequest, @ZodBody(createConsolidationRateSchema) dto: z.infer<typeof createConsolidationRateSchema>) {
     return this.consolidationDeepService.createConsolidationRate(req.user.tenantId, dto);
   }
 
@@ -5019,9 +5572,7 @@ export class AdvancedFinanceController {
   @Permissions('finance.report.create')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('ConsolidationRun')
-  async runConsolidatedTranslation(@Req() req: AuthenticatedRequest, @Body() dto: {
-    period: string; targetCurrency: string;
-  }) {
+  async runConsolidatedTranslation(@Req() req: AuthenticatedRequest, @ZodBody(runConsolidatedTranslationSchema) dto: z.infer<typeof runConsolidatedTranslationSchema>) {
     return this.consolidationDeepService.runConsolidatedTranslation(req.user.tenantId, dto.period, dto.targetCurrency);
   }
 
@@ -5038,9 +5589,7 @@ export class AdvancedFinanceController {
   @ApiOperation({ summary: 'Post intercompany consolidation eliminations' })
   @Post('consolidation/runs/:id/eliminations')
   @Permissions('finance.report.create')
-  async runConsolidationEliminations(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: {
-    eliminations: { fromOrgId: string; toOrgId: string; amount: number; accountType: string; description?: string }[];
-  }) {
+  async runConsolidationEliminations(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(runConsolidationEliminationsSchema) dto: z.infer<typeof runConsolidationEliminationsSchema>) {
     return this.consolidationDeepService.runConsolidationEliminations(req.user.tenantId, id, dto.eliminations);
   }
 

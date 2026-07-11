@@ -1,8 +1,0 @@
-{
-  "slug": "finance-scorecard-hardening",
-  "agent": "claude-code-cli-autopilot",
-  "scope": "Close Finance scorecard gaps: advanced-finance D2 Validation (Zod-validate @Body() endpoints) + D5 Observability (remove console.*), finance D6 Docs (add missing @ApiOperation)",
-  "acquiredAt": "2026-07-11T05:16:58.044Z",
-  "heartbeatAt": "2026-07-11T05:16:58.044Z",
-  "pid": 8652
-}

@@ -2,6 +2,60 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] Finance: Scorecard hardening — Validation, Observability, Docs/API gaps closed
+
+**Why**: `.ai/MODULE_FOCUS.md` §5 exit criterion 3 requires Finance modules to be
+10/10 on all seven `SCORECARD.md` dimensions before focus can advance to CRM & Sales.
+With P0 (typecheck/full API suite) confirmed green, this cycle's highest-priority
+Finance gap was the scorecard itself: `advanced-finance` was 8/10 (D2 Validation 6/10,
+D5 Observability 4/10) and `finance` was 9.1/10 (D6 Docs/API 4/10). Closing these is a
+direct, literal exit-criteria item, so this cycle was a hardening cycle rather than a
+new-feature batch — per the user's explicit instruction to prefer closing exit-criteria
+gaps over further feature accumulation once the module is feature-complete.
+
+**What shipped**:
+- **D5 Observability (advanced-finance, 4→10)**: removed the one stray `console.warn`
+  in `gl-accounting.service.ts` (unbalanced parallel-journal warning), replaced with
+  the service's structured `Logger`. Repo-wide grep confirmed no other stray
+  `console.*` calls remain in `apps/api/src`.
+- **D6 Docs/API (finance, 4→10)**: added missing `@ApiOperation` Swagger summaries to
+  all previously-undocumented routes in `finance/leases.controller.ts`.
+- **D2 Validation (advanced-finance, 6→10)**: converted all 81 remaining raw
+  `@Body() dto: Record<string, unknown>` / loosely-typed body params in the
+  5,900+ line `advanced-finance.controller.ts` god-class controller to real,
+  field-typed Zod schemas via the existing `@ZodBody(...)` decorator pattern
+  (matching the 112 endpoints that already used it) — covering treasury, AP/AR
+  intelligence, fixed-asset, FP&A, revenue/billing, compliance-controls, debt/loan,
+  cash-pooling, and consolidation endpoints. No behavior changes — additive
+  validation only.
+- Gates: `pnpm --filter @unerp/api typecheck` clean; `advanced-finance` suite 412/412,
+  `finance` suite 464/464, `auth` suite 8/8 (touched incidentally, unrelated fix)
+  all passing. `node scripts/scorecard.mjs` re-run: `advanced-finance` 8→9.4/10
+  (D2/D5 both now 10; D1 Functionality remains 6 — a pre-existing heuristic false
+  positive on the word "placeholders" in a code comment in
+  `cash-flow-forecast.service.ts:95` describing legitimate dynamic-calc logic, not an
+  actual stub; left as a known heuristic limitation, not a real gap), `finance`
+  8/8 dimensions → **10/10**. System score 9.8 → 9.9/10.
+
+**Finance exit-criteria (`.ai/MODULE_FOCUS.md` §5) status after this cycle**:
+1. Feature count ≥ 500 — met (527, per 2026-07-11 ledger row).
+2. MARKET_BENCHMARK gaps closed/deferred — met (all shipped or explicitly deferred).
+3. Scorecard 10/10 all dimensions + E2E smoke green — partially closed this cycle:
+   `finance` module now 10/10; `advanced-finance` now 9.4/10 (D1 heuristic false
+   positive, not a real functionality gap — see above). E2E smoke coverage across
+   all Finance pages still not fully confirmed this cycle (only 1099/nexus pages
+   were smoke-verified in the prior cycle) — still open.
+4. Zero unresolved FEEDBACK.md runtime errors from Finance — not re-verified this
+   cycle, carried from prior state.
+5. Integration contracts published — still open (contracts in §7 remain "planned"/
+   "partially wired", none formally published as implemented).
+6. UAT pass — still open, not run this cycle.
+
+**Remaining exit-criteria gaps for the next Finance cycle**: full E2E smoke sweep of
+every Finance/advanced-finance page (not just 1099/nexus), publishing the §7
+integration contracts as implemented (or explicitly deferred with reason), and a
+business-analyst-uat top-10-workflow pass.
+
 ## [2026-07-11] Finance: Economic Nexus Monitoring + 1099 E2E verification (module deepening)
 
 **Why**: with the P0-P2 gates clean (typecheck, full API suite) and the Up Next queue's
