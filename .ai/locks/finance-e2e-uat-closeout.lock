@@ -1,0 +1,8 @@
+{
+  "slug": "finance-e2e-uat-closeout",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "Finance E2E smoke sweep + UAT pass + invoice.overdue consumer",
+  "acquiredAt": "2026-07-11T05:37:04.915Z",
+  "heartbeatAt": "2026-07-11T05:37:04.916Z",
+  "pid": 12644
+}
