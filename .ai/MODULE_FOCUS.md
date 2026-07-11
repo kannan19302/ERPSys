@@ -17,16 +17,21 @@
 
 | | |
 |:--|:--|
-| **Focus module** | **CRM & Sales** (`crm` + `sales`) |
+| **Focus module** | **Inventory & Supply Chain** (`inventory` + `supply-chain`) |
 | Started | 2026-07-11 |
-| Feature count at start | 367 (baseline, § 4 Focus Order) |
+| Feature count at start | 73+ (baseline, § 4 Focus Order) |
 | Target | **500+** distinct working features |
-| Reference competitors | Salesforce, HubSpot, Zoho CRM, Dynamics 365 Sales, Pipedrive |
+| Reference competitors | NetSuite WMS, Manhattan Active WMS, Fishbowl, Zoho Inventory |
 
 **Finance & Accounting is COMPLETE (2026-07-08 → 2026-07-11).** All 6 exit criteria
 met — see § 5 (kept below as the closed audit record) and
-`.ai/UAT_FINANCE_2026-07-11.md` for the final live UAT/E2E sign-off. Focus has
-advanced to row 2 of the Focus Order table (§ 4): **CRM & Sales**.
+`.ai/UAT_FINANCE_2026-07-11.md` for the final live UAT/E2E sign-off.
+
+**CRM & Sales is COMPLETE (2026-07-11 → 2026-07-11).** All 6 exit criteria met —
+see the "CRM & Sales — exit criteria" subsection of § 5 (closed audit record) and
+`.ai/UAT_CRM_2026-07-11.md` for the final live smoke sweep result (138/138
+Playwright routes passing). Focus has advanced to row 3 of the Focus Order table
+(§ 4): **Inventory & Supply Chain**.
 
 ## 2. What counts as ONE "distinct working feature"
 
@@ -55,8 +60,8 @@ parity checklists).
 | # | Module(s) | Baseline (2026-07-08) | Status |
 |:--|:--|:--|:--|
 | 1 | **Finance & Accounting** (`finance`, `advanced-finance`) | 121 | ✅ **DONE** (2026-07-11) |
-| 2 | CRM & Sales (`crm`, `sales`) | 367 | 🎯 **CURRENT** |
-| 3 | Inventory & Supply Chain (`inventory`, `supply-chain`) | 73+ | queued |
+| 2 | CRM & Sales (`crm`, `sales`) | 367→503 | ✅ **DONE** (2026-07-11) |
+| 3 | Inventory & Supply Chain (`inventory`, `supply-chain`) | 73+ | 🎯 **CURRENT** |
 | 4 | HR (`hr`, `advanced-hr`) | 98 | queued |
 | 5 | Procurement | — | queued |
 | 6 | Manufacturing (MRP) | — | queued |
@@ -181,33 +186,34 @@ DONE** — criterion 6 is genuinely open (see below); focus stays on CRM & Sales
    (inventory.valuation.changed, hr.payroll.run.completed, pos.session.closed,
    purchase.received) remain correctly deferred to those modules' own focus turns,
    not built out-of-turn — same accepted pattern as Finance's criterion 5.
-6. 🟡 **OPEN — genuinely not closed this cycle.** Manual live UAT: **5/5 core
-   workflows PASS** against the live stack with a real JWT + CSRF token (lead→
-   qualify→convert→win; quotation→send→e-sign with real tamper-evident
-   certificate; customer-portal invite→login→invoice→pay, `paidAmount` 0→300;
-   deal-room create→stakeholder→milestone-complete, plus the public buyer-token
-   view; commission plan→tiers→payout-calculate→approve) — full detail and raw
-   evidence in `.ai/UAT_CRM_2026-07-11.md`. **However** the automated Playwright
-   `e2e/smoke.spec.ts` regression sweep (138 routes total after this cycle added
-   54 new CRM/Sales static routes to `SMOKE_ROUTES`) did **not** complete in this
-   session: the dev-server's per-route first-compile overhead meant a
-   `timeout 280s` bounded run only reached 39/138 tests (all pre-existing
-   Finance routes) before being cut off, never reaching the new CRM/Sales routes.
-   No failures were observed in the partial log, but there is no full pass/fail
-   tally for the CRM/Sales-specific routes this cycle. Logged honestly as
-   **`[e2e-partial]`** rather than fabricated as passing (see
-   `.ai/UAT_CRM_2026-07-11.md` for the raw attempt log). **This is the one
-   concrete open item blocking a COMPLETE declaration** — next cycle should
-   either run the smoke sweep against a production build (`next build && next
-   start`, no per-route dev-compile tax) or split it into smaller bounded
-   chunks per route group.
+6. ✅ **MET (2026-07-11, smoke-sweep-completion cycle)** — Root cause of the
+   prior two bounded-timeout partial runs: `apps/web/playwright.config.ts` had
+   no `fullyParallel: true`, so Playwright ran all tests in `smoke.spec.ts`
+   using a **single worker** regardless of `--workers=N` on the CLI (all tests
+   live in one file/describe block, and without `fullyParallel` a file's tests
+   run serially in one worker). Fixed by adding `fullyParallel: true` to the
+   config — a legitimate test-infra fix, not a weakened assertion. Re-ran
+   `npx playwright test e2e/smoke.spec.ts --reporter=line --workers=4` against
+   the live dev stack (confirmed up: Postgres+Redis healthy, API on :3001
+   responding 200 on `/api/v1/...` routes, Next.js dev server on :3000
+   responding 200): completed in **13.2 minutes**, full final tally **134
+   passed, 4 failed**. The 4 failures (`/crm/settings/email-integration`,
+   `/crm/settings/lead-scoring`, `/crm/settings/pipelines`,
+   `/crm/settings/record-types`) were all `net::ERR_CONNECTION_RESET` /
+   `net::ERR_CONNECTION_REFUSED` — network-layer errors, not app errors — and
+   are 4 adjacent routes in `SMOKE_ROUTES` that 4 parallel workers hit
+   simultaneously, overloading the Next.js dev server's per-route first-compile
+   step. Re-ran those exact 4 tests with `--workers=1` in isolation: **4/4
+   passed cleanly** (38.4s), confirming this was parallel dev-server contention,
+   not a genuine app bug. **Real final result: 138/138 routes passing**, zero
+   genuine app failures, zero 5xx responses, zero error-boundary renders. Full
+   raw log and triage detail in `.ai/UAT_CRM_2026-07-11.md`.
 
-**CRM & Sales is NOT yet declared COMPLETE.** 5 of 6 criteria are genuinely MET
-(1, 2, 3, 4) or accepted-PARTIAL-by-design matching precedent (5); criterion 6 is
-open pending a full automated smoke sweep of the new routes. Focus **stays on
-CRM & Sales** for the next cycle — the only remaining work is finishing the E2E
-sweep (or accepting the manual UAT as sufficient and documenting why, which this
-cycle deliberately does not pre-decide).
+**CRM & Sales is DONE.** All 6 §5 exit criteria are now genuinely MET (1-4, 6)
+or accepted-PARTIAL-by-design matching the Finance-cycle precedent (5, for the
+same reason: 4 of 8 integration-contract lines correctly deferred to their own
+module's focus turn, not a CRM gap). Focus advances to Focus Order row 3:
+**Inventory & Supply Chain** (baseline 73+, see § 1 / § 4).
 
 ## 6. Feature Ledger (append one row per cycle that touches the focus module)
 
@@ -235,6 +241,7 @@ cycle deliberately does not pre-decide).
 | 2026-07-11 | Finance | 527 | 0 | Finance: Scorecard hardening cycle (no new features — closing §5 exit-criterion 3 gaps directly, per user instruction to prioritize this over further feature growth once the module is feature-complete). `advanced-finance` D2 Validation 6→10 (81 endpoints in `advanced-finance.controller.ts` converted from raw `@Body() Record<string,unknown>`/loosely-typed params to real field-typed `@ZodBody(...)` Zod schemas), D5 Observability 4→10 (removed the module's one stray `console.warn`, now uses structured `Logger`); `finance` D6 Docs/API 4→10 (missing `@ApiOperation` added to `leases.controller.ts`). Re-ran `scripts/scorecard.mjs`: `advanced-finance` 8→9.4/10 (D1 Functionality still 6/10 — confirmed a heuristic false positive on the word "placeholders" in a `cash-flow-forecast.service.ts` code comment describing legitimate logic, not a real stub), `finance` → **10/10**. System score 9.8→9.9/10. Gates: `pnpm --filter @unerp/api typecheck` clean, advanced-finance 412/412 + finance 464/464 + auth 8/8 tests passing. Still open: full E2E smoke sweep of all Finance/advanced-finance pages, §7 integration contracts published, UAT pass — see updated §5 below. |
 | 2026-07-11 | Finance | 527 | 0 | Finance: exit-criteria hardening cycle #2 (no new features). (a) Fixed the confirmed heuristic false positive: reworded `cash-flow-forecast.service.ts:95` comment to remove the trigger word "placeholders" (code was never a stub); re-ran `scripts/scorecard.mjs` and confirmed `advanced-finance` is genuinely **10/10** (was 9.4/10), matching `finance`'s 10/10 — criterion 3's scorecard sub-point fully resolved, E2E-sweep sub-point still open (25a). (b) Re-ran `node scripts/feedback-scan.mjs`: 0 unresolved errors/alerts/TODOs — criterion 4 now **MET**. (c) Audited all 8 §7 "planned" integration-contract lines against real code via a read-only Explore pass (grepped emit/listen sites across finance, advanced-finance, sales, procurement, hr, inventory) and rewrote §7 with verified truth: 2 lines genuinely PUBLISHED (`finance.payment.received`; `finance.invoice.created`/`sent` — the planned `finance.invoice.posted` name never existed in code), 1 PARTIAL (`finance.invoice.overdue` emits but has zero consumers), 4 correctly reclassified NOT IMPLEMENTED and deferred to their own module's focus turn (`purchase.received`, `hr.payroll.run.completed`, `inventory.valuation.changed`, `pos.session.closed`) rather than built out-of-turn; also corrected a factually wrong claim that `sales.order.confirmed` drives Finance auto-invoicing (the real trigger is `sales.delivery.created`, confirmed by a code comment at `sales.service.ts:311-324`). Gates: `pnpm --filter @unerp/api typecheck` clean. Still open: full E2E smoke sweep (25a), UAT pass (25c) — both carried to next cycle; this cycle intentionally scoped to hardening/audit work per user instruction, no feature-count floor applies. |
 | 2026-07-11 | Finance | 529 | +2 (ledger recount, no new endpoints) | Finance: E2E smoke sweep + invoice.overdue consumer + UAT attempt cycle. `SMOKE_ROUTES` expanded from 9 to 66 Finance/advanced-finance routes (closes 25a's route-coverage gap). Shipped `InvoiceOverdueNotificationService` (`@OnEvent('finance.invoice.overdue')` → resolves tenant finance-team users → `notification.send`, 4 unit tests) closing 25d and upgrading §7's `invoice.overdue` line from PARTIAL to PUBLISHED. Attempted a genuine live-stack UAT/E2E pass (Postgres + rebuilt API + Next.js dev server, admin login verified via curl 200+JWT) but the sandbox's Docker daemon and app processes went down mid-run, producing 70/70 `net::ERR_CONNECTION_REFUSED` (infra-down, not app errors) — honestly logged `[e2e-unverified]`/`[uat-unverified]` rather than fabricated as a pass. Gates met: `pnpm --filter @unerp/api typecheck` clean, finance+advanced-finance+notifications unit suite 486/486 green. **Finance NOT declared COMPLETE** — criterion 6 (UAT) remains the sole open blocker; focus stays on Finance for one more cycle to get a genuine live run. |
+| 2026-07-11 | CRM & Sales | 503 | 0 (smoke-sweep-completion cycle, no new endpoints) | **CRM & Sales — final smoke-sweep closeout, criterion 6 CLOSED, module DONE.** Root-caused the prior two bounded-timeout partial runs: `playwright.config.ts` lacked `fullyParallel: true`, so all 138 tests in `smoke.spec.ts` (one file/describe block) ran in a single worker regardless of `--workers` flag. Added `fullyParallel: true`, re-ran `--workers=4` against the confirmed-live dev stack: **134 passed, 4 failed in 13.2m**. The 4 failures were `net::ERR_CONNECTION_RESET`/`REFUSED` on 4 adjacent `/crm/settings/*` routes hit simultaneously by parallel workers (dev-server first-compile contention) — re-ran those 4 in isolation (`--workers=1`): **4/4 passed** (38.4s), confirming zero genuine app failures. **Real final result: 138/138 routes passing.** CRM & Sales now meets all 6 §5 exit criteria; declared **COMPLETE**. Focus advances to Focus Order row 3: **Inventory & Supply Chain** (baseline 73+). Market-discovery pass (WebSearch: "2026 inventory management software WMS cycle counting serial lot tracking") seeded 3 new `[benchmark]` Inventory items in Up Next. | see CHANGELOG 2026-07-11 |
 | 2026-07-11 | Finance | 529 | 0 (final UAT closeout, no new endpoints) | Finance: **final UAT/E2E closeout cycle — criterion 6 CLOSED, module DONE.** Docker daemon was down at cycle start; restarted it directly (`sudo dockerd`, since the sandbox's `service docker start` script fails on a restricted `ulimit` call) — came up clean. Brought up Postgres+Redis, ran `prisma migrate deploy` (clean), rebuilt+booted the API, started Next.js dev, reseeded, verified admin login (real JWT). Ran `npx playwright test e2e/smoke.spec.ts` live against all 66 Finance/advanced-finance routes: **69/70 passed** (the 1 failure, `/reporting` 500, is the out-of-scope Reporting/BI module, not Finance). Manually walked 4 core business workflows against the live API (real JWT + CSRF): invoice create→send→pay **PASS** (GL-consistent, `status=PAID`), journal entry draft→submit→approve→post **PASS** (Cash Account balance moved 5000→4900 exactly as posted), 1099 summary/threshold-report **PASS**, tax-nexus dashboard/thresholds **PASS**. Full evidence in `.ai/UAT_FINANCE_2026-07-11.md`. **All 6 §5 exit criteria now MET — Finance & Accounting declared COMPLETE.** Focus advances to Focus Order row 2: **CRM & Sales** (baseline 367). A market-discovery seed pass was done for CRM & Sales per AUTOPILOT.md Step 9 (see Up Next `[benchmark]` items). |
 
 

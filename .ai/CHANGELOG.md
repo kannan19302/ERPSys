@@ -2,6 +2,51 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] CRM & Sales DECLARED COMPLETE — smoke-sweep-completion cycle
+
+**Claim**: `crm-smoke-sweep-completion`, released at cycle end.
+
+The sole remaining blocker on CRM & Sales's exit criteria (§5 criterion 6 in
+`.ai/MODULE_FOCUS.md`) was a full, real pass/fail result for the 138-route
+Playwright smoke suite; two prior cycles had each run out of bounded
+wall-clock time partway through (39/138 both times).
+
+- **Root cause found**: `apps/web/playwright.config.ts` had no
+  `fullyParallel: true`. All 138 tests live in one file/`describe` block, so
+  Playwright ran them **serially in a single worker** no matter what
+  `--workers` value was passed on the CLI — confirmed live (`Running 138
+  tests using 1 worker` even with `--workers=4`). This, not per-route
+  dev-server compile cost, was the actual reason neither prior attempt could
+  finish in a bounded window.
+- **Fixed**: added `fullyParallel: true` to `playwright.config.ts` (test
+  infra only — no assertions weakened, no routes skipped, no test dropped).
+- **Verified live**: confirmed the dev stack up first (`docker ps` →
+  Postgres/Redis healthy; `curl localhost:3000` → 200; `curl
+  localhost:3001/api/v1/health` → 200). Re-ran
+  `npx playwright test e2e/smoke.spec.ts --reporter=line --workers=4` in the
+  background (nohup + log file, monitored via non-blocking log reads):
+  confirmed 4 real workers this time, completed in **13.2 minutes** with a
+  final tally of **134 passed, 4 failed**.
+- **Triaged the 4 failures**: all `net::ERR_CONNECTION_RESET`/`REFUSED` (TCP
+  errors, not app 5xx or error-boundary renders) on 4 adjacent
+  `/crm/settings/*` routes hit simultaneously by parallel workers — dev-server
+  connection contention from concurrent first-compiles, not a real app bug.
+  Re-ran those exact 4 tests in isolation with `--workers=1`: **4/4 passed**
+  (38.4s), confirming zero genuine regressions.
+- **Real final result: 138/138 routes passing**, zero genuine app failures.
+  Full evidence in `.ai/UAT_CRM_2026-07-11.md`.
+- **CRM & Sales declared COMPLETE** — all 6 `MODULE_FOCUS.md` §5 exit
+  criteria now met. Focus advances to Focus Order row 3: **Inventory & Supply
+  Chain** (baseline 73+ features).
+- **Market-discovery seed pass** (WebSearch: "2026 inventory management
+  software WMS cycle counting serial lot tracking") added 3 new
+  `[benchmark]` items to `MODULE_REGISTRY.md` Up Next (§2 items 5b-5d):
+  cycle counting/perpetual inventory accuracy (RICE 53), serial/lot
+  traceability (RICE 48), directed put-away/bin/license-plate + barcode
+  workflows (RICE 26).
+- No application code changed besides the one-line Playwright config fix —
+  this was purely a test-infrastructure/verification cycle.
+
 ## [2026-07-11] CRM & Sales, cycle 8 — exit-criteria closeout attempt (scorecard/UAT/E2E/contracts)
 
 **Claim**: `crm-exit-criteria-closeout`, released at cycle end.

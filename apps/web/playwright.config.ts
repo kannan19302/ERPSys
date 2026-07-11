@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   retries: process.env.CI ? 1 : 0,
+  fullyParallel: true,
   use: {
     baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     extraHTTPHeaders: {
