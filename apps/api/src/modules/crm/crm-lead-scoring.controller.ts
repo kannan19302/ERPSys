@@ -31,36 +31,42 @@ export class CrmLeadScoringController {
     return { data: await this.svc.listRules(req.user.tenantId) };
   }
 
+  @ApiOperation({ summary: 'Get One' })
   @Get('lead-scoring/rules/:id')
   @Permissions('crm.lead-scoring.read')
   async getOne(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return { data: await this.svc.getRule(req.user.tenantId, id) };
   }
 
+  @ApiOperation({ summary: 'Create' })
   @Post('lead-scoring/rules')
   @Permissions('crm.lead-scoring.create')
   async create(@Req() req: AuthenticatedRequest, @ZodBody(createLeadScoringRuleSchema) dto: CreateLeadScoringRuleInput) {
     return { data: await this.svc.createRule(req.user.tenantId, dto) };
   }
 
+  @ApiOperation({ summary: 'Update' })
   @Put('lead-scoring/rules/:id')
   @Permissions('crm.lead-scoring.update')
   async update(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateLeadScoringRuleSchema) dto: UpdateLeadScoringRuleInput) {
     return { data: await this.svc.updateRule(req.user.tenantId, id, dto) };
   }
 
+  @ApiOperation({ summary: 'Remove' })
   @Delete('lead-scoring/rules/:id')
   @Permissions('crm.lead-scoring.delete')
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return { data: await this.svc.deleteRule(req.user.tenantId, id) };
   }
 
+  @ApiOperation({ summary: 'Recalc One' })
   @Post('leads/:id/recalculate-score')
   @Permissions('crm.lead-scoring.recalculate')
   async recalcOne(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return { data: await this.svc.recalculateScore(req.user.tenantId, id) };
   }
 
+  @ApiOperation({ summary: 'Recalc All' })
   @Post('lead-scoring/recalculate-all')
   @Permissions('crm.lead-scoring.recalculate')
   async recalcAll(@Req() req: AuthenticatedRequest) {

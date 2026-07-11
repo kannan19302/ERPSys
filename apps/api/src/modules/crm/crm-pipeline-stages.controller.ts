@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Param, Req, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
@@ -26,18 +26,21 @@ interface AuthenticatedRequest extends Request {
 export class CrmPipelineStagesController {
   constructor(private readonly svc: CrmPipelineStagesService) {}
 
+  @ApiOperation({ summary: 'List' })
   @Get('pipelines/:pipelineId/stages')
   @Permissions('crm.pipelines.read')
   async list(@Req() req: AuthenticatedRequest, @Param('pipelineId') pipelineId: string) {
     return this.svc.listStages(req.user.tenantId, pipelineId);
   }
 
+  @ApiOperation({ summary: 'Get One' })
   @Get('pipelines/:pipelineId/stages/:id')
   @Permissions('crm.pipelines.read')
   async getOne(@Req() req: AuthenticatedRequest, @Param('pipelineId') pipelineId: string, @Param('id') id: string) {
     return this.svc.getStage(req.user.tenantId, pipelineId, id);
   }
 
+  @ApiOperation({ summary: 'Create' })
   @Post('pipelines/:pipelineId/stages')
   @Permissions('crm.pipelines.create')
   async create(
@@ -48,6 +51,7 @@ export class CrmPipelineStagesController {
     return this.svc.createStage(req.user.tenantId, pipelineId, dto);
   }
 
+  @ApiOperation({ summary: 'Update' })
   @Put('pipelines/:pipelineId/stages/:id')
   @Permissions('crm.pipelines.update')
   async update(
@@ -59,12 +63,14 @@ export class CrmPipelineStagesController {
     return this.svc.updateStage(req.user.tenantId, pipelineId, id, dto);
   }
 
+  @ApiOperation({ summary: 'Remove' })
   @Delete('pipelines/:pipelineId/stages/:id')
   @Permissions('crm.pipelines.delete')
   async remove(@Req() req: AuthenticatedRequest, @Param('pipelineId') pipelineId: string, @Param('id') id: string) {
     return this.svc.deleteStage(req.user.tenantId, pipelineId, id);
   }
 
+  @ApiOperation({ summary: 'Reorder' })
   @Post('pipelines/:pipelineId/stages/reorder')
   @Permissions('crm.pipelines.update')
   async reorder(

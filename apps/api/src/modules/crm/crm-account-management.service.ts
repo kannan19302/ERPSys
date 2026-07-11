@@ -601,7 +601,7 @@ export class CrmAccountManagementService {
   // AccountPlan
   async createAccountPlan(tenantId: string, orgId: string, data: any) {
     return prisma.accountPlan.create({
-      data: { tenantId, orgId, ...data },
+      data: { ...data, tenantId, orgId },
     });
   }
 

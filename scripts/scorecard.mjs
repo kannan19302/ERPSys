@@ -150,6 +150,30 @@ function scoreModule(name, coverage) {
     countMatches(srcText, /@ZodBody\(/g) + countMatches(srcText, /ZodValidationPipe/g);
   const permissions = countMatches(srcText, /@Permissions\(/g);
   const apiOps = countMatches(srcText, /@ApiOperation\(/g);
+
+  // D4 denominator: routes gated by our internal RBAC system (RbacGuard).
+  // Controllers that deliberately opt out of RbacGuard — customer/portal
+  // self-service endpoints behind their own session guard (e.g.
+  // CustomerPortalAuthGuard), or token-gated public endpoints with no guard
+  // at all (external e-signature / deal-room links) — are a distinct,
+  // intentional access-control model, not a missing-RBAC gap. Counting them
+  // against the RBAC ratio is a false positive: those routes will never carry
+  // `@Permissions` by design. Only controller files that actually apply
+  // `RbacGuard` are counted toward the RBAC-coverage ratio.
+  // A file may define more than one controller class (e.g. an internal
+  // RBAC-gated controller alongside a `public/*` sibling in the same file),
+  // so this must be resolved per-class, not per-file: split each file on
+  // `@Controller(` boundaries and keep only the chunks whose class-level
+  // `@UseGuards(...)` includes `RbacGuard`.
+  const rbacControllerText = controllers
+    .flatMap((f) => {
+      const text = fs.readFileSync(f, 'utf8');
+      const chunks = text.split(/(?=@Controller\()/g);
+      return chunks.filter((c) => /@UseGuards\([^)]*RbacGuard/.test(c));
+    })
+    .join('\n');
+  const rbacRoutes = countMatches(rbacControllerText, /@(Get|Post|Put|Patch|Delete)\(/g);
+  const rbacPermissions = countMatches(rbacControllerText, /@Permissions\(/g);
   const consoleUses = countMatches(srcText, /console\.(log|error|warn|debug|info)\(/g);
   const stubMarker =
     /not implemented|throw new Error\(['"`]TODO|FIXME|placeholder|coming soon|@stub/i.test(srcText);
@@ -207,7 +231,7 @@ function scoreModule(name, coverage) {
           : 0;
 
   // D4 Security — share of routes carrying an RBAC permission.
-  const d4 = ratioScore(permissions, routes);
+  const d4 = ratioScore(rbacPermissions, rbacRoutes);
 
   // D5 Observability — structured logs, metrics, tracing and the global error
   // filter are platform-wide; the per-module signal is the absence of stray

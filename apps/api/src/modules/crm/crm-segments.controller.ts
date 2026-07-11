@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Param, Req, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
@@ -24,42 +24,49 @@ interface AuthenticatedRequest extends Request {
 export class CrmSegmentsController {
   constructor(private readonly svc: CrmSegmentsService) {}
 
+  @ApiOperation({ summary: 'List' })
   @Get('segments')
   @Permissions('crm.segments.read')
   async list(@Req() req: AuthenticatedRequest) {
     return this.svc.listSegments(req.user.tenantId);
   }
 
+  @ApiOperation({ summary: 'Get One' })
   @Get('segments/:id')
   @Permissions('crm.segments.read')
   async getOne(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.svc.getSegment(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Create' })
   @Post('segments')
   @Permissions('crm.segments.create')
   async create(@Req() req: AuthenticatedRequest, @ZodBody(createSegmentSchema) dto: CreateSegmentInput) {
     return this.svc.createSegment(req.user.tenantId, dto);
   }
 
+  @ApiOperation({ summary: 'Update' })
   @Put('segments/:id')
   @Permissions('crm.segments.update')
   async update(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(updateSegmentSchema) dto: UpdateSegmentInput) {
     return this.svc.updateSegment(req.user.tenantId, id, dto);
   }
 
+  @ApiOperation({ summary: 'Remove' })
   @Delete('segments/:id')
   @Permissions('crm.segments.delete')
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.svc.deleteSegment(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Refresh' })
   @Post('segments/:id/refresh')
   @Permissions('crm.segments.update')
   async refresh(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.svc.evaluate(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Members' })
   @Get('segments/:id/members')
   @Permissions('crm.segments.read')
   async members(@Req() req: AuthenticatedRequest, @Param('id') id: string) {

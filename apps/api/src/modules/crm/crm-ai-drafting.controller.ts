@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { z } from 'zod';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { TrackChanges } from '../../common/decorators/track-changes.decorator';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { CrmAiDraftingService, CrmDraftTone } from './crm-ai-drafting.service';
 
 interface AuthenticatedRequest extends Request {
@@ -15,6 +17,12 @@ const VALID_TONES: CrmDraftTone[] = ['PROFESSIONAL', 'FRIENDLY', 'URGENT', 'CONC
 function resolveTone(tone?: string): CrmDraftTone {
   return VALID_TONES.includes(tone as CrmDraftTone) ? (tone as CrmDraftTone) : 'PROFESSIONAL';
 }
+
+const updateDraftSchema = z.object({
+  subject: z.string().optional(),
+  body: z.string().min(1),
+});
+type UpdateDraftInput = z.infer<typeof updateDraftSchema>;
 
 /**
  * AI-assisted email/quote drafting API (Up Next item 41).
@@ -100,7 +108,7 @@ export class CrmAiDraftingController {
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('draftId') draftId: string,
-    @Body() body: { subject?: string; body: string },
+    @ZodBody(updateDraftSchema) body: UpdateDraftInput,
   ) {
     return this.svc.updateDraftText(req.user.tenantId, draftId, body.subject, body.body);
   }
