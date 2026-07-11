@@ -10172,5 +10172,73 @@ model Form1099Batch {
   @@map("form_1099_batches")
 }
 
+// ── ECONOMIC NEXUS MONITORING (sales/use-tax registration threshold tracking) ──────
+
+model EconomicNexusThreshold {
+  id                    String    @id @default(cuid())
+  tenantId              String    @map("tenant_id")
+  country               String    @default("US")
+  state                 String
+  revenueThreshold      Decimal   @default(100000) @db.Decimal(15, 2) @map("revenue_threshold")
+  transactionThreshold  Int?      @map("transaction_threshold")
+  measurementPeriod     String    @default("TRAILING_12_MONTHS") @map("measurement_period") // TRAILING_12_MONTHS, CALENDAR_YEAR, PRIOR_CALENDAR_YEAR
+  includesExemptSales   Boolean   @default(false) @map("includes_exempt_sales")
+  marketplaceFacilitatorLaw Boolean @default(true) @map("marketplace_facilitator_law")
+  effectiveFrom         DateTime  @default(now()) @map("effective_from")
+  sourceUrl             String?   @map("source_url")
+  notes                 String?
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, country, state])
+  @@index([tenantId])
+  @@map("economic_nexus_thresholds")
+}
+
+model NexusMonitoringSnapshot {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  country           String    @default("US")
+  state             String
+  periodStart       DateTime  @map("period_start")
+  periodEnd         DateTime  @map("period_end")
+  totalRevenue      Decimal   @default(0) @db.Decimal(15, 2) @map("total_revenue")
+  transactionCount  Int       @default(0) @map("transaction_count")
+  revenueThreshold  Decimal   @default(0) @db.Decimal(15, 2) @map("revenue_threshold")
+  transactionThreshold Int?   @map("transaction_threshold")
+  revenuePct        Decimal   @default(0) @db.Decimal(6, 2) @map("revenue_pct")
+  transactionPct    Decimal?  @db.Decimal(6, 2) @map("transaction_pct")
+  status            String    @default("NOT_MET") @map("status") // NOT_MET, APPROACHING, EXCEEDED, REGISTERED
+  computedAt        DateTime  @default(now()) @map("computed_at")
+
+  @@index([tenantId])
+  @@index([tenantId, state])
+  @@index([tenantId, computedAt])
+  @@map("nexus_monitoring_snapshots")
+}
+
+model NexusRegistration {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  country           String    @default("US")
+  state             String
+  status            String    @default("NOT_REGISTERED") @map("status") // NOT_REGISTERED, PENDING, REGISTERED, DEREGISTERED
+  registrationNumber String?  @map("registration_number")
+  registeredAt      DateTime? @map("registered_at")
+  effectiveDate     DateTime? @map("effective_date")
+  filingFrequency   String?   @map("filing_frequency") // MONTHLY, QUARTERLY, ANNUAL
+  nextFilingDueDate DateTime? @map("next_filing_due_date")
+  deregisteredAt    DateTime? @map("deregistered_at")
+  notes             String?
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, country, state])
+  @@index([tenantId])
+  @@map("nexus_registrations")
+}
+
 
 

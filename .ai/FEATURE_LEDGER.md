@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T04:34:38.415Z
+> Last generated: 2026-07-11T05:11:45.528Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1829 features** across 33 modules
+## System total: **1843 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 488 |
+| [advanced-finance](#advanced-finance) | 502 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -237,7 +237,7 @@
 
 ## advanced-finance
 
-488 features
+502 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -729,6 +729,20 @@
 | POST | `/advanced-finance/1099/batches/:id/efile` | Submit a 1099 batch to the simulated IRS FIRE e-file system | `finance.tax1099.read` |
 | GET | `/advanced-finance/1099/summary` | 1099 dashboard summary stats for a tax year | `finance.tax1099.read` |
 | GET | `/advanced-finance/1099/state-filing-requirements` | Reference: state 1099 filing requirements (CFS program participation) | `finance.tax1099.read` |
+| GET | `/advanced-finance/tax/nexus/thresholds` | List per-state economic nexus thresholds configured for this tenant | `finance.tax-nexus.read` |
+| POST | `/advanced-finance/tax/nexus/thresholds/seed-defaults` | Seed reference US state economic-nexus thresholds (idempotent, does not overwrite existing rows) | `finance.tax-nexus.read` |
+| POST | `/advanced-finance/tax/nexus/thresholds` | Create/override a state economic nexus threshold | `finance.tax-nexus.manage` |
+| PATCH | `/advanced-finance/tax/nexus/thresholds/:id` | Update a state economic nexus threshold | `finance.tax-nexus.manage` |
+| DELETE | `/advanced-finance/tax/nexus/thresholds/:id` | Delete a state economic nexus threshold | `finance.tax-nexus.manage` |
+| POST | `/advanced-finance/tax/nexus/monitor/refresh` | Recompute trailing-12-month per-state nexus monitoring snapshots from posted invoices | `finance.tax-nexus.manage` |
+| GET | `/advanced-finance/tax/nexus/monitor` | Latest per-state nexus monitoring snapshot (revenue/transaction % of threshold, status) | `finance.tax-nexus.manage` |
+| GET | `/advanced-finance/tax/nexus/monitor/:state/history` | Historical nexus monitoring snapshots for one state (trend over time) | `finance.tax-nexus.read` |
+| GET | `/advanced-finance/tax/nexus/dashboard` | Economic nexus dashboard — counts by status, exceeded/approaching state lists | `finance.tax-nexus.read` |
+| GET | `/advanced-finance/tax/nexus/registrations` | List nexus registrations (states where the tenant is/was registered to collect tax) | `finance.tax-nexus.read` |
+| GET | `/advanced-finance/tax/nexus/registrations/:id` | Get a single nexus registration | `finance.tax-nexus.read` |
+| POST | `/advanced-finance/tax/nexus/registrations` | Create a nexus registration record for a state | `finance.tax-nexus.read` |
+| PATCH | `/advanced-finance/tax/nexus/registrations/:id` | Update a nexus registration (status transitions, filing frequency, dates) | `finance.tax-nexus.manage` |
+| DELETE | `/advanced-finance/tax/nexus/registrations/:id` | Delete a nexus registration record | `finance.tax-nexus.manage` |
 
 ## advanced-hr
 

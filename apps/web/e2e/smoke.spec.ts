@@ -25,6 +25,8 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/finance/advanced/allocations' },
   { path: '/finance/advanced/accounting-books' },
   { path: '/finance/advanced/corporate-cards/corp-card-sarah' },
+  { path: '/finance/advanced/1099-reporting' },
+  { path: '/finance/advanced/tax-nexus' },
   { path: '/crm/contacts' },
   { path: '/crm/leads' },
   { path: '/inventory/products' },

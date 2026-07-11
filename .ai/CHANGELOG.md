@@ -2,6 +2,66 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-11] Finance: Economic Nexus Monitoring + 1099 E2E verification (module deepening)
+
+**Why**: with the P0-P2 gates clean (typecheck, full API suite) and the Up Next queue's
+top items being (1) `[e2e-unverified]` 1099 reporting page and (2) `[benchmark]` automated
+sales/use-tax nexus monitoring (RICE 72 — the only remaining un-shipped benchmark gap on
+the Finance board), this cycle closed both in one batch since they share the same
+`TaxEngineDeepService`/`advanced-finance` surface. **Note on scope**: this batch is
+intentionally sized to what a single cycle's real engineering time supports with genuine
+DB+API+UI+tests (no stubs/padding) — well under the newly-raised 100+/15,000+ LOC
+aspirational floor in `.ai/AUTOPILOT.md`. Per that doc's own allowance to log why when
+under floor: hitting 100+ *verifiable* features in one pass would require either padding
+trivial/duplicate endpoints (explicitly banned) or skipping real verification, both of
+which this session refused to do. The remainder of the 100+ target is queued as
+additional Finance Up Next items for subsequent cycles (see Up Next below).
+
+**What shipped (DB + API + UI + tests)**:
+- Schema (migration `20260711044719_finance_economic_nexus_monitoring`): `EconomicNexusThreshold`
+  (per-state revenue/transaction registration thresholds, measurement period, marketplace-facilitator
+  flag, source URL), `NexusMonitoringSnapshot` (append-only computed history: trailing-12-month
+  revenue/transaction count vs. threshold, % of threshold, NOT_MET/APPROACHING/EXCEEDED/REGISTERED
+  status), `NexusRegistration` (per-state registration lifecycle: NOT_REGISTERED/PENDING/REGISTERED/
+  DEREGISTERED, filing frequency, next-filing-due date).
+- API (`EconomicNexusService`, 12 endpoints on `AdvancedFinanceController` under
+  `/advanced-finance/tax/nexus/*`): threshold CRUD + idempotent seed of 20 reference US state
+  economic-nexus rules (post-Wayfair 2018+, sourced per-state), trailing-12-month monitoring
+  recompute engine (aggregates posted-invoice revenue/count by customer state, resolves both
+  2-letter codes and full state names via a validated USPS lookup table — does not blindly
+  truncate unrecognized values into a wrong state code), latest-snapshot + per-state history +
+  dashboard summary endpoints, registration CRUD with automatic `registeredAt`/`deregisteredAt`
+  stamping on status transitions. New permissions `finance.tax-nexus.read` / `finance.tax-nexus.manage`
+  registered in `packages/shared/src/permissions/registry.ts`.
+- UI: new `/finance/advanced/tax-nexus` page (Monitor / Thresholds / Registrations tabs,
+  DataTable-based, "Seed Reference Thresholds" + "Recompute" actions gated behind
+  `ProtectedComponent`, "Mark Registered" row action for EXCEEDED/APPROACHING states); nav +
+  breadcrumb registration in `moduleNav.tsx`/`registry.tsx`.
+- Tests: 18 new unit tests (`economic-nexus.service.spec.ts`) covering threshold CRUD/dedup,
+  default-seed idempotency, monitoring aggregation + EXCEEDED/APPROACHING/NOT_MET/REGISTERED
+  status logic, the state-name-resolution correctness fix, and explicit tenant-isolation
+  assertions (every read/write scoped by `tenantId`).
+- `[e2e-unverified]` closeout: added `/finance/advanced/1099-reporting` and
+  `/finance/advanced/tax-nexus` to `apps/web/e2e/smoke.spec.ts` `SMOKE_ROUTES` and ran the full
+  Playwright smoke suite against a live stack (docker Postgres + `nest start --watch` API +
+  `next dev` web, seeded via `db:seed`) — **20/20 passing**, including both new routes. Manually
+  verified the read endpoints (`GET .../thresholds`, `.../dashboard`) respond correctly against
+  the live API with a real JWT; mutation endpoints are additionally protected by CSRF (confirmed
+  working — rejected an unauthenticated-CSRF curl POST as expected).
+- Gates: `pnpm turbo typecheck` 10/10 packages clean; full API suite 167/167 test files,
+  2233/2233 tests passing (was 2215 before this cycle); zero skips.
+- Code review (self-review via `code-reviewer` subagent) caught and fixed 3 real issues before
+  ship: missing tenant-isolation tests (added), a permission-code inconsistency vs. the
+  `module.resource.action` convention (`finance.tax.nexus.*` → `finance.tax-nexus.*`), and a
+  state-extraction bug that would have silently truncated full state names like "Texas" → "TE"
+  (fixed with a validated USPS code + full-name lookup table, tested).
+
+**Feature count**: Finance ledger stays reported at 515+ (this batch adds ~12 genuinely new
+reachable+tested+RBAC-guarded features: 4 threshold endpoints + 1 seed + 1 refresh + 3 read
+endpoints + 4 registration endpoints, per `.ai/MODULE_FOCUS.md` §2 definition) — see
+`.ai/MODULE_FOCUS.md` §6 Feature Ledger for the row-by-row count; a full `feature-ledger.mjs`
+regeneration is queued for a future cycle alongside the remaining 100+ floor items.
+
 ## [2026-07-11] Finance: 1099 / Vendor Tax Reporting (module deepening, focus module crosses 500-feature target)
 
 **Why**: with the `MARKET_BENCHMARK.md` Finance Gap Backlog fully closed (all seeded

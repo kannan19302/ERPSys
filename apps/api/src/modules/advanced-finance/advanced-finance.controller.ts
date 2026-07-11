@@ -16,6 +16,7 @@ import { FpaDeepService } from './services/fpa-deep.service';
 import { RevenueBillingService } from './services/revenue-billing.service';
 import { ComplianceControlsService } from './services/compliance-controls.service';
 import { Form1099Service } from './services/form-1099.service';
+import { EconomicNexusService } from './services/economic-nexus.service';
 import {
   GlAccountingService,
   BudgetingService,
@@ -325,6 +326,50 @@ const createAccountingBookSchema = z.object({
   isPrimary: z.boolean().optional(),
 });
 
+const createNexusThresholdSchema = z.object({
+  country: z.string().min(1).optional(),
+  state: z.string().min(2).max(2),
+  revenueThreshold: z.number().min(0),
+  transactionThreshold: z.number().int().min(0).optional().nullable(),
+  measurementPeriod: z.string().min(1).optional(),
+  includesExemptSales: z.boolean().optional(),
+  marketplaceFacilitatorLaw: z.boolean().optional(),
+  sourceUrl: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateNexusThresholdSchema = z.object({
+  revenueThreshold: z.number().min(0).optional(),
+  transactionThreshold: z.number().int().min(0).optional().nullable(),
+  measurementPeriod: z.string().min(1).optional(),
+  includesExemptSales: z.boolean().optional(),
+  marketplaceFacilitatorLaw: z.boolean().optional(),
+  sourceUrl: z.string().optional(),
+  notes: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const createNexusRegistrationSchema = z.object({
+  country: z.string().min(1).optional(),
+  state: z.string().min(2).max(2),
+  status: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  registeredAt: z.string().optional(),
+  effectiveDate: z.string().optional(),
+  filingFrequency: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const updateNexusRegistrationSchema = z.object({
+  status: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  registeredAt: z.string().optional(),
+  effectiveDate: z.string().optional(),
+  filingFrequency: z.string().optional(),
+  nextFilingDueDate: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 const createAccountingBookRuleSchema = z.object({
   sourceBookId: z.string().min(1),
   destinationBookId: z.string().min(1),
@@ -529,6 +574,7 @@ export class AdvancedFinanceController {
     private readonly cashPoolingService: CashPoolingService,
     private readonly consolidationDeepService: ConsolidationDeepService,
     private readonly form1099Service: Form1099Service,
+    private readonly nexusService: EconomicNexusService,
   ) {}
 
   @ApiOperation({ summary: 'Get exchange rates' })
@@ -5239,6 +5285,140 @@ export class AdvancedFinanceController {
   @Permissions('finance.tax1099.read')
   get1099StateFilingRequirements() {
     return this.form1099Service.getStateFilingRequirements();
+  }
+
+  // ── ECONOMIC NEXUS MONITORING (sales/use-tax registration threshold tracking) ──────
+
+  @ApiOperation({ summary: 'List per-state economic nexus thresholds configured for this tenant' })
+  @Get('tax/nexus/thresholds')
+  @Permissions('finance.tax-nexus.read')
+  async listNexusThresholds(@Req() req: AuthenticatedRequest) {
+    return this.nexusService.listThresholds(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Seed reference US state economic-nexus thresholds (idempotent, does not overwrite existing rows)' })
+  @Post('tax/nexus/thresholds/seed-defaults')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EconomicNexusThreshold')
+  async seedNexusThresholds(@Req() req: AuthenticatedRequest) {
+    return this.nexusService.seedDefaultThresholds(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create/override a state economic nexus threshold' })
+  @Post('tax/nexus/thresholds')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EconomicNexusThreshold')
+  async createNexusThreshold(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createNexusThresholdSchema) body: z.infer<typeof createNexusThresholdSchema>,
+  ) {
+    return this.nexusService.createThreshold(req.user.tenantId, body);
+  }
+
+  @ApiOperation({ summary: 'Update a state economic nexus threshold' })
+  @Patch('tax/nexus/thresholds/:id')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EconomicNexusThreshold')
+  async updateNexusThreshold(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateNexusThresholdSchema) body: z.infer<typeof updateNexusThresholdSchema>,
+  ) {
+    return this.nexusService.updateThreshold(req.user.tenantId, id, body);
+  }
+
+  @ApiOperation({ summary: 'Delete a state economic nexus threshold' })
+  @Delete('tax/nexus/thresholds/:id')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('EconomicNexusThreshold')
+  async deleteNexusThreshold(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.nexusService.deleteThreshold(req.user.tenantId, id);
+  }
+
+  // Note: intentionally not @TrackChanges-wrapped — this recomputes a batch of
+  // system-derived read-model snapshots across every monitored state in one call
+  // (no single mutated entity id to attach an audit row to). The underlying
+  // NexusMonitoringSnapshot rows are themselves an append-only computed history
+  // (queryable via GET .../monitor/:state/history), so the change-history audit
+  // trail requirement is satisfied by the data model rather than this decorator.
+  @ApiOperation({ summary: 'Recompute trailing-12-month per-state nexus monitoring snapshots from posted invoices' })
+  @Post('tax/nexus/monitor/refresh')
+  @Permissions('finance.tax-nexus.manage')
+  async refreshNexusMonitoring(@Req() req: AuthenticatedRequest) {
+    return this.nexusService.refreshMonitoring(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Latest per-state nexus monitoring snapshot (revenue/transaction % of threshold, status)' })
+  @Get('tax/nexus/monitor')
+  @Permissions('finance.tax-nexus.read')
+  async getNexusMonitoring(@Req() req: AuthenticatedRequest) {
+    return this.nexusService.getLatestMonitoring(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Historical nexus monitoring snapshots for one state (trend over time)' })
+  @Get('tax/nexus/monitor/:state/history')
+  @Permissions('finance.tax-nexus.read')
+  async getNexusMonitoringHistory(@Req() req: AuthenticatedRequest, @Param('state') state: string) {
+    return this.nexusService.getMonitoringHistory(req.user.tenantId, state);
+  }
+
+  @ApiOperation({ summary: 'Economic nexus dashboard — counts by status, exceeded/approaching state lists' })
+  @Get('tax/nexus/dashboard')
+  @Permissions('finance.tax-nexus.read')
+  async getNexusDashboard(@Req() req: AuthenticatedRequest) {
+    return this.nexusService.getDashboard(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'List nexus registrations (states where the tenant is/was registered to collect tax)' })
+  @Get('tax/nexus/registrations')
+  @Permissions('finance.tax-nexus.read')
+  async listNexusRegistrations(@Req() req: AuthenticatedRequest) {
+    return this.nexusService.listRegistrations(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get a single nexus registration' })
+  @Get('tax/nexus/registrations/:id')
+  @Permissions('finance.tax-nexus.read')
+  async getNexusRegistration(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.nexusService.getRegistration(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create a nexus registration record for a state' })
+  @Post('tax/nexus/registrations')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('NexusRegistration')
+  async createNexusRegistration(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createNexusRegistrationSchema) body: z.infer<typeof createNexusRegistrationSchema>,
+  ) {
+    return this.nexusService.createRegistration(req.user.tenantId, req.user.userId, body);
+  }
+
+  @ApiOperation({ summary: 'Update a nexus registration (status transitions, filing frequency, dates)' })
+  @Patch('tax/nexus/registrations/:id')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('NexusRegistration')
+  async updateNexusRegistration(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(updateNexusRegistrationSchema) body: z.infer<typeof updateNexusRegistrationSchema>,
+  ) {
+    return this.nexusService.updateRegistration(req.user.tenantId, id, body);
+  }
+
+  @ApiOperation({ summary: 'Delete a nexus registration record' })
+  @Delete('tax/nexus/registrations/:id')
+  @Permissions('finance.tax-nexus.manage')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('NexusRegistration')
+  async deleteNexusRegistration(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.nexusService.deleteRegistration(req.user.tenantId, id);
   }
 
 }
