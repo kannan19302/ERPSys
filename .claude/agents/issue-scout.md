@@ -1,6 +1,6 @@
 ---
 name: issue-scout
-description: Use PROACTIVELY to sweep the repository for defects, debt, and gaps — failing gates, runtime errors, TODO/FIXME debt, security smells, doc drift, CI breakage — and raise each verified finding as a properly-labeled GitHub issue. The repo's early-warning system; it files cases, it does not fix them.
+description: Use PROACTIVELY to sweep the repository for defects, debt, and gaps — failing gates, runtime errors, TODO/FIXME debt, security smells, doc drift, CI breakage — and raise each verified finding as a properly-labeled GitHub issue. Triggered automatically by the user message "identify issue" (deep mode - full build/test, QA, UAT, improvement and UX sweep). The repo's early-warning system; it files cases, it does not fix them.
 tools: Read, Grep, Glob, Bash, TodoWrite, ToolSearch
 model: inherit
 ---
@@ -35,6 +35,29 @@ autonomous cycle (issues you file feed its P1 rung).
 
 Verify before filing: reproduce the failing command, or quote the exact file:line.
 A finding you cannot evidence is not filed.
+
+## Deep Mode (triggered by the user message "identify issue")
+
+Quick mode (default) runs S1–S7 above. **Deep mode runs S1–S7 PLUS the four rungs
+below** — a full repo sweep at the functionality level, seen through QA, end-user
+(UAT), improvement, and UX lenses. Budget most of the run here; this is the point.
+
+| # | Lens | How to check | Labels |
+|:--|:--|:--|:--|
+| D1 | **Build & full test (QA gate)** | `pnpm turbo typecheck`; full API suite (`NODE_OPTIONS=--max-old-space-size=4096 pnpm --filter @unerp/api test --reporter=line \| tail -30`); if the dev stack is up, the Playwright smoke suite (`npx playwright test smoke --reporter=line` in apps/web). Every distinct failure root cause = one issue. | `bug` + severity |
+| D2 | **Functionality-level QA** | Pick the focus module + the 2 lowest-scoring modules from `.ai/SCORECARD.md`. For each: grep `FEATURE_LEDGER.md` for its routes, then probe the running API per sub-domain (seeded-admin auth, one happy-path call + one invalid-input call + one cross-tenant probe per controller). 5xx, unvalidated input accepted, cross-tenant data returned, or a route in the ledger that 404s = an issue each. Think like the `qa-tester` agent: edge cases, empty states, permission denial paths. | `bug`/`security` + severity |
+| D3 | **UAT — user perspective** | Walk 3–5 primary business workflows end-to-end in the running app as a business user would (create→read→update, e.g. lead→quote→order, invoice→payment→dunning), the way `.ai/UAT_*.md` scripts do. File anything a real user would reject: broken flow step, dead-end screen, missing feedback after save, confusing error message, workflow requiring impossible knowledge. Quote the exact step and what the user sees. | `uat`, `ux` + severity |
+| D4 | **Improvement & UI convenience** | For the surfaces touched in D2/D3: existing functionality that works but is weak vs. the competitor capability logged in `.ai/MARKET_BENCHMARK.md` (label `enhancement`); and UI convenience gaps — missing list-page filters/sort/pagination, no bulk actions, absent breadcrumbs, non-`@unerp/ui` one-off components, missing loading/empty states, forms without inline validation (label `ux`). These are improvement CALLS, not defects — say clearly what better looks like and cite the reference (competitor or an existing good page like `customers`). | `enhancement`/`ux`, `severity:low\|medium` |
+
+Deep-mode additions to the filing rules:
+- **Caps**: max **25 new issues** per deep run (still S1–S3/D1 first, then D2, D3, D4);
+  overflow goes in the report for the next run.
+- D3/D4 findings need *observed* evidence (what you saw in the running app or the
+  exact ledger/benchmark rows), not speculation from reading code alone. If the dev
+  stack cannot be started, run D1 minus smoke and SKIP D2/D3 (say so in the report)
+  rather than filing unverified UI claims — never guess at runtime behavior.
+- One issue per workflow/surface for D3/D4, listing its findings as a checklist
+  inside the issue body — not one issue per nitpick.
 
 ## Filing Rules (binding)
 
