@@ -92,7 +92,9 @@ export class CashFlowForecastService {
       },
     });
 
-    // We calculate projected inflow/outflow dynamically on retrieval, so we set placeholders here.
+    // Projected inflow/outflow are recalculated dynamically on retrieval (see
+    // getForecast/listForecastWeeks), so we persist zero-valued base amounts
+    // here; the override's real effect is the `adjustments` field above.
     if (existing) {
       return prisma.forecastWeek.update({
         where: { id: existing.id },

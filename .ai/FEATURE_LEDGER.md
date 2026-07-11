@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T18:26:09.441Z
+> Last generated: 2026-07-11T11:26:27.373Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,12 +9,12 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1807 features** across 33 modules
+## System total: **1905 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
 | [admin](#admin) | 181 |
-| [advanced-finance](#advanced-finance) | 466 |
+| [advanced-finance](#advanced-finance) | 502 |
 | [advanced-hr](#advanced-hr) | 90 |
 | [ai](#ai) | 13 |
 | [analytics](#analytics) | 12 |
@@ -22,7 +22,7 @@
 | [auth](#auth) | 17 |
 | [builder](#builder) | 177 |
 | [communication](#communication) | 41 |
-| [crm](#crm) | 338 |
+| [crm](#crm) | 400 |
 | [devops](#devops) | 3 |
 | [documents](#documents) | 21 |
 | [ecommerce](#ecommerce) | 23 |
@@ -237,7 +237,7 @@
 
 ## advanced-finance
 
-466 features
+502 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -704,9 +704,45 @@
 | POST | `/advanced-finance/consolidation/translations` | Execute multi-currency consolidation translation | `finance.report.create` |
 | GET | `/advanced-finance/consolidation/cta/:period` | Calculate cumulative translation adjustment (CTA) amount | `finance.report.read` |
 | POST | `/advanced-finance/consolidation/runs/:id/eliminations` | Post intercompany consolidation eliminations | `finance.report.create` |
-| GET | `/advanced-finance/consolidation/statements/:period` | Get consolidated P&L and Balance Sheet financial statements | `finance.report.read` |
+| GET | `/advanced-finance/consolidation/statements/:period` | Get consolidated P&L and Balance Sheet financial statements | `finance.report.create` |
 | POST | `/advanced-finance/consolidation/runs/:id/lock` | Lock consolidated book period | `finance.report.create` |
 | GET | `/advanced-finance/consolidation/runs` | List consolidated book runs | `finance.report.create` |
+| GET | `/advanced-finance/1099/vendors` | List vendors with 1099 profiles and YTD reportable payments | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/vendor-profiles/:vendorId` | Get a vendor 1099 profile | `finance.tax1099.read` |
+| PATCH | `/advanced-finance/1099/vendor-profiles/:vendorId` | Create or update a vendor 1099 profile | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/vendor-profiles/:vendorId/tin-match` | Run a simulated TIN match check for a vendor | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/vendor-profiles/:vendorId/backup-withholding` | Toggle backup withholding for a vendor | `finance.tax1099.manage` |
+| GET | `/advanced-finance/1099/vendors/:vendorId/w9-checklist` | W-9 / TIN compliance checklist for a vendor | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/threshold-report` | $600 IRS threshold report — vendors crossing the 1099 reporting threshold | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/generate` | Generate draft 1099 forms for all eligible vendors in a tax year | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/forms` | List 1099 forms | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/forms/:id` | Get a 1099 form by ID | `finance.tax1099.read` |
+| PATCH | `/advanced-finance/1099/forms/:id` | Edit box amounts on a draft 1099 form | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/forms/:id/mark-ready` | Mark a 1099 form ready for filing | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/forms/:id/file` | File a 1099 form (outside of a batch) | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/forms/:id/void` | Void a 1099 form | `finance.tax1099.manage` |
+| POST | `/advanced-finance/1099/forms/:id/correct` | Create a corrected 1099 form linked to the original filed form | `finance.tax1099.manage` |
+| GET | `/advanced-finance/1099/forms/:id/pdf-data` | Printable/e-file summary payload for a 1099 form | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/batches` | Bundle READY 1099 forms into an e-file batch | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/batches` | List 1099 e-file batches | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/batches/:id` | Get a 1099 e-file batch with its forms | `finance.tax1099.read` |
+| POST | `/advanced-finance/1099/batches/:id/efile` | Submit a 1099 batch to the simulated IRS FIRE e-file system | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/summary` | 1099 dashboard summary stats for a tax year | `finance.tax1099.read` |
+| GET | `/advanced-finance/1099/state-filing-requirements` | Reference: state 1099 filing requirements (CFS program participation) | `finance.tax1099.read` |
+| GET | `/advanced-finance/tax/nexus/thresholds` | List per-state economic nexus thresholds configured for this tenant | `finance.tax-nexus.read` |
+| POST | `/advanced-finance/tax/nexus/thresholds/seed-defaults` | Seed reference US state economic-nexus thresholds (idempotent, does not overwrite existing rows) | `finance.tax-nexus.read` |
+| POST | `/advanced-finance/tax/nexus/thresholds` | Create/override a state economic nexus threshold | `finance.tax-nexus.manage` |
+| PATCH | `/advanced-finance/tax/nexus/thresholds/:id` | Update a state economic nexus threshold | `finance.tax-nexus.manage` |
+| DELETE | `/advanced-finance/tax/nexus/thresholds/:id` | Delete a state economic nexus threshold | `finance.tax-nexus.manage` |
+| POST | `/advanced-finance/tax/nexus/monitor/refresh` | Recompute trailing-12-month per-state nexus monitoring snapshots from posted invoices | `finance.tax-nexus.manage` |
+| GET | `/advanced-finance/tax/nexus/monitor` | Latest per-state nexus monitoring snapshot (revenue/transaction % of threshold, status) | `finance.tax-nexus.manage` |
+| GET | `/advanced-finance/tax/nexus/monitor/:state/history` | Historical nexus monitoring snapshots for one state (trend over time) | `finance.tax-nexus.read` |
+| GET | `/advanced-finance/tax/nexus/dashboard` | Economic nexus dashboard — counts by status, exceeded/approaching state lists | `finance.tax-nexus.read` |
+| GET | `/advanced-finance/tax/nexus/registrations` | List nexus registrations (states where the tenant is/was registered to collect tax) | `finance.tax-nexus.read` |
+| GET | `/advanced-finance/tax/nexus/registrations/:id` | Get a single nexus registration | `finance.tax-nexus.read` |
+| POST | `/advanced-finance/tax/nexus/registrations` | Create a nexus registration record for a state | `finance.tax-nexus.read` |
+| PATCH | `/advanced-finance/tax/nexus/registrations/:id` | Update a nexus registration (status transitions, filing frequency, dates) | `finance.tax-nexus.manage` |
+| DELETE | `/advanced-finance/tax/nexus/registrations/:id` | Delete a nexus registration record | `finance.tax-nexus.manage` |
 
 ## advanced-hr
 
@@ -1118,10 +1154,20 @@
 
 ## crm
 
-338 features
+400 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
+| POST | `/crm/cadences` | Create a multi-channel sales cadence | `crm.settings.create` |
+| GET | `/crm/cadences/:id` | Get a cadence with steps and auto-enroll rules | `crm.settings.read` |
+| GET | `/crm/cadences/auto-enroll-rules/list` | List auto-enroll rules | `crm.settings.read` |
+| POST | `/crm/cadences/auto-enroll-rules` | Create an auto-enroll rule | `crm.settings.read` |
+| PUT | `/crm/cadences/auto-enroll-rules/:id` | Update an auto-enroll rule | `crm.settings.update` |
+| DELETE | `/crm/cadences/auto-enroll-rules/:id` | Delete an auto-enroll rule | `crm.settings.delete` |
+| POST | `/crm/cadences/auto-enroll-rules/evaluate/:leadId` | Evaluate auto-enroll rules for a lead | `crm.lead.update` |
+| POST | `/crm/cadences/process-due-steps` | Process all due cadence steps now (manual trigger; scheduler-ready) | `crm.lead.update` |
+| GET | `/crm/cadences/step-tasks/mine` | List my pending cadence step tasks (call/task/LinkedIn touchpoints) | `crm.settings.update` |
+| POST | `/crm/cadences/step-tasks/:id/complete` | Complete (or skip) a cadence step task | `crm.lead.read` |
 | GET | `/crm/contracts` | List contracts (paginated, searchable, sortable) | `crm.contracts.read` |
 | GET | `/crm/contracts/stats` | Contract KPI stats (active/expiring-soon/expired/total value) | `crm.contracts.read` |
 | POST | `/crm/contracts/scan-renewals` | Scan and auto-transition contracts nearing renewal/expiry | `crm.contracts.read` |
@@ -1141,6 +1187,11 @@
 | POST | `/crm/contracts/:contractId/milestones` | Add a billing milestone to a contract | `crm.contracts.update` |
 | DELETE | `/crm/contracts/:contractId/milestones/:id` | Delete a billing milestone | `crm.contracts.update` |
 | POST | `/crm/contracts/:contractId/milestones/:id/invoice` | Trigger milestone invoicing (generates a draft Invoice in Finance module) | `crm.contracts.update` |
+| POST | `/crm/conversation-intelligence/calls` | Log a call and auto-generate its AI summary/sentiment/action items | `crm.activity.create` |
+| POST | `/crm/conversation-intelligence/calls/:id/regenerate-summary` | Re-run AI analysis on a logged call (e.g. after a transcript correction) | `crm.activity.update` |
+| GET | `/crm/conversation-intelligence/calls/:id` | Get one logged call with its full transcript + AI analysis | `crm.activity.read` |
+| GET | `/crm/conversation-intelligence/calls` | List logged calls, optionally filtered by deal/lead/customer/sentiment | `crm.activity.read` |
+| GET | `/crm/conversation-intelligence/insights/summary` | Tenant-wide conversation intelligence rollup (sentiment mix, avg engagement score) | `crm.activity.read` |
 | GET | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
 | GET | `/crm/duplicate-rules/:id` | — | `crm.duplicate-rules.read` |
 | POST | `/crm/duplicate-rules` | — | `crm.duplicate-rules.read` |
@@ -1217,12 +1268,28 @@
 | POST | `/crm/mailbox-connections/callback` | Handle OAuth callback: exchange code for tokens and store the connection | `crm.mailbox.create` |
 | DELETE | `/crm/mailbox-connections/:id` | Disconnect a mailbox | `crm.mailbox.create` |
 | POST | `/crm/mailbox-connections/:id/sync` | Manually trigger a sync for a connected mailbox | `crm.mailbox.delete` |
+| POST | `/crm/pipeline-risk/recompute` | Recompute stage-change risk alerts across the whole pipeline | `crm.opportunity.update` |
+| GET | `/crm/pipeline-risk` | List open risk alerts (dashboard) | `crm.opportunity.read` |
+| GET | `/crm/pipeline-risk/summary` | Risk alert summary counts (by risk level / type) | `crm.opportunity.read` |
+| GET | `/crm/pipeline-risk/opportunities/:opportunityId` | List risk alerts for one opportunity | `crm.opportunity.read` |
+| POST | `/crm/pipeline-risk/:id/acknowledge` | Acknowledge a risk alert | `crm.opportunity.read` |
+| POST | `/crm/pipeline-risk/:id/snooze` | Snooze a risk alert for N days | `crm.opportunity.update` |
+| POST | `/crm/pipeline-risk/:id/resolve` | Resolve a risk alert | `crm.opportunity.update` |
 | GET | `/crm/pipelines/:pipelineId/stages` | — | `crm.pipelines.read` |
 | GET | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.read` |
 | POST | `/crm/pipelines/:pipelineId/stages` | — | `crm.pipelines.read` |
 | PUT | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.update` |
 | DELETE | `/crm/pipelines/:pipelineId/stages/:id` | — | `crm.pipelines.delete` |
 | POST | `/crm/pipelines/:pipelineId/stages/reorder` | — | `crm.pipelines.delete` |
+| GET | `/crm/quote-signature/quotations/:quotationId` | List signature requests for a quotation | `crm.opportunity.read` |
+| POST | `/crm/quote-signature/request` | Request an e-signature for a quotation | `crm.opportunity.read` |
+| GET | `/crm/quote-signature/certificates/:signatureId` | Get the signature audit certificate | `crm.opportunity.read` |
+| GET | `/crm/quote-signature/certificates/:signatureId/document` | Render the certificate document (text content a PDF export would embed) | `crm.opportunity.read` |
+| GET | `/crm/quote-signature/:token` | Look up a pending signature request by token | — |
+| POST | `/crm/quote-signature/sign` | Sign the quotation via the emailed token | — |
+| GET | `/crm/quote-signature/certificates/:signatureId/document` | Public: fetch the issued certificate document for a signed quotation | — |
+| POST | `/crm/revenue-intelligence/digest/generate` | Generate and send the deal-risk digest to reps + managers (admin/scheduler-triggered) | `crm.opportunity.update` |
+| GET | `/crm/revenue-intelligence/digest/runs` | List past digest runs (audit history), optionally scoped to one recipient | `crm.opportunity.read` |
 | GET | `/crm/segments` | — | `crm.segments.read` |
 | GET | `/crm/segments/:id` | — | `crm.segments.read` |
 | POST | `/crm/segments` | — | `crm.segments.read` |
@@ -1237,6 +1304,14 @@
 | DELETE | `/crm/sla-policies/:id` | — | `crm.sla-policies.update` |
 | GET | `/crm/sla/breaches` | — | `crm.sla-policies.delete` |
 | POST | `/crm/sla/detect-breaches` | — | `crm.sla-policies.read` |
+| GET | `/crm/territory-rules` | List territory assignment rules | `crm.settings.read` |
+| GET | `/crm/territory-rules/:id` | Get a territory assignment rule | `crm.settings.read` |
+| POST | `/crm/territory-rules` | Create a territory assignment rule | `crm.settings.read` |
+| PUT | `/crm/territory-rules/:id` | Update a territory assignment rule | `crm.settings.update` |
+| DELETE | `/crm/territory-rules/:id` | Delete a territory assignment rule | `crm.settings.delete` |
+| GET | `/crm/territory-rules/log/entries` | Get territory assignment audit log | `crm.report.read` |
+| POST | `/crm/territory-rules/assign` | Run territory assignment rules against a lead | `crm.report.read` |
+| POST | `/crm/territory-rules/reassign-all` | Bulk re-run territory assignment for all open leads | `crm.lead.update` |
 | GET | `/crm/customers` | Get customers | `crm.contact.read` |
 | GET | `/crm/customers/tags` | Get customer tags | `crm.contact.read` |
 | POST | `/crm/customers/tags` | Create customer tag | `crm.contact.read` |
@@ -1460,6 +1535,29 @@
 | POST | `/crm/cases/:id/comments` | Add a comment to a case | `crm.case.update` |
 | POST | `/crm/cases/bulk-status` | Bulk update case status | `crm.case.update` |
 | GET | `/crm/cases-export` | Export cases (CSV-ready JSON) | `crm.case.read` |
+| POST | `/crm/customers/:customerId/portal-users` | Invite a customer portal user | `crm.customer-portal.manage` |
+| GET | `/crm/customers/:customerId/portal-users` | List customer portal users | `crm.customer-portal.manage` |
+| PATCH | `/crm/customers/:customerId/portal-users/:userId/disable` | Disable a customer portal user | `crm.customer-portal.manage` |
+| PATCH | `/crm/customers/:customerId/portal-users/:userId/reactivate` | Reactivate a customer portal user | `crm.customer-portal.manage` |
+| POST | `/portal/auth/login` | Customer portal login | — |
+| GET | `/portal/dashboard` | Portal dashboard summary | — |
+| GET | `/portal/quotations` | List my quotations | — |
+| GET | `/portal/quotations/:id` | Get one of my quotations | — |
+| POST | `/portal/quotations/:id/accept` | Accept one of my quotations | — |
+| POST | `/portal/quotations/:id/reject` | Reject one of my quotations | — |
+| GET | `/portal/orders` | List my sales orders | — |
+| GET | `/portal/orders/:id` | Get one of my sales orders | — |
+| GET | `/portal/invoices` | List my invoices | — |
+| GET | `/portal/invoices/:id` | Get one of my invoices | — |
+| GET | `/portal/quotations/:id/pdf` | Download a PDF of one of my quotations | — |
+| GET | `/portal/invoices/:id/pdf` | Download a PDF of one of my invoices | — |
+| GET | `/portal/payments` | List my invoice payment intents | — |
+| POST | `/portal/invoices/:id/pay` | Initiate an online payment for one of my invoices | — |
+| POST | `/portal/payments/:intentId/confirm` | Confirm an initiated invoice payment | — |
+| GET | `/portal/cases` | List my support cases | — |
+| GET | `/portal/cases/:id` | Get one of my support cases with public comments | — |
+| POST | `/portal/cases` | Submit a new support case | — |
+| POST | `/portal/cases/:id/comments` | Add a comment to one of my support cases | — |
 
 ## devops
 
@@ -1556,22 +1654,22 @@
 | POST | `/finance/invoices/bulk` | Bulk action | `finance.invoice.update` |
 | POST | `/finance/payments` | Create payment | `finance.payment.create` |
 | GET | `/finance/invoices/:id/payments` | Get payments | `finance.payment.read` |
-| GET | `/finance/leases` | — | `finance.leases.read` |
-| GET | `/finance/leases/summary` | — | `finance.leases.read` |
-| GET | `/finance/leases/upcoming-payments` | — | `finance.leases.read` |
-| GET | `/finance/leases/expiring-soon` | — | `finance.leases.read` |
-| GET | `/finance/leases/analytics` | — | `finance.leases.read` |
-| POST | `/finance/leases/bulk-post` | — | `finance.leases.read` |
-| GET | `/finance/leases/:id` | — | `finance.leases.post` |
-| GET | `/finance/leases/:id/schedule` | — | `finance.leases.read` |
-| GET | `/finance/leases/:id/journal-entries` | — | `finance.leases.read` |
-| POST | `/finance/leases` | — | `finance.leases.read` |
-| PATCH | `/finance/leases/:id` | — | `finance.leases.create` |
-| PATCH | `/finance/leases/:id/status` | — | `finance.leases.update` |
-| DELETE | `/finance/leases/:id` | — | `finance.leases.delete` |
-| POST | `/finance/leases/:id/post-month` | — | `finance.leases.delete` |
-| POST | `/finance/leases/:id/terminate` | — | `finance.leases.update` |
-| POST | `/finance/leases/:id/renew` | — | `finance.leases.update` |
+| GET | `/finance/leases` | List leases with pagination, search, and filters | `finance.leases.read` |
+| GET | `/finance/leases/summary` | Get aggregate lease portfolio summary | `finance.leases.read` |
+| GET | `/finance/leases/upcoming-payments` | Get upcoming lease payments within a day window | `finance.leases.read` |
+| GET | `/finance/leases/expiring-soon` | Get leases expiring within a day window | `finance.leases.read` |
+| GET | `/finance/leases/analytics` | Get lease analytics (cost trends, breakdowns) | `finance.leases.read` |
+| POST | `/finance/leases/bulk-post` | Bulk post monthly lease journal entries for a period | `finance.leases.read` |
+| GET | `/finance/leases/:id` | Get a lease by id | `finance.leases.read` |
+| GET | `/finance/leases/:id/schedule` | Get the amortization schedule for a lease | `finance.leases.read` |
+| GET | `/finance/leases/:id/journal-entries` | Get journal entries posted for a lease | `finance.leases.read` |
+| POST | `/finance/leases` | Create a new lease | `finance.leases.read` |
+| PATCH | `/finance/leases/:id` | Update lease details | `finance.leases.update` |
+| PATCH | `/finance/leases/:id/status` | Update the status of a lease | `finance.leases.update` |
+| DELETE | `/finance/leases/:id` | Delete a lease | `finance.leases.delete` |
+| POST | `/finance/leases/:id/post-month` | Post the monthly journal entry for a lease period | `finance.leases.post` |
+| POST | `/finance/leases/:id/terminate` | Terminate a lease early | `finance.leases.update` |
+| POST | `/finance/leases/:id/renew` | Renew a lease with a new end date and present value | `finance.leases.update` |
 
 ## fixed-assets
 

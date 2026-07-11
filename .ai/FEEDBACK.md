@@ -1,7 +1,7 @@
 # FEEDBACK.md — Reality signals for the autonomous cycle
 
 > **Generated file** — `node scripts/feedback-scan.mjs`. Do not edit by hand.
-> Last generated: 2026-07-09T18:04:05.259Z
+> Last generated: 2026-07-11T11:08:36.490Z
 >
 > Consumed by `.ai/AUTOPILOT.md` Step 1 (P1): unresolved runtime errors and open
 > alerts below outrank backlog features. Fix, then mark resolved via the Admin

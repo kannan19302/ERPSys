@@ -127,6 +127,8 @@ export class CrmLeadsService {
         industry: dto.industry || null,
         employeeCount: dto.employeeCount || null,
         annualRevenue: dto.annualRevenue != null ? new Prisma.Decimal(dto.annualRevenue) : null,
+        country: dto.country || null,
+        region: dto.region || null,
         notes: dto.notes || null,
         campaignId: dto.campaignId || null,
       },

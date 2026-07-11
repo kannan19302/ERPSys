@@ -1,8 +1,0 @@
-{
-  "slug": "finance-dynamic-allocations",
-  "agent": "antigravity-win1",
-  "scope": "Finance: Dynamic Allocation Engine (AllocationRule, AllocationRun, static and dynamic stats allocations, journal posting, and UI view)",
-  "acquiredAt": "2026-07-09T02:59:16.425Z",
-  "heartbeatAt": "2026-07-09T02:59:16.427Z",
-  "pid": 4984
-}

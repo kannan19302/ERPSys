@@ -28,6 +28,7 @@ import {
   AssetLifecycleService,
   CashPoolingService,
   ConsolidationDeepService,
+  Form1099Service,
 } from './services';
 import { TaxEngineDeepService } from './services/tax-engine-deep.service';
 import { TreasuryDeepService } from './services/treasury-deep.service';
@@ -37,6 +38,7 @@ import { FixedAssetDeepService } from './services/fixed-asset-deep.service';
 import { FpaDeepService } from './services/fpa-deep.service';
 import { RevenueBillingService } from './services/revenue-billing.service';
 import { ComplianceControlsService } from './services/compliance-controls.service';
+import { EconomicNexusService } from './services/economic-nexus.service';
 
 const domainServices = [
   GlAccountingService,
@@ -75,6 +77,8 @@ const domainServices = [
   AssetLifecycleService,
   CashPoolingService,
   ConsolidationDeepService,
+  Form1099Service,
+  EconomicNexusService,
 ];
 
 @Module({

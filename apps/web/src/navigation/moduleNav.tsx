@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle,
+  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -74,6 +74,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Tax Engine', href: '/finance/advanced/tax-engine', icon: GitFork },
             { name: 'Tax Filing', href: '/finance/advanced/tax-filing', icon: ShieldAlert },
+            { name: '1099 / Vendor Tax Reporting', href: '/finance/advanced/1099-reporting', icon: FileText },
+            { name: 'Economic Nexus Monitoring', href: '/finance/advanced/tax-nexus', icon: ShieldAlert },
             { name: 'Finance Audit Trail', href: '/finance/advanced/audit-logs', icon: Eye },
             { name: 'Account Reconciliation', href: '/finance/advanced/account-reconciliation', icon: GitFork },
           ]
@@ -156,6 +158,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Vendors', href: '/crm/vendors', icon: Building },
             { name: 'Contacts', href: '/crm/contacts', icon: Users },
             { name: 'Contracts', href: '/crm/contracts', icon: FileText },
+            { name: 'Customer Portal', href: '/crm/customer-portal', icon: Users },
           ]
         },
         {
@@ -167,7 +170,11 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Products', href: '/crm/products', icon: Package },
             { name: 'Price Books', href: '/crm/price-books', icon: BookOpen },
             { name: 'Quotations', href: '/crm/quotations', icon: FileText },
+            { name: 'E-Signatures', href: '/crm/quotations/signatures', icon: FileText },
             { name: 'Sales Orders', href: '/crm/sales-orders', icon: ClipboardList },
+            { name: 'Pipeline Risk Alerts', href: '/crm/forecasting/pipeline-risk', icon: TrendingUp },
+            { name: 'Revenue Intelligence', href: '/crm/forecasting/revenue-intelligence', icon: TrendingUp },
+            { name: 'Conversation Intelligence', href: '/crm/conversation-intelligence', icon: Phone },
           ]
         },
         {
@@ -208,7 +215,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           isHeader: true,
           items: [
             { name: 'Territories', href: '/crm/territories', icon: MapPin },
+            { name: 'Assignment Rules', href: '/crm/territories/assignment-rules', icon: MapPin },
             { name: 'Commissions', href: '/crm/commissions', icon: DollarSign },
+            { name: 'Sales Cadences', href: '/crm/sequences/cadences', icon: BookOpen },
           ]
         },
         {

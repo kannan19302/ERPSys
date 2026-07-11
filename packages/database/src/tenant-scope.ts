@@ -13,6 +13,14 @@ export const MODELS_WITHOUT_TENANT = new Set([
   // platform-wide, not per-tenant (AppVendor scopes by ownerTenantId instead).
   'AppVendor', 'AppPackage', 'AppBundle', 'MarketplaceApp',
   'AppChangelog', 'AppCollection', 'AppCollectionItem',
+  // EmailSequenceStep has no tenantId column of its own — it is scoped
+  // transitively through its parent (tenant-scoped) EmailSequence via
+  // sequenceId, the same pattern as UserRole above. Without this entry the
+  // extension injects a nonexistent `tenantId` filter into every
+  // `emailSequenceStep` query/create and Prisma throws a validation error
+  // (only surfaces under a real request-scoped tenant session, so unit
+  // tests — which never set one — never caught it).
+  'EmailSequenceStep',
 ]);
 
 const READ_OPS = new Set([

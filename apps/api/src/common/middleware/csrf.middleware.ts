@@ -48,6 +48,17 @@ export function csrfMiddleware(req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
+  // Skip CSRF for the CRM customer self-service portal (/portal/*). Like the
+  // storefront above, portal sessions authenticate with a Bearer JWT
+  // (`CustomerPortalAuthGuard`) instead of the httpOnly session cookie CSRF
+  // protects — there is no ambient-cookie attack vector for a token the
+  // browser must explicitly attach via `Authorization`, so the check is both
+  // inapplicable and blocks legitimate portal writes (case creation, quote
+  // accept/reject) that never receive a `csrf_token` cookie in the first place.
+  if (path.startsWith('/api/v1/portal/') || path.startsWith('/portal/')) {
+    return next();
+  }
+
   const headerToken = req.headers[CSRF_HEADER] as string | undefined;
   if (!headerToken || headerToken !== token) {
     return res.status(403).json({ message: 'Invalid or missing CSRF token' });

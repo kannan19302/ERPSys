@@ -30,6 +30,9 @@ import { CrmContractsController } from './crm-contracts.controller';
 import { CrmMailboxService } from './crm-mailbox.service';
 import { CrmMailboxController } from './crm-mailbox.controller';
 import { CrmExpansionController } from './crm-expansion.controller';
+import { CustomerPortalService } from './customer-portal.service';
+import { CustomerPortalAdminController } from './customer-portal-admin.controller';
+import { CustomerPortalController } from './customer-portal.controller';
 
 // New expansion services
 import { CrmForecastingService } from './crm-forecasting.service';
@@ -40,6 +43,20 @@ import { CrmEnablementService } from './crm-enablement.service';
 import { CrmRevOpsService } from './crm-revops.service';
 import { CrmPartnersService } from './crm-partners.service';
 import { CrmAutomationService } from './crm-automation.service';
+import { CrmTerritoryRulesService } from './crm-territory-rules.service';
+import { CrmTerritoryRulesController } from './crm-territory-rules.controller';
+import { CrmCadencesService } from './crm-cadences.service';
+import { CrmCadencesController } from './crm-cadences.controller';
+import { CrmQuoteSignatureService } from './crm-quote-signature.service';
+import { CrmQuoteSignatureController, CrmQuoteSignaturePublicController } from './crm-quote-signature.controller';
+import { CrmPipelineRiskService } from './crm-pipeline-risk.service';
+import { CrmPipelineRiskController } from './crm-pipeline-risk.controller';
+import { CrmPortalPaymentGatewayService } from './crm-portal-payment-gateway.service';
+import { CrmPortalDocumentsService } from './crm-portal-documents.service';
+import { CrmRevenueIntelligenceService } from './crm-revenue-intelligence.service';
+import { CrmRevenueIntelligenceController } from './crm-revenue-intelligence.controller';
+import { CrmConversationIntelligenceService } from './crm-conversation-intelligence.service';
+import { CrmConversationIntelligenceController } from './crm-conversation-intelligence.controller';
 
 const CRM_SERVICES = [
   CrmService,
@@ -72,6 +89,15 @@ const CRM_SERVICES = [
   CrmRevOpsService,
   CrmPartnersService,
   CrmAutomationService,
+  CustomerPortalService,
+  CrmTerritoryRulesService,
+  CrmCadencesService,
+  CrmQuoteSignatureService,
+  CrmPipelineRiskService,
+  CrmPortalPaymentGatewayService,
+  CrmPortalDocumentsService,
+  CrmRevenueIntelligenceService,
+  CrmConversationIntelligenceService,
 ];
 
 @Module({
@@ -86,6 +112,15 @@ const CRM_SERVICES = [
     CrmContractsController,
     CrmMailboxController,
     CrmExpansionController,
+    CustomerPortalAdminController,
+    CustomerPortalController,
+    CrmTerritoryRulesController,
+    CrmCadencesController,
+    CrmQuoteSignatureController,
+    CrmQuoteSignaturePublicController,
+    CrmPipelineRiskController,
+    CrmRevenueIntelligenceController,
+    CrmConversationIntelligenceController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

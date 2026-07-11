@@ -24,5 +24,6 @@ export { IntercompanyLoansService } from './intercompany-loans.service';
 export { AssetLifecycleService } from './asset-lifecycle.service';
 export { CashPoolingService } from './cash-pooling.service';
 export { ConsolidationDeepService } from './consolidation-deep.service';
+export { Form1099Service } from './form-1099.service';
 
 

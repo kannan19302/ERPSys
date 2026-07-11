@@ -580,6 +580,8 @@ export const createLeadSchema = z.object({
   industry: z.string().max(100).optional(),
   employeeCount: z.number().int().positive().optional(),
   annualRevenue: z.number().positive().optional(),
+  country: z.string().max(2).optional(),
+  region: z.string().max(100).optional(),
   notes: z.string().max(2000).optional(),
   assignedToId: z.string().optional(),
 });

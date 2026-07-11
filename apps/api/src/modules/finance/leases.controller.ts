@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -35,6 +36,8 @@ const BulkPostSchema = z.object({ period: z.string().regex(/^\d{4}-\d{2}$/, 'For
 const TerminateSchema = z.object({ terminationDate: z.string() });
 const RenewSchema = z.object({ newEndDate: z.string(), newPresentValue: z.number().positive().optional() });
 
+@ApiTags('Finance - Leases')
+@ApiBearerAuth()
 @Controller('finance/leases')
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(ChangeHistoryInterceptor)
@@ -48,6 +51,7 @@ export class LeasesController {
     return req.user?.orgId ?? (req as any).headers?.['x-org-id'];
   }
 
+  @ApiOperation({ summary: 'List leases with pagination, search, and filters' })
   @Get()
   @Permissions('finance.leases.read')
   list(@Req() req: AuthRequest, @Query() q: any) {
@@ -62,30 +66,35 @@ export class LeasesController {
     });
   }
 
+  @ApiOperation({ summary: 'Get aggregate lease portfolio summary' })
   @Get('summary')
   @Permissions('finance.leases.read')
   summary(@Req() req: AuthRequest) {
     return this.svc.getLeaseSummary(this.tid(req));
   }
 
+  @ApiOperation({ summary: 'Get upcoming lease payments within a day window' })
   @Get('upcoming-payments')
   @Permissions('finance.leases.read')
   upcomingPayments(@Req() req: AuthRequest, @Query('days') days?: string) {
     return this.svc.getUpcomingPayments(this.tid(req), days ? Number(days) : 30);
   }
 
+  @ApiOperation({ summary: 'Get leases expiring within a day window' })
   @Get('expiring-soon')
   @Permissions('finance.leases.read')
   expiringSoon(@Req() req: AuthRequest, @Query('days') days?: string) {
     return this.svc.getExpiringSoon(this.tid(req), days ? Number(days) : 90);
   }
 
+  @ApiOperation({ summary: 'Get lease analytics (cost trends, breakdowns)' })
   @Get('analytics')
   @Permissions('finance.leases.read')
   analytics(@Req() req: AuthRequest) {
     return this.svc.getLeaseAnalytics(this.tid(req));
   }
 
+  @ApiOperation({ summary: 'Bulk post monthly lease journal entries for a period' })
   @Post('bulk-post')
   @Permissions('finance.leases.post')
   @TrackChanges('finance.leases.bulk-post')
@@ -93,24 +102,28 @@ export class LeasesController {
     return this.svc.bulkPostMonth(this.tid(req), body.period);
   }
 
+  @ApiOperation({ summary: 'Get a lease by id' })
   @Get(':id')
   @Permissions('finance.leases.read')
   getOne(@Req() req: AuthRequest, @Param('id') id: string) {
     return this.svc.getLeaseById(this.tid(req), id);
   }
 
+  @ApiOperation({ summary: 'Get the amortization schedule for a lease' })
   @Get(':id/schedule')
   @Permissions('finance.leases.read')
   schedule(@Req() req: AuthRequest, @Param('id') id: string) {
     return this.svc.getLeaseSchedule(this.tid(req), id);
   }
 
+  @ApiOperation({ summary: 'Get journal entries posted for a lease' })
   @Get(':id/journal-entries')
   @Permissions('finance.leases.read')
   journalEntries(@Req() req: AuthRequest, @Param('id') id: string) {
     return this.svc.getLeaseJournalEntries(this.tid(req), id);
   }
 
+  @ApiOperation({ summary: 'Create a new lease' })
   @Post()
   @Permissions('finance.leases.create')
   @TrackChanges('finance.leases.create')
@@ -118,6 +131,7 @@ export class LeasesController {
     return this.svc.createLease(this.tid(req), this.oid(req), body);
   }
 
+  @ApiOperation({ summary: 'Update lease details' })
   @Patch(':id')
   @Permissions('finance.leases.update')
   @TrackChanges('finance.leases.update')
@@ -129,6 +143,7 @@ export class LeasesController {
     return this.svc.updateLease(this.tid(req), id, body);
   }
 
+  @ApiOperation({ summary: 'Update the status of a lease' })
   @Patch(':id/status')
   @Permissions('finance.leases.update')
   @TrackChanges('finance.leases.status')
@@ -140,6 +155,7 @@ export class LeasesController {
     return this.svc.setLeaseStatus(this.tid(req), id, body.status);
   }
 
+  @ApiOperation({ summary: 'Delete a lease' })
   @Delete(':id')
   @Permissions('finance.leases.delete')
   @TrackChanges('finance.leases.delete')
@@ -147,6 +163,7 @@ export class LeasesController {
     return this.svc.deleteLease(this.tid(req), id);
   }
 
+  @ApiOperation({ summary: 'Post the monthly journal entry for a lease period' })
   @Post(':id/post-month')
   @Permissions('finance.leases.post')
   @TrackChanges('finance.leases.post-month')
@@ -158,6 +175,7 @@ export class LeasesController {
     return this.svc.postMonthlyEntry(this.tid(req), id, body.period);
   }
 
+  @ApiOperation({ summary: 'Terminate a lease early' })
   @Post(':id/terminate')
   @Permissions('finance.leases.update')
   @TrackChanges('finance.leases.terminate')
@@ -169,6 +187,7 @@ export class LeasesController {
     return this.svc.terminateLease(this.tid(req), id, body.terminationDate);
   }
 
+  @ApiOperation({ summary: 'Renew a lease with a new end date and present value' })
   @Post(':id/renew')
   @Permissions('finance.leases.update')
   @TrackChanges('finance.leases.renew')

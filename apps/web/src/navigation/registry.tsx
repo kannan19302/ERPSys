@@ -65,6 +65,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'operations-service': 'Operations & Service',
   operations: 'Operations',
   customers: 'Customers',
+  'customer-portal': 'Customer Portal',
   vendors: 'Vendors',
   contacts: 'Contacts',
   contracts: 'Contracts',
@@ -114,6 +115,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'eliminations': 'Eliminations',
   'fx-revaluation': 'FX Revaluation',
   'corporate-cards': 'Corporate Cards',
+  '1099-reporting': '1099 / Vendor Tax Reporting',
+  'tax-nexus': 'Economic Nexus Monitoring',
   'payment-terms': 'Payment Terms',
   'invoice-analytics': 'Invoice Analytics',
   'tax-filing-summary': 'Tax Filing Summary',
@@ -248,6 +251,17 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'close-tasks': 'Close Checklist',
   'budget-scenarios': 'Budget Scenarios',
   'scenario-comparison': 'Scenario Comparison',
+  // CRM Sales Ops Automation (territory rules, cadences, e-signature certs)
+  territories: 'Territories',
+  'assignment-rules': 'Assignment Rules',
+  sequences: 'Sequences',
+  cadences: 'Sales Cadences',
+  'auto-enroll': 'Auto-Enroll Rules',
+  signatures: 'E-Signatures',
+  'pipeline-risk': 'Pipeline Risk Alerts',
+  forecasting: 'Forecasting',
+  'revenue-intelligence': 'Revenue Intelligence',
+  'conversation-intelligence': 'Conversation Intelligence',
 };
 
 export const formatSegment = (segment: string): string => {
