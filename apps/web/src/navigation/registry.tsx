@@ -165,6 +165,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   kits: 'Kits & Assembly',
   'transfer-approvals': 'Transfer Approvals',
   'movement-history': 'Movement History & Labels',
+  'pick-waves': 'Wave Picking',
+  consignment: 'Consignment Inventory',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

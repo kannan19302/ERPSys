@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T02:42:15.737Z
+> Last generated: 2026-07-12T02:55:24.793Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2027 features** across 33 modules
+## System total: **2039 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 121 |
+| [inventory](#inventory) | 133 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-121 features
+133 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1842,6 +1842,18 @@
 | POST | `/inventory/transfer-approvals/:id/approve` | Approve a pending transfer (submits the stock entry) | `inventory.stock.update` |
 | POST | `/inventory/transfer-approvals/:id/reject` | Reject a pending transfer | `inventory.stock.update` |
 | GET | `/inventory/movement-history` | Get consolidated movement history / audit trail | `inventory.stock.read` |
+| GET | `/inventory/pick-waves` | Get pick waves | `inventory.stock.read` |
+| GET | `/inventory/pick-waves/:id` | Get pick wave by id | `inventory.stock.read` |
+| POST | `/inventory/pick-waves` | Create pick wave from multiple sales orders | `inventory.stock.read` |
+| POST | `/inventory/pick-waves/items/:id/record-pick` | Record a pick against a wave item | `inventory.stock.update` |
+| GET | `/inventory/pick-waves/:id/pack-list` | Get pack list for a wave | `inventory.stock.update` |
+| POST | `/inventory/pick-waves/:id/complete` | Complete a pick wave | `inventory.stock.read` |
+| GET | `/inventory/consignment-stocks` | Get consignment stocks | `inventory.stock.read` |
+| POST | `/inventory/consignment-stocks` | Create consignment stock | `inventory.stock.create` |
+| POST | `/inventory/consignment-stocks/:id/consume` | Record consignment consumption (consumption-triggered billing) | `inventory.stock.update` |
+| GET | `/inventory/consignment-stocks/consumptions/unbilled` | Get unbilled consignment consumptions | `inventory.stock.update` |
+| POST | `/inventory/consignment-stocks/consumptions/:id/mark-billed` | Mark a consignment consumption as billed | `inventory.stock.read` |
+| POST | `/inventory/receive-with-traceability` | Receive stock with serial/lot traceability captured at receipt | `inventory.stock.create` |
 | GET | `/inventory/labels/product/:id` | Get product barcode label data | `inventory.stock.read` |
 | GET | `/inventory/labels/batch/:id` | Get batch barcode label data | `inventory.stock.read` |
 | GET | `/inventory/labels/license-plate/:id` | Get license plate barcode label data | `inventory.stock.read` |

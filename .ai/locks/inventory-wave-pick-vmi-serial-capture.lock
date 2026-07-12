@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-wave-pick-vmi-serial-capture",
-  "agent": "claude-code-cli-main",
-  "scope": "Inventory: wave-pick/pack-list generation, VMI/consignment inventory, serial/lot capture-at-receipt",
-  "acquiredAt": "2026-07-12T02:48:28.672Z",
-  "heartbeatAt": "2026-07-12T02:48:28.672Z",
-  "pid": 13926
-}

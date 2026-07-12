@@ -2,6 +2,37 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: wave picking/pack-lists, consignment inventory, receipt-with-traceability
+
+FAST cycle (Inventory cycle 5, branch `claude/new-session-7x5xhc`), toward the
+90→200 feature-count target (now 133/200).
+
+- **Duplicate-check first**: grepped for existing pick-list logic and found
+  `sales-fulfillment.service.ts`'s `generatePickList` — a stub that hardcodes
+  `warehouseLocation: 'A-1-01'` with a comment admitting it's a placeholder.
+  Built the real, persisted, bin-driven version in the inventory module
+  instead of touching that stub (out of scope for this focus module's turn).
+- **DB**: `PickWave`/`PickWaveOrder`/`PickWaveItem`, `ConsignmentStock`/
+  `ConsignmentConsumption` (migration
+  `20260712025022_inventory_wave_pick_consignment`).
+- **API**: wave creation batches multiple sales orders, aggregates quantity
+  per product, and picks the bin holding the most on-hand stock per
+  product/warehouse (via `InventoryItemBin`); record-pick/pack-list/complete
+  lifecycle. Consignment stock CRUD with consumption-triggered billing
+  (decrements on-hand, computes cost from unit cost, unbilled-consumption
+  queue + mark-billed). `receiveWithTraceability` captures serial numbers
+  and/or a batch/lot in the same call as the stock receipt.
+- **UI**: `/inventory/pick-waves`, `/inventory/consignment`, and a
+  receive-with-traceability form added to the existing `/inventory/traceability`
+  page — all wired into `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 11 new unit tests; inventory module suite 140/140 passing.
+- **Gates**: scoped typecheck clean (`@unerp/shared`, `@unerp/api`,
+  `@unerp/web`); full turbo typecheck/API suite/E2E deferred per FAST-cycle
+  tier (`fastCyclesSinceFullGate` 1→2).
+- Remaining Up Next: VMI/consignment is now shipped; next candidates are
+  quality-inspection deepening, reorder-rule automation deepening, and
+  closing out the RLS/seed blocker so E2E can run.
+
 ## [2026-07-12] Inventory: transfer approval workflow, movement-history report, barcode labels
 
 FAST cycle (Inventory cycle 4, branch `claude/new-session-7x5xhc`), continuing

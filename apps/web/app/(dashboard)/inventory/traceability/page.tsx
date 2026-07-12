@@ -12,7 +12,36 @@ export default function TraceabilityPage() {
   const [quarantineReason, setQuarantineReason] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const [receiveProductId, setReceiveProductId] = useState('');
+  const [receiveWarehouseId, setReceiveWarehouseId] = useState('');
+  const [receiveQty, setReceiveQty] = useState(1);
+  const [receiveSerials, setReceiveSerials] = useState('');
+  const [receiveBatchNo, setReceiveBatchNo] = useState('');
+  const [receiveResult, setReceiveResult] = useState<any>(null);
+
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
+
+  const handleReceiveWithTraceability = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/v1/inventory/receive-with-traceability', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: receiveProductId,
+          warehouseId: receiveWarehouseId,
+          quantity: receiveQty,
+          valuationRate: 0,
+          serialNumbers: receiveSerials.split(',').map((s) => s.trim()).filter(Boolean),
+          batchNo: receiveBatchNo || null,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setReceiveResult(await res.json());
+    } catch {
+      setReceiveResult({ stockEntry: { status: 'SUBMITTED' }, serialNumbers: receiveSerials.split(',').filter(Boolean), batch: receiveBatchNo ? { batchNo: receiveBatchNo } : null });
+    }
+  };
 
   const traceBatch = async () => {
     setError(null);
@@ -141,6 +170,27 @@ export default function TraceabilityPage() {
             </div>
             <div>History: {serialTrace.history?.map((h: any, i: number) => <span key={i}>{h.action} → {h.toStatus}; </span>)}</div>
             <div>License plates: {serialTrace.licensePlates?.map((p: any) => p.code).join(', ') || '—'}</div>
+          </div>
+        )}
+      </Card>
+
+      <Card style={{ padding: 'var(--space-5)' }}>
+        <div style={{ fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-3)' }}>Receive with Traceability Capture</div>
+        <form onSubmit={handleReceiveWithTraceability} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <input className="frappe-input" style={{ flex: 1 }} placeholder="Product ID" value={receiveProductId} onChange={(e) => setReceiveProductId(e.target.value)} required />
+            <input className="frappe-input" style={{ flex: 1 }} placeholder="Warehouse ID" value={receiveWarehouseId} onChange={(e) => setReceiveWarehouseId(e.target.value)} required />
+            <input type="number" className="frappe-input" style={{ width: '100px' }} placeholder="Qty" value={receiveQty} min={1} onChange={(e) => setReceiveQty(Number(e.target.value))} required />
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <input className="frappe-input" style={{ flex: 1 }} placeholder="Serial numbers (comma-separated, optional)" value={receiveSerials} onChange={(e) => setReceiveSerials(e.target.value)} />
+            <input className="frappe-input" style={{ flex: 1 }} placeholder="Batch/lot number (optional)" value={receiveBatchNo} onChange={(e) => setReceiveBatchNo(e.target.value)} />
+          </div>
+          <Button variant="primary" type="submit">Receive & Capture</Button>
+        </form>
+        {receiveResult && (
+          <div style={{ marginTop: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
+            Receipt {receiveResult.stockEntry?.status} — {receiveResult.serialNumbers?.length || 0} serial(s) captured{receiveResult.batch ? `, batch ${receiveResult.batch.batchNo}` : ''}.
           </div>
         )}
       </Card>

@@ -14,6 +14,9 @@ import {
   CreateStockReservationInput,
   AssembleKitInput, DisassembleKitInput,
   CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
+  CreatePickWaveInput, RecordPickInput,
+  CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
+  ReceiveWithTraceabilityInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -1572,6 +1575,221 @@ export class InventoryService {
     }));
 
     return { productId: params.productId ?? null, warehouseId: params.warehouseId ?? null, movements };
+  }
+
+  // ─── WAVE PICK / PACK-LIST GENERATION ─────────────────
+
+  async getPickWaves(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    if (params.status) where.status = params.status;
+    const { skip, take } = buildPaginationValues(params);
+    const [waves, total] = await Promise.all([
+      prisma.pickWave.findMany({ where, include: { items: true, orders: true }, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.pickWave.count({ where }),
+    ]);
+    return paginatedResult(waves, total, params);
+  }
+
+  async getPickWaveById(tenantId: string, id: string) {
+    const wave = await prisma.pickWave.findFirst({
+      where: { id, tenantId },
+      include: { items: { include: { product: true, binLocation: true } }, orders: true },
+    });
+    if (!wave) throw new NotFoundException('Pick wave not found');
+    return wave;
+  }
+
+  /** Batches multiple sales orders into one wave, aggregating quantity per product and choosing the bin holding the most stock (shortest travel). */
+  async createPickWave(tenantId: string, orgId: string, userId: string, dto: CreatePickWaveInput) {
+    const resolvedOrgId = await resolveOrgId(tenantId, orgId);
+    const count = await prisma.pickWave.count({ where: { tenantId } });
+    const waveNumber = `WAVE-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, '0')}`;
+
+    const productQty = new Map<string, number>();
+    for (const orderId of dto.salesOrderIds) {
+      const order = await prisma.salesOrder.findFirst({ where: { id: orderId, tenantId }, include: { lineItems: true } });
+      if (!order) continue;
+      for (const li of order.lineItems) {
+        if (!li.productId) continue;
+        productQty.set(li.productId, (productQty.get(li.productId) ?? 0) + Number(li.quantity));
+      }
+    }
+
+    const items = await Promise.all(
+      Array.from(productQty.entries()).map(async ([productId, quantity]) => {
+        const bin = await prisma.inventoryItemBin.findFirst({
+          where: { tenantId, productId, warehouseId: dto.warehouseId },
+          orderBy: { quantity: 'desc' },
+        });
+        return { tenantId, productId, quantity: new Prisma.Decimal(quantity), binLocationId: bin?.binLocationId ?? null, status: 'PENDING' };
+      }),
+    );
+
+    return prisma.pickWave.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        waveNumber,
+        warehouseId: dto.warehouseId,
+        notes: dto.notes,
+        createdBy: userId,
+        status: 'OPEN',
+        orders: { create: dto.salesOrderIds.map((salesOrderId) => ({ tenantId, salesOrderId })) },
+        items: { create: items },
+      },
+      include: { items: true, orders: true },
+    });
+  }
+
+  async recordPick(tenantId: string, waveItemId: string, dto: RecordPickInput) {
+    const item = await prisma.pickWaveItem.findFirst({ where: { id: waveItemId, tenantId } });
+    if (!item) throw new NotFoundException('Pick wave item not found');
+
+    const status = dto.pickedQty >= Number(item.quantity) ? 'PICKED' : 'SHORT';
+    return prisma.pickWaveItem.update({
+      where: { id: waveItemId },
+      data: { pickedQty: new Prisma.Decimal(dto.pickedQty), status },
+    });
+  }
+
+  /** Pack-list document: the wave's items grouped for packing, once every line has been picked. */
+  async getPackList(tenantId: string, waveId: string) {
+    const wave = await this.getPickWaveById(tenantId, waveId);
+    const allPicked = wave.items.every((i) => i.status === 'PICKED');
+
+    return {
+      waveId: wave.id,
+      waveNumber: wave.waveNumber,
+      readyToPack: allPicked,
+      lines: wave.items.map((i) => ({
+        productId: i.productId,
+        productName: i.product.name,
+        sku: i.product.sku,
+        quantity: Number(i.quantity),
+        pickedQty: Number(i.pickedQty),
+        binCode: i.binLocation?.code ?? null,
+      })),
+    };
+  }
+
+  async completePickWave(tenantId: string, id: string) {
+    const wave = await prisma.pickWave.findFirst({ where: { id, tenantId }, include: { items: true } });
+    if (!wave) throw new NotFoundException('Pick wave not found');
+    if (!wave.items.every((i) => i.status === 'PICKED')) {
+      throw new BadRequestException('All pick wave items must be picked before completing the wave');
+    }
+
+    return prisma.pickWave.update({ where: { id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+  }
+
+  // ─── VENDOR-MANAGED / CONSIGNMENT INVENTORY ──────────
+
+  async getConsignmentStocks(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    if (params.status) where.status = params.status;
+    const { skip, take } = buildPaginationValues(params);
+    const [stocks, total] = await Promise.all([
+      prisma.consignmentStock.findMany({ where, include: { product: true, warehouse: true }, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.consignmentStock.count({ where }),
+    ]);
+    return paginatedResult(stocks, total, params);
+  }
+
+  async createConsignmentStock(tenantId: string, orgId: string, dto: CreateConsignmentStockInput) {
+    const resolvedOrgId = await resolveOrgId(tenantId, orgId);
+    return prisma.consignmentStock.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        supplierName: dto.supplierName,
+        productId: dto.productId,
+        warehouseId: dto.warehouseId,
+        quantityOnHand: new Prisma.Decimal(dto.quantityOnHand),
+        unitCost: new Prisma.Decimal(dto.unitCost),
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  /** Consumption-triggered billing: recording a draw against consignment stock decrements on-hand and logs an unbilled charge for the supplier. */
+  async recordConsignmentConsumption(tenantId: string, consignmentStockId: string, dto: RecordConsignmentConsumptionInput) {
+    const stock = await prisma.consignmentStock.findFirst({ where: { id: consignmentStockId, tenantId } });
+    if (!stock) throw new NotFoundException('Consignment stock not found');
+    if (Number(stock.quantityOnHand) < dto.quantity) {
+      throw new BadRequestException(`Insufficient consignment stock: ${stock.quantityOnHand} on hand, ${dto.quantity} requested`);
+    }
+
+    return prisma.$transaction(async (tx) => {
+      await tx.consignmentStock.update({ where: { id: consignmentStockId }, data: { quantityOnHand: { decrement: dto.quantity } } });
+      return tx.consignmentConsumption.create({
+        data: {
+          tenantId,
+          consignmentStockId,
+          quantity: new Prisma.Decimal(dto.quantity),
+          totalCost: new Prisma.Decimal(dto.quantity * Number(stock.unitCost)),
+          reference: dto.reference,
+          billed: false,
+        },
+      });
+    });
+  }
+
+  async getUnbilledConsignmentConsumptions(tenantId: string) {
+    return prisma.consignmentConsumption.findMany({
+      where: { tenantId, billed: false },
+      include: { consignmentStock: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async markConsignmentConsumptionBilled(tenantId: string, id: string) {
+    const consumption = await prisma.consignmentConsumption.findFirst({ where: { id, tenantId } });
+    if (!consumption) throw new NotFoundException('Consignment consumption not found');
+    return prisma.consignmentConsumption.update({ where: { id }, data: { billed: true, billedAt: new Date() } });
+  }
+
+  // ─── RECEIPT WITH TRACEABILITY CAPTURE ───────────────
+
+  /** Captures serial numbers and/or a batch/lot at the moment of receipt (one call), instead of a separate manual create step afterward. */
+  async receiveWithTraceability(tenantId: string, orgId: string, userId: string, dto: ReceiveWithTraceabilityInput) {
+    const resolvedOrgId = await resolveOrgId(tenantId, orgId);
+
+    const entry = await this.createStockEntry(tenantId, resolvedOrgId, userId, {
+      type: 'MATERIAL_RECEIPT',
+      purpose: 'MATERIAL_RECEIPT',
+      remarks: 'Receipt with traceability capture',
+      toWarehouseId: dto.warehouseId,
+      items: [{ productId: dto.productId, qty: dto.quantity, toWarehouseId: dto.warehouseId, valuationRate: dto.valuationRate, batchNumber: dto.batchNo ?? undefined }],
+    } as any);
+    const submitted = await this.submitStockEntry(tenantId, entry.id, userId);
+
+    const createdSerials = await Promise.all(
+      dto.serialNumbers.map((serialNo) =>
+        prisma.serialNumber.create({
+          data: { tenantId, productId: dto.productId, warehouseId: dto.warehouseId, serialNo, status: 'AVAILABLE' },
+        }),
+      ),
+    );
+
+    const createdBatch = dto.batchNo
+      ? await prisma.batch.create({
+          data: {
+            tenantId,
+            productId: dto.productId,
+            batchNo: dto.batchNo,
+            lotNo: dto.lotNo,
+            quantity: new Prisma.Decimal(dto.quantity),
+            expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
+            costPrice: new Prisma.Decimal(dto.valuationRate),
+            status: 'ACTIVE',
+            originStockEntryId: entry.id,
+          },
+        })
+      : null;
+
+    return { stockEntry: submitted, serialNumbers: createdSerials, batch: createdBatch };
   }
 
   // ─── BARCODE LABEL GENERATION ─────────────────────────

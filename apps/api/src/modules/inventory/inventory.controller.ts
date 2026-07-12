@@ -22,6 +22,9 @@ import {
   CreateStockReservationInput,
   AssembleKitInput, DisassembleKitInput,
   CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
+  CreatePickWaveInput, RecordPickInput,
+  CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
+  ReceiveWithTraceabilityInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -564,6 +567,119 @@ export class InventoryController {
     @Query('limit') limit?: string,
   ) {
     return this.inventoryService.getMovementHistory(req.user.tenantId, { productId, warehouseId, limit: limit ? parseInt(limit) : undefined });
+  }
+
+  // ─── WAVE PICK / PACK-LIST GENERATION ─────────────────
+
+  @ApiOperation({ summary: 'Get pick waves' })
+  @Get('pick-waves')
+  @Permissions('inventory.stock.read')
+  async getPickWaves(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.inventoryService.getPickWaves(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      warehouseId, status,
+    });
+  }
+
+  @ApiOperation({ summary: 'Get pick wave by id' })
+  @Get('pick-waves/:id')
+  @Permissions('inventory.stock.read')
+  async getPickWaveById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getPickWaveById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create pick wave from multiple sales orders' })
+  @Post('pick-waves')
+  @Permissions('inventory.stock.create')
+  async createPickWave(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePickWaveInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.createPickWave(req.user.tenantId, orgId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Record a pick against a wave item' })
+  @Post('pick-waves/items/:id/record-pick')
+  @Permissions('inventory.stock.update')
+  async recordPick(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: RecordPickInput) {
+    return this.inventoryService.recordPick(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Get pack list for a wave' })
+  @Get('pick-waves/:id/pack-list')
+  @Permissions('inventory.stock.read')
+  async getPackList(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getPackList(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Complete a pick wave' })
+  @Post('pick-waves/:id/complete')
+  @Permissions('inventory.stock.update')
+  async completePickWave(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.completePickWave(req.user.tenantId, id);
+  }
+
+  // ─── VENDOR-MANAGED / CONSIGNMENT INVENTORY ──────────
+
+  @ApiOperation({ summary: 'Get consignment stocks' })
+  @Get('consignment-stocks')
+  @Permissions('inventory.stock.read')
+  async getConsignmentStocks(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.inventoryService.getConsignmentStocks(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      warehouseId, status,
+    });
+  }
+
+  @ApiOperation({ summary: 'Create consignment stock' })
+  @Post('consignment-stocks')
+  @Permissions('inventory.stock.create')
+  async createConsignmentStock(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateConsignmentStockInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.createConsignmentStock(req.user.tenantId, orgId, dto);
+  }
+
+  @ApiOperation({ summary: 'Record consignment consumption (consumption-triggered billing)' })
+  @Post('consignment-stocks/:id/consume')
+  @Permissions('inventory.stock.update')
+  async recordConsignmentConsumption(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: RecordConsignmentConsumptionInput) {
+    return this.inventoryService.recordConsignmentConsumption(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Get unbilled consignment consumptions' })
+  @Get('consignment-stocks/consumptions/unbilled')
+  @Permissions('inventory.stock.read')
+  async getUnbilledConsignmentConsumptions(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getUnbilledConsignmentConsumptions(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Mark a consignment consumption as billed' })
+  @Post('consignment-stocks/consumptions/:id/mark-billed')
+  @Permissions('inventory.stock.update')
+  async markConsignmentConsumptionBilled(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.markConsignmentConsumptionBilled(req.user.tenantId, id);
+  }
+
+  // ─── RECEIPT WITH TRACEABILITY CAPTURE ───────────────
+
+  @ApiOperation({ summary: 'Receive stock with serial/lot traceability captured at receipt' })
+  @Post('receive-with-traceability')
+  @Permissions('inventory.stock.create')
+  async receiveWithTraceability(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: ReceiveWithTraceabilityInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.receiveWithTraceability(req.user.tenantId, orgId, req.user.userId, dto);
   }
 
   // ─── BARCODE LABEL GENERATION ─────────────────────────

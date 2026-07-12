@@ -1888,6 +1888,45 @@ export const rejectTransferSchema = z.object({
 });
 export type RejectTransferInput = z.infer<typeof rejectTransferSchema>;
 
+export const createPickWaveSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  salesOrderIds: z.array(z.string()).min(1, 'At least one sales order is required'),
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreatePickWaveInput = z.infer<typeof createPickWaveSchema>;
+
+export const recordPickSchema = z.object({
+  pickedQty: z.number().nonnegative(),
+});
+export type RecordPickInput = z.infer<typeof recordPickSchema>;
+
+export const createConsignmentStockSchema = z.object({
+  supplierName: z.string().min(1, 'Supplier name is required').max(200),
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantityOnHand: z.number().nonnegative().default(0),
+  unitCost: z.number().nonnegative(),
+});
+export type CreateConsignmentStockInput = z.infer<typeof createConsignmentStockSchema>;
+
+export const recordConsignmentConsumptionSchema = z.object({
+  quantity: z.number().positive('Quantity must be positive'),
+  reference: z.string().max(200).optional().nullable(),
+});
+export type RecordConsignmentConsumptionInput = z.infer<typeof recordConsignmentConsumptionSchema>;
+
+export const receiveWithTraceabilitySchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  valuationRate: z.number().nonnegative().default(0),
+  serialNumbers: z.array(z.string()).optional().default([]),
+  batchNo: z.string().max(100).optional().nullable(),
+  lotNo: z.string().max(100).optional().nullable(),
+  expiryDate: z.string().optional().nullable(),
+});
+export type ReceiveWithTraceabilityInput = z.infer<typeof receiveWithTraceabilitySchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),
