@@ -180,6 +180,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'automation-rules': 'Automation Rules',
   'inventory-analytics': 'Inventory Analytics',
   'logistics': 'Logistics & Shipping',
+  'quality-compliance': 'Quality & Compliance',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

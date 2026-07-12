@@ -1,8 +1,9 @@
 {
-  "ranAt": "2026-07-12T14:43:00.000Z",
-  "fastCyclesSinceFullGate": 1,
+  "ranAt": "2026-07-12T16:00:00.000Z",
+  "fastCyclesSinceFullGate": 2,
   "deferredScopes": [
-    "inventory-cycle16-asn-inbound-outbound-carrier-logistics"
+    "inventory-cycle16-asn-inbound-outbound-carrier-logistics",
+    "inventory-cycle17-quality-compliance-capa-calibration-deviation-sop"
   ],
   "lastMilestoneCommit": "cycle-14-rtv-pending",
   "typecheck": {
@@ -22,6 +23,6 @@
   "e2e": {
     "label": "Playwright smoke gate",
     "pass": null,
-    "note": "[e2e-unverified] Seed-script RLS blocker is FIXED (prisma/seed.ts wraps every write to an RLS-protected table in a transaction that sets app.current_tenant_id via set_config — verified live). But login still 401s: the running app never sets app.current_tenant_id anywhere in its own request pipeline, so FORCE ROW LEVEL SECURITY on 12 tables makes them invisible to any DB role without BYPASSRLS — confirmed via psql (SELECT count(*) FROM users: 0 without context, 1 with it). This is a P0 cross-cutting gap (the RLS migration was never wired into packages/database/src/index.ts's Prisma extension) — see MODULE_REGISTRY.md 'Critical cross-cutting finding' section. A same-session attempt to fix that shared extension was correctly blocked by the harness as a self-contradictory unilateral change and was reverted; it needs a dedicated session with full regression testing across every module touching those tables."
+    "note": "[e2e-unverified] RLS blocker — app pipeline never sets app.current_tenant_id; needs dedicated session."
   }
 }

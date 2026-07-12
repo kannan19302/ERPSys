@@ -40,6 +40,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { EcommerceModule } from './modules/ecommerce/ecommerce.module';
 import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
 import { InventoryLogisticsModule } from './modules/inventory/inventory-logistics.module';
+import { QualityComplianceModule } from './modules/inventory/quality-compliance.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { InventoryLogisticsModule } from './modules/inventory/inventory-logistic
     CrmModule,
     InventoryModule,
     InventoryLogisticsModule,
+    QualityComplianceModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

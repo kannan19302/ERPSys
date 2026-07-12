@@ -2,6 +2,27 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory Cycle 17: Quality & Compliance Management
+
+FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 1→2.
+
+- **DB**: 6 new models — `CapaRecord`, `CapaAction`, `CalibrationRecord`, `DeviationRecord`,
+  `SopDocument`, `SopRevision` (migration `20260712150000_inventory_cycle17_quality_compliance`).
+- **API** (`QualityComplianceModule`, 32 endpoints under `/inventory/quality-compliance`):
+  - CAPA: create/list/get/update, state machine (OPEN→IN_PROGRESS→PENDING_VERIFICATION→CLOSED/CANCELLED),
+    action management (add/complete), overdue detection, dashboard
+  - Calibration: schedule, record result (PASS/FAIL/LIMITED_USE), auto-compute nextDueDate from
+    intervalDays, overdue list, dashboard
+  - Deviations: create/list/get, review, close with optional CAPA link, severity-based dashboard,
+    escalate-to-CAPA shortcut linking deviation → new CAPA automatically
+  - SOP Documents: create/list/get, submit-for-review, approve, obsolete, revise (bumps version +
+    logs revision history), keyword search, due-soon alert list
+  - Compliance dashboard aggregating all four sub-domains
+- **UI**: `/inventory/quality-compliance` — 5-tab page: Dashboard (status tiles with red warnings),
+  CAPA table, Calibrations table, Deviations table with severity badges, SOP Documents table;
+  wired into `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 26 unit tests, all passing. Inventory feature count: 253 → 284.
+
 ## [2026-07-12] Inventory Cycle 16: ASN, Inbound/Outbound Logistics & Carrier Management
 
 FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 0→1.

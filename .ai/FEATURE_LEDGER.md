@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T14:43:31.001Z
+> Last generated: 2026-07-12T16:00:42.729Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2159 features** across 33 modules
+## System total: **2190 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 253 |
+| [inventory](#inventory) | 284 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-253 features
+284 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2005,6 +2005,37 @@
 | POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
+| GET | `/inventory/quality-compliance/capas` | — | — |
+| GET | `/inventory/quality-compliance/capas/dashboard` | — | — |
+| GET | `/inventory/quality-compliance/capas/:id` | — | — |
+| POST | `/inventory/quality-compliance/capas` | — | — |
+| PATCH | `/inventory/quality-compliance/capas/:id` | — | — |
+| POST | `/inventory/quality-compliance/capas/:id/transition` | — | — |
+| POST | `/inventory/quality-compliance/capas/:id/actions` | — | — |
+| POST | `/inventory/quality-compliance/capas/actions/:actionId/complete` | — | — |
+| GET | `/inventory/quality-compliance/calibrations` | — | — |
+| GET | `/inventory/quality-compliance/calibrations/dashboard` | — | — |
+| GET | `/inventory/quality-compliance/calibrations/overdue` | — | — |
+| GET | `/inventory/quality-compliance/calibrations/:id` | — | — |
+| POST | `/inventory/quality-compliance/calibrations` | — | — |
+| POST | `/inventory/quality-compliance/calibrations/:id/result` | — | — |
+| GET | `/inventory/quality-compliance/deviations` | — | — |
+| GET | `/inventory/quality-compliance/deviations/dashboard` | — | — |
+| GET | `/inventory/quality-compliance/deviations/:id` | — | — |
+| POST | `/inventory/quality-compliance/deviations` | — | — |
+| POST | `/inventory/quality-compliance/deviations/:id/review` | — | — |
+| POST | `/inventory/quality-compliance/deviations/:id/close` | — | — |
+| POST | `/inventory/quality-compliance/deviations/:id/escalate-to-capa` | — | — |
+| GET | `/inventory/quality-compliance/sops` | — | — |
+| GET | `/inventory/quality-compliance/sops/due-soon` | — | — |
+| GET | `/inventory/quality-compliance/sops/search` | — | — |
+| GET | `/inventory/quality-compliance/sops/:id` | — | — |
+| POST | `/inventory/quality-compliance/sops` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/submit-review` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/approve` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/obsolete` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/revise` | — | — |
+| GET | `/inventory/quality-compliance/dashboard` | — | — |
 | GET | `/inventory/rtv/reason-codes` | List return reason codes | `inventory.rtv.read` |
 | POST | `/inventory/rtv/reason-codes` | Create a return reason code | `inventory.rtv.read` |
 | PATCH | `/inventory/rtv/reason-codes/:id` | Update a return reason code | `inventory.rtv.manage` |

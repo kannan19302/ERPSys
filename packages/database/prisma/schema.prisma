@@ -11747,3 +11747,167 @@ model ShipmentTrackingEvent {
   @@index([outboundShipmentId])
   @@map("shipment_tracking_events")
 }
+
+// ─── Inventory Cycle 17: Quality & Compliance Management ──────────────────────
+
+/// CAPA (Corrective & Preventive Action) record.
+model CapaRecord {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  capaNumber      String    @map("capa_number")
+  title           String
+  type            String    @default("CORRECTIVE")   // CORRECTIVE | PREVENTIVE
+  source          String    @default("INTERNAL")     // INTERNAL | CUSTOMER | AUDIT | NCR | DEVIATION
+  sourceRefId     String?   @map("source_ref_id")    // e.g. ncr id or deviation id
+  priority        String    @default("MEDIUM")       // LOW | MEDIUM | HIGH | CRITICAL
+  status          String    @default("OPEN")         // OPEN | IN_PROGRESS | PENDING_VERIFICATION | CLOSED | CANCELLED
+  description     String
+  rootCause       String?   @map("root_cause")
+  immediateAction String?   @map("immediate_action")
+  correctiveAction String?  @map("corrective_action")
+  preventiveAction String?  @map("preventive_action")
+  dueDate         DateTime? @map("due_date")
+  closedAt        DateTime? @map("closed_at")
+  verifiedAt      DateTime? @map("verified_at")
+  verifiedBy      String?   @map("verified_by")
+  assignedTo      String?   @map("assigned_to")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  actions CapaAction[]
+
+  @@unique([tenantId, capaNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("capa_records")
+}
+
+/// Individual action step within a CAPA.
+model CapaAction {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  capaId      String    @map("capa_id")
+  actionType  String    @map("action_type")   // ROOT_CAUSE_ANALYSIS | CONTAINMENT | CORRECTIVE | PREVENTIVE | VERIFICATION
+  description String
+  assignedTo  String?   @map("assigned_to")
+  dueDate     DateTime? @map("due_date")
+  completedAt DateTime? @map("completed_at")
+  status      String    @default("PENDING")  // PENDING | IN_PROGRESS | COMPLETE | OVERDUE
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  capa CapaRecord @relation(fields: [capaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([capaId])
+  @@map("capa_actions")
+}
+
+/// Instrument/equipment calibration record.
+model CalibrationRecord {
+  id                 String    @id @default(cuid())
+  tenantId           String    @map("tenant_id")
+  instrumentId       String    @map("instrument_id")   // references a product or internal asset id
+  instrumentName     String    @map("instrument_name")
+  serialNumber       String?   @map("serial_number")
+  location           String?
+  calibrationType    String    @map("calibration_type")  // INTERNAL | EXTERNAL | VENDOR
+  status             String    @default("DUE")           // DUE | IN_PROGRESS | PASSED | FAILED | OVERDUE | CANCELLED
+  scheduledDate      DateTime  @map("scheduled_date")
+  performedAt        DateTime? @map("performed_at")
+  nextDueDate        DateTime? @map("next_due_date")
+  intervalDays       Int?      @map("interval_days")
+  performedBy        String?   @map("performed_by")
+  externalVendor     String?   @map("external_vendor")
+  certificateNumber  String?   @map("certificate_number")
+  certificateUrl     String?   @map("certificate_url")
+  result             String?   // PASS | FAIL | LIMITED_USE
+  measurementBefore  String?   @map("measurement_before")
+  measurementAfter   String?   @map("measurement_after")
+  tolerance          String?
+  notes              String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, instrumentId])
+  @@map("calibration_records")
+}
+
+/// Quality deviation / non-conformance event.
+model DeviationRecord {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  deviationNumber String  @map("deviation_number")
+  title         String
+  type          String    @default("PROCESS")     // PROCESS | PRODUCT | MATERIAL | EQUIPMENT | DOCUMENTATION | ENVIRONMENTAL
+  severity      String    @default("MINOR")       // MINOR | MAJOR | CRITICAL
+  status        String    @default("OPEN")        // OPEN | UNDER_REVIEW | CLOSED | CANCELLED
+  description   String
+  detectedAt    DateTime  @map("detected_at")
+  detectedBy    String?   @map("detected_by")
+  area          String?   // warehouse zone, production area, etc.
+  productId     String?   @map("product_id")
+  batchId       String?   @map("batch_id")
+  impact        String?
+  immediateAction String? @map("immediate_action")
+  capaId        String?   @map("capa_id")         // linked CAPA if escalated
+  closedAt      DateTime? @map("closed_at")
+  closedBy      String?   @map("closed_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, deviationNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("deviation_records")
+}
+
+/// SOP / Work-instruction document control.
+model SopDocument {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  docNumber      String    @map("doc_number")
+  title          String
+  category       String    @default("SOP")   // SOP | WORK_INSTRUCTION | FORM | POLICY | SPECIFICATION
+  department     String?
+  status         String    @default("DRAFT") // DRAFT | UNDER_REVIEW | APPROVED | OBSOLETE | SUPERSEDED
+  version        String    @default("1.0")
+  effectiveDate  DateTime? @map("effective_date")
+  reviewDate     DateTime? @map("review_date")
+  expiryDate     DateTime? @map("expiry_date")
+  authorId       String?   @map("author_id")
+  approverId     String?   @map("approver_id")
+  approvedAt     DateTime? @map("approved_at")
+  fileUrl        String?   @map("file_url")
+  description    String?
+  keywords       String?   // comma-separated
+  supersededById String?   @map("superseded_by_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  revisions SopRevision[]
+
+  @@unique([tenantId, docNumber, version])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("sop_documents")
+}
+
+/// Revision history for a SOP document.
+model SopRevision {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  docId       String   @map("doc_id")
+  version     String
+  changedBy   String?  @map("changed_by")
+  changeSummary String @map("change_summary")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  document SopDocument @relation(fields: [docId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([docId])
+  @@map("sop_revisions")
+}
