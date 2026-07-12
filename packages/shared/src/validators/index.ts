@@ -1796,6 +1796,173 @@ export const submitCycleCountSchema = z.object({
 });
 export type SubmitCycleCountInput = z.infer<typeof submitCycleCountSchema>;
 
+export const createCycleCountScheduleSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  zone: z.string().max(50).optional().nullable(),
+  binScope: z.string().max(100).optional().nullable(),
+  frequency: z.enum(['WEEKLY', 'MONTHLY', 'QUARTERLY']).default('MONTHLY'),
+  blindCount: z.boolean().default(false),
+  nextDueDate: z.string().min(1, 'Next due date is required'),
+  active: z.boolean().default(true),
+});
+export type CreateCycleCountScheduleInput = z.infer<typeof createCycleCountScheduleSchema>;
+export const updateCycleCountScheduleSchema = createCycleCountScheduleSchema.partial();
+export type UpdateCycleCountScheduleInput = z.infer<typeof updateCycleCountScheduleSchema>;
+
+export const createLicensePlateSchema = z.object({
+  code: z.string().min(1, 'License plate code is required').max(100),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  binId: z.string().optional().nullable(),
+});
+export type CreateLicensePlateInput = z.infer<typeof createLicensePlateSchema>;
+
+export const addLicensePlateItemSchema = z.object({
+  inventoryItemId: z.string().min(1, 'Inventory item ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  lotBatchId: z.string().optional().nullable(),
+  serialNumberId: z.string().optional().nullable(),
+});
+export type AddLicensePlateItemInput = z.infer<typeof addLicensePlateItemSchema>;
+
+export const moveLicensePlateSchema = z.object({
+  binId: z.string().min(1, 'Destination bin ID is required'),
+});
+export type MoveLicensePlateInput = z.infer<typeof moveLicensePlateSchema>;
+
+export const createPutawayTaskSchema = z.object({
+  stockEntryId: z.string().min(1, 'Stock entry ID is required'),
+  inventoryItemId: z.string().min(1, 'Inventory item ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  suggestedBinId: z.string().optional().nullable(),
+});
+export type CreatePutawayTaskInput = z.infer<typeof createPutawayTaskSchema>;
+
+export const completePutawayTaskSchema = z.object({
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CompletePutawayTaskInput = z.infer<typeof completePutawayTaskSchema>;
+
+export const quarantineBatchSchema = z.object({
+  reason: z.string().min(1, 'Reason is required').max(1000),
+});
+export type QuarantineBatchInput = z.infer<typeof quarantineBatchSchema>;
+
+export const releaseBatchQuarantineSchema = z.object({
+  reason: z.string().max(1000).optional().nullable(),
+});
+export type ReleaseBatchQuarantineInput = z.infer<typeof releaseBatchQuarantineSchema>;
+
+export const createStockReservationSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  sourceType: z.enum(['SALES_ORDER', 'TRANSFER', 'MANUAL']).default('MANUAL'),
+  sourceId: z.string().optional().nullable(),
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreateStockReservationInput = z.infer<typeof createStockReservationSchema>;
+
+export const assembleKitSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+});
+export type AssembleKitInput = z.infer<typeof assembleKitSchema>;
+
+export const disassembleKitSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+});
+export type DisassembleKitInput = z.infer<typeof disassembleKitSchema>;
+
+export const createTransferApprovalRuleSchema = z.object({
+  warehouseId: z.string().optional().nullable(),
+  thresholdValue: z.number().nonnegative(),
+  isActive: z.boolean().default(true),
+});
+export type CreateTransferApprovalRuleInput = z.infer<typeof createTransferApprovalRuleSchema>;
+export const updateTransferApprovalRuleSchema = createTransferApprovalRuleSchema.partial();
+export type UpdateTransferApprovalRuleInput = z.infer<typeof updateTransferApprovalRuleSchema>;
+
+export const rejectTransferSchema = z.object({
+  reason: z.string().min(1, 'Reason is required').max(1000),
+});
+export type RejectTransferInput = z.infer<typeof rejectTransferSchema>;
+
+export const createPickWaveSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  salesOrderIds: z.array(z.string()).min(1, 'At least one sales order is required'),
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreatePickWaveInput = z.infer<typeof createPickWaveSchema>;
+
+export const recordPickSchema = z.object({
+  pickedQty: z.number().nonnegative(),
+  scannedSerials: z.array(z.string()).optional().default([]),
+});
+export type RecordPickInput = z.infer<typeof recordPickSchema>;
+
+export const createConsignmentStockSchema = z.object({
+  supplierName: z.string().min(1, 'Supplier name is required').max(200),
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantityOnHand: z.number().nonnegative().default(0),
+  unitCost: z.number().nonnegative(),
+});
+export type CreateConsignmentStockInput = z.infer<typeof createConsignmentStockSchema>;
+
+export const recordConsignmentConsumptionSchema = z.object({
+  quantity: z.number().positive('Quantity must be positive'),
+  reference: z.string().max(200).optional().nullable(),
+});
+export type RecordConsignmentConsumptionInput = z.infer<typeof recordConsignmentConsumptionSchema>;
+
+export const receiveWithTraceabilitySchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  valuationRate: z.number().nonnegative().default(0),
+  serialNumbers: z.array(z.string()).optional().default([]),
+  batchNo: z.string().max(100).optional().nullable(),
+  lotNo: z.string().max(100).optional().nullable(),
+  expiryDate: z.string().optional().nullable(),
+});
+export type ReceiveWithTraceabilityInput = z.infer<typeof receiveWithTraceabilitySchema>;
+
+export const createDockAppointmentSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  dockDoor: z.string().min(1, 'Dock door is required').max(50),
+  type: z.enum(['INBOUND', 'OUTBOUND']),
+  carrierName: z.string().min(1, 'Carrier name is required').max(200),
+  referenceType: z.enum(['STOCK_ENTRY', 'PICK_WAVE']).optional().nullable(),
+  referenceId: z.string().optional().nullable(),
+  scheduledAt: z.string().min(1, 'Scheduled time is required'),
+  durationMinutes: z.number().int().positive().default(60),
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreateDockAppointmentInput = z.infer<typeof createDockAppointmentSchema>;
+export const updateDockAppointmentSchema = createDockAppointmentSchema.partial();
+export type UpdateDockAppointmentInput = z.infer<typeof updateDockAppointmentSchema>;
+
+export const createQAInspectionTemplateSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  productId: z.string().optional().nullable(),
+  checklist: z.array(z.object({ parameter: z.string(), criteria: z.string() })).default([]),
+  isActive: z.boolean().default(true),
+});
+export type CreateQAInspectionTemplateInput = z.infer<typeof createQAInspectionTemplateSchema>;
+export const updateQAInspectionTemplateSchema = createQAInspectionTemplateSchema.partial();
+export type UpdateQAInspectionTemplateInput = z.infer<typeof updateQAInspectionTemplateSchema>;
+
+export const createRequisitionFromReorderRuleSchema = z.object({
+  requiredDate: z.string().optional().nullable(),
+});
+export type CreateRequisitionFromReorderRuleInput = z.infer<typeof createRequisitionFromReorderRuleSchema>;
+
+export const createKitVersionSchema = z.object({
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreateKitVersionInput = z.infer<typeof createKitVersionSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),

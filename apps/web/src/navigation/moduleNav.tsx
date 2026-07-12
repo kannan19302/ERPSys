@@ -303,6 +303,21 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Bin Configurations', href: '/inventory/bin-locations', icon: MapPin },
             { name: 'Cycle Count Audits', href: '/inventory/cycle-counts', icon: ClipboardCheck },
+            { name: 'Cycle Count Schedules', href: '/inventory/cycle-count-schedules', icon: ClipboardCheck },
+            { name: 'License Plates & Put-away', href: '/inventory/license-plates', icon: Package },
+            { name: 'Traceability', href: '/inventory/traceability', icon: QrCode },
+            { name: 'Stock Reservations & Analytics', href: '/inventory/stock-reservations', icon: ClipboardCheck },
+            { name: 'Kits & Assembly', href: '/inventory/kits', icon: Package },
+            { name: 'Transfer Approvals', href: '/inventory/transfer-approvals', icon: ShieldCheck },
+            { name: 'Movement History & Labels', href: '/inventory/movement-history', icon: ClipboardCheck },
+            { name: 'Wave Picking', href: '/inventory/pick-waves', icon: Truck },
+            { name: 'Consignment Inventory', href: '/inventory/consignment', icon: Truck },
+            { name: 'Reorder Rules & Automation', href: '/inventory/reorder-rules', icon: ShoppingCart },
+            { name: 'QA Templates & Routing', href: '/inventory/qa-templates', icon: ShieldCheck },
+            { name: 'Expiry, FEFO & Recalls', href: '/inventory/expiry-fefo', icon: AlertTriangle },
+            { name: 'Cross-Docking', href: '/inventory/cross-dock', icon: Link },
+            { name: 'Slotting Optimization', href: '/inventory/slotting', icon: MapPin },
+            { name: 'Dock Scheduling', href: '/inventory/dock-scheduling', icon: Truck },
           ]
         },
         {

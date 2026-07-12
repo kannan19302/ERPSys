@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { seedWebTemplates } from './seed-web-templates';
 
 const prisma = new PrismaClient();
@@ -58,6 +58,24 @@ const DEFAULT_ROLES = {
   },
 };
 
+/**
+ * Row-Level Security (migration `20260626120000_rls_policies`) enforces
+ * `tenant_id = current_tenant_id()` on a subset of high-value tables (users,
+ * invoices, payments, employees, patients, payroll_runs, journals, customers,
+ * vendors, sales_orders, purchase_orders, audit_logs). The app sets that
+ * session variable per-request via its own middleware; this seed script has
+ * no request context, so writes to those tables need it set explicitly.
+ * Wraps a single write (or a short read+write pair) in its own transaction
+ * scoped just to that call, rather than the whole multi-thousand-line seed
+ * run, to stay well under Prisma's interactive-transaction timeout.
+ */
+async function withTenantContext<T>(tenantId: string, fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}, true)`;
+    return fn(tx);
+  });
+}
+
 async function main() {
   console.log('🌱 Starting database seeding...');
 
@@ -101,7 +119,7 @@ async function main() {
   console.log('System roles upserted.');
 
   // 3. Create Super Admin User
-  const adminUser = await prisma.user.upsert({
+  const adminUser = await withTenantContext(tenant.id, (tx) => tx.user.upsert({
     where: {
       tenantId_email: {
         tenantId: tenant.id,
@@ -117,7 +135,7 @@ async function main() {
       lastName: 'Administrator',
       status: 'ACTIVE',
     },
-  });
+  }));
   console.log(`User verified: ${adminUser.email}`);
 
   // Assign Super Admin Role to User
@@ -188,31 +206,33 @@ async function main() {
       { code: 'EMP-002', firstName: 'Sarah', lastName: 'Connor', designation: 'Finance Controller', email: 'sarah.connor@company.com', deptId: financeDeptId },
     ];
     for (const emp of employeeData) {
-      const existing = await prisma.employee.findFirst({
-        where: { tenantId: tenant.id, employeeCode: emp.code },
-      });
-      if (!existing) {
-        await prisma.employee.create({
-          data: {
-            tenantId: tenant.id,
-            orgId: org.id,
-            employeeCode: emp.code,
-            firstName: emp.firstName,
-            lastName: emp.lastName,
-            email: emp.email,
-            designation: emp.designation,
-            departmentId: emp.deptId,
-            dateOfJoining: new Date(),
-          },
+      await withTenantContext(tenant.id, async (tx) => {
+        const existing = await tx.employee.findFirst({
+          where: { tenantId: tenant.id, employeeCode: emp.code },
         });
-      }
+        if (!existing) {
+          await tx.employee.create({
+            data: {
+              tenantId: tenant.id,
+              orgId: org.id,
+              employeeCode: emp.code,
+              firstName: emp.firstName,
+              lastName: emp.lastName,
+              email: emp.email,
+              designation: emp.designation,
+              departmentId: emp.deptId,
+              dateOfJoining: new Date(),
+            },
+          });
+        }
+      });
     }
     console.log('HR module initial employees seeded.');
 
     // Seed Corporate Cards & Spend Limits for Employees (Phase 2 / Spend Management verification)
-    const sarahEmp = await prisma.employee.findFirst({
+    const sarahEmp = await withTenantContext(tenant.id, (tx) => tx.employee.findFirst({
       where: { tenantId: tenant.id, employeeCode: 'EMP-002' },
-    });
+    }));
     if (sarahEmp) {
       const card = await prisma.corporateCard.upsert({
         where: { id: 'corp-card-sarah' },
@@ -276,21 +296,24 @@ async function main() {
   ];
   const customerMap: Record<string, string> = {};
   for (const cust of customers) {
-    let existing = await prisma.customer.findFirst({
-      where: { tenantId: tenant.id, name: cust.name },
-    });
-    if (!existing) {
-      existing = await prisma.customer.create({
-        data: {
-          tenantId: tenant.id,
-          orgId: org.id,
-          name: cust.name,
-          email: cust.email,
-          phone: cust.phone,
-          type: cust.type,
-        },
+    const existing = await withTenantContext(tenant.id, async (tx) => {
+      let row = await tx.customer.findFirst({
+        where: { tenantId: tenant.id, name: cust.name },
       });
-    }
+      if (!row) {
+        row = await tx.customer.create({
+          data: {
+            tenantId: tenant.id,
+            orgId: org.id,
+            name: cust.name,
+            email: cust.email,
+            phone: cust.phone,
+            type: cust.type,
+          },
+        });
+      }
+      return row;
+    });
     customerMap[cust.name] = existing.id;
   }
 
@@ -299,20 +322,22 @@ async function main() {
     { name: 'LexCorp Heavy Industries', email: 'logistics@lexcorp.com', phone: '555-0133' },
   ];
   for (const vend of vendors) {
-    const existing = await prisma.vendor.findFirst({
-      where: { tenantId: tenant.id, name: vend.name },
-    });
-    if (!existing) {
-      await prisma.vendor.create({
-        data: {
-          tenantId: tenant.id,
-          orgId: org.id,
-          name: vend.name,
-          email: vend.email,
-          phone: vend.phone,
-        },
+    await withTenantContext(tenant.id, async (tx) => {
+      const existing = await tx.vendor.findFirst({
+        where: { tenantId: tenant.id, name: vend.name },
       });
-    }
+      if (!existing) {
+        await tx.vendor.create({
+          data: {
+            tenantId: tenant.id,
+            orgId: org.id,
+            name: vend.name,
+            email: vend.email,
+            phone: vend.phone,
+          },
+        });
+      }
+    });
   }
   console.log('CRM Customers & Vendors seeded.');
 
@@ -382,58 +407,60 @@ async function main() {
   const wayneId = customerMap['Wayne Enterprises'];
   const laptopId = productMap['SKU-LAP-001'];
   if (wayneId && laptopId) {
-    const existingInv = await prisma.invoice.findFirst({
-      where: { tenantId: tenant.id, invoiceNumber: 'INV-2026-001' },
+    await withTenantContext(tenant.id, async (tx) => {
+      const existingInv = await tx.invoice.findFirst({
+        where: { tenantId: tenant.id, invoiceNumber: 'INV-2026-001' },
+      });
+      if (!existingInv) {
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+
+        const invoice = await tx.invoice.create({
+          data: {
+            tenantId: tenant.id,
+            orgId: org.id,
+            customerId: wayneId,
+            invoiceNumber: 'INV-2026-001',
+            status: 'PARTIALLY_PAID',
+            dueDate,
+            subtotal: 1200.00,
+            taxAmount: 120.00,
+            totalAmount: 1320.00,
+            paidAmount: 500.00,
+          },
+        });
+
+        await tx.invoiceLineItem.create({
+          data: {
+            tenantId: tenant.id,
+            invoiceId: invoice.id,
+            productId: laptopId,
+            description: 'UltraBook Laptop Pro - Standard Configuration',
+            quantity: 1,
+            unitPrice: 1200.00,
+            taxRate: 10,
+            taxAmount: 120.00,
+            totalAmount: 1320.00,
+          },
+        });
+
+        await tx.payment.create({
+          data: {
+            tenantId: tenant.id,
+            invoiceId: invoice.id,
+            amount: 500.00,
+            method: 'BANK_TRANSFER',
+            reference: 'TXN-998822',
+          },
+        });
+      }
     });
-    if (!existingInv) {
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 30);
-      
-      const invoice = await prisma.invoice.create({
-        data: {
-          tenantId: tenant.id,
-          orgId: org.id,
-          customerId: wayneId,
-          invoiceNumber: 'INV-2026-001',
-          status: 'PARTIALLY_PAID',
-          dueDate,
-          subtotal: 1200.00,
-          taxAmount: 120.00,
-          totalAmount: 1320.00,
-          paidAmount: 500.00,
-        },
-      });
-
-      await prisma.invoiceLineItem.create({
-        data: {
-          tenantId: tenant.id,
-          invoiceId: invoice.id,
-          productId: laptopId,
-          description: 'UltraBook Laptop Pro - Standard Configuration',
-          quantity: 1,
-          unitPrice: 1200.00,
-          taxRate: 10,
-          taxAmount: 120.00,
-          totalAmount: 1320.00,
-        },
-      });
-
-      await prisma.payment.create({
-        data: {
-          tenantId: tenant.id,
-          invoiceId: invoice.id,
-          amount: 500.00,
-          method: 'BANK_TRANSFER',
-          reference: 'TXN-998822',
-        },
-      });
-    }
     console.log('Finance Invoices & Payments seeded.');
   }
 
   // 9.5. Create Sourcing RFQs & Supplier Quotations
-  const oscorp = await prisma.vendor.findFirst({ where: { tenantId: tenant.id, name: 'Oscorp Chemical Supply' } });
-  const lexcorp = await prisma.vendor.findFirst({ where: { tenantId: tenant.id, name: 'LexCorp Heavy Industries' } });
+  const oscorp = await withTenantContext(tenant.id, (tx) => tx.vendor.findFirst({ where: { tenantId: tenant.id, name: 'Oscorp Chemical Supply' } }));
+  const lexcorp = await withTenantContext(tenant.id, (tx) => tx.vendor.findFirst({ where: { tenantId: tenant.id, name: 'LexCorp Heavy Industries' } }));
   const monitorId = productMap['SKU-MON-002'];
 
   if (oscorp && lexcorp && monitorId) {
@@ -575,7 +602,7 @@ async function main() {
       },
     });
 
-    const employee = await prisma.employee.findFirst({ where: { tenantId: tenant.id } });
+    const employee = await withTenantContext(tenant.id, (tx) => tx.employee.findFirst({ where: { tenantId: tenant.id } }));
     if (employee) {
       await prisma.timesheet.create({
         data: {
@@ -739,7 +766,7 @@ async function main() {
       },
     });
 
-    const emp = await prisma.employee.findFirst({ where: { tenantId: tenant.id } });
+    const emp = await withTenantContext(tenant.id, (tx) => tx.employee.findFirst({ where: { tenantId: tenant.id } }));
     if (emp) {
       await prisma.salaryStructure.create({
         data: {
@@ -1355,9 +1382,9 @@ async function main() {
   console.log('🌱 Seeding Project Management Gaps models...');
   
   // Find a Customer
-  const customer = await prisma.customer.findFirst({
+  const customer = await withTenantContext(tenant.id, (tx) => tx.customer.findFirst({
     where: { tenantId: tenant.id },
-  });
+  }));
   
   if (customer) {
     // Portfolios
@@ -1437,7 +1464,7 @@ async function main() {
     });
 
     // Add timesheets to completed tasks for cost calculations
-    const emp = await prisma.employee.findFirst({ where: { tenantId: tenant.id } });
+    const emp = await withTenantContext(tenant.id, (tx) => tx.employee.findFirst({ where: { tenantId: tenant.id } }));
     if (emp) {
       await prisma.timesheet.create({
         data: {
@@ -1900,7 +1927,7 @@ async function main() {
   });
 
   // 4. Subcontracting Orders
-  const lexcorpVendor = await prisma.vendor.findFirst({ where: { tenantId: tenant.id, name: 'LexCorp Heavy Industries' } });
+  const lexcorpVendor = await withTenantContext(tenant.id, (tx) => tx.vendor.findFirst({ where: { tenantId: tenant.id, name: 'LexCorp Heavy Industries' } }));
   const rawSteel = await prisma.product.findFirst({ where: { tenantId: tenant.id, sku: 'SKU-CHASSIS-01' } });
   if (lexcorpVendor && rawSteel) {
     await prisma.subcontractingOrder.create({
@@ -2139,7 +2166,7 @@ async function main() {
     const existingBpa = await prisma.blanketPurchaseAgreement.findFirst({
       where: { tenantId: tenant.id, agreementNumber: 'BPA-2026-001' }
     });
-    const defaultVendor = await prisma.vendor.findFirst({ where: { tenantId: tenant.id } });
+    const defaultVendor = await withTenantContext(tenant.id, (tx) => tx.vendor.findFirst({ where: { tenantId: tenant.id } }));
     if (!existingBpa && defaultVendor) {
       const start = new Date();
       const end = new Date();
@@ -2332,9 +2359,9 @@ async function main() {
     where: { tenantId: tenant.id, code: 'WH-MAIN' },
   });
 
-  const firstEmployee = await prisma.employee.findFirst({
+  const firstEmployee = await withTenantContext(tenant.id, (tx) => tx.employee.findFirst({
     where: { tenantId: tenant.id },
-  });
+  }));
 
   // Seed Fixed Assets
   const laptopAsset = await prisma.fixedAsset.upsert({

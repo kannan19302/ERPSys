@@ -989,6 +989,10 @@ model Product {
   inventoryItemBins             InventoryItemBin[]
   reorderRules                  ReorderRule[]
   stockAlerts                   StockAlert[]
+  stockReservations             StockReservation[]
+  pickWaveItems                 PickWaveItem[]
+  consignmentStocks             ConsignmentStock[]
+  qaInspectionTemplates          QAInspectionTemplate[]
   inventoryValuations           InventoryValuation[]
   productKit                    ProductKit?
   productKitItems               ProductKitItem[]
@@ -1020,11 +1024,18 @@ model Warehouse {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organization       Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  inventoryItems     InventoryItem[]
-  stockLedgerEntries StockLedgerEntry[]
-  binLocations       BinLocation[]
-  fixedAssets        FixedAsset[]
+  organization        Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inventoryItems      InventoryItem[]
+  stockLedgerEntries  StockLedgerEntry[]
+  binLocations        BinLocation[]
+  fixedAssets         FixedAsset[]
+  cycleCountSchedules CycleCountSchedule[]
+  licensePlates       LicensePlate[]
+  stockReservations    StockReservation[]
+  transferApprovalRules TransferApprovalRule[]
+  pickWaves            PickWave[]
+  dockAppointments     DockAppointment[]
+  consignmentStocks    ConsignmentStock[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -1047,8 +1058,10 @@ model InventoryItem {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  product   Product   @relation(fields: [productId], references: [id])
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  product           Product            @relation(fields: [productId], references: [id])
+  warehouse         Warehouse          @relation(fields: [warehouseId], references: [id])
+  licensePlateItems LicensePlateItem[]
+  putawayTasks      PutawayTask[]
 
   @@unique([tenantId, productId, warehouseId])
   @@index([tenantId])
@@ -2876,8 +2889,9 @@ model SerialNumber {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  product Product               @relation(fields: [productId], references: [id])
-  history SerialNumberHistory[]
+  product           Product               @relation(fields: [productId], references: [id])
+  history           SerialNumberHistory[]
+  licensePlateItems LicensePlateItem[]
 
   @@unique([tenantId, serialNo])
   @@index([tenantId])
@@ -2920,16 +2934,21 @@ model Batch {
   costPrice       Decimal?  @map("cost_price") @db.Decimal(15, 2)
   status          String    @default("ACTIVE") // ACTIVE, PARTIALLY_USED, EXHAUSTED, EXPIRED, QUARANTINE
   notes           String?
+  originStockEntryId String? @map("origin_stock_entry_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  product         Product          @relation(fields: [productId], references: [id])
-  stockEntryItems StockEntryItem[]
+  product           Product              @relation(fields: [productId], references: [id])
+  stockEntryItems   StockEntryItem[]
+  originStockEntry  StockEntry?          @relation("BatchOrigin", fields: [originStockEntryId], references: [id])
+  licensePlateItems LicensePlateItem[]
+  quarantineLogs    BatchQuarantineLog[]
 
   @@unique([tenantId, productId, batchNo])
   @@index([tenantId])
   @@index([productId])
   @@index([expiryDate])
+  @@index([originStockEntryId])
   @@map("batches")
 }
 
@@ -2953,6 +2972,9 @@ model BinLocation {
   inventoryBins       InventoryItemBin[]
   stockEntryFromItems StockEntryItem[]   @relation("FromBin")
   stockEntryToItems   StockEntryItem[]   @relation("ToBin")
+  licensePlates       LicensePlate[]
+  putawayTasks        PutawayTask[]
+  pickWaveItems       PickWaveItem[]
 
   @@unique([tenantId, warehouseId, code])
   @@index([tenantId])
@@ -3018,6 +3040,7 @@ model CycleCountItem {
   countedBy     String?   @map("counted_by")
   countedAt     DateTime? @map("counted_at")
   remarks       String?
+  reasonCode    String?   @map("reason_code")
 
   cycleCount CycleCount @relation(fields: [cycleCountId], references: [id], onDelete: Cascade)
   product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -3026,6 +3049,296 @@ model CycleCountItem {
   @@index([cycleCountId])
   @@index([productId])
   @@map("cycle_count_items")
+}
+
+model CycleCountSchedule {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  warehouseId String    @map("warehouse_id")
+  zone        String?
+  binScope    String?   @map("bin_scope")
+  frequency   String    @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
+  blindCount  Boolean   @default(false) @map("blind_count")
+  nextDueDate DateTime  @map("next_due_date")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@map("cycle_count_schedules")
+}
+
+model LicensePlate {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  code        String
+  warehouseId String    @map("warehouse_id")
+  binId       String?   @map("bin_id")
+  status      String    @default("OPEN") // OPEN, CLOSED, CONSUMED
+  closedAt    DateTime? @map("closed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse          @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  bin       BinLocation?       @relation(fields: [binId], references: [id])
+  items     LicensePlateItem[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@map("license_plates")
+}
+
+model LicensePlateItem {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  licensePlateId String   @map("license_plate_id")
+  inventoryItemId String  @map("inventory_item_id")
+  quantity       Decimal  @db.Decimal(15, 3)
+  lotBatchId     String?  @map("lot_batch_id")
+  serialNumberId String?  @map("serial_number_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  licensePlate LicensePlate  @relation(fields: [licensePlateId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  lotBatch      Batch?        @relation(fields: [lotBatchId], references: [id])
+  serialNumber  SerialNumber? @relation(fields: [serialNumberId], references: [id])
+
+  @@index([tenantId])
+  @@index([licensePlateId])
+  @@index([inventoryItemId])
+  @@map("license_plate_items")
+}
+
+model PutawayTask {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  stockEntryId    String    @map("stock_entry_id")
+  inventoryItemId String    @map("inventory_item_id")
+  quantity        Decimal   @db.Decimal(15, 3)
+  suggestedBinId  String?   @map("suggested_bin_id")
+  status          String    @default("PENDING") // PENDING, COMPLETE
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  stockEntry    StockEntry    @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  suggestedBin  BinLocation?  @relation(fields: [suggestedBinId], references: [id])
+
+  @@index([tenantId])
+  @@index([stockEntryId])
+  @@index([inventoryItemId])
+  @@map("putaway_tasks")
+}
+
+model BatchQuarantineLog {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  batchId     String    @map("batch_id")
+  action      String // QUARANTINED, RELEASED, REJECTED
+  reason      String?
+  performedBy String?   @map("performed_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([batchId])
+  @@map("batch_quarantine_logs")
+}
+
+model StockReservation {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  productId     String    @map("product_id")
+  warehouseId   String    @map("warehouse_id")
+  quantity      Decimal   @db.Decimal(15, 3)
+  sourceType    String    @map("source_type") // SALES_ORDER, TRANSFER, MANUAL
+  sourceId      String?   @map("source_id")
+  status        String    @default("ACTIVE") // ACTIVE, RELEASED, FULFILLED
+  releasedAt    DateTime? @map("released_at")
+  fulfilledAt   DateTime? @map("fulfilled_at")
+  notes         String?
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([productId])
+  @@index([warehouseId])
+  @@map("stock_reservations")
+}
+
+model TransferApprovalRule {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  warehouseId    String?   @map("warehouse_id")
+  thresholdValue Decimal   @default(0) @map("threshold_value") @db.Decimal(15, 2)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@map("transfer_approval_rules")
+}
+
+model StockTransferApproval {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  stockEntryId   String    @unique @map("stock_entry_id")
+  thresholdValue Decimal   @db.Decimal(15, 2)
+  entryValue     Decimal   @map("entry_value") @db.Decimal(15, 2)
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  requestedBy    String?   @map("requested_by")
+  approvedBy     String?   @map("approved_by")
+  approvedAt     DateTime? @map("approved_at")
+  rejectedReason String?   @map("rejected_reason")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("stock_transfer_approvals")
+}
+
+model PickWave {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  waveNumber  String    @map("wave_number")
+  warehouseId String    @map("warehouse_id")
+  status      String    @default("OPEN") // OPEN, PICKING, PACKED, COMPLETED, CANCELLED
+  notes       String?
+  createdBy   String?   @map("created_by")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id])
+  orders    PickWaveOrder[]
+  items     PickWaveItem[]
+
+  @@unique([tenantId, orgId, waveNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("pick_waves")
+}
+
+model PickWaveOrder {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  pickWaveId    String   @map("pick_wave_id")
+  salesOrderId  String   @map("sales_order_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  pickWave PickWave @relation(fields: [pickWaveId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, pickWaveId, salesOrderId])
+  @@index([tenantId])
+  @@index([pickWaveId])
+  @@map("pick_wave_orders")
+}
+
+model PickWaveItem {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  pickWaveId    String    @map("pick_wave_id")
+  productId     String    @map("product_id")
+  binLocationId String?   @map("bin_location_id")
+  quantity      Decimal   @db.Decimal(15, 3)
+  pickedQty     Decimal   @default(0) @map("picked_qty") @db.Decimal(15, 3)
+  status        String    @default("PENDING") // PENDING, PICKED, SHORT
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  pickWave    PickWave     @relation(fields: [pickWaveId], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [productId], references: [id])
+  binLocation BinLocation? @relation(fields: [binLocationId], references: [id])
+
+  @@index([tenantId])
+  @@index([pickWaveId])
+  @@map("pick_wave_items")
+}
+
+model ConsignmentStock {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  supplierName    String    @map("supplier_name")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  quantityOnHand  Decimal   @default(0) @map("quantity_on_hand") @db.Decimal(15, 3)
+  unitCost        Decimal   @map("unit_cost") @db.Decimal(15, 2)
+  status          String    @default("ACTIVE") // ACTIVE, SUSPENDED, CLOSED
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  product         Product                    @relation(fields: [productId], references: [id])
+  warehouse       Warehouse                  @relation(fields: [warehouseId], references: [id])
+  consumptions    ConsignmentConsumption[]
+
+  @@index([tenantId])
+  @@index([productId])
+  @@index([warehouseId])
+  @@map("consignment_stocks")
+}
+
+model ConsignmentConsumption {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  consignmentStockId String   @map("consignment_stock_id")
+  quantity           Decimal  @db.Decimal(15, 3)
+  totalCost          Decimal  @map("total_cost") @db.Decimal(15, 2)
+  billed             Boolean  @default(false)
+  billedAt           DateTime? @map("billed_at")
+  reference          String?
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  consignmentStock ConsignmentStock @relation(fields: [consignmentStockId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([consignmentStockId])
+  @@map("consignment_consumptions")
+}
+
+model DockAppointment {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  warehouseId     String    @map("warehouse_id")
+  dockDoor        String    @map("dock_door")
+  type            String // INBOUND, OUTBOUND
+  carrierName     String    @map("carrier_name")
+  referenceType   String?   @map("reference_type") // STOCK_ENTRY, PICK_WAVE
+  referenceId     String?   @map("reference_id")
+  scheduledAt     DateTime  @map("scheduled_at")
+  durationMinutes Int       @default(60) @map("duration_minutes")
+  status          String    @default("SCHEDULED") // SCHEDULED, CHECKED_IN, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  checkedInAt     DateTime? @map("checked_in_at")
+  completedAt     DateTime? @map("completed_at")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, warehouseId, dockDoor])
+  @@index([tenantId, status])
+  @@map("dock_appointments")
 }
 
 // ════════════════════════════════════════════════
@@ -5212,11 +5525,15 @@ model StockEntry {
   cancelledAt     DateTime? @map("cancelled_at")
   cancelReason    String?   @map("cancel_reason")
   createdBy       String?   @map("created_by")
+  sourceCycleCountId String? @map("source_cycle_count_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   items         StockEntryItem[]
   ledgerEntries StockLedgerEntry[]
+  originBatches Batch[]            @relation("BatchOrigin")
+  putawayTasks  PutawayTask[]
+  transferApproval StockTransferApproval?
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])
@@ -5311,6 +5628,22 @@ model QAInspectionCheckpoint {
   @@index([tenantId])
   @@index([inspectionId])
   @@map("qa_inspection_checkpoints")
+}
+
+model QAInspectionTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  productId   String?  @map("product_id")
+  checklist   Json     @default("[]")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@map("qa_inspection_templates")
 }
 
 // ════════════════════════════════════════════════
@@ -7309,6 +7642,7 @@ model ProductKit {
 
   product    Product          @relation(fields: [productId], references: [id])
   components ProductKitItem[]
+  versions   KitVersion[]
 
   @@index([tenantId])
   @@map("product_kits")
@@ -7328,6 +7662,25 @@ model ProductKitItem {
   @@index([tenantId])
   @@index([kitId])
   @@map("product_kit_items")
+}
+
+model KitVersion {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  kitId        String   @map("kit_id")
+  versionNo    Int      @map("version_no")
+  componentsSnapshot Json @map("components_snapshot")
+  isActive     Boolean  @default(false) @map("is_active")
+  notes        String?
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  kit ProductKit @relation(fields: [kitId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, kitId, versionNo])
+  @@index([tenantId])
+  @@index([kitId])
+  @@map("kit_versions")
 }
 
 model PurchaseRequisition {

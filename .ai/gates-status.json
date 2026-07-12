@@ -1,18 +1,28 @@
 {
-  "ranAt": "2026-07-04T04:24:19.536Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
-  "lastMilestoneCommit": "9884ffb",
+  "ranAt": "2026-07-12T03:43:48.000Z",
+  "fastCyclesSinceFullGate": 2,
+  "deferredScopes": [
+    "Inventory: dynamic slotting optimization (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
+    "Inventory: yard/dock appointment scheduling (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+  ],
+  "lastMilestoneCommit": "e91df65",
   "typecheck": {
-    "label": "Typecheck (tsc --noEmit, all packages)",
+    "label": "Typecheck (turbo, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 20
+    "seconds": 24
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 40
+    "seconds": 32,
+    "files": 194,
+    "cases": 2447
+  },
+  "e2e": {
+    "label": "Playwright smoke gate",
+    "pass": null,
+    "note": "[e2e-unverified] Seed-script RLS blocker is FIXED (prisma/seed.ts wraps every write to an RLS-protected table in a transaction that sets app.current_tenant_id via set_config — verified live). But login still 401s: the running app never sets app.current_tenant_id anywhere in its own request pipeline, so FORCE ROW LEVEL SECURITY on 12 tables makes them invisible to any DB role without BYPASSRLS — confirmed via psql (SELECT count(*) FROM users: 0 without context, 1 with it). This is a P0 cross-cutting gap (the RLS migration was never wired into packages/database/src/index.ts's Prisma extension) — see MODULE_REGISTRY.md 'Critical cross-cutting finding' section. A same-session attempt to fix that shared extension was correctly blocked by the harness as a self-contradictory unilateral change and was reverted; it needs a dedicated session with full regression testing across every module touching those tables."
   }
 }

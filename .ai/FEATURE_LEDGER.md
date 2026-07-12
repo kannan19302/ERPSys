@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T15:39:53.568Z
+> Last generated: 2026-07-12T03:55:29.767Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1979 features** across 33 modules
+## System total: **2064 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 73 |
+| [inventory](#inventory) | 158 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-73 features
+158 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1833,19 +1833,97 @@
 | POST | `/inventory/stock-entries/:id/cancel` | Cancel stock entry | `inventory.stock.update` |
 | GET | `/inventory/stock-ledger` | Get stock ledger | `inventory.stock.read` |
 | POST | `/inventory/transfers` | Transfer stock | `inventory.stock.create` |
+| GET | `/inventory/transfer-approval-rules` | Get transfer approval rules | `inventory.stock.read` |
+| POST | `/inventory/transfer-approval-rules` | Create transfer approval rule | `inventory.stock.create` |
+| PATCH | `/inventory/transfer-approval-rules/:id` | Update transfer approval rule | `inventory.stock.create` |
+| DELETE | `/inventory/transfer-approval-rules/:id` | Delete transfer approval rule | `inventory.stock.update` |
+| POST | `/inventory/stock-entries/:id/request-transfer-approval` | Request approval to submit a transfer stock entry (auto-submits below threshold) | `inventory.stock.delete` |
+| GET | `/inventory/transfer-approvals/pending` | Get pending transfer approvals | `inventory.stock.update` |
+| POST | `/inventory/transfer-approvals/:id/approve` | Approve a pending transfer (submits the stock entry) | `inventory.stock.update` |
+| POST | `/inventory/transfer-approvals/:id/reject` | Reject a pending transfer | `inventory.stock.update` |
+| GET | `/inventory/movement-history` | Get consolidated movement history / audit trail | `inventory.stock.read` |
+| GET | `/inventory/pick-waves` | Get pick waves | `inventory.stock.read` |
+| GET | `/inventory/pick-waves/:id` | Get pick wave by id | `inventory.stock.read` |
+| POST | `/inventory/pick-waves` | Create pick wave from multiple sales orders | `inventory.stock.read` |
+| POST | `/inventory/pick-waves/items/:id/record-pick` | Record a pick against a wave item | `inventory.stock.update` |
+| GET | `/inventory/pick-waves/:id/pack-list` | Get pack list for a wave | `inventory.stock.update` |
+| POST | `/inventory/pick-waves/:id/complete` | Complete a pick wave | `inventory.stock.read` |
+| GET | `/inventory/consignment-stocks` | Get consignment stocks | `inventory.stock.read` |
+| POST | `/inventory/consignment-stocks` | Create consignment stock | `inventory.stock.create` |
+| POST | `/inventory/consignment-stocks/:id/consume` | Record consignment consumption (consumption-triggered billing) | `inventory.stock.update` |
+| GET | `/inventory/consignment-stocks/consumptions/unbilled` | Get unbilled consignment consumptions | `inventory.stock.update` |
+| POST | `/inventory/consignment-stocks/consumptions/:id/mark-billed` | Mark a consignment consumption as billed | `inventory.stock.read` |
+| POST | `/inventory/receive-with-traceability` | Receive stock with serial/lot traceability captured at receipt | `inventory.stock.create` |
+| GET | `/inventory/labels/product/:id` | Get product barcode label data | `inventory.stock.read` |
+| GET | `/inventory/labels/batch/:id` | Get batch barcode label data | `inventory.stock.read` |
+| GET | `/inventory/labels/license-plate/:id` | Get license plate barcode label data | `inventory.stock.read` |
+| GET | `/inventory/labels/bin/:id` | Get bin location barcode label data | `inventory.stock.read` |
 | GET | `/inventory/cycle-counts` | Get cycle counts | `inventory.stock.read` |
 | GET | `/inventory/cycle-counts/:id` | Get cycle count by id | `inventory.stock.read` |
 | POST | `/inventory/cycle-counts` | Create cycle count | `inventory.stock.read` |
 | POST | `/inventory/cycle-counts/:id/submit` | Submit cycle count | `inventory.stock.update` |
 | POST | `/inventory/cycle-counts/:id/approve` | Approve cycle count | `inventory.stock.update` |
+| GET | `/inventory/cycle-count-schedules` | Get cycle count schedules | `inventory.stock.read` |
+| GET | `/inventory/cycle-count-schedules/due` | Get due cycle count schedules | `inventory.stock.read` |
+| GET | `/inventory/cycle-count-schedules/accuracy` | Get cycle count accuracy KPI | `inventory.stock.read` |
+| POST | `/inventory/cycle-count-schedules` | Create cycle count schedule | `inventory.stock.create` |
+| PATCH | `/inventory/cycle-count-schedules/:id` | Update cycle count schedule | `inventory.stock.create` |
+| POST | `/inventory/cycle-count-schedules/:id/roll-forward` | Roll forward cycle count schedule due date | `inventory.stock.update` |
+| DELETE | `/inventory/cycle-count-schedules/:id` | Delete cycle count schedule | `inventory.stock.update` |
+| GET | `/inventory/license-plates` | Get license plates | `inventory.stock.read` |
+| GET | `/inventory/license-plates/:id` | Get license plate by id | `inventory.stock.read` |
+| POST | `/inventory/license-plates` | Create license plate | `inventory.stock.read` |
+| POST | `/inventory/license-plates/:id/items` | Add item to license plate | `inventory.stock.create` |
+| POST | `/inventory/license-plates/:id/move` | Move license plate to another bin (barcode scan move) | `inventory.stock.update` |
+| POST | `/inventory/license-plates/:id/close` | Close license plate | `inventory.stock.update` |
+| GET | `/inventory/putaway-tasks` | Get putaway tasks | `inventory.stock.read` |
+| GET | `/inventory/putaway-tasks/suggest-bin/:inventoryItemId` | Suggest putaway bin for an inventory item (zone-based optimization) | `inventory.stock.read` |
+| POST | `/inventory/putaway-tasks` | Create putaway task | `inventory.stock.read` |
+| POST | `/inventory/putaway-tasks/:id/complete` | Complete putaway task (barcode scan confirm) | `inventory.stock.create` |
+| GET | `/inventory/dock-appointments` | Get dock appointments | `inventory.stock.read` |
+| POST | `/inventory/dock-appointments` | Create dock appointment (conflict-checked) | `inventory.stock.create` |
+| PATCH | `/inventory/dock-appointments/:id` | Update dock appointment (re-validates conflicts if rescheduled) | `inventory.stock.update` |
+| POST | `/inventory/dock-appointments/:id/check-in` | Check in a dock appointment | `inventory.stock.update` |
+| POST | `/inventory/dock-appointments/:id/complete` | Complete a dock appointment | `inventory.stock.update` |
+| POST | `/inventory/dock-appointments/:id/cancel` | Cancel a dock appointment | `inventory.stock.update` |
+| GET | `/inventory/dock-appointments/utilization` | Get dock door utilization report | `inventory.stock.update` |
+| GET | `/inventory/slotting/recommendations` | Get dynamic slotting recommendations for a warehouse | `inventory.stock.read` |
+| POST | `/inventory/slotting/execute-move` | Execute a slotting move (relocate bin-level quantity) | `inventory.stock.read` |
+| GET | `/inventory/cross-dock/opportunities` | Get cross-dock opportunities (inbound receipts that can bypass storage) | `inventory.stock.read` |
+| POST | `/inventory/cross-dock/execute` | Execute a cross-dock (receipt bypasses storage straight to an open pick) | `inventory.stock.read` |
+| POST | `/inventory/batches/:id/quarantine` | Quarantine a batch | `inventory.stock.update` |
+| POST | `/inventory/batches/:id/quarantine/release` | Release a batch from quarantine | `inventory.stock.update` |
+| POST | `/inventory/batches/:id/quarantine/reject` | Reject a quarantined batch (mark expired/unusable) | `inventory.stock.update` |
+| GET | `/inventory/batches/:id/quarantine-log` | Get batch quarantine log | `inventory.stock.update` |
+| GET | `/inventory/batches/:id/genealogy` | Get batch genealogy trace | `inventory.stock.read` |
+| GET | `/inventory/batches/:id/recall-notice` | Get batch recall notice (genealogy + affected sales orders) | `inventory.stock.read` |
+| GET | `/inventory/batches/reports/expiring` | Get expiring batches report (FEFO-sorted) | `inventory.stock.read` |
+| GET | `/inventory/batches/reports/fefo-suggestion` | Get FEFO pick suggestion for a product/warehouse/quantity | `inventory.stock.read` |
+| GET | `/inventory/serial-numbers/:id/trace` | Get serial number where-used trace | `inventory.stock.read` |
+| GET | `/inventory/stock-reservations` | Get stock reservations | `inventory.stock.read` |
+| GET | `/inventory/stock-reservations/allocation-summary` | Get allocation summary for a product in a warehouse | `inventory.stock.read` |
+| POST | `/inventory/stock-reservations` | Create stock reservation | `inventory.stock.read` |
+| POST | `/inventory/stock-reservations/:id/release` | Release a stock reservation | `inventory.stock.create` |
+| POST | `/inventory/stock-reservations/:id/fulfill` | Fulfill a stock reservation | `inventory.stock.update` |
+| GET | `/inventory/analytics/abc-classification` | Get ABC classification report | `inventory.stock.read` |
+| GET | `/inventory/analytics/dead-stock` | Get dead-stock report | `inventory.stock.read` |
+| GET | `/inventory/analytics/turnover` | Get inventory turnover report | `inventory.stock.read` |
 | GET | `/inventory/qa-inspections` | Get q a inspections | `inventory.stock.read` |
 | GET | `/inventory/qa-inspections/:id` | Get q a inspection by id | `inventory.stock.read` |
 | POST | `/inventory/qa-inspections` | Create q a inspection | `inventory.stock.read` |
 | POST | `/inventory/qa-inspections/:id/submit` | Submit q a inspection | `inventory.stock.update` |
+| POST | `/inventory/qa-inspections/:id/route-disposition` | Route a resolved inspection disposition to a downstream action (e.g. batch quarantine) | `inventory.stock.update` |
+| GET | `/inventory/qa-inspection-templates` | Get QA inspection templates | `inventory.stock.read` |
+| POST | `/inventory/qa-inspection-templates` | Create QA inspection template | `inventory.stock.create` |
+| PATCH | `/inventory/qa-inspection-templates/:id` | Update QA inspection template | `inventory.stock.create` |
+| DELETE | `/inventory/qa-inspection-templates/:id` | Delete QA inspection template | `inventory.stock.update` |
+| POST | `/inventory/qa-inspection-templates/:id/create-inspection` | Create QA inspection pre-populated from a template | `inventory.stock.delete` |
 | GET | `/inventory/reorder-rules` | Get reorder rules | `inventory.product.read` |
 | POST | `/inventory/reorder-rules` | Create reorder rule | `inventory.product.create` |
 | PATCH | `/inventory/reorder-rules/:id` | Update reorder rule | `inventory.product.create` |
 | DELETE | `/inventory/reorder-rules/:id` | Delete reorder rule | `inventory.product.update` |
+| GET | `/inventory/reorder-rules/dashboard` | Get reorder dashboard (triggered rules with lead-time-aware suggested order date) | `inventory.product.delete` |
+| POST | `/inventory/reorder-rules/:id/create-requisition` | Create purchase requisition from a triggered reorder rule | `inventory.product.read` |
 | GET | `/inventory/alerts` | Get stock alerts | `inventory.stock.read` |
 | POST | `/inventory/alerts/:id/resolve` | Resolve stock alert | `inventory.stock.update` |
 | GET | `/inventory/kits` | Get product kits | `inventory.product.read` |
@@ -1853,6 +1931,13 @@
 | POST | `/inventory/kits` | Create product kit | `inventory.product.read` |
 | PATCH | `/inventory/kits/:id` | Update product kit | `inventory.product.update` |
 | DELETE | `/inventory/kits/:id` | Delete product kit | `inventory.product.update` |
+| GET | `/inventory/kits/:id/versions` | Get kit BOM versions | `inventory.product.delete` |
+| POST | `/inventory/kits/:id/versions` | Snapshot the kit BOM as a new version | `inventory.stock.read` |
+| POST | `/inventory/kits/:id/versions/:versionId/activate` | Activate (revert to) a prior kit BOM version | `inventory.stock.create` |
+| GET | `/inventory/kits/:id/availability` | Get kit component availability / max buildable quantity | `inventory.stock.update` |
+| GET | `/inventory/kits/:id/cost-rollup` | Get kit cost rollup and margin | `inventory.stock.read` |
+| POST | `/inventory/kits/:id/assemble` | Assemble kits (consume components, produce finished kit stock) | `inventory.stock.read` |
+| POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
 
