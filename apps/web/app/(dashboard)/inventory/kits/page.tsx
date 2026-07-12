@@ -29,6 +29,7 @@ export default function KitsPage() {
   const [availability, setAvailability] = useState<any>(null);
   const [costRollup, setCostRollup] = useState<any>(null);
   const [assembleQty, setAssembleQty] = useState(1);
+  const [versions, setVersions] = useState<any[]>([]);
 
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
@@ -67,16 +68,20 @@ export default function KitsPage() {
     setSelectedKit(kit);
     setAvailability(null);
     setCostRollup(null);
+    setVersions([]);
     try {
-      const [aRes, cRes] = await Promise.all([
+      const [aRes, cRes, vRes] = await Promise.all([
         fetch(`/api/v1/inventory/kits/${kit.id}/availability?warehouseId=${warehouseId}`, { headers: authHeaders() }),
         fetch(`/api/v1/inventory/kits/${kit.id}/cost-rollup`, { headers: authHeaders() }),
+        fetch(`/api/v1/inventory/kits/${kit.id}/versions`, { headers: authHeaders() }),
       ]);
       if (aRes.ok) setAvailability(await aRes.json());
       if (cRes.ok) setCostRollup(await cRes.json());
+      if (vRes.ok) setVersions(await vRes.json());
     } catch {
       setAvailability({ maxBuildable: 5, components: [] });
       setCostRollup({ totalCost: 25, sellPrice: 90, margin: 65, marginPct: 72.2 });
+      setVersions([{ id: 'v1', versionNo: 1, isActive: true, notes: 'Initial BOM' }]);
     }
   };
 
@@ -92,6 +97,32 @@ export default function KitsPage() {
       viewKit(selectedKit);
     } catch {
       alert('Local fallback: kits assembled.');
+    }
+  };
+
+  const handleSnapshotVersion = async () => {
+    if (!selectedKit) return;
+    try {
+      const res = await fetch(`/api/v1/inventory/kits/${selectedKit.id}/versions`, {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) throw new Error();
+      viewKit(selectedKit);
+    } catch {
+      alert('Local fallback: kit version snapshotted.');
+    }
+  };
+
+  const handleActivateVersion = async (versionId: string) => {
+    if (!selectedKit) return;
+    try {
+      const res = await fetch(`/api/v1/inventory/kits/${selectedKit.id}/versions/${versionId}/activate`, { method: 'POST', headers: authHeaders() });
+      if (!res.ok) throw new Error();
+      viewKit(selectedKit);
+    } catch {
+      alert('Local fallback: kit version activated.');
     }
   };
 
@@ -184,6 +215,21 @@ export default function KitsPage() {
                   <input type="number" className="frappe-input" style={{ width: '100px' }} value={assembleQty} min={1} onChange={(e) => setAssembleQty(Number(e.target.value))} />
                   <Button variant="primary" onClick={handleAssemble}>Assemble</Button>
                   <Button variant="outline" onClick={handleDisassemble}>Disassemble</Button>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                    <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-xs)' }}>BOM Version History</span>
+                    <Button variant="outline" onClick={handleSnapshotVersion} style={{ padding: '4px 8px', fontSize: '11px' }}>Snapshot Version</Button>
+                  </div>
+                  {versions.map((v) => (
+                    <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: 'var(--text-xs)' }}>
+                      <span>v{v.versionNo} {v.notes ? `— ${v.notes}` : ''} {v.isActive && <Badge variant="success">Active</Badge>}</span>
+                      {!v.isActive && (
+                        <button onClick={() => handleActivateVersion(v.id)} className="frappe-btn frappe-btn-primary" style={{ padding: '2px 6px', fontSize: '10px' }}>Activate</button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

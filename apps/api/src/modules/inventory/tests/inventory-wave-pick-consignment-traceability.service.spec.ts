@@ -27,6 +27,7 @@ const { db } = vi.hoisted(() => {
     },
     salesOrder: {
       findFirst: vi.fn(),
+      updateMany: vi.fn(),
     },
     inventoryItemBin: {
       findFirst: vi.fn(),
@@ -110,7 +111,7 @@ describe('InventoryService — wave pick, consignment inventory, receipt traceab
     });
 
     it('completes a wave once every item is picked', async () => {
-      db.pickWave.findFirst.mockResolvedValue({ id: 'wave1', items: [{ status: 'PICKED' }] });
+      db.pickWave.findFirst.mockResolvedValue({ id: 'wave1', items: [{ status: 'PICKED' }], orders: [] });
       db.pickWave.update.mockResolvedValue({ id: 'wave1', status: 'COMPLETED' });
       const result = await service.completePickWave('t1', 'wave1');
       expect(result.status).toBe('COMPLETED');

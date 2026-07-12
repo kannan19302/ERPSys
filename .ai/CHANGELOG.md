@@ -2,6 +2,29 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: pick-wave/sales-order fulfillment integration, kit BOM versioning
+
+FAST cycle (Inventory cycle 8, branch `claude/new-session-7x5xhc`), toward the
+90→200 feature-count target (now 147/200).
+
+- **DB**: `KitVersion` model (migration
+  `20260712031329_inventory_kit_versioning`).
+- **API**: `completePickWave` now advances the wave's linked `SalesOrder`
+  rows to `PROCESSING` — cycle 5 shipped wave-pick with zero downstream
+  effect on the orders it fulfills, which was a real integration gap.
+  `createKitVersion` snapshots the current component list with an
+  incrementing version number; `activateKitVersion` reverts live
+  `ProductKitItem` rows to a prior snapshot, giving kit BOM changes an audit
+  trail and rollback path (Up Next item 5e was assembly/disassembly only —
+  no version history).
+- **UI**: version history + snapshot/activate actions added to the existing
+  `/inventory/kits` page (extends rather than adds a new route).
+- **Tests**: 6 new unit tests; also fixed 1 pre-existing test broken by the
+  `completePickWave` change (its mock fixture didn't include an `orders`
+  array). Inventory module suite 160/160 passing.
+- **Gates**: scoped typecheck clean; full turbo typecheck/API suite/E2E
+  deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 1→2).
+
 ## [2026-07-12] Inventory: expiring-batches/FEFO report, FEFO pick suggestion, recall notice
 
 FAST cycle (Inventory cycle 7, branch `claude/new-session-7x5xhc`), toward the

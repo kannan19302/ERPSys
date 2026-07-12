@@ -1942,6 +1942,11 @@ export const createRequisitionFromReorderRuleSchema = z.object({
 });
 export type CreateRequisitionFromReorderRuleInput = z.infer<typeof createRequisitionFromReorderRuleSchema>;
 
+export const createKitVersionSchema = z.object({
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreateKitVersionInput = z.infer<typeof createKitVersionSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),

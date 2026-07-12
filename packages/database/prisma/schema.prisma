@@ -7614,6 +7614,7 @@ model ProductKit {
 
   product    Product          @relation(fields: [productId], references: [id])
   components ProductKitItem[]
+  versions   KitVersion[]
 
   @@index([tenantId])
   @@map("product_kits")
@@ -7633,6 +7634,25 @@ model ProductKitItem {
   @@index([tenantId])
   @@index([kitId])
   @@map("product_kit_items")
+}
+
+model KitVersion {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  kitId        String   @map("kit_id")
+  versionNo    Int      @map("version_no")
+  componentsSnapshot Json @map("components_snapshot")
+  isActive     Boolean  @default(false) @map("is_active")
+  notes        String?
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  kit ProductKit @relation(fields: [kitId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, kitId, versionNo])
+  @@index([tenantId])
+  @@index([kitId])
+  @@map("kit_versions")
 }
 
 model PurchaseRequisition {

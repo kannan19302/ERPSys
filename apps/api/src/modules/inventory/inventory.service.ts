@@ -19,6 +19,7 @@ import {
   ReceiveWithTraceabilityInput,
   CreateQAInspectionTemplateInput, UpdateQAInspectionTemplateInput,
   CreateRequisitionFromReorderRuleInput,
+  CreateKitVersionInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -1745,14 +1746,22 @@ export class InventoryService {
     };
   }
 
+  /** Completing a wave advances its linked sales orders to PROCESSING (picked, ready to ship) — a real fulfillment-status integration, not just an inventory-side status flip. */
   async completePickWave(tenantId: string, id: string) {
-    const wave = await prisma.pickWave.findFirst({ where: { id, tenantId }, include: { items: true } });
+    const wave = await prisma.pickWave.findFirst({ where: { id, tenantId }, include: { items: true, orders: true } });
     if (!wave) throw new NotFoundException('Pick wave not found');
     if (!wave.items.every((i) => i.status === 'PICKED')) {
       throw new BadRequestException('All pick wave items must be picked before completing the wave');
     }
 
-    return prisma.pickWave.update({ where: { id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+    const updated = await prisma.pickWave.update({ where: { id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+
+    await prisma.salesOrder.updateMany({
+      where: { tenantId, id: { in: wave.orders.map((o) => o.salesOrderId) }, status: { in: ['CONFIRMED', 'DRAFT'] } },
+      data: { status: 'PROCESSING' },
+    });
+
+    return updated;
   }
 
   // ─── VENDOR-MANAGED / CONSIGNMENT INVENTORY ──────────
@@ -2716,6 +2725,47 @@ export class InventoryService {
 
     await prisma.productKit.delete({ where: { id } });
     return { success: true };
+  }
+
+  // ─── KIT BOM VERSIONING ───────────────────────────────
+
+  async getKitVersions(tenantId: string, kitId: string) {
+    return prisma.kitVersion.findMany({ where: { tenantId, kitId }, orderBy: { versionNo: 'desc' } });
+  }
+
+  /** Snapshots the kit's current component list as a new version, so BOM changes over time are auditable and revertible. */
+  async createKitVersion(tenantId: string, kitId: string, userId: string, dto: CreateKitVersionInput) {
+    const kit = await this.getProductKitById(tenantId, kitId);
+    const latest = await prisma.kitVersion.findFirst({ where: { tenantId, kitId }, orderBy: { versionNo: 'desc' } });
+    const versionNo = (latest?.versionNo ?? 0) + 1;
+
+    const snapshot = kit.components.map((c) => ({ productId: c.productId, productName: c.product.name, quantity: Number(c.quantity) }));
+
+    return prisma.$transaction(async (tx) => {
+      await tx.kitVersion.updateMany({ where: { tenantId, kitId, isActive: true }, data: { isActive: false } });
+      return tx.kitVersion.create({
+        data: { tenantId, kitId, versionNo, componentsSnapshot: snapshot, isActive: true, notes: dto.notes, createdBy: userId },
+      });
+    });
+  }
+
+  /** Reverts the kit's live components to match a prior version's snapshot. */
+  async activateKitVersion(tenantId: string, kitId: string, versionId: string) {
+    const version = await prisma.kitVersion.findFirst({ where: { id: versionId, tenantId, kitId } });
+    if (!version) throw new NotFoundException('Kit version not found');
+
+    const snapshot = version.componentsSnapshot as Array<{ productId: string; quantity: number }>;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.productKitItem.deleteMany({ where: { tenantId, kitId } });
+      await tx.productKitItem.createMany({
+        data: snapshot.map((c) => ({ tenantId, kitId, productId: c.productId, quantity: new Prisma.Decimal(c.quantity) })),
+      });
+      await tx.kitVersion.updateMany({ where: { tenantId, kitId, isActive: true }, data: { isActive: false } });
+      await tx.kitVersion.update({ where: { id: versionId }, data: { isActive: true } });
+    });
+
+    return this.getProductKitById(tenantId, kitId);
   }
 
   /** How many kits can be assembled right now from on-hand component stock in a warehouse. */

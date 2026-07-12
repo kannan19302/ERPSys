@@ -27,6 +27,7 @@ import {
   ReceiveWithTraceabilityInput,
   CreateQAInspectionTemplateInput, UpdateQAInspectionTemplateInput,
   CreateRequisitionFromReorderRuleInput,
+  CreateKitVersionInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -1281,6 +1282,27 @@ export class InventoryController {
   @Permissions('inventory.product.delete')
   async deleteProductKit(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.inventoryService.deleteProductKit(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get kit BOM versions' })
+  @Get('kits/:id/versions')
+  @Permissions('inventory.stock.read')
+  async getKitVersions(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getKitVersions(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Snapshot the kit BOM as a new version' })
+  @Post('kits/:id/versions')
+  @Permissions('inventory.stock.create')
+  async createKitVersion(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CreateKitVersionInput) {
+    return this.inventoryService.createKitVersion(req.user.tenantId, id, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Activate (revert to) a prior kit BOM version' })
+  @Post('kits/:id/versions/:versionId/activate')
+  @Permissions('inventory.stock.update')
+  async activateKitVersion(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Param('versionId') versionId: string) {
+    return this.inventoryService.activateKitVersion(req.user.tenantId, id, versionId);
   }
 
   @ApiOperation({ summary: 'Get kit component availability / max buildable quantity' })

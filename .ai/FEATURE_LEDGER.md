@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T03:10:56.369Z
+> Last generated: 2026-07-12T03:17:53.542Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2050 features** across 33 modules
+## System total: **2053 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 144 |
+| [inventory](#inventory) | 147 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-144 features
+147 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1920,7 +1920,10 @@
 | POST | `/inventory/kits` | Create product kit | `inventory.product.read` |
 | PATCH | `/inventory/kits/:id` | Update product kit | `inventory.product.update` |
 | DELETE | `/inventory/kits/:id` | Delete product kit | `inventory.product.update` |
-| GET | `/inventory/kits/:id/availability` | Get kit component availability / max buildable quantity | `inventory.product.delete` |
+| GET | `/inventory/kits/:id/versions` | Get kit BOM versions | `inventory.product.delete` |
+| POST | `/inventory/kits/:id/versions` | Snapshot the kit BOM as a new version | `inventory.stock.read` |
+| POST | `/inventory/kits/:id/versions/:versionId/activate` | Activate (revert to) a prior kit BOM version | `inventory.stock.create` |
+| GET | `/inventory/kits/:id/availability` | Get kit component availability / max buildable quantity | `inventory.stock.update` |
 | GET | `/inventory/kits/:id/cost-rollup` | Get kit cost rollup and margin | `inventory.stock.read` |
 | POST | `/inventory/kits/:id/assemble` | Assemble kits (consume components, produce finished kit stock) | `inventory.stock.read` |
 | POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
