@@ -2,6 +2,40 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: cycle count schedules + accuracy KPI, license plates, directed put-away
+
+FAST cycle (cycle 1 of the Inventory & Supply Chain focus module, branch
+`claude/new-session-7x5xhc`). Closes Up Next items 5b and 5d (in part).
+
+- **DB**: `CycleCountSchedule`, `LicensePlate`, `LicensePlateItem`, `PutawayTask`
+  models (migration `20260712014515_inventory_putaway_license_plates`); `Batch`
+  gained `originStockEntryId` traceability field.
+- **API** (`InventoryService`/`InventoryController`, `inventory.stock.*`
+  permissions, `inventory.stock.delete` added to the registry): cycle-count
+  schedule CRUD + due-schedule listing + roll-forward-on-completion +
+  perpetual-inventory accuracy-rate KPI (% of counted items with zero variance
+  over a trailing window); license-plate create/list/detail/add-item/move/close
+  lifecycle with duplicate-code and closed/consumed guards; directed put-away
+  task creation with zone-based bin suggestion (most free capacity in the
+  item's warehouse) and barcode-scan-style completion.
+- **UI**: `/inventory/cycle-count-schedules` (schedule list + accuracy KPI tile
+  + create modal + roll-forward action) and `/inventory/license-plates`
+  (license-plate list + pending put-away task queue with scan-to-complete),
+  both wired into `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 15 new unit tests
+  (`inventory-putaway-license-plate.service.spec.ts`) covering schedule
+  create/update/roll-forward/accuracy, license-plate lifecycle guards, and
+  put-away bin suggestion/completion.
+- **Gates**: scoped typecheck clean (`@unerp/shared`, `@unerp/api`,
+  `@unerp/web`); inventory module vitest 97/97 passing (82 pre-existing + 15
+  new). Full turbo typecheck/API suite/E2E deferred per FAST-cycle tier
+  (`fastCyclesSinceFullGate` 0→1).
+- **Follow-ups**: item 5c (serial/lot traceability) deferred — `SerialNumber`
+  and `Batch` models already exist; next cycle should add genealogy/where-used
+  trace reporting rather than new base models. Honest ~950-LOC batch, under the
+  100-feature/15k-LOC floor by design for a first cycle on a freshly-picked-up
+  focus module.
+
 ## [2026-07-11] Dev-workflow streamlining: cycle tiers, CI fixes, issue-scout agent
 
 Branch `claude/streamline-dev-workflow-fqn7ky`, merged to main.

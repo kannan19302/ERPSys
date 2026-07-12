@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T15:39:53.568Z
+> Last generated: 2026-07-12T01:53:45.741Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1979 features** across 33 modules
+## System total: **1996 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 73 |
+| [inventory](#inventory) | 90 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-73 features
+90 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1838,6 +1838,23 @@
 | POST | `/inventory/cycle-counts` | Create cycle count | `inventory.stock.read` |
 | POST | `/inventory/cycle-counts/:id/submit` | Submit cycle count | `inventory.stock.update` |
 | POST | `/inventory/cycle-counts/:id/approve` | Approve cycle count | `inventory.stock.update` |
+| GET | `/inventory/cycle-count-schedules` | Get cycle count schedules | `inventory.stock.read` |
+| GET | `/inventory/cycle-count-schedules/due` | Get due cycle count schedules | `inventory.stock.read` |
+| GET | `/inventory/cycle-count-schedules/accuracy` | Get cycle count accuracy KPI | `inventory.stock.read` |
+| POST | `/inventory/cycle-count-schedules` | Create cycle count schedule | `inventory.stock.create` |
+| PATCH | `/inventory/cycle-count-schedules/:id` | Update cycle count schedule | `inventory.stock.create` |
+| POST | `/inventory/cycle-count-schedules/:id/roll-forward` | Roll forward cycle count schedule due date | `inventory.stock.update` |
+| DELETE | `/inventory/cycle-count-schedules/:id` | Delete cycle count schedule | `inventory.stock.update` |
+| GET | `/inventory/license-plates` | Get license plates | `inventory.stock.read` |
+| GET | `/inventory/license-plates/:id` | Get license plate by id | `inventory.stock.read` |
+| POST | `/inventory/license-plates` | Create license plate | `inventory.stock.read` |
+| POST | `/inventory/license-plates/:id/items` | Add item to license plate | `inventory.stock.create` |
+| POST | `/inventory/license-plates/:id/move` | Move license plate to another bin (barcode scan move) | `inventory.stock.update` |
+| POST | `/inventory/license-plates/:id/close` | Close license plate | `inventory.stock.update` |
+| GET | `/inventory/putaway-tasks` | Get putaway tasks | `inventory.stock.read` |
+| GET | `/inventory/putaway-tasks/suggest-bin/:inventoryItemId` | Suggest putaway bin for an inventory item (zone-based optimization) | `inventory.stock.read` |
+| POST | `/inventory/putaway-tasks` | Create putaway task | `inventory.stock.read` |
+| POST | `/inventory/putaway-tasks/:id/complete` | Complete putaway task (barcode scan confirm) | `inventory.stock.create` |
 | GET | `/inventory/qa-inspections` | Get q a inspections | `inventory.stock.read` |
 | GET | `/inventory/qa-inspections/:id` | Get q a inspection by id | `inventory.stock.read` |
 | POST | `/inventory/qa-inspections` | Create q a inspection | `inventory.stock.read` |

@@ -7,6 +7,9 @@ import {
   CreateSerialNumberInput, UpdateSerialNumberInput,
   CreateBatchInput, UpdateBatchInput,
   CreateCycleCountInput, SubmitCycleCountInput,
+  CreateCycleCountScheduleInput, UpdateCycleCountScheduleInput,
+  CreateLicensePlateInput, AddLicensePlateItemInput, MoveLicensePlateInput,
+  CreatePutawayTaskInput, CompletePutawayTaskInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -1307,6 +1310,258 @@ export class InventoryService {
         approvedBy: userId,
       },
       include: { items: true },
+    });
+  }
+
+  // ─── CYCLE COUNT SCHEDULES ──────────────────────────
+
+  async getCycleCountSchedules(tenantId: string, params: PaginationParams & { warehouseId?: string; active?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    if (params.active !== undefined) where.active = params.active === 'true';
+
+    const { skip, take } = buildPaginationValues(params);
+    const [schedules, total] = await Promise.all([
+      prisma.cycleCountSchedule.findMany({ where, skip, take, orderBy: { nextDueDate: 'asc' } }),
+      prisma.cycleCountSchedule.count({ where }),
+    ]);
+    return paginatedResult(schedules, total, params);
+  }
+
+  async getDueCycleCountSchedules(tenantId: string) {
+    return prisma.cycleCountSchedule.findMany({
+      where: { tenantId, active: true, nextDueDate: { lte: new Date() } },
+      orderBy: { nextDueDate: 'asc' },
+    });
+  }
+
+  async createCycleCountSchedule(tenantId: string, dto: CreateCycleCountScheduleInput) {
+    return prisma.cycleCountSchedule.create({
+      data: {
+        tenantId,
+        warehouseId: dto.warehouseId,
+        zone: dto.zone,
+        binScope: dto.binScope,
+        frequency: dto.frequency,
+        blindCount: dto.blindCount,
+        nextDueDate: new Date(dto.nextDueDate),
+        active: dto.active,
+      },
+    });
+  }
+
+  async updateCycleCountSchedule(tenantId: string, id: string, dto: UpdateCycleCountScheduleInput) {
+    const existing = await prisma.cycleCountSchedule.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Cycle count schedule not found');
+
+    const data: any = { ...dto };
+    if (dto.nextDueDate) data.nextDueDate = new Date(dto.nextDueDate);
+
+    return prisma.cycleCountSchedule.update({ where: { id }, data });
+  }
+
+  async deleteCycleCountSchedule(tenantId: string, id: string) {
+    const existing = await prisma.cycleCountSchedule.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Cycle count schedule not found');
+    await prisma.cycleCountSchedule.delete({ where: { id } });
+    return { success: true };
+  }
+
+  /** Rolls a completed schedule's due date forward by its frequency, so recurring counts keep firing without manual re-entry. */
+  async rollForwardCycleCountSchedule(tenantId: string, id: string) {
+    const schedule = await prisma.cycleCountSchedule.findFirst({ where: { id, tenantId } });
+    if (!schedule) throw new NotFoundException('Cycle count schedule not found');
+
+    const days = schedule.frequency === 'WEEKLY' ? 7 : schedule.frequency === 'QUARTERLY' ? 90 : 30;
+    const nextDueDate = new Date(schedule.nextDueDate.getTime() + days * 24 * 60 * 60 * 1000);
+
+    return prisma.cycleCountSchedule.update({ where: { id }, data: { nextDueDate } });
+  }
+
+  /** Perpetual-inventory accuracy KPI: % of counted items with zero variance, over a trailing window. */
+  async getCycleCountAccuracy(tenantId: string, warehouseId?: string, sinceDays = 90) {
+    const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
+    const where: any = { tenantId, status: { in: ['COMPLETED', 'APPROVED'] }, completedAt: { gte: since } };
+    if (warehouseId) where.warehouseId = warehouseId;
+
+    const counts = await prisma.cycleCount.findMany({
+      where,
+      include: { items: true },
+    });
+
+    let totalItems = 0;
+    let accurateItems = 0;
+    let totalAbsVariance = 0;
+
+    for (const cc of counts) {
+      for (const item of cc.items) {
+        if (item.countedQty === null) continue;
+        totalItems += 1;
+        const variance = Number(item.varianceQty ?? 0);
+        totalAbsVariance += Math.abs(variance);
+        if (variance === 0) accurateItems += 1;
+      }
+    }
+
+    return {
+      warehouseId: warehouseId ?? null,
+      windowDays: sinceDays,
+      sessionsCounted: counts.length,
+      itemsCounted: totalItems,
+      accurateItems,
+      accuracyRate: totalItems > 0 ? Number(((accurateItems / totalItems) * 100).toFixed(2)) : null,
+      totalAbsoluteVariance: totalAbsVariance,
+    };
+  }
+
+  // ─── LICENSE PLATES (pallet/container tracking) ─────
+
+  async getLicensePlates(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    if (params.status) where.status = params.status;
+
+    const { skip, take } = buildPaginationValues(params);
+    const [plates, total] = await Promise.all([
+      prisma.licensePlate.findMany({
+        where,
+        include: { items: true, bin: true },
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.licensePlate.count({ where }),
+    ]);
+    return paginatedResult(plates, total, params);
+  }
+
+  async getLicensePlateById(tenantId: string, id: string) {
+    const plate = await prisma.licensePlate.findFirst({
+      where: { id, tenantId },
+      include: { items: { include: { inventoryItem: true, lotBatch: true, serialNumber: true } }, bin: true, warehouse: true },
+    });
+    if (!plate) throw new NotFoundException('License plate not found');
+    return plate;
+  }
+
+  async createLicensePlate(tenantId: string, dto: CreateLicensePlateInput) {
+    const existing = await prisma.licensePlate.findFirst({ where: { tenantId, code: dto.code } });
+    if (existing) throw new BadRequestException('A license plate with this code already exists');
+
+    return prisma.licensePlate.create({
+      data: {
+        tenantId,
+        code: dto.code,
+        warehouseId: dto.warehouseId,
+        binId: dto.binId,
+        status: 'OPEN',
+      },
+    });
+  }
+
+  async addLicensePlateItem(tenantId: string, licensePlateId: string, dto: AddLicensePlateItemInput) {
+    const plate = await prisma.licensePlate.findFirst({ where: { id: licensePlateId, tenantId } });
+    if (!plate) throw new NotFoundException('License plate not found');
+    if (plate.status !== 'OPEN') throw new BadRequestException('Cannot add items to a closed or consumed license plate');
+
+    await prisma.licensePlateItem.create({
+      data: {
+        tenantId,
+        licensePlateId,
+        inventoryItemId: dto.inventoryItemId,
+        quantity: new Prisma.Decimal(dto.quantity),
+        lotBatchId: dto.lotBatchId,
+        serialNumberId: dto.serialNumberId,
+      },
+    });
+    return this.getLicensePlateById(tenantId, licensePlateId);
+  }
+
+  async moveLicensePlate(tenantId: string, id: string, dto: MoveLicensePlateInput) {
+    const plate = await prisma.licensePlate.findFirst({ where: { id, tenantId } });
+    if (!plate) throw new NotFoundException('License plate not found');
+    if (plate.status === 'CONSUMED') throw new BadRequestException('Cannot move a consumed license plate');
+
+    return prisma.licensePlate.update({ where: { id }, data: { binId: dto.binId } });
+  }
+
+  async closeLicensePlate(tenantId: string, id: string) {
+    const plate = await prisma.licensePlate.findFirst({ where: { id, tenantId } });
+    if (!plate) throw new NotFoundException('License plate not found');
+    if (plate.status !== 'OPEN') throw new BadRequestException('License plate is not open');
+
+    return prisma.licensePlate.update({ where: { id }, data: { status: 'CLOSED', closedAt: new Date() } });
+  }
+
+  // ─── DIRECTED PUT-AWAY TASKS ─────────────────────────
+
+  async getPutawayTasks(tenantId: string, params: PaginationParams & { status?: string; stockEntryId?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.status) where.status = params.status;
+    if (params.stockEntryId) where.stockEntryId = params.stockEntryId;
+
+    const { skip, take } = buildPaginationValues(params);
+    const [tasks, total] = await Promise.all([
+      prisma.putawayTask.findMany({
+        where,
+        include: { inventoryItem: { include: { product: true } }, suggestedBin: true },
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.putawayTask.count({ where }),
+    ]);
+    return paginatedResult(tasks, total, params);
+  }
+
+  /** Zone-based directed put-away: suggests the bin in the item's warehouse with the most free capacity, to minimize travel distance. */
+  async suggestPutawayBin(tenantId: string, inventoryItemId: string) {
+    const item = await prisma.inventoryItem.findFirst({ where: { id: inventoryItemId, tenantId } });
+    if (!item) throw new NotFoundException('Inventory item not found');
+
+    const bins = await prisma.binLocation.findMany({
+      where: { tenantId, warehouseId: item.warehouseId, isActive: true },
+      include: { _count: { select: { inventoryBins: true } } },
+    });
+    if (bins.length === 0) return null;
+
+    bins.sort((a, b) => {
+      const aFree = (a.capacity ?? Infinity) === Infinity ? Infinity : Number(a.capacity) - a._count.inventoryBins;
+      const bFree = (b.capacity ?? Infinity) === Infinity ? Infinity : Number(b.capacity) - b._count.inventoryBins;
+      return bFree - aFree;
+    });
+
+    return bins[0];
+  }
+
+  async createPutawayTask(tenantId: string, dto: CreatePutawayTaskInput) {
+    let suggestedBinId = dto.suggestedBinId ?? null;
+    if (!suggestedBinId) {
+      const suggestion = await this.suggestPutawayBin(tenantId, dto.inventoryItemId);
+      suggestedBinId = suggestion?.id ?? null;
+    }
+
+    return prisma.putawayTask.create({
+      data: {
+        tenantId,
+        stockEntryId: dto.stockEntryId,
+        inventoryItemId: dto.inventoryItemId,
+        quantity: new Prisma.Decimal(dto.quantity),
+        suggestedBinId,
+        status: 'PENDING',
+      },
+      include: { suggestedBin: true },
+    });
+  }
+
+  async completePutawayTask(tenantId: string, id: string, _dto: CompletePutawayTaskInput) {
+    const task = await prisma.putawayTask.findFirst({ where: { id, tenantId } });
+    if (!task) throw new NotFoundException('Putaway task not found');
+    if (task.status === 'COMPLETE') throw new BadRequestException('Putaway task already completed');
+
+    return prisma.putawayTask.update({
+      where: { id },
+      data: { status: 'COMPLETE', completedAt: new Date() },
     });
   }
 

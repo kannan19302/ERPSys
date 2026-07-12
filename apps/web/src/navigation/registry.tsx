@@ -158,6 +158,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   batches: 'Batches',
   'bin-locations': 'Bin Locations',
   'cycle-counts': 'Cycle Counts',
+  'cycle-count-schedules': 'Cycle Count Schedules',
+  'license-plates': 'License Plates & Put-away',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

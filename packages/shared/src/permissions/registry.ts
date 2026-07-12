@@ -642,6 +642,7 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   { code: 'inventory.warehouse.delete', module: 'inventory', resource: 'warehouse', action: 'delete', level: 'endpoint', description: 'Delete Warehouse (inventory)' },
   { code: 'inventory.stock.create', module: 'inventory', resource: 'stock', action: 'create', level: 'endpoint', description: 'Create Stock (inventory)' },
   { code: 'inventory.stock.update', module: 'inventory', resource: 'stock', action: 'update', level: 'endpoint', description: 'Update Stock (inventory)' },
+  { code: 'inventory.stock.delete', module: 'inventory', resource: 'stock', action: 'delete', level: 'endpoint', description: 'Delete Stock (inventory)' },
   { code: 'localization.read', module: 'localization', resource: 'general', action: 'read', level: 'endpoint', description: 'View Localization module (legacy coarse permission)' },
   { code: 'manufacturing.work-order.update', module: 'manufacturing', resource: 'work-order', action: 'update', level: 'endpoint', description: 'Update Work Order (manufacturing)' },
   { code: 'manufacturing.bom.update', module: 'manufacturing', resource: 'bom', action: 'update', level: 'endpoint', description: 'Update Bom (manufacturing)' },

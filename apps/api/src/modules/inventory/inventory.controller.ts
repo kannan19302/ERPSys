@@ -15,6 +15,9 @@ import {
   CreateSerialNumberInput, UpdateSerialNumberInput,
   CreateBatchInput, UpdateBatchInput,
   CreateCycleCountInput, SubmitCycleCountInput,
+  CreateCycleCountScheduleInput, UpdateCycleCountScheduleInput,
+  CreateLicensePlateInput, AddLicensePlateItemInput, MoveLicensePlateInput,
+  CreatePutawayTaskInput, CompletePutawayTaskInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -525,6 +528,165 @@ export class InventoryController {
   @Permissions('inventory.stock.update')
   async approveCycleCount(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.inventoryService.approveCycleCount(req.user.tenantId, id, req.user.userId);
+  }
+
+  // ─── CYCLE COUNT SCHEDULES ───────────────────────────
+
+  @ApiOperation({ summary: 'Get cycle count schedules' })
+  @Get('cycle-count-schedules')
+  @Permissions('inventory.stock.read')
+  async getCycleCountSchedules(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('active') active?: string,
+  ) {
+    return this.inventoryService.getCycleCountSchedules(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      warehouseId, active,
+    });
+  }
+
+  @ApiOperation({ summary: 'Get due cycle count schedules' })
+  @Get('cycle-count-schedules/due')
+  @Permissions('inventory.stock.read')
+  async getDueCycleCountSchedules(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getDueCycleCountSchedules(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get cycle count accuracy KPI' })
+  @Get('cycle-count-schedules/accuracy')
+  @Permissions('inventory.stock.read')
+  async getCycleCountAccuracy(
+    @Req() req: AuthenticatedRequest,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('sinceDays') sinceDays?: string,
+  ) {
+    return this.inventoryService.getCycleCountAccuracy(req.user.tenantId, warehouseId, sinceDays ? parseInt(sinceDays) : undefined);
+  }
+
+  @ApiOperation({ summary: 'Create cycle count schedule' })
+  @Post('cycle-count-schedules')
+  @Permissions('inventory.stock.create')
+  async createCycleCountSchedule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateCycleCountScheduleInput) {
+    return this.inventoryService.createCycleCountSchedule(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update cycle count schedule' })
+  @Patch('cycle-count-schedules/:id')
+  @Permissions('inventory.stock.update')
+  async updateCycleCountSchedule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateCycleCountScheduleInput) {
+    return this.inventoryService.updateCycleCountSchedule(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Roll forward cycle count schedule due date' })
+  @Post('cycle-count-schedules/:id/roll-forward')
+  @Permissions('inventory.stock.update')
+  async rollForwardCycleCountSchedule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.rollForwardCycleCountSchedule(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Delete cycle count schedule' })
+  @Delete('cycle-count-schedules/:id')
+  @Permissions('inventory.stock.delete')
+  async deleteCycleCountSchedule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.deleteCycleCountSchedule(req.user.tenantId, id);
+  }
+
+  // ─── LICENSE PLATES ──────────────────────────────────
+
+  @ApiOperation({ summary: 'Get license plates' })
+  @Get('license-plates')
+  @Permissions('inventory.stock.read')
+  async getLicensePlates(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.inventoryService.getLicensePlates(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      warehouseId, status,
+    });
+  }
+
+  @ApiOperation({ summary: 'Get license plate by id' })
+  @Get('license-plates/:id')
+  @Permissions('inventory.stock.read')
+  async getLicensePlateById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getLicensePlateById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create license plate' })
+  @Post('license-plates')
+  @Permissions('inventory.stock.create')
+  async createLicensePlate(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateLicensePlateInput) {
+    return this.inventoryService.createLicensePlate(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Add item to license plate' })
+  @Post('license-plates/:id/items')
+  @Permissions('inventory.stock.update')
+  async addLicensePlateItem(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: AddLicensePlateItemInput) {
+    return this.inventoryService.addLicensePlateItem(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Move license plate to another bin (barcode scan move)' })
+  @Post('license-plates/:id/move')
+  @Permissions('inventory.stock.update')
+  async moveLicensePlate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: MoveLicensePlateInput) {
+    return this.inventoryService.moveLicensePlate(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Close license plate' })
+  @Post('license-plates/:id/close')
+  @Permissions('inventory.stock.update')
+  async closeLicensePlate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.closeLicensePlate(req.user.tenantId, id);
+  }
+
+  // ─── DIRECTED PUT-AWAY ───────────────────────────────
+
+  @ApiOperation({ summary: 'Get putaway tasks' })
+  @Get('putaway-tasks')
+  @Permissions('inventory.stock.read')
+  async getPutawayTasks(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('stockEntryId') stockEntryId?: string,
+  ) {
+    return this.inventoryService.getPutawayTasks(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      status, stockEntryId,
+    });
+  }
+
+  @ApiOperation({ summary: 'Suggest putaway bin for an inventory item (zone-based optimization)' })
+  @Get('putaway-tasks/suggest-bin/:inventoryItemId')
+  @Permissions('inventory.stock.read')
+  async suggestPutawayBin(@Req() req: AuthenticatedRequest, @Param('inventoryItemId') inventoryItemId: string) {
+    return this.inventoryService.suggestPutawayBin(req.user.tenantId, inventoryItemId);
+  }
+
+  @ApiOperation({ summary: 'Create putaway task' })
+  @Post('putaway-tasks')
+  @Permissions('inventory.stock.create')
+  async createPutawayTask(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreatePutawayTaskInput) {
+    return this.inventoryService.createPutawayTask(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Complete putaway task (barcode scan confirm)' })
+  @Post('putaway-tasks/:id/complete')
+  @Permissions('inventory.stock.update')
+  async completePutawayTask(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CompletePutawayTaskInput) {
+    return this.inventoryService.completePutawayTask(req.user.tenantId, id, dto);
   }
 
   // ─── QA INSPECTIONS ─────────────────────────────────

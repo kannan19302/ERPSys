@@ -1020,11 +1020,13 @@ model Warehouse {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organization       Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  inventoryItems     InventoryItem[]
-  stockLedgerEntries StockLedgerEntry[]
-  binLocations       BinLocation[]
-  fixedAssets        FixedAsset[]
+  organization        Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inventoryItems      InventoryItem[]
+  stockLedgerEntries  StockLedgerEntry[]
+  binLocations        BinLocation[]
+  fixedAssets         FixedAsset[]
+  cycleCountSchedules CycleCountSchedule[]
+  licensePlates       LicensePlate[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -1047,8 +1049,10 @@ model InventoryItem {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  product   Product   @relation(fields: [productId], references: [id])
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  product           Product            @relation(fields: [productId], references: [id])
+  warehouse         Warehouse          @relation(fields: [warehouseId], references: [id])
+  licensePlateItems LicensePlateItem[]
+  putawayTasks      PutawayTask[]
 
   @@unique([tenantId, productId, warehouseId])
   @@index([tenantId])
@@ -2876,8 +2880,9 @@ model SerialNumber {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  product Product               @relation(fields: [productId], references: [id])
-  history SerialNumberHistory[]
+  product           Product               @relation(fields: [productId], references: [id])
+  history           SerialNumberHistory[]
+  licensePlateItems LicensePlateItem[]
 
   @@unique([tenantId, serialNo])
   @@index([tenantId])
@@ -2920,16 +2925,20 @@ model Batch {
   costPrice       Decimal?  @map("cost_price") @db.Decimal(15, 2)
   status          String    @default("ACTIVE") // ACTIVE, PARTIALLY_USED, EXHAUSTED, EXPIRED, QUARANTINE
   notes           String?
+  originStockEntryId String? @map("origin_stock_entry_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  product         Product          @relation(fields: [productId], references: [id])
-  stockEntryItems StockEntryItem[]
+  product           Product            @relation(fields: [productId], references: [id])
+  stockEntryItems   StockEntryItem[]
+  originStockEntry  StockEntry?        @relation("BatchOrigin", fields: [originStockEntryId], references: [id])
+  licensePlateItems LicensePlateItem[]
 
   @@unique([tenantId, productId, batchNo])
   @@index([tenantId])
   @@index([productId])
   @@index([expiryDate])
+  @@index([originStockEntryId])
   @@map("batches")
 }
 
@@ -2953,6 +2962,8 @@ model BinLocation {
   inventoryBins       InventoryItemBin[]
   stockEntryFromItems StockEntryItem[]   @relation("FromBin")
   stockEntryToItems   StockEntryItem[]   @relation("ToBin")
+  licensePlates       LicensePlate[]
+  putawayTasks        PutawayTask[]
 
   @@unique([tenantId, warehouseId, code])
   @@index([tenantId])
@@ -3018,6 +3029,7 @@ model CycleCountItem {
   countedBy     String?   @map("counted_by")
   countedAt     DateTime? @map("counted_at")
   remarks       String?
+  reasonCode    String?   @map("reason_code")
 
   cycleCount CycleCount @relation(fields: [cycleCountId], references: [id], onDelete: Cascade)
   product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -3026,6 +3038,91 @@ model CycleCountItem {
   @@index([cycleCountId])
   @@index([productId])
   @@map("cycle_count_items")
+}
+
+model CycleCountSchedule {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  warehouseId String    @map("warehouse_id")
+  zone        String?
+  binScope    String?   @map("bin_scope")
+  frequency   String    @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
+  blindCount  Boolean   @default(false) @map("blind_count")
+  nextDueDate DateTime  @map("next_due_date")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@map("cycle_count_schedules")
+}
+
+model LicensePlate {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  code        String
+  warehouseId String    @map("warehouse_id")
+  binId       String?   @map("bin_id")
+  status      String    @default("OPEN") // OPEN, CLOSED, CONSUMED
+  closedAt    DateTime? @map("closed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse          @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  bin       BinLocation?       @relation(fields: [binId], references: [id])
+  items     LicensePlateItem[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@map("license_plates")
+}
+
+model LicensePlateItem {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  licensePlateId String   @map("license_plate_id")
+  inventoryItemId String  @map("inventory_item_id")
+  quantity       Decimal  @db.Decimal(15, 3)
+  lotBatchId     String?  @map("lot_batch_id")
+  serialNumberId String?  @map("serial_number_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  licensePlate LicensePlate  @relation(fields: [licensePlateId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  lotBatch      Batch?        @relation(fields: [lotBatchId], references: [id])
+  serialNumber  SerialNumber? @relation(fields: [serialNumberId], references: [id])
+
+  @@index([tenantId])
+  @@index([licensePlateId])
+  @@index([inventoryItemId])
+  @@map("license_plate_items")
+}
+
+model PutawayTask {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  stockEntryId    String    @map("stock_entry_id")
+  inventoryItemId String    @map("inventory_item_id")
+  quantity        Decimal   @db.Decimal(15, 3)
+  suggestedBinId  String?   @map("suggested_bin_id")
+  status          String    @default("PENDING") // PENDING, COMPLETE
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  stockEntry    StockEntry    @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  suggestedBin  BinLocation?  @relation(fields: [suggestedBinId], references: [id])
+
+  @@index([tenantId])
+  @@index([stockEntryId])
+  @@index([inventoryItemId])
+  @@map("putaway_tasks")
 }
 
 // ════════════════════════════════════════════════
@@ -5212,11 +5309,14 @@ model StockEntry {
   cancelledAt     DateTime? @map("cancelled_at")
   cancelReason    String?   @map("cancel_reason")
   createdBy       String?   @map("created_by")
+  sourceCycleCountId String? @map("source_cycle_count_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   items         StockEntryItem[]
   ledgerEntries StockLedgerEntry[]
+  originBatches Batch[]            @relation("BatchOrigin")
+  putawayTasks  PutawayTask[]
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])

@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-directed-putaway",
-  "agent": "claude-code-cli-main",
-  "scope": "License plates, directed putaway tasks, cycle count schedules",
-  "acquiredAt": "2026-07-12T01:43:05.928Z",
-  "heartbeatAt": "2026-07-12T01:43:05.928Z",
-  "pid": 2346
-}

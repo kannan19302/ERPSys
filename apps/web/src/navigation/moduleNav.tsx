@@ -303,6 +303,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           items: [
             { name: 'Bin Configurations', href: '/inventory/bin-locations', icon: MapPin },
             { name: 'Cycle Count Audits', href: '/inventory/cycle-counts', icon: ClipboardCheck },
+            { name: 'Cycle Count Schedules', href: '/inventory/cycle-count-schedules', icon: ClipboardCheck },
+            { name: 'License Plates & Put-away', href: '/inventory/license-plates', icon: Package },
           ]
         },
         {

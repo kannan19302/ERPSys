@@ -1796,6 +1796,52 @@ export const submitCycleCountSchema = z.object({
 });
 export type SubmitCycleCountInput = z.infer<typeof submitCycleCountSchema>;
 
+export const createCycleCountScheduleSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  zone: z.string().max(50).optional().nullable(),
+  binScope: z.string().max(100).optional().nullable(),
+  frequency: z.enum(['WEEKLY', 'MONTHLY', 'QUARTERLY']).default('MONTHLY'),
+  blindCount: z.boolean().default(false),
+  nextDueDate: z.string().min(1, 'Next due date is required'),
+  active: z.boolean().default(true),
+});
+export type CreateCycleCountScheduleInput = z.infer<typeof createCycleCountScheduleSchema>;
+export const updateCycleCountScheduleSchema = createCycleCountScheduleSchema.partial();
+export type UpdateCycleCountScheduleInput = z.infer<typeof updateCycleCountScheduleSchema>;
+
+export const createLicensePlateSchema = z.object({
+  code: z.string().min(1, 'License plate code is required').max(100),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  binId: z.string().optional().nullable(),
+});
+export type CreateLicensePlateInput = z.infer<typeof createLicensePlateSchema>;
+
+export const addLicensePlateItemSchema = z.object({
+  inventoryItemId: z.string().min(1, 'Inventory item ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  lotBatchId: z.string().optional().nullable(),
+  serialNumberId: z.string().optional().nullable(),
+});
+export type AddLicensePlateItemInput = z.infer<typeof addLicensePlateItemSchema>;
+
+export const moveLicensePlateSchema = z.object({
+  binId: z.string().min(1, 'Destination bin ID is required'),
+});
+export type MoveLicensePlateInput = z.infer<typeof moveLicensePlateSchema>;
+
+export const createPutawayTaskSchema = z.object({
+  stockEntryId: z.string().min(1, 'Stock entry ID is required'),
+  inventoryItemId: z.string().min(1, 'Inventory item ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  suggestedBinId: z.string().optional().nullable(),
+});
+export type CreatePutawayTaskInput = z.infer<typeof createPutawayTaskSchema>;
+
+export const completePutawayTaskSchema = z.object({
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CompletePutawayTaskInput = z.infer<typeof completePutawayTaskSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),
