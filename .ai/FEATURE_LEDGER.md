@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T02:15:30.338Z
+> Last generated: 2026-07-12T02:42:15.737Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2014 features** across 33 modules
+## System total: **2027 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 108 |
+| [inventory](#inventory) | 121 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-108 features
+121 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1833,6 +1833,19 @@
 | POST | `/inventory/stock-entries/:id/cancel` | Cancel stock entry | `inventory.stock.update` |
 | GET | `/inventory/stock-ledger` | Get stock ledger | `inventory.stock.read` |
 | POST | `/inventory/transfers` | Transfer stock | `inventory.stock.create` |
+| GET | `/inventory/transfer-approval-rules` | Get transfer approval rules | `inventory.stock.read` |
+| POST | `/inventory/transfer-approval-rules` | Create transfer approval rule | `inventory.stock.create` |
+| PATCH | `/inventory/transfer-approval-rules/:id` | Update transfer approval rule | `inventory.stock.create` |
+| DELETE | `/inventory/transfer-approval-rules/:id` | Delete transfer approval rule | `inventory.stock.update` |
+| POST | `/inventory/stock-entries/:id/request-transfer-approval` | Request approval to submit a transfer stock entry (auto-submits below threshold) | `inventory.stock.delete` |
+| GET | `/inventory/transfer-approvals/pending` | Get pending transfer approvals | `inventory.stock.update` |
+| POST | `/inventory/transfer-approvals/:id/approve` | Approve a pending transfer (submits the stock entry) | `inventory.stock.update` |
+| POST | `/inventory/transfer-approvals/:id/reject` | Reject a pending transfer | `inventory.stock.update` |
+| GET | `/inventory/movement-history` | Get consolidated movement history / audit trail | `inventory.stock.read` |
+| GET | `/inventory/labels/product/:id` | Get product barcode label data | `inventory.stock.read` |
+| GET | `/inventory/labels/batch/:id` | Get batch barcode label data | `inventory.stock.read` |
+| GET | `/inventory/labels/license-plate/:id` | Get license plate barcode label data | `inventory.stock.read` |
+| GET | `/inventory/labels/bin/:id` | Get bin location barcode label data | `inventory.stock.read` |
 | GET | `/inventory/cycle-counts` | Get cycle counts | `inventory.stock.read` |
 | GET | `/inventory/cycle-counts/:id` | Get cycle count by id | `inventory.stock.read` |
 | POST | `/inventory/cycle-counts` | Create cycle count | `inventory.stock.read` |

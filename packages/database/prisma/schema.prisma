@@ -1029,6 +1029,7 @@ model Warehouse {
   cycleCountSchedules CycleCountSchedule[]
   licensePlates       LicensePlate[]
   stockReservations    StockReservation[]
+  transferApprovalRules TransferApprovalRule[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -3168,6 +3169,42 @@ model StockReservation {
   @@index([productId])
   @@index([warehouseId])
   @@map("stock_reservations")
+}
+
+model TransferApprovalRule {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  warehouseId    String?   @map("warehouse_id")
+  thresholdValue Decimal   @default(0) @map("threshold_value") @db.Decimal(15, 2)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@map("transfer_approval_rules")
+}
+
+model StockTransferApproval {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  stockEntryId   String    @unique @map("stock_entry_id")
+  thresholdValue Decimal   @db.Decimal(15, 2)
+  entryValue     Decimal   @map("entry_value") @db.Decimal(15, 2)
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  requestedBy    String?   @map("requested_by")
+  approvedBy     String?   @map("approved_by")
+  approvedAt     DateTime? @map("approved_at")
+  rejectedReason String?   @map("rejected_reason")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("stock_transfer_approvals")
 }
 
 // ════════════════════════════════════════════════
@@ -5362,6 +5399,7 @@ model StockEntry {
   ledgerEntries StockLedgerEntry[]
   originBatches Batch[]            @relation("BatchOrigin")
   putawayTasks  PutawayTask[]
+  transferApproval StockTransferApproval?
 
   @@unique([tenantId, orgId, entryNumber])
   @@index([tenantId])

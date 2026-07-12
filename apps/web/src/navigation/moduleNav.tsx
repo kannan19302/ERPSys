@@ -308,6 +308,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Traceability', href: '/inventory/traceability', icon: QrCode },
             { name: 'Stock Reservations & Analytics', href: '/inventory/stock-reservations', icon: ClipboardCheck },
             { name: 'Kits & Assembly', href: '/inventory/kits', icon: Package },
+            { name: 'Transfer Approvals', href: '/inventory/transfer-approvals', icon: ShieldCheck },
+            { name: 'Movement History & Labels', href: '/inventory/movement-history', icon: ClipboardCheck },
           ]
         },
         {

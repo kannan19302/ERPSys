@@ -21,6 +21,7 @@ import {
   QuarantineBatchInput, ReleaseBatchQuarantineInput,
   CreateStockReservationInput,
   AssembleKitInput, DisassembleKitInput,
+  CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -479,6 +480,120 @@ export class InventoryController {
   async transferStock(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: TransferStockInput) {
     const orgId = req.user.orgId || 'org-system-default';
     return this.inventoryService.transferStock(req.user.tenantId, orgId, req.user.userId, dto);
+  }
+
+  // ─── TRANSFER APPROVAL WORKFLOW ──────────────────────
+
+  @ApiOperation({ summary: 'Get transfer approval rules' })
+  @Get('transfer-approval-rules')
+  @Permissions('inventory.stock.read')
+  async getTransferApprovalRules(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+  ) {
+    return this.inventoryService.getTransferApprovalRules(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      warehouseId,
+    });
+  }
+
+  @ApiOperation({ summary: 'Create transfer approval rule' })
+  @Post('transfer-approval-rules')
+  @Permissions('inventory.stock.create')
+  async createTransferApprovalRule(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateTransferApprovalRuleInput) {
+    return this.inventoryService.createTransferApprovalRule(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update transfer approval rule' })
+  @Patch('transfer-approval-rules/:id')
+  @Permissions('inventory.stock.update')
+  async updateTransferApprovalRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateTransferApprovalRuleInput) {
+    return this.inventoryService.updateTransferApprovalRule(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete transfer approval rule' })
+  @Delete('transfer-approval-rules/:id')
+  @Permissions('inventory.stock.delete')
+  async deleteTransferApprovalRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.deleteTransferApprovalRule(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Request approval to submit a transfer stock entry (auto-submits below threshold)' })
+  @Post('stock-entries/:id/request-transfer-approval')
+  @Permissions('inventory.stock.update')
+  async requestTransferApproval(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.requestTransferApproval(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Get pending transfer approvals' })
+  @Get('transfer-approvals/pending')
+  @Permissions('inventory.stock.read')
+  async getPendingTransferApprovals(@Req() req: AuthenticatedRequest, @Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.inventoryService.getPendingTransferApprovals(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+    });
+  }
+
+  @ApiOperation({ summary: 'Approve a pending transfer (submits the stock entry)' })
+  @Post('transfer-approvals/:id/approve')
+  @Permissions('inventory.stock.update')
+  async approveTransfer(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.approveTransfer(req.user.tenantId, id, req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Reject a pending transfer' })
+  @Post('transfer-approvals/:id/reject')
+  @Permissions('inventory.stock.update')
+  async rejectTransfer(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: RejectTransferInput) {
+    return this.inventoryService.rejectTransfer(req.user.tenantId, id, req.user.userId, dto);
+  }
+
+  // ─── MOVEMENT HISTORY / AUDIT TRAIL ──────────────────
+
+  @ApiOperation({ summary: 'Get consolidated movement history / audit trail' })
+  @Get('movement-history')
+  @Permissions('inventory.stock.read')
+  async getMovementHistory(
+    @Req() req: AuthenticatedRequest,
+    @Query('productId') productId?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.inventoryService.getMovementHistory(req.user.tenantId, { productId, warehouseId, limit: limit ? parseInt(limit) : undefined });
+  }
+
+  // ─── BARCODE LABEL GENERATION ─────────────────────────
+
+  @ApiOperation({ summary: 'Get product barcode label data' })
+  @Get('labels/product/:id')
+  @Permissions('inventory.stock.read')
+  async getProductLabel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getProductLabel(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get batch barcode label data' })
+  @Get('labels/batch/:id')
+  @Permissions('inventory.stock.read')
+  async getBatchLabel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getBatchLabel(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get license plate barcode label data' })
+  @Get('labels/license-plate/:id')
+  @Permissions('inventory.stock.read')
+  async getLicensePlateLabel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getLicensePlateLabel(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get bin location barcode label data' })
+  @Get('labels/bin/:id')
+  @Permissions('inventory.stock.read')
+  async getBinLabel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getBinLabel(req.user.tenantId, id);
   }
 
   // ─── CYCLE COUNTS ───────────────────────────────────

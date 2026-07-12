@@ -1,7 +1,9 @@
 {
   "ranAt": "2026-07-12T02:20:09.000Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": [
+    "Inventory: transfer approval workflow + movement-history report + barcode labels (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+  ],
   "lastMilestoneCommit": "1792ad9",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",

@@ -2,6 +2,31 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: transfer approval workflow, movement-history report, barcode labels
+
+FAST cycle (Inventory cycle 4, branch `claude/new-session-7x5xhc`), continuing
+toward the 90→200 feature-count target (now 121/200).
+
+- **DB**: `TransferApprovalRule`, `StockTransferApproval` models (migration
+  `20260712023732_inventory_transfer_approval`), layered additively on the
+  existing `StockEntry` create/submit flow — no changes to already-tested
+  submit logic.
+- **API**: transfer-approval-rule CRUD (per-warehouse or tenant-wide value
+  threshold); `requestTransferApproval` auto-submits below threshold or
+  creates a PENDING approval above it; approve/reject endpoints (approve
+  calls the real `submitStockEntry`, actually moving stock); consolidated
+  movement-history/audit-trail report from `StockLedgerEntry`; barcode
+  label-data endpoints for product/batch/license-plate/bin (data only).
+- **UI**: `/inventory/transfer-approvals` (pending queue + threshold-rule
+  management) and `/inventory/movement-history` (timeline search + label
+  lookup), wired into `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 12 new unit tests; inventory module suite 129/129 passing.
+- **Gates**: scoped typecheck clean (`@unerp/shared`, `@unerp/api`,
+  `@unerp/web`); full turbo typecheck/API suite/E2E deferred per FAST-cycle
+  tier (`fastCyclesSinceFullGate` 0→1, reset by this session's milestone).
+- Next candidates: wave-pick/pack-list generation, VMI/consignment
+  inventory, serial/lot capture-at-receipt-scan deepening.
+
 ## [2026-07-12] MILESTONE gate: full typecheck + full API suite green; E2E blocked, honestly logged
 
 Settlement of 3 accumulated FAST cycles (`fastCyclesSinceFullGate` 3→0),

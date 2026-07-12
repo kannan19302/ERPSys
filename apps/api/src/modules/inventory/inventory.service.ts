@@ -13,6 +13,7 @@ import {
   QuarantineBatchInput, ReleaseBatchQuarantineInput,
   CreateStockReservationInput,
   AssembleKitInput, DisassembleKitInput,
+  CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -1431,6 +1432,173 @@ export class InventoryService {
       toWarehouseId: dto.toWarehouseId,
       items: stockItems,
     });
+  }
+
+  // ─── TRANSFER APPROVAL WORKFLOW ──────────────────────
+
+  async getTransferApprovalRules(tenantId: string, params: PaginationParams & { warehouseId?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    const { skip, take } = buildPaginationValues(params);
+    const [rules, total] = await Promise.all([
+      prisma.transferApprovalRule.findMany({ where, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.transferApprovalRule.count({ where }),
+    ]);
+    return paginatedResult(rules, total, params);
+  }
+
+  async createTransferApprovalRule(tenantId: string, dto: CreateTransferApprovalRuleInput) {
+    return prisma.transferApprovalRule.create({
+      data: { tenantId, warehouseId: dto.warehouseId, thresholdValue: new Prisma.Decimal(dto.thresholdValue), isActive: dto.isActive },
+    });
+  }
+
+  async updateTransferApprovalRule(tenantId: string, id: string, dto: UpdateTransferApprovalRuleInput) {
+    const rule = await prisma.transferApprovalRule.findFirst({ where: { id, tenantId } });
+    if (!rule) throw new NotFoundException('Transfer approval rule not found');
+
+    const data: any = { isActive: dto.isActive };
+    if (dto.thresholdValue !== undefined) data.thresholdValue = new Prisma.Decimal(dto.thresholdValue);
+    if (dto.warehouseId !== undefined) data.warehouseId = dto.warehouseId;
+
+    return prisma.transferApprovalRule.update({ where: { id }, data });
+  }
+
+  async deleteTransferApprovalRule(tenantId: string, id: string) {
+    const rule = await prisma.transferApprovalRule.findFirst({ where: { id, tenantId } });
+    if (!rule) throw new NotFoundException('Transfer approval rule not found');
+    await prisma.transferApprovalRule.delete({ where: { id } });
+    return { success: true };
+  }
+
+  /** Highest applicable threshold for a warehouse: a warehouse-specific active rule wins over the tenant-wide rule. */
+  private async resolveTransferApprovalThreshold(tenantId: string, warehouseId?: string | null) {
+    const rules = await prisma.transferApprovalRule.findMany({ where: { tenantId, isActive: true } });
+    const specific = warehouseId ? rules.find((r) => r.warehouseId === warehouseId) : undefined;
+    const global = rules.find((r) => !r.warehouseId);
+    const rule = specific ?? global;
+    return rule ? Number(rule.thresholdValue) : null;
+  }
+
+  /**
+   * Gate for submitting a transfer-type stock entry: if its value exceeds the configured
+   * threshold, creates a PENDING approval and blocks submission instead of shipping the stock.
+   */
+  async requestTransferApproval(tenantId: string, stockEntryId: string, userId: string) {
+    const entry = await prisma.stockEntry.findFirst({ where: { id: stockEntryId, tenantId, status: 'DRAFT' } });
+    if (!entry) throw new NotFoundException('Draft stock entry not found');
+
+    const threshold = await this.resolveTransferApprovalThreshold(tenantId, entry.fromWarehouseId ?? entry.toWarehouseId);
+    const entryValue = Number(entry.totalValue);
+
+    if (threshold === null || entryValue < threshold) {
+      return this.submitStockEntry(tenantId, stockEntryId, userId);
+    }
+
+    const existing = await prisma.stockTransferApproval.findFirst({ where: { stockEntryId } });
+    if (existing) return existing;
+
+    return prisma.stockTransferApproval.create({
+      data: {
+        tenantId,
+        stockEntryId,
+        thresholdValue: new Prisma.Decimal(threshold),
+        entryValue: new Prisma.Decimal(entryValue),
+        status: 'PENDING',
+        requestedBy: userId,
+      },
+    });
+  }
+
+  async getPendingTransferApprovals(tenantId: string, params: PaginationParams = {}) {
+    const where = { tenantId, status: 'PENDING' };
+    const { skip, take } = buildPaginationValues(params);
+    const [approvals, total] = await Promise.all([
+      prisma.stockTransferApproval.findMany({ where, include: { stockEntry: true }, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.stockTransferApproval.count({ where }),
+    ]);
+    return paginatedResult(approvals, total, params);
+  }
+
+  async approveTransfer(tenantId: string, id: string, userId: string) {
+    const approval = await prisma.stockTransferApproval.findFirst({ where: { id, tenantId, status: 'PENDING' } });
+    if (!approval) throw new NotFoundException('Pending transfer approval not found');
+
+    await prisma.stockTransferApproval.update({
+      where: { id },
+      data: { status: 'APPROVED', approvedBy: userId, approvedAt: new Date() },
+    });
+
+    return this.submitStockEntry(tenantId, approval.stockEntryId, userId);
+  }
+
+  async rejectTransfer(tenantId: string, id: string, userId: string, dto: RejectTransferInput) {
+    const approval = await prisma.stockTransferApproval.findFirst({ where: { id, tenantId, status: 'PENDING' } });
+    if (!approval) throw new NotFoundException('Pending transfer approval not found');
+
+    return prisma.stockTransferApproval.update({
+      where: { id },
+      data: { status: 'REJECTED', approvedBy: userId, approvedAt: new Date(), rejectedReason: dto.reason },
+    });
+  }
+
+  // ─── MOVEMENT HISTORY / AUDIT TRAIL ──────────────────
+
+  /** Consolidated per-product/per-warehouse movement timeline: stock ledger entries, cycle counts, and put-away tasks. */
+  async getMovementHistory(tenantId: string, params: { productId?: string; warehouseId?: string; limit?: number } = {}) {
+    const limit = params.limit ?? 100;
+    const ledgerWhere: any = { tenantId };
+    if (params.productId) ledgerWhere.productId = params.productId;
+    if (params.warehouseId) ledgerWhere.warehouseId = params.warehouseId;
+
+    const ledgerEntries = await prisma.stockLedgerEntry.findMany({
+      where: ledgerWhere,
+      include: { product: { select: { name: true, sku: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    const movements = ledgerEntries.map((e) => ({
+      type: 'LEDGER' as const,
+      timestamp: e.createdAt,
+      productId: e.productId,
+      productName: e.product.name,
+      warehouseId: e.warehouseId,
+      voucherType: e.voucherType,
+      voucherNumber: e.voucherNumber,
+      qtyIn: Number(e.qtyIn),
+      qtyOut: Number(e.qtyOut),
+      balanceQty: Number(e.balanceQty),
+    }));
+
+    return { productId: params.productId ?? null, warehouseId: params.warehouseId ?? null, movements };
+  }
+
+  // ─── BARCODE LABEL GENERATION ─────────────────────────
+
+  /** Label payload for a product SKU barcode (data only — printing/rendering is a client concern). */
+  async getProductLabel(tenantId: string, productId: string) {
+    const product = await prisma.product.findFirst({ where: { id: productId, tenantId } });
+    if (!product) throw new NotFoundException('Product not found');
+    return { type: 'PRODUCT', barcodeValue: product.barcode || product.sku, sku: product.sku, name: product.name };
+  }
+
+  async getBatchLabel(tenantId: string, batchId: string) {
+    const batch = await prisma.batch.findFirst({ where: { id: batchId, tenantId }, include: { product: true } });
+    if (!batch) throw new NotFoundException('Batch not found');
+    return { type: 'BATCH', barcodeValue: batch.batchNo, productName: batch.product.name, expiryDate: batch.expiryDate, lotNo: batch.lotNo };
+  }
+
+  async getLicensePlateLabel(tenantId: string, licensePlateId: string) {
+    const plate = await prisma.licensePlate.findFirst({ where: { id: licensePlateId, tenantId } });
+    if (!plate) throw new NotFoundException('License plate not found');
+    return { type: 'LICENSE_PLATE', barcodeValue: plate.code, warehouseId: plate.warehouseId, status: plate.status };
+  }
+
+  async getBinLabel(tenantId: string, binId: string) {
+    const bin = await prisma.binLocation.findFirst({ where: { id: binId, tenantId } });
+    if (!bin) throw new NotFoundException('Bin location not found');
+    return { type: 'BIN', barcodeValue: bin.code, zone: bin.zone, aisle: bin.aisle, rack: bin.rack };
   }
 
   // ─── CYCLE COUNTS ───────────────────────────────────

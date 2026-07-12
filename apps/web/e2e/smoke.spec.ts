@@ -153,6 +153,8 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/inventory/traceability' },
   { path: '/inventory/stock-reservations' },
   { path: '/inventory/kits' },
+  { path: '/inventory/transfer-approvals' },
+  { path: '/inventory/movement-history' },
   { path: '/hr/employees' },
   { path: '/procurement/purchase-orders' },
   { path: '/sales/orders' },

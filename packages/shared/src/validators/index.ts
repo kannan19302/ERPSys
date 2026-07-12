@@ -1874,6 +1874,20 @@ export const disassembleKitSchema = z.object({
 });
 export type DisassembleKitInput = z.infer<typeof disassembleKitSchema>;
 
+export const createTransferApprovalRuleSchema = z.object({
+  warehouseId: z.string().optional().nullable(),
+  thresholdValue: z.number().nonnegative(),
+  isActive: z.boolean().default(true),
+});
+export type CreateTransferApprovalRuleInput = z.infer<typeof createTransferApprovalRuleSchema>;
+export const updateTransferApprovalRuleSchema = createTransferApprovalRuleSchema.partial();
+export type UpdateTransferApprovalRuleInput = z.infer<typeof updateTransferApprovalRuleSchema>;
+
+export const rejectTransferSchema = z.object({
+  reason: z.string().min(1, 'Reason is required').max(1000),
+});
+export type RejectTransferInput = z.infer<typeof rejectTransferSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),

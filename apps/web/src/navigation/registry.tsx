@@ -163,6 +163,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   traceability: 'Traceability',
   'stock-reservations': 'Stock Reservations & Analytics',
   kits: 'Kits & Assembly',
+  'transfer-approvals': 'Transfer Approvals',
+  'movement-history': 'Movement History & Labels',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',
