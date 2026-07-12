@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-transfer-approval-movement-labels",
+  "agent": "claude-code-cli-main",
+  "scope": "Inventory: multi-warehouse transfer approval workflow, movement-history report, barcode label generation",
+  "acquiredAt": "2026-07-12T02:36:23.956Z",
+  "heartbeatAt": "2026-07-12T02:36:23.968Z",
+  "pid": 5912
+}
