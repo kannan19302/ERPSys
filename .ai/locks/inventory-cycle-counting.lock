@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle-counting",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "Inventory: cycle counting, serial/lot tracking, directed putaway/bin/barcode (Up Next 5b/5c/5d)",
+  "acquiredAt": "2026-07-12T01:37:45.845Z",
+  "heartbeatAt": "2026-07-12T01:37:45.856Z",
+  "pid": 4419
+}
