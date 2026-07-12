@@ -1,0 +1,8 @@
+{
+  "slug": "rls-session-context",
+  "agent": "backend-developer-agent",
+  "scope": "packages/database/src/index.ts RLS session wiring (P0)",
+  "acquiredAt": "2026-07-12T06:48:43.863Z",
+  "heartbeatAt": "2026-07-12T06:48:43.863Z",
+  "pid": 31285
+}
