@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-pickwave-fulfillment-kit-versioning",
+  "agent": "claude-code-cli-main",
+  "scope": "Inventory: pick-wave to sales-order fulfillment integration, kit BOM versioning",
+  "acquiredAt": "2026-07-12T03:12:38.139Z",
+  "heartbeatAt": "2026-07-12T03:12:38.140Z",
+  "pid": 18369
+}
