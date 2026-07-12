@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cross-docking",
+  "agent": "claude-code-cli-main",
+  "scope": "Inventory: cross-docking opportunity detection and execution (receive-to-ship bypass)",
+  "acquiredAt": "2026-07-12T03:39:45.626Z",
+  "heartbeatAt": "2026-07-12T03:39:45.626Z",
+  "pid": 22320
+}
