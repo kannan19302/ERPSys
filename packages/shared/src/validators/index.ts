@@ -1862,6 +1862,18 @@ export const createStockReservationSchema = z.object({
 });
 export type CreateStockReservationInput = z.infer<typeof createStockReservationSchema>;
 
+export const assembleKitSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+});
+export type AssembleKitInput = z.infer<typeof assembleKitSchema>;
+
+export const disassembleKitSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+});
+export type DisassembleKitInput = z.infer<typeof disassembleKitSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),

@@ -307,6 +307,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'License Plates & Put-away', href: '/inventory/license-plates', icon: Package },
             { name: 'Traceability', href: '/inventory/traceability', icon: QrCode },
             { name: 'Stock Reservations & Analytics', href: '/inventory/stock-reservations', icon: ClipboardCheck },
+            { name: 'Kits & Assembly', href: '/inventory/kits', icon: Package },
           ]
         },
         {

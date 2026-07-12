@@ -162,6 +162,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'license-plates': 'License Plates & Put-away',
   traceability: 'Traceability',
   'stock-reservations': 'Stock Reservations & Analytics',
+  kits: 'Kits & Assembly',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

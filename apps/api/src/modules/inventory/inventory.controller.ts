@@ -20,6 +20,7 @@ import {
   CreatePutawayTaskInput, CompletePutawayTaskInput,
   QuarantineBatchInput, ReleaseBatchQuarantineInput,
   CreateStockReservationInput,
+  AssembleKitInput, DisassembleKitInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -957,6 +958,36 @@ export class InventoryController {
   @Permissions('inventory.product.delete')
   async deleteProductKit(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.inventoryService.deleteProductKit(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get kit component availability / max buildable quantity' })
+  @Get('kits/:id/availability')
+  @Permissions('inventory.stock.read')
+  async getKitAvailability(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Query('warehouseId') warehouseId: string) {
+    return this.inventoryService.getKitAvailability(req.user.tenantId, id, warehouseId);
+  }
+
+  @ApiOperation({ summary: 'Get kit cost rollup and margin' })
+  @Get('kits/:id/cost-rollup')
+  @Permissions('inventory.stock.read')
+  async getKitCostRollup(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getKitCostRollup(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Assemble kits (consume components, produce finished kit stock)' })
+  @Post('kits/:id/assemble')
+  @Permissions('inventory.stock.create')
+  async assembleKit(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: AssembleKitInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.assembleKit(req.user.tenantId, orgId, req.user.userId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Disassemble kits (consume finished kit stock, produce components)' })
+  @Post('kits/:id/disassemble')
+  @Permissions('inventory.stock.create')
+  async disassembleKit(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: DisassembleKitInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.disassembleKit(req.user.tenantId, orgId, req.user.userId, id, dto);
   }
 
   // ─── VALUATION & REPORTS ────────────────────────────

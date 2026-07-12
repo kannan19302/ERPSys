@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T02:05:19.691Z
+> Last generated: 2026-07-12T02:15:30.338Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2010 features** across 33 modules
+## System total: **2014 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 104 |
+| [inventory](#inventory) | 108 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-104 features
+108 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1884,6 +1884,10 @@
 | POST | `/inventory/kits` | Create product kit | `inventory.product.read` |
 | PATCH | `/inventory/kits/:id` | Update product kit | `inventory.product.update` |
 | DELETE | `/inventory/kits/:id` | Delete product kit | `inventory.product.update` |
+| GET | `/inventory/kits/:id/availability` | Get kit component availability / max buildable quantity | `inventory.product.delete` |
+| GET | `/inventory/kits/:id/cost-rollup` | Get kit cost rollup and margin | `inventory.stock.read` |
+| POST | `/inventory/kits/:id/assemble` | Assemble kits (consume components, produce finished kit stock) | `inventory.stock.read` |
+| POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
 

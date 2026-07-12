@@ -2,6 +2,29 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: kit assembly/disassembly, component availability, cost rollup
+
+FAST cycle (Inventory cycle 3, branch `claude/new-session-7x5xhc`), continuing
+toward the 90→200 feature-count target.
+
+- **No new schema** — reused the existing `ProductKit`/`ProductKitItem` CRUD
+  and `createStockEntry`/`submitStockEntry` machinery (confirmed it performs
+  real per-warehouse inventory adjustments before relying on it).
+- **API**: `getKitAvailability` (max buildable quantity from the scarcest
+  component's on-hand stock per warehouse), `getKitCostRollup` (component
+  cost rollup vs. discounted sell price, margin/margin %), `assembleKit`/
+  `disassembleKit` (generates and submits a real `STOCK_ADJUSTMENT` stock
+  entry consuming/producing the correct quantities, with insufficient-stock
+  guards on both directions).
+- **UI**: `/inventory/kits` — kit list, availability/margin panel, assemble/
+  disassemble form — wired into `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 6 new unit tests; inventory module suite 117/117 passing.
+- **Gates**: scoped typecheck clean (`@unerp/shared`, `@unerp/api`,
+  `@unerp/web`); full turbo typecheck/API suite/E2E deferred per FAST-cycle
+  tier (`fastCyclesSinceFullGate` 2→3).
+- Module count 104→108. Next candidates: wave-pick/pack-list generation,
+  multi-warehouse transfer approval workflow, movement-history report.
+
 ## [2026-07-12] Inventory: batch quarantine + traceability, stock reservations, ABC/dead-stock/turnover analytics
 
 FAST cycle (Inventory cycle 2, branch `claude/new-session-7x5xhc`), toward the

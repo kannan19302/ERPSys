@@ -12,6 +12,7 @@ import {
   CreatePutawayTaskInput, CompletePutawayTaskInput,
   QuarantineBatchInput, ReleaseBatchQuarantineInput,
   CreateStockReservationInput,
+  AssembleKitInput, DisassembleKitInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -2119,6 +2120,97 @@ export class InventoryService {
 
     await prisma.productKit.delete({ where: { id } });
     return { success: true };
+  }
+
+  /** How many kits can be assembled right now from on-hand component stock in a warehouse. */
+  async getKitAvailability(tenantId: string, kitId: string, warehouseId: string) {
+    const kit = await this.getProductKitById(tenantId, kitId);
+
+    const componentAvailability = await Promise.all(
+      kit.components.map(async (c) => {
+        const item = await prisma.inventoryItem.findFirst({ where: { tenantId, productId: c.productId, warehouseId } });
+        const onHand = Number(item?.quantity ?? 0);
+        const perKit = Number(c.quantity);
+        const buildable = perKit > 0 ? Math.floor(onHand / perKit) : 0;
+        return { productId: c.productId, productName: c.product.name, perKitQty: perKit, onHand, buildable };
+      }),
+    );
+
+    const maxBuildable = componentAvailability.length > 0 ? Math.min(...componentAvailability.map((c) => c.buildable)) : 0;
+    return { kitId, warehouseId, maxBuildable, components: componentAvailability };
+  }
+
+  /** Rolled-up cost of a kit from its component cost prices, compared against the kit's sell price for margin visibility. */
+  async getKitCostRollup(tenantId: string, kitId: string) {
+    const kit = await this.getProductKitById(tenantId, kitId);
+    const componentCosts = kit.components.map((c) => ({
+      productId: c.productId,
+      productName: c.product.name,
+      quantity: Number(c.quantity),
+      unitCost: Number(c.product.costPrice),
+      lineCost: Number(c.quantity) * Number(c.product.costPrice),
+    }));
+    const totalCost = componentCosts.reduce((sum, c) => sum + c.lineCost, 0);
+    const sellPrice = Number(kit.sellPrice) * (1 - Number(kit.discount) / 100);
+
+    return { kitId, components: componentCosts, totalCost, sellPrice, margin: sellPrice - totalCost, marginPct: sellPrice > 0 ? Number((((sellPrice - totalCost) / sellPrice) * 100).toFixed(2)) : null };
+  }
+
+  /** Assembles kits: consumes component stock and produces finished-kit stock via a STOCK_ADJUSTMENT entry. */
+  async assembleKit(tenantId: string, orgId: string, userId: string, kitId: string, dto: AssembleKitInput) {
+    const kit = await this.getProductKitById(tenantId, kitId);
+    const availability = await this.getKitAvailability(tenantId, kitId, dto.warehouseId);
+    if (availability.maxBuildable < dto.quantity) {
+      throw new BadRequestException(`Insufficient component stock: can build ${availability.maxBuildable}, requested ${dto.quantity}`);
+    }
+
+    const items = [
+      ...kit.components.map((c) => ({
+        productId: c.productId,
+        qty: Number(c.quantity) * dto.quantity,
+        fromWarehouseId: dto.warehouseId,
+        valuationRate: Number(c.product.costPrice),
+      })),
+      { productId: kit.productId, qty: dto.quantity, toWarehouseId: dto.warehouseId, valuationRate: Number(kit.product.costPrice) },
+    ];
+
+    const entry = await this.createStockEntry(tenantId, orgId, userId, {
+      type: 'STOCK_ADJUSTMENT',
+      purpose: 'STOCK_ADJUSTMENT',
+      remarks: `Kit assembly: ${dto.quantity} x ${kit.name}`,
+      items,
+    } as any);
+
+    return this.submitStockEntry(tenantId, entry.id, userId);
+  }
+
+  /** Disassembles kits: consumes finished-kit stock and returns component stock via a STOCK_ADJUSTMENT entry. */
+  async disassembleKit(tenantId: string, orgId: string, userId: string, kitId: string, dto: DisassembleKitInput) {
+    const kit = await this.getProductKitById(tenantId, kitId);
+    const kitItem = await prisma.inventoryItem.findFirst({ where: { tenantId, productId: kit.productId, warehouseId: dto.warehouseId } });
+    const onHandKits = Number(kitItem?.quantity ?? 0);
+    if (onHandKits < dto.quantity) {
+      throw new BadRequestException(`Insufficient kit stock: ${onHandKits} on hand, ${dto.quantity} requested`);
+    }
+
+    const items = [
+      { productId: kit.productId, qty: dto.quantity, fromWarehouseId: dto.warehouseId, valuationRate: Number(kit.product.costPrice) },
+      ...kit.components.map((c) => ({
+        productId: c.productId,
+        qty: Number(c.quantity) * dto.quantity,
+        toWarehouseId: dto.warehouseId,
+        valuationRate: Number(c.product.costPrice),
+      })),
+    ];
+
+    const entry = await this.createStockEntry(tenantId, orgId, userId, {
+      type: 'STOCK_ADJUSTMENT',
+      purpose: 'STOCK_ADJUSTMENT',
+      remarks: `Kit disassembly: ${dto.quantity} x ${kit.name}`,
+      items,
+    } as any);
+
+    return this.submitStockEntry(tenantId, entry.id, userId);
   }
 
   // ─── VALUATION & REPORTS ────────────────────────────

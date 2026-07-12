@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-kitting-assembly",
-  "agent": "claude-code-cli-main",
-  "scope": "Inventory: kit assembly/disassembly, component availability check, kit costing rollup",
-  "acquiredAt": "2026-07-12T02:12:25.979Z",
-  "heartbeatAt": "2026-07-12T02:12:25.979Z",
-  "pid": 14191
-}
