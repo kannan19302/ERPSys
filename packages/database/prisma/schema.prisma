@@ -173,6 +173,7 @@ model Organization {
   campaigns                 Campaign[]
   salesReturns              SalesReturn[]
   purchaseReturns           PurchaseReturn[]
+  vendorRmaRequests         VendorRmaRequest[]
   purchaseRequisitions      PurchaseRequisition[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
   cases                     Case[]
@@ -180,6 +181,7 @@ model Organization {
   accountingBooks           AccountingBook[]
   contracts                 Contract[]
   financeLeases             FinanceLease[]
+  demandForecastRuns        DemandForecastRun[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -327,8 +329,12 @@ model Vendor {
   paymentSchedules          PaymentSchedule[]
   supplierQuotations        SupplierQuotation[]
   purchaseReturns           PurchaseReturn[]
+  vendorRmaRequests         VendorRmaRequest[]
   subcontractingOrders      SubcontractingOrder[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
+  supplierScorecards        SupplierScorecard[]
+  supplierNcrs              SupplierNcr[]
+  supplierCarRequests       SupplierCarRequest[]
   portalUsers               VendorPortalUser[]
   auctionBids               RFQAuctionBid[]
   contracts                 Contract[]
@@ -1003,6 +1009,8 @@ model Product {
   channelInventory              ChannelInventory[]
   storefrontListings            ProductListing[]
   contractLineItems             ContractLineItem[]
+  demandForecastLines           DemandForecastLine[]
+  reorderSuggestions            ReorderSuggestion[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -1036,6 +1044,10 @@ model Warehouse {
   pickWaves            PickWave[]
   dockAppointments     DockAppointment[]
   consignmentStocks    ConsignmentStock[]
+  demandForecastRuns   DemandForecastRun[]
+  demandForecastLines  DemandForecastLine[]
+  reorderSuggestions   ReorderSuggestion[]
+  vendorReturnShipments VendorReturnShipment[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -7627,6 +7639,89 @@ model StockAlert {
   @@map("stock_alerts")
 }
 
+// ── Demand Forecasting (Up Next 5w discovery item) ──────────────────────────
+// Reuses StockLedgerEntry.qtyOut as the historical demand series (no new
+// snapshot model). DemandForecastRun persists one forecasting pass'
+// parameters/status; DemandForecastLine holds the per-product/warehouse
+// projected quantity; ReorderSuggestion is generated from a run's lines and
+// is distinct from the pre-existing static-threshold ReorderRule.
+model DemandForecastRun {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  name           String
+  method         String    @default("MOVING_AVERAGE") // MOVING_AVERAGE, EXPONENTIAL_SMOOTHING
+  parameters     Json      @default("{}") // e.g. { windowDays, alpha, horizonDays, historyDays }
+  status         String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  warehouseId    String?   @map("warehouse_id")
+  errorMessage   String?   @map("error_message")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  warehouse    Warehouse?           @relation(fields: [warehouseId], references: [id])
+  lines        DemandForecastLine[]
+  suggestions  ReorderSuggestion[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, warehouseId])
+  @@map("demand_forecast_runs")
+}
+
+model DemandForecastLine {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  runId              String   @map("run_id")
+  productId          String   @map("product_id")
+  warehouseId        String   @map("warehouse_id")
+  period             DateTime // start date of the forecasted bucket (daily bucket)
+  historicalAvgQty   Decimal  @default(0) @map("historical_avg_qty") @db.Decimal(15, 3)
+  forecastedQuantity Decimal  @map("forecasted_quantity") @db.Decimal(15, 3)
+  confidence         Decimal  @default(0) @db.Decimal(5, 2) // 0-100
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  run       DemandForecastRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [productId], references: [id])
+  warehouse Warehouse         @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([runId])
+  @@index([tenantId, productId, warehouseId])
+  @@map("demand_forecast_lines")
+}
+
+model ReorderSuggestion {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  runId             String    @map("run_id")
+  productId         String    @map("product_id")
+  warehouseId       String    @map("warehouse_id")
+  reorderPoint      Decimal   @map("reorder_point") @db.Decimal(15, 3)
+  suggestedQuantity Decimal   @map("suggested_quantity") @db.Decimal(15, 3)
+  currentStockQty   Decimal   @default(0) @map("current_stock_qty") @db.Decimal(15, 3)
+  basis             String    @default("FORECAST") // FORECAST
+  status            String    @default("PENDING") // PENDING, ACCEPTED, DISMISSED
+  decidedBy         String?   @map("decided_by")
+  decidedAt         DateTime? @map("decided_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  run       DemandForecastRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [productId], references: [id])
+  warehouse Warehouse         @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([runId])
+  @@index([tenantId, productId, warehouseId])
+  @@map("reorder_suggestions")
+}
+
 model ProductKit {
   id          String   @id @default(cuid())
   tenantId    String   @map("tenant_id")
@@ -11197,4 +11292,780 @@ model CommissionPayoutSpiffLine {
   @@index([tenantId])
   @@index([payoutId])
   @@map("commission_payout_spiff_lines")
+}
+
+// ════════════════════════════════════════════════
+// INVENTORY — Returns-to-Vendor (RTV) Workflow
+// ════════════════════════════════════════════════
+
+/// Configurable taxonomy of reasons for returning goods to a vendor.
+model ReturnReasonCode {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  code        String
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  rmaRequests VendorRmaRequest[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("return_reason_codes")
+}
+
+/// RMA (Return Merchandise Authorization) request sent to a vendor.
+/// Tracks authorization status, vendor RMA number, and links to PurchaseReturn.
+model VendorRmaRequest {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  rmaNumber         String    @map("rma_number")
+  purchaseReturnId  String    @map("purchase_return_id")
+  vendorId          String    @map("vendor_id")
+  reasonCodeId      String?   @map("reason_code_id")
+  status            String    @default("PENDING")
+  // PENDING → SUBMITTED → AUTHORIZED → REJECTED → COMPLETED
+  vendorRmaRef      String?   @map("vendor_rma_ref")   // vendor-assigned RMA#
+  requestedAt       DateTime  @default(now()) @map("requested_at")
+  submittedAt       DateTime? @map("submitted_at")
+  authorizedAt      DateTime? @map("authorized_at")
+  rejectedAt        DateTime? @map("rejected_at")
+  rejectionReason   String?   @map("rejection_reason")
+  notes             String?
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  vendor         Vendor            @relation(fields: [vendorId], references: [id])
+  organization   Organization      @relation(fields: [orgId], references: [id])
+  reasonCode     ReturnReasonCode? @relation(fields: [reasonCodeId], references: [id])
+  shipments      VendorReturnShipment[]
+
+  @@unique([tenantId, rmaNumber])
+  @@index([tenantId])
+  @@index([tenantId, purchaseReturnId])
+  @@map("vendor_rma_requests")
+}
+
+/// Outbound shipment tracking for goods being returned to a vendor.
+model VendorReturnShipment {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  rmaRequestId    String    @map("rma_request_id")
+  warehouseId     String    @map("warehouse_id")
+  shipmentNumber  String    @map("shipment_number")
+  carrier         String?
+  trackingNumber  String?   @map("tracking_number")
+  status          String    @default("PENDING")
+  // PENDING → PACKED → SHIPPED → DELIVERED → LOST
+  packedAt        DateTime? @map("packed_at")
+  shippedAt       DateTime? @map("shipped_at")
+  deliveredAt     DateTime? @map("delivered_at")
+  creditMemoRef   String?   @map("credit_memo_ref")   // vendor credit memo number once received
+  creditAmount    Decimal?  @map("credit_amount") @db.Decimal(15, 2)
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  rmaRequest VendorRmaRequest @relation(fields: [rmaRequestId], references: [id])
+  warehouse  Warehouse        @relation(fields: [warehouseId], references: [id])
+
+  @@unique([tenantId, shipmentNumber])
+  @@index([tenantId])
+  @@map("vendor_return_shipments")
+}
+
+// ─── Inventory Cycle 15: Labor Management ────────────────────────────────────
+
+/// Standard time per task type used to measure worker productivity.
+model LaborStandard {
+  id           String  @id @default(cuid())
+  tenantId     String  @map("tenant_id")
+  taskType     String  @map("task_type")   // PICK, PACK, RECEIVE, PUTAWAY, CYCLE_COUNT, TRANSFER
+  description  String?
+  standardMins Decimal @map("standard_mins") @db.Decimal(8, 2)
+  warehouseId  String? @map("warehouse_id")
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, taskType, warehouseId])
+  @@index([tenantId])
+  @@map("labor_standards")
+}
+
+/// Individual task assigned to a warehouse worker.
+model WorkerTaskLog {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  workerId     String    @map("worker_id")       // User or employee ID
+  workerName   String    @map("worker_name")
+  warehouseId  String    @map("warehouse_id")
+  taskType     String    @map("task_type")
+  referenceId  String?   @map("reference_id")    // PickWave ID, transfer ID, etc.
+  referenceType String?  @map("reference_type")
+  startedAt    DateTime  @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  durationMins Decimal?  @map("duration_mins") @db.Decimal(8, 2)
+  standardMins Decimal?  @map("standard_mins") @db.Decimal(8, 2)
+  efficiencyPct Decimal? @map("efficiency_pct") @db.Decimal(6, 2)
+  notes        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, workerId])
+  @@index([tenantId, warehouseId])
+  @@map("worker_task_logs")
+}
+
+/// Recurring shift template for warehouse staffing (not the HR ShiftSchedule).
+model WarehouseShiftTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  warehouseId String   @map("warehouse_id")
+  shiftName   String   @map("shift_name")
+  dayOfWeek   Int      @map("day_of_week")   // 0=Sun..6=Sat
+  startTime   String   @map("start_time")    // HH:MM
+  endTime     String   @map("end_time")      // HH:MM
+  headcount   Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, warehouseId])
+  @@map("warehouse_shift_templates")
+}
+
+// ─── Inventory Cycle 15: Supplier Quality Management ─────────────────────────
+
+/// Periodic quality/delivery scorecard for a vendor.
+model SupplierScorecard {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  vendorId         String   @map("vendor_id")
+  periodStart      DateTime @map("period_start")
+  periodEnd        DateTime @map("period_end")
+  qualityScore     Decimal? @map("quality_score") @db.Decimal(5, 2)       // 0-100
+  deliveryScore    Decimal? @map("delivery_score") @db.Decimal(5, 2)
+  fillRateScore    Decimal? @map("fill_rate_score") @db.Decimal(5, 2)
+  overallScore     Decimal? @map("overall_score") @db.Decimal(5, 2)
+  onTimeDeliveries Int      @default(0) @map("on_time_deliveries")
+  lateDeliveries   Int      @default(0) @map("late_deliveries")
+  defectiveUnits   Int      @default(0) @map("defective_units")
+  totalUnitsReceived Int    @default(0) @map("total_units_received")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@unique([tenantId, vendorId, periodStart])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("supplier_scorecards")
+}
+
+/// Vendor-specific NCR raised against an incoming shipment (distinct from manufacturing NCR).
+model SupplierNcr {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  ncrNumber      String    @map("ncr_number")
+  vendorId       String    @map("vendor_id")
+  productId      String?   @map("product_id")
+  warehouseId    String?   @map("warehouse_id")
+  referenceId    String?   @map("reference_id")    // PO / GRN
+  referenceType  String?   @map("reference_type")
+  defectType     String    @map("defect_type")     // DIMENSIONAL, COSMETIC, FUNCTIONAL, DOCUMENTATION
+  severity       String    @default("MINOR")        // MINOR, MAJOR, CRITICAL
+  defectQty      Int       @default(0) @map("defect_qty")
+  totalQty       Int       @default(0) @map("total_qty")
+  description    String
+  status         String    @default("OPEN")         // OPEN, UNDER_REVIEW, CAR_RAISED, CLOSED
+  resolution     String?
+  raisedBy       String?   @map("raised_by")
+  closedAt       DateTime? @map("closed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  vendor      Vendor                @relation(fields: [vendorId], references: [id])
+  carRequests SupplierCarRequest[]
+
+  @@unique([tenantId, ncrNumber])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("supplier_ncrs")
+}
+
+/// Corrective action request linked to a supplier NCR.
+model SupplierCarRequest {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  carNumber        String    @map("car_number")
+  ncrId            String    @map("ncr_id")
+  vendorId         String    @map("vendor_id")
+  rootCause        String?   @map("root_cause")
+  correctiveAction String?   @map("corrective_action")
+  dueDate          DateTime? @map("due_date")
+  status           String    @default("PENDING")   // PENDING, SUBMITTED, ACCEPTED, REJECTED, CLOSED
+  vendorResponse   String?   @map("vendor_response")
+  respondedAt      DateTime? @map("responded_at")
+  closedAt         DateTime? @map("closed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  ncr    SupplierNcr @relation(fields: [ncrId], references: [id])
+  vendor Vendor      @relation(fields: [vendorId], references: [id])
+
+  @@unique([tenantId, carNumber])
+  @@index([tenantId])
+  @@index([tenantId, ncrId])
+  @@map("supplier_car_requests")
+}
+
+// ─── Inventory Cycle 15: Automation Rules ────────────────────────────────────
+
+/// Rule that triggers automatic stock replenishment from reserve to active bin.
+model BinReplenishmentRule {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  warehouseId   String   @map("warehouse_id")
+  productId     String   @map("product_id")
+  activeBinCode String   @map("active_bin_code")
+  reserveBinCode String  @map("reserve_bin_code")
+  triggerQty    Decimal  @map("trigger_qty") @db.Decimal(15, 4)     // replenish when active drops below
+  replenishQty  Decimal  @map("replenish_qty") @db.Decimal(15, 4)   // move this many units
+  isActive      Boolean  @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, warehouseId, productId, activeBinCode])
+  @@index([tenantId])
+  @@map("bin_replenishment_rules")
+}
+
+/// Inventory hold placed on items (quality hold, customs hold, damage hold).
+model InventoryHold {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  holdNumber  String    @map("hold_number")
+  warehouseId String    @map("warehouse_id")
+  productId   String?   @map("product_id")
+  batchId     String?   @map("batch_id")
+  serialId    String?   @map("serial_id")
+  holdType    String    @map("hold_type")    // QUALITY, CUSTOMS, DAMAGE, RECALL, FINANCIAL
+  reason      String
+  heldQty     Decimal   @map("held_qty") @db.Decimal(15, 4)
+  status      String    @default("ACTIVE")   // ACTIVE, RELEASED, CANCELLED
+  raisedBy    String?   @map("raised_by")
+  releasedBy  String?   @map("released_by")
+  releasedAt  DateTime? @map("released_at")
+  releaseNotes String?  @map("release_notes")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, holdNumber])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("inventory_holds")
+}
+
+// ─── Inventory Cycle 16: ASN, Inbound/Outbound Logistics, Carrier Management ─
+
+/// Carrier master — shipping carriers used for inbound/outbound shipments.
+model ShippingCarrier {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  code          String
+  name          String
+  trackingUrl   String?  @map("tracking_url")  // e.g. https://track.ups.com/track/input?tracknum={trackingNumber}
+  contactEmail  String?  @map("contact_email")
+  contactPhone  String?  @map("contact_phone")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  serviceLevels   CarrierServiceLevel[]
+  inboundShipments  InboundShipment[]
+  outboundShipments OutboundShipment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("shipping_carriers")
+}
+
+/// Carrier service level — e.g. Ground, 2-Day, Overnight.
+model CarrierServiceLevel {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  carrierId   String   @map("carrier_id")
+  code        String
+  name        String
+  transitDays Int?     @map("transit_days")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  carrier ShippingCarrier @relation(fields: [carrierId], references: [id])
+
+  @@unique([tenantId, carrierId, code])
+  @@index([tenantId])
+  @@map("carrier_service_levels")
+}
+
+/// Advance Shipping Notice — vendor notifies warehouse before shipment arrives.
+model AdvanceShippingNotice {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  asnNumber       String    @map("asn_number")
+  vendorId        String    @map("vendor_id")
+  purchaseOrderId String?   @map("purchase_order_id")
+  warehouseId     String    @map("warehouse_id")
+  shipDate        DateTime? @map("ship_date")
+  expectedArrival DateTime? @map("expected_arrival")
+  status          String    @default("PENDING")  // PENDING, IN_TRANSIT, ARRIVED, RECEIVED, CANCELLED
+  carrierName     String?   @map("carrier_name")
+  trackingNumber  String?   @map("tracking_number")
+  notes           String?
+  receivedAt      DateTime? @map("received_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  lineItems ASNLineItem[]
+
+  @@unique([tenantId, asnNumber])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("advance_shipping_notices")
+}
+
+/// Line item within an ASN.
+model ASNLineItem {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  asnId       String   @map("asn_id")
+  productId   String   @map("product_id")
+  expectedQty Decimal  @map("expected_qty") @db.Decimal(15, 4)
+  receivedQty Decimal  @default(0) @map("received_qty") @db.Decimal(15, 4)
+  uom         String   @default("EA")
+  lotNumber   String?  @map("lot_number")
+  serialNos   String?  @map("serial_nos")   // JSON array of serial numbers
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  asn AdvanceShippingNotice @relation(fields: [asnId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([asnId])
+  @@map("asn_line_items")
+}
+
+/// Inbound shipment — physical carrier shipment bringing goods to the warehouse.
+model InboundShipment {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  shipmentNumber  String    @map("shipment_number")
+  asnId           String?   @map("asn_id")
+  carrierId       String?   @map("carrier_id")
+  warehouseId     String    @map("warehouse_id")
+  trackingNumber  String?   @map("tracking_number")
+  status          String    @default("EXPECTED")  // EXPECTED, IN_TRANSIT, ARRIVED, RECEIVING, COMPLETE, EXCEPTION
+  expectedArrival DateTime? @map("expected_arrival")
+  arrivedAt       DateTime? @map("arrived_at")
+  completedAt     DateTime? @map("completed_at")
+  totalPallets    Int?      @map("total_pallets")
+  totalCartons    Int?      @map("total_cartons")
+  totalWeight     Decimal?  @map("total_weight") @db.Decimal(15, 3)
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  carrier         ShippingCarrier? @relation(fields: [carrierId], references: [id])
+  trackingEvents  ShipmentTrackingEvent[]
+
+  @@unique([tenantId, shipmentNumber])
+  @@index([tenantId])
+  @@map("inbound_shipments")
+}
+
+/// Outbound shipment — carrier shipment for a sales order delivery.
+model OutboundShipment {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  shipmentNumber String    @map("shipment_number")
+  salesOrderId   String?   @map("sales_order_id")
+  carrierId      String?   @map("carrier_id")
+  serviceLevelId String?   @map("service_level_id")
+  warehouseId    String    @map("warehouse_id")
+  trackingNumber String?   @map("tracking_number")
+  status         String    @default("PENDING")  // PENDING, PACKED, SHIPPED, IN_TRANSIT, DELIVERED, EXCEPTION, RETURNED
+  shipDate       DateTime? @map("ship_date")
+  estimatedDelivery DateTime? @map("estimated_delivery")
+  deliveredAt    DateTime? @map("delivered_at")
+  totalPallets   Int?      @map("total_pallets")
+  totalCartons   Int?      @map("total_cartons")
+  totalWeight    Decimal?  @map("total_weight") @db.Decimal(15, 3)
+  labelUrl       String?   @map("label_url")
+  proofOfDelivery String?  @map("proof_of_delivery")
+  recipientName  String?   @map("recipient_name")
+  recipientAddr  String?   @map("recipient_addr")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  carrier        ShippingCarrier? @relation(fields: [carrierId], references: [id])
+  trackingEvents ShipmentTrackingEvent[]
+
+  @@unique([tenantId, shipmentNumber])
+  @@index([tenantId])
+  @@index([tenantId, salesOrderId])
+  @@map("outbound_shipments")
+}
+
+/// Tracking milestone event for inbound or outbound shipments.
+model ShipmentTrackingEvent {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  inboundShipmentId  String? @map("inbound_shipment_id")
+  outboundShipmentId String? @map("outbound_shipment_id")
+  eventCode        String    @map("event_code")   // PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, EXCEPTION
+  description      String
+  location         String?
+  occurredAt       DateTime  @map("occurred_at")
+  source           String    @default("MANUAL")   // MANUAL, CARRIER_API, WEBHOOK
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  inboundShipment  InboundShipment?  @relation(fields: [inboundShipmentId], references: [id])
+  outboundShipment OutboundShipment? @relation(fields: [outboundShipmentId], references: [id])
+
+  @@index([tenantId])
+  @@index([inboundShipmentId])
+  @@index([outboundShipmentId])
+  @@map("shipment_tracking_events")
+}
+
+// ─── Inventory Cycle 17: Quality & Compliance Management ──────────────────────
+
+/// CAPA (Corrective & Preventive Action) record.
+model CapaRecord {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  capaNumber      String    @map("capa_number")
+  title           String
+  type            String    @default("CORRECTIVE")   // CORRECTIVE | PREVENTIVE
+  source          String    @default("INTERNAL")     // INTERNAL | CUSTOMER | AUDIT | NCR | DEVIATION
+  sourceRefId     String?   @map("source_ref_id")    // e.g. ncr id or deviation id
+  priority        String    @default("MEDIUM")       // LOW | MEDIUM | HIGH | CRITICAL
+  status          String    @default("OPEN")         // OPEN | IN_PROGRESS | PENDING_VERIFICATION | CLOSED | CANCELLED
+  description     String
+  rootCause       String?   @map("root_cause")
+  immediateAction String?   @map("immediate_action")
+  correctiveAction String?  @map("corrective_action")
+  preventiveAction String?  @map("preventive_action")
+  dueDate         DateTime? @map("due_date")
+  closedAt        DateTime? @map("closed_at")
+  verifiedAt      DateTime? @map("verified_at")
+  verifiedBy      String?   @map("verified_by")
+  assignedTo      String?   @map("assigned_to")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  actions CapaAction[]
+
+  @@unique([tenantId, capaNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("capa_records")
+}
+
+/// Individual action step within a CAPA.
+model CapaAction {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  capaId      String    @map("capa_id")
+  actionType  String    @map("action_type")   // ROOT_CAUSE_ANALYSIS | CONTAINMENT | CORRECTIVE | PREVENTIVE | VERIFICATION
+  description String
+  assignedTo  String?   @map("assigned_to")
+  dueDate     DateTime? @map("due_date")
+  completedAt DateTime? @map("completed_at")
+  status      String    @default("PENDING")  // PENDING | IN_PROGRESS | COMPLETE | OVERDUE
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  capa CapaRecord @relation(fields: [capaId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([capaId])
+  @@map("capa_actions")
+}
+
+/// Instrument/equipment calibration record.
+model CalibrationRecord {
+  id                 String    @id @default(cuid())
+  tenantId           String    @map("tenant_id")
+  instrumentId       String    @map("instrument_id")   // references a product or internal asset id
+  instrumentName     String    @map("instrument_name")
+  serialNumber       String?   @map("serial_number")
+  location           String?
+  calibrationType    String    @map("calibration_type")  // INTERNAL | EXTERNAL | VENDOR
+  status             String    @default("DUE")           // DUE | IN_PROGRESS | PASSED | FAILED | OVERDUE | CANCELLED
+  scheduledDate      DateTime  @map("scheduled_date")
+  performedAt        DateTime? @map("performed_at")
+  nextDueDate        DateTime? @map("next_due_date")
+  intervalDays       Int?      @map("interval_days")
+  performedBy        String?   @map("performed_by")
+  externalVendor     String?   @map("external_vendor")
+  certificateNumber  String?   @map("certificate_number")
+  certificateUrl     String?   @map("certificate_url")
+  result             String?   // PASS | FAIL | LIMITED_USE
+  measurementBefore  String?   @map("measurement_before")
+  measurementAfter   String?   @map("measurement_after")
+  tolerance          String?
+  notes              String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, instrumentId])
+  @@map("calibration_records")
+}
+
+/// Quality deviation / non-conformance event.
+model DeviationRecord {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  deviationNumber String  @map("deviation_number")
+  title         String
+  type          String    @default("PROCESS")     // PROCESS | PRODUCT | MATERIAL | EQUIPMENT | DOCUMENTATION | ENVIRONMENTAL
+  severity      String    @default("MINOR")       // MINOR | MAJOR | CRITICAL
+  status        String    @default("OPEN")        // OPEN | UNDER_REVIEW | CLOSED | CANCELLED
+  description   String
+  detectedAt    DateTime  @map("detected_at")
+  detectedBy    String?   @map("detected_by")
+  area          String?   // warehouse zone, production area, etc.
+  productId     String?   @map("product_id")
+  batchId       String?   @map("batch_id")
+  impact        String?
+  immediateAction String? @map("immediate_action")
+  capaId        String?   @map("capa_id")         // linked CAPA if escalated
+  closedAt      DateTime? @map("closed_at")
+  closedBy      String?   @map("closed_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, deviationNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("deviation_records")
+}
+
+/// SOP / Work-instruction document control.
+model SopDocument {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  docNumber      String    @map("doc_number")
+  title          String
+  category       String    @default("SOP")   // SOP | WORK_INSTRUCTION | FORM | POLICY | SPECIFICATION
+  department     String?
+  status         String    @default("DRAFT") // DRAFT | UNDER_REVIEW | APPROVED | OBSOLETE | SUPERSEDED
+  version        String    @default("1.0")
+  effectiveDate  DateTime? @map("effective_date")
+  reviewDate     DateTime? @map("review_date")
+  expiryDate     DateTime? @map("expiry_date")
+  authorId       String?   @map("author_id")
+  approverId     String?   @map("approver_id")
+  approvedAt     DateTime? @map("approved_at")
+  fileUrl        String?   @map("file_url")
+  description    String?
+  keywords       String?   // comma-separated
+  supersededById String?   @map("superseded_by_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  revisions SopRevision[]
+
+  @@unique([tenantId, docNumber, version])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("sop_documents")
+}
+
+/// Revision history for a SOP document.
+model SopRevision {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  docId       String   @map("doc_id")
+  version     String
+  changedBy   String?  @map("changed_by")
+  changeSummary String @map("change_summary")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  document SopDocument @relation(fields: [docId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([docId])
+  @@map("sop_revisions")
+}
+
+// ─── Inventory Cycle 18: Warehouse Operations ─────────────────────────────────
+
+/// Generic warehouse task (pick, put-away, replenish, transfer, count, receive, pack).
+model WarehouseTask {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  taskNumber    String    @map("task_number")
+  taskType      String    @map("task_type")      // PICK | PUTAWAY | REPLENISH | BIN_TRANSFER | RECEIVE | PACK | CYCLE_COUNT
+  priority      Int       @default(50)            // 1-100, lower = higher priority
+  status        String    @default("QUEUED")      // QUEUED | ASSIGNED | IN_PROGRESS | COMPLETE | CANCELLED | FAILED
+  warehouseId   String    @map("warehouse_id")
+  zoneId        String?   @map("zone_id")
+  sourceLocation String?  @map("source_location")
+  destLocation  String?   @map("dest_location")
+  productId     String?   @map("product_id")
+  qty           Decimal?  @db.Decimal(15, 4)
+  uom           String?
+  referenceType String?   @map("reference_type") // PICK_WAVE | ASN | PURCHASE_ORDER | MANUAL
+  referenceId   String?   @map("reference_id")
+  assignedTo    String?   @map("assigned_to")    // userId
+  assignedAt    DateTime? @map("assigned_at")
+  startedAt     DateTime? @map("started_at")
+  completedAt   DateTime? @map("completed_at")
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, taskNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, assignedTo])
+  @@index([tenantId, taskType, status])
+  @@map("warehouse_tasks")
+}
+
+/// Bin-to-bin transfer request (operator-initiated, optionally supervisor-approved).
+model BinTransferRequest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  transferNumber  String    @map("transfer_number")
+  productId       String    @map("product_id")
+  fromBin         String    @map("from_bin")
+  toBin           String    @map("to_bin")
+  qty             Decimal   @db.Decimal(15, 4)
+  uom             String    @default("EA")
+  reason          String?
+  status          String    @default("PENDING")  // PENDING | APPROVED | IN_PROGRESS | COMPLETE | REJECTED
+  requestedBy     String?   @map("requested_by")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  rejectedReason  String?   @map("rejected_reason")
+  completedAt     DateTime? @map("completed_at")
+  warehouseTaskId String?   @map("warehouse_task_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, transferNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("bin_transfer_requests")
+}
+
+/// Goods Receipt Note — records physical receipt of a purchase order.
+model GoodsReceiptNote {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  grnNumber       String    @map("grn_number")
+  purchaseOrderId String?   @map("purchase_order_id")
+  asnId           String?   @map("asn_id")
+  warehouseId     String    @map("warehouse_id")
+  supplierId      String?   @map("supplier_id")
+  receivedDate    DateTime  @map("received_date")
+  status          String    @default("DRAFT")    // DRAFT | VERIFIED | QUALITY_CHECK | PUT_AWAY | COMPLETE | REJECTED
+  vehicleNumber   String?   @map("vehicle_number")
+  driverName      String?   @map("driver_name")
+  totalCartons    Int?      @map("total_cartons")
+  totalWeight     Decimal?  @db.Decimal(15, 3) @map("total_weight")
+  notes           String?
+  rejectedReason  String?   @map("rejected_reason")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  lineItems GrnLineItem[]
+
+  @@unique([tenantId, grnNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, purchaseOrderId])
+  @@map("goods_receipt_notes")
+}
+
+/// Line item on a GRN.
+model GrnLineItem {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  grnId        String   @map("grn_id")
+  productId    String   @map("product_id")
+  orderedQty   Decimal  @db.Decimal(15, 4) @map("ordered_qty")
+  receivedQty  Decimal  @db.Decimal(15, 4) @map("received_qty")
+  acceptedQty  Decimal  @db.Decimal(15, 4) @default(0) @map("accepted_qty")
+  rejectedQty  Decimal  @db.Decimal(15, 4) @default(0) @map("rejected_qty")
+  uom          String   @default("EA")
+  lotNumber    String?  @map("lot_number")
+  expiryDate   DateTime? @map("expiry_date")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  grn GoodsReceiptNote @relation(fields: [grnId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([grnId])
+  @@map("grn_line_items")
+}
+
+/// Packing station session — captures cartons packed for an outbound shipment.
+model PackingSession {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  sessionNumber  String    @map("session_number")
+  outboundShipmentId String? @map("outbound_shipment_id")
+  pickWaveId     String?   @map("pick_wave_id")
+  workerId       String?   @map("worker_id")
+  status         String    @default("OPEN")   // OPEN | COMPLETE | CANCELLED
+  totalCartons   Int       @default(0) @map("total_cartons")
+  totalWeight    Decimal?  @db.Decimal(15, 3) @map("total_weight")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  cartons PackingCarton[]
+
+  @@unique([tenantId, sessionNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("packing_sessions")
+}
+
+/// Individual carton within a packing session.
+model PackingCarton {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  sessionId       String   @map("session_id")
+  cartonNumber    String   @map("carton_number")
+  weight          Decimal? @db.Decimal(10, 3)
+  length          Decimal? @db.Decimal(10, 2)
+  width           Decimal? @db.Decimal(10, 2)
+  height          Decimal? @db.Decimal(10, 2)
+  labelUrl        String?  @map("label_url")
+  sealedAt        DateTime? @map("sealed_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  session PackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([sessionId])
+  @@map("packing_cartons")
 }

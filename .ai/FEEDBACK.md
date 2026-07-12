@@ -1,7 +1,7 @@
 # FEEDBACK.md — Reality signals for the autonomous cycle
 
 > **Generated file** — `node scripts/feedback-scan.mjs`. Do not edit by hand.
-> Last generated: 2026-07-11T17:07:53.727Z
+> Last generated: 2026-07-12T14:32:02.846Z
 >
 > Consumed by `.ai/AUTOPILOT.md` Step 1 (P1): unresolved runtime errors and open
 > alerts below outrank backlog features. Fix, then mark resolved via the Admin
@@ -9,7 +9,7 @@
 
 ## 1–2. Database signals
 
-_Database unreachable (Cannot find module '@prisma/client') — start the dev stack (`.\scripts\docker-start.ps1`) and re-run for runtime-error signals._
+_Database unreachable (Invalid `prisma.errorLog.groupBy()` invocation:) — start the dev stack (`.\scripts\docker-start.ps1`) and re-run for runtime-error signals._
 
 ## 3. TODO / FIXME / HACK markers in source
 

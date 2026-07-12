@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone,
+  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone, RotateCcw,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -318,6 +318,15 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Cross-Docking', href: '/inventory/cross-dock', icon: Link },
             { name: 'Slotting Optimization', href: '/inventory/slotting', icon: MapPin },
             { name: 'Dock Scheduling', href: '/inventory/dock-scheduling', icon: Truck },
+            { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
+            { name: 'Returns to Vendor (RTV)', href: '/inventory/rtv', icon: RotateCcw },
+            { name: 'Labor Management', href: '/inventory/labor-management', icon: Users },
+            { name: 'Supplier Quality', href: '/inventory/supplier-quality', icon: ClipboardList },
+            { name: 'Automation Rules', href: '/inventory/automation-rules', icon: Zap },
+            { name: 'Inventory Analytics', href: '/inventory/inventory-analytics', icon: BarChart3 },
+            { name: 'Logistics & Shipping', href: '/inventory/logistics', icon: Truck },
+            { name: 'Quality & Compliance', href: '/inventory/quality-compliance', icon: ShieldCheck },
+            { name: 'Warehouse Operations', href: '/inventory/warehouse-ops', icon: Truck },
           ]
         },
         {

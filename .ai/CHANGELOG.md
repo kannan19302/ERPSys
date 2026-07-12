@@ -2,6 +2,108 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory Cycle 18: Warehouse Operations
+
+FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 2→3.
+
+- **DB**: 6 new models — `WarehouseTask`, `BinTransferRequest`, `GoodsReceiptNote`, `GrnLineItem`,
+  `PackingSession`, `PackingCarton` (migration `20260712170000_inventory_cycle18_warehouse_ops`).
+- **API** (`WarehouseOpsModule`, 30 endpoints under `/inventory/warehouse-ops`):
+  - Task queue: create/list/get tasks, assign (QUEUED→ASSIGNED), start (→IN_PROGRESS), complete,
+    cancel; worker queue view; dashboard with counts by status and type
+  - Bin transfers: create/list/get, approve (PENDING→APPROVED) with approver tracking, reject with
+    reason, complete; blocks same-bin transfers
+  - GRN workflow: create with auto-generated GRN-XXXXX number + nested line items, verify (updates
+    accepted/rejected qtys in $transaction → VERIFIED), quality-check (→QUALITY_CHECK), putaway
+    (→COMPLETE), reject with reason; GRN dashboard by status
+  - Packing: create session, add carton ($transaction: create + increment totalCartons), seal carton,
+    complete session (sums actual carton weights); status: OPEN→COMPLETE
+  - Warehouse ops dashboard aggregating all sub-domains
+- **UI**: `/inventory/warehouse-ops` — 5-tab page: Dashboard (stat cards for tasks/GRN/bin transfers),
+  Task Queue (with type/status/priority), Bin Transfers, GRN, Packing Sessions; wired into
+  `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 24 unit tests, all passing. Inventory feature count: 284 → 314.
+
+## [2026-07-12] Inventory Cycle 17: Quality & Compliance Management
+
+FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 1→2.
+
+- **DB**: 6 new models — `CapaRecord`, `CapaAction`, `CalibrationRecord`, `DeviationRecord`,
+  `SopDocument`, `SopRevision` (migration `20260712150000_inventory_cycle17_quality_compliance`).
+- **API** (`QualityComplianceModule`, 32 endpoints under `/inventory/quality-compliance`):
+  - CAPA: create/list/get/update, state machine (OPEN→IN_PROGRESS→PENDING_VERIFICATION→CLOSED/CANCELLED),
+    action management (add/complete), overdue detection, dashboard
+  - Calibration: schedule, record result (PASS/FAIL/LIMITED_USE), auto-compute nextDueDate from
+    intervalDays, overdue list, dashboard
+  - Deviations: create/list/get, review, close with optional CAPA link, severity-based dashboard,
+    escalate-to-CAPA shortcut linking deviation → new CAPA automatically
+  - SOP Documents: create/list/get, submit-for-review, approve, obsolete, revise (bumps version +
+    logs revision history), keyword search, due-soon alert list
+  - Compliance dashboard aggregating all four sub-domains
+- **UI**: `/inventory/quality-compliance` — 5-tab page: Dashboard (status tiles with red warnings),
+  CAPA table, Calibrations table, Deviations table with severity badges, SOP Documents table;
+  wired into `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 26 unit tests, all passing. Inventory feature count: 253 → 284.
+
+## [2026-07-12] Inventory Cycle 16: ASN, Inbound/Outbound Logistics & Carrier Management
+
+FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 0→1.
+
+- **DB**: 7 new models — `ShippingCarrier`, `CarrierServiceLevel`, `AdvanceShippingNotice`,
+  `ASNLineItem`, `InboundShipment`, `OutboundShipment`, `ShipmentTrackingEvent`
+  (migration `20260712110000_inventory_cycle16_asn_carrier_logistics`).
+- **API** (`InventoryLogisticsModule`): 26 endpoints under `/inventory/logistics` —
+  carrier CRUD + deactivation, service levels per carrier, ASN lifecycle
+  (PENDING→IN_TRANSIT→ARRIVED→RECEIVED/CANCELLED), inbound shipment state machine
+  (EXPECTED→IN_TRANSIT→ARRIVED→RECEIVING→COMPLETE/EXCEPTION), outbound shipment
+  lifecycle (PENDING→PACKED→SHIPPED→IN_TRANSIT→DELIVERED/EXCEPTION/RETURNED),
+  tracking events for both directions, shipment exceptions list, logistics dashboard.
+- **UI**: `/inventory/logistics` — 5-tab page: Dashboard (stat cards + exceptions),
+  ASNs table, Inbound Shipments table, Outbound Shipments table, Carriers table;
+  wired into `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 22 unit tests covering all service methods (`inventory-cycle16-logistics.service.spec.ts`).
+
+## [2026-07-12] Inventory: Returns-to-Vendor (RTV) workflow
+
+FAST cycle (Inventory cycle 14, branch `claude/goal-start-ib21qn`). **Milestone gate triggered** (fastCyclesSinceFullGate 3→4).
+
+- **DB**: `ReturnReasonCode`, `VendorRmaRequest`, `VendorReturnShipment` models
+  (migration `20260712074500_inventory_rtv_workflow`).
+- **API**: Full RTV lifecycle — reason codes (CRUD), RMA request state machine
+  (PENDING→SUBMITTED→AUTHORIZED→REJECTED→COMPLETED), vendor return shipment
+  lifecycle (PENDING→PACKED→SHIPPED→DELIVERED) with credit-memo recording;
+  event emission on create/complete/credit-memo. 17 endpoints across 3 resource
+  groups plus dashboard analytics (status breakdown, pending shipments, total
+  credit received).
+- **UI**: `/inventory/rtv` — 4 KPI stat tiles, tabbed RMA Requests + Return
+  Shipments tables with contextual action buttons (submit/authorize/reject/
+  complete/pack/ship/deliver/credit), new-RMA modal; wired into
+  `moduleNav`/`registry.tsx`/smoke.spec.ts.
+- **Tests**: 13 new unit tests; inventory suite 204/204 passing.
+- **Gates**: scoped typecheck clean (api+web); milestone gate run (see below).
+- Module count 159→160.
+
+## [2026-07-12] Inventory: demand forecasting & reorder suggestions
+
+FAST cycle (Inventory cycle 13, branch `claude/goal-start-ib21qn`).
+
+- **DB**: `DemandForecastRun`/`DemandForecastLine`/`ReorderSuggestion` models
+  (migration `20260712064837_inventory_demand_forecasting`).
+- **API**: forecast-run generation (moving-average or exponential-smoothing)
+  over historical `StockLedgerEntry` outbound (`qtyOut`) demand grouped per
+  product/warehouse, projected forward over a configurable horizon with a
+  coefficient-of-variation confidence score; reorder-point-derived
+  suggestions (forecasted daily demand × lead time + safety stock vs.
+  current on-hand) with accept/dismiss decision lifecycle. 8 endpoints (run
+  CRUD + generate, line listing, suggestion list/accept/dismiss).
+- **UI**: `/inventory/demand-forecasting` (forecast-run table + pending
+  reorder-suggestions table with accept/dismiss actions), wired into
+  `moduleNav`/`registry.tsx`/`SMOKE_ROUTES`.
+- **Tests**: 7 new unit tests; inventory suite 191/191 passing.
+- **Gates**: scoped typecheck clean (api+web); full turbo typecheck/API
+  suite/E2E deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 2→3).
+- Module count 158→159.
+
 ## [2026-07-12] Inventory: yard/dock appointment scheduling
 
 FAST cycle (Inventory cycle 12, branch `claude/new-session-7x5xhc`).

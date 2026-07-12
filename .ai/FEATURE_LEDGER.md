@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T03:55:29.767Z
+> Last generated: 2026-07-12T16:25:20.749Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2064 features** across 33 modules
+## System total: **2220 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 158 |
+| [inventory](#inventory) | 314 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-158 features
+314 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1786,6 +1786,71 @@
 | GET | `/inventory/costing/valuation-report` | Get valuation report | `inventory.stock.read` |
 | POST | `/inventory/costing/landed-cost` | Calculate landed cost | `inventory.stock.read` |
 | GET | `/inventory/costing/barcode/:barcode` | Lookup barcode | `inventory.stock.adjust` |
+| GET | `/inventory/demand-forecasting/runs` | List demand forecast runs | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/runs/:id` | Get a demand forecast run | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/runs/:id/lines` | Get forecast lines for a run | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/runs/generate` | Generate a new demand forecast run (moving average / exponential smoothing over historical stock-ledger outbound demand) | `inventory.demand_forecast.generate` |
+| PATCH | `/inventory/demand-forecasting/runs/:id` | Update a demand forecast run (name only) | `inventory.demand_forecast.update` |
+| DELETE | `/inventory/demand-forecasting/runs/:id` | Soft-delete a demand forecast run | `inventory.demand_forecast.delete` |
+| GET | `/inventory/demand-forecasting/reorder-suggestions` | List reorder suggestions | `inventory.reorder_suggestion.read` |
+| POST | `/inventory/demand-forecasting/reorder-suggestions/:id/accept` | Accept a reorder suggestion | `inventory.reorder_suggestion.update` |
+| POST | `/inventory/demand-forecasting/reorder-suggestions/:id/dismiss` | Dismiss a reorder suggestion | `inventory.reorder_suggestion.update` |
+| GET | `/inventory/analytics/dashboard` | Aggregate inventory analytics dashboard | — |
+| GET | `/inventory/analytics/health-score` | Aggregate inventory analytics dashboard | — |
+| GET | `/inventory/analytics/slow-moving` | Inventory health score with component breakdown | — |
+| GET | `/inventory/analytics/dio` | Slow-moving inventory items (no outbound in N days) | — |
+| GET | `/inventory/analytics/fill-rate` | Days Inventory Outstanding (DIO) per product | — |
+| GET | `/inventory/analytics/volume-trends` | Pick-wave fill rate report | — |
+| GET | `/inventory/analytics/shrinkage` | Daily inbound/outbound volume trend data | — |
+| GET | `/inventory/analytics/capacity-utilization` | Shrinkage and loss analysis from negative adjustments | — |
+| GET | `/inventory/analytics/multi-warehouse` | Bin and quantity utilization per warehouse | — |
+| GET | `/inventory/automation/dashboard` | Automation rules and holds overview | — |
+| GET | `/inventory/automation/replenishment-rules` | Automation rules and holds overview | — |
+| POST | `/inventory/automation/replenishment-rules` | List bin replenishment rules | — |
+| PATCH | `/inventory/automation/replenishment-rules/:id` | Create a bin replenishment rule | — |
+| DELETE | `/inventory/automation/replenishment-rules/:id` | Update replenishment rule thresholds | — |
+| POST | `/inventory/automation/replenishment-rules/evaluate` | Deactivate a replenishment rule | — |
+| GET | `/inventory/automation/holds` | Evaluate all active rules for a warehouse | — |
+| POST | `/inventory/automation/holds` | Place an inventory hold | — |
+| POST | `/inventory/automation/holds/:id/release` | Place an inventory hold | — |
+| POST | `/inventory/automation/holds/:id/cancel` | Release an inventory hold | — |
+| GET | `/inventory/labor/standards` | List labor time standards | — |
+| POST | `/inventory/labor/standards` | List labor time standards | — |
+| PATCH | `/inventory/labor/standards/:id` | Create a labor time standard | — |
+| DELETE | `/inventory/labor/standards/:id` | Update a labor time standard | — |
+| GET | `/inventory/labor/task-logs` | Deactivate a labor time standard | — |
+| POST | `/inventory/labor/task-logs` | Log a worker task (start + optional completion) | — |
+| PATCH | `/inventory/labor/task-logs/:id/complete` | Log a worker task (start + optional completion) | — |
+| GET | `/inventory/labor/shift-templates` | Mark a task log as completed | — |
+| POST | `/inventory/labor/shift-templates` | List warehouse shift templates | — |
+| DELETE | `/inventory/labor/shift-templates/:id` | Create a warehouse shift template | — |
+| GET | `/inventory/labor/dashboard` | Deactivate a shift template | — |
+| GET | `/inventory/labor/workers/:workerId/productivity` | Labor productivity dashboard (7d) | — |
+| GET | `/inventory/logistics/carriers` | — | — |
+| POST | `/inventory/logistics/carriers` | — | — |
+| PATCH | `/inventory/logistics/carriers/:id` | — | — |
+| DELETE | `/inventory/logistics/carriers/:id` | — | — |
+| GET | `/inventory/logistics/carriers/:carrierId/service-levels` | — | — |
+| POST | `/inventory/logistics/carriers/service-levels` | — | — |
+| GET | `/inventory/logistics/asns` | — | — |
+| GET | `/inventory/logistics/asns/:id` | — | — |
+| POST | `/inventory/logistics/asns` | — | — |
+| POST | `/inventory/logistics/asns/:id/in-transit` | — | — |
+| POST | `/inventory/logistics/asns/:id/arrived` | — | — |
+| POST | `/inventory/logistics/asns/:id/receive` | — | — |
+| POST | `/inventory/logistics/asns/:id/cancel` | — | — |
+| GET | `/inventory/logistics/inbound` | — | — |
+| POST | `/inventory/logistics/inbound` | — | — |
+| PATCH | `/inventory/logistics/inbound/:id/status` | — | — |
+| POST | `/inventory/logistics/inbound/:id/tracking` | — | — |
+| GET | `/inventory/logistics/outbound` | — | — |
+| POST | `/inventory/logistics/outbound` | — | — |
+| POST | `/inventory/logistics/outbound/:id/ship` | — | — |
+| POST | `/inventory/logistics/outbound/:id/deliver` | — | — |
+| POST | `/inventory/logistics/outbound/:id/exception` | — | — |
+| POST | `/inventory/logistics/outbound/:id/tracking` | — | — |
+| GET | `/inventory/logistics/dashboard` | — | — |
+| GET | `/inventory/logistics/exceptions` | — | — |
 | GET | `/inventory/products` | Get products | `inventory.product.read` |
 | GET | `/inventory/products/stats` | Get inventory stats | `inventory.product.read` |
 | GET | `/inventory/products/:id` | Get product by id | `inventory.product.read` |
@@ -1940,6 +2005,97 @@
 | POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
+| GET | `/inventory/quality-compliance/capas` | — | — |
+| GET | `/inventory/quality-compliance/capas/dashboard` | — | — |
+| GET | `/inventory/quality-compliance/capas/:id` | — | — |
+| POST | `/inventory/quality-compliance/capas` | — | — |
+| PATCH | `/inventory/quality-compliance/capas/:id` | — | — |
+| POST | `/inventory/quality-compliance/capas/:id/transition` | — | — |
+| POST | `/inventory/quality-compliance/capas/:id/actions` | — | — |
+| POST | `/inventory/quality-compliance/capas/actions/:actionId/complete` | — | — |
+| GET | `/inventory/quality-compliance/calibrations` | — | — |
+| GET | `/inventory/quality-compliance/calibrations/dashboard` | — | — |
+| GET | `/inventory/quality-compliance/calibrations/overdue` | — | — |
+| GET | `/inventory/quality-compliance/calibrations/:id` | — | — |
+| POST | `/inventory/quality-compliance/calibrations` | — | — |
+| POST | `/inventory/quality-compliance/calibrations/:id/result` | — | — |
+| GET | `/inventory/quality-compliance/deviations` | — | — |
+| GET | `/inventory/quality-compliance/deviations/dashboard` | — | — |
+| GET | `/inventory/quality-compliance/deviations/:id` | — | — |
+| POST | `/inventory/quality-compliance/deviations` | — | — |
+| POST | `/inventory/quality-compliance/deviations/:id/review` | — | — |
+| POST | `/inventory/quality-compliance/deviations/:id/close` | — | — |
+| POST | `/inventory/quality-compliance/deviations/:id/escalate-to-capa` | — | — |
+| GET | `/inventory/quality-compliance/sops` | — | — |
+| GET | `/inventory/quality-compliance/sops/due-soon` | — | — |
+| GET | `/inventory/quality-compliance/sops/search` | — | — |
+| GET | `/inventory/quality-compliance/sops/:id` | — | — |
+| POST | `/inventory/quality-compliance/sops` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/submit-review` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/approve` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/obsolete` | — | — |
+| POST | `/inventory/quality-compliance/sops/:id/revise` | — | — |
+| GET | `/inventory/quality-compliance/dashboard` | — | — |
+| GET | `/inventory/rtv/reason-codes` | List return reason codes | `inventory.rtv.read` |
+| POST | `/inventory/rtv/reason-codes` | Create a return reason code | `inventory.rtv.read` |
+| PATCH | `/inventory/rtv/reason-codes/:id` | Update a return reason code | `inventory.rtv.manage` |
+| GET | `/inventory/rtv/rma-requests` | List RMA requests | `inventory.rtv.read` |
+| GET | `/inventory/rtv/rma-requests/:id` | Get a single RMA request with shipments | `inventory.rtv.read` |
+| POST | `/inventory/rtv/rma-requests` | Create a new RMA request | `inventory.rtv.read` |
+| POST | `/inventory/rtv/rma-requests/:id/submit` | Submit an RMA request to the vendor | `inventory.rtv.create` |
+| POST | `/inventory/rtv/rma-requests/:id/authorize` | Record vendor authorization of an RMA | `inventory.rtv.update` |
+| POST | `/inventory/rtv/rma-requests/:id/reject` | Record vendor rejection of an RMA | `inventory.rtv.update` |
+| POST | `/inventory/rtv/rma-requests/:id/complete` | Mark an RMA as completed | `inventory.rtv.update` |
+| GET | `/inventory/rtv/shipments` | List return shipments | `inventory.rtv.read` |
+| GET | `/inventory/rtv/shipments/:id` | Get a single return shipment | `inventory.rtv.read` |
+| POST | `/inventory/rtv/shipments` | Create a return shipment (RMA must be AUTHORIZED) | `inventory.rtv.read` |
+| POST | `/inventory/rtv/shipments/:id/pack` | Mark a shipment as packed | `inventory.rtv.create` |
+| POST | `/inventory/rtv/shipments/:id/ship` | Mark a shipment as shipped | `inventory.rtv.update` |
+| POST | `/inventory/rtv/shipments/:id/deliver` | Mark a shipment as delivered to vendor | `inventory.rtv.update` |
+| POST | `/inventory/rtv/shipments/:id/credit-memo` | Record vendor credit memo against a delivered shipment | `inventory.rtv.update` |
+| GET | `/inventory/rtv/dashboard` | RTV dashboard summary | `inventory.rtv.read` |
+| GET | `/inventory/supplier-quality/dashboard` | Supplier quality overview dashboard | — |
+| GET | `/inventory/supplier-quality/scorecards` | Supplier quality overview dashboard | — |
+| POST | `/inventory/supplier-quality/scorecards` | List supplier quality scorecards | — |
+| GET | `/inventory/supplier-quality/scorecards/vendor/:vendorId` | Create a supplier scorecard for a period | — |
+| GET | `/inventory/supplier-quality/ncrs` | Get score history for a specific vendor | — |
+| POST | `/inventory/supplier-quality/ncrs` | Raise a supplier NCR | — |
+| POST | `/inventory/supplier-quality/ncrs/:id/close` | Raise a supplier NCR | — |
+| GET | `/inventory/supplier-quality/cars` | Close an NCR with resolution notes | — |
+| POST | `/inventory/supplier-quality/cars` | List corrective action requests | — |
+| POST | `/inventory/supplier-quality/cars/:id/respond` | Raise a CAR against an NCR | — |
+| POST | `/inventory/supplier-quality/cars/:id/accept` | Vendor response to a CAR | — |
+| POST | `/inventory/supplier-quality/cars/:id/reject` | Accept a vendor CAR response | — |
+| GET | `/inventory/warehouse-ops/dashboard` | — | — |
+| GET | `/inventory/warehouse-ops/tasks` | — | — |
+| GET | `/inventory/warehouse-ops/tasks/dashboard` | — | — |
+| GET | `/inventory/warehouse-ops/tasks/worker/:workerId` | — | — |
+| GET | `/inventory/warehouse-ops/tasks/:id` | — | — |
+| POST | `/inventory/warehouse-ops/tasks` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/assign` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/start` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/complete` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/cancel` | — | — |
+| GET | `/inventory/warehouse-ops/bin-transfers` | — | — |
+| GET | `/inventory/warehouse-ops/bin-transfers/:id` | — | — |
+| POST | `/inventory/warehouse-ops/bin-transfers` | — | — |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/approve` | — | — |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/reject` | — | — |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/complete` | — | — |
+| GET | `/inventory/warehouse-ops/grn` | — | — |
+| GET | `/inventory/warehouse-ops/grn/dashboard` | — | — |
+| GET | `/inventory/warehouse-ops/grn/:id` | — | — |
+| POST | `/inventory/warehouse-ops/grn` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/verify` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/quality-check` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/putaway` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/reject` | — | — |
+| GET | `/inventory/warehouse-ops/packing` | — | — |
+| GET | `/inventory/warehouse-ops/packing/:id` | — | — |
+| POST | `/inventory/warehouse-ops/packing` | — | — |
+| POST | `/inventory/warehouse-ops/packing/:id/cartons` | — | — |
+| PATCH | `/inventory/warehouse-ops/packing/:sessionId/cartons/:cartonId/seal` | — | — |
+| PATCH | `/inventory/warehouse-ops/packing/:id/complete` | — | — |
 
 ## localization
 
