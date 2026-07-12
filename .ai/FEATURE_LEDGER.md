@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T02:55:24.793Z
+> Last generated: 2026-07-12T03:03:47.613Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2039 features** across 33 modules
+## System total: **2047 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 133 |
+| [inventory](#inventory) | 141 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-133 features
+141 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1898,10 +1898,18 @@
 | GET | `/inventory/qa-inspections/:id` | Get q a inspection by id | `inventory.stock.read` |
 | POST | `/inventory/qa-inspections` | Create q a inspection | `inventory.stock.read` |
 | POST | `/inventory/qa-inspections/:id/submit` | Submit q a inspection | `inventory.stock.update` |
+| POST | `/inventory/qa-inspections/:id/route-disposition` | Route a resolved inspection disposition to a downstream action (e.g. batch quarantine) | `inventory.stock.update` |
+| GET | `/inventory/qa-inspection-templates` | Get QA inspection templates | `inventory.stock.read` |
+| POST | `/inventory/qa-inspection-templates` | Create QA inspection template | `inventory.stock.create` |
+| PATCH | `/inventory/qa-inspection-templates/:id` | Update QA inspection template | `inventory.stock.create` |
+| DELETE | `/inventory/qa-inspection-templates/:id` | Delete QA inspection template | `inventory.stock.update` |
+| POST | `/inventory/qa-inspection-templates/:id/create-inspection` | Create QA inspection pre-populated from a template | `inventory.stock.delete` |
 | GET | `/inventory/reorder-rules` | Get reorder rules | `inventory.product.read` |
 | POST | `/inventory/reorder-rules` | Create reorder rule | `inventory.product.create` |
 | PATCH | `/inventory/reorder-rules/:id` | Update reorder rule | `inventory.product.create` |
 | DELETE | `/inventory/reorder-rules/:id` | Delete reorder rule | `inventory.product.update` |
+| GET | `/inventory/reorder-rules/dashboard` | Get reorder dashboard (triggered rules with lead-time-aware suggested order date) | `inventory.product.delete` |
+| POST | `/inventory/reorder-rules/:id/create-requisition` | Create purchase requisition from a triggered reorder rule | `inventory.product.read` |
 | GET | `/inventory/alerts` | Get stock alerts | `inventory.stock.read` |
 | POST | `/inventory/alerts/:id/resolve` | Resolve stock alert | `inventory.stock.update` |
 | GET | `/inventory/kits` | Get product kits | `inventory.product.read` |

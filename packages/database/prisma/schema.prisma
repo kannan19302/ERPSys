@@ -992,6 +992,7 @@ model Product {
   stockReservations             StockReservation[]
   pickWaveItems                 PickWaveItem[]
   consignmentStocks             ConsignmentStock[]
+  qaInspectionTemplates          QAInspectionTemplate[]
   inventoryValuations           InventoryValuation[]
   productKit                    ProductKit?
   productKitItems               ProductKitItem[]
@@ -5599,6 +5600,22 @@ model QAInspectionCheckpoint {
   @@index([tenantId])
   @@index([inspectionId])
   @@map("qa_inspection_checkpoints")
+}
+
+model QAInspectionTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  productId   String?  @map("product_id")
+  checklist   Json     @default("[]")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@map("qa_inspection_templates")
 }
 
 // ════════════════════════════════════════════════

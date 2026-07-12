@@ -1,9 +1,10 @@
 {
   "ranAt": "2026-07-12T02:20:09.000Z",
-  "fastCyclesSinceFullGate": 2,
+  "fastCyclesSinceFullGate": 3,
   "deferredScopes": [
     "Inventory: transfer approval workflow + movement-history report + barcode labels (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: wave picking/pack-lists + consignment inventory + receipt-with-traceability (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+    "Inventory: wave picking/pack-lists + consignment inventory + receipt-with-traceability (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
+    "Inventory: QA disposition routing/templates + reorder-rule automation (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
   ],
   "lastMilestoneCommit": "1792ad9",
   "typecheck": {

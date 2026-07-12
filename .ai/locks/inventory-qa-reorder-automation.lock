@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-qa-reorder-automation",
-  "agent": "claude-code-cli-main",
-  "scope": "Inventory: quality-inspection workflow deepening (quarantine link, disposition routing, templates), reorder-rule automation (auto-requisition, lead-time reorder point, dashboard)",
-  "acquiredAt": "2026-07-12T02:56:50.717Z",
-  "heartbeatAt": "2026-07-12T02:56:50.717Z",
-  "pid": 23015
-}

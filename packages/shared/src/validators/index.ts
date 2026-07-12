@@ -1927,6 +1927,21 @@ export const receiveWithTraceabilitySchema = z.object({
 });
 export type ReceiveWithTraceabilityInput = z.infer<typeof receiveWithTraceabilitySchema>;
 
+export const createQAInspectionTemplateSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  productId: z.string().optional().nullable(),
+  checklist: z.array(z.object({ parameter: z.string(), criteria: z.string() })).default([]),
+  isActive: z.boolean().default(true),
+});
+export type CreateQAInspectionTemplateInput = z.infer<typeof createQAInspectionTemplateSchema>;
+export const updateQAInspectionTemplateSchema = createQAInspectionTemplateSchema.partial();
+export type UpdateQAInspectionTemplateInput = z.infer<typeof updateQAInspectionTemplateSchema>;
+
+export const createRequisitionFromReorderRuleSchema = z.object({
+  requiredDate: z.string().optional().nullable(),
+});
+export type CreateRequisitionFromReorderRuleInput = z.infer<typeof createRequisitionFromReorderRuleSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),

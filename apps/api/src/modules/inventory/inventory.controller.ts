@@ -25,6 +25,8 @@ import {
   CreatePickWaveInput, RecordPickInput,
   CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
   ReceiveWithTraceabilityInput,
+  CreateQAInspectionTemplateInput, UpdateQAInspectionTemplateInput,
+  CreateRequisitionFromReorderRuleInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -1083,6 +1085,55 @@ export class InventoryController {
     return this.inventoryService.submitQAInspection(req.user.tenantId, id, req.user.userId, dto);
   }
 
+  @ApiOperation({ summary: 'Route a resolved inspection disposition to a downstream action (e.g. batch quarantine)' })
+  @Post('qa-inspections/:id/route-disposition')
+  @Permissions('inventory.stock.update')
+  async routeQAInspectionDisposition(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.routeQAInspectionDisposition(req.user.tenantId, id, req.user.userId);
+  }
+
+  // ─── QA INSPECTION TEMPLATES ──────────────────────────
+
+  @ApiOperation({ summary: 'Get QA inspection templates' })
+  @Get('qa-inspection-templates')
+  @Permissions('inventory.stock.read')
+  async getQAInspectionTemplates(@Req() req: AuthenticatedRequest, @Query('page') page?: string, @Query('limit') limit?: string, @Query('productId') productId?: string) {
+    return this.inventoryService.getQAInspectionTemplates(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      productId,
+    });
+  }
+
+  @ApiOperation({ summary: 'Create QA inspection template' })
+  @Post('qa-inspection-templates')
+  @Permissions('inventory.stock.create')
+  async createQAInspectionTemplate(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateQAInspectionTemplateInput) {
+    return this.inventoryService.createQAInspectionTemplate(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update QA inspection template' })
+  @Patch('qa-inspection-templates/:id')
+  @Permissions('inventory.stock.update')
+  async updateQAInspectionTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateQAInspectionTemplateInput) {
+    return this.inventoryService.updateQAInspectionTemplate(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete QA inspection template' })
+  @Delete('qa-inspection-templates/:id')
+  @Permissions('inventory.stock.delete')
+  async deleteQAInspectionTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.deleteQAInspectionTemplate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create QA inspection pre-populated from a template' })
+  @Post('qa-inspection-templates/:id/create-inspection')
+  @Permissions('inventory.stock.create')
+  async createQAInspectionFromTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CreateQAInspectionInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.createQAInspectionFromTemplate(req.user.tenantId, orgId, req.user.userId, id, dto);
+  }
+
   // ─── REORDER RULES ──────────────────────────────────
 
   @ApiOperation({ summary: 'Get reorder rules' })
@@ -1118,6 +1169,21 @@ export class InventoryController {
   @Permissions('inventory.product.delete')
   async deleteReorderRule(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.inventoryService.deleteReorderRule(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get reorder dashboard (triggered rules with lead-time-aware suggested order date)' })
+  @Get('reorder-rules/dashboard')
+  @Permissions('inventory.product.read')
+  async getReorderDashboard(@Req() req: AuthenticatedRequest) {
+    return this.inventoryService.getReorderDashboard(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create purchase requisition from a triggered reorder rule' })
+  @Post('reorder-rules/:id/create-requisition')
+  @Permissions('inventory.product.create')
+  async createRequisitionFromReorderRule(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CreateRequisitionFromReorderRuleInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.createRequisitionFromReorderRule(req.user.tenantId, orgId, req.user.userId, id, dto);
   }
 
   // ─── STOCK ALERTS ───────────────────────────────────

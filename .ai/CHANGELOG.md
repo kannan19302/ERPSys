@@ -2,6 +2,30 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: QA disposition routing/templates, reorder-rule automation
+
+FAST cycle (Inventory cycle 6, branch `claude/new-session-7x5xhc`), toward the
+90→200 feature-count target (now 141/200).
+
+- **DB**: `QAInspectionTemplate` model (migration
+  `20260712025813_inventory_qa_templates`).
+- **API**: `routeQAInspectionDisposition` gives the pre-existing `disposition`
+  field a real consequence — QUARANTINE routes to the batch-quarantine
+  workflow shipped in cycle 2, instead of being a label nobody acts on.
+  QA template CRUD + create-inspection-from-template. Reorder-rule dashboard
+  (real on-hand vs. `minQty`, lead-time-aware suggested order date) +
+  one-click purchase-requisition creation from a triggered rule, reusing the
+  existing procurement `PurchaseRequisition`/`PurchaseRequisitionItem` models.
+- **UI**: `/inventory/reorder-rules` and `/inventory/qa-templates`, wired into
+  `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 9 new unit tests; inventory module suite 149/149 passing.
+- **Gates**: scoped typecheck clean; full turbo typecheck/API suite/E2E
+  deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 2→3 — next cycle
+  should be a MILESTONE per the ≤4 rule).
+- Up Next items 5a-5n from the 2026-07-11 discovery pass are now all closed
+  or partial. Next cycle should run a fresh market-discovery pass or deepen
+  an existing sub-domain (P6) since the explicit backlog is exhausted.
+
 ## [2026-07-12] Inventory: wave picking/pack-lists, consignment inventory, receipt-with-traceability
 
 FAST cycle (Inventory cycle 5, branch `claude/new-session-7x5xhc`), toward the

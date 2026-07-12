@@ -167,6 +167,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'movement-history': 'Movement History & Labels',
   'pick-waves': 'Wave Picking',
   consignment: 'Consignment Inventory',
+  'reorder-rules': 'Reorder Rules & Automation',
+  'qa-templates': 'QA Templates & Routing',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

@@ -17,6 +17,8 @@ import {
   CreatePickWaveInput, RecordPickInput,
   CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
   ReceiveWithTraceabilityInput,
+  CreateQAInspectionTemplateInput, UpdateQAInspectionTemplateInput,
+  CreateRequisitionFromReorderRuleInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -2329,6 +2331,71 @@ export class InventoryService {
     return this.getQAInspectionById(tenantId, id);
   }
 
+  /**
+   * Routes a resolved inspection's disposition into a real downstream action: QUARANTINE
+   * links to the batch quarantine workflow (if the inspection references a batch), instead
+   * of `disposition` being a label with no consequence.
+   */
+  async routeQAInspectionDisposition(tenantId: string, id: string, userId: string) {
+    const qa = await prisma.qualityInspection.findFirst({ where: { id, tenantId } });
+    if (!qa) throw new NotFoundException('QA inspection not found');
+    if (!qa.disposition) throw new BadRequestException('Inspection has no disposition to route yet');
+
+    if (qa.disposition === 'QUARANTINE' && qa.referenceType === 'STOCK_ENTRY') {
+      const batch = await prisma.batch.findFirst({ where: { tenantId, originStockEntryId: qa.referenceId } });
+      if (batch && batch.status !== 'QUARANTINE') {
+        await this.quarantineBatch(tenantId, batch.id, userId, { reason: `QA inspection ${qa.inspectionNumber} disposition: QUARANTINE` });
+        return { routed: true, action: 'BATCH_QUARANTINED', batchId: batch.id };
+      }
+    }
+
+    return { routed: false, action: 'NONE', reason: 'No matching batch/action for this disposition' };
+  }
+
+  // ─── QA INSPECTION TEMPLATES ──────────────────────────
+
+  async getQAInspectionTemplates(tenantId: string, params: PaginationParams & { productId?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.productId) where.productId = params.productId;
+    const { skip, take } = buildPaginationValues(params);
+    const [templates, total] = await Promise.all([
+      prisma.qAInspectionTemplate.findMany({ where, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.qAInspectionTemplate.count({ where }),
+    ]);
+    return paginatedResult(templates, total, params);
+  }
+
+  async createQAInspectionTemplate(tenantId: string, dto: CreateQAInspectionTemplateInput) {
+    return prisma.qAInspectionTemplate.create({
+      data: { tenantId, name: dto.name, productId: dto.productId, checklist: dto.checklist, isActive: dto.isActive },
+    });
+  }
+
+  async updateQAInspectionTemplate(tenantId: string, id: string, dto: UpdateQAInspectionTemplateInput) {
+    const template = await prisma.qAInspectionTemplate.findFirst({ where: { id, tenantId } });
+    if (!template) throw new NotFoundException('QA inspection template not found');
+    return prisma.qAInspectionTemplate.update({
+      where: { id },
+      data: { name: dto.name, productId: dto.productId, checklist: dto.checklist, isActive: dto.isActive },
+    });
+  }
+
+  async deleteQAInspectionTemplate(tenantId: string, id: string) {
+    const template = await prisma.qAInspectionTemplate.findFirst({ where: { id, tenantId } });
+    if (!template) throw new NotFoundException('QA inspection template not found');
+    await prisma.qAInspectionTemplate.delete({ where: { id } });
+    return { success: true };
+  }
+
+  /** Creates a new inspection pre-populated with a template's checklist, instead of building checkpoints by hand each time. */
+  async createQAInspectionFromTemplate(tenantId: string, orgId: string, userId: string, templateId: string, dto: CreateQAInspectionInput) {
+    const template = await prisma.qAInspectionTemplate.findFirst({ where: { id: templateId, tenantId } });
+    if (!template) throw new NotFoundException('QA inspection template not found');
+
+    const checkpoints = (template.checklist as Array<{ parameter: string; criteria: string }>) ?? [];
+    return this.createQAInspection(tenantId, orgId, userId, { ...dto, checkpoints } as any);
+  }
+
   // ─── REORDER RULES ──────────────────────────────────
 
   async getReorderRules(tenantId: string, params: PaginationParams = {}) {
@@ -2391,6 +2458,79 @@ export class InventoryService {
 
     await prisma.reorderRule.delete({ where: { id } });
     return { success: true };
+  }
+
+  /** Reorder dashboard: active rules whose on-hand quantity has fallen to/below minQty, with a lead-time-aware suggested order date. */
+  async getReorderDashboard(tenantId: string) {
+    const rules = await prisma.reorderRule.findMany({ where: { tenantId, isActive: true }, include: { product: true } });
+
+    const triggered = await Promise.all(
+      rules.map(async (rule) => {
+        const where: any = { tenantId, productId: rule.productId };
+        if (rule.warehouseId) where.warehouseId = rule.warehouseId;
+        const items = await prisma.inventoryItem.findMany({ where });
+        const onHand = items.reduce((sum, i) => sum + Number(i.quantity), 0);
+        const isTriggered = onHand <= Number(rule.minQty);
+        const suggestedOrderDate = new Date(Date.now() - rule.leadTimeDays * 24 * 60 * 60 * 1000);
+
+        return {
+          ruleId: rule.id,
+          productId: rule.productId,
+          productName: rule.product.name,
+          warehouseId: rule.warehouseId,
+          onHand,
+          minQty: Number(rule.minQty),
+          reorderQty: Number(rule.reorderQty),
+          leadTimeDays: rule.leadTimeDays,
+          isTriggered,
+          suggestedOrderDate: isTriggered ? suggestedOrderDate : null,
+          autoCreatePO: rule.autoCreatePO,
+        };
+      }),
+    );
+
+    return { rules: triggered, triggeredCount: triggered.filter((t) => t.isTriggered).length };
+  }
+
+  /** Creates a purchase requisition from a triggered reorder rule and stamps lastTriggeredAt, instead of leaving the trigger as a dashboard-only signal. */
+  async createRequisitionFromReorderRule(tenantId: string, orgId: string, userId: string, ruleId: string, dto: CreateRequisitionFromReorderRuleInput) {
+    const rule = await prisma.reorderRule.findFirst({ where: { id: ruleId, tenantId }, include: { product: true } });
+    if (!rule) throw new NotFoundException('Reorder rule not found');
+
+    const resolvedOrgId = await resolveOrgId(tenantId, orgId);
+    const count = await prisma.purchaseRequisition.count({ where: { tenantId } });
+    const requisitionNumber = `REQ-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, '0')}`;
+    const estimatedPrice = Number(rule.product.costPrice);
+    const totalAmount = estimatedPrice * Number(rule.reorderQty);
+
+    const requisition = await prisma.purchaseRequisition.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        requisitionNumber,
+        title: `Auto-reorder: ${rule.product.name}`,
+        status: 'DRAFT',
+        requestedById: userId,
+        requiredDate: dto.requiredDate ? new Date(dto.requiredDate) : null,
+        estimatedCost: new Prisma.Decimal(totalAmount),
+        notes: `Auto-generated from reorder rule ${rule.id} (min ${rule.minQty}, lead time ${rule.leadTimeDays}d)`,
+        lineItems: {
+          create: [{
+            tenantId,
+            productId: rule.productId,
+            description: rule.product.name,
+            quantity: new Prisma.Decimal(rule.reorderQty),
+            estimatedPrice: new Prisma.Decimal(estimatedPrice),
+            totalAmount: new Prisma.Decimal(totalAmount),
+          }],
+        },
+      },
+      include: { lineItems: true },
+    });
+
+    await prisma.reorderRule.update({ where: { id: ruleId }, data: { lastTriggeredAt: new Date() } });
+
+    return requisition;
   }
 
   // ─── STOCK ALERTS ───────────────────────────────────
