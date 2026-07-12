@@ -2,6 +2,18 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] MILESTONE gate #2: full typecheck + full API suite green; E2E still blocked
+
+Settlement of 3 accumulated FAST cycles (`fastCyclesSinceFullGate` 3→0),
+`lastMilestoneCommit` stamped at `5eb3603`.
+
+- `pnpm turbo typecheck` (all 9 packages): **green**, 33s.
+- Full API unit test suite: **190/190 files, 2426/2426 tests green**, 33s.
+- E2E smoke gate: still `[e2e-unverified]` — the `prisma/seed.ts` RLS blocker
+  from the first milestone gate has not been fixed (out of scope for these
+  FAST cycles); declined to bypass RLS again. No regression since gate #1.
+- No code changes in this cycle — gate-only.
+
 ## [2026-07-12] Inventory: QA disposition routing/templates, reorder-rule automation
 
 FAST cycle (Inventory cycle 6, branch `claude/new-session-7x5xhc`), toward the
