@@ -326,6 +326,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Inventory Analytics', href: '/inventory/inventory-analytics', icon: BarChart3 },
             { name: 'Logistics & Shipping', href: '/inventory/logistics', icon: Truck },
             { name: 'Quality & Compliance', href: '/inventory/quality-compliance', icon: ShieldCheck },
+            { name: 'Warehouse Operations', href: '/inventory/warehouse-ops', icon: Truck },
           ]
         },
         {

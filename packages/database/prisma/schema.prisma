@@ -11911,3 +11911,161 @@ model SopRevision {
   @@index([docId])
   @@map("sop_revisions")
 }
+
+// ─── Inventory Cycle 18: Warehouse Operations ─────────────────────────────────
+
+/// Generic warehouse task (pick, put-away, replenish, transfer, count, receive, pack).
+model WarehouseTask {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  taskNumber    String    @map("task_number")
+  taskType      String    @map("task_type")      // PICK | PUTAWAY | REPLENISH | BIN_TRANSFER | RECEIVE | PACK | CYCLE_COUNT
+  priority      Int       @default(50)            // 1-100, lower = higher priority
+  status        String    @default("QUEUED")      // QUEUED | ASSIGNED | IN_PROGRESS | COMPLETE | CANCELLED | FAILED
+  warehouseId   String    @map("warehouse_id")
+  zoneId        String?   @map("zone_id")
+  sourceLocation String?  @map("source_location")
+  destLocation  String?   @map("dest_location")
+  productId     String?   @map("product_id")
+  qty           Decimal?  @db.Decimal(15, 4)
+  uom           String?
+  referenceType String?   @map("reference_type") // PICK_WAVE | ASN | PURCHASE_ORDER | MANUAL
+  referenceId   String?   @map("reference_id")
+  assignedTo    String?   @map("assigned_to")    // userId
+  assignedAt    DateTime? @map("assigned_at")
+  startedAt     DateTime? @map("started_at")
+  completedAt   DateTime? @map("completed_at")
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, taskNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, assignedTo])
+  @@index([tenantId, taskType, status])
+  @@map("warehouse_tasks")
+}
+
+/// Bin-to-bin transfer request (operator-initiated, optionally supervisor-approved).
+model BinTransferRequest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  transferNumber  String    @map("transfer_number")
+  productId       String    @map("product_id")
+  fromBin         String    @map("from_bin")
+  toBin           String    @map("to_bin")
+  qty             Decimal   @db.Decimal(15, 4)
+  uom             String    @default("EA")
+  reason          String?
+  status          String    @default("PENDING")  // PENDING | APPROVED | IN_PROGRESS | COMPLETE | REJECTED
+  requestedBy     String?   @map("requested_by")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  rejectedReason  String?   @map("rejected_reason")
+  completedAt     DateTime? @map("completed_at")
+  warehouseTaskId String?   @map("warehouse_task_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, transferNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("bin_transfer_requests")
+}
+
+/// Goods Receipt Note — records physical receipt of a purchase order.
+model GoodsReceiptNote {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  grnNumber       String    @map("grn_number")
+  purchaseOrderId String?   @map("purchase_order_id")
+  asnId           String?   @map("asn_id")
+  warehouseId     String    @map("warehouse_id")
+  supplierId      String?   @map("supplier_id")
+  receivedDate    DateTime  @map("received_date")
+  status          String    @default("DRAFT")    // DRAFT | VERIFIED | QUALITY_CHECK | PUT_AWAY | COMPLETE | REJECTED
+  vehicleNumber   String?   @map("vehicle_number")
+  driverName      String?   @map("driver_name")
+  totalCartons    Int?      @map("total_cartons")
+  totalWeight     Decimal?  @db.Decimal(15, 3) @map("total_weight")
+  notes           String?
+  rejectedReason  String?   @map("rejected_reason")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  lineItems GrnLineItem[]
+
+  @@unique([tenantId, grnNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, purchaseOrderId])
+  @@map("goods_receipt_notes")
+}
+
+/// Line item on a GRN.
+model GrnLineItem {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  grnId        String   @map("grn_id")
+  productId    String   @map("product_id")
+  orderedQty   Decimal  @db.Decimal(15, 4) @map("ordered_qty")
+  receivedQty  Decimal  @db.Decimal(15, 4) @map("received_qty")
+  acceptedQty  Decimal  @db.Decimal(15, 4) @default(0) @map("accepted_qty")
+  rejectedQty  Decimal  @db.Decimal(15, 4) @default(0) @map("rejected_qty")
+  uom          String   @default("EA")
+  lotNumber    String?  @map("lot_number")
+  expiryDate   DateTime? @map("expiry_date")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  grn GoodsReceiptNote @relation(fields: [grnId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([grnId])
+  @@map("grn_line_items")
+}
+
+/// Packing station session — captures cartons packed for an outbound shipment.
+model PackingSession {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  sessionNumber  String    @map("session_number")
+  outboundShipmentId String? @map("outbound_shipment_id")
+  pickWaveId     String?   @map("pick_wave_id")
+  workerId       String?   @map("worker_id")
+  status         String    @default("OPEN")   // OPEN | COMPLETE | CANCELLED
+  totalCartons   Int       @default(0) @map("total_cartons")
+  totalWeight    Decimal?  @db.Decimal(15, 3) @map("total_weight")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  cartons PackingCarton[]
+
+  @@unique([tenantId, sessionNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("packing_sessions")
+}
+
+/// Individual carton within a packing session.
+model PackingCarton {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  sessionId       String   @map("session_id")
+  cartonNumber    String   @map("carton_number")
+  weight          Decimal? @db.Decimal(10, 3)
+  length          Decimal? @db.Decimal(10, 2)
+  width           Decimal? @db.Decimal(10, 2)
+  height          Decimal? @db.Decimal(10, 2)
+  labelUrl        String?  @map("label_url")
+  sealedAt        DateTime? @map("sealed_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  session PackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([sessionId])
+  @@map("packing_cartons")
+}

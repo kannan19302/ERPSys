@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T16:00:42.729Z
+> Last generated: 2026-07-12T16:25:20.749Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2190 features** across 33 modules
+## System total: **2220 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 284 |
+| [inventory](#inventory) | 314 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-284 features
+314 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2066,6 +2066,36 @@
 | POST | `/inventory/supplier-quality/cars/:id/respond` | Raise a CAR against an NCR | — |
 | POST | `/inventory/supplier-quality/cars/:id/accept` | Vendor response to a CAR | — |
 | POST | `/inventory/supplier-quality/cars/:id/reject` | Accept a vendor CAR response | — |
+| GET | `/inventory/warehouse-ops/dashboard` | — | — |
+| GET | `/inventory/warehouse-ops/tasks` | — | — |
+| GET | `/inventory/warehouse-ops/tasks/dashboard` | — | — |
+| GET | `/inventory/warehouse-ops/tasks/worker/:workerId` | — | — |
+| GET | `/inventory/warehouse-ops/tasks/:id` | — | — |
+| POST | `/inventory/warehouse-ops/tasks` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/assign` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/start` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/complete` | — | — |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/cancel` | — | — |
+| GET | `/inventory/warehouse-ops/bin-transfers` | — | — |
+| GET | `/inventory/warehouse-ops/bin-transfers/:id` | — | — |
+| POST | `/inventory/warehouse-ops/bin-transfers` | — | — |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/approve` | — | — |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/reject` | — | — |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/complete` | — | — |
+| GET | `/inventory/warehouse-ops/grn` | — | — |
+| GET | `/inventory/warehouse-ops/grn/dashboard` | — | — |
+| GET | `/inventory/warehouse-ops/grn/:id` | — | — |
+| POST | `/inventory/warehouse-ops/grn` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/verify` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/quality-check` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/putaway` | — | — |
+| PATCH | `/inventory/warehouse-ops/grn/:id/reject` | — | — |
+| GET | `/inventory/warehouse-ops/packing` | — | — |
+| GET | `/inventory/warehouse-ops/packing/:id` | — | — |
+| POST | `/inventory/warehouse-ops/packing` | — | — |
+| POST | `/inventory/warehouse-ops/packing/:id/cartons` | — | — |
+| PATCH | `/inventory/warehouse-ops/packing/:sessionId/cartons/:cartonId/seal` | — | — |
+| PATCH | `/inventory/warehouse-ops/packing/:id/complete` | — | — |
 
 ## localization
 

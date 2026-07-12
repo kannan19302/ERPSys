@@ -181,6 +181,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'inventory-analytics': 'Inventory Analytics',
   'logistics': 'Logistics & Shipping',
   'quality-compliance': 'Quality & Compliance',
+  'warehouse-ops': 'Warehouse Operations',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

@@ -41,6 +41,7 @@ import { EcommerceModule } from './modules/ecommerce/ecommerce.module';
 import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
 import { InventoryLogisticsModule } from './modules/inventory/inventory-logistics.module';
 import { QualityComplianceModule } from './modules/inventory/quality-compliance.module';
+import { WarehouseOpsModule } from './modules/inventory/warehouse-ops.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { QualityComplianceModule } from './modules/inventory/quality-compliance.
     InventoryModule,
     InventoryLogisticsModule,
     QualityComplianceModule,
+    WarehouseOpsModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

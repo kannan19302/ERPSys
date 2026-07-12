@@ -2,6 +2,28 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory Cycle 18: Warehouse Operations
+
+FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 2→3.
+
+- **DB**: 6 new models — `WarehouseTask`, `BinTransferRequest`, `GoodsReceiptNote`, `GrnLineItem`,
+  `PackingSession`, `PackingCarton` (migration `20260712170000_inventory_cycle18_warehouse_ops`).
+- **API** (`WarehouseOpsModule`, 30 endpoints under `/inventory/warehouse-ops`):
+  - Task queue: create/list/get tasks, assign (QUEUED→ASSIGNED), start (→IN_PROGRESS), complete,
+    cancel; worker queue view; dashboard with counts by status and type
+  - Bin transfers: create/list/get, approve (PENDING→APPROVED) with approver tracking, reject with
+    reason, complete; blocks same-bin transfers
+  - GRN workflow: create with auto-generated GRN-XXXXX number + nested line items, verify (updates
+    accepted/rejected qtys in $transaction → VERIFIED), quality-check (→QUALITY_CHECK), putaway
+    (→COMPLETE), reject with reason; GRN dashboard by status
+  - Packing: create session, add carton ($transaction: create + increment totalCartons), seal carton,
+    complete session (sums actual carton weights); status: OPEN→COMPLETE
+  - Warehouse ops dashboard aggregating all sub-domains
+- **UI**: `/inventory/warehouse-ops` — 5-tab page: Dashboard (stat cards for tasks/GRN/bin transfers),
+  Task Queue (with type/status/priority), Bin Transfers, GRN, Packing Sessions; wired into
+  `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 24 unit tests, all passing. Inventory feature count: 284 → 314.
+
 ## [2026-07-12] Inventory Cycle 17: Quality & Compliance Management
 
 FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 1→2.
