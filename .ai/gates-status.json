@@ -2,7 +2,7 @@
   "ranAt": "2026-07-12T03:43:48.000Z",
   "fastCyclesSinceFullGate": 0,
   "deferredScopes": [],
-  "lastMilestoneCommit": "HEAD (cross-docking cycle 10 commit, this same push)",
+  "lastMilestoneCommit": "e91df65",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
