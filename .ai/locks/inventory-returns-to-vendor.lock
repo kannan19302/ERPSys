@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-returns-to-vendor",
-  "agent": "claude-sonnet-ib21qn",
-  "scope": "Inventory: returns-to-vendor (RTV) workflow — supplier return requests, RMA authorization, return shipment tracking, credit memo linkage, return reason codes",
-  "acquiredAt": "2026-07-12T07:45:14.165Z",
-  "heartbeatAt": "2026-07-12T07:45:14.176Z",
-  "pid": 3343
-}

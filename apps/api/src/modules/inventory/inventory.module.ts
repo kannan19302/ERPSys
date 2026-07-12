@@ -7,11 +7,13 @@ import { CostingService } from './costing.service';
 import { CostingController } from './costing.controller';
 import { DemandForecastingService } from './demand-forecasting.service';
 import { DemandForecastingController } from './demand-forecasting.controller';
+import { RtvService } from './rtv.service';
+import { RtvController } from './rtv.controller';
 
 @Module({
-  controllers: [InventoryController, CostingController, DemandForecastingController],
-  providers: [InventoryService, InventoryWarehousesService, InventoryEventHandler, CostingService, DemandForecastingService],
-  exports: [InventoryService, InventoryWarehousesService, CostingService, DemandForecastingService],
+  controllers: [InventoryController, CostingController, DemandForecastingController, RtvController],
+  providers: [InventoryService, InventoryWarehousesService, InventoryEventHandler, CostingService, DemandForecastingService, RtvService],
+  exports: [InventoryService, InventoryWarehousesService, CostingService, DemandForecastingService, RtvService],
 })
 export class InventoryModule {}
 

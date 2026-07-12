@@ -2,6 +2,26 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: Returns-to-Vendor (RTV) workflow
+
+FAST cycle (Inventory cycle 14, branch `claude/goal-start-ib21qn`). **Milestone gate triggered** (fastCyclesSinceFullGate 3→4).
+
+- **DB**: `ReturnReasonCode`, `VendorRmaRequest`, `VendorReturnShipment` models
+  (migration `20260712074500_inventory_rtv_workflow`).
+- **API**: Full RTV lifecycle — reason codes (CRUD), RMA request state machine
+  (PENDING→SUBMITTED→AUTHORIZED→REJECTED→COMPLETED), vendor return shipment
+  lifecycle (PENDING→PACKED→SHIPPED→DELIVERED) with credit-memo recording;
+  event emission on create/complete/credit-memo. 17 endpoints across 3 resource
+  groups plus dashboard analytics (status breakdown, pending shipments, total
+  credit received).
+- **UI**: `/inventory/rtv` — 4 KPI stat tiles, tabbed RMA Requests + Return
+  Shipments tables with contextual action buttons (submit/authorize/reject/
+  complete/pack/ship/deliver/credit), new-RMA modal; wired into
+  `moduleNav`/`registry.tsx`/smoke.spec.ts.
+- **Tests**: 13 new unit tests; inventory suite 204/204 passing.
+- **Gates**: scoped typecheck clean (api+web); milestone gate run (see below).
+- Module count 159→160.
+
 ## [2026-07-12] Inventory: demand forecasting & reorder suggestions
 
 FAST cycle (Inventory cycle 13, branch `claude/goal-start-ib21qn`).

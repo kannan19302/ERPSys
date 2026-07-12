@@ -1,25 +1,21 @@
 {
-  "ranAt": "2026-07-12T03:43:48.000Z",
-  "fastCyclesSinceFullGate": 3,
-  "deferredScopes": [
-    "Inventory: dynamic slotting optimization (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: yard/dock appointment scheduling (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: demand forecasting & reorder suggestions (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
-  ],
-  "lastMilestoneCommit": "e91df65",
+  "ranAt": "2026-07-12T07:57:30.000Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "cycle-14-rtv-pending",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 24
+    "seconds": 30
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 32,
-    "files": 194,
-    "cases": 2447
+    "seconds": 33,
+    "files": 198,
+    "cases": 2481
   },
   "e2e": {
     "label": "Playwright smoke gate",

@@ -9,7 +9,7 @@ import {
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
   Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
-  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone,
+  Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone, RotateCcw,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
 
@@ -319,6 +319,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Slotting Optimization', href: '/inventory/slotting', icon: MapPin },
             { name: 'Dock Scheduling', href: '/inventory/dock-scheduling', icon: Truck },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
+            { name: 'Returns to Vendor (RTV)', href: '/inventory/rtv', icon: RotateCcw },
           ]
         },
         {

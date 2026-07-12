@@ -173,6 +173,7 @@ model Organization {
   campaigns                 Campaign[]
   salesReturns              SalesReturn[]
   purchaseReturns           PurchaseReturn[]
+  vendorRmaRequests         VendorRmaRequest[]
   purchaseRequisitions      PurchaseRequisition[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
   cases                     Case[]
@@ -328,6 +329,7 @@ model Vendor {
   paymentSchedules          PaymentSchedule[]
   supplierQuotations        SupplierQuotation[]
   purchaseReturns           PurchaseReturn[]
+  vendorRmaRequests         VendorRmaRequest[]
   subcontractingOrders      SubcontractingOrder[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
   portalUsers               VendorPortalUser[]
@@ -1042,6 +1044,7 @@ model Warehouse {
   demandForecastRuns   DemandForecastRun[]
   demandForecastLines  DemandForecastLine[]
   reorderSuggestions   ReorderSuggestion[]
+  vendorReturnShipments VendorReturnShipment[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -11286,4 +11289,88 @@ model CommissionPayoutSpiffLine {
   @@index([tenantId])
   @@index([payoutId])
   @@map("commission_payout_spiff_lines")
+}
+
+// ════════════════════════════════════════════════
+// INVENTORY — Returns-to-Vendor (RTV) Workflow
+// ════════════════════════════════════════════════
+
+/// Configurable taxonomy of reasons for returning goods to a vendor.
+model ReturnReasonCode {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  code        String
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  rmaRequests VendorRmaRequest[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("return_reason_codes")
+}
+
+/// RMA (Return Merchandise Authorization) request sent to a vendor.
+/// Tracks authorization status, vendor RMA number, and links to PurchaseReturn.
+model VendorRmaRequest {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  rmaNumber         String    @map("rma_number")
+  purchaseReturnId  String    @map("purchase_return_id")
+  vendorId          String    @map("vendor_id")
+  reasonCodeId      String?   @map("reason_code_id")
+  status            String    @default("PENDING")
+  // PENDING → SUBMITTED → AUTHORIZED → REJECTED → COMPLETED
+  vendorRmaRef      String?   @map("vendor_rma_ref")   // vendor-assigned RMA#
+  requestedAt       DateTime  @default(now()) @map("requested_at")
+  submittedAt       DateTime? @map("submitted_at")
+  authorizedAt      DateTime? @map("authorized_at")
+  rejectedAt        DateTime? @map("rejected_at")
+  rejectionReason   String?   @map("rejection_reason")
+  notes             String?
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  vendor         Vendor            @relation(fields: [vendorId], references: [id])
+  organization   Organization      @relation(fields: [orgId], references: [id])
+  reasonCode     ReturnReasonCode? @relation(fields: [reasonCodeId], references: [id])
+  shipments      VendorReturnShipment[]
+
+  @@unique([tenantId, rmaNumber])
+  @@index([tenantId])
+  @@index([tenantId, purchaseReturnId])
+  @@map("vendor_rma_requests")
+}
+
+/// Outbound shipment tracking for goods being returned to a vendor.
+model VendorReturnShipment {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  rmaRequestId    String    @map("rma_request_id")
+  warehouseId     String    @map("warehouse_id")
+  shipmentNumber  String    @map("shipment_number")
+  carrier         String?
+  trackingNumber  String?   @map("tracking_number")
+  status          String    @default("PENDING")
+  // PENDING → PACKED → SHIPPED → DELIVERED → LOST
+  packedAt        DateTime? @map("packed_at")
+  shippedAt       DateTime? @map("shipped_at")
+  deliveredAt     DateTime? @map("delivered_at")
+  creditMemoRef   String?   @map("credit_memo_ref")   // vendor credit memo number once received
+  creditAmount    Decimal?  @map("credit_amount") @db.Decimal(15, 2)
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  rmaRequest VendorRmaRequest @relation(fields: [rmaRequestId], references: [id])
+  warehouse  Warehouse        @relation(fields: [warehouseId], references: [id])
+
+  @@unique([tenantId, shipmentNumber])
+  @@index([tenantId])
+  @@map("vendor_return_shipments")
 }
