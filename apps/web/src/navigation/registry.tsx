@@ -173,6 +173,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'cross-dock': 'Cross-Docking',
   slotting: 'Slotting Optimization',
   'dock-scheduling': 'Dock Scheduling',
+  'demand-forecasting': 'Demand Forecasting',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

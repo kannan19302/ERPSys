@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T03:55:29.767Z
+> Last generated: 2026-07-12T07:04:55.247Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2064 features** across 33 modules
+## System total: **2073 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 158 |
+| [inventory](#inventory) | 167 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-158 features
+167 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1786,6 +1786,15 @@
 | GET | `/inventory/costing/valuation-report` | Get valuation report | `inventory.stock.read` |
 | POST | `/inventory/costing/landed-cost` | Calculate landed cost | `inventory.stock.read` |
 | GET | `/inventory/costing/barcode/:barcode` | Lookup barcode | `inventory.stock.adjust` |
+| GET | `/inventory/demand-forecasting/runs` | List demand forecast runs | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/runs/:id` | Get a demand forecast run | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/runs/:id/lines` | Get forecast lines for a run | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/runs/generate` | Generate a new demand forecast run (moving average / exponential smoothing over historical stock-ledger outbound demand) | `inventory.demand_forecast.generate` |
+| PATCH | `/inventory/demand-forecasting/runs/:id` | Update a demand forecast run (name only) | `inventory.demand_forecast.update` |
+| DELETE | `/inventory/demand-forecasting/runs/:id` | Soft-delete a demand forecast run | `inventory.demand_forecast.delete` |
+| GET | `/inventory/demand-forecasting/reorder-suggestions` | List reorder suggestions | `inventory.reorder_suggestion.read` |
+| POST | `/inventory/demand-forecasting/reorder-suggestions/:id/accept` | Accept a reorder suggestion | `inventory.reorder_suggestion.update` |
+| POST | `/inventory/demand-forecasting/reorder-suggestions/:id/dismiss` | Dismiss a reorder suggestion | `inventory.reorder_suggestion.update` |
 | GET | `/inventory/products` | Get products | `inventory.product.read` |
 | GET | `/inventory/products/stats` | Get inventory stats | `inventory.product.read` |
 | GET | `/inventory/products/:id` | Get product by id | `inventory.product.read` |

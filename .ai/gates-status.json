@@ -1,9 +1,10 @@
 {
   "ranAt": "2026-07-12T03:43:48.000Z",
-  "fastCyclesSinceFullGate": 2,
+  "fastCyclesSinceFullGate": 3,
   "deferredScopes": [
     "Inventory: dynamic slotting optimization (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: yard/dock appointment scheduling (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+    "Inventory: yard/dock appointment scheduling (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
+    "Inventory: demand forecasting & reorder suggestions (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
   ],
   "lastMilestoneCommit": "e91df65",
   "typecheck": {

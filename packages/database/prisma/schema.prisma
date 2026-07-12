@@ -180,6 +180,7 @@ model Organization {
   accountingBooks           AccountingBook[]
   contracts                 Contract[]
   financeLeases             FinanceLease[]
+  demandForecastRuns        DemandForecastRun[]
 
   @@index([tenantId])
   @@map("organizations")
@@ -1003,6 +1004,8 @@ model Product {
   channelInventory              ChannelInventory[]
   storefrontListings            ProductListing[]
   contractLineItems             ContractLineItem[]
+  demandForecastLines           DemandForecastLine[]
+  reorderSuggestions            ReorderSuggestion[]
 
   @@unique([tenantId, orgId, sku])
   @@index([tenantId])
@@ -1036,6 +1039,9 @@ model Warehouse {
   pickWaves            PickWave[]
   dockAppointments     DockAppointment[]
   consignmentStocks    ConsignmentStock[]
+  demandForecastRuns   DemandForecastRun[]
+  demandForecastLines  DemandForecastLine[]
+  reorderSuggestions   ReorderSuggestion[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -7625,6 +7631,89 @@ model StockAlert {
   @@index([tenantId, isResolved])
   @@index([tenantId, alertType])
   @@map("stock_alerts")
+}
+
+// ── Demand Forecasting (Up Next 5w discovery item) ──────────────────────────
+// Reuses StockLedgerEntry.qtyOut as the historical demand series (no new
+// snapshot model). DemandForecastRun persists one forecasting pass'
+// parameters/status; DemandForecastLine holds the per-product/warehouse
+// projected quantity; ReorderSuggestion is generated from a run's lines and
+// is distinct from the pre-existing static-threshold ReorderRule.
+model DemandForecastRun {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  name           String
+  method         String    @default("MOVING_AVERAGE") // MOVING_AVERAGE, EXPONENTIAL_SMOOTHING
+  parameters     Json      @default("{}") // e.g. { windowDays, alpha, horizonDays, historyDays }
+  status         String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  warehouseId    String?   @map("warehouse_id")
+  errorMessage   String?   @map("error_message")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  warehouse    Warehouse?           @relation(fields: [warehouseId], references: [id])
+  lines        DemandForecastLine[]
+  suggestions  ReorderSuggestion[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, warehouseId])
+  @@map("demand_forecast_runs")
+}
+
+model DemandForecastLine {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  runId              String   @map("run_id")
+  productId          String   @map("product_id")
+  warehouseId        String   @map("warehouse_id")
+  period             DateTime // start date of the forecasted bucket (daily bucket)
+  historicalAvgQty   Decimal  @default(0) @map("historical_avg_qty") @db.Decimal(15, 3)
+  forecastedQuantity Decimal  @map("forecasted_quantity") @db.Decimal(15, 3)
+  confidence         Decimal  @default(0) @db.Decimal(5, 2) // 0-100
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  run       DemandForecastRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [productId], references: [id])
+  warehouse Warehouse         @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([runId])
+  @@index([tenantId, productId, warehouseId])
+  @@map("demand_forecast_lines")
+}
+
+model ReorderSuggestion {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  runId             String    @map("run_id")
+  productId         String    @map("product_id")
+  warehouseId       String    @map("warehouse_id")
+  reorderPoint      Decimal   @map("reorder_point") @db.Decimal(15, 3)
+  suggestedQuantity Decimal   @map("suggested_quantity") @db.Decimal(15, 3)
+  currentStockQty   Decimal   @default(0) @map("current_stock_qty") @db.Decimal(15, 3)
+  basis             String    @default("FORECAST") // FORECAST
+  status            String    @default("PENDING") // PENDING, ACCEPTED, DISMISSED
+  decidedBy         String?   @map("decided_by")
+  decidedAt         DateTime? @map("decided_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  run       DemandForecastRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [productId], references: [id])
+  warehouse Warehouse         @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([runId])
+  @@index([tenantId, productId, warehouseId])
+  @@map("reorder_suggestions")
 }
 
 model ProductKit {

@@ -318,6 +318,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Cross-Docking', href: '/inventory/cross-dock', icon: Link },
             { name: 'Slotting Optimization', href: '/inventory/slotting', icon: MapPin },
             { name: 'Dock Scheduling', href: '/inventory/dock-scheduling', icon: Truck },
+            { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
           ]
         },
         {

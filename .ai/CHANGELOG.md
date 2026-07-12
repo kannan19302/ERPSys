@@ -2,6 +2,27 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: demand forecasting & reorder suggestions
+
+FAST cycle (Inventory cycle 13, branch `claude/goal-start-ib21qn`).
+
+- **DB**: `DemandForecastRun`/`DemandForecastLine`/`ReorderSuggestion` models
+  (migration `20260712064837_inventory_demand_forecasting`).
+- **API**: forecast-run generation (moving-average or exponential-smoothing)
+  over historical `StockLedgerEntry` outbound (`qtyOut`) demand grouped per
+  product/warehouse, projected forward over a configurable horizon with a
+  coefficient-of-variation confidence score; reorder-point-derived
+  suggestions (forecasted daily demand × lead time + safety stock vs.
+  current on-hand) with accept/dismiss decision lifecycle. 8 endpoints (run
+  CRUD + generate, line listing, suggestion list/accept/dismiss).
+- **UI**: `/inventory/demand-forecasting` (forecast-run table + pending
+  reorder-suggestions table with accept/dismiss actions), wired into
+  `moduleNav`/`registry.tsx`/`SMOKE_ROUTES`.
+- **Tests**: 7 new unit tests; inventory suite 191/191 passing.
+- **Gates**: scoped typecheck clean (api+web); full turbo typecheck/API
+  suite/E2E deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 2→3).
+- Module count 158→159.
+
 ## [2026-07-12] Inventory: yard/dock appointment scheduling
 
 FAST cycle (Inventory cycle 12, branch `claude/new-session-7x5xhc`).
