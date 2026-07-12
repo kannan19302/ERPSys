@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T03:03:47.613Z
+> Last generated: 2026-07-12T03:10:56.369Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2047 features** across 33 modules
+## System total: **2050 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 141 |
+| [inventory](#inventory) | 144 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-141 features
+144 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1885,6 +1885,9 @@
 | POST | `/inventory/batches/:id/quarantine/reject` | Reject a quarantined batch (mark expired/unusable) | `inventory.stock.update` |
 | GET | `/inventory/batches/:id/quarantine-log` | Get batch quarantine log | `inventory.stock.update` |
 | GET | `/inventory/batches/:id/genealogy` | Get batch genealogy trace | `inventory.stock.read` |
+| GET | `/inventory/batches/:id/recall-notice` | Get batch recall notice (genealogy + affected sales orders) | `inventory.stock.read` |
+| GET | `/inventory/batches/reports/expiring` | Get expiring batches report (FEFO-sorted) | `inventory.stock.read` |
+| GET | `/inventory/batches/reports/fefo-suggestion` | Get FEFO pick suggestion for a product/warehouse/quantity | `inventory.stock.read` |
 | GET | `/inventory/serial-numbers/:id/trace` | Get serial number where-used trace | `inventory.stock.read` |
 | GET | `/inventory/stock-reservations` | Get stock reservations | `inventory.stock.read` |
 | GET | `/inventory/stock-reservations/allocation-summary` | Get allocation summary for a product in a warehouse | `inventory.stock.read` |

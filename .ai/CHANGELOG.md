@@ -2,6 +2,34 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: expiring-batches/FEFO report, FEFO pick suggestion, recall notice
+
+FAST cycle (Inventory cycle 7, branch `claude/new-session-7x5xhc`), toward the
+90→200 feature-count target (now 144/200).
+
+- **No new schema** — reuses `Batch`/`StockEntry` traceability data.
+- **API**: `getExpiringBatchesReport` (FEFO-sorted expiry window),
+  `getFefoPickSuggestion` (allocates a requested quantity across the
+  soonest-expiring batches first — a real WMS gap that wasn't previously
+  built), `getBatchRecallNotice` (compiles affected sales orders from real
+  `StockEntry.referenceType`/`referenceDoc` data, honestly distinguishing
+  traced from untraced consumptions rather than fabricating a customer
+  list).
+- **Scope decision**: considered PDF/ZPL barcode-label rendering (remainder
+  of Up Next item 5j) but found no barcode-symbology library installed
+  (`bwip-js`/`jsbarcode`); declined to render a fake non-scannable barcode
+  or add a new dependency without asking. Left that item open.
+- **Bug caught before shipping**: `batches/fefo-suggestion` (2 path
+  segments) would have been silently shadowed by the earlier
+  `GET batches/:id` route, treating "fefo-suggestion" as a batch ID — moved
+  to `batches/reports/fefo-suggestion` (3 segments) to disambiguate.
+- **UI**: `/inventory/expiry-fefo`, wired into
+  `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 5 new unit tests; inventory module suite 154/154 passing.
+- **Gates**: scoped typecheck clean; full turbo typecheck/API suite/E2E
+  deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 0→1, reset by
+  this session's second milestone gate).
+
 ## [2026-07-12] MILESTONE gate #2: full typecheck + full API suite green; E2E still blocked
 
 Settlement of 3 accumulated FAST cycles (`fastCyclesSinceFullGate` 3→0),

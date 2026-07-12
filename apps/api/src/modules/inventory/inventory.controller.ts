@@ -962,6 +962,32 @@ export class InventoryController {
     return this.inventoryService.getBatchGenealogy(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: 'Get batch recall notice (genealogy + affected sales orders)' })
+  @Get('batches/:id/recall-notice')
+  @Permissions('inventory.stock.read')
+  async getBatchRecallNotice(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getBatchRecallNotice(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get expiring batches report (FEFO-sorted)' })
+  @Get('batches/reports/expiring')
+  @Permissions('inventory.stock.read')
+  async getExpiringBatchesReport(@Req() req: AuthenticatedRequest, @Query('withinDays') withinDays?: string) {
+    return this.inventoryService.getExpiringBatchesReport(req.user.tenantId, withinDays ? parseInt(withinDays) : undefined);
+  }
+
+  @ApiOperation({ summary: 'Get FEFO pick suggestion for a product/warehouse/quantity' })
+  @Get('batches/reports/fefo-suggestion')
+  @Permissions('inventory.stock.read')
+  async getFefoPickSuggestion(
+    @Req() req: AuthenticatedRequest,
+    @Query('productId') productId: string,
+    @Query('warehouseId') warehouseId: string,
+    @Query('quantity') quantity: string,
+  ) {
+    return this.inventoryService.getFefoPickSuggestion(req.user.tenantId, productId, warehouseId, parseFloat(quantity));
+  }
+
   @ApiOperation({ summary: 'Get serial number where-used trace' })
   @Get('serial-numbers/:id/trace')
   @Permissions('inventory.stock.read')

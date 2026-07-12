@@ -686,6 +686,76 @@ export class InventoryService {
     };
   }
 
+  /** Batches expiring within a window, FEFO-sorted (soonest expiry first), for proactive rotation/markdown decisions. */
+  async getExpiringBatchesReport(tenantId: string, withinDays = 30) {
+    const cutoff = new Date(Date.now() + withinDays * 24 * 60 * 60 * 1000);
+    const batches = await prisma.batch.findMany({
+      where: { tenantId, expiryDate: { not: null, lte: cutoff }, status: { in: ['ACTIVE', 'PARTIALLY_USED'] } },
+      include: { product: true },
+      orderBy: { expiryDate: 'asc' },
+    });
+
+    return {
+      windowDays: withinDays,
+      count: batches.length,
+      batches: batches.map((b) => ({
+        batchId: b.id,
+        batchNo: b.batchNo,
+        productName: b.product.name,
+        sku: b.product.sku,
+        quantity: Number(b.quantity) - Number(b.usedQty),
+        expiryDate: b.expiryDate,
+        daysUntilExpiry: b.expiryDate ? Math.ceil((b.expiryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)) : null,
+      })),
+    };
+  }
+
+  /** FEFO pick suggestion: allocates the requested quantity across the soonest-expiring batches first. */
+  async getFefoPickSuggestion(tenantId: string, productId: string, warehouseId: string, quantity: number) {
+    const batches = await prisma.batch.findMany({
+      where: { tenantId, productId, status: { in: ['ACTIVE', 'PARTIALLY_USED'] } },
+      orderBy: [{ expiryDate: 'asc' }, { createdAt: 'asc' }],
+    });
+
+    let remaining = quantity;
+    const allocations: Array<{ batchId: string; batchNo: string; expiryDate: Date | null; allocatedQty: number }> = [];
+
+    for (const batch of batches) {
+      if (remaining <= 0) break;
+      const available = Number(batch.quantity) - Number(batch.usedQty);
+      if (available <= 0) continue;
+      const allocatedQty = Math.min(available, remaining);
+      allocations.push({ batchId: batch.id, batchNo: batch.batchNo, expiryDate: batch.expiryDate, allocatedQty });
+      remaining -= allocatedQty;
+    }
+
+    return { productId, warehouseId, requestedQty: quantity, fulfilledQty: quantity - remaining, shortfall: remaining, allocations };
+  }
+
+  /**
+   * Recall notice: batch genealogy plus any consumption stock entries carrying a sales-order
+   * reference, so an affected-customer list can be compiled from real traceability data
+   * rather than assumed — entries without a populated reference are honestly listed as unknown.
+   */
+  async getBatchRecallNotice(tenantId: string, batchId: string) {
+    const genealogy = await this.getBatchGenealogy(tenantId, batchId);
+
+    const affectedReferences = genealogy.consumedIn
+      .filter((entry) => entry.referenceType === 'SALES_ORDER' && entry.referenceDoc)
+      .map((entry) => ({ salesOrderId: entry.referenceDoc, stockEntryNumber: entry.entryNumber }));
+
+    const untracedConsumptions = genealogy.consumedIn.filter((entry) => !(entry.referenceType === 'SALES_ORDER' && entry.referenceDoc)).length;
+
+    return {
+      batch: genealogy.batch,
+      generatedAt: new Date().toISOString(),
+      affectedSalesOrders: affectedReferences,
+      untracedConsumptions,
+      licensePlatesInvolved: genealogy.licensePlates.map((p) => p.code),
+      recommendedAction: genealogy.batch.status === 'QUARANTINE' ? 'Already quarantined — proceed to customer notification' : 'Quarantine remaining stock immediately, then notify affected customers',
+    };
+  }
+
   /** Where-used trace for a serial number: full status history plus any license-plate placements. */
   async getSerialNumberTrace(tenantId: string, serialNumberId: string) {
     const serial = await prisma.serialNumber.findFirst({

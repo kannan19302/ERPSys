@@ -169,6 +169,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   consignment: 'Consignment Inventory',
   'reorder-rules': 'Reorder Rules & Automation',
   'qa-templates': 'QA Templates & Routing',
+  'expiry-fefo': 'Expiry, FEFO & Recalls',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

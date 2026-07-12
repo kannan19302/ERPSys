@@ -1,7 +1,9 @@
 {
   "ranAt": "2026-07-12T03:06:16.000Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": [
+    "Inventory: expiring-batches/FEFO report + FEFO pick suggestion + recall notice (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+  ],
   "lastMilestoneCommit": "5eb3603",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",

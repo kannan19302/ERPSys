@@ -314,6 +314,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Consignment Inventory', href: '/inventory/consignment', icon: Truck },
             { name: 'Reorder Rules & Automation', href: '/inventory/reorder-rules', icon: ShoppingCart },
             { name: 'QA Templates & Routing', href: '/inventory/qa-templates', icon: ShieldCheck },
+            { name: 'Expiry, FEFO & Recalls', href: '/inventory/expiry-fefo', icon: AlertTriangle },
           ]
         },
         {

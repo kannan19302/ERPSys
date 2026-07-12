@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-expiry-fefo-recall",
-  "agent": "claude-code-cli-main",
-  "scope": "Inventory: expiring-batches report, FEFO pick suggestion, batch recall notice generation",
-  "acquiredAt": "2026-07-12T03:07:55.529Z",
-  "heartbeatAt": "2026-07-12T03:07:55.529Z",
-  "pid": 11925
-}
