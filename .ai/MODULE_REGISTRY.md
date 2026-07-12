@@ -80,6 +80,7 @@
 > HR items below) stay queued for their module's turn. P0/P1/P2 items (broken
 > build, runtime failures, conflicts, cross-cutting hardening) are exempt.
 
+0. **[P0] Wire RLS session context into the shared Prisma extension** — `packages/database/src/index.ts`'s `$allOperations` hook needs to `set_config('app.current_tenant_id', ...)` for the 12 RLS-protected models (`users`, `invoices`, `payments`, `employees`, `patients`, `payroll_runs`, `journals`, `customers`, `vendors`, `sales_orders`, `purchase_orders`, `audit_logs`) using the existing `getTenantSession()`, or those tables stay invisible to any DB role without BYPASSRLS — confirmed live via `psql` 2026-07-12. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
 1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
 2. **`dependency-cruiser`/ESLint module-boundary lint** — enforce "no cross-module deep imports, no business logic in controllers" in CI (Enterprise Hardening Phase 1 exit criteria).
 3. **CI test-suite scope decision** — `test:coverage` still excludes `*.coverage.spec.ts`; decide whether to run the full suite in CI now that it's stable (Enterprise Hardening Phase 0 follow-up).
@@ -487,6 +488,52 @@ via `GET /super-admin/tenants` — a tenant-isolation-adjacent Critical finding,
   `admin.operations.*`, since a full Postgres backup/restore is instance-wide, not per-tenant — this
   pattern (system.* namespace, distinct from tenant-scoped admin.*) is the template for any future
   cross-tenant/platform-operator permission.
+
+### Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline (project-wide)
+
+Discovered 2026-07-12 while chasing the recurring `[e2e-unverified]` gate blocker during
+Inventory focus-module cycles. **Confirmed via direct `psql`, not assumption**:
+`SELECT count(*) FROM users` returns **0** rows with no session context set, **1** with
+`app.current_tenant_id` set via `set_config` — proving Postgres's `FORCE ROW LEVEL SECURITY`
+(migration `20260626120000_rls_policies`, applied to `users`, `invoices`, `payments`,
+`employees`, `patients`, `payroll_runs`, `journals`, `customers`, `vendors`, `sales_orders`,
+`purchase_orders`, `audit_logs`) makes those 12 tables **invisible to any DB role without
+BYPASSRLS/superuser** — and grepping the entire app source (`apps/api`, `packages/database`)
+turns up **zero** places that ever set that session variable. This is why `POST /auth/login`
+401s for a genuinely-seeded admin user under a properly-restricted DB role: the login query
+itself can't see the row.
+
+- The app's **actual** tenant isolation lives in a completely separate, working mechanism —
+  `packages/database/src/index.ts`'s Prisma `$extends` query hook + `applyTenantScope`
+  (`packages/database/src/tenant-scope.ts`), driven by an `AsyncLocalStorage`-based
+  `getTenantSession()` (`packages/database/src/tenant-context.ts`) that filters/injects
+  `tenantId` into Prisma query args at the ORM layer. The RLS SQL policies were added later as
+  a defense-in-depth DB-level backstop but **nobody wired the corresponding `SET LOCAL`/
+  `set_config('app.current_tenant_id', ...)` into the request lifecycle** to match.
+- **Practical impact**: in any environment whose DB connection role happens to have
+  superuser/BYPASSRLS (common in dev Docker setups that connect as `postgres`), this defect
+  is silently masked — RLS simply never blocks anything, and the app works normally via the
+  Prisma-extension mechanism alone. In any environment with a properly-least-privileged DB
+  role (as in this session's sandbox), the app is **broken** for all 12 RLS-protected tables:
+  login fails, and any create/update on those tables fails the `WITH CHECK` clause. This
+  likely explains why every prior CHANGELOG entry claiming a live E2E/UAT pass never
+  surfaced this — those runs' DB roles never exercised the RLS path at all.
+- **Fixed this session**: `packages/database/prisma/seed.ts` now wraps every write to an
+  RLS-protected table in a transaction that sets `app.current_tenant_id` via `set_config`
+  (helper `withTenantContext()`) — verified live, `pnpm db:seed` completes end-to-end and the
+  admin row is genuinely queryable with the right session context.
+- **NOT fixed**: the app's actual request pipeline (the shared Prisma extension used by every
+  module). Wiring `SET LOCAL`/`set_config` into `$allOperations` for the 12 RLS-protected
+  models, keyed off the same `getTenantSession()` already used by `applyTenantScope`, is the
+  correct fix — but it touches a shared file every module depends on and needs dedicated
+  regression testing (Finance, CRM, HR, Sales, Procurement all read/write these tables), not
+  a side-fix during an Inventory-focused session. Declined to bypass RLS as a shortcut.
+- **Recommended next step for a dedicated session**: extend the `$allOperations` hook in
+  `packages/database/src/index.ts` to run `set_config` for the RLS-protected model set before
+  delegating to `query(args)`, verify with the full API suite + a live E2E smoke run under a
+  DB role that has RLS actually enforced (not superuser) so this class of gap can't hide
+  again, then re-run this session's already-shipped Inventory cycles' `[e2e-unverified]`
+  smoke gate for real.
 
 ---
 

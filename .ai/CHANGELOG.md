@@ -2,6 +2,56 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Fix: seed script now honors RLS; discovered a deeper P0 — RLS is disconnected from the app's request pipeline
+
+Not an Inventory feature cycle — a P1 tooling fix plus a P0 cross-cutting
+finding surfaced while chasing the `[e2e-unverified]` blocker from the two
+prior MILESTONE gates.
+
+- **Fixed** `prisma/seed.ts`: added `withTenantContext()`, a helper that
+  runs a callback inside a transaction with
+  `SELECT set_config('app.current_tenant_id', $1, true)` (the parameterized
+  equivalent of `SET LOCAL`, scoped to that one transaction only — avoids
+  the risk of wrapping the whole multi-thousand-line seed run in one
+  transaction and hitting Prisma's interactive-transaction timeout).
+  Wrapped all ~20 call sites touching the 12 RLS-protected tables (`users`,
+  `invoices`, `payments`, `employees`, `customers`, `vendors` — the seed
+  script never touches `patients`/`payroll_runs`/`journals`/`sales_orders`/
+  `purchase_orders`/`audit_logs`). Verified live: `pnpm db:seed` now
+  completes end-to-end (previously died on the first `user.upsert`), and
+  the admin row genuinely exists (`SELECT email,status FROM users` returns
+  it).
+- **Discovered a deeper, previously-undocumented P0**: even with the seed
+  fixed, `POST /auth/login` still 401s for the real seeded admin user.
+  Root cause, confirmed directly via `psql`: `SELECT count(*) FROM users`
+  returns **0** without `app.current_tenant_id` set in the session, **1**
+  with it set — Postgres's `FORCE ROW LEVEL SECURITY` (migration
+  `20260626120000_rls_policies`) makes `users`/`invoices`/`payments`/
+  `employees`/`patients`/`payroll_runs`/`journals`/`customers`/`vendors`/
+  `sales_orders`/`purchase_orders`/`audit_logs` **invisible to any DB role
+  without BYPASSRLS**, and grepping the entire app source turns up **zero**
+  places that ever set that session variable. The app's actual tenant
+  isolation lives in a completely separate mechanism —
+  `packages/database/src/index.ts`'s Prisma `$extends` hook +
+  `applyTenantScope`, driven by an `AsyncLocalStorage`-based
+  `getTenantSession()` — that the RLS migration was never wired into. The
+  two tenant-isolation layers are disconnected; RLS as deployed either (a)
+  silently no-ops in any environment whose DB role happens to have
+  superuser/BYPASSRLS (masking the gap — likely why every prior
+  changelog entry claiming a live E2E/UAT pass never hit this), or (b)
+  breaks the entire app for those 12 tables under a properly-restricted
+  role, exactly as reproduced here.
+- **Scope decision**: declined to fix the deeper gap in this session —
+  wiring `SET LOCAL`/`set_config` into the shared Prisma extension used by
+  every module touching those 12 tables is a genuine cross-cutting change
+  that needs dedicated regression testing across Finance/CRM/HR/Sales/etc.,
+  not a side-fix while focused on Inventory. Also declined to bypass RLS.
+  Flagging this as a **P0** item for a dedicated session — see
+  `MODULE_REGISTRY.md` Conflict Log.
+- E2E therefore remains `[e2e-unverified]`, but the blocker is now fully
+  root-caused and documented rather than a recurring mystery each
+  milestone gate.
+
 ## [2026-07-12] Inventory: pick-wave/sales-order fulfillment integration, kit BOM versioning
 
 FAST cycle (Inventory cycle 8, branch `claude/new-session-7x5xhc`), toward the
