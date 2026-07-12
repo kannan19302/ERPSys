@@ -989,6 +989,7 @@ model Product {
   inventoryItemBins             InventoryItemBin[]
   reorderRules                  ReorderRule[]
   stockAlerts                   StockAlert[]
+  stockReservations             StockReservation[]
   inventoryValuations           InventoryValuation[]
   productKit                    ProductKit?
   productKitItems               ProductKitItem[]
@@ -1027,6 +1028,7 @@ model Warehouse {
   fixedAssets         FixedAsset[]
   cycleCountSchedules CycleCountSchedule[]
   licensePlates       LicensePlate[]
+  stockReservations    StockReservation[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -2929,10 +2931,11 @@ model Batch {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  product           Product            @relation(fields: [productId], references: [id])
+  product           Product              @relation(fields: [productId], references: [id])
   stockEntryItems   StockEntryItem[]
-  originStockEntry  StockEntry?        @relation("BatchOrigin", fields: [originStockEntryId], references: [id])
+  originStockEntry  StockEntry?          @relation("BatchOrigin", fields: [originStockEntryId], references: [id])
   licensePlateItems LicensePlateItem[]
+  quarantineLogs    BatchQuarantineLog[]
 
   @@unique([tenantId, productId, batchNo])
   @@index([tenantId])
@@ -3123,6 +3126,48 @@ model PutawayTask {
   @@index([stockEntryId])
   @@index([inventoryItemId])
   @@map("putaway_tasks")
+}
+
+model BatchQuarantineLog {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  batchId     String    @map("batch_id")
+  action      String // QUARANTINED, RELEASED, REJECTED
+  reason      String?
+  performedBy String?   @map("performed_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([batchId])
+  @@map("batch_quarantine_logs")
+}
+
+model StockReservation {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  productId     String    @map("product_id")
+  warehouseId   String    @map("warehouse_id")
+  quantity      Decimal   @db.Decimal(15, 3)
+  sourceType    String    @map("source_type") // SALES_ORDER, TRANSFER, MANUAL
+  sourceId      String?   @map("source_id")
+  status        String    @default("ACTIVE") // ACTIVE, RELEASED, FULFILLED
+  releasedAt    DateTime? @map("released_at")
+  fulfilledAt   DateTime? @map("fulfilled_at")
+  notes         String?
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([productId])
+  @@index([warehouseId])
+  @@map("stock_reservations")
 }
 
 // ════════════════════════════════════════════════

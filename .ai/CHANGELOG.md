@@ -2,6 +2,41 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: batch quarantine + traceability, stock reservations, ABC/dead-stock/turnover analytics
+
+FAST cycle (Inventory cycle 2, branch `claude/new-session-7x5xhc`), toward the
+user-requested 90→200 feature target for this module.
+
+- **Duplicate-check first**: before building, grepped `FEATURE_LEDGER.md` and
+  `inventory.service.ts` for a planned RMA/returns sub-domain and found
+  `SalesReturn`/`PurchaseReturn` (sales/procurement modules) and stock
+  alerts/aging already shipped — dropped that sub-domain to avoid duplicating
+  existing work and substituted batch quarantine + traceability instead.
+- **DB**: `BatchQuarantineLog`, `StockReservation` models (migration
+  `20260712015953_inventory_quarantine_stock_reservations`).
+- **API**: batch quarantine/release/reject workflow with audit trail; batch
+  genealogy trace (origin → consumption → license-plate placements) and
+  serial-number where-used trace (closes Up Next item 5c); stock-reservation
+  create/release/fulfill with available-quantity enforcement and an
+  allocation-summary endpoint; ABC classification (Pareto cumulative-value),
+  dead-stock report, and inventory-turnover-ratio report — all computed from
+  existing ledger/item data.
+- **UI**: `/inventory/traceability` (batch/serial trace lookup + quarantine
+  actions) and `/inventory/stock-reservations` (reservation list + ABC/dead-
+  stock KPI tiles + create modal), wired into
+  `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 14 new unit tests; inventory module suite 111/111 passing.
+- **Gates**: scoped typecheck clean (`@unerp/shared`, `@unerp/api`,
+  `@unerp/web`); full turbo typecheck/API suite/E2E deferred per FAST-cycle
+  tier (`fastCyclesSinceFullGate` 1→2).
+- **Plan to 200**: `inventory` module count is now 104 (baseline 73, +17 cycle
+  1, +14 cycle 2). At the observed pace, 6-8 more comparably-scoped FAST
+  cycles reach 200+; candidate sub-domains logged in Up Next: kitting/BOM
+  assembly-disassembly deepening, wave-pick/pack-list generation, safety-
+  stock/demand-based replenishment deepening, multi-warehouse transfer
+  approval workflow, inventory audit-trail/movement-history reporting,
+  vendor-managed/consignment inventory, barcode label printing.
+
 ## [2026-07-12] Inventory: cycle count schedules + accuracy KPI, license plates, directed put-away
 
 FAST cycle (cycle 1 of the Inventory & Supply Chain focus module, branch

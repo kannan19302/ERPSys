@@ -1,8 +1,9 @@
 {
   "ranAt": "2026-07-04T04:24:19.536Z",
-  "fastCyclesSinceFullGate": 1,
+  "fastCyclesSinceFullGate": 2,
   "deferredScopes": [
-    "Inventory: cycle count schedules/accuracy KPI + license plates + directed put-away (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+    "Inventory: cycle count schedules/accuracy KPI + license plates + directed put-away (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
+    "Inventory: batch quarantine/traceability + stock reservations + ABC/dead-stock/turnover analytics (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
   ],
   "lastMilestoneCommit": "9884ffb",
   "typecheck": {

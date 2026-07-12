@@ -18,6 +18,8 @@ import {
   CreateCycleCountScheduleInput, UpdateCycleCountScheduleInput,
   CreateLicensePlateInput, AddLicensePlateItemInput, MoveLicensePlateInput,
   CreatePutawayTaskInput, CompletePutawayTaskInput,
+  QuarantineBatchInput, ReleaseBatchQuarantineInput,
+  CreateStockReservationInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -687,6 +689,121 @@ export class InventoryController {
   @Permissions('inventory.stock.update')
   async completePutawayTask(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CompletePutawayTaskInput) {
     return this.inventoryService.completePutawayTask(req.user.tenantId, id, dto);
+  }
+
+  // ─── BATCH QUARANTINE WORKFLOW ───────────────────────
+
+  @ApiOperation({ summary: 'Quarantine a batch' })
+  @Post('batches/:id/quarantine')
+  @Permissions('inventory.stock.update')
+  async quarantineBatch(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: QuarantineBatchInput) {
+    return this.inventoryService.quarantineBatch(req.user.tenantId, id, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Release a batch from quarantine' })
+  @Post('batches/:id/quarantine/release')
+  @Permissions('inventory.stock.update')
+  async releaseBatchQuarantine(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: ReleaseBatchQuarantineInput) {
+    return this.inventoryService.releaseBatchQuarantine(req.user.tenantId, id, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Reject a quarantined batch (mark expired/unusable)' })
+  @Post('batches/:id/quarantine/reject')
+  @Permissions('inventory.stock.update')
+  async rejectBatchQuarantine(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: ReleaseBatchQuarantineInput) {
+    return this.inventoryService.rejectBatchQuarantine(req.user.tenantId, id, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Get batch quarantine log' })
+  @Get('batches/:id/quarantine-log')
+  @Permissions('inventory.stock.read')
+  async getBatchQuarantineLog(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getBatchQuarantineLog(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get batch genealogy trace' })
+  @Get('batches/:id/genealogy')
+  @Permissions('inventory.stock.read')
+  async getBatchGenealogy(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getBatchGenealogy(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get serial number where-used trace' })
+  @Get('serial-numbers/:id/trace')
+  @Permissions('inventory.stock.read')
+  async getSerialNumberTrace(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.getSerialNumberTrace(req.user.tenantId, id);
+  }
+
+  // ─── STOCK RESERVATIONS & ALLOCATION ─────────────────
+
+  @ApiOperation({ summary: 'Get stock reservations' })
+  @Get('stock-reservations')
+  @Permissions('inventory.stock.read')
+  async getStockReservations(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('productId') productId?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.inventoryService.getStockReservations(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      productId, warehouseId, status,
+    });
+  }
+
+  @ApiOperation({ summary: 'Get allocation summary for a product in a warehouse' })
+  @Get('stock-reservations/allocation-summary')
+  @Permissions('inventory.stock.read')
+  async getAllocationSummary(@Req() req: AuthenticatedRequest, @Query('productId') productId: string, @Query('warehouseId') warehouseId: string) {
+    return this.inventoryService.getAllocationSummary(req.user.tenantId, productId, warehouseId);
+  }
+
+  @ApiOperation({ summary: 'Create stock reservation' })
+  @Post('stock-reservations')
+  @Permissions('inventory.stock.create')
+  async createStockReservation(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateStockReservationInput) {
+    return this.inventoryService.createStockReservation(req.user.tenantId, req.user.userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Release a stock reservation' })
+  @Post('stock-reservations/:id/release')
+  @Permissions('inventory.stock.update')
+  async releaseStockReservation(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.releaseStockReservation(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Fulfill a stock reservation' })
+  @Post('stock-reservations/:id/fulfill')
+  @Permissions('inventory.stock.update')
+  async fulfillStockReservation(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.fulfillStockReservation(req.user.tenantId, id);
+  }
+
+  // ─── INVENTORY ANALYTICS ─────────────────────────────
+
+  @ApiOperation({ summary: 'Get ABC classification report' })
+  @Get('analytics/abc-classification')
+  @Permissions('inventory.stock.read')
+  async getAbcClassification(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId?: string) {
+    return this.inventoryService.getAbcClassification(req.user.tenantId, warehouseId);
+  }
+
+  @ApiOperation({ summary: 'Get dead-stock report' })
+  @Get('analytics/dead-stock')
+  @Permissions('inventory.stock.read')
+  async getDeadStockReport(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId?: string, @Query('sinceDays') sinceDays?: string) {
+    return this.inventoryService.getDeadStockReport(req.user.tenantId, warehouseId, sinceDays ? parseInt(sinceDays) : undefined);
+  }
+
+  @ApiOperation({ summary: 'Get inventory turnover report' })
+  @Get('analytics/turnover')
+  @Permissions('inventory.stock.read')
+  async getTurnoverReport(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId?: string, @Query('sinceDays') sinceDays?: string) {
+    return this.inventoryService.getTurnoverReport(req.user.tenantId, warehouseId, sinceDays ? parseInt(sinceDays) : undefined);
   }
 
   // ─── QA INSPECTIONS ─────────────────────────────────

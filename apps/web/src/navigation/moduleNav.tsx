@@ -305,6 +305,8 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Cycle Count Audits', href: '/inventory/cycle-counts', icon: ClipboardCheck },
             { name: 'Cycle Count Schedules', href: '/inventory/cycle-count-schedules', icon: ClipboardCheck },
             { name: 'License Plates & Put-away', href: '/inventory/license-plates', icon: Package },
+            { name: 'Traceability', href: '/inventory/traceability', icon: QrCode },
+            { name: 'Stock Reservations & Analytics', href: '/inventory/stock-reservations', icon: ClipboardCheck },
           ]
         },
         {

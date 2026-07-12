@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T01:53:45.741Z
+> Last generated: 2026-07-12T02:05:19.691Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **1996 features** across 33 modules
+## System total: **2010 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 90 |
+| [inventory](#inventory) | 104 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-90 features
+104 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1855,6 +1855,20 @@
 | GET | `/inventory/putaway-tasks/suggest-bin/:inventoryItemId` | Suggest putaway bin for an inventory item (zone-based optimization) | `inventory.stock.read` |
 | POST | `/inventory/putaway-tasks` | Create putaway task | `inventory.stock.read` |
 | POST | `/inventory/putaway-tasks/:id/complete` | Complete putaway task (barcode scan confirm) | `inventory.stock.create` |
+| POST | `/inventory/batches/:id/quarantine` | Quarantine a batch | `inventory.stock.update` |
+| POST | `/inventory/batches/:id/quarantine/release` | Release a batch from quarantine | `inventory.stock.update` |
+| POST | `/inventory/batches/:id/quarantine/reject` | Reject a quarantined batch (mark expired/unusable) | `inventory.stock.update` |
+| GET | `/inventory/batches/:id/quarantine-log` | Get batch quarantine log | `inventory.stock.update` |
+| GET | `/inventory/batches/:id/genealogy` | Get batch genealogy trace | `inventory.stock.read` |
+| GET | `/inventory/serial-numbers/:id/trace` | Get serial number where-used trace | `inventory.stock.read` |
+| GET | `/inventory/stock-reservations` | Get stock reservations | `inventory.stock.read` |
+| GET | `/inventory/stock-reservations/allocation-summary` | Get allocation summary for a product in a warehouse | `inventory.stock.read` |
+| POST | `/inventory/stock-reservations` | Create stock reservation | `inventory.stock.read` |
+| POST | `/inventory/stock-reservations/:id/release` | Release a stock reservation | `inventory.stock.create` |
+| POST | `/inventory/stock-reservations/:id/fulfill` | Fulfill a stock reservation | `inventory.stock.update` |
+| GET | `/inventory/analytics/abc-classification` | Get ABC classification report | `inventory.stock.read` |
+| GET | `/inventory/analytics/dead-stock` | Get dead-stock report | `inventory.stock.read` |
+| GET | `/inventory/analytics/turnover` | Get inventory turnover report | `inventory.stock.read` |
 | GET | `/inventory/qa-inspections` | Get q a inspections | `inventory.stock.read` |
 | GET | `/inventory/qa-inspections/:id` | Get q a inspection by id | `inventory.stock.read` |
 | POST | `/inventory/qa-inspections` | Create q a inspection | `inventory.stock.read` |

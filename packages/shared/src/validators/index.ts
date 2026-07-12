@@ -1842,6 +1842,26 @@ export const completePutawayTaskSchema = z.object({
 });
 export type CompletePutawayTaskInput = z.infer<typeof completePutawayTaskSchema>;
 
+export const quarantineBatchSchema = z.object({
+  reason: z.string().min(1, 'Reason is required').max(1000),
+});
+export type QuarantineBatchInput = z.infer<typeof quarantineBatchSchema>;
+
+export const releaseBatchQuarantineSchema = z.object({
+  reason: z.string().max(1000).optional().nullable(),
+});
+export type ReleaseBatchQuarantineInput = z.infer<typeof releaseBatchQuarantineSchema>;
+
+export const createStockReservationSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  sourceType: z.enum(['SALES_ORDER', 'TRANSFER', 'MANUAL']).default('MANUAL'),
+  sourceId: z.string().optional().nullable(),
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreateStockReservationInput = z.infer<typeof createStockReservationSchema>;
+
 export const createQACheckpointSchema = z.object({
   parameter: z.string().min(1, 'Parameter is required'),
   criteria: z.string().min(1, 'Criteria is required'),

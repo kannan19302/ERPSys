@@ -10,6 +10,8 @@ import {
   CreateCycleCountScheduleInput, UpdateCycleCountScheduleInput,
   CreateLicensePlateInput, AddLicensePlateItemInput, MoveLicensePlateInput,
   CreatePutawayTaskInput, CompletePutawayTaskInput,
+  QuarantineBatchInput, ReleaseBatchQuarantineInput,
+  CreateStockReservationInput,
   CreateQAInspectionInput, SubmitQAInspectionInput,
   CreateReorderRuleInput, CreateKitInput,
   CreateStockEntryInput,
@@ -603,6 +605,276 @@ export class InventoryService {
       where: { id },
       data: updateData,
     });
+  }
+
+  // ─── BATCH QUARANTINE WORKFLOW ───────────────────────
+
+  async quarantineBatch(tenantId: string, id: string, userId: string, dto: QuarantineBatchInput) {
+    const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
+    if (!batch) throw new NotFoundException('Batch not found');
+    if (batch.status === 'QUARANTINE') throw new BadRequestException('Batch is already quarantined');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.batch.update({ where: { id }, data: { status: 'QUARANTINE' } });
+      await tx.batchQuarantineLog.create({
+        data: { tenantId, batchId: id, action: 'QUARANTINED', reason: dto.reason, performedBy: userId },
+      });
+      return updated;
+    });
+  }
+
+  async releaseBatchQuarantine(tenantId: string, id: string, userId: string, dto: ReleaseBatchQuarantineInput) {
+    const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
+    if (!batch) throw new NotFoundException('Batch not found');
+    if (batch.status !== 'QUARANTINE') throw new BadRequestException('Batch is not quarantined');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.batch.update({ where: { id }, data: { status: 'ACTIVE' } });
+      await tx.batchQuarantineLog.create({
+        data: { tenantId, batchId: id, action: 'RELEASED', reason: dto.reason, performedBy: userId },
+      });
+      return updated;
+    });
+  }
+
+  async rejectBatchQuarantine(tenantId: string, id: string, userId: string, dto: ReleaseBatchQuarantineInput) {
+    const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
+    if (!batch) throw new NotFoundException('Batch not found');
+    if (batch.status !== 'QUARANTINE') throw new BadRequestException('Batch is not quarantined');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.batch.update({ where: { id }, data: { status: 'EXPIRED' } });
+      await tx.batchQuarantineLog.create({
+        data: { tenantId, batchId: id, action: 'REJECTED', reason: dto.reason, performedBy: userId },
+      });
+      return updated;
+    });
+  }
+
+  async getBatchQuarantineLog(tenantId: string, batchId: string) {
+    return prisma.batchQuarantineLog.findMany({
+      where: { tenantId, batchId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** Full genealogy trace for a batch: origin stock entry, license-plate placements, and consumption via stock entry items. */
+  async getBatchGenealogy(tenantId: string, id: string) {
+    const batch = await prisma.batch.findFirst({
+      where: { id, tenantId },
+      include: {
+        product: true,
+        originStockEntry: true,
+        stockEntryItems: { include: { stockEntry: true } },
+        licensePlateItems: { include: { licensePlate: true } },
+      },
+    });
+    if (!batch) throw new NotFoundException('Batch not found');
+
+    return {
+      batch: { id: batch.id, batchNo: batch.batchNo, lotNo: batch.lotNo, status: batch.status, product: batch.product },
+      origin: batch.originStockEntry ?? null,
+      consumedIn: batch.stockEntryItems.map((i) => i.stockEntry),
+      licensePlates: batch.licensePlateItems.map((i) => i.licensePlate),
+    };
+  }
+
+  /** Where-used trace for a serial number: full status history plus any license-plate placements. */
+  async getSerialNumberTrace(tenantId: string, serialNumberId: string) {
+    const serial = await prisma.serialNumber.findFirst({
+      where: { id: serialNumberId, tenantId },
+      include: { product: true, history: { orderBy: { createdAt: 'desc' } }, licensePlateItems: { include: { licensePlate: true } } },
+    });
+    if (!serial) throw new NotFoundException('Serial number not found');
+
+    return {
+      serial: { id: serial.id, serialNo: serial.serialNo, status: serial.status, product: serial.product },
+      history: serial.history,
+      licensePlates: serial.licensePlateItems.map((i) => i.licensePlate),
+    };
+  }
+
+  // ─── STOCK RESERVATIONS & ALLOCATION ─────────────────
+
+  async getStockReservations(tenantId: string, params: PaginationParams & { productId?: string; warehouseId?: string; status?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.productId) where.productId = params.productId;
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    if (params.status) where.status = params.status;
+
+    const { skip, take } = buildPaginationValues(params);
+    const [reservations, total] = await Promise.all([
+      prisma.stockReservation.findMany({
+        where,
+        include: { product: true, warehouse: true },
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.stockReservation.count({ where }),
+    ]);
+    return paginatedResult(reservations, total, params);
+  }
+
+  /** Sum of currently ACTIVE reservations for a product in a warehouse — the "committed" quantity for allocation reporting. */
+  async getAllocationSummary(tenantId: string, productId: string, warehouseId: string) {
+    const [item, active] = await Promise.all([
+      prisma.inventoryItem.findFirst({ where: { tenantId, productId, warehouseId } }),
+      prisma.stockReservation.aggregate({
+        where: { tenantId, productId, warehouseId, status: 'ACTIVE' },
+        _sum: { quantity: true },
+      }),
+    ]);
+
+    const onHand = Number(item?.quantity ?? 0);
+    const reserved = Number(active._sum.quantity ?? 0);
+
+    return { productId, warehouseId, onHand, reserved, available: onHand - reserved };
+  }
+
+  async createStockReservation(tenantId: string, userId: string, dto: CreateStockReservationInput) {
+    const summary = await this.getAllocationSummary(tenantId, dto.productId, dto.warehouseId);
+    if (summary.available < dto.quantity) {
+      throw new BadRequestException(`Insufficient available stock: ${summary.available} available, ${dto.quantity} requested`);
+    }
+
+    return prisma.stockReservation.create({
+      data: {
+        tenantId,
+        productId: dto.productId,
+        warehouseId: dto.warehouseId,
+        quantity: new Prisma.Decimal(dto.quantity),
+        sourceType: dto.sourceType,
+        sourceId: dto.sourceId,
+        notes: dto.notes,
+        createdBy: userId,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  async releaseStockReservation(tenantId: string, id: string) {
+    const reservation = await prisma.stockReservation.findFirst({ where: { id, tenantId } });
+    if (!reservation) throw new NotFoundException('Stock reservation not found');
+    if (reservation.status !== 'ACTIVE') throw new BadRequestException('Reservation is not active');
+
+    return prisma.stockReservation.update({ where: { id }, data: { status: 'RELEASED', releasedAt: new Date() } });
+  }
+
+  async fulfillStockReservation(tenantId: string, id: string) {
+    const reservation = await prisma.stockReservation.findFirst({ where: { id, tenantId } });
+    if (!reservation) throw new NotFoundException('Stock reservation not found');
+    if (reservation.status !== 'ACTIVE') throw new BadRequestException('Reservation is not active');
+
+    return prisma.stockReservation.update({ where: { id }, data: { status: 'FULFILLED', fulfilledAt: new Date() } });
+  }
+
+  // ─── INVENTORY ANALYTICS (ABC, dead-stock, turnover) ─
+
+  /** ABC classification by annual consumption value (Pareto: top ~80% value = A, next ~15% = B, remainder = C). */
+  async getAbcClassification(tenantId: string, warehouseId?: string) {
+    const where: any = { tenantId };
+    if (warehouseId) where.warehouseId = warehouseId;
+
+    const items = await prisma.inventoryItem.findMany({ where, include: { product: true } });
+    const ranked = items
+      .map((i) => ({
+        productId: i.productId,
+        productName: i.product.name,
+        sku: i.product.sku,
+        value: Number(i.quantity) * Number(i.product.costPrice),
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    const totalValue = ranked.reduce((sum, r) => sum + r.value, 0);
+    let cumulative = 0;
+    const classified = ranked.map((r) => {
+      cumulative += r.value;
+      const cumulativePct = totalValue > 0 ? (cumulative / totalValue) * 100 : 0;
+      const cls = cumulativePct <= 80 ? 'A' : cumulativePct <= 95 ? 'B' : 'C';
+      return { ...r, cumulativePct: Number(cumulativePct.toFixed(2)), class: cls };
+    });
+
+    return {
+      warehouseId: warehouseId ?? null,
+      totalValue,
+      counts: {
+        A: classified.filter((c) => c.class === 'A').length,
+        B: classified.filter((c) => c.class === 'B').length,
+        C: classified.filter((c) => c.class === 'C').length,
+      },
+      items: classified,
+    };
+  }
+
+  /** Dead-stock report: items with no stock movement (no stock ledger entry) in the trailing window, still holding value. */
+  async getDeadStockReport(tenantId: string, warehouseId?: string, sinceDays = 90) {
+    const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
+    const where: any = { tenantId };
+    if (warehouseId) where.warehouseId = warehouseId;
+
+    const items = await prisma.inventoryItem.findMany({ where, include: { product: true } });
+    const results: Array<{ productId: string; productName: string; sku: string; warehouseId: string; quantity: number; value: number; lastMovementAt: Date | null }> = [];
+
+    for (const item of items) {
+      if (Number(item.quantity) <= 0) continue;
+      const lastEntry = await prisma.stockLedgerEntry.findFirst({
+        where: { tenantId, productId: item.productId, warehouseId: item.warehouseId },
+        orderBy: { createdAt: 'desc' },
+      });
+      const lastMovementAt = lastEntry?.createdAt ?? null;
+      if (!lastMovementAt || lastMovementAt < since) {
+        results.push({
+          productId: item.productId,
+          productName: item.product.name,
+          sku: item.product.sku,
+          warehouseId: item.warehouseId,
+          quantity: Number(item.quantity),
+          value: Number(item.quantity) * Number(item.product.costPrice),
+          lastMovementAt,
+        });
+      }
+    }
+
+    return { warehouseId: warehouseId ?? null, windowDays: sinceDays, deadStockItems: results, totalDeadValue: results.reduce((s, r) => s + r.value, 0) };
+  }
+
+  /** Inventory turnover ratio: total quantity issued (OUT-type ledger entries) over the window, divided by average on-hand quantity. */
+  async getTurnoverReport(tenantId: string, warehouseId?: string, sinceDays = 365) {
+    const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
+    const where: any = { tenantId, createdAt: { gte: since } };
+    if (warehouseId) where.warehouseId = warehouseId;
+
+    const [issuedAgg, itemsWhere] = await Promise.all([
+      prisma.stockLedgerEntry.groupBy({
+        by: ['productId'],
+        where: { ...where, quantity: { lt: 0 } },
+        _sum: { quantity: true },
+      }),
+      (async () => {
+        const w: any = { tenantId };
+        if (warehouseId) w.warehouseId = warehouseId;
+        return prisma.inventoryItem.findMany({ where: w, include: { product: true } });
+      })(),
+    ]);
+
+    const issuedByProduct = new Map(issuedAgg.map((r) => [r.productId, Math.abs(Number(r._sum.quantity ?? 0))]));
+
+    const results = itemsWhere.map((item) => {
+      const issued = issuedByProduct.get(item.productId) ?? 0;
+      const onHand = Number(item.quantity);
+      const turnoverRatio = onHand > 0 ? Number((issued / onHand).toFixed(2)) : null;
+      return {
+        productId: item.productId,
+        productName: item.product.name,
+        sku: item.product.sku,
+        issuedQty: issued,
+        onHandQty: onHand,
+        turnoverRatio,
+      };
+    });
+
+    return { warehouseId: warehouseId ?? null, windowDays: sinceDays, items: results.sort((a, b) => (b.turnoverRatio ?? 0) - (a.turnoverRatio ?? 0)) };
   }
 
   // ─── STOCK ENTRIES & LEDGER ─────────────────────────
