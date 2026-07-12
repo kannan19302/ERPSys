@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-dock-scheduling",
+  "agent": "claude-code-cli-main",
+  "scope": "Inventory: yard/dock appointment scheduling for inbound/outbound trucks",
+  "acquiredAt": "2026-07-12T03:50:45.740Z",
+  "heartbeatAt": "2026-07-12T03:50:45.740Z",
+  "pid": 6153
+}
