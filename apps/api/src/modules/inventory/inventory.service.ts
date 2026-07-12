@@ -2334,6 +2334,72 @@ export class InventoryService {
     });
   }
 
+  // ─── CROSS-DOCKING ────────────────────────────────────
+
+  /**
+   * Cross-dock opportunities: pending inbound receipts (PutawayTask) whose product is also
+   * needed by an open, not-yet-picked wave item in the same warehouse — routing straight from
+   * receiving to shipping instead of storage-then-retrieval, per 2026 WMS market benchmarking
+   * (Manhattan Active WMS, NetSuite WMS) confirmed via discovery pass.
+   */
+  async getCrossDockOpportunities(tenantId: string, warehouseId?: string) {
+    const putawayWhere: any = { tenantId, status: 'PENDING' };
+    const putawayTasks = await prisma.putawayTask.findMany({
+      where: putawayWhere,
+      include: { inventoryItem: { include: { product: true } } },
+    });
+
+    const opportunities: Array<{ putawayTaskId: string; productId: string; productName: string; inboundQty: number; pickWaveItemId: string; demandQty: number; matchedQty: number }> = [];
+
+    for (const task of putawayTasks) {
+      const item = task.inventoryItem;
+      if (warehouseId && item.warehouseId !== warehouseId) continue;
+
+      const demandItem = await prisma.pickWaveItem.findFirst({
+        where: { tenantId, productId: item.productId, status: 'PENDING' },
+        include: { pickWave: true },
+      });
+      if (!demandItem || demandItem.pickWave.warehouseId !== item.warehouseId) continue;
+
+      opportunities.push({
+        putawayTaskId: task.id,
+        productId: item.productId,
+        productName: item.product.name,
+        inboundQty: Number(task.quantity),
+        pickWaveItemId: demandItem.id,
+        demandQty: Number(demandItem.quantity),
+        matchedQty: Math.min(Number(task.quantity), Number(demandItem.quantity)),
+      });
+    }
+
+    return { warehouseId: warehouseId ?? null, count: opportunities.length, opportunities };
+  }
+
+  /** Executes a cross-dock: completes the inbound receipt task and marks the matched pick-wave item picked, bypassing put-away/storage entirely. */
+  async executeCrossDock(tenantId: string, putawayTaskId: string, pickWaveItemId: string) {
+    const task = await prisma.putawayTask.findFirst({ where: { id: putawayTaskId, tenantId } });
+    if (!task) throw new NotFoundException('Putaway task not found');
+    if (task.status === 'COMPLETE') throw new BadRequestException('Putaway task already completed');
+
+    const waveItem = await prisma.pickWaveItem.findFirst({ where: { id: pickWaveItemId, tenantId } });
+    if (!waveItem) throw new NotFoundException('Pick wave item not found');
+    if (waveItem.status === 'PICKED') throw new BadRequestException('Pick wave item is already picked');
+
+    const matchedQty = Math.min(Number(task.quantity), Number(waveItem.quantity));
+
+    return prisma.$transaction(async (tx) => {
+      const updatedTask = await tx.putawayTask.update({
+        where: { id: putawayTaskId },
+        data: { status: 'COMPLETE', completedAt: new Date() },
+      });
+      await tx.pickWaveItem.update({
+        where: { id: pickWaveItemId },
+        data: { pickedQty: new Prisma.Decimal(matchedQty), status: matchedQty >= Number(waveItem.quantity) ? 'PICKED' : 'SHORT' },
+      });
+      return updatedTask;
+    });
+  }
+
   // ─── QUALITY INSPECTIONS ────────────────────────────
 
   async getQAInspections(tenantId: string, params: PaginationParams & { status?: string } = {}) {

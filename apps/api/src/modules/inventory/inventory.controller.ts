@@ -926,6 +926,22 @@ export class InventoryController {
     return this.inventoryService.completePutawayTask(req.user.tenantId, id, dto);
   }
 
+  // ─── CROSS-DOCKING ────────────────────────────────────
+
+  @ApiOperation({ summary: 'Get cross-dock opportunities (inbound receipts that can bypass storage)' })
+  @Get('cross-dock/opportunities')
+  @Permissions('inventory.stock.read')
+  async getCrossDockOpportunities(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId?: string) {
+    return this.inventoryService.getCrossDockOpportunities(req.user.tenantId, warehouseId);
+  }
+
+  @ApiOperation({ summary: 'Execute a cross-dock (receipt bypasses storage straight to an open pick)' })
+  @Post('cross-dock/execute')
+  @Permissions('inventory.stock.update')
+  async executeCrossDock(@Req() req: AuthenticatedRequest, @Query('putawayTaskId') putawayTaskId: string, @Query('pickWaveItemId') pickWaveItemId: string) {
+    return this.inventoryService.executeCrossDock(req.user.tenantId, putawayTaskId, pickWaveItemId);
+  }
+
   // ─── BATCH QUARANTINE WORKFLOW ───────────────────────
 
   @ApiOperation({ summary: 'Quarantine a batch' })

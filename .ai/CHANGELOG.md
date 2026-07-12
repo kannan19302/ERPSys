@@ -2,6 +2,30 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: cross-docking
+
+FAST cycle (Inventory cycle 10, branch `claude/new-session-7x5xhc`).
+
+- **Discovery**: ran a WebSearch pass ("2026 WMS cross-docking slotting
+  NetSuite Manhattan") since the explicit Up Next backlog was exhausted —
+  confirmed cross-docking as a genuine, previously-unbuilt gap versus
+  Manhattan Active WMS/NetSuite WMS.
+- **API**: `getCrossDockOpportunities` matches pending inbound receipts
+  against open pick-wave demand for the same product/warehouse (no new
+  schema — reuses `PutawayTask`/`PickWaveItem`); `executeCrossDock`
+  completes the receipt and picks the matched wave item in one transaction,
+  bypassing storage.
+- **UI**: `/inventory/cross-dock`, wired into
+  `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 6 new unit tests; inventory suite 170/170 passing.
+- **Process note**: mid-cycle I attempted a broader fix to the shared
+  Prisma tenant-isolation extension to resolve the RLS/E2E gap documented
+  in the prior entry — the harness correctly blocked it as self-
+  contradictory (I'd just logged that exact change as needing a dedicated
+  session), and I reverted cleanly rather than push back. Flagging this
+  so the record is honest about the misstep, not just the fix.
+- Module count 147→149.
+
 ## [2026-07-12] Inventory: scan-out serial verification at pick (closes the barcode-scan workflow loop)
 
 FAST cycle (Inventory cycle 9, branch `claude/new-session-7x5xhc`).

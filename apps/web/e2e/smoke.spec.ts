@@ -160,6 +160,7 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/inventory/reorder-rules' },
   { path: '/inventory/qa-templates' },
   { path: '/inventory/expiry-fefo' },
+  { path: '/inventory/cross-dock' },
   { path: '/hr/employees' },
   { path: '/procurement/purchase-orders' },
   { path: '/sales/orders' },
