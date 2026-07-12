@@ -189,7 +189,8 @@ double-check (§ Parallel Agents rule 1b) before writing any code. Full mechanic
 
 ## Step 3 — PLAN
 
-Act as the product manager (Claude Code: invoke the `product-manager` subagent):
+Act as the product manager **yourself, inline** (read `.claude/agents/product-manager.md`
+for the checklist if needed — do NOT spawn it; see § Do The Work Yourself):
 - Confirm the item doesn't already exist — search `.ai/FEATURE_LEDGER.md` (the
   generated single-file inventory of every functionality in the system) and
   `MODULE_REGISTRY.md`. Mandatory.
@@ -270,9 +271,11 @@ Rules); the `security-auditor` pass still applies to sensitive surfaces in every
 `lastMilestoneCommit`.
 
 Run the Code Review checklist from `MASTER_PROMPT.md` § Code Review against your own
-diff (`git diff`). Claude Code: use the `code-reviewer` subagent; touches to auth,
-tenancy, permissions, file upload, or payments additionally require the
-`security-auditor` pass. Fix all Blockers and Warnings before shipping.
+diff (`git diff`) **yourself, inline** — do not spawn `code-reviewer` for this
+(§ Do The Work Yourself). Touches to auth, tenancy, permissions, file upload, or
+payments additionally require the `security-auditor` pass (the one permitted
+subagent, at MILESTONE cycles; on FAST cycles apply its checklist inline).
+Fix all Blockers and Warnings before shipping.
 
 ## Step 7 — RECORD (documentation gate — ALL items, then commit; not just CHANGELOG+REGISTRY)
 
@@ -491,6 +494,40 @@ Before claiming, check §1 Active Claims AND `git log --all --since="1 day ago"
 grep `FEATURE_LEDGER.md` for your batch's routes — if half your features just landed
 from someone else's merge, shrink your batch to the remainder rather than re-shipping.
 
+## Do The Work Yourself (binding — no delegation theater)
+
+Spawning subagents is the single biggest silent token sink in this repo: every
+subagent boots cold, re-reads AGENTS.md/HANDBOOK/registry from scratch, re-derives
+context the caller already holds, and returns a summary the caller then re-verifies.
+A cycle that "orchestrates" five role agents ships fewer features than one that just
+writes the code. Rules:
+
+1. **Default = inline.** Every role in this protocol — product manager (Step 3),
+   reviewer (Step 6), QA, tech writer — is a *hat you put on*, not a subagent you
+   call. Execute the role's checklist yourself in the main thread. The role agent
+   files in `.claude/agents/` define the checklist and standards; read the checklist,
+   don't spawn the agent.
+2. **Delegation is the exception and must pay for its boot cost.** Spawn a subagent
+   ONLY when (a) the chunk is large AND genuinely parallelizable (e.g. the entire UI
+   stage of a 100-feature batch running while you build the API stage), or (b) the
+   user explicitly asked for a specific agent. Never spawn for: planning, review,
+   doc updates, a single file, a search you can grep yourself, or "a second opinion".
+3. **One hop maximum.** A subagent NEVER spawns further subagents. If a spawned
+   agent thinks it needs another role, it applies that role's checklist itself.
+4. **No relay chains.** Never spawn agent A to "coordinate" agents B and C, and never
+   spawn an agent whose output you will just forward to another agent. If you are
+   about to write a subagent prompt that mostly restates protocol files, that is the
+   signal you should do the task inline.
+5. **When you do delegate, make it cheap**: pass the exact file list, the reference
+   pattern, and the acceptance criteria in the prompt so the subagent does zero
+   re-exploration; require it to return counts and file paths, not prose or code dumps.
+6. **Exception that stands**: the `security-auditor` pass on auth/tenancy/permissions/
+   payments surfaces at MILESTONE cycles may run as a subagent — security review
+   benefits from fresh eyes. Everything else defaults to inline.
+
+Violating this section IS a protocol violation even if the cycle ships: log any
+subagent spawned and its justification (rule 2a/2b) in the Step 10 report.
+
 ## Token & Context Efficiency (binding — less reading/re-doing, more building)
 
 Tokens spent re-deriving context are tokens not spent shipping features. Rules:
@@ -523,10 +560,8 @@ Tokens spent re-deriving context are tokens not spent shipping features. Rules:
    files are written once, correct.
 
 **Don't multiply context**
-8. Avoid spawning subagents that must re-read AGENTS/HANDBOOK from scratch for small
-   tasks — a subagent is worth its boot cost only for a large parallelizable chunk
-   (e.g. the whole UI stage of a batch). Pass them the exact file list + pattern
-   reference in the prompt so they don't re-explore.
+8. Subagents: governed entirely by § Do The Work Yourself above — inline by default,
+   spawn only for a large parallelizable chunk or on explicit user request.
 9. Keep Step 10 reports tight: counts, gate results, ledger row — never paste code,
    diffs, or file contents into the report.
 10. When a gate fails, read only the failing test/error lines (grep the output),
@@ -561,7 +596,7 @@ Tokens spent re-deriving context are tokens not spent shipping features. Rules:
 
 | Agent | How "Start" reaches this protocol |
 |:--|:--|
-| **Claude Code** | Root `CLAUDE.md` instructs it; `/start` skill in `.claude/skills/start/` invokes it; role subagents (`product-manager`, `fullstack-developer`, `qa-tester`, `code-reviewer`, `security-auditor`, `tech-writer`) map to steps 3–7. |
+| **Claude Code** | Root `CLAUDE.md` instructs it; `/start` skill in `.claude/skills/start/` invokes it. The role files in `.claude/agents/` are the checklists for steps 3–7 — applied **inline** per § Do The Work Yourself, not spawned. |
 | **Cursor / Copilot / Windsurf / Aider / Antigravity** | Their rule files point to `AGENTS.md`, which points here (§ Autonomous Mode). |
 | **Schedulers / CI** | Any runner that can invoke an agent with the prompt "Start" gets one full cycle; run it on an interval for continuous evolution. |
 

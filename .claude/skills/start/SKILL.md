@@ -42,8 +42,13 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    never hand-merge; never reset/re-seed the shared DB while other agents' claims are active;
    after any rebase, grep FEATURE_LEDGER for your routes and shrink the batch if
    another agent already shipped part of it.
-4. **Plan** with the `product-manager` subagent (registry duplicate-check, stories,
-   acceptance criteria, Definition of Done).
+4. **Plan** wearing the product-manager hat YOURSELF, inline (registry duplicate-check,
+   stories, acceptance criteria, Definition of Done) — do NOT spawn the
+   product-manager agent. **Binding (AUTOPILOT § Do The Work Yourself)**: every role
+   in this cycle is a checklist you apply in the main thread, not a subagent to call.
+   Spawning is allowed only for a large genuinely-parallel chunk (e.g. the whole UI
+   stage while you build the API) or on explicit user request; one hop max, no
+   agent-coordinating-agents, and every spawn must be justified in the final report.
 5. **Build a BATCH end-to-end** — minimum **20–40+ distinct features or 5,000–10,000+
    LOC per cycle** (hit at least one floor; verify vs SPRINT_TRACKER/FEATURE_LEDGER at
    record time and extend the cycle with the next sub-domain slice if under; more is
@@ -64,10 +69,12 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    gate (`npx playwright test smoke`), and one manual pass over the accumulated
    deferred scopes; on green, reset the counter and stamp `lastMilestoneCommit`.
    A red milestone gate is P0 within that same cycle.
-7. **Review** per tier: FAST → self-review of the diff vs the Critical Rules;
-   MILESTONE → `code-reviewer` subagent over the accumulated diff since
-   `lastMilestoneCommit`. The `security-auditor` pass on auth/tenancy/permission-
-   sensitive changes applies in EVERY tier.
+7. **Review** per tier, inline: FAST → self-review of the diff vs the Critical Rules;
+   MILESTONE → run the code-reviewer checklist yourself over the accumulated diff
+   since `lastMilestoneCommit` (spawning `code-reviewer` is not permitted for this).
+   Auth/tenancy/permission-sensitive changes additionally get the security-auditor
+   pass in EVERY tier — inline on FAST cycles; at MILESTONE it may run as a subagent
+   (the one standing exception).
 8. **Record (documentation gate — commit is FORBIDDEN until the tier's set is done)**:
    FAST cycle: CHANGELOG entry; MODULE_REGISTRY claim move; regenerate
    `feature-ledger.mjs`, `sprint-tracker.mjs`; MODULE_FOCUS § 6 row; release the lock
