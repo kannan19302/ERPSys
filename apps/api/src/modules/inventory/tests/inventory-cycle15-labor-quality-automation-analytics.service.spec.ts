@@ -168,7 +168,7 @@ describe('SupplierQualityService', () => {
   it('createCar: uses $transaction and returns car', async () => {
     const { prisma } = await import('@unerp/database');
     vi.mocked(prisma.supplierNcr.findFirst).mockResolvedValue({ id: 'n1', status: 'OPEN' } as never);
-    vi.mocked(prisma.$transaction).mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma));
+    vi.mocked(prisma.$transaction).mockResolvedValue([{ id: 'car1' }, {}] as any);
     vi.mocked(prisma.supplierCarRequest.create).mockResolvedValue({ id: 'car1' } as never);
     vi.mocked(prisma.supplierNcr.update).mockResolvedValue({} as never);
     const res = await svc.createCar(TENANT, { ncrId: 'n1' });

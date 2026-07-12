@@ -42,6 +42,7 @@ import { FixedAssetsModule } from './modules/fixed-assets/fixed-assets.module';
 import { InventoryLogisticsModule } from './modules/inventory/inventory-logistics.module';
 import { QualityComplianceModule } from './modules/inventory/quality-compliance.module';
 import { WarehouseOpsModule } from './modules/inventory/warehouse-ops.module';
+import { LotSerialTrackingModule } from './modules/inventory/lot-serial-tracking.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { WarehouseOpsModule } from './modules/inventory/warehouse-ops.module';
     InventoryLogisticsModule,
     QualityComplianceModule,
     WarehouseOpsModule,
+    LotSerialTrackingModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

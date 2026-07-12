@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T16:25:20.749Z
+> Last generated: 2026-07-12T17:02:20.827Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2220 features** across 33 modules
+## System total: **2248 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 314 |
+| [inventory](#inventory) | 342 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-314 features
+342 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2005,6 +2005,34 @@
 | POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
+| GET | `/inventory/lot-serial/dashboard` | — | — |
+| GET | `/inventory/lot-serial/expiry-report` | — | — |
+| GET | `/inventory/lot-serial/batches` | — | — |
+| GET | `/inventory/lot-serial/batches/:id` | — | — |
+| POST | `/inventory/lot-serial/batches` | — | — |
+| PATCH | `/inventory/lot-serial/batches/:id/quarantine` | — | — |
+| PATCH | `/inventory/lot-serial/batches/:id/release-quarantine` | — | — |
+| PATCH | `/inventory/lot-serial/batches/:id/expire` | — | — |
+| GET | `/inventory/lot-serial/batches/:id/movements` | — | — |
+| POST | `/inventory/lot-serial/lot-movements` | — | — |
+| GET | `/inventory/lot-serial/serials` | — | — |
+| GET | `/inventory/lot-serial/serials/:id` | — | — |
+| POST | `/inventory/lot-serial/serials` | — | — |
+| PATCH | `/inventory/lot-serial/serials/:id/sold` | — | — |
+| PATCH | `/inventory/lot-serial/serials/:id/returned` | — | — |
+| PATCH | `/inventory/lot-serial/serials/:id/scrap` | — | — |
+| POST | `/inventory/lot-serial/pick-suggestions/generate` | — | — |
+| GET | `/inventory/lot-serial/pick-suggestions` | — | — |
+| PATCH | `/inventory/lot-serial/pick-suggestions/:id/confirm` | — | — |
+| PATCH | `/inventory/lot-serial/pick-suggestions/:id/cancel` | — | — |
+| POST | `/inventory/lot-serial/expiry-alerts/generate` | — | — |
+| GET | `/inventory/lot-serial/expiry-alerts` | — | — |
+| PATCH | `/inventory/lot-serial/expiry-alerts/:id/acknowledge` | — | — |
+| GET | `/inventory/lot-serial/quarantine` | — | — |
+| GET | `/inventory/lot-serial/quarantine/:id` | — | — |
+| POST | `/inventory/lot-serial/quarantine` | — | — |
+| PATCH | `/inventory/lot-serial/quarantine/:id/release` | — | — |
+| PATCH | `/inventory/lot-serial/quarantine/:id/scrap` | — | — |
 | GET | `/inventory/quality-compliance/capas` | — | — |
 | GET | `/inventory/quality-compliance/capas/dashboard` | — | — |
 | GET | `/inventory/quality-compliance/capas/:id` | — | — |

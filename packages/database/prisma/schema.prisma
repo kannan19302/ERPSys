@@ -12069,3 +12069,100 @@ model PackingCarton {
   @@index([sessionId])
   @@map("packing_cartons")
 }
+
+
+// ════════════════════════════════════════════════
+// INVENTORY CYCLE 19 — LOT/SERIAL TRACKING ENHANCEMENTS
+// ════════════════════════════════════════════════
+
+/// Enhanced lot movement ledger — full audit trail per lot/batch.
+model LotMovement {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  batchId       String   @map("batch_id")
+  movementType  String   @map("movement_type")  // RECEIPT | PICK | TRANSFER | ADJUSTMENT | RETURN | SCRAP
+  qty           Decimal  @db.Decimal(15, 4)
+  uom           String   @default("EA")
+  referenceType String?  @map("reference_type")
+  referenceId   String?  @map("reference_id")
+  performedBy   String?  @map("performed_by")
+  fromBin       String?  @map("from_bin")
+  toBin         String?  @map("to_bin")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([batchId])
+  @@index([tenantId, movementType])
+  @@map("lot_movements")
+}
+
+/// FEFO/FIFO pick suggestion — records which lot/serial to pick for an order line.
+model PickSuggestion {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  productId     String   @map("product_id")
+  warehouseId   String   @map("warehouse_id")
+  strategy      String   @default("FEFO")  // FEFO | FIFO | LIFO | MANUAL
+  referenceType String?  @map("reference_type")
+  referenceId   String?  @map("reference_id")
+  batchId       String?  @map("batch_id")
+  serialId      String?  @map("serial_id")
+  suggestedQty  Decimal  @db.Decimal(15, 4) @map("suggested_qty")
+  pickedQty     Decimal  @default(0) @db.Decimal(15, 4) @map("picked_qty")
+  status        String   @default("PENDING")  // PENDING | CONFIRMED | CANCELLED
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([tenantId, referenceId])
+  @@map("pick_suggestions")
+}
+
+/// Expiry alert — tracks near-expiry batches requiring action.
+model ExpiryAlert {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  batchId         String    @map("batch_id")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  expiryDate      DateTime  @map("expiry_date")
+  daysUntilExpiry Int       @map("days_until_expiry")
+  qty             Decimal   @db.Decimal(15, 4)
+  severity        String    @default("WARNING")  // WARNING | CRITICAL | EXPIRED
+  acknowledged    Boolean   @default(false)
+  acknowledgedBy  String?   @map("acknowledged_by")
+  acknowledgedAt  DateTime? @map("acknowledged_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, severity])
+  @@index([tenantId, acknowledged])
+  @@map("expiry_alerts")
+}
+
+/// Quarantine order — places a batch/lot under quarantine with release workflow.
+model QuarantineOrder {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orderNumber     String    @map("order_number")
+  batchId         String?   @map("batch_id")
+  serialId        String?   @map("serial_id")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  qty             Decimal   @db.Decimal(15, 4)
+  reason          String
+  status          String    @default("ACTIVE")  // ACTIVE | RELEASED | SCRAPPED
+  quarantinedBy   String?   @map("quarantined_by")
+  releasedBy      String?   @map("released_by")
+  releasedAt      DateTime? @map("released_at")
+  releaseNotes    String?   @map("release_notes")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("quarantine_orders")
+}

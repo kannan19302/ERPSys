@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle19-lot-serial-tracking",
-  "agent": "claude-sonnet-cycle19",
-  "scope": "Lot/serial number tracking, expiry management, FEFO/FIFO picking, serialized inventory moves",
-  "acquiredAt": "2026-07-12T16:48:19.001Z",
-  "heartbeatAt": "2026-07-12T16:48:19.015Z",
-  "pid": 2254
-}
