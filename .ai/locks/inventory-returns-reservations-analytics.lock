@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-returns-reservations-analytics",
+  "agent": "claude-code-cli-main",
+  "scope": "Inventory: RMA/returns, stock reservations, traceability/analytics reports, low-stock/expiry alerts",
+  "acquiredAt": "2026-07-12T01:57:32.888Z",
+  "heartbeatAt": "2026-07-12T01:57:32.888Z",
+  "pid": 30368
+}
