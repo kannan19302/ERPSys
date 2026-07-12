@@ -1,7 +1,9 @@
 {
   "ranAt": "2026-07-12T03:43:48.000Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": [
+    "Inventory: dynamic slotting optimization (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+  ],
   "lastMilestoneCommit": "e91df65",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",

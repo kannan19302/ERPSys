@@ -2,6 +2,26 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: dynamic slotting optimization
+
+FAST cycle (Inventory cycle 11, branch `claude/new-session-7x5xhc`),
+closing the Gap Backlog item logged in cycle 10's discovery pass.
+
+- **API**: `getSlottingRecommendations` computes pick frequency per product
+  from `StockLedgerEntry` OUT movements over a trailing window, flags
+  fast-movers (top-quintile) outside zone A for a move-to-preferred-zone
+  recommendation, and zero-pick items occupying zone A for a
+  move-to-reserve recommendation. `executeSlottingMove` relocates the
+  `InventoryItemBin` quantity between bins (real stock move; no new
+  schema).
+- **UI**: `/inventory/slotting`, wired into
+  `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 6 new unit tests; inventory suite 176/176 passing.
+- **Gates**: scoped typecheck clean; full turbo typecheck/API suite/E2E
+  deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 0→1, reset by
+  this session's third milestone gate).
+- Module count 149→151.
+
 ## [2026-07-12] Inventory: cross-docking
 
 FAST cycle (Inventory cycle 10, branch `claude/new-session-7x5xhc`).

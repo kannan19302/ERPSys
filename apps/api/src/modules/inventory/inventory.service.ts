@@ -2334,6 +2334,86 @@ export class InventoryService {
     });
   }
 
+  // ─── DYNAMIC SLOTTING OPTIMIZATION ────────────────────
+
+  /**
+   * Recommends re-slotting: fast-moving products (high pick frequency over the trailing window)
+   * that aren't in a preferred zone ("A" — closest to packing, by convention) get a move-to-A
+   * recommendation; slow movers currently occupying zone A get a move-to-reserve recommendation.
+   * Per 2026 WMS market benchmarking (Manhattan Active WMS), confirmed via discovery pass.
+   */
+  async getSlottingRecommendations(tenantId: string, warehouseId: string, sinceDays = 30) {
+    const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
+
+    const [pickFrequency, binAssignments, preferredBins, reserveBins] = await Promise.all([
+      prisma.stockLedgerEntry.groupBy({
+        by: ['productId'],
+        where: { tenantId, warehouseId, createdAt: { gte: since }, quantity: { lt: 0 } },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryItemBin.findMany({
+        where: { tenantId, warehouseId },
+        include: { product: true, binLocation: true },
+      }),
+      prisma.binLocation.findMany({ where: { tenantId, warehouseId, zone: 'A', isActive: true } }),
+      prisma.binLocation.findMany({ where: { tenantId, warehouseId, zone: { not: 'A' }, isActive: true } }),
+    ]);
+
+    const pickFreqByProduct = new Map(pickFrequency.map((f) => [f.productId, Math.abs(Number(f._sum.quantity ?? 0))]));
+    const frequencies = Array.from(pickFreqByProduct.values()).sort((a, b) => b - a);
+    const fastMoverThreshold = frequencies[Math.floor(frequencies.length * 0.2)] ?? 0;
+
+    const recommendations: Array<{ productId: string; productName: string; currentBinCode: string; currentZone: string; pickFrequency: number; recommendation: string; suggestedBinCode: string | null }> = [];
+
+    for (const assignment of binAssignments) {
+      const freq = pickFreqByProduct.get(assignment.productId) ?? 0;
+      const isFastMover = freq > 0 && freq >= fastMoverThreshold;
+      const inZoneA = assignment.binLocation.zone === 'A';
+
+      if (isFastMover && !inZoneA && preferredBins.length > 0) {
+        recommendations.push({
+          productId: assignment.productId,
+          productName: assignment.product.name,
+          currentBinCode: assignment.binLocation.code,
+          currentZone: assignment.binLocation.zone,
+          pickFrequency: freq,
+          recommendation: 'MOVE_TO_PREFERRED_ZONE',
+          suggestedBinCode: preferredBins[0]!.code,
+        });
+      } else if (!isFastMover && inZoneA && freq === 0 && reserveBins.length > 0) {
+        recommendations.push({
+          productId: assignment.productId,
+          productName: assignment.product.name,
+          currentBinCode: assignment.binLocation.code,
+          currentZone: assignment.binLocation.zone,
+          pickFrequency: freq,
+          recommendation: 'MOVE_TO_RESERVE_ZONE',
+          suggestedBinCode: reserveBins[0]!.code,
+        });
+      }
+    }
+
+    return { warehouseId, windowDays: sinceDays, count: recommendations.length, recommendations };
+  }
+
+  /** Executes a slotting move: relocates a product's bin-level quantity from one bin to another (real stock move, no new schema). */
+  async executeSlottingMove(tenantId: string, productId: string, warehouseId: string, fromBinId: string, toBinId: string) {
+    const fromAssignment = await prisma.inventoryItemBin.findFirst({ where: { tenantId, productId, warehouseId, binLocationId: fromBinId } });
+    if (!fromAssignment) throw new NotFoundException('Source bin assignment not found');
+    if (Number(fromAssignment.quantity) <= 0) throw new BadRequestException('Source bin has no quantity to move');
+
+    const qty = fromAssignment.quantity;
+
+    return prisma.$transaction(async (tx) => {
+      await tx.inventoryItemBin.update({ where: { id: fromAssignment.id }, data: { quantity: 0 } });
+      return tx.inventoryItemBin.upsert({
+        where: { tenantId_productId_warehouseId_binLocationId: { tenantId, productId, warehouseId, binLocationId: toBinId } },
+        update: { quantity: { increment: qty } },
+        create: { tenantId, productId, warehouseId, binLocationId: toBinId, quantity: qty },
+      });
+    });
+  }
+
   // ─── CROSS-DOCKING ────────────────────────────────────
 
   /**

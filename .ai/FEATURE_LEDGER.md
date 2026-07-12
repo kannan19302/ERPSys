@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T03:42:19.936Z
+> Last generated: 2026-07-12T03:49:11.202Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2055 features** across 33 modules
+## System total: **2057 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 149 |
+| [inventory](#inventory) | 151 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-149 features
+151 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1880,6 +1880,8 @@
 | GET | `/inventory/putaway-tasks/suggest-bin/:inventoryItemId` | Suggest putaway bin for an inventory item (zone-based optimization) | `inventory.stock.read` |
 | POST | `/inventory/putaway-tasks` | Create putaway task | `inventory.stock.read` |
 | POST | `/inventory/putaway-tasks/:id/complete` | Complete putaway task (barcode scan confirm) | `inventory.stock.create` |
+| GET | `/inventory/slotting/recommendations` | Get dynamic slotting recommendations for a warehouse | `inventory.stock.read` |
+| POST | `/inventory/slotting/execute-move` | Execute a slotting move (relocate bin-level quantity) | `inventory.stock.read` |
 | GET | `/inventory/cross-dock/opportunities` | Get cross-dock opportunities (inbound receipts that can bypass storage) | `inventory.stock.read` |
 | POST | `/inventory/cross-dock/execute` | Execute a cross-dock (receipt bypasses storage straight to an open pick) | `inventory.stock.read` |
 | POST | `/inventory/batches/:id/quarantine` | Quarantine a batch | `inventory.stock.update` |

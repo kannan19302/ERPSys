@@ -926,6 +926,28 @@ export class InventoryController {
     return this.inventoryService.completePutawayTask(req.user.tenantId, id, dto);
   }
 
+  // ─── DYNAMIC SLOTTING OPTIMIZATION ────────────────────
+
+  @ApiOperation({ summary: 'Get dynamic slotting recommendations for a warehouse' })
+  @Get('slotting/recommendations')
+  @Permissions('inventory.stock.read')
+  async getSlottingRecommendations(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId: string, @Query('sinceDays') sinceDays?: string) {
+    return this.inventoryService.getSlottingRecommendations(req.user.tenantId, warehouseId, sinceDays ? parseInt(sinceDays) : undefined);
+  }
+
+  @ApiOperation({ summary: 'Execute a slotting move (relocate bin-level quantity)' })
+  @Post('slotting/execute-move')
+  @Permissions('inventory.stock.update')
+  async executeSlottingMove(
+    @Req() req: AuthenticatedRequest,
+    @Query('productId') productId: string,
+    @Query('warehouseId') warehouseId: string,
+    @Query('fromBinId') fromBinId: string,
+    @Query('toBinId') toBinId: string,
+  ) {
+    return this.inventoryService.executeSlottingMove(req.user.tenantId, productId, warehouseId, fromBinId, toBinId);
+  }
+
   // ─── CROSS-DOCKING ────────────────────────────────────
 
   @ApiOperation({ summary: 'Get cross-dock opportunities (inbound receipts that can bypass storage)' })

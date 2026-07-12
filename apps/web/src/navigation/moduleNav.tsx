@@ -316,6 +316,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'QA Templates & Routing', href: '/inventory/qa-templates', icon: ShieldCheck },
             { name: 'Expiry, FEFO & Recalls', href: '/inventory/expiry-fefo', icon: AlertTriangle },
             { name: 'Cross-Docking', href: '/inventory/cross-dock', icon: Link },
+            { name: 'Slotting Optimization', href: '/inventory/slotting', icon: MapPin },
           ]
         },
         {
