@@ -1928,6 +1928,21 @@ export const receiveWithTraceabilitySchema = z.object({
 });
 export type ReceiveWithTraceabilityInput = z.infer<typeof receiveWithTraceabilitySchema>;
 
+export const createDockAppointmentSchema = z.object({
+  warehouseId: z.string().min(1, 'Warehouse ID is required'),
+  dockDoor: z.string().min(1, 'Dock door is required').max(50),
+  type: z.enum(['INBOUND', 'OUTBOUND']),
+  carrierName: z.string().min(1, 'Carrier name is required').max(200),
+  referenceType: z.enum(['STOCK_ENTRY', 'PICK_WAVE']).optional().nullable(),
+  referenceId: z.string().optional().nullable(),
+  scheduledAt: z.string().min(1, 'Scheduled time is required'),
+  durationMinutes: z.number().int().positive().default(60),
+  notes: z.string().max(1000).optional().nullable(),
+});
+export type CreateDockAppointmentInput = z.infer<typeof createDockAppointmentSchema>;
+export const updateDockAppointmentSchema = createDockAppointmentSchema.partial();
+export type UpdateDockAppointmentInput = z.infer<typeof updateDockAppointmentSchema>;
+
 export const createQAInspectionTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   productId: z.string().optional().nullable(),

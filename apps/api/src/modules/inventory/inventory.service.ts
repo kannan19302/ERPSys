@@ -14,6 +14,7 @@ import {
   CreateStockReservationInput,
   AssembleKitInput, DisassembleKitInput,
   CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
+  CreateDockAppointmentInput, UpdateDockAppointmentInput,
   CreatePickWaveInput, RecordPickInput,
   CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
   ReceiveWithTraceabilityInput,
@@ -2332,6 +2333,128 @@ export class InventoryService {
       where: { id },
       data: { status: 'COMPLETE', completedAt: new Date() },
     });
+  }
+
+  // ─── YARD / DOCK APPOINTMENT SCHEDULING ───────────────
+
+  async getDockAppointments(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string; dockDoor?: string } = {}) {
+    const where: any = { tenantId };
+    if (params.warehouseId) where.warehouseId = params.warehouseId;
+    if (params.status) where.status = params.status;
+    if (params.dockDoor) where.dockDoor = params.dockDoor;
+    const { skip, take } = buildPaginationValues(params);
+    const [appointments, total] = await Promise.all([
+      prisma.dockAppointment.findMany({ where, skip, take, orderBy: { scheduledAt: 'asc' } }),
+      prisma.dockAppointment.count({ where }),
+    ]);
+    return paginatedResult(appointments, total, params);
+  }
+
+  /** Rejects a new appointment that overlaps an existing one on the same dock door. */
+  private async assertNoDockConflict(tenantId: string, warehouseId: string, dockDoor: string, scheduledAt: Date, durationMinutes: number, excludeId?: string) {
+    const start = scheduledAt;
+    const end = new Date(scheduledAt.getTime() + durationMinutes * 60 * 1000);
+
+    const candidates = await prisma.dockAppointment.findMany({
+      where: {
+        tenantId, warehouseId, dockDoor,
+        status: { notIn: ['CANCELLED', 'COMPLETED', 'NO_SHOW'] },
+        ...(excludeId ? { id: { not: excludeId } } : {}),
+      },
+    });
+
+    for (const existing of candidates) {
+      const existingStart = existing.scheduledAt;
+      const existingEnd = new Date(existing.scheduledAt.getTime() + existing.durationMinutes * 60 * 1000);
+      if (start < existingEnd && end > existingStart) {
+        throw new BadRequestException(`Dock door ${dockDoor} is already booked from ${existingStart.toISOString()} to ${existingEnd.toISOString()}`);
+      }
+    }
+  }
+
+  async createDockAppointment(tenantId: string, orgId: string, dto: CreateDockAppointmentInput) {
+    const resolvedOrgId = await resolveOrgId(tenantId, orgId);
+    const scheduledAt = new Date(dto.scheduledAt);
+    await this.assertNoDockConflict(tenantId, dto.warehouseId, dto.dockDoor, scheduledAt, dto.durationMinutes);
+
+    return prisma.dockAppointment.create({
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        warehouseId: dto.warehouseId,
+        dockDoor: dto.dockDoor,
+        type: dto.type,
+        carrierName: dto.carrierName,
+        referenceType: dto.referenceType,
+        referenceId: dto.referenceId,
+        scheduledAt,
+        durationMinutes: dto.durationMinutes,
+        notes: dto.notes,
+        status: 'SCHEDULED',
+      },
+    });
+  }
+
+  async updateDockAppointment(tenantId: string, id: string, dto: UpdateDockAppointmentInput) {
+    const existing = await prisma.dockAppointment.findFirst({ where: { id, tenantId } });
+    if (!existing) throw new NotFoundException('Dock appointment not found');
+
+    const scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : existing.scheduledAt;
+    const durationMinutes = dto.durationMinutes ?? existing.durationMinutes;
+    const dockDoor = dto.dockDoor ?? existing.dockDoor;
+    const warehouseId = dto.warehouseId ?? existing.warehouseId;
+
+    if (dto.scheduledAt || dto.durationMinutes || dto.dockDoor || dto.warehouseId) {
+      await this.assertNoDockConflict(tenantId, warehouseId, dockDoor, scheduledAt, durationMinutes, id);
+    }
+
+    return prisma.dockAppointment.update({
+      where: { id },
+      data: { ...dto, scheduledAt, durationMinutes, dockDoor, warehouseId },
+    });
+  }
+
+  async checkInDockAppointment(tenantId: string, id: string) {
+    const appointment = await prisma.dockAppointment.findFirst({ where: { id, tenantId, status: 'SCHEDULED' } });
+    if (!appointment) throw new NotFoundException('Scheduled dock appointment not found');
+    return prisma.dockAppointment.update({ where: { id }, data: { status: 'CHECKED_IN', checkedInAt: new Date() } });
+  }
+
+  async completeDockAppointment(tenantId: string, id: string) {
+    const appointment = await prisma.dockAppointment.findFirst({ where: { id, tenantId } });
+    if (!appointment) throw new NotFoundException('Dock appointment not found');
+    if (appointment.status === 'COMPLETED') throw new BadRequestException('Dock appointment already completed');
+    return prisma.dockAppointment.update({ where: { id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+  }
+
+  async cancelDockAppointment(tenantId: string, id: string) {
+    const appointment = await prisma.dockAppointment.findFirst({ where: { id, tenantId } });
+    if (!appointment) throw new NotFoundException('Dock appointment not found');
+    return prisma.dockAppointment.update({ where: { id }, data: { status: 'CANCELLED' } });
+  }
+
+  /** Utilization by dock door over a window — booked minutes vs. total available minutes. */
+  async getDockUtilization(tenantId: string, warehouseId: string, sinceDays = 7) {
+    const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
+    const appointments = await prisma.dockAppointment.findMany({
+      where: { tenantId, warehouseId, scheduledAt: { gte: since }, status: { notIn: ['CANCELLED', 'NO_SHOW'] } },
+    });
+
+    const byDoor = new Map<string, number>();
+    for (const a of appointments) {
+      byDoor.set(a.dockDoor, (byDoor.get(a.dockDoor) ?? 0) + a.durationMinutes);
+    }
+
+    const totalAvailableMinutes = sinceDays * 24 * 60;
+    return {
+      warehouseId,
+      windowDays: sinceDays,
+      doors: Array.from(byDoor.entries()).map(([dockDoor, bookedMinutes]) => ({
+        dockDoor,
+        bookedMinutes,
+        utilizationPct: Number(((bookedMinutes / totalAvailableMinutes) * 100).toFixed(2)),
+      })),
+    };
   }
 
   // ─── DYNAMIC SLOTTING OPTIMIZATION ────────────────────

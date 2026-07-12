@@ -22,6 +22,7 @@ import {
   CreateStockReservationInput,
   AssembleKitInput, DisassembleKitInput,
   CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
+  CreateDockAppointmentInput, UpdateDockAppointmentInput,
   CreatePickWaveInput, RecordPickInput,
   CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
   ReceiveWithTraceabilityInput,
@@ -924,6 +925,69 @@ export class InventoryController {
   @Permissions('inventory.stock.update')
   async completePutawayTask(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CompletePutawayTaskInput) {
     return this.inventoryService.completePutawayTask(req.user.tenantId, id, dto);
+  }
+
+  // ─── YARD / DOCK APPOINTMENT SCHEDULING ───────────────
+
+  @ApiOperation({ summary: 'Get dock appointments' })
+  @Get('dock-appointments')
+  @Permissions('inventory.stock.read')
+  async getDockAppointments(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('status') status?: string,
+    @Query('dockDoor') dockDoor?: string,
+  ) {
+    return this.inventoryService.getDockAppointments(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      warehouseId, status, dockDoor,
+    });
+  }
+
+  @ApiOperation({ summary: 'Create dock appointment (conflict-checked)' })
+  @Post('dock-appointments')
+  @Permissions('inventory.stock.create')
+  async createDockAppointment(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateDockAppointmentInput) {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.inventoryService.createDockAppointment(req.user.tenantId, orgId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update dock appointment (re-validates conflicts if rescheduled)' })
+  @Patch('dock-appointments/:id')
+  @Permissions('inventory.stock.update')
+  async updateDockAppointment(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateDockAppointmentInput) {
+    return this.inventoryService.updateDockAppointment(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Check in a dock appointment' })
+  @Post('dock-appointments/:id/check-in')
+  @Permissions('inventory.stock.update')
+  async checkInDockAppointment(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.checkInDockAppointment(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Complete a dock appointment' })
+  @Post('dock-appointments/:id/complete')
+  @Permissions('inventory.stock.update')
+  async completeDockAppointment(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.completeDockAppointment(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Cancel a dock appointment' })
+  @Post('dock-appointments/:id/cancel')
+  @Permissions('inventory.stock.update')
+  async cancelDockAppointment(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.inventoryService.cancelDockAppointment(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Get dock door utilization report' })
+  @Get('dock-appointments/utilization')
+  @Permissions('inventory.stock.read')
+  async getDockUtilization(@Req() req: AuthenticatedRequest, @Query('warehouseId') warehouseId: string, @Query('sinceDays') sinceDays?: string) {
+    return this.inventoryService.getDockUtilization(req.user.tenantId, warehouseId, sinceDays ? parseInt(sinceDays) : undefined);
   }
 
   // ─── DYNAMIC SLOTTING OPTIMIZATION ────────────────────

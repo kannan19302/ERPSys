@@ -1034,6 +1034,7 @@ model Warehouse {
   stockReservations    StockReservation[]
   transferApprovalRules TransferApprovalRule[]
   pickWaves            PickWave[]
+  dockAppointments     DockAppointment[]
   consignmentStocks    ConsignmentStock[]
 
   @@unique([tenantId, orgId, code])
@@ -3311,6 +3312,33 @@ model ConsignmentConsumption {
   @@index([tenantId])
   @@index([consignmentStockId])
   @@map("consignment_consumptions")
+}
+
+model DockAppointment {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  warehouseId     String    @map("warehouse_id")
+  dockDoor        String    @map("dock_door")
+  type            String // INBOUND, OUTBOUND
+  carrierName     String    @map("carrier_name")
+  referenceType   String?   @map("reference_type") // STOCK_ENTRY, PICK_WAVE
+  referenceId     String?   @map("reference_id")
+  scheduledAt     DateTime  @map("scheduled_at")
+  durationMinutes Int       @default(60) @map("duration_minutes")
+  status          String    @default("SCHEDULED") // SCHEDULED, CHECKED_IN, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  checkedInAt     DateTime? @map("checked_in_at")
+  completedAt     DateTime? @map("completed_at")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, warehouseId, dockDoor])
+  @@index([tenantId, status])
+  @@map("dock_appointments")
 }
 
 // ════════════════════════════════════════════════

@@ -172,6 +172,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'expiry-fefo': 'Expiry, FEFO & Recalls',
   'cross-dock': 'Cross-Docking',
   slotting: 'Slotting Optimization',
+  'dock-scheduling': 'Dock Scheduling',
   'qa-inspections': 'QA Inspections',
   'serial-numbers': 'Serial Numbers',
   'stock-entries': 'Stock Entries',

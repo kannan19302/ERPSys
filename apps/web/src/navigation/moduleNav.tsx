@@ -317,6 +317,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Expiry, FEFO & Recalls', href: '/inventory/expiry-fefo', icon: AlertTriangle },
             { name: 'Cross-Docking', href: '/inventory/cross-dock', icon: Link },
             { name: 'Slotting Optimization', href: '/inventory/slotting', icon: MapPin },
+            { name: 'Dock Scheduling', href: '/inventory/dock-scheduling', icon: Truck },
           ]
         },
         {

@@ -2,6 +2,24 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: yard/dock appointment scheduling
+
+FAST cycle (Inventory cycle 12, branch `claude/new-session-7x5xhc`).
+
+- **DB**: `DockAppointment` model (migration
+  `20260712035133_inventory_dock_scheduling`).
+- **API**: conflict-checked dock-door booking (create/update both
+  re-validate against overlapping time windows on the same door; different
+  doors never conflict), full lifecycle (schedule → check-in →
+  complete/cancel), dock-utilization report (booked minutes vs. total
+  available minutes per door over a trailing window).
+- **UI**: `/inventory/dock-scheduling`, wired into
+  `moduleNav`/`SEGMENT_NAMES`/`SMOKE_ROUTES`.
+- **Tests**: 8 new unit tests; inventory suite 184/184 passing.
+- **Gates**: scoped typecheck clean; full turbo typecheck/API suite/E2E
+  deferred per FAST-cycle tier (`fastCyclesSinceFullGate` 1→2).
+- Module count 151→158.
+
 ## [2026-07-12] Inventory: dynamic slotting optimization
 
 FAST cycle (Inventory cycle 11, branch `claude/new-session-7x5xhc`),
