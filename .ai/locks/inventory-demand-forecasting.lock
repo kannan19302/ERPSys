@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-demand-forecasting",
+  "agent": "claude-fullstack-goal-start-ib21qn",
+  "scope": "Inventory & Supply Chain: demand forecasting (historical-sales-based reorder forecasting, seasonal demand patterns, forecast accuracy tracking) + returns-to-vendor workflow",
+  "acquiredAt": "2026-07-12T06:39:23.158Z",
+  "heartbeatAt": "2026-07-12T06:39:23.169Z",
+  "pid": 5856
+}
