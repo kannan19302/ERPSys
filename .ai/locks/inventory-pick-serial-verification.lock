@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-pick-serial-verification",
+  "agent": "claude-code-cli-main",
+  "scope": "Inventory: serial/lot verification at pick-wave scan-out",
+  "acquiredAt": "2026-07-12T03:31:39.439Z",
+  "heartbeatAt": "2026-07-12T03:31:39.439Z",
+  "pid": 11453
+}
