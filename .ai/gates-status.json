@@ -1,22 +1,25 @@
 {
-  "ranAt": "2026-07-04T04:24:19.536Z",
-  "fastCyclesSinceFullGate": 3,
-  "deferredScopes": [
-    "Inventory: cycle count schedules/accuracy KPI + license plates + directed put-away (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: batch quarantine/traceability + stock reservations + ABC/dead-stock/turnover analytics (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: kit assembly/disassembly + availability + cost rollup (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
-  ],
-  "lastMilestoneCommit": "9884ffb",
+  "ranAt": "2026-07-12T02:20:09.000Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "1792ad9",
   "typecheck": {
-    "label": "Typecheck (tsc --noEmit, all packages)",
+    "label": "Typecheck (turbo, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 20
+    "seconds": 29
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 40
+    "seconds": 32,
+    "files": 187,
+    "cases": 2394
+  },
+  "e2e": {
+    "label": "Playwright smoke gate",
+    "pass": null,
+    "note": "[e2e-unverified] DB seed blocked by RLS: prisma/seed.ts inserts the super-admin user without setting app.current_tenant_id via SET LOCAL (the app's own request-scoped mechanism), so the tenant_isolation_policy WITH CHECK rejects the insert. Did not weaken RLS to force it through. Next agent with a working seed path (or a seed.ts fix that wraps inserts in a transaction setting app.current_tenant_id) should run the smoke gate."
   }
 }
