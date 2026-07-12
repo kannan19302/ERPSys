@@ -2,6 +2,24 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory Cycle 16: ASN, Inbound/Outbound Logistics & Carrier Management
+
+FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 0→1.
+
+- **DB**: 7 new models — `ShippingCarrier`, `CarrierServiceLevel`, `AdvanceShippingNotice`,
+  `ASNLineItem`, `InboundShipment`, `OutboundShipment`, `ShipmentTrackingEvent`
+  (migration `20260712110000_inventory_cycle16_asn_carrier_logistics`).
+- **API** (`InventoryLogisticsModule`): 26 endpoints under `/inventory/logistics` —
+  carrier CRUD + deactivation, service levels per carrier, ASN lifecycle
+  (PENDING→IN_TRANSIT→ARRIVED→RECEIVED/CANCELLED), inbound shipment state machine
+  (EXPECTED→IN_TRANSIT→ARRIVED→RECEIVING→COMPLETE/EXCEPTION), outbound shipment
+  lifecycle (PENDING→PACKED→SHIPPED→IN_TRANSIT→DELIVERED/EXCEPTION/RETURNED),
+  tracking events for both directions, shipment exceptions list, logistics dashboard.
+- **UI**: `/inventory/logistics` — 5-tab page: Dashboard (stat cards + exceptions),
+  ASNs table, Inbound Shipments table, Outbound Shipments table, Carriers table;
+  wired into `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 22 unit tests covering all service methods (`inventory-cycle16-logistics.service.spec.ts`).
+
 ## [2026-07-12] Inventory: Returns-to-Vendor (RTV) workflow
 
 FAST cycle (Inventory cycle 14, branch `claude/goal-start-ib21qn`). **Milestone gate triggered** (fastCyclesSinceFullGate 3→4).

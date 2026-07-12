@@ -63,6 +63,7 @@
 
 | Agent | Session started | Scope (module/files) | Branch | Status |
 |:---|:---|:---|:---|:---|
+| claude-code-web-goal-start-ib21qn | 2026-07-12 | Inventory cycle 16 — ASN, inbound logistics, carrier management, outbound shipment tracking | claude/goal-start-ib21qn | 🟡 IN PROGRESS |
 
 ### 2. Up Next (unclaimed work, pick from the top)
 
@@ -109,6 +110,10 @@
 5v. **Inventory: yard/dock appointment scheduling** — ✅ **SHIPPED 2026-07-12**: conflict-checked dock-door booking, check-in/complete lifecycle, utilization reporting (`/inventory/dock-scheduling`). Part of the 90→200 plan.
 5w. **Inventory: demand forecasting + reorder suggestions** — ✅ **SHIPPED 2026-07-12**: moving-average/exponential-smoothing forecast runs over historical outbound demand, reorder-point-derived suggestions with accept/dismiss lifecycle (`/inventory/demand-forecasting`). Part of the 90→200 plan. Otherwise-exhausted named gaps: ZPL/PDF barcode label rendering (needs a barcode-symbology dependency decision), mobile-optimized scan-first UI (touch/camera-scan layout). Next cycle: run another discovery pass on a different Inventory sub-domain (e.g. labor management, returns-to-vendor workflow).
 5d. **[benchmark] Inventory: directed put-away, bin/license-plate management & mobile barcode scanning workflows** — ✅ **PARTIAL, 2026-07-12**: license-plate pallet/container tracking (create/move/close lifecycle) + directed put-away tasks with zone-based bin suggestion (most free capacity) + barcode-scan-style completion shipped (`/inventory/license-plates`). Still open: mobile-optimized scan-first UI flow, pick/pack scanning (only receive/putaway covered so far). Leaders: Manhattan Active WMS, NetSuite WMS. RICE: Reach 45 · Impact 7 · Confidence 50% · Effort 6 = **26**. (Same discovery pass.)
+
+**[pending]** Inventory cycle 15 — labor management, supplier quality (NCR/CAR/scorecards), bin replenishment automation rules, inventory holds, advanced analytics (health score, slow-movers, DIO, fill rate, volume trends, shrinkage, capacity, multi-warehouse) — ~40 features, 8 new services+controllers+UI pages written but NOT committed (prior session, working-tree only). Do NOT auto-complete — human-gated per AUTOPILOT §0.
+
+5x. **[benchmark] Inventory: advance shipping notices (ASN), inbound logistics & carrier management** — real WMS gap (NetSuite WMS, Manhattan Active, Fishbowl all support). RICE: Reach 60 · Impact 8 · Confidence 65% · Effort 5 = **62**. 🟡 CLAIMED (cycle 16).
 
 Add new items here as they're identified (PM scoping, bug reports, user asks, and the mandatory per-cycle market-discovery pass in `.ai/AUTOPILOT.md` Step 9a → `.ai/MARKET_BENCHMARK.md`). Don't let this list go stale — prune completed/obsolete entries.
 

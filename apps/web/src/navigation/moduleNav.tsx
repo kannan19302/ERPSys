@@ -320,6 +320,11 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Dock Scheduling', href: '/inventory/dock-scheduling', icon: Truck },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
             { name: 'Returns to Vendor (RTV)', href: '/inventory/rtv', icon: RotateCcw },
+            { name: 'Labor Management', href: '/inventory/labor-management', icon: Users },
+            { name: 'Supplier Quality', href: '/inventory/supplier-quality', icon: ClipboardList },
+            { name: 'Automation Rules', href: '/inventory/automation-rules', icon: Zap },
+            { name: 'Inventory Analytics', href: '/inventory/inventory-analytics', icon: BarChart3 },
+            { name: 'Logistics & Shipping', href: '/inventory/logistics', icon: Truck },
           ]
         },
         {

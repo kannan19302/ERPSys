@@ -332,6 +332,9 @@ model Vendor {
   vendorRmaRequests         VendorRmaRequest[]
   subcontractingOrders      SubcontractingOrder[]
   blanketPurchaseAgreements BlanketPurchaseAgreement[]
+  supplierScorecards        SupplierScorecard[]
+  supplierNcrs              SupplierNcr[]
+  supplierCarRequests       SupplierCarRequest[]
   portalUsers               VendorPortalUser[]
   auctionBids               RFQAuctionBid[]
   contracts                 Contract[]
@@ -11373,4 +11376,374 @@ model VendorReturnShipment {
   @@unique([tenantId, shipmentNumber])
   @@index([tenantId])
   @@map("vendor_return_shipments")
+}
+
+// ─── Inventory Cycle 15: Labor Management ────────────────────────────────────
+
+/// Standard time per task type used to measure worker productivity.
+model LaborStandard {
+  id           String  @id @default(cuid())
+  tenantId     String  @map("tenant_id")
+  taskType     String  @map("task_type")   // PICK, PACK, RECEIVE, PUTAWAY, CYCLE_COUNT, TRANSFER
+  description  String?
+  standardMins Decimal @map("standard_mins") @db.Decimal(8, 2)
+  warehouseId  String? @map("warehouse_id")
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, taskType, warehouseId])
+  @@index([tenantId])
+  @@map("labor_standards")
+}
+
+/// Individual task assigned to a warehouse worker.
+model WorkerTaskLog {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  workerId     String    @map("worker_id")       // User or employee ID
+  workerName   String    @map("worker_name")
+  warehouseId  String    @map("warehouse_id")
+  taskType     String    @map("task_type")
+  referenceId  String?   @map("reference_id")    // PickWave ID, transfer ID, etc.
+  referenceType String?  @map("reference_type")
+  startedAt    DateTime  @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  durationMins Decimal?  @map("duration_mins") @db.Decimal(8, 2)
+  standardMins Decimal?  @map("standard_mins") @db.Decimal(8, 2)
+  efficiencyPct Decimal? @map("efficiency_pct") @db.Decimal(6, 2)
+  notes        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, workerId])
+  @@index([tenantId, warehouseId])
+  @@map("worker_task_logs")
+}
+
+/// Recurring shift template for warehouse staffing (not the HR ShiftSchedule).
+model WarehouseShiftTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  warehouseId String   @map("warehouse_id")
+  shiftName   String   @map("shift_name")
+  dayOfWeek   Int      @map("day_of_week")   // 0=Sun..6=Sat
+  startTime   String   @map("start_time")    // HH:MM
+  endTime     String   @map("end_time")      // HH:MM
+  headcount   Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, warehouseId])
+  @@map("warehouse_shift_templates")
+}
+
+// ─── Inventory Cycle 15: Supplier Quality Management ─────────────────────────
+
+/// Periodic quality/delivery scorecard for a vendor.
+model SupplierScorecard {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  vendorId         String   @map("vendor_id")
+  periodStart      DateTime @map("period_start")
+  periodEnd        DateTime @map("period_end")
+  qualityScore     Decimal? @map("quality_score") @db.Decimal(5, 2)       // 0-100
+  deliveryScore    Decimal? @map("delivery_score") @db.Decimal(5, 2)
+  fillRateScore    Decimal? @map("fill_rate_score") @db.Decimal(5, 2)
+  overallScore     Decimal? @map("overall_score") @db.Decimal(5, 2)
+  onTimeDeliveries Int      @default(0) @map("on_time_deliveries")
+  lateDeliveries   Int      @default(0) @map("late_deliveries")
+  defectiveUnits   Int      @default(0) @map("defective_units")
+  totalUnitsReceived Int    @default(0) @map("total_units_received")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@unique([tenantId, vendorId, periodStart])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("supplier_scorecards")
+}
+
+/// Vendor-specific NCR raised against an incoming shipment (distinct from manufacturing NCR).
+model SupplierNcr {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  ncrNumber      String    @map("ncr_number")
+  vendorId       String    @map("vendor_id")
+  productId      String?   @map("product_id")
+  warehouseId    String?   @map("warehouse_id")
+  referenceId    String?   @map("reference_id")    // PO / GRN
+  referenceType  String?   @map("reference_type")
+  defectType     String    @map("defect_type")     // DIMENSIONAL, COSMETIC, FUNCTIONAL, DOCUMENTATION
+  severity       String    @default("MINOR")        // MINOR, MAJOR, CRITICAL
+  defectQty      Int       @default(0) @map("defect_qty")
+  totalQty       Int       @default(0) @map("total_qty")
+  description    String
+  status         String    @default("OPEN")         // OPEN, UNDER_REVIEW, CAR_RAISED, CLOSED
+  resolution     String?
+  raisedBy       String?   @map("raised_by")
+  closedAt       DateTime? @map("closed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  vendor      Vendor                @relation(fields: [vendorId], references: [id])
+  carRequests SupplierCarRequest[]
+
+  @@unique([tenantId, ncrNumber])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("supplier_ncrs")
+}
+
+/// Corrective action request linked to a supplier NCR.
+model SupplierCarRequest {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  carNumber        String    @map("car_number")
+  ncrId            String    @map("ncr_id")
+  vendorId         String    @map("vendor_id")
+  rootCause        String?   @map("root_cause")
+  correctiveAction String?   @map("corrective_action")
+  dueDate          DateTime? @map("due_date")
+  status           String    @default("PENDING")   // PENDING, SUBMITTED, ACCEPTED, REJECTED, CLOSED
+  vendorResponse   String?   @map("vendor_response")
+  respondedAt      DateTime? @map("responded_at")
+  closedAt         DateTime? @map("closed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  ncr    SupplierNcr @relation(fields: [ncrId], references: [id])
+  vendor Vendor      @relation(fields: [vendorId], references: [id])
+
+  @@unique([tenantId, carNumber])
+  @@index([tenantId])
+  @@index([tenantId, ncrId])
+  @@map("supplier_car_requests")
+}
+
+// ─── Inventory Cycle 15: Automation Rules ────────────────────────────────────
+
+/// Rule that triggers automatic stock replenishment from reserve to active bin.
+model BinReplenishmentRule {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  warehouseId   String   @map("warehouse_id")
+  productId     String   @map("product_id")
+  activeBinCode String   @map("active_bin_code")
+  reserveBinCode String  @map("reserve_bin_code")
+  triggerQty    Decimal  @map("trigger_qty") @db.Decimal(15, 4)     // replenish when active drops below
+  replenishQty  Decimal  @map("replenish_qty") @db.Decimal(15, 4)   // move this many units
+  isActive      Boolean  @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, warehouseId, productId, activeBinCode])
+  @@index([tenantId])
+  @@map("bin_replenishment_rules")
+}
+
+/// Inventory hold placed on items (quality hold, customs hold, damage hold).
+model InventoryHold {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  holdNumber  String    @map("hold_number")
+  warehouseId String    @map("warehouse_id")
+  productId   String?   @map("product_id")
+  batchId     String?   @map("batch_id")
+  serialId    String?   @map("serial_id")
+  holdType    String    @map("hold_type")    // QUALITY, CUSTOMS, DAMAGE, RECALL, FINANCIAL
+  reason      String
+  heldQty     Decimal   @map("held_qty") @db.Decimal(15, 4)
+  status      String    @default("ACTIVE")   // ACTIVE, RELEASED, CANCELLED
+  raisedBy    String?   @map("raised_by")
+  releasedBy  String?   @map("released_by")
+  releasedAt  DateTime? @map("released_at")
+  releaseNotes String?  @map("release_notes")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, holdNumber])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("inventory_holds")
+}
+
+// ─── Inventory Cycle 16: ASN, Inbound/Outbound Logistics, Carrier Management ─
+
+/// Carrier master — shipping carriers used for inbound/outbound shipments.
+model ShippingCarrier {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  code          String
+  name          String
+  trackingUrl   String?  @map("tracking_url")  // e.g. https://track.ups.com/track/input?tracknum={trackingNumber}
+  contactEmail  String?  @map("contact_email")
+  contactPhone  String?  @map("contact_phone")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  serviceLevels   CarrierServiceLevel[]
+  inboundShipments  InboundShipment[]
+  outboundShipments OutboundShipment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("shipping_carriers")
+}
+
+/// Carrier service level — e.g. Ground, 2-Day, Overnight.
+model CarrierServiceLevel {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  carrierId   String   @map("carrier_id")
+  code        String
+  name        String
+  transitDays Int?     @map("transit_days")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  carrier ShippingCarrier @relation(fields: [carrierId], references: [id])
+
+  @@unique([tenantId, carrierId, code])
+  @@index([tenantId])
+  @@map("carrier_service_levels")
+}
+
+/// Advance Shipping Notice — vendor notifies warehouse before shipment arrives.
+model AdvanceShippingNotice {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  asnNumber       String    @map("asn_number")
+  vendorId        String    @map("vendor_id")
+  purchaseOrderId String?   @map("purchase_order_id")
+  warehouseId     String    @map("warehouse_id")
+  shipDate        DateTime? @map("ship_date")
+  expectedArrival DateTime? @map("expected_arrival")
+  status          String    @default("PENDING")  // PENDING, IN_TRANSIT, ARRIVED, RECEIVED, CANCELLED
+  carrierName     String?   @map("carrier_name")
+  trackingNumber  String?   @map("tracking_number")
+  notes           String?
+  receivedAt      DateTime? @map("received_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  lineItems ASNLineItem[]
+
+  @@unique([tenantId, asnNumber])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("advance_shipping_notices")
+}
+
+/// Line item within an ASN.
+model ASNLineItem {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  asnId       String   @map("asn_id")
+  productId   String   @map("product_id")
+  expectedQty Decimal  @map("expected_qty") @db.Decimal(15, 4)
+  receivedQty Decimal  @default(0) @map("received_qty") @db.Decimal(15, 4)
+  uom         String   @default("EA")
+  lotNumber   String?  @map("lot_number")
+  serialNos   String?  @map("serial_nos")   // JSON array of serial numbers
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  asn AdvanceShippingNotice @relation(fields: [asnId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([asnId])
+  @@map("asn_line_items")
+}
+
+/// Inbound shipment — physical carrier shipment bringing goods to the warehouse.
+model InboundShipment {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  shipmentNumber  String    @map("shipment_number")
+  asnId           String?   @map("asn_id")
+  carrierId       String?   @map("carrier_id")
+  warehouseId     String    @map("warehouse_id")
+  trackingNumber  String?   @map("tracking_number")
+  status          String    @default("EXPECTED")  // EXPECTED, IN_TRANSIT, ARRIVED, RECEIVING, COMPLETE, EXCEPTION
+  expectedArrival DateTime? @map("expected_arrival")
+  arrivedAt       DateTime? @map("arrived_at")
+  completedAt     DateTime? @map("completed_at")
+  totalPallets    Int?      @map("total_pallets")
+  totalCartons    Int?      @map("total_cartons")
+  totalWeight     Decimal?  @map("total_weight") @db.Decimal(15, 3)
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  carrier         ShippingCarrier? @relation(fields: [carrierId], references: [id])
+  trackingEvents  ShipmentTrackingEvent[]
+
+  @@unique([tenantId, shipmentNumber])
+  @@index([tenantId])
+  @@map("inbound_shipments")
+}
+
+/// Outbound shipment — carrier shipment for a sales order delivery.
+model OutboundShipment {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  shipmentNumber String    @map("shipment_number")
+  salesOrderId   String?   @map("sales_order_id")
+  carrierId      String?   @map("carrier_id")
+  serviceLevelId String?   @map("service_level_id")
+  warehouseId    String    @map("warehouse_id")
+  trackingNumber String?   @map("tracking_number")
+  status         String    @default("PENDING")  // PENDING, PACKED, SHIPPED, IN_TRANSIT, DELIVERED, EXCEPTION, RETURNED
+  shipDate       DateTime? @map("ship_date")
+  estimatedDelivery DateTime? @map("estimated_delivery")
+  deliveredAt    DateTime? @map("delivered_at")
+  totalPallets   Int?      @map("total_pallets")
+  totalCartons   Int?      @map("total_cartons")
+  totalWeight    Decimal?  @map("total_weight") @db.Decimal(15, 3)
+  labelUrl       String?   @map("label_url")
+  proofOfDelivery String?  @map("proof_of_delivery")
+  recipientName  String?   @map("recipient_name")
+  recipientAddr  String?   @map("recipient_addr")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  carrier        ShippingCarrier? @relation(fields: [carrierId], references: [id])
+  trackingEvents ShipmentTrackingEvent[]
+
+  @@unique([tenantId, shipmentNumber])
+  @@index([tenantId])
+  @@index([tenantId, salesOrderId])
+  @@map("outbound_shipments")
+}
+
+/// Tracking milestone event for inbound or outbound shipments.
+model ShipmentTrackingEvent {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  inboundShipmentId  String? @map("inbound_shipment_id")
+  outboundShipmentId String? @map("outbound_shipment_id")
+  eventCode        String    @map("event_code")   // PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, EXCEPTION
+  description      String
+  location         String?
+  occurredAt       DateTime  @map("occurred_at")
+  source           String    @default("MANUAL")   // MANUAL, CARRIER_API, WEBHOOK
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  inboundShipment  InboundShipment?  @relation(fields: [inboundShipmentId], references: [id])
+  outboundShipment OutboundShipment? @relation(fields: [outboundShipmentId], references: [id])
+
+  @@index([tenantId])
+  @@index([inboundShipmentId])
+  @@index([outboundShipmentId])
+  @@map("shipment_tracking_events")
 }
