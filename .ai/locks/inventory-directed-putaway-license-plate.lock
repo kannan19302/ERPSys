@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-directed-putaway-license-plate",
+  "agent": "claude-code-cli-autopilot",
+  "scope": "Inventory: directed put-away, license-plate/pallet tracking, barcode scan receive/pick/pack, zone-based bin optimization",
+  "acquiredAt": "2026-07-12T01:38:39.090Z",
+  "heartbeatAt": "2026-07-12T01:38:39.090Z",
+  "pid": 9168
+}
