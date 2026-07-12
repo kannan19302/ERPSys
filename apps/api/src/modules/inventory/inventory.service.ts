@@ -1715,9 +1715,38 @@ export class InventoryService {
     });
   }
 
+  /**
+   * Recording a pick with scanned serials verifies each one is a real AVAILABLE serial for this
+   * product before marking it RESERVED — a scan-out counterpart to receiveWithTraceability's
+   * scan-in capture, closing the receive/pick/pack barcode-workflow loop end to end.
+   */
   async recordPick(tenantId: string, waveItemId: string, dto: RecordPickInput) {
     const item = await prisma.pickWaveItem.findFirst({ where: { id: waveItemId, tenantId } });
     if (!item) throw new NotFoundException('Pick wave item not found');
+
+    const scannedSerials = dto.scannedSerials ?? [];
+    if (scannedSerials.length > 0) {
+      const serials = await prisma.serialNumber.findMany({
+        where: { tenantId, productId: item.productId, serialNo: { in: scannedSerials } },
+      });
+      const found = new Map(serials.map((s) => [s.serialNo, s]));
+
+      for (const scanned of scannedSerials) {
+        const serial = found.get(scanned);
+        if (!serial) throw new BadRequestException(`Serial ${scanned} does not belong to this product`);
+        if (serial.status !== 'AVAILABLE') throw new BadRequestException(`Serial ${scanned} is not AVAILABLE (status: ${serial.status})`);
+      }
+
+      await prisma.$transaction(async (tx) => {
+        for (const scanned of scannedSerials) {
+          const serial = found.get(scanned)!;
+          await tx.serialNumber.update({ where: { id: serial.id }, data: { status: 'RESERVED' } });
+          await tx.serialNumberHistory.create({
+            data: { tenantId, serialNumberId: serial.id, action: 'TRANSFERRED', fromStatus: 'AVAILABLE', toStatus: 'RESERVED', reference: waveItemId, notes: 'Scanned at pick-wave pick' },
+          });
+        }
+      });
+    }
 
     const status = dto.pickedQty >= Number(item.quantity) ? 'PICKED' : 'SHORT';
     return prisma.pickWaveItem.update({

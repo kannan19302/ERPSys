@@ -1,9 +1,10 @@
 {
   "ranAt": "2026-07-12T03:06:16.000Z",
-  "fastCyclesSinceFullGate": 2,
+  "fastCyclesSinceFullGate": 3,
   "deferredScopes": [
     "Inventory: expiring-batches/FEFO report + FEFO pick suggestion + recall notice (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
-    "Inventory: pick-wave/sales-order fulfillment integration + kit BOM versioning (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
+    "Inventory: pick-wave/sales-order fulfillment integration + kit BOM versioning (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred",
+    "Inventory: scan-out serial verification at pick (2026-07-12) — scoped typecheck+vitest only, full turbo typecheck/API suite/E2E deferred"
   ],
   "lastMilestoneCommit": "5eb3603",
   "typecheck": {

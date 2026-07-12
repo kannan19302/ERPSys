@@ -2,6 +2,22 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-12] Inventory: scan-out serial verification at pick (closes the barcode-scan workflow loop)
+
+FAST cycle (Inventory cycle 9, branch `claude/new-session-7x5xhc`).
+
+- **API**: `recordPick` now accepts optional `scannedSerials`; each is
+  verified as a real AVAILABLE serial belonging to the wave item's product
+  before being marked RESERVED (with a `SerialNumberHistory` audit row) —
+  rejects unknown or non-AVAILABLE serials instead of accepting anything
+  scanned. Pairs with cycle 5's `receiveWithTraceability` (scan-in capture)
+  to close the receive→pick→pack barcode-scanning loop end to end.
+- **UI**: scan input added to the existing `/inventory/pick-waves` page.
+- **Tests**: 4 new unit tests; inventory suite 164/164 passing.
+- **Ledger note**: no new endpoint (deepens an existing one), so the raw
+  feature count holds at 147 — a real functional gap closed even though
+  the endpoint-counting ledger method doesn't move.
+
 ## [2026-07-12] Fix: seed script now honors RLS; discovered a deeper P0 — RLS is disconnected from the app's request pipeline
 
 Not an Inventory feature cycle — a P1 tooling fix plus a P0 cross-cutting

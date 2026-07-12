@@ -1897,6 +1897,7 @@ export type CreatePickWaveInput = z.infer<typeof createPickWaveSchema>;
 
 export const recordPickSchema = z.object({
   pickedQty: z.number().nonnegative(),
+  scannedSerials: z.array(z.string()).optional().default([]),
 });
 export type RecordPickInput = z.infer<typeof recordPickSchema>;
 

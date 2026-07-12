@@ -28,6 +28,7 @@ export default function PickWavesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [warehouseId, setWarehouseId] = useState('');
+  const [scanInputs, setScanInputs] = useState<Record<string, string>>({});
   const [orderIds, setOrderIds] = useState('');
 
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -67,12 +68,12 @@ export default function PickWavesPage() {
     }
   };
 
-  const handleRecordPick = async (itemId: string, quantity: number) => {
+  const handleRecordPick = async (itemId: string, quantity: number, scannedSerials: string[] = []) => {
     try {
       const res = await fetch(`/api/v1/inventory/pick-waves/items/${itemId}/record-pick`, {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickedQty: quantity }),
+        body: JSON.stringify({ pickedQty: quantity, scannedSerials }),
       });
       if (!res.ok) throw new Error();
       if (selectedWave) {
@@ -143,10 +144,23 @@ export default function PickWavesPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 <div style={{ fontWeight: 'var(--weight-semibold)' }}>{selectedWave.waveNumber}</div>
                 {selectedWave.items.map((item) => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', fontSize: 'var(--text-sm)' }}>
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2)', borderBottom: '1px solid var(--color-border)', fontSize: 'var(--text-sm)', gap: 'var(--space-2)' }}>
                     <span>{item.product?.name} — bin {item.binLocation?.code || '—'}</span>
                     <span>{item.pickedQty}/{item.quantity}</span>
-                    <button onClick={() => handleRecordPick(item.id, Number(item.quantity))} className="frappe-btn frappe-btn-primary" style={{ padding: '4px 8px', fontSize: '11px' }}>Pick Full Qty</button>
+                    <input
+                      className="frappe-input"
+                      style={{ width: '140px', fontSize: '11px' }}
+                      placeholder="Scan serial(s), comma-sep"
+                      value={scanInputs[item.id] || ''}
+                      onChange={(e) => setScanInputs({ ...scanInputs, [item.id]: e.target.value })}
+                    />
+                    <button
+                      onClick={() => handleRecordPick(item.id, Number(item.quantity), (scanInputs[item.id] || '').split(',').map((s) => s.trim()).filter(Boolean))}
+                      className="frappe-btn frappe-btn-primary"
+                      style={{ padding: '4px 8px', fontSize: '11px' }}
+                    >
+                      Scan &amp; Pick Full Qty
+                    </button>
                   </div>
                 ))}
                 <Button variant="primary" onClick={() => handleComplete(selectedWave.id)}>Complete Wave</Button>
