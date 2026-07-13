@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle39-rop-safety-stock",
+  "agent": "claude-sonnet-4-6-session-2b8e0da4",
+  "scope": "Reorder Point & Safety Stock: statistical safety stock, ROP alerts, demand variability analysis",
+  "acquiredAt": "2026-07-13T09:48:47.151Z",
+  "heartbeatAt": "2026-07-13T09:48:47.152Z",
+  "pid": 22102
+}
