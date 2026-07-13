@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] MILESTONE Gate — Cycles 24–27
+
+Full turbo typecheck: PASS (34s). Full API unit suite: 210 files / 2800 tests — all PASS (48s). E2E: deferred (RLS/tenant-id pipeline blocker). fastCyclesSinceFullGate reset to 0. lastMilestoneCommit: cycle-27-asl.
+
 ## [2026-07-13] Inventory Cycle 27 — Approved Supplier List (ASL) & Vendor Item Catalog (FAST)
 
 5 DB models (ApprovedSupplier, SupplierPriceTier, AslChangeLog, VendorItemAttribute, AslComplianceRule) + 2 enums (AslStatus, AslChangeType); AslModule — 30+ endpoints covering full supplier qualification lifecycle (PENDING_APPROVAL→APPROVED/CONDITIONAL/DISQUALIFIED) with change-log on every status transition, preference ranking + set/unset-preferred, volume-break price tiers with effective-date ranges + qty-based price resolution, vendor item attributes (key-value upsert), compliance rules with min-vendor count + qualification + preferred requirements, per-product compliance check with issue list, vendor sourcing report (lowest price, shortest lead time), expiring-supplier scan, full dashboard. 4-tab Next.js UI. Nav, registry, smoke-route added. 22 unit tests pass. FAST gate: scoped typecheck clean.

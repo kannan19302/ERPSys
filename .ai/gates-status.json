@@ -1,26 +1,21 @@
 {
-  "ranAt": "2026-07-13T10:00:00.000Z",
-  "fastCyclesSinceFullGate": 4,
-  "deferredScopes": [
-    "inventory-cycle24-yard-management",
-    "inventory-cycle25-stock-take",
-    "inventory-cycle26-hazmat",
-    "inventory-cycle27-asl"
-  ],
-  "lastMilestoneCommit": "cycle-23-transfer-orders",
+  "ranAt": "2026-07-13T10:30:00.000Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "cycle-27-asl",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 30
+    "seconds": 34
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 46,
-    "files": 206,
-    "cases": 2692
+    "seconds": 48,
+    "files": 210,
+    "cases": 2800
   },
   "e2e": {
     "label": "Playwright smoke gate",
