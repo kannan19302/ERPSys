@@ -336,6 +336,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Hazmat', href: '/inventory/hazmat', icon: AlertTriangle },
             { name: 'Approved Suppliers', href: '/inventory/asl', icon: CheckSquare },
             { name: 'Container & Pallets', href: '/inventory/container-pallet', icon: Package },
+            { name: 'Catch-Weight & Recall', href: '/inventory/catch-weight-recall', icon: AlertTriangle },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
           ]
         },

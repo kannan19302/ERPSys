@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T08:14:39.675Z
+> Last generated: 2026-07-13T08:24:55.411Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2452 features** across 33 modules
+## System total: **2475 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 546 |
+| [inventory](#inventory) | 569 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-546 features
+569 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1804,6 +1804,29 @@
 | POST | `/inventory/asl/compliance/rules` | — | — |
 | GET | `/inventory/asl/compliance/check/:productId` | — | — |
 | GET | `/inventory/asl/sourcing-report/:productId` | — | — |
+| GET | `/inventory/catch-weight-recall/dashboard` | — | — |
+| GET | `/inventory/catch-weight-recall/configs` | — | — |
+| GET | `/inventory/catch-weight-recall/configs/:id` | — | — |
+| POST | `/inventory/catch-weight-recall/configs` | — | — |
+| PATCH | `/inventory/catch-weight-recall/configs/:id/deactivate` | — | — |
+| GET | `/inventory/catch-weight-recall/readings` | — | — |
+| POST | `/inventory/catch-weight-recall/readings` | — | — |
+| GET | `/inventory/catch-weight-recall/configs/:id/variance-summary` | — | — |
+| GET | `/inventory/catch-weight-recall/tares` | — | — |
+| POST | `/inventory/catch-weight-recall/tares` | — | — |
+| GET | `/inventory/catch-weight-recall/recalls` | — | — |
+| GET | `/inventory/catch-weight-recall/recalls/:id` | — | — |
+| GET | `/inventory/catch-weight-recall/recalls/:id/impact-report` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/issue` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/complete` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/cancel` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/affected-stock` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/affected-stock/:stockId/quarantine` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/send-notices` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices/:noticeId/acknowledge` | — | — |
+| POST | `/inventory/catch-weight-recall/recalls/:id/disposal-records` | — | — |
 | GET | `/inventory/container-pallet/dashboard` | — | — |
 | GET | `/inventory/container-pallet/pallet-types` | — | — |
 | POST | `/inventory/container-pallet/pallet-types` | — | — |

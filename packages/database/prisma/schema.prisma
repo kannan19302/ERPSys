@@ -13439,3 +13439,196 @@ model LoadCartonItem {
   @@index([cartonId])
   @@map("load_carton_items")
 }
+
+
+// ════════════════════════════════════════════════
+// INVENTORY CYCLE 29 — CATCH-WEIGHT & PRODUCT RECALL
+// ════════════════════════════════════════════════
+
+enum CatchWeightVariance {
+  WITHIN_TOLERANCE
+  OVER_TOLERANCE
+  UNDER_TOLERANCE
+}
+
+enum RecallClass {
+  CLASS_I
+  CLASS_II
+  CLASS_III
+}
+
+enum RecallStatus {
+  DRAFT
+  ISSUED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RecallActionType {
+  RETURN
+  DESTROY
+  REWORK
+  QUARANTINE
+}
+
+/// Catch-weight configuration per product — defines tare, tolerance bands, pricing basis.
+model CatchWeightConfig {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  productId           String   @map("product_id")
+  nominalWeightKg     Decimal  @map("nominal_weight_kg") @db.Decimal(10, 4)
+  tolerancePctPlus    Decimal  @default(5) @map("tolerance_pct_plus") @db.Decimal(5, 2)
+  tolerancePctMinus   Decimal  @default(5) @map("tolerance_pct_minus") @db.Decimal(5, 2)
+  pricingBasis        String   @default("ACTUAL_WEIGHT") @map("pricing_basis")
+  tareWeightKg        Decimal  @default(0) @map("tare_weight_kg") @db.Decimal(10, 4)
+  uomNominal          String   @default("UNIT") @map("uom_nominal")
+  uomWeight           String   @default("KG") @map("uom_weight")
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  weightReadings      CatchWeightReading[]
+
+  @@unique([tenantId, productId])
+  @@index([tenantId])
+  @@map("catch_weight_configs")
+}
+
+/// Actual weight reading captured at receipt/pick/ship.
+model CatchWeightReading {
+  id              String               @id @default(cuid())
+  tenantId        String               @map("tenant_id")
+  configId        String               @map("config_id")
+  referenceType   String               @map("reference_type")   // RECEIPT | PICK | SHIPMENT | ADJUSTMENT
+  referenceId     String               @map("reference_id")
+  lotNumber       String?              @map("lot_number")
+  serialNumber    String?              @map("serial_number")
+  nominalQty      Decimal              @map("nominal_qty") @db.Decimal(15, 4)
+  actualWeightKg  Decimal              @map("actual_weight_kg") @db.Decimal(10, 4)
+  varianceKg      Decimal              @map("variance_kg") @db.Decimal(10, 4)
+  variancePct     Decimal              @map("variance_pct") @db.Decimal(7, 4)
+  varianceStatus  CatchWeightVariance  @map("variance_status")
+  scaleId         String?              @map("scale_id")
+  capturedAt      DateTime             @default(now()) @map("captured_at")
+  capturedBy      String               @map("captured_by")
+
+  config          CatchWeightConfig    @relation(fields: [configId], references: [id])
+
+  @@index([tenantId])
+  @@index([configId])
+  @@index([referenceType, referenceId])
+  @@map("catch_weight_readings")
+}
+
+/// Tare override per container type used with catch-weight products.
+model CatchWeightTare {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  containerLabel  String   @map("container_label")
+  tareWeightKg    Decimal  @map("tare_weight_kg") @db.Decimal(10, 4)
+  description     String?
+  active          Boolean  @default(true)
+
+  @@unique([tenantId, containerLabel])
+  @@index([tenantId])
+  @@map("catch_weight_tares")
+}
+
+/// Product recall notice issued by manufacturer / regulatory authority.
+model ProductRecall {
+  id                  String         @id @default(cuid())
+  tenantId            String         @map("tenant_id")
+  recallNumber        String         @map("recall_number")
+  productId           String         @map("product_id")
+  recallClass         RecallClass    @map("recall_class")
+  status              RecallStatus   @default(DRAFT)
+  title               String
+  reason              String
+  regulatoryRef       String?        @map("regulatory_ref")
+  affectedLotNumbers  String[]       @map("affected_lot_numbers")
+  affectedSerials     String[]       @map("affected_serials")
+  affectedDateFrom    DateTime?      @map("affected_date_from")
+  affectedDateTo      DateTime?      @map("affected_date_to")
+  actionRequired      RecallActionType @map("action_required")
+  issuedAt            DateTime?      @map("issued_at")
+  deadlineAt          DateTime?      @map("deadline_at")
+  completedAt         DateTime?      @map("completed_at")
+  totalUnitsAffected  Int            @default(0) @map("total_units_affected")
+  totalUnitsRecovered Int            @default(0) @map("total_units_recovered")
+  notifiedAt          DateTime?      @map("notified_at")
+  createdBy           String         @map("created_by")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  affectedStock       RecallAffectedStock[]
+  customerNotices     RecallCustomerNotice[]
+  disposalRecords     RecallDisposalRecord[]
+
+  @@unique([tenantId, recallNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("product_recalls")
+}
+
+/// Inventory units identified as affected by a recall.
+model RecallAffectedStock {
+  id              String        @id @default(cuid())
+  tenantId        String        @map("tenant_id")
+  recallId        String        @map("recall_id")
+  warehouseId     String        @map("warehouse_id")
+  locationBin     String?       @map("location_bin")
+  lotNumber       String?       @map("lot_number")
+  serialNumber    String?       @map("serial_number")
+  qtyAffected     Decimal       @map("qty_affected") @db.Decimal(15, 4)
+  qtyQuarantined  Decimal       @default(0) @map("qty_quarantined") @db.Decimal(15, 4)
+  qtyRecovered    Decimal       @default(0) @map("qty_recovered") @db.Decimal(15, 4)
+  quarantinedAt   DateTime?     @map("quarantined_at")
+
+  recall          ProductRecall @relation(fields: [recallId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([recallId])
+  @@map("recall_affected_stocks")
+}
+
+/// Customer notification record for a recall.
+model RecallCustomerNotice {
+  id              String        @id @default(cuid())
+  tenantId        String        @map("tenant_id")
+  recallId        String        @map("recall_id")
+  customerId      String        @map("customer_id")
+  customerName    String        @map("customer_name")
+  contactEmail    String?       @map("contact_email")
+  qtyShipped      Decimal       @map("qty_shipped") @db.Decimal(15, 4)
+  qtyReturned     Decimal       @default(0) @map("qty_returned") @db.Decimal(15, 4)
+  noticeSentAt    DateTime?     @map("notice_sent_at")
+  acknowledgedAt  DateTime?     @map("acknowledged_at")
+  notes           String?
+
+  recall          ProductRecall @relation(fields: [recallId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([recallId])
+  @@map("recall_customer_notices")
+}
+
+/// Disposal / destruction / rework record for recalled units.
+model RecallDisposalRecord {
+  id              String        @id @default(cuid())
+  tenantId        String        @map("tenant_id")
+  recallId        String        @map("recall_id")
+  actionType      RecallActionType @map("action_type")
+  qtyProcessed    Decimal       @map("qty_processed") @db.Decimal(15, 4)
+  disposalMethod  String?       @map("disposal_method")
+  authorizedBy    String        @map("authorized_by")
+  processedAt     DateTime      @default(now()) @map("processed_at")
+  certificateRef  String?       @map("certificate_ref")
+  notes           String?
+
+  recall          ProductRecall @relation(fields: [recallId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([recallId])
+  @@map("recall_disposal_records")
+}

@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 29 — Catch-Weight & Product Recall (FAST)
+
+DB: 7 models + 4 enums (CatchWeightConfig, CatchWeightReading, CatchWeightTare, ProductRecall, RecallAffectedStock, RecallCustomerNotice, RecallDisposalRecord + CatchWeightVariance, RecallClass, RecallStatus, RecallActionType); migration 20260713120000. API: CatchWeightRecallModule — catch-weight config upsert/deactivate, reading capture with tare deduction + automatic tolerance classification (WITHIN/OVER/UNDER), variance summary aggregation, tare library, recall lifecycle (DRAFT→ISSUED→IN_PROGRESS→COMPLETED/CANCELLED), affected-stock add + quarantine, customer notice add + bulk send + acknowledge, disposal record with recovery count, impact report, dashboard. 30+ endpoints, 19 tests pass. UI: 3-tab page (Dashboard, Catch-Weight, Recalls) with recall detail drill-down and inline lifecycle transitions. fastCyclesSinceFullGate: 2. +23 features, ~2400 LOC.
+
 ## [2026-07-13] Inventory Cycle 28 — Container & Pallet Management (FAST)
 
 DB: 9 models (PalletType, ContainerType, LoadPlan, LoadPlanPallet, LoadPlanItem, PackingPlan, LoadCarton, LoadCartonItem) + 4 enums (PalletTypeCategory, ContainerTypeCategory, LoadPlanStatus, PackingPlanStatus); migration 20260713110000. API: ContainerPalletService (dashboard, pallet-type CRUD, container-type CRUD, load-plan lifecycle DRAFT→OPTIMIZING→READY→IN_LOADING→LOADED→SHIPPED, pallet/item assignment + utilisation calc, packing-plan lifecycle DRAFT→CONFIRMED→PACKING→COMPLETED, carton seal/label/item operations) + 30+ controller endpoints; 23 tests pass. UI: 5-tab page (Dashboard, Pallet Types, Container Types, Load Plans, Packing Plans). Nav/registry/smoke updated. +82 features, ~4200 LOC. fastCyclesSinceFullGate: 1, deferredScopes: inventory-cycle28-container-pallet.

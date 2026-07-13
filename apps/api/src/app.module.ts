@@ -52,6 +52,7 @@ import { StockTakeModule } from './modules/inventory/stock-take.module';
 import { HazmatModule } from './modules/inventory/hazmat.module';
 import { AslModule } from './modules/inventory/asl.module';
 import { ContainerPalletModule } from './modules/inventory/container-pallet.module';
+import { CatchWeightRecallModule } from './modules/inventory/catch-weight-recall.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { ContainerPalletModule } from './modules/inventory/container-pallet.modu
     HazmatModule,
     AslModule,
     ContainerPalletModule,
+    CatchWeightRecallModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,
