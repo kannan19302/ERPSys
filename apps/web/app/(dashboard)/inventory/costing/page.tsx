@@ -1,0 +1,358 @@
+'use client';
+import { useState, useEffect, useCallback } from 'react';
+
+const BASE = '/api/inventory/costing';
+async function apiFetch(path: string, opts?: RequestInit) {
+  const res = await fetch(BASE + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+const TABS = ['Dashboard', 'Profiles', 'Cost Layers', 'Consume', 'Adjustments', 'Valuation'] as const;
+type Tab = typeof TABS[number];
+
+export default function CostingPage() {
+  const [tab, setTab] = useState<Tab>('Dashboard');
+  return (
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">Inventory Costing Methods</h1>
+      <div className="flex gap-2 border-b flex-wrap">
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            {t}
+          </button>
+        ))}
+      </div>
+      {tab === 'Dashboard' && <DashboardTab />}
+      {tab === 'Profiles' && <ProfilesTab />}
+      {tab === 'Cost Layers' && <CostLayersTab />}
+      {tab === 'Consume' && <ConsumeTab />}
+      {tab === 'Adjustments' && <AdjustmentsTab />}
+      {tab === 'Valuation' && <ValuationTab />}
+    </div>
+  );
+}
+
+function DashboardTab() {
+  const [stats, setStats] = useState<any>(null);
+  useEffect(() => { apiFetch('/dashboard').then(setStats).catch(console.error); }, []);
+  if (!stats) return <p className="text-sm text-gray-500">Loading…</p>;
+  const cards = [
+    ['Total Profiles', stats.totalProfiles], ['FIFO Profiles', stats.fifoProfiles],
+    ['WAC Profiles', stats.wacProfiles], ['LIFO Profiles', stats.lifoProfiles],
+    ['Total Adjustments', stats.totalAdjustments],
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      {cards.map(([label, value]) => (
+        <div key={label as string} className="bg-white border rounded-lg p-4 shadow-sm">
+          <p className="text-xs text-gray-500 mb-1">{label}</p>
+          <p className="text-2xl font-bold">{value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProfilesTab() {
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [form, setForm] = useState({ productId: '', warehouseId: '', method: 'WAC', standardCost: '', notes: '' });
+  const [msg, setMsg] = useState('');
+
+  const load = useCallback(() => {
+    apiFetch('/profiles').then(r => { setProfiles(r.items); setTotal(r.total); }).catch(console.error);
+  }, []);
+  useEffect(load, [load]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch('/profiles', {
+        method: 'POST',
+        body: JSON.stringify({ ...form, standardCost: form.standardCost ? +form.standardCost : undefined }),
+      });
+      setMsg('Profile saved'); setForm({ productId: '', warehouseId: '', method: 'WAC', standardCost: '', notes: '' }); load();
+    } catch (err: any) { setMsg(err.message); }
+  };
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={submit} className="bg-white border rounded-lg p-4 space-y-3">
+        <h2 className="font-semibold text-sm">Create / Update Cost Profile</h2>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-600">Product ID *</label>
+            <input className="w-full border rounded px-2 py-1 text-sm" value={form.productId}
+              onChange={e => setForm(f => ({ ...f, productId: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Warehouse ID *</label>
+            <input className="w-full border rounded px-2 py-1 text-sm" value={form.warehouseId}
+              onChange={e => setForm(f => ({ ...f, warehouseId: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Costing Method</label>
+            <select className="w-full border rounded px-2 py-1 text-sm" value={form.method}
+              onChange={e => setForm(f => ({ ...f, method: e.target.value }))}>
+              {['FIFO', 'LIFO', 'WAC', 'STANDARD', 'SPECIFIC'].map(m => <option key={m}>{m}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Standard Cost</label>
+            <input type="number" step="0.0001" className="w-full border rounded px-2 py-1 text-sm" value={form.standardCost}
+              onChange={e => setForm(f => ({ ...f, standardCost: e.target.value }))} />
+          </div>
+        </div>
+        <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded">Save Profile</button>
+        {msg && <p className="text-sm text-green-600">{msg}</p>}
+      </form>
+      <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="px-4 py-2 border-b text-sm font-medium">Profiles ({total})</div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50"><tr>{['Product', 'Warehouse', 'Method', 'Std Cost', 'Currency'].map(h => <th key={h} className="px-3 py-2 text-left text-xs">{h}</th>)}</tr></thead>
+          <tbody>
+            {profiles.map(p => (
+              <tr key={p.id} className="border-t">
+                <td className="px-3 py-2">{p.productId}</td>
+                <td className="px-3 py-2">{p.warehouseId}</td>
+                <td className="px-3 py-2"><span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">{p.method}</span></td>
+                <td className="px-3 py-2">{p.standardCost ?? '—'}</td>
+                <td className="px-3 py-2">{p.currency}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function CostLayersTab() {
+  const [profileId, setProfileId] = useState('');
+  const [layers, setLayers] = useState<any[]>([]);
+  const [form, setForm] = useState({ unitCost: '', qty: '', receiptRef: '' });
+  const [msg, setMsg] = useState('');
+
+  const load = useCallback(() => {
+    if (!profileId) return;
+    apiFetch(`/profiles/${profileId}/layers`).then(setLayers).catch(console.error);
+  }, [profileId]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch(`/profiles/${profileId}/layers`, {
+        method: 'POST',
+        body: JSON.stringify({ receiptDate: new Date(), unitCost: +form.unitCost, qty: +form.qty, receiptRef: form.receiptRef }),
+      });
+      setMsg('Layer added'); setForm({ unitCost: '', qty: '', receiptRef: '' }); load();
+    } catch (err: any) { setMsg(err.message); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <input className="border rounded px-2 py-1 text-sm" placeholder="Profile ID" value={profileId}
+          onChange={e => setProfileId(e.target.value)} />
+        <button onClick={load} className="px-3 py-1 bg-gray-100 text-sm rounded">Load</button>
+      </div>
+      {profileId && (
+        <form onSubmit={submit} className="bg-white border rounded-lg p-4 space-y-3 max-w-md">
+          <h2 className="font-semibold text-sm">Add Cost Layer (Receipt)</h2>
+          {([['Unit Cost *', 'unitCost', 'number'], ['Qty *', 'qty', 'number'], ['Receipt Ref', 'receiptRef', 'text']] as const).map(([label, key, type]) => (
+            <div key={key}>
+              <label className="text-xs text-gray-600">{label}</label>
+              <input type={type} className="w-full border rounded px-2 py-1 text-sm"
+                value={form[key]}
+                onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                required={label.includes('*')} />
+            </div>
+          ))}
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded">Add Layer</button>
+          {msg && <p className="text-sm text-green-600">{msg}</p>}
+        </form>
+      )}
+      <div className="bg-white border rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50"><tr>{['Receipt Date', 'Ref', 'Unit Cost', 'Rcvd Qty', 'Remaining', 'Status'].map(h => <th key={h} className="px-3 py-2 text-left text-xs">{h}</th>)}</tr></thead>
+          <tbody>
+            {layers.map(l => (
+              <tr key={l.id} className="border-t">
+                <td className="px-3 py-2 text-xs">{new Date(l.receiptDate).toLocaleDateString()}</td>
+                <td className="px-3 py-2 text-xs">{l.receiptRef ?? '—'}</td>
+                <td className="px-3 py-2">{l.unitCost}</td>
+                <td className="px-3 py-2">{l.qtyReceived}</td>
+                <td className="px-3 py-2">{l.qtyRemaining}</td>
+                <td className="px-3 py-2"><span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{l.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ConsumeTab() {
+  const [form, setForm] = useState({ profileId: '', qty: '', method: '' });
+  const [result, setResult] = useState<any>(null);
+  const [msg, setMsg] = useState('');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await apiFetch(`/profiles/${form.profileId}/consume`, {
+        method: 'POST',
+        body: JSON.stringify({ qty: +form.qty, method: form.method || undefined }),
+      });
+      setResult(res); setMsg('');
+    } catch (err: any) { setMsg(err.message); setResult(null); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={submit} className="bg-white border rounded-lg p-4 space-y-3 max-w-md">
+        <h2 className="font-semibold text-sm">Consume Cost Layers (COGS)</h2>
+        <div>
+          <label className="text-xs text-gray-600">Profile ID *</label>
+          <input className="w-full border rounded px-2 py-1 text-sm" value={form.profileId}
+            onChange={e => setForm(f => ({ ...f, profileId: e.target.value }))} required />
+        </div>
+        <div>
+          <label className="text-xs text-gray-600">Quantity *</label>
+          <input type="number" className="w-full border rounded px-2 py-1 text-sm" value={form.qty}
+            onChange={e => setForm(f => ({ ...f, qty: e.target.value }))} required />
+        </div>
+        <div>
+          <label className="text-xs text-gray-600">Override Method</label>
+          <select className="w-full border rounded px-2 py-1 text-sm" value={form.method}
+            onChange={e => setForm(f => ({ ...f, method: e.target.value }))}>
+            <option value="">Use profile default</option>
+            {['FIFO', 'LIFO', 'WAC'].map(m => <option key={m}>{m}</option>)}
+          </select>
+        </div>
+        <button type="submit" className="px-4 py-2 bg-orange-600 text-white text-sm rounded">Consume</button>
+        {msg && <p className="text-sm text-red-600">{msg}</p>}
+      </form>
+      {result && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm space-y-1">
+          <p><strong>Qty Consumed:</strong> {result.qtyConsumed}</p>
+          <p><strong>Total Cost:</strong> {result.totalCost.toFixed(4)}</p>
+          <p><strong>Avg Cost/Unit:</strong> {result.avgCost.toFixed(4)}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdjustmentsTab() {
+  const [adjustments, setAdjustments] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [form, setForm] = useState({ profileId: '', adjustmentType: 'MANUAL', amount: '', reason: '' });
+  const [msg, setMsg] = useState('');
+
+  const load = useCallback(() => {
+    apiFetch('/adjustments').then(r => { setAdjustments(r.items); setTotal(r.total); }).catch(console.error);
+  }, []);
+  useEffect(load, [load]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch('/adjustments', { method: 'POST', body: JSON.stringify({ ...form, amount: +form.amount }) });
+      setMsg('Adjustment created'); setForm({ profileId: '', adjustmentType: 'MANUAL', amount: '', reason: '' }); load();
+    } catch (err: any) { setMsg(err.message); }
+  };
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={submit} className="bg-white border rounded-lg p-4 space-y-3 max-w-lg">
+        <h2 className="font-semibold text-sm">Create Cost Adjustment</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-gray-600">Profile ID *</label>
+            <input className="w-full border rounded px-2 py-1 text-sm" value={form.profileId}
+              onChange={e => setForm(f => ({ ...f, profileId: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Type</label>
+            <select className="w-full border rounded px-2 py-1 text-sm" value={form.adjustmentType}
+              onChange={e => setForm(f => ({ ...f, adjustmentType: e.target.value }))}>
+              {['PURCHASE_PRICE_VARIANCE', 'FREIGHT_ABSORPTION', 'OVERHEAD_ABSORPTION', 'WRITE_DOWN', 'MANUAL'].map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Amount *</label>
+            <input type="number" step="0.01" className="w-full border rounded px-2 py-1 text-sm" value={form.amount}
+              onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Reason *</label>
+            <input className="w-full border rounded px-2 py-1 text-sm" value={form.reason}
+              onChange={e => setForm(f => ({ ...f, reason: e.target.value }))} required />
+          </div>
+        </div>
+        <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded">Create Adjustment</button>
+        {msg && <p className="text-sm text-green-600">{msg}</p>}
+      </form>
+      <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="px-4 py-2 border-b text-sm font-medium">Adjustments ({total})</div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50"><tr>{['Adj #', 'Type', 'Amount', 'Reason', 'Date'].map(h => <th key={h} className="px-3 py-2 text-left text-xs">{h}</th>)}</tr></thead>
+          <tbody>
+            {adjustments.map(a => (
+              <tr key={a.id} className="border-t">
+                <td className="px-3 py-2 font-mono">{a.adjustmentNumber}</td>
+                <td className="px-3 py-2 text-xs">{a.adjustmentType}</td>
+                <td className="px-3 py-2">{a.amount}</td>
+                <td className="px-3 py-2">{a.reason}</td>
+                <td className="px-3 py-2 text-xs text-gray-500">{new Date(a.adjustedAt).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ValuationTab() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [productId, setProductId] = useState('');
+
+  const load = useCallback(() => {
+    const qs = productId ? `?productId=${productId}` : '';
+    apiFetch(`/valuation${qs}`).then(setRows).catch(console.error);
+  }, [productId]);
+  useEffect(load, [load]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 items-center">
+        <input className="border rounded px-2 py-1 text-sm" placeholder="Filter by Product ID" value={productId}
+          onChange={e => setProductId(e.target.value)} />
+        <button onClick={load} className="px-3 py-1 bg-gray-100 text-sm rounded">Refresh</button>
+      </div>
+      <div className="bg-white border rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50"><tr>{['Product', 'Warehouse', 'Method', 'Total Qty', 'Total Value', 'Avg Cost', 'Currency'].map(h => <th key={h} className="px-3 py-2 text-left text-xs">{h}</th>)}</tr></thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.profileId} className="border-t">
+                <td className="px-3 py-2">{r.productId}</td>
+                <td className="px-3 py-2">{r.warehouseId}</td>
+                <td className="px-3 py-2"><span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs">{r.method}</span></td>
+                <td className="px-3 py-2">{r.totalQty.toFixed(2)}</td>
+                <td className="px-3 py-2 font-semibold">{r.totalValue.toFixed(2)}</td>
+                <td className="px-3 py-2">{r.totalQty > 0 ? (r.totalValue / r.totalQty).toFixed(4) : '—'}</td>
+                <td className="px-3 py-2">{r.currency}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

@@ -180,6 +180,7 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/inventory/minmax-replen' },
   { path: '/inventory/freight-claims' },
   { path: '/inventory/vmi' },
+  { path: '/inventory/costing' },
   { path: '/inventory/rtv' },
   { path: '/inventory/labor-management' },
   { path: '/inventory/supplier-quality' },

@@ -60,6 +60,7 @@ import { CustomerReturnsModule } from './modules/inventory/customer-returns.modu
 import { MinMaxReplenModule } from './modules/inventory/minmax-replen.module';
 import { FreightClaimsModule } from './modules/inventory/freight-claims.module';
 import { VmiModule } from './modules/inventory/vmi.module';
+import { CostingMethodsModule } from './modules/inventory/costing-methods.module';
 
 @Module({
   imports: [
@@ -118,6 +119,7 @@ import { VmiModule } from './modules/inventory/vmi.module';
     MinMaxReplenModule,
     FreightClaimsModule,
     VmiModule,
+    CostingMethodsModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

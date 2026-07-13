@@ -14504,3 +14504,90 @@ model VmiOrder {
   @@index([tenantId, vendorId])
   @@map("vmi_orders")
 }
+
+// ── Inventory Costing Methods (Cycle 37) ─────────────────────────────────────
+
+enum CostingMethod {
+  FIFO
+  LIFO
+  WAC
+  STANDARD
+  SPECIFIC
+}
+
+enum CostLayerStatus {
+  OPEN
+  PARTIALLY_CONSUMED
+  FULLY_CONSUMED
+}
+
+enum CostAdjustmentType {
+  PURCHASE_PRICE_VARIANCE
+  FREIGHT_ABSORPTION
+  OVERHEAD_ABSORPTION
+  WRITE_DOWN
+  MANUAL
+}
+
+model InventoryCostProfile {
+  id              String        @id @default(cuid())
+  tenantId        String
+  productId       String
+  warehouseId     String
+  method          CostingMethod @default(WAC)
+  standardCost    Decimal?      @db.Decimal(18, 4)
+  currency        String        @default("USD")
+  activeFrom      DateTime      @default(now())
+  notes           String?
+  createdById     String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  costLayers      InventoryCostLayer[]
+
+  @@unique([tenantId, productId, warehouseId])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("inventory_cost_profiles")
+}
+
+model InventoryCostLayer {
+  id            String            @id @default(cuid())
+  tenantId      String
+  profileId     String
+  receiptDate   DateTime
+  receiptRef    String?
+  unitCost      Decimal           @db.Decimal(18, 4)
+  qtyReceived   Decimal           @db.Decimal(18, 4)
+  qtyRemaining  Decimal           @db.Decimal(18, 4)
+  status        CostLayerStatus   @default(OPEN)
+  currency      String            @default("USD")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  profile       InventoryCostProfile @relation(fields: [profileId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, profileId])
+  @@index([tenantId, profileId, status])
+  @@map("inventory_cost_layers")
+}
+
+model InventoryCostAdjustment {
+  id              String              @id @default(cuid())
+  tenantId        String
+  adjustmentNumber String
+  profileId       String
+  adjustmentType  CostAdjustmentType
+  amount          Decimal             @db.Decimal(18, 4)
+  currency        String              @default("USD")
+  reason          String
+  adjustedById    String
+  adjustedAt      DateTime            @default(now())
+  createdAt       DateTime            @default(now())
+
+  @@unique([tenantId, adjustmentNumber])
+  @@index([tenantId])
+  @@index([tenantId, profileId])
+  @@map("inventory_cost_adjustments")
+}

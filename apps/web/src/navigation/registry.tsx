@@ -190,6 +190,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'minmax-replen': 'Min-Max Replenishment Planning',
   'freight-claims': 'Freight Claims & Cargo Damage Reporting',
   'vmi': 'Vendor-Managed Inventory (VMI)',
+  'costing': 'Inventory Costing Methods (FIFO/LIFO/WAC)',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

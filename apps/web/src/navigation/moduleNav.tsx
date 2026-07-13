@@ -344,6 +344,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           { name: 'Min-Max Replenishment', href: '/inventory/minmax-replen', icon: TrendingUp },
           { name: 'Freight Claims', href: '/inventory/freight-claims', icon: AlertTriangle },
           { name: 'Vendor-Managed Inventory', href: '/inventory/vmi', icon: Box },
+          { name: 'Inventory Costing', href: '/inventory/costing', icon: TrendingUp },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
           ]
         },

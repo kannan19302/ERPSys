@@ -2,6 +2,18 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 37 — Inventory Costing Methods (FAST)
+
+**Sub-domain**: inventory-cycle37-costing-methods | **Gate**: FAST
+
+### Added
+- `InventoryCostProfile` — per-product-per-warehouse costing method selection (FIFO/LIFO/WAC/STANDARD/SPECIFIC); WAC automatically computes from open layers; unique per tenantId+productId+warehouseId
+- `InventoryCostLayer` — cost receipt layers with qty tracking (OPEN/PARTIALLY_CONSUMED/FULLY_CONSUMED); drives FIFO/LIFO/WAC consumption
+- `InventoryCostAdjustment` — auto-numbered ICA-XXXXXX cost adjustments (PPV, freight absorption, overhead, write-down, manual)
+- API: 3 enums, 3 DB tables; `CostingMethodsService` — upsertProfile, layer management, FIFO/LIFO/WAC consumption engine (returns totalCost + avgCost), valuation rollup; `CostingMethodsController` with 10 endpoints; `CostingMethodsModule` wired in
+- UI: `/inventory/costing` — 6-tab page (Dashboard, Profiles, Cost Layers, Consume, Adjustments, Valuation)
+- Nav, registry, smoke route updated
+
 ## [2026-07-13] Inventory Cycle 36 — Vendor-Managed Inventory (FAST)
 
 **Sub-domain**: inventory-cycle36-vmi | **Gate**: FAST

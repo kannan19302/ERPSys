@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-13T19:00:00.000Z",
-  "fastCyclesSinceFullGate": 1,
-  "deferredScopes": ["inventory-cycle36-vmi"],
+  "ranAt": "2026-07-13T20:00:00.000Z",
+  "fastCyclesSinceFullGate": 2,
+  "deferredScopes": ["inventory-cycle36-vmi", "inventory-cycle37-costing-methods"],
   "lastMilestoneCommit": "cycle-35-freight-claims",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
