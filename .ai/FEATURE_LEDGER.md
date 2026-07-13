@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T03:44:01.829Z
+> Last generated: 2026-07-13T03:52:25.183Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2308 features** across 33 modules
+## System total: **2324 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 402 |
+| [inventory](#inventory) | 418 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-402 features
+418 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2154,6 +2154,22 @@
 | POST | `/inventory/supplier-quality/cars/:id/respond` | Raise a CAR against an NCR | — |
 | POST | `/inventory/supplier-quality/cars/:id/accept` | Vendor response to a CAR | — |
 | POST | `/inventory/supplier-quality/cars/:id/reject` | Accept a vendor CAR response | — |
+| GET | `/inventory/transfer-orders/dashboard` | — | — |
+| GET | `/inventory/transfer-orders/in-transit` | — | — |
+| GET | `/inventory/transfer-orders/receiving-report` | — | — |
+| GET | `/inventory/transfer-orders` | — | — |
+| POST | `/inventory/transfer-orders` | — | — |
+| GET | `/inventory/transfer-orders/:id` | — | — |
+| PUT | `/inventory/transfer-orders/:id` | — | — |
+| PATCH | `/inventory/transfer-orders/:id/submit` | — | — |
+| PATCH | `/inventory/transfer-orders/:id/approve` | — | — |
+| PATCH | `/inventory/transfer-orders/:id/ship` | — | — |
+| PATCH | `/inventory/transfer-orders/:id/receive` | — | — |
+| PATCH | `/inventory/transfer-orders/:id/cancel` | — | — |
+| PATCH | `/inventory/transfer-orders/:id/close-out` | — | — |
+| POST | `/inventory/transfer-orders/:id/lines` | — | — |
+| DELETE | `/inventory/transfer-orders/:id/lines/:lineId` | — | — |
+| GET | `/inventory/transfer-orders/:id/receipts` | — | — |
 | GET | `/inventory/warehouse-ops/dashboard` | — | — |
 | GET | `/inventory/warehouse-ops/tasks` | — | — |
 | GET | `/inventory/warehouse-ops/tasks/dashboard` | — | — |

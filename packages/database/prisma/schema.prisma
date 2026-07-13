@@ -12509,3 +12509,114 @@ model StockRevaluationLine {
   @@index([revaluationId])
   @@map("stock_revaluation_lines")
 }
+
+// ── Inventory Cycle 23: Transfer Orders ─────────────────────────────────────
+
+enum TransferOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  IN_TRANSIT
+  PARTIALLY_RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+model TransferOrder {
+  id               String              @id @default(cuid())
+  tenantId         String              @map("tenant_id")
+  transferNumber   String              @map("transfer_number")
+  fromWarehouseId  String              @map("from_warehouse_id")
+  toWarehouseId    String              @map("to_warehouse_id")
+  status           TransferOrderStatus @default(DRAFT)
+  priority         String              @default("NORMAL") // LOW|NORMAL|HIGH|URGENT
+  requestedDate    DateTime?           @map("requested_date")
+  expectedDate     DateTime?           @map("expected_date")
+  shippedDate      DateTime?           @map("shipped_date")
+  completedDate    DateTime?           @map("completed_date")
+  notes            String?
+  internalNotes    String?             @map("internal_notes")
+  approvedBy       String?             @map("approved_by")
+  approvedAt       DateTime?           @map("approved_at")
+  shippedBy        String?             @map("shipped_by")
+  receivedBy       String?             @map("received_by")
+  carrier          String?
+  trackingNumber   String?             @map("tracking_number")
+  estimatedCost    Decimal?            @map("estimated_cost") @db.Decimal(15, 2)
+  createdBy        String?             @map("created_by")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  lines    TransferOrderLine[]
+  receipts TransferOrderReceipt[]
+
+  @@unique([tenantId, transferNumber])
+  @@index([tenantId])
+  @@index([tenantId, fromWarehouseId])
+  @@index([tenantId, toWarehouseId])
+  @@index([tenantId, status])
+  @@map("transfer_orders")
+}
+
+model TransferOrderLine {
+  id               String        @id @default(cuid())
+  tenantId         String        @map("tenant_id")
+  transferOrderId  String        @map("transfer_order_id")
+  productId        String        @map("product_id")
+  requestedQty     Decimal       @map("requested_qty") @db.Decimal(15, 4)
+  shippedQty       Decimal       @default(0) @map("shipped_qty") @db.Decimal(15, 4)
+  receivedQty      Decimal       @default(0) @map("received_qty") @db.Decimal(15, 4)
+  uom              String        @default("UNIT")
+  unitCost         Decimal?      @map("unit_cost") @db.Decimal(15, 6)
+  lotNumber        String?       @map("lot_number")
+  serialNumbers    String[]      @map("serial_numbers")
+  binLocationId    String?       @map("bin_location_id")
+  notes            String?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  transferOrder TransferOrder @relation(fields: [transferOrderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([transferOrderId])
+  @@index([tenantId, productId])
+  @@map("transfer_order_lines")
+}
+
+model TransferOrderReceipt {
+  id              String        @id @default(cuid())
+  tenantId        String        @map("tenant_id")
+  transferOrderId String        @map("transfer_order_id")
+  receiptNumber   String        @map("receipt_number")
+  receivedDate    DateTime      @default(now()) @map("received_date")
+  receivedBy      String?       @map("received_by")
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  transferOrder TransferOrder             @relation(fields: [transferOrderId], references: [id], onDelete: Cascade)
+  lines         TransferOrderReceiptLine[]
+
+  @@unique([tenantId, receiptNumber])
+  @@index([tenantId])
+  @@index([transferOrderId])
+  @@map("transfer_order_receipts")
+}
+
+model TransferOrderReceiptLine {
+  id               String               @id @default(cuid())
+  tenantId         String               @map("tenant_id")
+  receiptId        String               @map("receipt_id")
+  transferLineId   String               @map("transfer_line_id")
+  productId        String               @map("product_id")
+  receivedQty      Decimal              @map("received_qty") @db.Decimal(15, 4)
+  acceptedQty      Decimal              @default(0) @map("accepted_qty") @db.Decimal(15, 4)
+  rejectedQty      Decimal              @default(0) @map("rejected_qty") @db.Decimal(15, 4)
+  rejectionReason  String?              @map("rejection_reason")
+  createdAt        DateTime             @default(now()) @map("created_at")
+
+  receipt TransferOrderReceipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([receiptId])
+  @@map("transfer_order_receipt_lines")
+}

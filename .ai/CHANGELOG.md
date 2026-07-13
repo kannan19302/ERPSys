@@ -2,6 +2,21 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 23: Transfer Orders — FAST cycle
+
+FAST cycle (fastCyclesSinceFullGate 3→4 — MILESTONE gate required next cycle). Scoped typechecks pass; 22 unit tests pass.
+
+- **DB**: 4 new models — `TransferOrder`, `TransferOrderLine`, `TransferOrderReceipt`, `TransferOrderReceiptLine`
+  (migration `20260713060000_inventory_cycle23_transfer_orders`)
+- **API** (`TransferOrdersModule`, 20+ endpoints under `/inventory/transfer-orders`):
+  - **Orders**: create (auto-numbered TO-XXXXX), list (status/warehouse filters), get, update (DRAFT/PENDING_APPROVAL only)
+  - **Lifecycle**: submit (DRAFT→PENDING_APPROVAL, requires lines), approve (→APPROVED), ship (→IN_TRANSIT, per-line shipped qty, over-ship guard), receive (partial receipts with accepted/rejected qty per line, auto-advances to PARTIALLY_RECEIVED or COMPLETED), close-out (PARTIALLY_RECEIVED→COMPLETED), cancel (all non-terminal statuses)
+  - **Lines**: add, remove (DRAFT/PENDING_APPROVAL only)
+  - **Receipts**: list per order
+  - **Reports**: dashboard (8 status KPIs), in-transit summary (pending lines vs shipped), receiving-report
+- **UI** (`/inventory/transfer-orders`): 4-tab page — Dashboard, Transfer Orders (create form with multi-line, lifecycle action buttons), In Transit (live shipment tracking), Receiving Report
+- **Nav/Registry**: `Transfer Orders` nav entry + registry segment; smoke route added
+
 ## [2026-07-13] Inventory Cycle 22: Stock Valuation Methods — FAST cycle
 
 FAST cycle (fastCyclesSinceFullGate 2→3). Scoped typechecks pass; 19 unit tests pass.

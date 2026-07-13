@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle23-transfer-orders",
-  "agent": "claude-sonnet-4-6-goal-start",
-  "scope": "Inventory Transfer Orders: multi-line inter-warehouse transfers with approval, in-transit stock tracking, partial shipment, receive at destination, close-out",
-  "acquiredAt": "2026-07-13T03:46:00.379Z",
-  "heartbeatAt": "2026-07-13T03:46:00.379Z",
-  "pid": 6391
-}
