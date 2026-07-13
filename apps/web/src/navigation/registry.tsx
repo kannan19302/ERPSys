@@ -181,6 +181,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'stock-takes': 'Physical Inventory',
   'hazmat': 'Hazardous Materials',
   'asl': 'Approved Suppliers',
+  'container-pallet': 'Container & Pallet Management',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

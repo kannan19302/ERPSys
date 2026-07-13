@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-13T10:30:00.000Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
+  "ranAt": "2026-07-13T11:00:00.000Z",
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": ["inventory-cycle28-container-pallet"],
   "lastMilestoneCommit": "cycle-27-asl",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",

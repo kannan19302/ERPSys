@@ -51,6 +51,7 @@ import { YardManagementModule } from './modules/inventory/yard-management.module
 import { StockTakeModule } from './modules/inventory/stock-take.module';
 import { HazmatModule } from './modules/inventory/hazmat.module';
 import { AslModule } from './modules/inventory/asl.module';
+import { ContainerPalletModule } from './modules/inventory/container-pallet.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { AslModule } from './modules/inventory/asl.module';
     StockTakeModule,
     HazmatModule,
     AslModule,
+    ContainerPalletModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

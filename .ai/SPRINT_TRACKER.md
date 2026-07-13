@@ -1,17 +1,17 @@
 # SPRINT_TRACKER.md — Daily Delivery Tracker
 
 > **Generated file** — `node scripts/sprint-tracker.mjs [days]`. Do not edit by hand.
-> Last generated: 2026-07-13T04:33:35.684Z (window: last 30 days)
+> Last generated: 2026-07-13T08:14:41.358Z (window: last 30 days)
 >
 > LOC counts code files only (ts/tsx/js/jsx/prisma/css/scss/mjs, excl. lockfiles/dist).
 > "Features" = new API endpoints added to controllers that day (same definition as
 > `FEATURE_LEDGER.md`). Regenerated every AUTOPILOT cycle (Step 7).
 
-## Last 30 days: **2488 features**, **+522,289 / −22,565 LOC** (net 499,724) across 155 commits
+## Last 30 days: **2510 features**, **+523,767 / −22,566 LOC** (net 501,201) across 158 commits
 
 | Date | Commits | LOC + | LOC − | Net | Features | Modules touched |
 |:--|--:|--:|--:|--:|--:|:--|
-| 2026-07-13 | 18 | +10,122 | −757 | 9,365 | 166 | inventory |
+| 2026-07-13 | 21 | +11,600 | −758 | 10,842 | 188 | inventory |
 | 2026-07-12 | 56 | +19,381 | −135 | 19,246 | 269 | inventory |
 | 2026-07-11 | 39 | +16,198 | −857 | 15,341 | 172 | crm, sales, notifications, advanced-finance, auth, finance |
 | 2026-07-10 | 8 | +474 | −300 | 174 | 0 | — |

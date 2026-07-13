@@ -13226,3 +13226,216 @@ model AslComplianceRule {
   @@index([tenantId])
   @@map("asl_compliance_rules")
 }
+
+// ─── Cycle 28: Container & Pallet Management ────────────────────────────────
+
+enum PalletTypeCategory {
+  STANDARD
+  EURO
+  CHEP
+  CUSTOM
+}
+
+enum ContainerTypeCategory {
+  DRY_VAN
+  REEFER
+  FLAT_RACK
+  OPEN_TOP
+  TANK
+  BULK
+}
+
+enum LoadPlanStatus {
+  DRAFT
+  OPTIMIZING
+  READY
+  IN_LOADING
+  LOADED
+  SHIPPED
+  CANCELLED
+}
+
+enum PackingPlanStatus {
+  DRAFT
+  CONFIRMED
+  PACKING
+  COMPLETED
+  CANCELLED
+}
+
+model PalletType {
+  id            String              @id @default(cuid())
+  tenantId      String              @map("tenant_id")
+  code          String
+  name          String
+  category      PalletTypeCategory
+  lengthMm      Int                 @map("length_mm")
+  widthMm       Int                 @map("width_mm")
+  heightMm      Int                 @map("height_mm")
+  maxWeightKg   Decimal             @map("max_weight_kg") @db.Decimal(10, 2)
+  ownWeightKg   Decimal             @map("own_weight_kg") @db.Decimal(10, 2)
+  isStackable   Boolean             @default(false) @map("is_stackable")
+  maxStackLayers Int               @default(1) @map("max_stack_layers")
+  isActive      Boolean             @default(true) @map("is_active")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  loadPlanPallets LoadPlanPallet[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("pallet_types")
+}
+
+model ContainerType {
+  id              String                 @id @default(cuid())
+  tenantId        String                 @map("tenant_id")
+  code            String
+  name            String
+  category        ContainerTypeCategory
+  isoCode         String?                @map("iso_code")
+  externalLengthMm Int                  @map("external_length_mm")
+  externalWidthMm  Int                  @map("external_width_mm")
+  externalHeightMm Int                  @map("external_height_mm")
+  internalLengthMm Int                  @map("internal_length_mm")
+  internalWidthMm  Int                  @map("internal_width_mm")
+  internalHeightMm Int                  @map("internal_height_mm")
+  maxPayloadKg    Decimal                @map("max_payload_kg") @db.Decimal(12, 2)
+  tare            Decimal                @map("tare") @db.Decimal(12, 2)
+  maxVolumeM3     Decimal                @map("max_volume_m3") @db.Decimal(10, 3)
+  isActive        Boolean                @default(true) @map("is_active")
+  createdAt       DateTime               @default(now()) @map("created_at")
+
+  loadPlans       LoadPlan[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("container_types")
+}
+
+model LoadPlan {
+  id              String          @id @default(cuid())
+  tenantId        String          @map("tenant_id")
+  planNumber      String          @map("plan_number")
+  containerTypeId String          @map("container_type_id")
+  shipmentRef     String?         @map("shipment_ref")
+  originWarehouse String          @map("origin_warehouse")
+  destAddress     String          @map("dest_address")
+  plannedLoadDate DateTime?       @map("planned_load_date")
+  status          LoadPlanStatus  @default(DRAFT)
+  totalWeightKg   Decimal         @default(0) @map("total_weight_kg") @db.Decimal(12, 2)
+  totalVolumeM3   Decimal         @default(0) @map("total_volume_m3") @db.Decimal(10, 3)
+  utilizationPct  Decimal         @default(0) @map("utilization_pct") @db.Decimal(5, 2)
+  optimizationNotes String?       @map("optimization_notes")
+  createdBy       String          @map("created_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  containerType   ContainerType   @relation(fields: [containerTypeId], references: [id])
+  pallets         LoadPlanPallet[]
+  items           LoadPlanItem[]
+
+  @@unique([tenantId, planNumber])
+  @@index([tenantId])
+  @@index([status])
+  @@map("load_plans")
+}
+
+model LoadPlanPallet {
+  id              String     @id @default(cuid())
+  tenantId        String     @map("tenant_id")
+  loadPlanId      String     @map("load_plan_id")
+  palletTypeId    String     @map("pallet_type_id")
+  palletSequence  Int        @map("pallet_sequence")
+  positionX       Int?       @map("position_x")
+  positionY       Int?       @map("position_y")
+  positionZ       Int?       @map("position_z")
+  grossWeightKg   Decimal    @default(0) @map("gross_weight_kg") @db.Decimal(10, 2)
+  netWeightKg     Decimal    @default(0) @map("net_weight_kg") @db.Decimal(10, 2)
+  stackLayer      Int        @default(1) @map("stack_layer")
+  notes           String?
+
+  loadPlan        LoadPlan   @relation(fields: [loadPlanId], references: [id], onDelete: Cascade)
+  palletType      PalletType @relation(fields: [palletTypeId], references: [id])
+
+  @@index([tenantId])
+  @@index([loadPlanId])
+  @@map("load_plan_pallets")
+}
+
+model LoadPlanItem {
+  id              String     @id @default(cuid())
+  tenantId        String     @map("tenant_id")
+  loadPlanId      String     @map("load_plan_id")
+  productId       String     @map("product_id")
+  quantity        Decimal    @db.Decimal(15, 4)
+  uom             String     @default("UNIT")
+  grossWeightKg   Decimal?   @map("gross_weight_kg") @db.Decimal(10, 2)
+  volumeM3        Decimal?   @map("volume_m3") @db.Decimal(10, 4)
+  palletSequence  Int?       @map("pallet_sequence")
+  notes           String?
+
+  loadPlan        LoadPlan   @relation(fields: [loadPlanId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([loadPlanId])
+  @@map("load_plan_items")
+}
+
+model PackingPlan {
+  id              String           @id @default(cuid())
+  tenantId        String           @map("tenant_id")
+  planNumber      String           @map("plan_number")
+  salesOrderRef   String?          @map("sales_order_ref")
+  warehouseId     String           @map("warehouse_id")
+  status          PackingPlanStatus @default(DRAFT)
+  plannedDate     DateTime?        @map("planned_date")
+  totalCartons    Int              @default(0) @map("total_cartons")
+  totalWeightKg   Decimal          @default(0) @map("total_weight_kg") @db.Decimal(12, 2)
+  instructions    String?
+  completedAt     DateTime?        @map("completed_at")
+  createdBy       String           @map("created_by")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  cartons         LoadCarton[]
+
+  @@unique([tenantId, planNumber])
+  @@index([tenantId])
+  @@index([status])
+  @@map("packing_plans")
+}
+
+model LoadCarton {
+  id              String      @id @default(cuid())
+  tenantId        String      @map("tenant_id")
+  packingPlanId   String      @map("packing_plan_id")
+  cartonNumber    String      @map("carton_number")
+  lengthMm        Int?        @map("length_mm")
+  widthMm         Int?        @map("width_mm")
+  heightMm        Int?        @map("height_mm")
+  grossWeightKg   Decimal?    @map("gross_weight_kg") @db.Decimal(10, 2)
+  sealed          Boolean     @default(false)
+  labelPrinted    Boolean     @default(false) @map("label_printed")
+
+  packingPlan     PackingPlan @relation(fields: [packingPlanId], references: [id], onDelete: Cascade)
+  items           LoadCartonItem[]
+
+  @@index([tenantId])
+  @@index([packingPlanId])
+  @@map("load_cartons")
+}
+
+model LoadCartonItem {
+  id              String        @id @default(cuid())
+  tenantId        String        @map("tenant_id")
+  cartonId        String        @map("carton_id")
+  productId       String        @map("product_id")
+  quantity        Decimal       @db.Decimal(15, 4)
+  uom             String        @default("UNIT")
+
+  carton          LoadCarton @relation(fields: [cartonId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([cartonId])
+  @@map("load_carton_items")
+}

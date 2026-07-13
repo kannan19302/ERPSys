@@ -171,6 +171,7 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/inventory/stock-takes' },
   { path: '/inventory/hazmat' },
   { path: '/inventory/asl' },
+  { path: '/inventory/container-pallet' },
   { path: '/inventory/rtv' },
   { path: '/inventory/labor-management' },
   { path: '/inventory/supplier-quality' },

@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 28 — Container & Pallet Management (FAST)
+
+DB: 9 models (PalletType, ContainerType, LoadPlan, LoadPlanPallet, LoadPlanItem, PackingPlan, LoadCarton, LoadCartonItem) + 4 enums (PalletTypeCategory, ContainerTypeCategory, LoadPlanStatus, PackingPlanStatus); migration 20260713110000. API: ContainerPalletService (dashboard, pallet-type CRUD, container-type CRUD, load-plan lifecycle DRAFT→OPTIMIZING→READY→IN_LOADING→LOADED→SHIPPED, pallet/item assignment + utilisation calc, packing-plan lifecycle DRAFT→CONFIRMED→PACKING→COMPLETED, carton seal/label/item operations) + 30+ controller endpoints; 23 tests pass. UI: 5-tab page (Dashboard, Pallet Types, Container Types, Load Plans, Packing Plans). Nav/registry/smoke updated. +82 features, ~4200 LOC. fastCyclesSinceFullGate: 1, deferredScopes: inventory-cycle28-container-pallet.
+
 ## [2026-07-13] MILESTONE Gate — Cycles 24–27
 
 Full turbo typecheck: PASS (34s). Full API unit suite: 210 files / 2800 tests — all PASS (48s). E2E: deferred (RLS/tenant-id pipeline blocker). fastCyclesSinceFullGate reset to 0. lastMilestoneCommit: cycle-27-asl.

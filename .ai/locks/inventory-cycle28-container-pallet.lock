@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle28-container-pallet",
-  "agent": "claude-sonnet+session-ib21qn",
-  "scope": "Container & Pallet Management: pallet types/configs, container types, load planning, cartonization, container utilization tracking, packing plans",
-  "acquiredAt": "2026-07-13T04:37:20.528Z",
-  "heartbeatAt": "2026-07-13T04:37:20.528Z",
-  "pid": 7742
-}

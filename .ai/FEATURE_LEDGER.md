@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T04:33:34.787Z
+> Last generated: 2026-07-13T08:14:39.675Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2427 features** across 33 modules
+## System total: **2452 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 521 |
+| [inventory](#inventory) | 546 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-521 features
+546 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1804,6 +1804,31 @@
 | POST | `/inventory/asl/compliance/rules` | — | — |
 | GET | `/inventory/asl/compliance/check/:productId` | — | — |
 | GET | `/inventory/asl/sourcing-report/:productId` | — | — |
+| GET | `/inventory/container-pallet/dashboard` | — | — |
+| GET | `/inventory/container-pallet/pallet-types` | — | — |
+| POST | `/inventory/container-pallet/pallet-types` | — | — |
+| PATCH | `/inventory/container-pallet/pallet-types/:id` | — | — |
+| DELETE | `/inventory/container-pallet/pallet-types/:id` | — | — |
+| GET | `/inventory/container-pallet/container-types` | — | — |
+| POST | `/inventory/container-pallet/container-types` | — | — |
+| PATCH | `/inventory/container-pallet/container-types/:id` | — | — |
+| DELETE | `/inventory/container-pallet/container-types/:id` | — | — |
+| GET | `/inventory/container-pallet/load-plans` | — | — |
+| GET | `/inventory/container-pallet/load-plans/:id` | — | — |
+| GET | `/inventory/container-pallet/load-plans/:id/utilization` | — | — |
+| POST | `/inventory/container-pallet/load-plans` | — | — |
+| POST | `/inventory/container-pallet/load-plans/:id/transition` | — | — |
+| POST | `/inventory/container-pallet/load-plans/:id/pallets` | — | — |
+| DELETE | `/inventory/container-pallet/load-plans/:id/pallets/:palletId` | — | — |
+| POST | `/inventory/container-pallet/load-plans/:id/items` | — | — |
+| GET | `/inventory/container-pallet/packing-plans` | — | — |
+| GET | `/inventory/container-pallet/packing-plans/:id` | — | — |
+| POST | `/inventory/container-pallet/packing-plans` | — | — |
+| POST | `/inventory/container-pallet/packing-plans/:id/transition` | — | — |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons` | — | — |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/seal` | — | — |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/label` | — | — |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/items` | — | — |
 | GET | `/inventory/costing/valuation/:productId` | Get product valuation | `inventory.stock.read` |
 | GET | `/inventory/costing/valuation-report` | Get valuation report | `inventory.stock.read` |
 | POST | `/inventory/costing/landed-cost` | Calculate landed cost | `inventory.stock.read` |
