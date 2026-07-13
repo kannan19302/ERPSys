@@ -327,3 +327,4 @@ truthful spec instead of the previous document's incorrect assumptions.
 
 *Maintained by the autonomous cycle. Update § 1/§ 4/§ 6 every cycle that advances the
 focus module; never skip the ledger row.*
+| 2026-07-13 | Inventory & Supply Chain | 592 | +19 | **Inventory cycle 32 — Velocity Classification & ABC-XYZ Analysis** (FAST): 3 enums (AbcClass, XyzClass, VelocityClassificationStatus) + 4 models (VelocityClassificationRun, VelocityClassificationItem, VelocitySlottingPolicy, ProductVelocitySnapshot; migration `20260713150000`); `VelocityAbcXyzModule` — 13 endpoints, ABC classification by revenue Pareto, XYZ by CV of monthly demand series, run lifecycle (DRAFT→ACTIVE, supersedes prior active), slotting policy upsert per combined class (AX…CZ), monthly velocity snapshots per product. 5-tab UI. 15 unit tests pass. fastCyclesSinceFullGate: 0→1. |

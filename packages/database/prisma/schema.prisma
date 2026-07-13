@@ -13933,3 +13933,124 @@ model StockWriteOffRecord {
   @@index([tenantId, status])
   @@map("stock_write_off_records")
 }
+
+// ─── Inventory Cycle 32 — Velocity Classification & ABC-XYZ Analysis ──────────
+
+enum AbcClass {
+  A // top ~20% of products driving ~80% of value
+  B // middle tier
+  C // bottom tier — low value/volume
+}
+
+enum XyzClass {
+  X // highly stable demand (low CV)
+  Y // moderate variability
+  Z // highly erratic / unpredictable
+}
+
+enum VelocityClassificationStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+
+/// Periodic ABC-XYZ classification run for a tenant's product catalog
+model VelocityClassificationRun {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  runNumber       String   @map("run_number")    // VCR-000001
+  warehouseId     String?  @map("warehouse_id")  // null = all warehouses
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  status          VelocityClassificationStatus @default(DRAFT)
+  totalProducts   Int      @default(0) @map("total_products")
+  classACount     Int      @default(0) @map("class_a_count")
+  classBCount     Int      @default(0) @map("class_b_count")
+  classCCount     Int      @default(0) @map("class_c_count")
+  classXCount     Int      @default(0) @map("class_x_count")
+  classYCount     Int      @default(0) @map("class_y_count")
+  classZCount     Int      @default(0) @map("class_z_count")
+  notes           String?
+  runByUserId     String   @map("run_by_user_id")
+  activatedAt     DateTime? @map("activated_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  items VelocityClassificationItem[]
+
+  @@unique([tenantId, runNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("velocity_classification_runs")
+}
+
+/// Per-product result within a classification run
+model VelocityClassificationItem {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  runId           String   @map("run_id")
+  productId       String   @map("product_id")
+  warehouseId     String?  @map("warehouse_id")
+  totalRevenue    Decimal  @default(0) @map("total_revenue") @db.Decimal(18, 4)
+  totalQuantitySold Decimal @default(0) @map("total_quantity_sold") @db.Decimal(18, 4)
+  revenueShare    Decimal  @default(0) @map("revenue_share") @db.Decimal(8, 6) // 0-1
+  cumulativeShare Decimal  @default(0) @map("cumulative_share") @db.Decimal(8, 6)
+  demandCv        Decimal? @map("demand_cv") @db.Decimal(8, 4)  // coefficient of variation
+  avgMonthlyDemand Decimal? @map("avg_monthly_demand") @db.Decimal(18, 4)
+  stdDevDemand    Decimal? @map("std_dev_demand") @db.Decimal(18, 4)
+  abcClass        AbcClass @map("abc_class")
+  xyzClass        XyzClass @map("xyz_class")
+  combinedClass   String   @map("combined_class") // e.g. "AX", "BZ"
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  run VelocityClassificationRun @relation(fields: [runId], references: [id])
+
+  @@unique([runId, productId, warehouseId])
+  @@index([tenantId])
+  @@index([tenantId, runId])
+  @@index([tenantId, productId])
+  @@index([tenantId, abcClass])
+  @@index([tenantId, combinedClass])
+  @@map("velocity_classification_items")
+}
+
+/// Reorder and stocking policy recommendations derived from ABC-XYZ class
+model VelocitySlottingPolicy {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  combinedClass   String   @map("combined_class")  // "AX", "AY", etc.
+  description     String?
+  reviewFrequency String   @map("review_frequency") // e.g. "DAILY", "WEEKLY", "MONTHLY"
+  reorderMethod   String   @map("reorder_method")   // "CONTINUOUS", "PERIODIC", "MANUAL"
+  safetyStockMultiplier Decimal @default(1) @map("safety_stock_multiplier") @db.Decimal(5, 2)
+  preferredZone   String?  @map("preferred_zone")   // warehouse zone code
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, combinedClass])
+  @@index([tenantId])
+  @@map("velocity_slotting_policies")
+}
+
+/// Trend snapshot — monthly velocity metrics per product for sparkline / trend analysis
+model ProductVelocitySnapshot {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  productId       String   @map("product_id")
+  warehouseId     String?  @map("warehouse_id")
+  snapshotMonth   DateTime @map("snapshot_month")   // first day of month
+  quantitySold    Decimal  @default(0) @map("quantity_sold") @db.Decimal(18, 4)
+  revenue         Decimal  @default(0) @map("revenue") @db.Decimal(18, 4)
+  transactionCount Int     @default(0) @map("transaction_count")
+  avgSellingPrice Decimal? @map("avg_selling_price") @db.Decimal(18, 4)
+  abcClass        AbcClass? @map("abc_class")
+  xyzClass        XyzClass? @map("xyz_class")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, productId, warehouseId, snapshotMonth])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([tenantId, snapshotMonth])
+  @@map("product_velocity_snapshots")
+}

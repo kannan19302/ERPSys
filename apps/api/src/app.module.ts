@@ -55,6 +55,7 @@ import { ContainerPalletModule } from './modules/inventory/container-pallet.modu
 import { CatchWeightRecallModule } from './modules/inventory/catch-weight-recall.module';
 import { PackagingGs1Module } from './modules/inventory/packaging-gs1.module';
 import { ColdChainWriteoffModule } from './modules/inventory/cold-chain-writeoff.module';
+import { VelocityAbcXyzModule } from './modules/inventory/velocity-abc-xyz.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { ColdChainWriteoffModule } from './modules/inventory/cold-chain-writeoff
     CatchWeightRecallModule,
     PackagingGs1Module,
     ColdChainWriteoffModule,
+    VelocityAbcXyzModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

@@ -2,6 +2,20 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 32 — Velocity Classification & ABC-XYZ Analysis (FAST)
+
+**Sub-domain**: `inventory-cycle32-supplier-delivery-perf` (velocity-abc-xyz)
+
+**Schema** (migration `20260713150000`): 3 enums (`AbcClass`, `XyzClass`, `VelocityClassificationStatus`), 3 models (`VelocityClassificationRun`, `VelocityClassificationItem`, `VelocitySlottingPolicy`, `ProductVelocitySnapshot`)
+
+**API** (`/api/inventory/velocity-abc-xyz`): 13 endpoints — dashboard, CRUD runs, compute ABC-XYZ classification, activate run, list items with filters, get product current class, upsert/delete slotting policies, record/get velocity snapshots.
+
+**Business logic**: ABC classification via revenue Pareto (A≤80%, B≤95%, C rest); XYZ via coefficient of variation (CV≤0.25→X, ≤0.5→Y, else Z); automatic supersession of prior ACTIVE run on activation.
+
+**UI**: 5-tab page (`/inventory/velocity-abc-xyz`) — Dashboard (stat grid + class breakdown), Runs (CRUD + activate), Classifications (filterable items table), Policies (upsert slotting policies), Snapshots (monthly velocity history per product).
+
+**Tests**: 15 unit tests — all pass.
+
 ## [2026-07-13] MILESTONE Gate — Cycles 28–31
 
 Full turbo typecheck: PASS (29s). Full API unit suite: 214 files / 2875 tests — all PASS (41s). fastCyclesSinceFullGate reset to 0. lastMilestoneCommit: cycle-31-cold-chain-writeoff. E2E deferred (RLS/tenant-id pipeline blocker unchanged). Deferred scopes cleared.
