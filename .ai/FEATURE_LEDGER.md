@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T04:14:13.950Z
+> Last generated: 2026-07-13T04:24:34.592Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2370 features** across 33 modules
+## System total: **2405 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 464 |
+| [inventory](#inventory) | 499 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-464 features
+499 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1814,6 +1814,41 @@
 | POST | `/inventory/demand-forecasting/stockout-predictions/generate` | — | — |
 | GET | `/inventory/demand-forecasting/stockout-predictions/:id` | — | — |
 | PATCH | `/inventory/demand-forecasting/stockout-predictions/:id/acknowledge` | — | — |
+| GET | `/inventory/hazmat/dashboard` | — | — |
+| GET | `/inventory/hazmat/compliance-report` | — | — |
+| GET | `/inventory/hazmat/hazard-class-summary` | — | — |
+| GET | `/inventory/hazmat/un-search` | — | — |
+| GET | `/inventory/hazmat/classifications` | — | — |
+| POST | `/inventory/hazmat/classifications` | — | — |
+| GET | `/inventory/hazmat/classifications/:id` | — | — |
+| PUT | `/inventory/hazmat/classifications/:id` | — | — |
+| DELETE | `/inventory/hazmat/classifications/:id` | — | — |
+| GET | `/inventory/hazmat/classifications/:id/compatibility` | — | — |
+| GET | `/inventory/hazmat/sds` | — | — |
+| POST | `/inventory/hazmat/sds` | — | — |
+| GET | `/inventory/hazmat/sds/expiring` | — | — |
+| GET | `/inventory/hazmat/sds/:id` | — | — |
+| PATCH | `/inventory/hazmat/sds/:id/acknowledge` | — | — |
+| PATCH | `/inventory/hazmat/sds/:id/expire` | — | — |
+| PATCH | `/inventory/hazmat/sds/:id/supersede` | — | — |
+| GET | `/inventory/hazmat/storage-rules` | — | — |
+| POST | `/inventory/hazmat/storage-rules` | — | — |
+| GET | `/inventory/hazmat/storage-rules/check` | — | — |
+| GET | `/inventory/hazmat/manifests` | — | — |
+| POST | `/inventory/hazmat/manifests` | — | — |
+| GET | `/inventory/hazmat/manifests/:id` | — | — |
+| POST | `/inventory/hazmat/manifests/:id/lines` | — | — |
+| DELETE | `/inventory/hazmat/manifests/:id/lines/:lineId` | — | — |
+| PATCH | `/inventory/hazmat/manifests/:id/submit` | — | — |
+| PATCH | `/inventory/hazmat/manifests/:id/acknowledge` | — | — |
+| PATCH | `/inventory/hazmat/manifests/:id/in-transit` | — | — |
+| PATCH | `/inventory/hazmat/manifests/:id/deliver` | — | — |
+| PATCH | `/inventory/hazmat/manifests/:id/cancel` | — | — |
+| GET | `/inventory/hazmat/incidents` | — | — |
+| POST | `/inventory/hazmat/incidents` | — | — |
+| GET | `/inventory/hazmat/incidents/:id` | — | — |
+| PUT | `/inventory/hazmat/incidents/:id` | — | — |
+| PATCH | `/inventory/hazmat/incidents/:id/close` | — | — |
 | GET | `/inventory/analytics/dashboard` | Aggregate inventory analytics dashboard | — |
 | GET | `/inventory/analytics/health-score` | Aggregate inventory analytics dashboard | — |
 | GET | `/inventory/analytics/slow-moving` | Inventory health score with component breakdown | — |

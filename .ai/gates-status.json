@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-13T08:00:00.000Z",
-  "fastCyclesSinceFullGate": 2,
-  "deferredScopes": ["inventory-cycle24-yard-management", "inventory-cycle25-stock-take"],
+  "ranAt": "2026-07-13T09:00:00.000Z",
+  "fastCyclesSinceFullGate": 3,
+  "deferredScopes": ["inventory-cycle24-yard-management", "inventory-cycle25-stock-take", "inventory-cycle26-hazmat"],
   "lastMilestoneCommit": "cycle-23-transfer-orders",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",

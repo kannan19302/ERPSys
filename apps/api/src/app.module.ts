@@ -49,6 +49,7 @@ import { StockValuationModule } from './modules/inventory/stock-valuation.module
 import { TransferOrdersModule } from './modules/inventory/transfer-orders.module';
 import { YardManagementModule } from './modules/inventory/yard-management.module';
 import { StockTakeModule } from './modules/inventory/stock-take.module';
+import { HazmatModule } from './modules/inventory/hazmat.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { StockTakeModule } from './modules/inventory/stock-take.module';
     TransferOrdersModule,
     YardManagementModule,
     StockTakeModule,
+    HazmatModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

@@ -12899,3 +12899,208 @@ model StockTakeVariance {
   @@index([status])
   @@map("stock_take_variances")
 }
+
+// ─── Cycle 26: Hazardous Materials & Dangerous Goods ────────────────────────
+
+enum HazardClass {
+  CLASS_1_EXPLOSIVES
+  CLASS_2_GASES
+  CLASS_3_FLAMMABLE_LIQUIDS
+  CLASS_4_FLAMMABLE_SOLIDS
+  CLASS_5_OXIDIZERS
+  CLASS_6_TOXIC
+  CLASS_7_RADIOACTIVE
+  CLASS_8_CORROSIVES
+  CLASS_9_MISC
+}
+
+enum PackingGroup {
+  I
+  II
+  III
+}
+
+enum HazmatRegulation {
+  ADR
+  IATA
+  IMDG
+  DOT
+  REACH
+}
+
+enum SdsStatus {
+  CURRENT
+  EXPIRED
+  PENDING_REVIEW
+  SUPERSEDED
+}
+
+enum HazmatManifestStatus {
+  DRAFT
+  SUBMITTED
+  ACKNOWLEDGED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum StorageCompatibilityResult {
+  COMPATIBLE
+  INCOMPATIBLE
+  CONDITIONAL
+}
+
+model HazmatClassification {
+  id              String           @id @default(cuid())
+  tenantId        String           @map("tenant_id")
+  productId       String           @map("product_id")
+  unNumber        String           @map("un_number")
+  properShippingName String        @map("proper_shipping_name")
+  hazardClass     HazardClass      @map("hazard_class")
+  subsidiaryHazards String[]       @map("subsidiary_hazards")
+  packingGroup    PackingGroup?    @map("packing_group")
+  regulation      HazmatRegulation
+  flashPoint      Decimal?         @map("flash_point") @db.Decimal(8, 2)
+  boilingPoint    Decimal?         @map("boiling_point") @db.Decimal(8, 2)
+  maxQtyPerPackage Decimal?        @map("max_qty_per_package") @db.Decimal(15, 4)
+  transportIndex  Decimal?         @map("transport_index") @db.Decimal(8, 2)
+  isExempted      Boolean          @default(false) @map("is_exempted")
+  exemptionRef    String?          @map("exemption_ref")
+  notes           String?
+  createdBy       String           @map("created_by")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  sdsRecords      SafetyDataSheet[]
+  manifests       HazmatManifestLine[]
+
+  @@unique([tenantId, productId, regulation])
+  @@index([tenantId])
+  @@index([unNumber])
+  @@map("hazmat_classifications")
+}
+
+model SafetyDataSheet {
+  id                  String     @id @default(cuid())
+  tenantId            String     @map("tenant_id")
+  classificationId    String     @map("classification_id")
+  productId           String     @map("product_id")
+  sdsNumber           String     @map("sds_number")
+  revision            String
+  issueDate           DateTime   @map("issue_date")
+  expiryDate          DateTime?  @map("expiry_date")
+  supplier            String
+  language            String     @default("EN")
+  status              SdsStatus  @default(CURRENT)
+  storageConditions   String?    @map("storage_conditions")
+  firstAidMeasures    String?    @map("first_aid_measures")
+  spillProcedures     String?    @map("spill_procedures")
+  disposalMethods     String?    @map("disposal_methods")
+  documentUrl         String?    @map("document_url")
+  acknowledgedBy      String?    @map("acknowledged_by")
+  acknowledgedAt      DateTime?  @map("acknowledged_at")
+  supersededById      String?    @map("superseded_by_id")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  classification      HazmatClassification @relation(fields: [classificationId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sdsNumber])
+  @@index([tenantId])
+  @@index([productId])
+  @@index([status])
+  @@map("safety_data_sheets")
+}
+
+model HazmatStorageRule {
+  id              String                     @id @default(cuid())
+  tenantId        String                     @map("tenant_id")
+  hazardClassA    HazardClass                @map("hazard_class_a")
+  hazardClassB    HazardClass                @map("hazard_class_b")
+  result          StorageCompatibilityResult
+  condition       String?
+  notes           String?
+  createdAt       DateTime                   @default(now()) @map("created_at")
+
+  @@unique([tenantId, hazardClassA, hazardClassB])
+  @@index([tenantId])
+  @@map("hazmat_storage_rules")
+}
+
+model HazmatManifest {
+  id              String               @id @default(cuid())
+  tenantId        String               @map("tenant_id")
+  manifestNumber  String               @map("manifest_number")
+  regulation      HazmatRegulation
+  shipmentRef     String?              @map("shipment_ref")
+  carrierId       String?              @map("carrier_id")
+  carrierName     String?              @map("carrier_name")
+  originAddress   String               @map("origin_address")
+  destAddress     String               @map("dest_address")
+  shippedAt       DateTime?            @map("shipped_at")
+  deliveredAt     DateTime?            @map("delivered_at")
+  status          HazmatManifestStatus @default(DRAFT)
+  totalGrossWeight Decimal?            @map("total_gross_weight") @db.Decimal(15, 4)
+  weightUnit      String               @default("KG") @map("weight_unit")
+  emergencyContact String?             @map("emergency_contact")
+  specialInstructions String?          @map("special_instructions")
+  createdBy       String               @map("created_by")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  lines           HazmatManifestLine[]
+
+  @@unique([tenantId, manifestNumber])
+  @@index([tenantId])
+  @@index([status])
+  @@map("hazmat_manifests")
+}
+
+model HazmatManifestLine {
+  id               String               @id @default(cuid())
+  tenantId         String               @map("tenant_id")
+  manifestId       String               @map("manifest_id")
+  classificationId String               @map("classification_id")
+  productId        String               @map("product_id")
+  quantity         Decimal              @db.Decimal(15, 4)
+  uom              String               @default("KG")
+  grossWeight      Decimal?             @map("gross_weight") @db.Decimal(15, 4)
+  netWeight        Decimal?             @map("net_weight") @db.Decimal(15, 4)
+  numberOfPackages Int                  @default(1) @map("number_of_packages")
+  packagingType    String?              @map("packaging_type")
+  labelRequired    Boolean              @default(true) @map("label_required")
+  notes            String?
+
+  manifest         HazmatManifest        @relation(fields: [manifestId], references: [id], onDelete: Cascade)
+  classification   HazmatClassification  @relation(fields: [classificationId], references: [id])
+
+  @@index([tenantId])
+  @@index([manifestId])
+  @@map("hazmat_manifest_lines")
+}
+
+model HazmatIncident {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  incidentNumber  String    @map("incident_number")
+  productId       String    @map("product_id")
+  warehouseId     String?   @map("warehouse_id")
+  incidentDate    DateTime  @map("incident_date")
+  severity        String
+  description     String
+  immediateAction String?   @map("immediate_action")
+  rootCause       String?   @map("root_cause")
+  correctiveAction String?  @map("corrective_action")
+  reportedBy      String    @map("reported_by")
+  reportedToAuthority Boolean @default(false) @map("reported_to_authority")
+  authorityRef    String?   @map("authority_ref")
+  closedAt        DateTime? @map("closed_at")
+  closedBy        String?   @map("closed_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, incidentNumber])
+  @@index([tenantId])
+  @@index([productId])
+  @@map("hazmat_incidents")
+}

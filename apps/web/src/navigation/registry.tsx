@@ -179,6 +179,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'transfer-orders': 'Transfer Orders',
   'yard-management': 'Yard Management',
   'stock-takes': 'Physical Inventory',
+  'hazmat': 'Hazardous Materials',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

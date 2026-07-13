@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 26 — Hazardous Materials & Dangerous Goods (FAST)
+
+6 DB models (HazmatClassification, SafetyDataSheet, HazmatStorageRule, HazmatManifest, HazmatManifestLine, HazmatIncident) + 6 enums; 35+ API endpoints covering UN classification CRUD with duplicate-guard, SDS lifecycle (CURRENT→EXPIRED/SUPERSEDED) with acknowledge + expiry-window query, storage compatibility rules upsert + symmetrical check + warehouse-level scan, hazmat manifest lifecycle (DRAFT→SUBMITTED→ACKNOWLEDGED→IN_TRANSIT→DELIVERED/CANCELLED) with auto-numbered lines and gross-weight rollup, hazmat incident reporting + close, compliance report per product, hazard-class summary, UN number search, and full dashboard; `/inventory/hazmat` 5-tab Next.js UI (Dashboard, Classifications, Manifests, Incidents, Compliance Report). Nav, registry, smoke-route added. 32 unit tests pass. FAST gate: scoped typecheck clean, 32/32 tests green.
+
 ## [2026-07-13] Inventory Cycle 25 — Physical Inventory / Stock Take (FAST)
 
 4 DB models (StockTake, CountSheet, CountSheetItem, StockTakeVariance) + 3 enums (StockTakeStatus, CountSheetStatus, StockTakeVarianceStatus); 25+ API endpoints (stock-take lifecycle DRAFT→IN_PROGRESS→COUNTING→VARIANCE_REVIEW→APPROVED→POSTED with freeze-on-start, count-sheet CRUD with auto-numbering ST-XXXXX-NNN, item add + count recording with Decimal variance arithmetic, recount, variance generation + approve/reject per-variance + approve/post full stock-take); `/inventory/stock-takes` 4-tab UI (Dashboard, Stock Takes, Variance Review, Accuracy Report). Nav, registry, smoke-route added. 24 unit tests pass. FAST gate: scoped typecheck clean, 24/24 tests green.
