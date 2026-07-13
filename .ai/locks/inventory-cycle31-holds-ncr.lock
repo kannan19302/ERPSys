@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle31-holds-ncr",
+  "agent": "claude-code-web-goal-start-ib21qn",
+  "scope": "Inventory holds/blocks + supplier NCR/CAR quality workflow",
+  "acquiredAt": "2026-07-13T08:38:26.631Z",
+  "heartbeatAt": "2026-07-13T08:38:26.631Z",
+  "pid": 3643
+}
