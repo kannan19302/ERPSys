@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle23-purchase-order-mgmt",
-  "agent": "claude-sonnet-4-6-goal-start",
-  "scope": "Purchase Order management: multi-line PO with approval workflow, vendor selection, partial receipts tracking, PO amendments, close-out, vendor performance scoring",
-  "acquiredAt": "2026-07-13T03:44:33.957Z",
-  "heartbeatAt": "2026-07-13T03:44:33.957Z",
-  "pid": 32241
-}
