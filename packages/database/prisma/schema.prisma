@@ -14054,3 +14054,132 @@ model ProductVelocitySnapshot {
   @@index([tenantId, snapshotMonth])
   @@map("product_velocity_snapshots")
 }
+
+// ─── Inventory Cycle 33 — Customer Returns & Reverse Logistics ────────────────
+
+enum RmaStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  RECEIVED
+  INSPECTED
+  CLOSED
+}
+
+enum ReturnDisposition {
+  RESTOCK          // goes back to inventory
+  REFURBISH        // needs repair/rework before restock
+  SCRAP            // destroy / write off
+  RETURN_TO_VENDOR // send back to supplier
+  QUARANTINE       // hold for QA decision
+}
+
+enum ReturnCreditStatus {
+  PENDING
+  ISSUED
+  VOIDED
+}
+
+/// Customer Return Merchandise Authorization
+model CustomerRma {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  rmaNumber       String    @map("rma_number")          // RMA-000001
+  customerId      String    @map("customer_id")
+  salesOrderId    String?   @map("sales_order_id")
+  status          RmaStatus @default(REQUESTED)
+  returnReason    String    @map("return_reason")
+  customerNotes   String?   @map("customer_notes")
+  requestedById   String    @map("requested_by_id")
+  approvedById    String?   @map("approved_by_id")
+  approvedAt      DateTime? @map("approved_at")
+  rejectedById    String?   @map("rejected_by_id")
+  rejectionReason String?   @map("rejection_reason")
+  receivedAt      DateTime? @map("received_at")
+  warehouseId     String?   @map("warehouse_id")
+  expiresAt       DateTime? @map("expires_at")          // RMA validity window
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  lines  CustomerRmaLine[]
+  credit ReturnCredit?
+
+  @@unique([tenantId, rmaNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@map("customer_rmas")
+}
+
+/// Line items on a customer RMA
+model CustomerRmaLine {
+  id              String            @id @default(cuid())
+  tenantId        String            @map("tenant_id")
+  rmaId           String            @map("rma_id")
+  productId       String            @map("product_id")
+  lotNumber       String?           @map("lot_number")
+  serialNumber    String?           @map("serial_number")
+  quantityRequested Decimal         @map("quantity_requested") @db.Decimal(18, 4)
+  quantityReceived  Decimal         @default(0) @map("quantity_received") @db.Decimal(18, 4)
+  unitCost        Decimal?          @map("unit_cost") @db.Decimal(18, 4)
+  disposition     ReturnDisposition? @map("disposition")
+  inspectionNotes String?           @map("inspection_notes")
+  inspectedById   String?           @map("inspected_by_id")
+  inspectedAt     DateTime?         @map("inspected_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  rma CustomerRma @relation(fields: [rmaId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, rmaId])
+  @@index([tenantId, productId])
+  @@map("customer_rma_lines")
+}
+
+/// Credit memo issued to customer after return
+model ReturnCredit {
+  id              String             @id @default(cuid())
+  tenantId        String             @map("tenant_id")
+  creditNumber    String             @map("credit_number")   // CRM-000001
+  rmaId           String             @unique @map("rma_id")
+  customerId      String             @map("customer_id")
+  creditAmount    Decimal            @map("credit_amount") @db.Decimal(18, 4)
+  currency        String             @default("USD")
+  status          ReturnCreditStatus @default(PENDING)
+  issuedById      String?            @map("issued_by_id")
+  issuedAt        DateTime?          @map("issued_at")
+  voidedById      String?            @map("voided_by_id")
+  voidReason      String?            @map("void_reason")
+  notes           String?
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  rma CustomerRma @relation(fields: [rmaId], references: [id])
+
+  @@unique([tenantId, creditNumber])
+  @@index([tenantId])
+  @@index([tenantId, customerId])
+  @@index([tenantId, status])
+  @@map("return_credits")
+}
+
+/// Tracks restocking of returned items back into warehouse bins
+model ReturnRestock {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  rmaLineId       String   @map("rma_line_id")
+  productId       String   @map("product_id")
+  warehouseId     String   @map("warehouse_id")
+  binLocationId   String?  @map("bin_location_id")
+  quantityRestocked Decimal @map("quantity_restocked") @db.Decimal(18, 4)
+  restockedById   String   @map("restocked_by_id")
+  restockedAt     DateTime @default(now()) @map("restocked_at")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, rmaLineId])
+  @@index([tenantId, productId])
+  @@map("return_restocks")
+}

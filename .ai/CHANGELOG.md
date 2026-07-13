@@ -2,6 +2,20 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 33 — Customer Returns & Reverse Logistics (FAST)
+
+**Sub-domain**: `inventory-cycle33-customer-returns`
+
+**Schema** (migration `20260713160000`): 3 enums (`RmaStatus`, `ReturnDisposition`, `ReturnCreditStatus`), 4 models (`CustomerRma`, `CustomerRmaLine`, `ReturnCredit`, `ReturnRestock`)
+
+**API** (`/api/inventory/customer-returns`): 14 endpoints — dashboard, RMA lifecycle (create, approve, reject, receive, close), per-line inspection with auto-advance to INSPECTED when all lines done, credit memo issuance/void, restock recording.
+
+**Business logic**: RMA state machine (REQUESTED→APPROVED→RECEIVED→INSPECTED→CLOSED or REJECTED), auto-numbering (RMA-XXXXXX, CRM-XXXXXX), disposition types (RESTOCK/REFURBISH/SCRAP/RETURN_TO_VENDOR/QUARANTINE), credit guard (duplicate prevention, positive amount check).
+
+**UI**: 5-tab page (`/inventory/customer-returns`) — Dashboard (stat grid), RMAs (list + create + lifecycle actions), Inspection (per-line disposition assignment), Credits (issue + void), Restocks (record returns to inventory).
+
+**Tests**: 16 unit tests — all pass.
+
 ## [2026-07-13] Inventory Cycle 32 — Velocity Classification & ABC-XYZ Analysis (FAST)
 
 **Sub-domain**: `inventory-cycle32-supplier-delivery-perf` (velocity-abc-xyz)

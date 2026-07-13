@@ -56,6 +56,7 @@ import { CatchWeightRecallModule } from './modules/inventory/catch-weight-recall
 import { PackagingGs1Module } from './modules/inventory/packaging-gs1.module';
 import { ColdChainWriteoffModule } from './modules/inventory/cold-chain-writeoff.module';
 import { VelocityAbcXyzModule } from './modules/inventory/velocity-abc-xyz.module';
+import { CustomerReturnsModule } from './modules/inventory/customer-returns.module';
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { VelocityAbcXyzModule } from './modules/inventory/velocity-abc-xyz.modul
     PackagingGs1Module,
     ColdChainWriteoffModule,
     VelocityAbcXyzModule,
+    CustomerReturnsModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

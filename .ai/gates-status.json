@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-13T15:00:00.000Z",
-  "fastCyclesSinceFullGate": 1,
-  "deferredScopes": ["inventory-cycle32-velocity-abc-xyz"],
+  "ranAt": "2026-07-13T15:30:00.000Z",
+  "fastCyclesSinceFullGate": 2,
+  "deferredScopes": ["inventory-cycle32-velocity-abc-xyz", "inventory-cycle33-customer-returns"],
   "lastMilestoneCommit": "cycle-31-cold-chain-writeoff",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
