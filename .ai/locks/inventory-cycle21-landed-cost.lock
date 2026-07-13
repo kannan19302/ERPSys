@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle21-landed-cost",
-  "agent": "claude-sonnet/cycle21",
-  "scope": "Landed cost allocation: freight/duty/insurance/brokerage spread across PO receipt lines by qty, value, weight, or volume",
-  "acquiredAt": "2026-07-13T03:25:19.088Z",
-  "heartbeatAt": "2026-07-13T03:25:19.106Z",
-  "pid": 7440
-}

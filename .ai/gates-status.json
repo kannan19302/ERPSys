@@ -1,7 +1,10 @@
 {
-  "ranAt": "2026-07-13T03:10:00.000Z",
-  "fastCyclesSinceFullGate": 1,
-  "deferredScopes": ["inventory-demand-forecasting"],
+  "ranAt": "2026-07-13T04:00:00.000Z",
+  "fastCyclesSinceFullGate": 2,
+  "deferredScopes": [
+    "inventory-demand-forecasting",
+    "inventory-landed-cost"
+  ],
   "lastMilestoneCommit": "cycle-19-lot-serial-tracking",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
@@ -20,6 +23,6 @@
   "e2e": {
     "label": "Playwright smoke gate",
     "pass": null,
-    "note": "[e2e-unverified] RLS blocker — app pipeline never sets app.current_tenant_id; needs dedicated session."
+    "note": "[e2e-unverified] RLS blocker \u2014 app pipeline never sets app.current_tenant_id; needs dedicated session."
   }
 }

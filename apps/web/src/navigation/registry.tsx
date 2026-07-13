@@ -174,6 +174,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   slotting: 'Slotting Optimization',
   'dock-scheduling': 'Dock Scheduling',
   'demand-forecasting': 'Demand Forecasting',
+  'landed-cost': 'Landed Cost',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

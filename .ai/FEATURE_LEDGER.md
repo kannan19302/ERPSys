@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-12T17:02:20.827Z
+> Last generated: 2026-07-13T03:36:42.656Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2248 features** across 33 modules
+## System total: **2286 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 342 |
+| [inventory](#inventory) | 380 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-342 features
+380 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1786,15 +1786,34 @@
 | GET | `/inventory/costing/valuation-report` | Get valuation report | `inventory.stock.read` |
 | POST | `/inventory/costing/landed-cost` | Calculate landed cost | `inventory.stock.read` |
 | GET | `/inventory/costing/barcode/:barcode` | Lookup barcode | `inventory.stock.adjust` |
-| GET | `/inventory/demand-forecasting/runs` | List demand forecast runs | `inventory.demand_forecast.read` |
-| GET | `/inventory/demand-forecasting/runs/:id` | Get a demand forecast run | `inventory.demand_forecast.read` |
-| GET | `/inventory/demand-forecasting/runs/:id/lines` | Get forecast lines for a run | `inventory.demand_forecast.read` |
-| POST | `/inventory/demand-forecasting/runs/generate` | Generate a new demand forecast run (moving average / exponential smoothing over historical stock-ledger outbound demand) | `inventory.demand_forecast.generate` |
-| PATCH | `/inventory/demand-forecasting/runs/:id` | Update a demand forecast run (name only) | `inventory.demand_forecast.update` |
-| DELETE | `/inventory/demand-forecasting/runs/:id` | Soft-delete a demand forecast run | `inventory.demand_forecast.delete` |
-| GET | `/inventory/demand-forecasting/reorder-suggestions` | List reorder suggestions | `inventory.reorder_suggestion.read` |
-| POST | `/inventory/demand-forecasting/reorder-suggestions/:id/accept` | Accept a reorder suggestion | `inventory.reorder_suggestion.update` |
-| POST | `/inventory/demand-forecasting/reorder-suggestions/:id/dismiss` | Dismiss a reorder suggestion | `inventory.reorder_suggestion.update` |
+| GET | `/inventory/demand-forecasting/dashboard` | — | — |
+| GET | `/inventory/demand-forecasting/replenishment-summary` | — | — |
+| GET | `/inventory/demand-forecasting/forecast-accuracy` | — | — |
+| GET | `/inventory/demand-forecasting/reorder-alerts` | — | — |
+| GET | `/inventory/demand-forecasting/forecasts` | — | — |
+| POST | `/inventory/demand-forecasting/forecasts` | — | — |
+| POST | `/inventory/demand-forecasting/forecasts/run-engine` | — | — |
+| GET | `/inventory/demand-forecasting/forecasts/:id` | — | — |
+| PATCH | `/inventory/demand-forecasting/forecasts/:id/actual` | — | — |
+| PATCH | `/inventory/demand-forecasting/forecasts/:id/archive` | — | — |
+| GET | `/inventory/demand-forecasting/reorder-points` | — | — |
+| POST | `/inventory/demand-forecasting/reorder-points/calculate` | — | — |
+| GET | `/inventory/demand-forecasting/reorder-points/:id` | — | — |
+| PATCH | `/inventory/demand-forecasting/reorder-points/:id/deactivate` | — | — |
+| GET | `/inventory/demand-forecasting/safety-stock` | — | — |
+| POST | `/inventory/demand-forecasting/safety-stock` | — | — |
+| DELETE | `/inventory/demand-forecasting/safety-stock/:id` | — | — |
+| GET | `/inventory/demand-forecasting/replenishment-orders` | — | — |
+| POST | `/inventory/demand-forecasting/replenishment-orders` | — | — |
+| POST | `/inventory/demand-forecasting/replenishment-orders/auto-generate` | — | — |
+| GET | `/inventory/demand-forecasting/replenishment-orders/:id` | — | — |
+| POST | `/inventory/demand-forecasting/replenishment-orders/:id/approve` | — | — |
+| PATCH | `/inventory/demand-forecasting/replenishment-orders/:id/status` | — | — |
+| PATCH | `/inventory/demand-forecasting/replenishment-orders/:id/cancel` | — | — |
+| GET | `/inventory/demand-forecasting/stockout-predictions` | — | — |
+| POST | `/inventory/demand-forecasting/stockout-predictions/generate` | — | — |
+| GET | `/inventory/demand-forecasting/stockout-predictions/:id` | — | — |
+| PATCH | `/inventory/demand-forecasting/stockout-predictions/:id/acknowledge` | — | — |
 | GET | `/inventory/analytics/dashboard` | Aggregate inventory analytics dashboard | — |
 | GET | `/inventory/analytics/health-score` | Aggregate inventory analytics dashboard | — |
 | GET | `/inventory/analytics/slow-moving` | Inventory health score with component breakdown | — |
@@ -2005,6 +2024,25 @@
 | POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
+| GET | `/inventory/landed-cost/dashboard` | — | — |
+| GET | `/inventory/landed-cost/charge-type-summary` | — | — |
+| GET | `/inventory/landed-cost/allocation-report` | — | — |
+| GET | `/inventory/landed-cost/vouchers` | — | — |
+| POST | `/inventory/landed-cost/vouchers` | — | — |
+| GET | `/inventory/landed-cost/vouchers/:id` | — | — |
+| PUT | `/inventory/landed-cost/vouchers/:id` | — | — |
+| DELETE | `/inventory/landed-cost/vouchers/:id` | — | — |
+| PATCH | `/inventory/landed-cost/vouchers/:id/submit` | — | — |
+| PATCH | `/inventory/landed-cost/vouchers/:id/cancel` | — | — |
+| PATCH | `/inventory/landed-cost/vouchers/:id/allocate` | — | — |
+| GET | `/inventory/landed-cost/vouchers/:id/charge-lines` | — | — |
+| POST | `/inventory/landed-cost/vouchers/:id/charge-lines` | — | — |
+| PUT | `/inventory/landed-cost/vouchers/:id/charge-lines/:lineId` | — | — |
+| DELETE | `/inventory/landed-cost/vouchers/:id/charge-lines/:lineId` | — | — |
+| GET | `/inventory/landed-cost/vouchers/:id/receipt-links` | — | — |
+| POST | `/inventory/landed-cost/vouchers/:id/receipt-links` | — | — |
+| DELETE | `/inventory/landed-cost/vouchers/:id/receipt-links/:stockEntryId` | — | — |
+| GET | `/inventory/landed-cost/vouchers/:id/allocations` | — | — |
 | GET | `/inventory/lot-serial/dashboard` | — | — |
 | GET | `/inventory/lot-serial/expiry-report` | — | — |
 | GET | `/inventory/lot-serial/batches` | — | — |

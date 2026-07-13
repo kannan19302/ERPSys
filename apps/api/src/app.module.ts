@@ -44,6 +44,7 @@ import { QualityComplianceModule } from './modules/inventory/quality-compliance.
 import { WarehouseOpsModule } from './modules/inventory/warehouse-ops.module';
 import { LotSerialTrackingModule } from './modules/inventory/lot-serial-tracking.module';
 import { DemandForecastingModule } from './modules/inventory/demand-forecasting.module';
+import { LandedCostModule } from './modules/inventory/landed-cost.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { DemandForecastingModule } from './modules/inventory/demand-forecasting.
     WarehouseOpsModule,
     LotSerialTrackingModule,
     DemandForecastingModule,
+    LandedCostModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

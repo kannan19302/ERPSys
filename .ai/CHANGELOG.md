@@ -2,6 +2,24 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 21: Landed Cost Allocation — FAST cycle
+
+FAST cycle (fastCyclesSinceFullGate 1→2). Scoped typechecks pass; 22 unit tests pass.
+
+- **DB**: 4 new models — `LandedCostVoucher`, `LandedCostChargeLine`, `LandedCostReceiptLink`, `LandedCostAllocation`
+  (migration `20260713040000_inventory_cycle21_landed_cost`)
+- **API** (`LandedCostModule`, 25+ endpoints under `/inventory/landed-cost`):
+  - **Vouchers**: create (auto-numbered LCV-XXXXX), list (status filter), get, update, delete (DRAFT only),
+    submit (DRAFT→SUBMITTED, requires charge lines), cancel (guards ALLOCATED), allocate (SUBMITTED→ALLOCATED)
+  - **Charge Lines**: add, update, remove (DRAFT only); auto-recalculates voucher total on every change
+  - **Receipt Links**: link/unlink purchase receipt entries (qty, value, weight, volume basis fields)
+  - **Allocations**: spread charge lines across receipts by QTY/VALUE/WEIGHT/VOLUME/EQUAL method;
+    stores pct + allocated amount per receipt per charge type; clears and re-creates on re-allocation
+  - **Reports**: allocation-report (with charge-type breakdown), charge-type-summary, dashboard (status KPIs + total allocated)
+- **UI** (`/inventory/landed-cost`): 4-tab page — Dashboard (status grid + total allocated),
+  Vouchers (create form + lifecycle action buttons: submit/allocate/cancel), Charge Lines (add/remove), Allocations (report view)
+- **Nav/Registry**: `Landed Cost` entry in moduleNav + registry segment `landed-cost`; smoke route added
+
 ## [2026-07-13] Inventory Cycle 20: Demand Forecasting — FAST cycle
 
 FAST cycle (fastCyclesSinceFullGate 0→1). Scoped typechecks + full test suite (203 files, 2629 tests).

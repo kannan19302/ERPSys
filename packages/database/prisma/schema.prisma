@@ -12289,3 +12289,93 @@ model StockoutPrediction {
   @@index([tenantId, productId])
   @@map("stockout_predictions")
 }
+
+// ─── Cycle 21: Landed Cost Allocation ─────────────────────────────────────────
+
+model LandedCostVoucher {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  voucherNumber   String    @map("voucher_number")
+  description     String?
+  status          String    @default("DRAFT") // DRAFT | SUBMITTED | ALLOCATED | CANCELLED
+  allocationMethod String   @map("allocation_method") // QTY | VALUE | WEIGHT | VOLUME | EQUAL
+  totalAmount     Decimal   @map("total_amount") @db.Decimal(15, 2)
+  currency        String    @default("USD")
+  vendorId        String?   @map("vendor_id")
+  invoiceRef      String?   @map("invoice_ref")
+  notes           String?
+  allocatedAt     DateTime? @map("allocated_at")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  chargeLines LandedCostChargeLine[]
+  receiptLinks LandedCostReceiptLink[]
+  allocations  LandedCostAllocation[]
+
+  @@unique([tenantId, voucherNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("landed_cost_vouchers")
+}
+
+model LandedCostChargeLine {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  voucherId   String    @map("voucher_id")
+  chargeType  String    @map("charge_type") // FREIGHT | DUTY | INSURANCE | BROKERAGE | OTHER
+  description String?
+  amount      Decimal   @db.Decimal(15, 2)
+  currency    String    @default("USD")
+  accountCode String?   @map("account_code")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  voucher LandedCostVoucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([voucherId])
+  @@map("landed_cost_charge_lines")
+}
+
+model LandedCostReceiptLink {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  voucherId      String    @map("voucher_id")
+  stockEntryId   String    @map("stock_entry_id")
+  totalQty       Decimal   @map("total_qty") @db.Decimal(15, 4)
+  totalValue     Decimal   @map("total_value") @db.Decimal(15, 2)
+  totalWeight    Decimal?  @map("total_weight") @db.Decimal(15, 4)
+  totalVolume    Decimal?  @map("total_volume") @db.Decimal(15, 4)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  voucher LandedCostVoucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@unique([voucherId, stockEntryId])
+  @@index([tenantId])
+  @@index([voucherId])
+  @@map("landed_cost_receipt_links")
+}
+
+model LandedCostAllocation {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  voucherId       String    @map("voucher_id")
+  chargeType      String    @map("charge_type")
+  stockEntryId    String    @map("stock_entry_id")
+  stockEntryItemId String?  @map("stock_entry_item_id")
+  productId       String    @map("product_id")
+  allocationBasis Decimal   @map("allocation_basis") @db.Decimal(15, 4) // weight used for calc
+  allocationPct   Decimal   @map("allocation_pct") @db.Decimal(8, 6)
+  allocatedAmount Decimal   @map("allocated_amount") @db.Decimal(15, 4)
+  addedToItemCost Boolean   @default(false) @map("added_to_item_cost")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  voucher LandedCostVoucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([voucherId])
+  @@index([tenantId, productId])
+  @@map("landed_cost_allocations")
+}
