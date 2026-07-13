@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle38-lot-expiry",
+  "agent": "claude-sonnet-4-6-session-2b8e0da4",
+  "scope": "Lot/Batch expiry management: FEFO picking, expiry alerts, disposal workflows",
+  "acquiredAt": "2026-07-13T09:43:24.502Z",
+  "heartbeatAt": "2026-07-13T09:43:24.502Z",
+  "pid": 18526
+}
