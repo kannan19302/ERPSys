@@ -58,6 +58,7 @@ import { ColdChainWriteoffModule } from './modules/inventory/cold-chain-writeoff
 import { VelocityAbcXyzModule } from './modules/inventory/velocity-abc-xyz.module';
 import { CustomerReturnsModule } from './modules/inventory/customer-returns.module';
 import { MinMaxReplenModule } from './modules/inventory/minmax-replen.module';
+import { FreightClaimsModule } from './modules/inventory/freight-claims.module';
 
 @Module({
   imports: [
@@ -114,6 +115,7 @@ import { MinMaxReplenModule } from './modules/inventory/minmax-replen.module';
     VelocityAbcXyzModule,
     CustomerReturnsModule,
     MinMaxReplenModule,
+    FreightClaimsModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

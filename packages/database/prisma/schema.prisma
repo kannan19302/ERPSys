@@ -14280,3 +14280,122 @@ model ReplenRunLog {
   @@index([tenantId])
   @@map("replen_run_logs")
 }
+
+// ─── Inventory Cycle 35 — Freight Claims & Cargo Damage Reporting ─────────────
+
+enum DamageReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  CLAIM_FILED
+  RESOLVED
+  CLOSED
+}
+
+enum DamageSeverity {
+  MINOR      // cosmetic / partial damage; item still usable
+  MODERATE   // partial loss; item degraded but repairable
+  SEVERE     // item total loss
+}
+
+enum FreightClaimType {
+  DAMAGE          // physical damage to cargo
+  SHORTAGE        // quantity short-delivered
+  LOSS            // cargo lost in transit
+  DELAY           // time-sensitive cargo delayed
+  CONCEALED       // damage discovered after delivery
+}
+
+enum FreightClaimStatus {
+  DRAFT
+  FILED
+  ACKNOWLEDGED
+  UNDER_INVESTIGATION
+  SETTLEMENT_OFFERED
+  ACCEPTED
+  REJECTED
+  CLOSED
+}
+
+/// Damage report created on receipt of a shipment
+model CargoDamageReport {
+  id              String             @id @default(cuid())
+  tenantId        String             @map("tenant_id")
+  reportNumber    String             @map("report_number")    // CDR-000001
+  shipmentId      String?            @map("shipment_id")
+  purchaseOrderId String?            @map("purchase_order_id")
+  carrierId       String?            @map("carrier_id")
+  warehouseId     String?            @map("warehouse_id")
+  reportedById    String             @map("reported_by_id")
+  discoveredAt    DateTime           @map("discovered_at")
+  severity        DamageSeverity     @default(MINOR)
+  status          DamageReportStatus @default(DRAFT)
+  description     String
+  affectedSkus    String?            @map("affected_skus")    // CSV of product IDs
+  quantityDamaged Decimal?           @map("quantity_damaged") @db.Decimal(18, 4)
+  estimatedLoss   Decimal?           @map("estimated_loss") @db.Decimal(18, 4)
+  currency        String             @default("USD")
+  photoUrls       String?            @map("photo_urls")       // CSV of URLs
+  notes           String?
+  reviewedById    String?            @map("reviewed_by_id")
+  reviewedAt      DateTime?          @map("reviewed_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  claim FreightClaim?
+
+  @@unique([tenantId, reportNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, carrierId])
+  @@map("cargo_damage_reports")
+}
+
+/// Freight claim filed against a carrier
+model FreightClaim {
+  id              String             @id @default(cuid())
+  tenantId        String             @map("tenant_id")
+  claimNumber     String             @map("claim_number")     // FC-000001
+  damageReportId  String             @unique @map("damage_report_id")
+  carrierId       String             @map("carrier_id")
+  claimType       FreightClaimType
+  status          FreightClaimStatus @default(DRAFT)
+  claimedAmount   Decimal            @map("claimed_amount") @db.Decimal(18, 4)
+  currency        String             @default("USD")
+  filedById       String?            @map("filed_by_id")
+  filedAt         DateTime?          @map("filed_at")
+  carrierRefNumber String?           @map("carrier_ref_number")
+  settlementAmount Decimal?          @map("settlement_amount") @db.Decimal(18, 4)
+  settlementDate  DateTime?          @map("settlement_date")
+  acceptedById    String?            @map("accepted_by_id")
+  rejectionReason String?            @map("rejection_reason")
+  dueDate         DateTime?          @map("due_date")
+  notes           String?
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  damageReport CargoDamageReport @relation(fields: [damageReportId], references: [id])
+
+  @@unique([tenantId, claimNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, carrierId])
+  @@index([tenantId, claimType])
+  @@map("freight_claims")
+}
+
+/// Status updates / correspondence log for a freight claim
+model FreightClaimEvent {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  claimId     String   @map("claim_id")
+  eventType   String   @map("event_type")   // e.g. "CARRIER_RESPONSE", "DOCUMENT_SUBMITTED"
+  description String
+  recordedById String  @map("recorded_by_id")
+  occurredAt  DateTime @default(now()) @map("occurred_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, claimId])
+  @@map("freight_claim_events")
+}

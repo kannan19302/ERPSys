@@ -1,21 +1,21 @@
 {
-  "ranAt": "2026-07-13T16:00:00.000Z",
-  "fastCyclesSinceFullGate": 3,
-  "deferredScopes": ["inventory-cycle32-velocity-abc-xyz", "inventory-cycle33-customer-returns", "inventory-cycle34-minmax-replen"],
-  "lastMilestoneCommit": "cycle-31-cold-chain-writeoff",
+  "ranAt": "2026-07-13T18:00:00.000Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "cycle-35-freight-claims",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 29
+    "seconds": 28
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
     "seconds": 41,
-    "files": 214,
-    "cases": 2875
+    "files": 218,
+    "cases": 2935
   },
   "e2e": {
     "label": "Playwright smoke gate",

@@ -188,6 +188,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'velocity-abc-xyz': 'Inventory Velocity & ABC-XYZ Classification',
   'customer-returns': 'Customer Returns & Reverse Logistics',
   'minmax-replen': 'Min-Max Replenishment Planning',
+  'freight-claims': 'Freight Claims & Cargo Damage Reporting',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

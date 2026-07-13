@@ -2,6 +2,18 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 35 — Freight Claims & Cargo Damage Reporting (MILESTONE)
+
+**Sub-domain**: inventory-cycle35-freight-claims | **Gate**: MILESTONE (turbo typecheck ✅, 218 test files / 2935 tests ✅)
+
+### Added
+- `CargoDamageReport` model — auto-numbered CDR-XXXXXX, severity (MINOR/MODERATE/SEVERE), status workflow (DRAFT→SUBMITTED→UNDER_REVIEW/CLAIM_FILED→RESOLVED/CLOSED), reviewer tracking
+- `FreightClaim` model — auto-numbered FC-XXXXXX, 1:1 with damage report (unique), state machine (DRAFT→FILED→ACKNOWLEDGED→UNDER_INVESTIGATION→SETTLEMENT_OFFERED→ACCEPTED/REJECTED→CLOSED), settlement amount/date, carrier ref number
+- `FreightClaimEvent` audit log — event type + description + timestamp per claim
+- API: 4 enums, 3 DB tables; `FreightClaimsService` with 12 methods; `FreightClaimsController` with 13 endpoints; `FreightClaimsModule` wired into AppModule
+- UI: `/inventory/freight-claims` — 5-tab page (Dashboard, Damage Reports, File Claim, Claims, Events)
+- Nav, registry, smoke route updated
+
 ## [2026-07-13] Inventory Cycle 34 — Min-Max Replenishment Planning (FAST)
 
 **Sub-domain**: `inventory-cycle34-minmax-replen`
