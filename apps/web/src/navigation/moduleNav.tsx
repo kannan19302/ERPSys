@@ -345,6 +345,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
           { name: 'Freight Claims', href: '/inventory/freight-claims', icon: AlertTriangle },
           { name: 'Vendor-Managed Inventory', href: '/inventory/vmi', icon: Box },
           { name: 'Inventory Costing', href: '/inventory/costing', icon: TrendingUp },
+          { name: 'Lot/Batch Expiry', href: '/inventory/lot-expiry', icon: AlertTriangle },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
           ]
         },

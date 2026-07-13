@@ -2,6 +2,21 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 38 — Lot/Batch Expiry Management (FAST)
+
+**Sub-domain**: inventory-cycle38-lot-expiry | **Gate**: FAST
+
+### Added
+- `LotExpiryRecord` — lot/batch registration with expiry date, qty tracking (remaining vs received), ACTIVE/QUARANTINE/EXPIRED/DISPOSED/RECALLED status
+- `LotExpiryAlert` — auto-generated alerts (INFO/WARNING/CRITICAL) based on days-to-expiry thresholds, dismissable
+- `LotDisposalRecord` — auto-numbered LDR-XXXXXX, 5 disposal methods (DESTROY/RETURN_TO_VENDOR/DONATE/REWORK/OTHER), decrements lot remaining qty
+- FEFO (First-Expired-First-Out) pick planner: given productId+warehouseId+qty, returns optimal lot allocation sorted by earliest expiry
+- Quarantine/release workflow: ACTIVE↔QUARANTINE transitions
+- `scanExpiryAlerts`: batch scan all active lots, auto-flags expiring stock, transitions past-expiry lots to EXPIRED status
+- API: `LotExpiryModule` with 13 endpoints; `LotExpiryService`
+- UI: `/inventory/lot-expiry` — 5-tab page (Dashboard, Lots, FEFO Pick, Alerts, Disposals)
+- Nav, registry, smoke updated
+
 ## [2026-07-13] Inventory Cycle 37 — Inventory Costing Methods (FAST)
 
 **Sub-domain**: inventory-cycle37-costing-methods | **Gate**: FAST

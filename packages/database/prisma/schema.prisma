@@ -14591,3 +14591,94 @@ model InventoryCostAdjustment {
   @@index([tenantId, profileId])
   @@map("inventory_cost_adjustments")
 }
+
+// ── Lot/Batch Expiry Management (Cycle 38) ───────────────────────────────────
+
+enum LotStatus {
+  ACTIVE
+  QUARANTINE
+  EXPIRED
+  DISPOSED
+  RECALLED
+}
+
+enum ExpiryAlertLevel {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum DisposalMethod {
+  DESTROY
+  RETURN_TO_VENDOR
+  DONATE
+  REWORK
+  OTHER
+}
+
+model LotExpiryRecord {
+  id              String            @id @default(cuid())
+  tenantId        String
+  lotNumber       String
+  productId       String
+  warehouseId     String
+  manufactureDate DateTime?
+  expiryDate      DateTime
+  qty             Decimal           @db.Decimal(18, 4)
+  remainingQty    Decimal           @db.Decimal(18, 4)
+  status          LotStatus         @default(ACTIVE)
+  supplierId      String?
+  receiptRef      String?
+  notes           String?
+  createdById     String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  alerts          LotExpiryAlert[]
+  disposals       LotDisposalRecord[]
+
+  @@unique([tenantId, lotNumber, productId, warehouseId])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([tenantId, expiryDate])
+  @@index([tenantId, status])
+  @@map("lot_expiry_records")
+}
+
+model LotExpiryAlert {
+  id          String            @id @default(cuid())
+  tenantId    String
+  lotId       String
+  alertLevel  ExpiryAlertLevel
+  daysToExpiry Int
+  alertedAt   DateTime          @default(now())
+  dismissed   Boolean           @default(false)
+
+  lot         LotExpiryRecord   @relation(fields: [lotId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, lotId])
+  @@index([tenantId, dismissed])
+  @@map("lot_expiry_alerts")
+}
+
+model LotDisposalRecord {
+  id              String          @id @default(cuid())
+  tenantId        String
+  disposalNumber  String
+  lotId           String
+  disposalMethod  DisposalMethod
+  qtyDisposed     Decimal         @db.Decimal(18, 4)
+  disposedById    String
+  disposedAt      DateTime        @default(now())
+  reason          String
+  notes           String?
+  createdAt       DateTime        @default(now())
+
+  lot             LotExpiryRecord @relation(fields: [lotId], references: [id])
+
+  @@unique([tenantId, disposalNumber])
+  @@index([tenantId])
+  @@index([tenantId, lotId])
+  @@map("lot_disposal_records")
+}

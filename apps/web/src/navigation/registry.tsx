@@ -191,6 +191,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'freight-claims': 'Freight Claims & Cargo Damage Reporting',
   'vmi': 'Vendor-Managed Inventory (VMI)',
   'costing': 'Inventory Costing Methods (FIFO/LIFO/WAC)',
+  'lot-expiry': 'Lot/Batch Expiry Management & FEFO',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

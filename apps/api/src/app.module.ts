@@ -61,6 +61,7 @@ import { MinMaxReplenModule } from './modules/inventory/minmax-replen.module';
 import { FreightClaimsModule } from './modules/inventory/freight-claims.module';
 import { VmiModule } from './modules/inventory/vmi.module';
 import { CostingMethodsModule } from './modules/inventory/costing-methods.module';
+import { LotExpiryModule } from './modules/inventory/lot-expiry.module';
 
 @Module({
   imports: [
@@ -120,6 +121,7 @@ import { CostingMethodsModule } from './modules/inventory/costing-methods.module
     FreightClaimsModule,
     VmiModule,
     CostingMethodsModule,
+    LotExpiryModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,
