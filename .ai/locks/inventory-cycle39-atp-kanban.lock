@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle39-atp-kanban",
+  "agent": "claude-sonnet-4-6-1783951248",
+  "scope": "Available-to-Promise (ATP) Engine & Kanban Pull Replenishment: ATP calculation engine, delivery promise management, kanban cards & two-bin replenishment, pull signal workflows",
+  "acquiredAt": "2026-07-13T14:00:48.863Z",
+  "heartbeatAt": "2026-07-13T14:00:48.864Z",
+  "pid": 11616
+}
