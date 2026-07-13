@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle32-supplier-delivery-perf",
+  "agent": "claude-sonnet-4-6",
+  "scope": "Supplier Delivery Performance Tracking: KPIs (on-time rate, lead-time accuracy, fill rate), scorecards, alerts, trend analysis",
+  "acquiredAt": "2026-07-13T08:52:31.929Z",
+  "heartbeatAt": "2026-07-13T08:52:31.929Z",
+  "pid": 26596
+}
