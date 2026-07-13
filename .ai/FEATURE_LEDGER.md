@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T03:52:25.183Z
+> Last generated: 2026-07-13T04:05:32.292Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2324 features** across 33 modules
+## System total: **2350 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 418 |
+| [inventory](#inventory) | 444 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-418 features
+444 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2200,6 +2200,32 @@
 | POST | `/inventory/warehouse-ops/packing/:id/cartons` | — | — |
 | PATCH | `/inventory/warehouse-ops/packing/:sessionId/cartons/:cartonId/seal` | — | — |
 | PATCH | `/inventory/warehouse-ops/packing/:id/complete` | — | — |
+| GET | `/inventory/yard-management/dashboard` | — | — |
+| GET | `/inventory/yard-management/dock-doors` | — | — |
+| POST | `/inventory/yard-management/dock-doors` | — | — |
+| PUT | `/inventory/yard-management/dock-doors/:id` | — | — |
+| DELETE | `/inventory/yard-management/dock-doors/:id` | — | — |
+| GET | `/inventory/yard-management/dock-doors/schedule` | — | — |
+| GET | `/inventory/yard-management/appointments` | — | — |
+| GET | `/inventory/yard-management/appointments/range` | — | — |
+| GET | `/inventory/yard-management/appointments/turnaround-report` | — | — |
+| GET | `/inventory/yard-management/appointments/:id` | — | — |
+| POST | `/inventory/yard-management/appointments` | — | — |
+| PATCH | `/inventory/yard-management/appointments/:id/check-in` | — | — |
+| PATCH | `/inventory/yard-management/appointments/:id/start-loading` | — | — |
+| PATCH | `/inventory/yard-management/appointments/:id/complete` | — | — |
+| PATCH | `/inventory/yard-management/appointments/:id/no-show` | — | — |
+| PATCH | `/inventory/yard-management/appointments/:id/cancel` | — | — |
+| PATCH | `/inventory/yard-management/appointments/:id/reschedule` | — | — |
+| GET | `/inventory/yard-management/appointments/:id/gate-pass` | — | — |
+| GET | `/inventory/yard-management/yard-moves` | — | — |
+| POST | `/inventory/yard-management/yard-moves` | — | — |
+| PATCH | `/inventory/yard-management/yard-moves/:id/start` | — | — |
+| PATCH | `/inventory/yard-management/yard-moves/:id/complete` | — | — |
+| PATCH | `/inventory/yard-management/yard-moves/:id/cancel` | — | — |
+| GET | `/inventory/yard-management/yard-inventory` | — | — |
+| POST | `/inventory/yard-management/yard-inventory` | — | — |
+| PATCH | `/inventory/yard-management/yard-inventory/:id/depart` | — | — |
 
 ## localization
 

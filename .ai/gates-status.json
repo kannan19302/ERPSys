@@ -1,7 +1,7 @@
 {
   "ranAt": "2026-07-13T07:00:00.000Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": ["inventory-cycle24-yard-management"],
   "lastMilestoneCommit": "cycle-23-transfer-orders",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",

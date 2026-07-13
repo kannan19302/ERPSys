@@ -47,6 +47,7 @@ import { DemandForecastingModule } from './modules/inventory/demand-forecasting.
 import { LandedCostModule } from './modules/inventory/landed-cost.module';
 import { StockValuationModule } from './modules/inventory/stock-valuation.module';
 import { TransferOrdersModule } from './modules/inventory/transfer-orders.module';
+import { YardManagementModule } from './modules/inventory/yard-management.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { TransferOrdersModule } from './modules/inventory/transfer-orders.module
     LandedCostModule,
     StockValuationModule,
     TransferOrdersModule,
+    YardManagementModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

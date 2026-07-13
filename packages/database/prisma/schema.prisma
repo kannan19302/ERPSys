@@ -12620,3 +12620,151 @@ model TransferOrderReceiptLine {
   @@index([receiptId])
   @@map("transfer_order_receipt_lines")
 }
+
+// ─── Yard Management System (Cycle 24) ───────────────────────────────────────
+
+enum DockDoorType {
+  INBOUND
+  OUTBOUND
+  DUAL
+}
+
+enum DockDoorStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  CLOSED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CHECKED_IN
+  LOADING
+  COMPLETE
+  NO_SHOW
+  CANCELLED
+}
+
+enum YardMoveStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  CANCELLED
+}
+
+model DockDoor {
+  id          String         @id @default(cuid())
+  tenantId    String         @map("tenant_id")
+  warehouseId String         @map("warehouse_id")
+  doorNumber  String         @map("door_number")
+  doorType    DockDoorType   @default(DUAL) @map("door_type")
+  status      DockDoorStatus @default(AVAILABLE)
+  notes       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  appointments YardAppointment[]
+
+  @@unique([tenantId, warehouseId, doorNumber])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@map("dock_doors")
+}
+
+model YardAppointment {
+  id              String            @id @default(cuid())
+  tenantId        String            @map("tenant_id")
+  appointmentNumber String          @map("appointment_number")
+  dockDoorId      String?           @map("dock_door_id")
+  warehouseId     String            @map("warehouse_id")
+  carrierId       String?           @map("carrier_id")
+  carrierName     String?           @map("carrier_name")
+  driverName      String?           @map("driver_name")
+  truckPlate      String?           @map("truck_plate")
+  trailerNumber   String?           @map("trailer_number")
+  appointmentType String            @default("INBOUND") @map("appointment_type") // INBOUND | OUTBOUND
+  status          AppointmentStatus @default(SCHEDULED)
+  scheduledAt     DateTime          @map("scheduled_at")
+  checkedInAt     DateTime?         @map("checked_in_at")
+  loadingStartAt  DateTime?         @map("loading_start_at")
+  completedAt     DateTime?         @map("completed_at")
+  referenceNumber String?           @map("reference_number") // PO/SO/TO number
+  notes           String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  dockDoor  DockDoor?   @relation(fields: [dockDoorId], references: [id])
+  gatePass  GatePass?
+  yardMoves YardMove[]
+
+  @@unique([tenantId, appointmentNumber])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([dockDoorId])
+  @@index([status])
+  @@map("yard_appointments")
+}
+
+model GatePass {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  appointmentId   String   @unique @map("appointment_id")
+  passNumber      String   @map("pass_number")
+  gateInAt        DateTime? @map("gate_in_at")
+  gateOutAt       DateTime? @map("gate_out_at")
+  gateInBy        String?   @map("gate_in_by")
+  gateOutBy       String?   @map("gate_out_by")
+  vehicleWeight   Decimal?  @map("vehicle_weight") @db.Decimal(10, 2)
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  appointment YardAppointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, passNumber])
+  @@index([tenantId])
+  @@map("gate_passes")
+}
+
+model YardMove {
+  id              String         @id @default(cuid())
+  tenantId        String         @map("tenant_id")
+  appointmentId   String?        @map("appointment_id")
+  warehouseId     String         @map("warehouse_id")
+  trailerNumber   String         @map("trailer_number")
+  fromLocation    String         @map("from_location")
+  toLocation      String         @map("to_location")
+  status          YardMoveStatus @default(PENDING)
+  assignedTo      String?        @map("assigned_to")
+  startedAt       DateTime?      @map("started_at")
+  completedAt     DateTime?      @map("completed_at")
+  notes           String?
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  appointment YardAppointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([status])
+  @@map("yard_moves")
+}
+
+model YardInventory {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  warehouseId     String   @map("warehouse_id")
+  trailerNumber   String   @map("trailer_number")
+  location        String   // yard spot/lane
+  productId       String?  @map("product_id")
+  description     String?
+  qty             Decimal? @db.Decimal(15, 4)
+  uom             String?
+  arrivedAt       DateTime @default(now()) @map("arrived_at")
+  departedAt      DateTime? @map("departed_at")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([trailerNumber])
+  @@map("yard_inventory")
+}
