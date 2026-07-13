@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle23-mrp",
-  "agent": "claude-sonnet-4-6-goal-start",
-  "scope": "Material Requirements Planning (MRP): BOM explosion, production order requirements, material shortage alerts, MRP run with planned orders, capacity planning view",
-  "acquiredAt": "2026-07-13T03:45:05.324Z",
-  "heartbeatAt": "2026-07-13T03:45:05.324Z",
-  "pid": 2027
-}
