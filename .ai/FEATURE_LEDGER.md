@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T08:24:55.411Z
+> Last generated: 2026-07-13T08:35:30.524Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2475 features** across 33 modules
+## System total: **2496 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 569 |
+| [inventory](#inventory) | 590 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-569 features
+590 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2176,6 +2176,27 @@
 | POST | `/inventory/lot-serial/quarantine` | — | — |
 | PATCH | `/inventory/lot-serial/quarantine/:id/release` | — | — |
 | PATCH | `/inventory/lot-serial/quarantine/:id/scrap` | — | — |
+| GET | `/inventory/packaging-gs1/dashboard` | — | — |
+| GET | `/inventory/packaging-gs1/specs` | — | — |
+| GET | `/inventory/packaging-gs1/specs/:id` | — | — |
+| GET | `/inventory/packaging-gs1/hierarchy` | — | — |
+| POST | `/inventory/packaging-gs1/specs` | — | — |
+| PATCH | `/inventory/packaging-gs1/specs/:id/deactivate` | — | — |
+| GET | `/inventory/packaging-gs1/barcodes` | — | — |
+| GET | `/inventory/packaging-gs1/barcodes/lookup` | — | — |
+| POST | `/inventory/packaging-gs1/barcodes` | — | — |
+| PATCH | `/inventory/packaging-gs1/barcodes/:id/deactivate` | — | — |
+| GET | `/inventory/packaging-gs1/gs1-ais` | — | — |
+| POST | `/inventory/packaging-gs1/gs1-ais` | — | — |
+| POST | `/inventory/packaging-gs1/gs1-ais/seed-standard` | — | — |
+| GET | `/inventory/packaging-gs1/label-templates` | — | — |
+| POST | `/inventory/packaging-gs1/label-templates` | — | — |
+| PATCH | `/inventory/packaging-gs1/label-templates/:id` | — | — |
+| POST | `/inventory/packaging-gs1/label-assignments` | — | — |
+| GET | `/inventory/packaging-gs1/label-assignments/resolve` | — | — |
+| GET | `/inventory/packaging-gs1/sscc` | — | — |
+| POST | `/inventory/packaging-gs1/sscc/allocate` | — | — |
+| POST | `/inventory/packaging-gs1/sscc/:sscc/mark-used` | — | — |
 | GET | `/inventory/quality-compliance/capas` | — | — |
 | GET | `/inventory/quality-compliance/capas/dashboard` | — | — |
 | GET | `/inventory/quality-compliance/capas/:id` | — | — |

@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 30 — Packaging Specifications & GS1 Barcode Management (FAST)
+
+DB: 6 models + 3 enums (PackagingSpec, ItemBarcode, Gs1ApplicationIdentifier, LabelTemplate, LabelAssignment, SsccRecord + PackagingLevel/BarcodeSymbology/LabelTemplateType); migration 20260713130000. API: PackagingGs1Module — packaging spec upsert/deactivate per product+level, hierarchy calculator with cumulative-unit rollup and primary-barcode lookup, item barcode add (primary-clear pattern) + lookup + deactivate, GS1 AI upsert + seed-standard (8 standard AIs), label template CRUD + label assignment with default-clear pattern + per-spec lookup, SSCC allocation with GS1 modulo-10 check-digit + mark-used + list, dashboard. 25+ endpoints, 17 tests pass. UI: 5-tab page (Dashboard with GS1-setup panel, Packaging Specs, Barcodes, Label Templates, SSCC Registry). fastCyclesSinceFullGate: 3. +21 features, ~1900 LOC.
+
 ## [2026-07-13] Inventory Cycle 29 — Catch-Weight & Product Recall (FAST)
 
 DB: 7 models + 4 enums (CatchWeightConfig, CatchWeightReading, CatchWeightTare, ProductRecall, RecallAffectedStock, RecallCustomerNotice, RecallDisposalRecord + CatchWeightVariance, RecallClass, RecallStatus, RecallActionType); migration 20260713120000. API: CatchWeightRecallModule — catch-weight config upsert/deactivate, reading capture with tare deduction + automatic tolerance classification (WITHIN/OVER/UNDER), variance summary aggregation, tare library, recall lifecycle (DRAFT→ISSUED→IN_PROGRESS→COMPLETED/CANCELLED), affected-stock add + quarantine, customer notice add + bulk send + acknowledge, disposal record with recovery count, impact report, dashboard. 30+ endpoints, 19 tests pass. UI: 3-tab page (Dashboard, Catch-Weight, Recalls) with recall detail drill-down and inline lifecycle transitions. fastCyclesSinceFullGate: 2. +23 features, ~2400 LOC.

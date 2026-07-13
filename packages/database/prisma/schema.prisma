@@ -13632,3 +13632,162 @@ model RecallDisposalRecord {
   @@index([recallId])
   @@map("recall_disposal_records")
 }
+
+
+// ════════════════════════════════════════════════
+// INVENTORY CYCLE 30 — PACKAGING SPECS & GS1
+// ════════════════════════════════════════════════
+
+enum PackagingLevel {
+  EACH
+  INNER
+  CASE
+  MASTER_CARTON
+  PALLET
+}
+
+enum BarcodeSymbology {
+  EAN13
+  EAN8
+  UPC_A
+  UPC_E
+  CODE128
+  CODE39
+  ITF14
+  GS1_128
+  DATA_MATRIX
+  QR_CODE
+  GS1_DATAMATRIX
+}
+
+enum LabelTemplateType {
+  ITEM
+  INNER
+  CASE
+  PALLET
+  SHIPPING
+  COMPLIANCE
+}
+
+/// Packaging specification per item — defines hierarchy and physical attributes at each level.
+model PackagingSpec {
+  id                String          @id @default(cuid())
+  tenantId          String          @map("tenant_id")
+  productId         String          @map("product_id")
+  level             PackagingLevel
+  unitsPerLevel     Int             @map("units_per_level")
+  lengthMm          Decimal?        @map("length_mm") @db.Decimal(10, 2)
+  widthMm           Decimal?        @map("width_mm") @db.Decimal(10, 2)
+  heightMm          Decimal?        @map("height_mm") @db.Decimal(10, 2)
+  grossWeightKg     Decimal?        @map("gross_weight_kg") @db.Decimal(10, 4)
+  netWeightKg       Decimal?        @map("net_weight_kg") @db.Decimal(10, 4)
+  cubicMetre        Decimal?        @map("cubic_metre") @db.Decimal(10, 6)
+  stackable         Boolean         @default(true)
+  maxStackLayers    Int?            @map("max_stack_layers")
+  description       String?
+  active            Boolean         @default(true)
+  effectiveFrom     DateTime?       @map("effective_from")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  barcodes          ItemBarcode[]
+  labelAssignments  LabelAssignment[]
+
+  @@unique([tenantId, productId, level])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("packaging_specs")
+}
+
+/// Barcode / GTIN / SSCC assigned to a packaging level.
+model ItemBarcode {
+  id              String           @id @default(cuid())
+  tenantId        String           @map("tenant_id")
+  packagingSpecId String           @map("packaging_spec_id")
+  symbology       BarcodeSymbology
+  barcodeValue    String           @map("barcode_value")
+  gtin14          String?          @map("gtin_14")
+  gs1CompanyPrefix String?         @map("gs1_company_prefix")
+  isPrimary       Boolean          @default(false) @map("is_primary")
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  packagingSpec   PackagingSpec    @relation(fields: [packagingSpecId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, barcodeValue])
+  @@index([tenantId])
+  @@index([packagingSpecId])
+  @@map("item_barcodes")
+}
+
+/// GS1 application identifier definition (reference table).
+model Gs1ApplicationIdentifier {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  ai              String
+  title           String
+  dataFormat      String   @map("data_format")
+  fnc1Required    Boolean  @default(false) @map("fnc1_required")
+  maxLength       Int?     @map("max_length")
+  description     String?
+
+  @@unique([tenantId, ai])
+  @@index([tenantId])
+  @@map("gs1_application_identifiers")
+}
+
+/// Label template definition for a packaging level.
+model LabelTemplate {
+  id              String            @id @default(cuid())
+  tenantId        String            @map("tenant_id")
+  name            String
+  templateType    LabelTemplateType @map("template_type")
+  widthMm         Decimal           @map("width_mm") @db.Decimal(8, 2)
+  heightMm        Decimal           @map("height_mm") @db.Decimal(8, 2)
+  content         String
+  version         Int               @default(1)
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  assignments     LabelAssignment[]
+
+  @@unique([tenantId, name, version])
+  @@index([tenantId])
+  @@map("label_templates")
+}
+
+/// Assignment of a label template to a packaging spec (per-customer or default).
+model LabelAssignment {
+  id                String        @id @default(cuid())
+  tenantId          String        @map("tenant_id")
+  packagingSpecId   String        @map("packaging_spec_id")
+  templateId        String        @map("template_id")
+  customerId        String?       @map("customer_id")
+  isDefault         Boolean       @default(false) @map("is_default")
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  packagingSpec     PackagingSpec @relation(fields: [packagingSpecId], references: [id], onDelete: Cascade)
+  template          LabelTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([tenantId])
+  @@index([packagingSpecId])
+  @@map("label_assignments")
+}
+
+/// SSCC (Serial Shipping Container Code) registry.
+model SsccRecord {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  sscc            String
+  extensionDigit  Int      @map("extension_digit")
+  gs1CompanyPrefix String  @map("gs1_company_prefix")
+  serialRef       String   @map("serial_ref")
+  allocatedAt     DateTime @default(now()) @map("allocated_at")
+  usedAt          DateTime? @map("used_at")
+  shipmentRef     String?  @map("shipment_ref")
+
+  @@unique([tenantId, sscc])
+  @@index([tenantId])
+  @@map("sscc_records")
+}
