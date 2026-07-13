@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle22-stock-valuation",
-  "agent": "claude-sonnet-4-6-goal-start",
-  "scope": "Stock valuation methods: FIFO, LIFO, Weighted Average cost — revaluation, cost adjustment, valuation ledger, variance reports",
-  "acquiredAt": "2026-07-13T03:37:29.780Z",
-  "heartbeatAt": "2026-07-13T03:37:29.780Z",
-  "pid": 25118
-}

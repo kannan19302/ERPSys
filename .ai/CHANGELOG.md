@@ -2,6 +2,22 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 22: Stock Valuation Methods — FAST cycle
+
+FAST cycle (fastCyclesSinceFullGate 2→3). Scoped typechecks pass; 19 unit tests pass.
+
+- **DB**: 5 new models — `StockValuationPolicy`, `StockValuationLedger`, `CostAdjustment`, `StockRevaluation`, `StockRevaluationLine`
+  (migration `20260713050000_inventory_cycle22_stock_valuation`)
+- **API** (`StockValuationModule`, 22+ endpoints under `/inventory/stock-valuation`):
+  - **Policies**: upsert per-product/warehouse method (FIFO/LIFO/WEIGHTED_AVG/STANDARD_COST/ACTUAL_COST), list, get, deactivate
+  - **Valuation Ledger**: post entry (running qty/value/avg-cost), get ledger (with product/warehouse filter), product-valuation snapshot
+  - **FIFO/LIFO/WAC issue cost compute**: `POST /compute-issue-cost` — picks oldest (FIFO), newest (LIFO), or avg-cost (WAC) receipt layers
+  - **Cost Adjustments**: create (auto-numbered CAD-XXXXX), approve, post (writes ledger entry), reject, list by status
+  - **Stock Revaluations**: create with lines, post (writes ledger entry per line + marks POSTED), cancel, list, get
+  - **Reports**: dashboard (all KPIs), variance report (per-product adjustment summary), valuation summary (running balances per product)
+- **UI** (`/inventory/stock-valuation`): 6-tab page — Dashboard, Policies, Cost Adjustments (lifecycle actions), Revaluations (line detail), Valuation Ledger, Summary
+- **Nav/Registry**: `Stock Valuation` nav entry + registry segment; smoke route added
+
 ## [2026-07-13] Inventory Cycle 21: Landed Cost Allocation — FAST cycle
 
 FAST cycle (fastCyclesSinceFullGate 1→2). Scoped typechecks pass; 22 unit tests pass.

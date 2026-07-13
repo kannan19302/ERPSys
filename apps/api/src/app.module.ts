@@ -45,6 +45,7 @@ import { WarehouseOpsModule } from './modules/inventory/warehouse-ops.module';
 import { LotSerialTrackingModule } from './modules/inventory/lot-serial-tracking.module';
 import { DemandForecastingModule } from './modules/inventory/demand-forecasting.module';
 import { LandedCostModule } from './modules/inventory/landed-cost.module';
+import { StockValuationModule } from './modules/inventory/stock-valuation.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { LandedCostModule } from './modules/inventory/landed-cost.module';
     LotSerialTrackingModule,
     DemandForecastingModule,
     LandedCostModule,
+    StockValuationModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

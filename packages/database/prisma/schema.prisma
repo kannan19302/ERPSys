@@ -12379,3 +12379,133 @@ model LandedCostAllocation {
   @@index([tenantId, productId])
   @@map("landed_cost_allocations")
 }
+
+// ── Inventory Cycle 22: Stock Valuation Methods ──────────────────────────────
+
+enum ValuationMethod {
+  FIFO
+  LIFO
+  WEIGHTED_AVG
+  STANDARD_COST
+  ACTUAL_COST
+}
+
+enum ValuationStatus {
+  ACTIVE
+  SUPERSEDED
+  REVALUED
+}
+
+model StockValuationPolicy {
+  id              String          @id @default(cuid())
+  tenantId        String          @map("tenant_id")
+  productId       String?         @map("product_id")
+  warehouseId     String?         @map("warehouse_id")
+  method          ValuationMethod
+  standardCost    Decimal?        @map("standard_cost") @db.Decimal(18, 6)
+  currency        String          @default("USD")
+  effectiveFrom   DateTime        @default(now()) @map("effective_from")
+  effectiveTo     DateTime?       @map("effective_to")
+  isActive        Boolean         @default(true) @map("is_active")
+  notes           String?
+  createdBy       String?         @map("created_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@unique([tenantId, productId, warehouseId])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("stock_valuation_policies")
+}
+
+model StockValuationLedger {
+  id              String          @id @default(cuid())
+  tenantId        String          @map("tenant_id")
+  productId       String          @map("product_id")
+  warehouseId     String?         @map("warehouse_id")
+  method          ValuationMethod
+  transactionType String          @map("transaction_type") // RECEIPT|ISSUE|ADJUSTMENT|REVALUATION
+  transactionRef  String          @map("transaction_ref")
+  qty             Decimal         @db.Decimal(18, 4)
+  unitCost        Decimal         @map("unit_cost") @db.Decimal(18, 6)
+  totalCost       Decimal         @map("total_cost") @db.Decimal(18, 4)
+  runningQty      Decimal         @map("running_qty") @db.Decimal(18, 4)
+  runningValue    Decimal         @map("running_value") @db.Decimal(18, 4)
+  runningAvgCost  Decimal?        @map("running_avg_cost") @db.Decimal(18, 6)
+  status          ValuationStatus @default(ACTIVE)
+  postedAt        DateTime        @default(now()) @map("posted_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([tenantId, productId, warehouseId])
+  @@index([transactionRef])
+  @@map("stock_valuation_ledger")
+}
+
+model CostAdjustment {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  adjustmentNumber String  @map("adjustment_number")
+  productId       String   @map("product_id")
+  warehouseId     String?  @map("warehouse_id")
+  oldUnitCost     Decimal  @map("old_unit_cost") @db.Decimal(18, 6)
+  newUnitCost     Decimal  @map("new_unit_cost") @db.Decimal(18, 6)
+  qty             Decimal  @db.Decimal(18, 4)
+  impactAmount    Decimal  @map("impact_amount") @db.Decimal(18, 4)
+  reason          String
+  approvedBy      String?  @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  status          String   @default("PENDING") // PENDING|APPROVED|POSTED|REJECTED
+  postedAt        DateTime? @map("posted_at")
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, adjustmentNumber])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("cost_adjustments")
+}
+
+model StockRevaluation {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  revaluationNumber String @map("revaluation_number")
+  description     String?
+  revaluationDate DateTime @map("revaluation_date")
+  status          String   @default("DRAFT") // DRAFT|POSTED|CANCELLED
+  totalImpact     Decimal  @default(0) @map("total_impact") @db.Decimal(18, 4)
+  currency        String   @default("USD")
+  createdBy       String?  @map("created_by")
+  postedAt        DateTime? @map("posted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  lines StockRevaluationLine[]
+
+  @@unique([tenantId, revaluationNumber])
+  @@index([tenantId])
+  @@map("stock_revaluations")
+}
+
+model StockRevaluationLine {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  revaluationId   String   @map("revaluation_id")
+  productId       String   @map("product_id")
+  warehouseId     String?  @map("warehouse_id")
+  currentQty      Decimal  @map("current_qty") @db.Decimal(18, 4)
+  currentUnitCost Decimal  @map("current_unit_cost") @db.Decimal(18, 6)
+  newUnitCost     Decimal  @map("new_unit_cost") @db.Decimal(18, 6)
+  impactAmount    Decimal  @map("impact_amount") @db.Decimal(18, 4)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  revaluation StockRevaluation @relation(fields: [revaluationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([revaluationId])
+  @@map("stock_revaluation_lines")
+}

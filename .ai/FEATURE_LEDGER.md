@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T03:36:42.656Z
+> Last generated: 2026-07-13T03:44:01.829Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2286 features** across 33 modules
+## System total: **2308 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 380 |
+| [inventory](#inventory) | 402 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-380 features
+402 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2120,6 +2120,28 @@
 | POST | `/inventory/rtv/shipments/:id/deliver` | Mark a shipment as delivered to vendor | `inventory.rtv.update` |
 | POST | `/inventory/rtv/shipments/:id/credit-memo` | Record vendor credit memo against a delivered shipment | `inventory.rtv.update` |
 | GET | `/inventory/rtv/dashboard` | RTV dashboard summary | `inventory.rtv.read` |
+| GET | `/inventory/stock-valuation/dashboard` | — | — |
+| GET | `/inventory/stock-valuation/variance-report` | — | — |
+| GET | `/inventory/stock-valuation/valuation-summary` | — | — |
+| GET | `/inventory/stock-valuation/policies` | — | — |
+| POST | `/inventory/stock-valuation/policies` | — | — |
+| GET | `/inventory/stock-valuation/policies/:id` | — | — |
+| PATCH | `/inventory/stock-valuation/policies/:id/deactivate` | — | — |
+| GET | `/inventory/stock-valuation/ledger` | — | — |
+| POST | `/inventory/stock-valuation/ledger` | — | — |
+| GET | `/inventory/stock-valuation/product-valuation` | — | — |
+| POST | `/inventory/stock-valuation/compute-issue-cost` | — | — |
+| GET | `/inventory/stock-valuation/adjustments` | — | — |
+| POST | `/inventory/stock-valuation/adjustments` | — | — |
+| GET | `/inventory/stock-valuation/adjustments/:id` | — | — |
+| PATCH | `/inventory/stock-valuation/adjustments/:id/approve` | — | — |
+| PATCH | `/inventory/stock-valuation/adjustments/:id/post` | — | — |
+| PATCH | `/inventory/stock-valuation/adjustments/:id/reject` | — | — |
+| GET | `/inventory/stock-valuation/revaluations` | — | — |
+| POST | `/inventory/stock-valuation/revaluations` | — | — |
+| GET | `/inventory/stock-valuation/revaluations/:id` | — | — |
+| PATCH | `/inventory/stock-valuation/revaluations/:id/post` | — | — |
+| DELETE | `/inventory/stock-valuation/revaluations/:id` | — | — |
 | GET | `/inventory/supplier-quality/dashboard` | Supplier quality overview dashboard | — |
 | GET | `/inventory/supplier-quality/scorecards` | Supplier quality overview dashboard | — |
 | POST | `/inventory/supplier-quality/scorecards` | List supplier quality scorecards | — |

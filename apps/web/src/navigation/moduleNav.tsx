@@ -329,6 +329,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Warehouse Operations', href: '/inventory/warehouse-ops', icon: Truck },
             { name: 'Lot & Serial Tracking', href: '/inventory/lot-serial', icon: ClipboardList },
             { name: 'Landed Cost', href: '/inventory/landed-cost', icon: Calculator },
+            { name: 'Stock Valuation', href: '/inventory/stock-valuation', icon: DollarSign },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
           ]
         },
