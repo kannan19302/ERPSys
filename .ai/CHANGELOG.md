@@ -2,6 +2,20 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 34 — Min-Max Replenishment Planning (FAST)
+
+**Sub-domain**: `inventory-cycle34-minmax-replen`
+
+**Schema** (migration `20260713170000`): 2 enums (`ReplenishmentMethod`, `ReplenSuggestionStatus`), 3 models (`MinMaxLevel`, `ReplenSuggestion`, `ReplenRunLog`)
+
+**API** (`/api/inventory/minmax-replen`): 12 endpoints — dashboard, upsert/deactivate min-max levels, trigger replenishment run (scan all levels against stock snapshot → auto-generate OPEN suggestions), run logs, suggestion lifecycle (OPEN→APPROVED→ORDERED→RECEIVED / CANCELLED).
+
+**Business logic**: Auto-computes suggested order qty as `maxQty - currentStock` unless `reorderQty` override is set; respect `leadTimeDays` to compute `neededByDate`; suggestion auto-numbering (RS-XXXXXX), run auto-numbering (RRL-XXXXXX).
+
+**UI**: 4-tab page (`/inventory/minmax-replen`) — Dashboard (stat grid + last run), Min-Max Levels (CRUD), Run Replenishment (stock snapshot input + run history), Suggestions (filtered lifecycle table).
+
+**Tests**: 15 unit tests — all pass.
+
 ## [2026-07-13] Inventory Cycle 33 — Customer Returns & Reverse Logistics (FAST)
 
 **Sub-domain**: `inventory-cycle33-customer-returns`

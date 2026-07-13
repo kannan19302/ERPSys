@@ -341,6 +341,7 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
             { name: 'Cold Chain & Write-Off', href: '/inventory/cold-chain-writeoff', icon: Box },
           { name: 'Velocity & ABC-XYZ', href: '/inventory/velocity-abc-xyz', icon: TrendingUp },
           { name: 'Customer Returns', href: '/inventory/customer-returns', icon: Package },
+          { name: 'Min-Max Replenishment', href: '/inventory/minmax-replen', icon: TrendingUp },
             { name: 'Demand Forecasting', href: '/inventory/demand-forecasting', icon: TrendingUp },
           ]
         },

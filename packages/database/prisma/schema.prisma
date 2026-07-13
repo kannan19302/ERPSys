@@ -14183,3 +14183,100 @@ model ReturnRestock {
   @@index([tenantId, productId])
   @@map("return_restocks")
 }
+
+// ─── Inventory Cycle 34 — Min-Max Replenishment Planning ─────────────────────
+
+enum ReplenishmentMethod {
+  PURCHASE_ORDER    // order from supplier
+  TRANSFER          // transfer from another warehouse
+  PRODUCTION        // manufacturing order
+}
+
+enum ReplenSuggestionStatus {
+  OPEN
+  APPROVED
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+/// Per-product min/max stock level configuration per warehouse
+model MinMaxLevel {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  productId       String   @map("product_id")
+  warehouseId     String   @map("warehouse_id")
+  minQty          Decimal  @map("min_qty") @db.Decimal(18, 4)       // reorder point
+  maxQty          Decimal  @map("max_qty") @db.Decimal(18, 4)       // order-up-to level
+  reorderQty      Decimal? @map("reorder_qty") @db.Decimal(18, 4)   // fixed order qty override
+  method          ReplenishmentMethod @default(PURCHASE_ORDER)
+  preferredVendorId String? @map("preferred_vendor_id")
+  leadTimeDays    Int      @default(0) @map("lead_time_days")
+  active          Boolean  @default(true)
+  notes           String?
+  updatedById     String   @map("updated_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  suggestions ReplenSuggestion[]
+
+  @@unique([tenantId, productId, warehouseId])
+  @@index([tenantId])
+  @@index([tenantId, warehouseId])
+  @@index([tenantId, productId])
+  @@map("min_max_levels")
+}
+
+/// Auto-generated replenishment suggestion when stock falls below min
+model ReplenSuggestion {
+  id              String                @id @default(cuid())
+  tenantId        String                @map("tenant_id")
+  suggestionNumber String               @map("suggestion_number")  // RS-000001
+  levelId         String                @map("level_id")
+  productId       String                @map("product_id")
+  warehouseId     String                @map("warehouse_id")
+  currentStock    Decimal               @map("current_stock") @db.Decimal(18, 4)
+  suggestedQty    Decimal               @map("suggested_qty") @db.Decimal(18, 4)
+  method          ReplenishmentMethod
+  vendorId        String?               @map("vendor_id")
+  sourceWarehouseId String?             @map("source_warehouse_id")
+  neededByDate    DateTime?             @map("needed_by_date")
+  status          ReplenSuggestionStatus @default(OPEN)
+  approvedById    String?               @map("approved_by_id")
+  approvedAt      DateTime?             @map("approved_at")
+  orderedAt       DateTime?             @map("ordered_at")
+  receivedAt      DateTime?             @map("received_at")
+  cancelledById   String?               @map("cancelled_by_id")
+  cancellationReason String?            @map("cancellation_reason")
+  notes           String?
+  generatedAt     DateTime              @default(now()) @map("generated_at")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  level MinMaxLevel @relation(fields: [levelId], references: [id])
+
+  @@unique([tenantId, suggestionNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, productId])
+  @@index([tenantId, warehouseId])
+  @@map("replen_suggestions")
+}
+
+/// Log of replenishment run executions (scan all min/max levels and generate suggestions)
+model ReplenRunLog {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  runNumber       String   @map("run_number")    // RRL-000001
+  warehouseId     String?  @map("warehouse_id")  // null = all
+  levelsScanned   Int      @default(0) @map("levels_scanned")
+  suggestionsCreated Int   @default(0) @map("suggestions_created")
+  triggeredById   String   @map("triggered_by_id")
+  completedAt     DateTime? @map("completed_at")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, runNumber])
+  @@index([tenantId])
+  @@map("replen_run_logs")
+}

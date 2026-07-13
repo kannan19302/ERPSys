@@ -177,6 +177,7 @@ const SMOKE_ROUTES: { path: string; marker?: string }[] = [
   { path: '/inventory/cold-chain-writeoff' },
   { path: '/inventory/velocity-abc-xyz' },
   { path: '/inventory/customer-returns' },
+  { path: '/inventory/minmax-replen' },
   { path: '/inventory/rtv' },
   { path: '/inventory/labor-management' },
   { path: '/inventory/supplier-quality' },

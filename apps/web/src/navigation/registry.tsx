@@ -187,6 +187,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'cold-chain-writeoff': 'Cold Chain & Inventory Write-Off Management',
   'velocity-abc-xyz': 'Inventory Velocity & ABC-XYZ Classification',
   'customer-returns': 'Customer Returns & Reverse Logistics',
+  'minmax-replen': 'Min-Max Replenishment Planning',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',
