@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle34-minmax-replen",
+  "agent": "claude-sonnet-4-6",
+  "scope": "Min-Max Replenishment Planning: per-product min/max level config, replenishment triggers, order suggestions, execution tracking",
+  "acquiredAt": "2026-07-13T09:12:40.345Z",
+  "heartbeatAt": "2026-07-13T09:12:40.345Z",
+  "pid": 21691
+}
