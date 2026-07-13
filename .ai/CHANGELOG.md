@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] MILESTONE Gate — Cycles 28–31
+
+Full turbo typecheck: PASS (29s). Full API unit suite: 214 files / 2875 tests — all PASS (41s). fastCyclesSinceFullGate reset to 0. lastMilestoneCommit: cycle-31-cold-chain-writeoff. E2E deferred (RLS/tenant-id pipeline blocker unchanged). Deferred scopes cleared.
+
 ## [2026-07-13] Inventory Cycle 31 — Cold Chain & Inventory Write-Off Management (FAST)
 
 DB: 4 models + 5 enums (ColdChainRequirement, TemperatureExcursion, StockWriteDownRequest, StockWriteOffRecord + TemperatureUnit/ExcursionSeverity/ExcursionStatus/WriteDownStatus/WriteOffStatus); migration 20260713140000. API: ColdChainWriteoffModule — cold-chain requirement upsert/deactivate/compliance-check per product, temperature excursion logging with auto-severity classification (MINOR/MODERATE/CRITICAL based on °C deviation from spec) + review/status transition + excursion summary, stock write-down request lifecycle (create→PENDING_APPROVAL→APPROVED/REJECTED→WRITTEN_DOWN), stock write-off record lifecycle (create→PENDING_APPROVAL→APPROVED/REJECTED→COMPLETED) with auto total calculation + disposal method tracking, dashboard. 25+ endpoints, 16 tests pass. UI: 5-tab page (Dashboard, Cold Chain, Excursions, Write-Downs, Write-Offs) with inline approve/reject/apply/complete transitions. fastCyclesSinceFullGate: 3→4 (MILESTONE gate triggered next cycle). +19 features, ~1700 LOC.

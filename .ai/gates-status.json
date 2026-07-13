@@ -1,21 +1,21 @@
 {
-  "ranAt": "2026-07-13T14:30:00.000Z",
-  "fastCyclesSinceFullGate": 4,
-  "deferredScopes": ["inventory-cycle28-container-pallet", "inventory-cycle29-catch-weight-recall", "inventory-cycle30-packaging-gs1", "inventory-cycle31-cold-chain-writeoff"],
-  "lastMilestoneCommit": "cycle-27-asl",
+  "ranAt": "2026-07-13T14:45:00.000Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "cycle-31-cold-chain-writeoff",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
     "code": 0,
-    "seconds": 34
+    "seconds": 29
   },
   "tests": {
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 48,
-    "files": 210,
-    "cases": 2800
+    "seconds": 41,
+    "files": 214,
+    "cases": 2875
   },
   "e2e": {
     "label": "Playwright smoke gate",
