@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T04:24:34.592Z
+> Last generated: 2026-07-13T04:33:34.787Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2405 features** across 33 modules
+## System total: **2427 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 499 |
+| [inventory](#inventory) | 521 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,10 +1778,32 @@
 
 ## inventory
 
-499 features
+521 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
+| GET | `/inventory/asl/dashboard` | — | — |
+| GET | `/inventory/asl/expiring` | — | — |
+| GET | `/inventory/asl` | — | — |
+| POST | `/inventory/asl` | — | — |
+| GET | `/inventory/asl/:id` | — | — |
+| PUT | `/inventory/asl/:id` | — | — |
+| PATCH | `/inventory/asl/:id/approve` | — | — |
+| PATCH | `/inventory/asl/:id/disqualify` | — | — |
+| PATCH | `/inventory/asl/:id/conditional` | — | — |
+| PATCH | `/inventory/asl/:id/set-preferred` | — | — |
+| PATCH | `/inventory/asl/:id/unset-preferred` | — | — |
+| GET | `/inventory/asl/:id/change-log` | — | — |
+| POST | `/inventory/asl/:id/price-tiers` | — | — |
+| DELETE | `/inventory/asl/:id/price-tiers/:tierId` | — | — |
+| GET | `/inventory/asl/:id/effective-price` | — | — |
+| GET | `/inventory/asl/attributes/:productId` | — | — |
+| POST | `/inventory/asl/attributes` | — | — |
+| DELETE | `/inventory/asl/attributes/:id` | — | — |
+| GET | `/inventory/asl/compliance/rules` | — | — |
+| POST | `/inventory/asl/compliance/rules` | — | — |
+| GET | `/inventory/asl/compliance/check/:productId` | — | — |
+| GET | `/inventory/asl/sourcing-report/:productId` | — | — |
 | GET | `/inventory/costing/valuation/:productId` | Get product valuation | `inventory.stock.read` |
 | GET | `/inventory/costing/valuation-report` | Get valuation report | `inventory.stock.read` |
 | POST | `/inventory/costing/landed-cost` | Calculate landed cost | `inventory.stock.read` |

@@ -180,6 +180,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'yard-management': 'Yard Management',
   'stock-takes': 'Physical Inventory',
   'hazmat': 'Hazardous Materials',
+  'asl': 'Approved Suppliers',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

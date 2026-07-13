@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle27-asl",
-  "agent": "claude-sonnet+session-ib21qn",
-  "scope": "Approved Supplier List (ASL) & Vendor Item Catalog: per-product vendor associations, lead times, pricing, MOQ, preferred ranking, compliance controls",
-  "acquiredAt": "2026-07-13T04:26:15.890Z",
-  "heartbeatAt": "2026-07-13T04:26:15.890Z",
-  "pid": 25381
-}

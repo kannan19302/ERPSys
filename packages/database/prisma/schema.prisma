@@ -13104,3 +13104,125 @@ model HazmatIncident {
   @@index([productId])
   @@map("hazmat_incidents")
 }
+
+// ─── Cycle 27: Approved Supplier List (ASL) & Vendor Item Catalog ───────────
+
+enum AslStatus {
+  APPROVED
+  CONDITIONAL
+  DISQUALIFIED
+  PENDING_APPROVAL
+}
+
+enum AslChangeType {
+  APPROVED
+  DISQUALIFIED
+  CONDITIONAL
+  PRICE_UPDATE
+  LEAD_TIME_UPDATE
+  PREFERRED_UPDATE
+}
+
+model ApprovedSupplier {
+  id              String     @id @default(cuid())
+  tenantId        String     @map("tenant_id")
+  productId       String     @map("product_id")
+  vendorId        String     @map("vendor_id")
+  vendorProductRef String?   @map("vendor_product_ref")
+  vendorProductName String?  @map("vendor_product_name")
+  status          AslStatus  @default(PENDING_APPROVAL)
+  isPreferred     Boolean    @default(false) @map("is_preferred")
+  preferenceRank  Int        @default(999) @map("preference_rank")
+  unitPrice       Decimal?   @map("unit_price") @db.Decimal(15, 4)
+  currency        String     @default("USD")
+  moq             Decimal?   @map("moq") @db.Decimal(15, 4)
+  leadTimeDays    Int?       @map("lead_time_days")
+  maxOrderQty     Decimal?   @map("max_order_qty") @db.Decimal(15, 4)
+  uom             String     @default("UNIT")
+  packSize        Decimal?   @map("pack_size") @db.Decimal(15, 4)
+  qualificationDate DateTime? @map("qualification_date")
+  expiryDate      DateTime?  @map("expiry_date")
+  conditionalNote String?    @map("conditional_note")
+  disqualifiedReason String? @map("disqualified_reason")
+  approvedBy      String?    @map("approved_by")
+  createdBy       String     @map("created_by")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  priceTiers      SupplierPriceTier[]
+  changeLog       AslChangeLog[]
+
+  @@unique([tenantId, productId, vendorId])
+  @@index([tenantId])
+  @@index([productId])
+  @@index([vendorId])
+  @@index([status])
+  @@map("approved_suppliers")
+}
+
+model SupplierPriceTier {
+  id                  String           @id @default(cuid())
+  tenantId            String           @map("tenant_id")
+  approvedSupplierId  String           @map("approved_supplier_id")
+  fromQty             Decimal          @map("from_qty") @db.Decimal(15, 4)
+  toQty               Decimal?         @map("to_qty") @db.Decimal(15, 4)
+  unitPrice           Decimal          @map("unit_price") @db.Decimal(15, 4)
+  effectiveFrom       DateTime         @map("effective_from")
+  effectiveTo         DateTime?        @map("effective_to")
+
+  approvedSupplier    ApprovedSupplier @relation(fields: [approvedSupplierId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([approvedSupplierId])
+  @@map("supplier_price_tiers")
+}
+
+model AslChangeLog {
+  id                  String           @id @default(cuid())
+  tenantId            String           @map("tenant_id")
+  approvedSupplierId  String           @map("approved_supplier_id")
+  changeType          AslChangeType    @map("change_type")
+  previousValue       String?          @map("previous_value")
+  newValue            String?          @map("new_value")
+  reason              String?
+  changedBy           String           @map("changed_by")
+  changedAt           DateTime         @default(now()) @map("changed_at")
+
+  approvedSupplier    ApprovedSupplier @relation(fields: [approvedSupplierId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([approvedSupplierId])
+  @@map("asl_change_logs")
+}
+
+model VendorItemAttribute {
+  id                  String     @id @default(cuid())
+  tenantId            String     @map("tenant_id")
+  productId           String     @map("product_id")
+  vendorId            String     @map("vendor_id")
+  attributeKey        String     @map("attribute_key")
+  attributeValue      String     @map("attribute_value")
+  createdAt           DateTime   @default(now()) @map("created_at")
+
+  @@unique([tenantId, productId, vendorId, attributeKey])
+  @@index([tenantId])
+  @@index([productId, vendorId])
+  @@map("vendor_item_attributes")
+}
+
+model AslComplianceRule {
+  id              String     @id @default(cuid())
+  tenantId        String     @map("tenant_id")
+  productCategory String?    @map("product_category")
+  minApprovedVendors Int     @default(1) @map("min_approved_vendors")
+  requiresQualification Boolean @default(false) @map("requires_qualification")
+  qualificationValidityDays Int? @map("qualification_validity_days")
+  requiresPreferred Boolean  @default(false) @map("requires_preferred")
+  notes           String?
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  @@unique([tenantId, productCategory])
+  @@index([tenantId])
+  @@map("asl_compliance_rules")
+}

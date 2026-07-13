@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 27 — Approved Supplier List (ASL) & Vendor Item Catalog (FAST)
+
+5 DB models (ApprovedSupplier, SupplierPriceTier, AslChangeLog, VendorItemAttribute, AslComplianceRule) + 2 enums (AslStatus, AslChangeType); AslModule — 30+ endpoints covering full supplier qualification lifecycle (PENDING_APPROVAL→APPROVED/CONDITIONAL/DISQUALIFIED) with change-log on every status transition, preference ranking + set/unset-preferred, volume-break price tiers with effective-date ranges + qty-based price resolution, vendor item attributes (key-value upsert), compliance rules with min-vendor count + qualification + preferred requirements, per-product compliance check with issue list, vendor sourcing report (lowest price, shortest lead time), expiring-supplier scan, full dashboard. 4-tab Next.js UI. Nav, registry, smoke-route added. 22 unit tests pass. FAST gate: scoped typecheck clean.
+
 ## [2026-07-13] Inventory Cycle 26 — Hazardous Materials & Dangerous Goods (FAST)
 
 6 DB models (HazmatClassification, SafetyDataSheet, HazmatStorageRule, HazmatManifest, HazmatManifestLine, HazmatIncident) + 6 enums; 35+ API endpoints covering UN classification CRUD with duplicate-guard, SDS lifecycle (CURRENT→EXPIRED/SUPERSEDED) with acknowledge + expiry-window query, storage compatibility rules upsert + symmetrical check + warehouse-level scan, hazmat manifest lifecycle (DRAFT→SUBMITTED→ACKNOWLEDGED→IN_TRANSIT→DELIVERED/CANCELLED) with auto-numbered lines and gross-weight rollup, hazmat incident reporting + close, compliance report per product, hazard-class summary, UN number search, and full dashboard; `/inventory/hazmat` 5-tab Next.js UI (Dashboard, Classifications, Manifests, Incidents, Compliance Report). Nav, registry, smoke-route added. 32 unit tests pass. FAST gate: scoped typecheck clean, 32/32 tests green.
