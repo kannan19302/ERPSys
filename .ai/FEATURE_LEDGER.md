@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T04:05:32.292Z
+> Last generated: 2026-07-13T04:14:13.950Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2350 features** across 33 modules
+## System total: **2370 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 444 |
+| [inventory](#inventory) | 464 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-444 features
+464 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -2120,6 +2120,26 @@
 | POST | `/inventory/rtv/shipments/:id/deliver` | Mark a shipment as delivered to vendor | `inventory.rtv.update` |
 | POST | `/inventory/rtv/shipments/:id/credit-memo` | Record vendor credit memo against a delivered shipment | `inventory.rtv.update` |
 | GET | `/inventory/rtv/dashboard` | RTV dashboard summary | `inventory.rtv.read` |
+| GET | `/inventory/stock-takes/dashboard` | — | — |
+| GET | `/inventory/stock-takes/accuracy-report` | — | — |
+| GET | `/inventory/stock-takes` | — | — |
+| POST | `/inventory/stock-takes` | — | — |
+| GET | `/inventory/stock-takes/:id` | — | — |
+| PUT | `/inventory/stock-takes/:id` | — | — |
+| PATCH | `/inventory/stock-takes/:id/start` | — | — |
+| PATCH | `/inventory/stock-takes/:id/cancel` | — | — |
+| PATCH | `/inventory/stock-takes/:id/generate-variances` | — | — |
+| PATCH | `/inventory/stock-takes/:id/approve` | — | — |
+| PATCH | `/inventory/stock-takes/:id/post` | — | — |
+| GET | `/inventory/stock-takes/:id/sheets` | — | — |
+| POST | `/inventory/stock-takes/:id/sheets` | — | — |
+| POST | `/inventory/stock-takes/:id/sheets/:sheetId/items` | — | — |
+| PATCH | `/inventory/stock-takes/:id/sheets/:sheetId/count` | — | — |
+| PATCH | `/inventory/stock-takes/:id/sheets/:sheetId/recount` | — | — |
+| GET | `/inventory/stock-takes/:id/variances` | — | — |
+| GET | `/inventory/stock-takes/:id/variance-report` | — | — |
+| PATCH | `/inventory/stock-takes/variances/:varianceId/approve` | — | — |
+| PATCH | `/inventory/stock-takes/variances/:varianceId/reject` | — | — |
 | GET | `/inventory/stock-valuation/dashboard` | — | — |
 | GET | `/inventory/stock-valuation/variance-report` | — | — |
 | GET | `/inventory/stock-valuation/valuation-summary` | — | — |

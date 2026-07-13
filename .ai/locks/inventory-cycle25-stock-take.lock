@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle25-stock-take",
-  "agent": "claude-sonnet-4-6",
-  "scope": "Physical Inventory / Stock Take: scheduled count sessions, count sheets, variance analysis, variance approval workflow, posting to stock ledger",
-  "acquiredAt": "2026-07-13T04:06:54.279Z",
-  "heartbeatAt": "2026-07-13T04:06:54.279Z",
-  "pid": 2732
-}

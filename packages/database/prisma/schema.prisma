@@ -12768,3 +12768,134 @@ model YardInventory {
   @@index([trailerNumber])
   @@map("yard_inventory")
 }
+
+// ─── Physical Inventory / Stock Take (Cycle 25) ──────────────────────────────
+
+enum StockTakeStatus {
+  DRAFT
+  IN_PROGRESS
+  COUNTING
+  VARIANCE_REVIEW
+  APPROVED
+  POSTED
+  CANCELLED
+}
+
+enum CountSheetStatus {
+  PENDING
+  COUNTING
+  RECOUNTED
+  APPROVED
+  REJECTED
+}
+
+enum StockTakeVarianceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model StockTake {
+  id             String          @id @default(cuid())
+  tenantId       String          @map("tenant_id")
+  stockTakeNumber String         @map("stock_take_number")
+  warehouseId    String          @map("warehouse_id")
+  status         StockTakeStatus @default(DRAFT)
+  countType      String          @default("FULL") @map("count_type") // FULL | ZONE | CATEGORY
+  countDate      DateTime        @map("count_date")
+  frozenAt       DateTime?       @map("frozen_at")
+  completedAt    DateTime?       @map("completed_at")
+  postedAt       DateTime?       @map("posted_at")
+  notes          String?
+  createdBy      String          @map("created_by")
+  approvedBy     String?         @map("approved_by")
+  approvedAt     DateTime?       @map("approved_at")
+  postedBy       String?         @map("posted_by")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  sheets    CountSheet[]
+  variances StockTakeVariance[]
+
+  @@unique([tenantId, stockTakeNumber])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([status])
+  @@map("stock_takes")
+}
+
+model CountSheet {
+  id           String          @id @default(cuid())
+  tenantId     String          @map("tenant_id")
+  stockTakeId  String          @map("stock_take_id")
+  sheetNumber  String          @map("sheet_number")
+  warehouseId  String          @map("warehouse_id")
+  zone         String?
+  assignedTo   String?         @map("assigned_to")
+  status       CountSheetStatus @default(PENDING)
+  countedAt    DateTime?       @map("counted_at")
+  recountedAt  DateTime?       @map("recounted_at")
+  notes        String?
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  stockTake StockTake       @relation(fields: [stockTakeId], references: [id], onDelete: Cascade)
+  items     CountSheetItem[]
+
+  @@unique([tenantId, stockTakeId, sheetNumber])
+  @@index([tenantId])
+  @@index([stockTakeId])
+  @@map("count_sheets")
+}
+
+model CountSheetItem {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  sheetId         String   @map("sheet_id")
+  productId       String   @map("product_id")
+  binLocationId   String?  @map("bin_location_id")
+  lotNumber       String?  @map("lot_number")
+  uom             String   @default("UNIT")
+  systemQty       Decimal  @map("system_qty") @db.Decimal(15, 4)
+  countedQty      Decimal? @map("counted_qty") @db.Decimal(15, 4)
+  recountedQty    Decimal? @map("recounted_qty") @db.Decimal(15, 4)
+  varianceQty     Decimal? @map("variance_qty") @db.Decimal(15, 4)
+  variancePct     Decimal? @map("variance_pct") @db.Decimal(8, 4)
+  unitCost        Decimal? @map("unit_cost") @db.Decimal(15, 4)
+  varianceValue   Decimal? @map("variance_value") @db.Decimal(15, 4)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  sheet CountSheet @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([sheetId])
+  @@map("count_sheet_items")
+}
+
+model StockTakeVariance {
+  id              String                  @id @default(cuid())
+  tenantId        String                  @map("tenant_id")
+  stockTakeId     String                  @map("stock_take_id")
+  productId       String                  @map("product_id")
+  warehouseId     String                  @map("warehouse_id")
+  binLocationId   String?                 @map("bin_location_id")
+  systemQty       Decimal                 @map("system_qty") @db.Decimal(15, 4)
+  countedQty      Decimal                 @map("counted_qty") @db.Decimal(15, 4)
+  varianceQty     Decimal                 @map("variance_qty") @db.Decimal(15, 4)
+  variancePct     Decimal                 @map("variance_pct") @db.Decimal(8, 4)
+  unitCost        Decimal?                @map("unit_cost") @db.Decimal(15, 4)
+  varianceValue   Decimal?                @map("variance_value") @db.Decimal(15, 4)
+  status          StockTakeVarianceStatus @default(PENDING)
+  approvedBy      String?                 @map("approved_by")
+  approvedAt      DateTime?               @map("approved_at")
+  rejectionReason String?                 @map("rejection_reason")
+  postedLedgerId  String?                 @map("posted_ledger_id")
+  createdAt       DateTime                @default(now()) @map("created_at")
+
+  stockTake StockTake @relation(fields: [stockTakeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([stockTakeId])
+  @@index([status])
+  @@map("stock_take_variances")
+}

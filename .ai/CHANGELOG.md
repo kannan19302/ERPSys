@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 25 — Physical Inventory / Stock Take (FAST)
+
+4 DB models (StockTake, CountSheet, CountSheetItem, StockTakeVariance) + 3 enums (StockTakeStatus, CountSheetStatus, StockTakeVarianceStatus); 25+ API endpoints (stock-take lifecycle DRAFT→IN_PROGRESS→COUNTING→VARIANCE_REVIEW→APPROVED→POSTED with freeze-on-start, count-sheet CRUD with auto-numbering ST-XXXXX-NNN, item add + count recording with Decimal variance arithmetic, recount, variance generation + approve/reject per-variance + approve/post full stock-take); `/inventory/stock-takes` 4-tab UI (Dashboard, Stock Takes, Variance Review, Accuracy Report). Nav, registry, smoke-route added. 24 unit tests pass. FAST gate: scoped typecheck clean, 24/24 tests green.
+
 ## [2026-07-13] Inventory Cycle 24 — Yard Management System (FAST)
 
 5 DB models (DockDoor, YardAppointment, GatePass, YardMove, YardInventory); 30+ API endpoints (dock-door CRUD + status, appointment lifecycle SCHEDULED→CHECKED_IN→LOADING→COMPLETE/NO_SHOW/CANCELLED with ±2h conflict detection, auto gate-pass creation on check-in, dock-door release on completion, yard-move PENDING→IN_PROGRESS→COMPLETE with location propagation to YardInventory, yard-inventory tracking with depart stamp, dock-door schedule view, turnaround report); `/inventory/yard-management` 5-tab UI (Dashboard, Dock Doors, Appointments, Yard Moves, Yard Inventory). Nav, registry, smoke-route added. 30 unit tests pass. FAST gate: scoped typecheck clean, 30/30 new tests green.
