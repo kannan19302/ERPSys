@@ -12069,3 +12069,223 @@ model PackingCarton {
   @@index([sessionId])
   @@map("packing_cartons")
 }
+
+
+// ════════════════════════════════════════════════
+// INVENTORY CYCLE 19 — LOT/SERIAL TRACKING ENHANCEMENTS
+// ════════════════════════════════════════════════
+
+/// Enhanced lot movement ledger — full audit trail per lot/batch.
+model LotMovement {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  batchId       String   @map("batch_id")
+  movementType  String   @map("movement_type")  // RECEIPT | PICK | TRANSFER | ADJUSTMENT | RETURN | SCRAP
+  qty           Decimal  @db.Decimal(15, 4)
+  uom           String   @default("EA")
+  referenceType String?  @map("reference_type")
+  referenceId   String?  @map("reference_id")
+  performedBy   String?  @map("performed_by")
+  fromBin       String?  @map("from_bin")
+  toBin         String?  @map("to_bin")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([batchId])
+  @@index([tenantId, movementType])
+  @@map("lot_movements")
+}
+
+/// FEFO/FIFO pick suggestion — records which lot/serial to pick for an order line.
+model PickSuggestion {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  productId     String   @map("product_id")
+  warehouseId   String   @map("warehouse_id")
+  strategy      String   @default("FEFO")  // FEFO | FIFO | LIFO | MANUAL
+  referenceType String?  @map("reference_type")
+  referenceId   String?  @map("reference_id")
+  batchId       String?  @map("batch_id")
+  serialId      String?  @map("serial_id")
+  suggestedQty  Decimal  @db.Decimal(15, 4) @map("suggested_qty")
+  pickedQty     Decimal  @default(0) @db.Decimal(15, 4) @map("picked_qty")
+  status        String   @default("PENDING")  // PENDING | CONFIRMED | CANCELLED
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([tenantId, referenceId])
+  @@map("pick_suggestions")
+}
+
+/// Expiry alert — tracks near-expiry batches requiring action.
+model ExpiryAlert {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  batchId         String    @map("batch_id")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  expiryDate      DateTime  @map("expiry_date")
+  daysUntilExpiry Int       @map("days_until_expiry")
+  qty             Decimal   @db.Decimal(15, 4)
+  severity        String    @default("WARNING")  // WARNING | CRITICAL | EXPIRED
+  acknowledged    Boolean   @default(false)
+  acknowledgedBy  String?   @map("acknowledged_by")
+  acknowledgedAt  DateTime? @map("acknowledged_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, severity])
+  @@index([tenantId, acknowledged])
+  @@map("expiry_alerts")
+}
+
+/// Quarantine order — places a batch/lot under quarantine with release workflow.
+model QuarantineOrder {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orderNumber     String    @map("order_number")
+  batchId         String?   @map("batch_id")
+  serialId        String?   @map("serial_id")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  qty             Decimal   @db.Decimal(15, 4)
+  reason          String
+  status          String    @default("ACTIVE")  // ACTIVE | RELEASED | SCRAPPED
+  quarantinedBy   String?   @map("quarantined_by")
+  releasedBy      String?   @map("released_by")
+  releasedAt      DateTime? @map("released_at")
+  releaseNotes    String?   @map("release_notes")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("quarantine_orders")
+}
+
+// ─── Cycle 20: Demand Forecasting ─────────────────────────────────────────────
+
+model DemandForecast {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  productId       String    @map("product_id")
+  warehouseId     String?   @map("warehouse_id")
+  forecastDate    DateTime  @map("forecast_date")
+  horizon         Int       // days
+  method          String    // MOVING_AVG | WEIGHTED_AVG | EXPONENTIAL | LINEAR_REGRESSION
+  forecastedQty   Decimal   @map("forecasted_qty") @db.Decimal(15, 4)
+  confidenceLow   Decimal?  @map("confidence_low") @db.Decimal(15, 4)
+  confidenceHigh  Decimal?  @map("confidence_high") @db.Decimal(15, 4)
+  actualQty       Decimal?  @map("actual_qty") @db.Decimal(15, 4)
+  mape            Decimal?  @db.Decimal(8, 4) // Mean Absolute Percentage Error
+  status          String    @default("ACTIVE") // ACTIVE | SUPERSEDED | ARCHIVED
+  notes           String?
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([tenantId, forecastDate])
+  @@map("demand_forecasts")
+}
+
+model ReorderPoint {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  productId       String    @map("product_id")
+  warehouseId     String?   @map("warehouse_id")
+  reorderPoint    Decimal   @map("reorder_point") @db.Decimal(15, 4)
+  reorderQty      Decimal   @map("reorder_qty") @db.Decimal(15, 4)
+  safetyStock     Decimal   @map("safety_stock") @db.Decimal(15, 4)
+  leadTimeDays    Int       @map("lead_time_days")
+  avgDailyDemand  Decimal   @map("avg_daily_demand") @db.Decimal(15, 4)
+  serviceLevel    Decimal   @map("service_level") @db.Decimal(5, 4) // 0.95 = 95%
+  calculatedAt    DateTime  @map("calculated_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, productId, warehouseId])
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@map("reorder_points")
+}
+
+model SafetyStockConfig {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  productId         String    @map("product_id")
+  warehouseId       String?   @map("warehouse_id")
+  method            String    @default("FIXED") // FIXED | STATISTICAL | DEMAND_VARIABILITY
+  fixedQty          Decimal?  @map("fixed_qty") @db.Decimal(15, 4)
+  coverageDays      Int?      @map("coverage_days")
+  serviceLevel      Decimal?  @map("service_level") @db.Decimal(5, 4)
+  demandStdDev      Decimal?  @map("demand_std_dev") @db.Decimal(15, 4)
+  leadTimeStdDev    Decimal?  @map("lead_time_std_dev") @db.Decimal(8, 4)
+  calculatedSafety  Decimal?  @map("calculated_safety") @db.Decimal(15, 4)
+  lastRecalcAt      DateTime? @map("last_recalc_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, productId, warehouseId])
+  @@index([tenantId])
+  @@map("safety_stock_configs")
+}
+
+model ReplenishmentOrder {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orderNumber     String    @map("order_number")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  suggestedQty    Decimal   @map("suggested_qty") @db.Decimal(15, 4)
+  approvedQty     Decimal?  @map("approved_qty") @db.Decimal(15, 4)
+  uom             String    @default("EA")
+  triggerType     String    @map("trigger_type") // ROP | FORECAST | MANUAL | MIN_MAX
+  currentStock    Decimal   @map("current_stock") @db.Decimal(15, 4)
+  reorderPoint    Decimal?  @map("reorder_point") @db.Decimal(15, 4)
+  status          String    @default("PENDING") // PENDING | APPROVED | ORDERED | RECEIVED | CANCELLED
+  priority        String    @default("NORMAL") // LOW | NORMAL | HIGH | URGENT
+  expectedDate    DateTime? @map("expected_date")
+  supplierId      String?   @map("supplier_id")
+  notes           String?
+  createdBy       String?   @map("created_by")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, productId])
+  @@map("replenishment_orders")
+}
+
+model StockoutPrediction {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  productId       String    @map("product_id")
+  warehouseId     String    @map("warehouse_id")
+  currentStock    Decimal   @map("current_stock") @db.Decimal(15, 4)
+  avgDailyDemand  Decimal   @map("avg_daily_demand") @db.Decimal(15, 4)
+  daysOfStock     Decimal   @map("days_of_stock") @db.Decimal(8, 2)
+  predictedStockoutDate DateTime? @map("predicted_stockout_date")
+  riskLevel       String    @map("risk_level") // LOW | MEDIUM | HIGH | CRITICAL
+  recommendedAction String? @map("recommended_action")
+  acknowledged    Boolean   @default(false)
+  acknowledgedBy  String?   @map("acknowledged_by")
+  acknowledgedAt  DateTime? @map("acknowledged_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, riskLevel])
+  @@index([tenantId, productId])
+  @@map("stockout_predictions")
+}

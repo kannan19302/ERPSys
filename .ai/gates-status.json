@@ -1,12 +1,8 @@
 {
-  "ranAt": "2026-07-12T16:00:00.000Z",
-  "fastCyclesSinceFullGate": 3,
-  "deferredScopes": [
-    "inventory-cycle16-asn-inbound-outbound-carrier-logistics",
-    "inventory-cycle17-quality-compliance-capa-calibration-deviation-sop",
-    "inventory-cycle18-warehouse-ops-task-queue-bin-transfer-grn-packing"
-  ],
-  "lastMilestoneCommit": "cycle-14-rtv-pending",
+  "ranAt": "2026-07-13T03:10:00.000Z",
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": ["inventory-demand-forecasting"],
+  "lastMilestoneCommit": "cycle-19-lot-serial-tracking",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
@@ -17,9 +13,9 @@
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 33,
-    "files": 198,
-    "cases": 2481
+    "seconds": 36,
+    "files": 203,
+    "cases": 2629
   },
   "e2e": {
     "label": "Playwright smoke gate",

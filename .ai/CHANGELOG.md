@@ -2,6 +2,53 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 20: Demand Forecasting — FAST cycle
+
+FAST cycle (fastCyclesSinceFullGate 0→1). Scoped typechecks + full test suite (203 files, 2629 tests).
+
+- **DB**: 5 new models — `DemandForecast`, `ReorderPoint`, `SafetyStockConfig`, `ReplenishmentOrder`, `StockoutPrediction`
+  (migration `20260712200000_inventory_cycle20_demand_forecasting`)
+- **API** (`DemandForecastingModule`, 30 endpoints under `/inventory/demand-forecasting`):
+  - **Forecasts**: create, list, get, update-actual (with MAPE calculation), archive, run-engine
+    (MOVING_AVG / WEIGHTED_AVG / EXPONENTIAL / LINEAR_REGRESSION, auto-supersedes prior actives)
+  - **Reorder Points**: calculate (ROP = avg_daily_demand × lead_time + safety_stock, z-score lookup),
+    list (with active-only filter), get, deactivate; `reorder-alerts` endpoint (compares stock vs ROP)
+  - **Safety Stock Config**: upsert (FIXED / STATISTICAL / DEMAND_VARIABILITY methods), list, delete
+  - **Replenishment Orders**: create (auto-numbered RPL-XXXXX), list, get, approve, cancel,
+    update-status (guarded transitions: PENDING→APPROVED→ORDERED→RECEIVED), auto-generate-from-ROP
+  - **Stockout Predictions**: generate (per-product days-of-stock from StockEntryItem aggregation,
+    buckets LOW/MEDIUM/HIGH/CRITICAL), list, get, acknowledge
+  - **Analytics**: dashboard (10 KPIs), replenishment-summary (groupBy status/priority/trigger),
+    forecast-accuracy (MAPE by method)
+- **UI** (`/inventory/demand-forecasting`): 6-tab page — Dashboard (KPI grid + reorder alerts),
+  Forecasts (run-engine action + table with MAPE), Reorder Points, Replenishment (auto-generate),
+  Stockout Risk (generate + severity badges), Safety Stock
+- **Tests**: 24 unit tests, all passing (replaced pre-existing stub spec targeting different API shape)
+
+## [2026-07-12] Inventory Cycle 19: Lot/Serial Tracking — MILESTONE cycle
+
+MILESTONE cycle (fastCyclesSinceFullGate 3→0 reset). Full suite: 203/203 files, 2616/2616 tests.
+Also fixed pre-existing cycle 15 test bug (`createCar` $transaction mock — array form, not callback).
+
+- **DB**: 4 new models — `LotMovement`, `PickSuggestion`, `ExpiryAlert`, `QuarantineOrder`
+  (migration `20260712190000_inventory_cycle19_lot_serial_tracking`). Builds on existing
+  `Batch` and `SerialNumber`/`SerialNumberHistory` models.
+- **API** (`LotSerialTrackingModule`, 30 endpoints under `/inventory/lot-serial`):
+  - Lot/batch management: create/list/get, quarantine, release-from-quarantine, expire;
+    full lot movement ledger (RECEIPT/PICK/TRANSFER/ADJUSTMENT/RETURN/SCRAP)
+  - Serial numbers: create/list/get with history, mark-sold (+ history entry), mark-returned,
+    scrap (both latter use $transaction to create history atomically)
+  - FEFO/FIFO/LIFO pick suggestions: generate (walks active batches in expiry/creation order,
+    fills qty across lots), list, confirm (with qty validation), cancel
+  - Expiry alerts: generate (bucket batches by threshold → WARNING/CRITICAL/EXPIRED),
+    list with ack filter, acknowledge per alert
+  - Quarantine orders: create with QO-XXXXX auto-number + auto-quarantine batch/serial,
+    release (restores ACTIVE status), scrap; full status lifecycle
+  - Dashboard: 10-metric combined view; expiry report (expired / ≤7d / ≤30d / ≤90d buckets)
+- **UI**: `/inventory/lot-serial` — 6-tab page: Dashboard, Lots & Batches, Serial Numbers,
+  Pick Suggestions, Expiry Alerts, Quarantine; wired into `moduleNav`/`registry.tsx`/`smoke.spec.ts`.
+- **Tests**: 27 unit tests, all passing. Full gate: 203 files / 2616 tests ✅. API + web typecheck ✅.
+
 ## [2026-07-12] Inventory Cycle 18: Warehouse Operations
 
 FAST cycle (branch `claude/goal-start-ib21qn`). fastCyclesSinceFullGate 2→3.
