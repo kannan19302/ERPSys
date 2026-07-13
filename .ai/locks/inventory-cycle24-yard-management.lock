@@ -1,0 +1,8 @@
+{
+  "slug": "inventory-cycle24-yard-management",
+  "agent": "claude-sonnet-4-6",
+  "scope": "Yard Management System: dock doors, carrier appointments, gate passes, yard moves, yard inventory — full DB+API+UI+tests",
+  "acquiredAt": "2026-07-13T03:58:06.905Z",
+  "heartbeatAt": "2026-07-13T03:58:06.905Z",
+  "pid": 22733
+}
