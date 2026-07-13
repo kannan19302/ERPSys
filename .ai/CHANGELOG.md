@@ -2,6 +2,10 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 31 — Cold Chain & Inventory Write-Off Management (FAST)
+
+DB: 4 models + 5 enums (ColdChainRequirement, TemperatureExcursion, StockWriteDownRequest, StockWriteOffRecord + TemperatureUnit/ExcursionSeverity/ExcursionStatus/WriteDownStatus/WriteOffStatus); migration 20260713140000. API: ColdChainWriteoffModule — cold-chain requirement upsert/deactivate/compliance-check per product, temperature excursion logging with auto-severity classification (MINOR/MODERATE/CRITICAL based on °C deviation from spec) + review/status transition + excursion summary, stock write-down request lifecycle (create→PENDING_APPROVAL→APPROVED/REJECTED→WRITTEN_DOWN), stock write-off record lifecycle (create→PENDING_APPROVAL→APPROVED/REJECTED→COMPLETED) with auto total calculation + disposal method tracking, dashboard. 25+ endpoints, 16 tests pass. UI: 5-tab page (Dashboard, Cold Chain, Excursions, Write-Downs, Write-Offs) with inline approve/reject/apply/complete transitions. fastCyclesSinceFullGate: 3→4 (MILESTONE gate triggered next cycle). +19 features, ~1700 LOC.
+
 ## [2026-07-13] Inventory Cycle 30 — Packaging Specifications & GS1 Barcode Management (FAST)
 
 DB: 6 models + 3 enums (PackagingSpec, ItemBarcode, Gs1ApplicationIdentifier, LabelTemplate, LabelAssignment, SsccRecord + PackagingLevel/BarcodeSymbology/LabelTemplateType); migration 20260713130000. API: PackagingGs1Module — packaging spec upsert/deactivate per product+level, hierarchy calculator with cumulative-unit rollup and primary-barcode lookup, item barcode add (primary-clear pattern) + lookup + deactivate, GS1 AI upsert + seed-standard (8 standard AIs), label template CRUD + label assignment with default-clear pattern + per-spec lookup, SSCC allocation with GS1 modulo-10 check-digit + mark-used + list, dashboard. 25+ endpoints, 17 tests pass. UI: 5-tab page (Dashboard with GS1-setup panel, Packaging Specs, Barcodes, Label Templates, SSCC Registry). fastCyclesSinceFullGate: 3. +21 features, ~1900 LOC.

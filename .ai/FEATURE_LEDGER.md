@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T08:35:30.524Z
+> Last generated: 2026-07-13T08:47:17.558Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2496 features** across 33 modules
+## System total: **2515 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 590 |
+| [inventory](#inventory) | 609 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -1778,7 +1778,7 @@
 
 ## inventory
 
-590 features
+609 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
@@ -1827,6 +1827,25 @@
 | POST | `/inventory/catch-weight-recall/recalls/:id/send-notices` | — | — |
 | POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices/:noticeId/acknowledge` | — | — |
 | POST | `/inventory/catch-weight-recall/recalls/:id/disposal-records` | — | — |
+| GET | `/api/inventory/cold-chain-writeoff/dashboard` | Cold chain & write-off dashboard | — |
+| GET | `/api/inventory/cold-chain-writeoff/requirements` | List cold-chain requirements | — |
+| POST | `/api/inventory/cold-chain-writeoff/requirements` | List cold-chain requirements | — |
+| DELETE | `/api/inventory/cold-chain-writeoff/requirements/:productId` | Upsert cold-chain requirement for a product | — |
+| GET | `/api/inventory/cold-chain-writeoff/requirements/:productId/compliance` | Deactivate cold-chain requirement | — |
+| GET | `/api/inventory/cold-chain-writeoff/excursions` | List temperature excursions | — |
+| POST | `/api/inventory/cold-chain-writeoff/excursions` | List temperature excursions | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/excursions/:id/review` | Log a temperature excursion | — |
+| GET | `/api/inventory/cold-chain-writeoff/excursions/summary` | Review/update excursion status | — |
+| GET | `/api/inventory/cold-chain-writeoff/write-downs` | List stock write-down requests | — |
+| POST | `/api/inventory/cold-chain-writeoff/write-downs` | List stock write-down requests | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/approve` | Create write-down request | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/reject` | Approve write-down request | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/apply` | Reject write-down request | — |
+| GET | `/api/inventory/cold-chain-writeoff/write-offs` | List stock write-off records | — |
+| POST | `/api/inventory/cold-chain-writeoff/write-offs` | List stock write-off records | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/approve` | Create write-off record | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/reject` | Approve write-off | — |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/complete` | Reject write-off | — |
 | GET | `/inventory/container-pallet/dashboard` | — | — |
 | GET | `/inventory/container-pallet/pallet-types` | — | — |
 | POST | `/inventory/container-pallet/pallet-types` | — | — |

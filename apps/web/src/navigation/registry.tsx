@@ -184,6 +184,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'container-pallet': 'Container & Pallet Management',
   'catch-weight-recall': 'Catch-Weight & Product Recall',
   'packaging-gs1': 'Packaging Specifications & GS1',
+  'cold-chain-writeoff': 'Cold Chain & Inventory Write-Off Management',
   'rtv': 'Returns to Vendor (RTV)',
   'labor-management': 'Labor Management',
   'supplier-quality': 'Supplier Quality Management',

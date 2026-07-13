@@ -13791,3 +13791,145 @@ model SsccRecord {
   @@index([tenantId])
   @@map("sscc_records")
 }
+
+// ─── Inventory Cycle 31: Cold Chain & Inventory Write-Off Management ─────────
+
+enum TemperatureUnit {
+  CELSIUS
+  FAHRENHEIT
+}
+
+enum ExcursionSeverity {
+  MINOR
+  MODERATE
+  CRITICAL
+}
+
+enum ExcursionStatus {
+  OPEN
+  UNDER_REVIEW
+  QUARANTINED
+  RELEASED
+  DISPOSED
+}
+
+enum WriteDownStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  WRITTEN_DOWN
+}
+
+enum WriteOffStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+/// Cold-chain storage requirements for a product.
+model ColdChainRequirement {
+  id              String          @id @default(cuid())
+  tenantId        String          @map("tenant_id")
+  productId       String          @map("product_id")
+  minTempCelsius  Decimal         @map("min_temp_celsius")
+  maxTempCelsius  Decimal         @map("max_temp_celsius")
+  minHumidityPct  Decimal?        @map("min_humidity_pct")
+  maxHumidityPct  Decimal?        @map("max_humidity_pct")
+  maxExcursionMins Int?           @map("max_excursion_mins")
+  specialHandling String?         @map("special_handling")
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  excursions      TemperatureExcursion[]
+
+  @@unique([tenantId, productId])
+  @@index([tenantId])
+  @@map("cold_chain_requirements")
+}
+
+/// Logged temperature/humidity excursion event.
+model TemperatureExcursion {
+  id                String            @id @default(cuid())
+  tenantId          String            @map("tenant_id")
+  requirementId     String            @map("requirement_id")
+  warehouseId       String            @map("warehouse_id")
+  batchId           String?           @map("batch_id")
+  recordedTempC     Decimal           @map("recorded_temp_c")
+  recordedHumidityPct Decimal?        @map("recorded_humidity_pct")
+  excursionStartAt  DateTime          @map("excursion_start_at")
+  excursionEndAt    DateTime?         @map("excursion_end_at")
+  durationMins      Int?              @map("duration_mins")
+  severity          ExcursionSeverity
+  status            ExcursionStatus   @default(OPEN)
+  loggedById        String            @map("logged_by_id")
+  reviewedById      String?           @map("reviewed_by_id")
+  dispositionNotes  String?           @map("disposition_notes")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  requirement       ColdChainRequirement @relation(fields: [requirementId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, warehouseId])
+  @@map("temperature_excursions")
+}
+
+/// Request to write down the book value of aged or damaged stock.
+model StockWriteDownRequest {
+  id              String          @id @default(cuid())
+  tenantId        String          @map("tenant_id")
+  requestNumber   String          @map("request_number")
+  warehouseId     String          @map("warehouse_id")
+  productId       String          @map("product_id")
+  batchId         String?         @map("batch_id")
+  quantity        Decimal
+  originalValuePerUnit Decimal    @map("original_value_per_unit")
+  proposedValuePerUnit Decimal    @map("proposed_value_per_unit")
+  writeDownReason String          @map("write_down_reason")
+  status          WriteDownStatus @default(DRAFT)
+  requestedById   String          @map("requested_by_id")
+  approvedById    String?         @map("approved_by_id")
+  approvedAt      DateTime?       @map("approved_at")
+  rejectionNotes  String?         @map("rejection_notes")
+  appliedAt       DateTime?       @map("applied_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@unique([tenantId, requestNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("stock_write_down_requests")
+}
+
+/// Write-off record for stock that has been disposed of (destroyed, donated, scrapped).
+model StockWriteOffRecord {
+  id              String         @id @default(cuid())
+  tenantId        String         @map("tenant_id")
+  writeOffNumber  String         @map("write_off_number")
+  warehouseId     String         @map("warehouse_id")
+  productId       String         @map("product_id")
+  batchId         String?        @map("batch_id")
+  quantity        Decimal
+  bookValuePerUnit Decimal       @map("book_value_per_unit")
+  totalWriteOff   Decimal        @map("total_write_off")
+  disposalMethod  String         @map("disposal_method")
+  writeOffReason  String         @map("write_off_reason")
+  status          WriteOffStatus @default(DRAFT)
+  requestedById   String         @map("requested_by_id")
+  approvedById    String?        @map("approved_by_id")
+  approvedAt      DateTime?      @map("approved_at")
+  completedAt     DateTime?      @map("completed_at")
+  rejectionNotes  String?        @map("rejection_notes")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@unique([tenantId, writeOffNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("stock_write_off_records")
+}
