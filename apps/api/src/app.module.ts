@@ -59,6 +59,7 @@ import { VelocityAbcXyzModule } from './modules/inventory/velocity-abc-xyz.modul
 import { CustomerReturnsModule } from './modules/inventory/customer-returns.module';
 import { MinMaxReplenModule } from './modules/inventory/minmax-replen.module';
 import { FreightClaimsModule } from './modules/inventory/freight-claims.module';
+import { VmiModule } from './modules/inventory/vmi.module';
 
 @Module({
   imports: [
@@ -116,6 +117,7 @@ import { FreightClaimsModule } from './modules/inventory/freight-claims.module';
     CustomerReturnsModule,
     MinMaxReplenModule,
     FreightClaimsModule,
+    VmiModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

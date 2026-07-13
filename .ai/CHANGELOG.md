@@ -2,6 +2,19 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 36 — Vendor-Managed Inventory (FAST)
+
+**Sub-domain**: inventory-cycle36-vmi | **Gate**: FAST
+
+### Added
+- `VmiAgreement` model — auto-numbered VMI-XXXXXX, per-product-per-warehouse VMI contract with vendor, min/max/target qty, review cycle days, lead days; status DRAFT→ACTIVE→SUSPENDED/TERMINATED
+- `VmiStockSnapshot` model — periodic on-hand + on-order snapshot per agreement, auto-triggers replenishment order when ACTIVE+BELOW_MIN trigger and stock < minQty
+- `VmiOrder` model — auto-numbered VMIO-XXXXXX, state machine PENDING→CONFIRMED→SHIPPED→RECEIVED/CANCELLED, received qty tracking
+- API: 3 enums, 3 DB tables; `VmiService` with 12 methods; `VmiController` with 13 endpoints; `VmiModule` wired into AppModule
+- Auto-replenishment: snapshot recording auto-fires VMI order (qty = targetQty − onHand) when stock below min on ACTIVE BELOW_MIN agreements
+- UI: `/inventory/vmi` — 4-tab page (Dashboard, Agreements, Stock Snapshots, Orders)
+- Nav, registry, smoke route updated
+
 ## [2026-07-13] Inventory Cycle 35 — Freight Claims & Cargo Damage Reporting (MILESTONE)
 
 **Sub-domain**: inventory-cycle35-freight-claims | **Gate**: MILESTONE (turbo typecheck ✅, 218 test files / 2935 tests ✅)

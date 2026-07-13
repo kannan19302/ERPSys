@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle36-vmi",
-  "agent": "claude-sonnet-4-6-session-2b8e0da4",
-  "scope": "Vendor-Managed Inventory: VMI agreements, stock visibility snapshots, auto-replenishment triggers",
-  "acquiredAt": "2026-07-13T09:31:16.396Z",
-  "heartbeatAt": "2026-07-13T09:31:16.396Z",
-  "pid": 9512
-}

@@ -14399,3 +14399,108 @@ model FreightClaimEvent {
   @@index([tenantId, claimId])
   @@map("freight_claim_events")
 }
+
+// ── Vendor-Managed Inventory (Cycle 36) ──────────────────────────────────────
+
+enum VmiAgreementStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum VmiReplenTrigger {
+  BELOW_MIN
+  SCHEDULE
+  MANUAL
+}
+
+enum VmiOrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
+
+model VmiAgreement {
+  id              String              @id @default(cuid())
+  tenantId        String
+  agreementNumber String
+  vendorId        String
+  warehouseId     String
+  productId       String
+  status          VmiAgreementStatus  @default(DRAFT)
+  replenTrigger   VmiReplenTrigger    @default(BELOW_MIN)
+  minQty          Decimal             @db.Decimal(18, 4)
+  maxQty          Decimal             @db.Decimal(18, 4)
+  targetQty       Decimal             @db.Decimal(18, 4)
+  reviewCycleDays Int                 @default(7)
+  vendorLeadDays  Int                 @default(3)
+  currency        String              @default("USD")
+  notes           String?
+  activatedAt     DateTime?
+  terminatedAt    DateTime?
+  createdById     String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  stockSnapshots  VmiStockSnapshot[]
+  orders          VmiOrder[]
+
+  @@unique([tenantId, agreementNumber])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("vmi_agreements")
+}
+
+model VmiStockSnapshot {
+  id            String        @id @default(cuid())
+  tenantId      String
+  agreementId   String
+  snapshotDate  DateTime
+  onHandQty     Decimal       @db.Decimal(18, 4)
+  onOrderQty    Decimal       @default(0) @db.Decimal(18, 4)
+  recordedById  String
+  notes         String?
+  createdAt     DateTime      @default(now())
+
+  agreement     VmiAgreement  @relation(fields: [agreementId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, agreementId])
+  @@index([tenantId, snapshotDate])
+  @@map("vmi_stock_snapshots")
+}
+
+model VmiOrder {
+  id              String        @id @default(cuid())
+  tenantId        String
+  orderNumber     String
+  agreementId     String
+  vendorId        String
+  status          VmiOrderStatus @default(PENDING)
+  orderedQty      Decimal       @db.Decimal(18, 4)
+  receivedQty     Decimal?      @db.Decimal(18, 4)
+  currency        String        @default("USD")
+  triggeredBy     VmiReplenTrigger
+  triggeredAt     DateTime      @default(now())
+  confirmedAt     DateTime?
+  shippedAt       DateTime?
+  receivedAt      DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  agreement       VmiAgreement  @relation(fields: [agreementId], references: [id])
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([tenantId, agreementId])
+  @@index([tenantId, status])
+  @@index([tenantId, vendorId])
+  @@map("vmi_orders")
+}
