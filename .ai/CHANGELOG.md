@@ -2,6 +2,14 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] MILESTONE Gate — Cycles 20–23
+
+Full turbo typecheck: 10/10 packages, all green (38.6s).
+Full API test suite: 206/206 files, 2692/2692 tests, all green (45.7s).
+E2E smoke: [e2e-unverified] — RLS blocker unchanged (app.current_tenant_id not set in pipeline).
+fastCyclesSinceFullGate reset 4→0. lastMilestoneCommit: cycle-23-transfer-orders.
+Deferred scopes cleared: inventory-demand-forecasting, inventory-landed-cost, inventory-stock-valuation, inventory-transfer-orders.
+
 ## [2026-07-13] Inventory Cycle 23: Transfer Orders — FAST cycle
 
 FAST cycle (fastCyclesSinceFullGate 3→4 — MILESTONE gate required next cycle). Scoped typechecks pass; 22 unit tests pass.

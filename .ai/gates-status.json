@@ -1,13 +1,8 @@
 {
-  "ranAt": "2026-07-13T06:00:00.000Z",
-  "fastCyclesSinceFullGate": 4,
-  "deferredScopes": [
-    "inventory-demand-forecasting",
-    "inventory-landed-cost",
-    "inventory-stock-valuation",
-    "inventory-transfer-orders"
-  ],
-  "lastMilestoneCommit": "cycle-19-lot-serial-tracking",
+  "ranAt": "2026-07-13T07:00:00.000Z",
+  "fastCyclesSinceFullGate": 0,
+  "deferredScopes": [],
+  "lastMilestoneCommit": "cycle-23-transfer-orders",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
     "pass": true,
@@ -18,9 +13,9 @@
     "label": "Unit tests (full API suite)",
     "pass": true,
     "code": 0,
-    "seconds": 36,
-    "files": 203,
-    "cases": 2629
+    "seconds": 46,
+    "files": 206,
+    "cases": 2692
   },
   "e2e": {
     "label": "Playwright smoke gate",
