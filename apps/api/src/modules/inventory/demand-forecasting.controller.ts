@@ -1,142 +1,195 @@
 import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { TrackChanges } from '../../common/decorators/track-changes.decorator';
-import { ChangeHistoryInterceptor } from '../../common/interceptors/change-history.interceptor';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import {
   DemandForecastingService,
-  generateForecastRunSchema,
-  updateForecastRunSchema,
-  GenerateForecastRunInput,
-  UpdateForecastRunInput,
+  createForecastSchema,
+  updateActualSchema,
+  calculateReorderPointSchema,
+  upsertSafetyStockConfigSchema,
+  createReplenishmentOrderSchema,
+  approveReplenishmentSchema,
+  generateStockoutPredictionsSchema,
+  acknowledgeStockoutSchema,
+  runForecastEngineSchema,
 } from './demand-forecasting.service';
 
 interface AuthReq extends Request {
   user: { tenantId: string; orgId: string; userId: string };
 }
 
-/**
- * Inventory Demand Forecasting API (Collab Board slug
- * `inventory-demand-forecasting`). Forecast-run CRUD + generate-forecast +
- * reorder-suggestion list/accept/dismiss.
- */
-@ApiTags('inventory-demand-forecasting')
-@ApiBearerAuth()
 @Controller('inventory/demand-forecasting')
-@UseGuards(JwtAuthGuard, RbacGuard)
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(TenantInterceptor)
 export class DemandForecastingController {
   constructor(private readonly svc: DemandForecastingService) {}
 
-  @ApiOperation({ summary: 'List demand forecast runs' })
-  @Get('runs')
-  @Permissions('inventory.demand_forecast.read')
-  async listRuns(
+  // Dashboard
+  @Get('dashboard')
+  getDashboard(@Req() req: AuthReq) {
+    return this.svc.getDashboard(req.user.tenantId);
+  }
+
+  @Get('replenishment-summary')
+  getReplenishmentSummary(@Req() req: AuthReq) {
+    return this.svc.getReplenishmentSummary(req.user.tenantId);
+  }
+
+  @Get('forecast-accuracy')
+  getForecastAccuracy(@Req() req: AuthReq, @Query('productId') productId?: string) {
+    return this.svc.getForecastAccuracy(req.user.tenantId, productId);
+  }
+
+  @Get('reorder-alerts')
+  checkReorderAlerts(@Req() req: AuthReq) {
+    return this.svc.checkReorderAlerts(req.user.tenantId);
+  }
+
+  // Forecasts
+  @Get('forecasts')
+  listForecasts(@Req() req: AuthReq, @Query('productId') productId?: string, @Query('status') status?: string) {
+    return this.svc.listForecasts(req.user.tenantId, productId, status);
+  }
+
+  @Post('forecasts')
+  createForecast(@Req() req: AuthReq, @ZodBody(createForecastSchema) body: any) {
+    return this.svc.createForecast(req.user.tenantId, req.user.userId, body);
+  }
+
+  @Post('forecasts/run-engine')
+  runForecastEngine(@Req() req: AuthReq, @ZodBody(runForecastEngineSchema) body: any) {
+    return this.svc.runForecastEngine(req.user.tenantId, req.user.userId, body);
+  }
+
+  @Get('forecasts/:id')
+  getForecast(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.getForecast(req.user.tenantId, id);
+  }
+
+  @Patch('forecasts/:id/actual')
+  updateActual(@Req() req: AuthReq, @Param('id') id: string, @ZodBody(updateActualSchema) body: any) {
+    return this.svc.updateActual(req.user.tenantId, id, body);
+  }
+
+  @Patch('forecasts/:id/archive')
+  archiveForecast(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.archiveForecast(req.user.tenantId, id);
+  }
+
+  // Reorder Points
+  @Get('reorder-points')
+  listReorderPoints(
     @Req() req: AuthReq,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('status') status?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('productId') productId?: string,
+    @Query('activeOnly') activeOnly?: string,
   ) {
-    return this.svc.listRuns(req.user.tenantId, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      status,
-      sortBy,
-      sortOrder,
-    });
+    return this.svc.listReorderPoints(req.user.tenantId, productId, activeOnly === 'true');
   }
 
-  @ApiOperation({ summary: 'Get a demand forecast run' })
-  @Get('runs/:id')
-  @Permissions('inventory.demand_forecast.read')
-  async getRun(@Req() req: AuthReq, @Param('id') id: string) {
-    return this.svc.getRun(req.user.tenantId, id);
+  @Post('reorder-points/calculate')
+  calculateReorderPoint(@Req() req: AuthReq, @ZodBody(calculateReorderPointSchema) body: any) {
+    return this.svc.calculateReorderPoint(req.user.tenantId, body);
   }
 
-  @ApiOperation({ summary: 'Get forecast lines for a run' })
-  @Get('runs/:id/lines')
-  @Permissions('inventory.demand_forecast.read')
-  async getRunLines(
+  @Get('reorder-points/:id')
+  getReorderPoint(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.getReorderPoint(req.user.tenantId, id);
+  }
+
+  @Patch('reorder-points/:id/deactivate')
+  deactivateReorderPoint(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.deactivateReorderPoint(req.user.tenantId, id);
+  }
+
+  // Safety Stock
+  @Get('safety-stock')
+  listSafetyStockConfigs(@Req() req: AuthReq, @Query('productId') productId?: string) {
+    return this.svc.listSafetyStockConfigs(req.user.tenantId, productId);
+  }
+
+  @Post('safety-stock')
+  upsertSafetyStockConfig(@Req() req: AuthReq, @ZodBody(upsertSafetyStockConfigSchema) body: any) {
+    return this.svc.upsertSafetyStockConfig(req.user.tenantId, body);
+  }
+
+  @Delete('safety-stock/:id')
+  deleteSafetyStockConfig(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.deleteSafetyStockConfig(req.user.tenantId, id);
+  }
+
+  // Replenishment Orders
+  @Get('replenishment-orders')
+  listReplenishmentOrders(
+    @Req() req: AuthReq,
+    @Query('status') status?: string,
+    @Query('priority') priority?: string,
+  ) {
+    return this.svc.listReplenishmentOrders(req.user.tenantId, status, priority);
+  }
+
+  @Post('replenishment-orders')
+  createReplenishmentOrder(@Req() req: AuthReq, @ZodBody(createReplenishmentOrderSchema) body: any) {
+    return this.svc.createReplenishmentOrder(req.user.tenantId, req.user.userId, body);
+  }
+
+  @Post('replenishment-orders/auto-generate')
+  autoGenerateReplenishments(@Req() req: AuthReq) {
+    return this.svc.autoGenerateReplenishments(req.user.tenantId, req.user.userId);
+  }
+
+  @Get('replenishment-orders/:id')
+  getReplenishmentOrder(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.getReplenishmentOrder(req.user.tenantId, id);
+  }
+
+  @Post('replenishment-orders/:id/approve')
+  approveReplenishmentOrder(
     @Req() req: AuthReq,
     @Param('id') id: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @ZodBody(approveReplenishmentSchema) body: any,
   ) {
-    return this.svc.getRunLines(req.user.tenantId, id, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
+    return this.svc.approveReplenishmentOrder(req.user.tenantId, id, req.user.userId, body);
   }
 
-  @ApiOperation({ summary: 'Generate a new demand forecast run (moving average / exponential smoothing over historical stock-ledger outbound demand)' })
-  @Post('runs/generate')
-  @Permissions('inventory.demand_forecast.generate')
-  @TrackChanges('DemandForecastRun')
-  @UseInterceptors(ChangeHistoryInterceptor)
-  async generate(@Req() req: AuthReq, @ZodBody(generateForecastRunSchema) body: GenerateForecastRunInput) {
-    return this.svc.generateForecast(req.user.tenantId, req.user.orgId, req.user.userId, body);
+  @Patch('replenishment-orders/:id/status')
+  updateReplenishmentStatus(@Req() req: AuthReq, @Param('id') id: string, @Query('status') status: string) {
+    return this.svc.updateReplenishmentStatus(req.user.tenantId, id, status);
   }
 
-  @ApiOperation({ summary: 'Update a demand forecast run (name only)' })
-  @Patch('runs/:id')
-  @Permissions('inventory.demand_forecast.update')
-  @TrackChanges('DemandForecastRun')
-  @UseInterceptors(ChangeHistoryInterceptor)
-  async updateRun(@Req() req: AuthReq, @Param('id') id: string, @ZodBody(updateForecastRunSchema) body: UpdateForecastRunInput) {
-    return this.svc.updateRun(req.user.tenantId, id, body);
+  @Patch('replenishment-orders/:id/cancel')
+  cancelReplenishmentOrder(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.cancelReplenishmentOrder(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Soft-delete a demand forecast run' })
-  @Delete('runs/:id')
-  @Permissions('inventory.demand_forecast.delete')
-  @TrackChanges('DemandForecastRun')
-  @UseInterceptors(ChangeHistoryInterceptor)
-  async deleteRun(@Req() req: AuthReq, @Param('id') id: string) {
-    return this.svc.deleteRun(req.user.tenantId, id);
-  }
-
-  @ApiOperation({ summary: 'List reorder suggestions' })
-  @Get('reorder-suggestions')
-  @Permissions('inventory.reorder_suggestion.read')
-  async listSuggestions(
+  // Stockout Predictions
+  @Get('stockout-predictions')
+  listStockoutPredictions(
     @Req() req: AuthReq,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('status') status?: string,
-    @Query('warehouseId') warehouseId?: string,
-    @Query('runId') runId?: string,
+    @Query('riskLevel') riskLevel?: string,
+    @Query('acknowledged') acknowledged?: string,
   ) {
-    return this.svc.listSuggestions(req.user.tenantId, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      status,
-      warehouseId,
-      runId,
-    });
+    const ack = acknowledged === 'true' ? true : acknowledged === 'false' ? false : undefined;
+    return this.svc.listStockoutPredictions(req.user.tenantId, riskLevel, ack);
   }
 
-  @ApiOperation({ summary: 'Accept a reorder suggestion' })
-  @Post('reorder-suggestions/:id/accept')
-  @Permissions('inventory.reorder_suggestion.update')
-  @TrackChanges('ReorderSuggestion')
-  @UseInterceptors(ChangeHistoryInterceptor)
-  async accept(@Req() req: AuthReq, @Param('id') id: string) {
-    return this.svc.acceptSuggestion(req.user.tenantId, id, req.user.userId);
+  @Post('stockout-predictions/generate')
+  generateStockoutPredictions(@Req() req: AuthReq, @ZodBody(generateStockoutPredictionsSchema) body: any) {
+    return this.svc.generateStockoutPredictions(req.user.tenantId, body);
   }
 
-  @ApiOperation({ summary: 'Dismiss a reorder suggestion' })
-  @Post('reorder-suggestions/:id/dismiss')
-  @Permissions('inventory.reorder_suggestion.update')
-  @TrackChanges('ReorderSuggestion')
-  @UseInterceptors(ChangeHistoryInterceptor)
-  async dismiss(@Req() req: AuthReq, @Param('id') id: string) {
-    return this.svc.dismissSuggestion(req.user.tenantId, id, req.user.userId);
+  @Get('stockout-predictions/:id')
+  getStockoutPrediction(@Req() req: AuthReq, @Param('id') id: string) {
+    return this.svc.getStockoutPrediction(req.user.tenantId, id);
+  }
+
+  @Patch('stockout-predictions/:id/acknowledge')
+  acknowledgeStockoutPrediction(
+    @Req() req: AuthReq,
+    @Param('id') id: string,
+    @ZodBody(acknowledgeStockoutSchema) body: any,
+  ) {
+    return this.svc.acknowledgeStockoutPrediction(req.user.tenantId, id, body);
   }
 }

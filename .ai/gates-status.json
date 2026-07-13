@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-12T16:00:00.000Z",
-  "fastCyclesSinceFullGate": 0,
-  "deferredScopes": [],
+  "ranAt": "2026-07-13T03:10:00.000Z",
+  "fastCyclesSinceFullGate": 1,
+  "deferredScopes": ["inventory-demand-forecasting"],
   "lastMilestoneCommit": "cycle-19-lot-serial-tracking",
   "typecheck": {
     "label": "Typecheck (turbo, all packages)",
@@ -15,7 +15,7 @@
     "code": 0,
     "seconds": 36,
     "files": 203,
-    "cases": 2616
+    "cases": 2629
   },
   "e2e": {
     "label": "Playwright smoke gate",

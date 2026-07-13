@@ -1,266 +1,386 @@
 'use client';
+import { useState, useEffect, useCallback } from 'react';
 
-import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge } from '@unerp/ui';
-import { Plus, AlertCircle, TrendingUp, Check, X } from 'lucide-react';
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-interface ForecastRun {
-  id: string;
-  name: string;
-  method: string;
-  status: string;
-  createdAt: string;
-  warehouse?: { name: string } | null;
-  _count?: { lines: number; suggestions: number };
+async function apiFetch(path: string, opts?: RequestInit) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${BASE}${path}`, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
-interface ReorderSuggestion {
-  id: string;
-  status: string;
-  suggestedQuantity: string;
-  currentStockQty: string;
-  reorderPoint: string;
-  product: { sku: string; name: string; unit: string };
-  warehouse: { name: string; code: string };
-}
+type Tab = 'dashboard' | 'forecasts' | 'reorder-points' | 'replenishment' | 'stockout' | 'safety-stock';
 
 export default function DemandForecastingPage() {
-  const [runs, setRuns] = useState<ForecastRun[]>([]);
-  const [suggestions, setSuggestions] = useState<ReorderSuggestion[]>([]);
-  const [warehouses, setWarehouses] = useState<Array<{ id: string; name: string }>>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [method, setMethod] = useState<'MOVING_AVERAGE' | 'EXPONENTIAL_SMOOTHING'>('MOVING_AVERAGE');
-  const [warehouseId, setWarehouseId] = useState('');
-  const [historyDays, setHistoryDays] = useState(90);
-  const [horizonDays, setHorizonDays] = useState(30);
+  const [tab, setTab] = useState<Tab>('dashboard');
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [forecasts, setForecasts] = useState<any[]>([]);
+  const [reorderPoints, setReorderPoints] = useState<any[]>([]);
+  const [replenishments, setReplenishments] = useState<any[]>([]);
+  const [stockouts, setStockouts] = useState<any[]>([]);
+  const [safetyConfigs, setSafetyConfigs] = useState<any[]>([]);
+  const [reorderAlerts, setReorderAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
-
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
     try {
-      const [rRes, sRes, wRes] = await Promise.all([
-        fetch('/api/v1/inventory/demand-forecasting/runs', { headers: authHeaders() }),
-        fetch('/api/v1/inventory/demand-forecasting/reorder-suggestions?status=PENDING', { headers: authHeaders() }),
-        fetch('/api/v1/inventory/warehouses', { headers: authHeaders() }),
-      ]);
-      if (rRes.ok) setRuns(await rRes.json().then((d) => (Array.isArray(d) ? d : d?.data || [])));
-      if (sRes.ok) setSuggestions(await sRes.json().then((d) => (Array.isArray(d) ? d : d?.data || [])));
-      if (wRes.ok) {
-        const whs = await wRes.json().then((d) => (Array.isArray(d) ? d : d?.data || []));
-        setWarehouses(whs);
+      if (tab === 'dashboard') {
+        const [dash, alerts] = await Promise.all([
+          apiFetch('/inventory/demand-forecasting/dashboard'),
+          apiFetch('/inventory/demand-forecasting/reorder-alerts'),
+        ]);
+        setDashboard(dash); setReorderAlerts(alerts);
+      } else if (tab === 'forecasts') {
+        setForecasts(await apiFetch('/inventory/demand-forecasting/forecasts'));
+      } else if (tab === 'reorder-points') {
+        setReorderPoints(await apiFetch('/inventory/demand-forecasting/reorder-points'));
+      } else if (tab === 'replenishment') {
+        setReplenishments(await apiFetch('/inventory/demand-forecasting/replenishment-orders'));
+      } else if (tab === 'stockout') {
+        setStockouts(await apiFetch('/inventory/demand-forecasting/stockout-predictions'));
+      } else if (tab === 'safety-stock') {
+        setSafetyConfigs(await apiFetch('/inventory/demand-forecasting/safety-stock'));
       }
-    } catch {
-      setError('Serving local mock fallback registry.');
-      setWarehouses([{ id: 'wh-1', name: 'Schenectady Central Depot' }]);
-      setRuns([{ id: 'run-1', name: 'Q3 Forecast', method: 'MOVING_AVERAGE', status: 'COMPLETED', createdAt: new Date().toISOString(), _count: { lines: 12, suggestions: 3 } }]);
-      setSuggestions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    } catch (e: any) { setError(e.message); }
+    setLoading(false);
+  }, [tab]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { load(); }, [load]);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/v1/inventory/demand-forecasting/runs/generate', {
-        method: 'POST',
-        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          method,
-          warehouseId: warehouseId || undefined,
-          historyDays,
-          horizonDays,
-        }),
-      });
-      if (!res.ok) throw new Error();
-      setIsCreateModalOpen(false);
-      setName('');
-      loadData();
-    } catch {
-      alert('Local fallback: forecast run generated.');
-      setIsCreateModalOpen(false);
-    }
-  };
-
-  const handleAccept = async (id: string) => {
-    try {
-      const res = await fetch(`/api/v1/inventory/demand-forecasting/reorder-suggestions/${id}/accept`, { method: 'POST', headers: authHeaders() });
-      if (!res.ok) throw new Error();
-      loadData();
-    } catch {
-      alert('Local fallback: suggestion accepted.');
-    }
-  };
-
-  const handleDismiss = async (id: string) => {
-    try {
-      const res = await fetch(`/api/v1/inventory/demand-forecasting/reorder-suggestions/${id}/dismiss`, { method: 'POST', headers: authHeaders() });
-      if (!res.ok) throw new Error();
-      loadData();
-    } catch {
-      alert('Local fallback: suggestion dismissed.');
-    }
-  };
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'forecasts', label: 'Forecasts' },
+    { id: 'reorder-points', label: 'Reorder Points' },
+    { id: 'replenishment', label: 'Replenishment' },
+    { id: 'stockout', label: 'Stockout Risk' },
+    { id: 'safety-stock', label: 'Safety Stock' },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeInUp 0.4s ease-out' }}>
-      <PageHeader
-        title="Demand Forecasting & Reorder Suggestions"
-        description="Historical-sales-based reorder forecasting with moving-average or exponential-smoothing projections, plus derived reorder suggestions."
-        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory', href: '/inventory' }, { label: 'Demand Forecasting' }]}
-        actions={
-          <Button variant="primary" onClick={() => setIsCreateModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Plus size={14} /> New Forecast Run
-          </Button>
-        }
-      />
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Demand Forecasting</h1>
+        <button
+          onClick={load}
+          className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Refresh
+        </button>
+      </div>
 
-      {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-warning-light)', border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-md)', color: 'var(--color-warning-text)', fontSize: 'var(--text-sm)' }}>
-          <AlertCircle size={16} />
-          <span>Note: {error}</span>
-        </div>
-      )}
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              tab === t.id
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12)' }}>
-          <Spinner size="lg" />
-        </div>
-      ) : (
-        <>
-          <Card padding="none" style={{ overflowX: 'auto' }}>
-            <div style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <TrendingUp size={16} /> Forecast Runs
-            </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Name</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Method</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Warehouse</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Lines</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Suggestions</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {runs.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{r.name}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{r.method}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{r.warehouse?.name ?? 'All warehouses'}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{r._count?.lines ?? '-'}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{r._count?.suggestions ?? '-'}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>
-                      <Badge variant={r.status === 'COMPLETED' ? 'success' : r.status === 'FAILED' ? 'danger' : 'warning'}>{r.status}</Badge>
-                    </td>
-                  </tr>
-                ))}
-                {runs.length === 0 && (
-                  <tr>
-                    <td colSpan={6} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No forecast runs yet.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </Card>
+      {error && <div className="p-3 rounded bg-red-50 text-red-700 text-sm dark:bg-red-900/20 dark:text-red-400">{error}</div>}
+      {loading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
 
-          <Card padding="none" style={{ overflowX: 'auto' }}>
-            <div style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>Pending Reorder Suggestions</div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-sunken)' }}>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>SKU</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Warehouse</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>On Hand</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Reorder Point</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Suggested Qty</th>
-                  <th style={{ padding: 'var(--space-4) var(--space-5)', textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {suggestions.map((s) => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontFamily: 'monospace' }}>{s.product.sku}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{s.warehouse.name}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{s.currentStockQty}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)' }}>{s.reorderPoint}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--weight-semibold)' }}>{s.suggestedQuantity}</td>
-                    <td style={{ padding: 'var(--space-4) var(--space-5)', textAlign: 'right', display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                      <button onClick={() => handleAccept(s.id)} className="frappe-btn frappe-btn-primary" style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Check size={12} /> Accept
-                      </button>
-                      <button onClick={() => handleDismiss(s.id)} className="frappe-btn" style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <X size={12} /> Dismiss
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {suggestions.length === 0 && (
-                  <tr>
-                    <td colSpan={6} style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>No pending reorder suggestions.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </Card>
-        </>
-      )}
-
-      {isCreateModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--color-bg-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '16px' }}>
-          <div className="frappe-card modal-card" style={{ width: '100%', maxWidth: '450px', background: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-xl)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
-              <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>New Forecast Run</span>
-              <button onClick={() => setIsCreateModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>Close</button>
-            </div>
-            <div className="frappe-card-body" style={{ padding: '20px' }}>
-              <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="frappe-form-group">
-                  <label className="frappe-label">Run Name *</label>
-                  <input type="text" className="frappe-input" value={name} onChange={(e) => setName(e.target.value)} required />
-                </div>
-                <div className="frappe-form-group">
-                  <label className="frappe-label">Method *</label>
-                  <select className="frappe-input" value={method} onChange={(e) => setMethod(e.target.value as typeof method)}>
-                    <option value="MOVING_AVERAGE">Moving Average</option>
-                    <option value="EXPONENTIAL_SMOOTHING">Exponential Smoothing</option>
-                  </select>
-                </div>
-                <div className="frappe-form-group">
-                  <label className="frappe-label">Warehouse (optional)</label>
-                  <select className="frappe-input" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}>
-                    <option value="">All warehouses</option>
-                    {warehouses.map((w) => (
-                      <option key={w.id} value={w.id}>{w.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="frappe-form-group">
-                  <label className="frappe-label">History Window (days) *</label>
-                  <input type="number" className="frappe-input" min={7} max={730} value={historyDays} onChange={(e) => setHistoryDays(Number(e.target.value))} required />
-                </div>
-                <div className="frappe-form-group">
-                  <label className="frappe-label">Forecast Horizon (days) *</label>
-                  <input type="number" className="frappe-input" min={1} max={365} value={horizonDays} onChange={(e) => setHorizonDays(Number(e.target.value))} required />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
-                  <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
-                  <Button variant="primary" type="submit">Generate forecast</Button>
-                </div>
-              </form>
-            </div>
+      {tab === 'dashboard' && dashboard && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[
+              { label: 'Active Forecasts', value: dashboard.activeForecasts, color: 'blue' },
+              { label: 'Active ROP Configs', value: dashboard.activeReorderPoints, color: 'green' },
+              { label: 'Pending Replenishments', value: dashboard.pendingReplenishments, color: 'yellow' },
+              { label: 'Critical Stockouts', value: dashboard.criticalStockouts, color: 'red' },
+              { label: 'Below ROP', value: dashboard.belowRopCount, color: 'orange' },
+            ].map((m) => (
+              <div key={m.label} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{m.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{m.value}</p>
+              </div>
+            ))}
           </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Urgent Replenishments', value: dashboard.urgentReplenishments },
+              { label: 'High Stockout Risk', value: dashboard.highStockouts },
+              { label: 'Total Safety Configs', value: dashboard.totalSafetyConfigs },
+              { label: 'Avg Forecast MAPE', value: dashboard.avgMape != null ? `${(dashboard.avgMape * 100).toFixed(1)}%` : 'N/A' },
+            ].map((m) => (
+              <div key={m.label} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{m.label}</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-white mt-1">{m.value}</p>
+              </div>
+            ))}
+          </div>
+          {reorderAlerts.length > 0 && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <h3 className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">⚠ Reorder Alerts ({reorderAlerts.length})</h3>
+              <div className="space-y-2">
+                {reorderAlerts.map((a, i) => (
+                  <div key={i} className="flex justify-between text-sm text-yellow-700 dark:text-yellow-400">
+                    <span>{a.productId}</span>
+                    <span>Stock: {a.currentQty} / ROP: {a.reorderPoint} {a.belowSafetyStock && '🔴 BELOW SAFETY'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'forecasts' && (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  await apiFetch('/inventory/demand-forecasting/forecasts/run-engine', {
+                    method: 'POST',
+                    body: JSON.stringify({ horizon: 30, method: 'MOVING_AVG', lookbackDays: 90 }),
+                  });
+                  load();
+                } catch (e: any) { setError(e.message); }
+              }}
+              className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Run Forecast Engine
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  {['Product', 'Date', 'Horizon', 'Method', 'Forecasted Qty', 'Actual Qty', 'MAPE', 'Status'].map((h) => (
+                    <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {forecasts.map((f) => (
+                  <tr key={f.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-3 py-2 text-gray-900 dark:text-white font-mono text-xs">{f.productId.slice(0, 12)}…</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{new Date(f.forecastDate).toLocaleDateString()}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{f.horizon}d</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{f.method}</td>
+                    <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(f.forecastedQty).toFixed(2)}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{f.actualQty ? Number(f.actualQty).toFixed(2) : '—'}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{f.mape ? `${(Number(f.mape) * 100).toFixed(1)}%` : '—'}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        f.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : f.status === 'SUPERSEDED' ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>{f.status}</span>
+                    </td>
+                  </tr>
+                ))}
+                {!forecasts.length && (
+                  <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No forecasts. Run the engine to generate.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === 'reorder-points' && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                {['Product', 'Warehouse', 'Reorder Point', 'Reorder Qty', 'Safety Stock', 'Lead Time', 'Avg Daily Demand', 'Service Level', 'Active'].map((h) => (
+                  <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {reorderPoints.map((rp) => (
+                <tr key={rp.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-3 py-2 font-mono text-xs text-gray-900 dark:text-white">{rp.productId.slice(0, 12)}…</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{rp.warehouseId ?? '—'}</td>
+                  <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(rp.reorderPoint).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(rp.reorderQty).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(rp.safetyStock).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{rp.leadTimeDays}d</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{Number(rp.avgDailyDemand).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{(Number(rp.serviceLevel) * 100).toFixed(0)}%</td>
+                  <td className="px-3 py-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${rp.isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500'}`}>
+                      {rp.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {!reorderPoints.length && (
+                <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">No reorder points configured.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === 'replenishment' && (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  const r = await apiFetch('/inventory/demand-forecasting/replenishment-orders/auto-generate', { method: 'POST' });
+                  setError(`Generated ${r.generated} replenishment orders`);
+                  load();
+                } catch (e: any) { setError(e.message); }
+              }}
+              className="px-3 py-1.5 text-sm bg-orange-600 text-white rounded hover:bg-orange-700"
+            >
+              Auto-Generate from ROP
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  {['Order #', 'Product', 'Warehouse', 'Suggested Qty', 'Trigger', 'Priority', 'Status', 'Created'].map((h) => (
+                    <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {replenishments.map((ro) => (
+                  <tr key={ro.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-3 py-2 font-medium text-gray-900 dark:text-white">{ro.orderNumber}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-300">{ro.productId.slice(0, 12)}…</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{ro.warehouseId}</td>
+                    <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(ro.suggestedQty).toFixed(2)} {ro.uom}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{ro.triggerType}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        ro.priority === 'URGENT' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        : ro.priority === 'HIGH' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                        : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                      }`}>{ro.priority}</span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        ro.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700'
+                        : ro.status === 'APPROVED' ? 'bg-blue-100 text-blue-700'
+                        : ro.status === 'ORDERED' ? 'bg-purple-100 text-purple-700'
+                        : ro.status === 'RECEIVED' ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
+                      }`}>{ro.status}</span>
+                    </td>
+                    <td className="px-3 py-2 text-gray-500 text-xs">{new Date(ro.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+                {!replenishments.length && (
+                  <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No replenishment orders.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === 'stockout' && (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  const r = await apiFetch('/inventory/demand-forecasting/stockout-predictions/generate', {
+                    method: 'POST',
+                    body: JSON.stringify({ riskThresholdDays: 30 }),
+                  });
+                  setError(`Generated ${r.generated} predictions`);
+                  load();
+                } catch (e: any) { setError(e.message); }
+              }}
+              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Generate Predictions
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  {['Product', 'Warehouse', 'Current Stock', 'Avg Daily Demand', 'Days of Stock', 'Predicted Stockout', 'Risk', 'Acknowledged'].map((h) => (
+                    <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {stockouts.map((p) => (
+                  <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-3 py-2 font-mono text-xs text-gray-900 dark:text-white">{p.productId.slice(0, 12)}…</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{p.warehouseId}</td>
+                    <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(p.currentStock).toFixed(2)}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{Number(p.avgDailyDemand).toFixed(2)}</td>
+                    <td className="px-3 py-2 text-gray-900 dark:text-white">{Number(p.daysOfStock).toFixed(1)}</td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">
+                      {p.predictedStockoutDate ? new Date(p.predictedStockoutDate).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        p.riskLevel === 'CRITICAL' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        : p.riskLevel === 'HIGH' ? 'bg-orange-100 text-orange-700'
+                        : p.riskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-green-100 text-green-700'
+                      }`}>{p.riskLevel}</span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${p.acknowledged ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {p.acknowledged ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {!stockouts.length && (
+                  <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No stockout predictions.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === 'safety-stock' && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                {['Product', 'Warehouse', 'Method', 'Fixed Qty', 'Coverage Days', 'Service Level', 'Calculated Safety', 'Last Recalc'].map((h) => (
+                  <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {safetyConfigs.map((c) => (
+                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-3 py-2 font-mono text-xs text-gray-900 dark:text-white">{c.productId.slice(0, 12)}…</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{c.warehouseId ?? '—'}</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{c.method}</td>
+                  <td className="px-3 py-2 text-gray-900 dark:text-white">{c.fixedQty ? Number(c.fixedQty).toFixed(2) : '—'}</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{c.coverageDays ?? '—'}</td>
+                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{c.serviceLevel ? `${(Number(c.serviceLevel) * 100).toFixed(0)}%` : '—'}</td>
+                  <td className="px-3 py-2 text-gray-900 dark:text-white">{c.calculatedSafety ? Number(c.calculatedSafety).toFixed(2) : '—'}</td>
+                  <td className="px-3 py-2 text-gray-500 text-xs">{c.lastRecalcAt ? new Date(c.lastRecalcAt).toLocaleDateString() : '—'}</td>
+                </tr>
+              ))}
+              {!safetyConfigs.length && (
+                <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No safety stock configurations.</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

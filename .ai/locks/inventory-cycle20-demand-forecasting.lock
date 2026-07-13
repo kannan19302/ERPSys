@@ -1,8 +1,0 @@
-{
-  "slug": "inventory-cycle20-demand-forecasting",
-  "agent": "claude-sonnet-cycle20",
-  "scope": "Demand forecasting, reorder point calculation, safety stock, replenishment planning, stockout predictions",
-  "acquiredAt": "2026-07-12T17:10:49.179Z",
-  "heartbeatAt": "2026-07-12T17:10:49.191Z",
-  "pid": 2252
-}

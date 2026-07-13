@@ -2,6 +2,29 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-13] Inventory Cycle 20: Demand Forecasting — FAST cycle
+
+FAST cycle (fastCyclesSinceFullGate 0→1). Scoped typechecks + full test suite (203 files, 2629 tests).
+
+- **DB**: 5 new models — `DemandForecast`, `ReorderPoint`, `SafetyStockConfig`, `ReplenishmentOrder`, `StockoutPrediction`
+  (migration `20260712200000_inventory_cycle20_demand_forecasting`)
+- **API** (`DemandForecastingModule`, 30 endpoints under `/inventory/demand-forecasting`):
+  - **Forecasts**: create, list, get, update-actual (with MAPE calculation), archive, run-engine
+    (MOVING_AVG / WEIGHTED_AVG / EXPONENTIAL / LINEAR_REGRESSION, auto-supersedes prior actives)
+  - **Reorder Points**: calculate (ROP = avg_daily_demand × lead_time + safety_stock, z-score lookup),
+    list (with active-only filter), get, deactivate; `reorder-alerts` endpoint (compares stock vs ROP)
+  - **Safety Stock Config**: upsert (FIXED / STATISTICAL / DEMAND_VARIABILITY methods), list, delete
+  - **Replenishment Orders**: create (auto-numbered RPL-XXXXX), list, get, approve, cancel,
+    update-status (guarded transitions: PENDING→APPROVED→ORDERED→RECEIVED), auto-generate-from-ROP
+  - **Stockout Predictions**: generate (per-product days-of-stock from StockEntryItem aggregation,
+    buckets LOW/MEDIUM/HIGH/CRITICAL), list, get, acknowledge
+  - **Analytics**: dashboard (10 KPIs), replenishment-summary (groupBy status/priority/trigger),
+    forecast-accuracy (MAPE by method)
+- **UI** (`/inventory/demand-forecasting`): 6-tab page — Dashboard (KPI grid + reorder alerts),
+  Forecasts (run-engine action + table with MAPE), Reorder Points, Replenishment (auto-generate),
+  Stockout Risk (generate + severity badges), Safety Stock
+- **Tests**: 24 unit tests, all passing (replaced pre-existing stub spec targeting different API shape)
+
 ## [2026-07-12] Inventory Cycle 19: Lot/Serial Tracking — MILESTONE cycle
 
 MILESTONE cycle (fastCyclesSinceFullGate 3→0 reset). Full suite: 203/203 files, 2616/2616 tests.
