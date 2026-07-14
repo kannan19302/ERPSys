@@ -78,6 +78,21 @@ existing functionality — it multiplies value only once the functionality is co
 
 ## 5. Module Exit Criteria (all required before advancing to the next row)
 
+**The 500+ mandate (binding, absolute).** A module is NEVER declared complete below
+**500 distinct working business features** (§ 2 definition, § 3 measurement, no
+padding). This is a hard floor with no exceptions, waivers, or "close enough" — 499
+is not done. It is criterion 1 below and it gates all the others.
+
+**The 500+ is necessary, NOT sufficient — continued-focus exception (binding).**
+Crossing 500 does not end a module's focus turn by itself. If a module has ≥ 500
+features but any other exit criterion below is unmet — open benchmark gaps, scorecard
+dimensions < 10, unresolved runtime errors, unverified integration contracts, failed
+UAT, or open GitHub issues labeled `severity:critical`/`severity:high` against the
+module — the module **retains focus** and cycles continue deepening it until every
+criterion genuinely passes. Declare such a module `500+ / IN-FOCUS (exception:
+<unmet criteria>)` in § 1 and § 6 rather than DONE. The focus advances only on a full
+6-for-6 pass; quality closes a module, not the counter.
+
 **CLOSED RECORD — Finance & Accounting is DONE as of 2026-07-11.** All 6 criteria
 below are MET; kept verbatim (including prior-cycle history) as the audit trail.
 Final closing evidence: `.ai/UAT_FINANCE_2026-07-11.md`.
