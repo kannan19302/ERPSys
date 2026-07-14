@@ -4,6 +4,8 @@ import {
 } from '@nestjs/common';
 import { LandedCostService } from './landed-cost.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
+import { RbacGuard } from '../../common/guards/rbac.guard';
 import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
 
 interface AuthRequest {
@@ -11,23 +13,26 @@ interface AuthRequest {
 }
 
 @Controller('inventory/landed-cost')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class LandedCostController {
   constructor(private readonly svc: LandedCostService) {}
 
   // Dashboard
+  @Permissions('inventory.landed_cost.read')
   @Get('dashboard')
   getDashboard(@Request() req: AuthRequest) {
     return this.svc.getDashboard(req.user.tenantId);
   }
 
+  @Permissions('inventory.landed_cost.read')
   @Get('charge-type-summary')
   getChargeTypeSummary(@Request() req: AuthRequest) {
     return this.svc.getChargeTypeSummary(req.user.tenantId);
   }
 
   // Allocation report
+  @Permissions('inventory.landed_cost.read')
   @Get('allocation-report')
   getAllocationReport(
     @Request() req: AuthRequest,
@@ -37,6 +42,7 @@ export class LandedCostController {
   }
 
   // Vouchers
+  @Permissions('inventory.landed_cost.read')
   @Get('vouchers')
   listVouchers(
     @Request() req: AuthRequest,
@@ -45,6 +51,7 @@ export class LandedCostController {
     return this.svc.listVouchers(req.user.tenantId, status);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Post('vouchers')
   createVoucher(
     @Request() req: AuthRequest,
@@ -60,11 +67,13 @@ export class LandedCostController {
     return this.svc.createVoucher(req.user.tenantId, req.user.userId, dto);
   }
 
+  @Permissions('inventory.landed_cost.read')
   @Get('vouchers/:id')
   getVoucher(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.getVoucher(req.user.tenantId, id);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Put('vouchers/:id')
   updateVoucher(
     @Request() req: AuthRequest,
@@ -81,32 +90,38 @@ export class LandedCostController {
     return this.svc.updateVoucher(req.user.tenantId, id, dto);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Delete('vouchers/:id')
   deleteVoucher(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.deleteVoucher(req.user.tenantId, id);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Patch('vouchers/:id/submit')
   submitVoucher(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.submitVoucher(req.user.tenantId, id);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Patch('vouchers/:id/cancel')
   cancelVoucher(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.cancelVoucher(req.user.tenantId, id);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Patch('vouchers/:id/allocate')
   allocate(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.allocate(req.user.tenantId, id);
   }
 
   // Charge Lines
+  @Permissions('inventory.landed_cost.read')
   @Get('vouchers/:id/charge-lines')
   listChargeLines(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.listChargeLines(req.user.tenantId, id);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Post('vouchers/:id/charge-lines')
   addChargeLine(
     @Request() req: AuthRequest,
@@ -122,6 +137,7 @@ export class LandedCostController {
     return this.svc.addChargeLine(req.user.tenantId, voucherId, dto);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Put('vouchers/:id/charge-lines/:lineId')
   updateChargeLine(
     @Request() req: AuthRequest,
@@ -138,6 +154,7 @@ export class LandedCostController {
     return this.svc.updateChargeLine(req.user.tenantId, voucherId, lineId, dto);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Delete('vouchers/:id/charge-lines/:lineId')
   removeChargeLine(
     @Request() req: AuthRequest,
@@ -148,11 +165,13 @@ export class LandedCostController {
   }
 
   // Receipt Links
+  @Permissions('inventory.landed_cost.read')
   @Get('vouchers/:id/receipt-links')
   listReceiptLinks(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.listReceiptLinks(req.user.tenantId, id);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Post('vouchers/:id/receipt-links')
   linkReceipt(
     @Request() req: AuthRequest,
@@ -168,6 +187,7 @@ export class LandedCostController {
     return this.svc.linkReceipt(req.user.tenantId, voucherId, dto);
   }
 
+  @Permissions('inventory.landed_cost.manage')
   @Delete('vouchers/:id/receipt-links/:stockEntryId')
   unlinkReceipt(
     @Request() req: AuthRequest,
@@ -178,6 +198,7 @@ export class LandedCostController {
   }
 
   // Allocations
+  @Permissions('inventory.landed_cost.read')
   @Get('vouchers/:id/allocations')
   listAllocations(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.svc.listAllocations(req.user.tenantId, id);
