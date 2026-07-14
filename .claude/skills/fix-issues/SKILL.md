@@ -59,6 +59,12 @@ are shared.
    issue): comment your findings on the issue, add the `blocked` label, release the
    lock, move on. Never thrash.
 
+**Pre-v1 posture** (while `.ai/RELEASE_PLAN.md` § Status is "pre-v1"): this is the
+dominant activity — drain the ENTIRE backlog, security and critical/high first, and
+keep looping runs until zero `security` and zero `severity:critical|high` issues
+remain open (the v1 launch gate, RELEASE_PLAN § 1). Also file/drain from
+`.ai/ISSUE_INVENTORY.jsonl` if issue-scout left un-filed rows there.
+
 ## 3. Settlement (once, after the loop)
 
 1. If any fix touched risky surface (data migration, auth/tenancy/RBAC, shared

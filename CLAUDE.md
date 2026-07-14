@@ -3,6 +3,13 @@
 Read and follow `AGENTS.md` — it is the master instruction set for this repo
 (architecture, critical rules, 3-file tracking convention, Collab Board protocol).
 
+**Release focus**: the project is in the **pre-v1 hardening window** (`.ai/RELEASE_PLAN.md`)
+— targeting a full-fledged, flawless, live v1 in ~2 months. All three workflows point
+at that goal: `identify issue` runs exhaustively (no cap, every module, security-first)
+to catalogue every flaw; `fix issues` drains the backlog security/critical-first; and
+`Start` cycles prioritise closing module exit criteria and launch-blocking work over
+new nice-to-haves. Security (`security`-labeled) and critical/high issues block launch.
+
 **Autonomous mode**: if the user's message is just "Start" (or "start", "/start",
 "continue", "next") with no other requirements, execute the Autonomous Development
 Protocol in `.ai/AUTOPILOT.md` end-to-end: select one work item via its priority

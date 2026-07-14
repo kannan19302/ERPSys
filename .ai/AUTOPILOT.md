@@ -608,6 +608,12 @@ Tokens spent re-deriving context are tokens not spent shipping features. Rules:
 
 ## Guardrails (absolute)
 
+- **500+ distinct business features is the module-completion mandate** (binding,
+  `MODULE_FOCUS.md` § 5): no module is ever declared DONE below 500 genuine features —
+  and crossing 500 is necessary, not sufficient. A 500+ module with any unmet exit
+  criterion (benchmark gaps, scorecard < 10, runtime errors, contracts, UAT, open
+  critical/high GitHub issues) keeps its focus turn under the continued-focus
+  exception until all six criteria pass.
 - **Gate debt is bounded, never forgiven.** Max 4 fast cycles between milestones;
   no module completion / focus advance / risky surface ships without a green
   milestone; a red milestone gate is P0 within that same cycle.
