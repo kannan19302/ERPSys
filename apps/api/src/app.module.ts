@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { TenantInterceptor } from './common/guards/tenant.interceptor';
 import { HealthController } from './health.controller';
@@ -209,6 +209,8 @@ import { LotExpiryModule } from './modules/inventory/lot-expiry.module';
     { provide: APP_INTERCEPTOR, useClass: TenantInterceptor },
     // Always-on compliance audit log for every mutating request.
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+    // Enforces the ThrottlerModule buckets configured above on every route.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

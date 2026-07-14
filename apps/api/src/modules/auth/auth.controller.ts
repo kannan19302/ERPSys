@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Patch, Body, UseGuards, Req, Res, HttpCode, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { z } from 'zod';
@@ -46,6 +47,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Login' })
   @Permissions('auth.create')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -98,6 +100,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Request password reset' })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body(new ZodValidationPipe(forgotPasswordSchema)) dto: ForgotPasswordInput) {
@@ -105,6 +108,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Reset password' })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body(new ZodValidationPipe(resetPasswordSchema)) dto: ResetPasswordInput) {
@@ -112,6 +116,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Login demo user (non-production only)' })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login-demo')
   @HttpCode(HttpStatus.OK)
   async loginDemo(
