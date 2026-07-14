@@ -7,6 +7,8 @@ dist/
 .next/
 out/
 *.tsbuildinfo
+apps/api/src/**/*.js
+apps/api/src/**/*.js.map
 
 # Environment
 .env
