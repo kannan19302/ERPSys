@@ -26,6 +26,11 @@ export const prisma = basePrisma.$extends({
         operation,
         args,
         query,
+      }: {
+        model: string;
+        operation: string;
+        args: unknown;
+        query: (args: unknown) => Promise<unknown>;
       }) {
         const session = getTenantSession();
         if (!session || MODELS_WITHOUT_TENANT.has(model)) {
