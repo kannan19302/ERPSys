@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Req, Res, HttpCode, HttpStatus, NotFoundException } from '@nestjs/common';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { z } from 'zod';
@@ -111,13 +111,16 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
-  @ApiOperation({ summary: 'Login demo user' })
+  @ApiOperation({ summary: 'Login demo user (non-production only)' })
   @Post('login-demo')
   @HttpCode(HttpStatus.OK)
   async loginDemo(
     @Body() body: { role: 'SUPER_ADMIN' | 'HR_MANAGER' | 'FINANCE_MANAGER' | 'VIEWER' },
     @Res({ passthrough: true }) res: Response,
   ) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException();
+    }
     const result = await this.authService.loginDemo(body.role);
     res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
     return result;
