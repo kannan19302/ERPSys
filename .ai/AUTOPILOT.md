@@ -137,17 +137,32 @@ then exercises them all).
    adoption, no matter how finished it looks. A stale-lock takeover (rule 1) releases
    the *slug* for fresh work — it never adopts the previous holder's pending files.
 
-## Multi-Collaborator Focus Selection (binding — applies to /start, /issue-scan, /fix-issues)
+## Focus-Module Question & Multi-Collaborator Selection (binding — /start, /issue-scan, /fix-issues)
+
+**Every interactive `/start` run asks the focus-module question — always**, not only
+when collaborators are present. The user picks where the cycle's effort goes, with
+current numbers in front of them:
+
+0. **The question (binding for every interactive /start).** Before Step 1, regenerate
+   the counts (`node scripts/feature-ledger.mjs` — seconds) and ask via
+   `AskUserQuestion` which module to focus on this session. EVERY option must show
+   the module's **updated feature count** from the regenerated `FEATURE_LEDGER.md`,
+   plus its status: e.g. "Inventory — 612 features (current focus)", "Finance — 487
+   features", "CRM & Sales — 391 features (DONE)", "HR — 96 features (weakest)".
+   Offer the current focus module first (recommended), then 2–3 sensible
+   alternatives; mark any option held by an active collaborator as occupied. One
+   question total — after the answer, the whole cycle runs with zero further
+   questions. `/issue-scan` and `/fix-issues` ask only when collaborators are active
+   (rule 2); unattended sessions of any workflow never ask (rule 4).
 
 When more than one collaborator (human-driven session or agent) is active at the same
-time, module choice is negotiated with the user instead of silently assumed:
+time, module choice is additionally guarded:
 
 1. **Detect collaborators** at bootstrap: `node scripts/claim.mjs list` + Collab
    Board §1 Active Claims. "Active" = a lock with a heartbeat in the last 2h.
 2. **If other active collaborators exist AND a user is present** (interactive
-   session): ASK the user which module they want to focus on for this session
-   (Claude Code: `AskUserQuestion`, options = focus module + 2–3 modules with no
-   active claim, marking each option that is free vs. occupied).
+   session): the focus-module question above is mandatory for all three workflows,
+   with occupied modules clearly marked in the options.
 3. **Collision rule**: if the user picks a module that another active collaborator
    already holds (any lock whose sub-domain belongs to that module), do not proceed
    silently — intimate them: say WHO holds it (agent name + slug + scope from the
