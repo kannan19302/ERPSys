@@ -18,12 +18,18 @@ end-to-end. Summary of the cycle (read AUTOPILOT.md for the full binding rules):
    never `git add -A` over it. Log it once as `[pending]` in Up Next, then start a NEW
    task in a non-overlapping sub-domain. Pending work is completed only when the user
    explicitly instructs (e.g. "complete pending work").
-2. **Multi-collaborator gate** (AUTOPILOT § Multi-Collaborator Focus Selection):
-   `node scripts/claim.mjs list` — if other sessions hold active claims and a user is
-   present, ask which module to focus on this session (`AskUserQuestion`); if they
-   pick a module an active collaborator already holds, tell them who holds it (agent
-   + slug + scope) and ask them to choose a different module. Unattended: never
-   prompt, auto-pick unclaimed scope. Then **select ONE item** via the priority ladder: P0 broken typecheck/tests → P1 unfinished
+2. **Focus-module question (binding, EVERY interactive run)** — AUTOPILOT
+   § Focus-Module Question & Multi-Collaborator Selection: regenerate counts first
+   (`node scripts/feature-ledger.mjs`), run `node scripts/claim.mjs list`, then ask
+   via `AskUserQuestion` which module to focus on this session — every option showing
+   the module's **updated feature count** from the regenerated `FEATURE_LEDGER.md`
+   and its status (current focus / DONE / weakest / occupied-by-whom). Recommend the
+   current focus module first. If the user picks a module an active collaborator
+   already holds, tell them who holds it (agent + slug + scope) and ask them to
+   choose a different module. This is the ONE question of the cycle — after the
+   answer, proceed with zero further questions. Unattended runs (scheduler/CI):
+   never prompt, follow MODULE_FOCUS.md and auto-pick unclaimed scope.
+   Then **select ONE item** via the priority ladder: P0 broken typecheck/tests → P1 unfinished
    shipped work → P2 conflict log → P3 Collab Board "Up Next" queue → P4 scorecard/
    hardening quality gaps → P5 competitive gaps from `.ai/MARKET_BENCHMARK.md` →
    P6 module deepening → P7 propose new capability.

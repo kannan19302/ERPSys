@@ -4,11 +4,20 @@ Read and follow `AGENTS.md` — it is the master instruction set for this repo
 (architecture, critical rules, 3-file tracking convention, Collab Board protocol).
 
 **Autonomous mode**: if the user's message is just "Start" (or "start", "/start",
-"continue", "next") with no other requirements, do not ask questions — execute the
-Autonomous Development Protocol in `.ai/AUTOPILOT.md` end-to-end: select one work item
-via its priority ladder, build it fully (DB → API → UI → tests), verify typecheck + test
-gates, update `.ai/CHANGELOG.md` + `.ai/MODULE_REGISTRY.md`, commit + push, and refill
-the Up Next queue so the next cycle always has work.
+"continue", "next") with no other requirements, execute the Autonomous Development
+Protocol in `.ai/AUTOPILOT.md` end-to-end: select one work item via its priority
+ladder, build it fully (DB → API → UI → tests), verify typecheck + test gates, update
+`.ai/CHANGELOG.md` + `.ai/MODULE_REGISTRY.md`, commit + push, and refill the Up Next
+queue so the next cycle always has work.
+Ask exactly ONE question before starting — **the focus-module question** (binding,
+every interactive run): regenerate `node scripts/feature-ledger.mjs` first, then ask
+which module to focus on via `AskUserQuestion`, showing in EVERY option the module's
+**updated feature count** from the regenerated `FEATURE_LEDGER.md` (e.g. "Inventory —
+612 features, focus module" / "Finance — 487 features" / "HR — 96 features, weakest"),
+and marking any module another active collaborator holds (per `claim.mjs list`). If
+the user picks an occupied module, tell them who holds it and ask them to choose
+another. After that single answer, proceed with zero further questions. Unattended
+runs (scheduler/CI — no user to ask) skip the question and follow `MODULE_FOCUS.md`.
 
 **Issue-identification mode**: if the user's message is just "identify issue" (or
 "identify issues", "/issue-scan") with no other requirements, do not ask questions —
