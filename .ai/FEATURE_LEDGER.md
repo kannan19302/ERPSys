@@ -1,7 +1,7 @@
 # FEATURE_LEDGER.md — Every Functionality in UniERP (single file, whole system)
 
 > **Generated file** — `node scripts/feature-ledger.mjs`. Do not edit by hand.
-> Last generated: 2026-07-13T08:47:17.558Z
+> Last generated: 2026-07-14T02:32:05.877Z
 >
 > One row per API-backed functionality (method + route + summary + permission),
 > scanned directly from every controller — so it always reflects existing **and**
@@ -9,7 +9,7 @@
 > every cycle that ships code; agents use it to answer "does X already exist?"
 > before building anything.
 
-## System total: **2515 features** across 33 modules
+## System total: **2601 features** across 33 modules
 
 | Module | Features |
 |:--|--:|
@@ -30,7 +30,7 @@
 | [finance](#finance) | 27 |
 | [fixed-assets](#fixed-assets) | 9 |
 | [hr](#hr) | 8 |
-| [inventory](#inventory) | 609 |
+| [inventory](#inventory) | 695 |
 | [localization](#localization) | 4 |
 | [manufacturing](#manufacturing) | 43 |
 | [marketplace](#marketplace) | 17 |
@@ -909,7 +909,7 @@
 | PATCH | `/auth/me` | Update profile | `auth.update` |
 | POST | `/auth/forgot-password` | Request password reset | — |
 | POST | `/auth/reset-password` | Reset password | — |
-| POST | `/auth/login-demo` | Login demo user | — |
+| POST | `/auth/login-demo` | Login demo user (non-production only) | — |
 | POST | `/auth/mfa/setup` | Setup TOTP MFA | — |
 | POST | `/auth/mfa/verify` | Verify and enable/disable TOTP MFA | — |
 | POST | `/auth/passkey/register-options` | Generate Passkey Registration Options | — |
@@ -1778,222 +1778,258 @@
 
 ## inventory
 
-609 features
+695 features
 
 | Method | Route | Functionality | Permission |
 |:--|:--|:--|:--|
-| GET | `/inventory/asl/dashboard` | — | — |
-| GET | `/inventory/asl/expiring` | — | — |
-| GET | `/inventory/asl` | — | — |
-| POST | `/inventory/asl` | — | — |
-| GET | `/inventory/asl/:id` | — | — |
-| PUT | `/inventory/asl/:id` | — | — |
-| PATCH | `/inventory/asl/:id/approve` | — | — |
-| PATCH | `/inventory/asl/:id/disqualify` | — | — |
-| PATCH | `/inventory/asl/:id/conditional` | — | — |
-| PATCH | `/inventory/asl/:id/set-preferred` | — | — |
-| PATCH | `/inventory/asl/:id/unset-preferred` | — | — |
-| GET | `/inventory/asl/:id/change-log` | — | — |
-| POST | `/inventory/asl/:id/price-tiers` | — | — |
-| DELETE | `/inventory/asl/:id/price-tiers/:tierId` | — | — |
-| GET | `/inventory/asl/:id/effective-price` | — | — |
-| GET | `/inventory/asl/attributes/:productId` | — | — |
-| POST | `/inventory/asl/attributes` | — | — |
-| DELETE | `/inventory/asl/attributes/:id` | — | — |
-| GET | `/inventory/asl/compliance/rules` | — | — |
-| POST | `/inventory/asl/compliance/rules` | — | — |
-| GET | `/inventory/asl/compliance/check/:productId` | — | — |
-| GET | `/inventory/asl/sourcing-report/:productId` | — | — |
-| GET | `/inventory/catch-weight-recall/dashboard` | — | — |
-| GET | `/inventory/catch-weight-recall/configs` | — | — |
-| GET | `/inventory/catch-weight-recall/configs/:id` | — | — |
-| POST | `/inventory/catch-weight-recall/configs` | — | — |
-| PATCH | `/inventory/catch-weight-recall/configs/:id/deactivate` | — | — |
-| GET | `/inventory/catch-weight-recall/readings` | — | — |
-| POST | `/inventory/catch-weight-recall/readings` | — | — |
-| GET | `/inventory/catch-weight-recall/configs/:id/variance-summary` | — | — |
-| GET | `/inventory/catch-weight-recall/tares` | — | — |
-| POST | `/inventory/catch-weight-recall/tares` | — | — |
-| GET | `/inventory/catch-weight-recall/recalls` | — | — |
-| GET | `/inventory/catch-weight-recall/recalls/:id` | — | — |
-| GET | `/inventory/catch-weight-recall/recalls/:id/impact-report` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/issue` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/complete` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/cancel` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/affected-stock` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/affected-stock/:stockId/quarantine` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/send-notices` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices/:noticeId/acknowledge` | — | — |
-| POST | `/inventory/catch-weight-recall/recalls/:id/disposal-records` | — | — |
-| GET | `/api/inventory/cold-chain-writeoff/dashboard` | Cold chain & write-off dashboard | — |
-| GET | `/api/inventory/cold-chain-writeoff/requirements` | List cold-chain requirements | — |
-| POST | `/api/inventory/cold-chain-writeoff/requirements` | List cold-chain requirements | — |
-| DELETE | `/api/inventory/cold-chain-writeoff/requirements/:productId` | Upsert cold-chain requirement for a product | — |
-| GET | `/api/inventory/cold-chain-writeoff/requirements/:productId/compliance` | Deactivate cold-chain requirement | — |
-| GET | `/api/inventory/cold-chain-writeoff/excursions` | List temperature excursions | — |
-| POST | `/api/inventory/cold-chain-writeoff/excursions` | List temperature excursions | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/excursions/:id/review` | Log a temperature excursion | — |
-| GET | `/api/inventory/cold-chain-writeoff/excursions/summary` | Review/update excursion status | — |
-| GET | `/api/inventory/cold-chain-writeoff/write-downs` | List stock write-down requests | — |
-| POST | `/api/inventory/cold-chain-writeoff/write-downs` | List stock write-down requests | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/approve` | Create write-down request | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/reject` | Approve write-down request | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/apply` | Reject write-down request | — |
-| GET | `/api/inventory/cold-chain-writeoff/write-offs` | List stock write-off records | — |
-| POST | `/api/inventory/cold-chain-writeoff/write-offs` | List stock write-off records | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/approve` | Create write-off record | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/reject` | Approve write-off | — |
-| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/complete` | Reject write-off | — |
-| GET | `/inventory/container-pallet/dashboard` | — | — |
-| GET | `/inventory/container-pallet/pallet-types` | — | — |
-| POST | `/inventory/container-pallet/pallet-types` | — | — |
-| PATCH | `/inventory/container-pallet/pallet-types/:id` | — | — |
-| DELETE | `/inventory/container-pallet/pallet-types/:id` | — | — |
-| GET | `/inventory/container-pallet/container-types` | — | — |
-| POST | `/inventory/container-pallet/container-types` | — | — |
-| PATCH | `/inventory/container-pallet/container-types/:id` | — | — |
-| DELETE | `/inventory/container-pallet/container-types/:id` | — | — |
-| GET | `/inventory/container-pallet/load-plans` | — | — |
-| GET | `/inventory/container-pallet/load-plans/:id` | — | — |
-| GET | `/inventory/container-pallet/load-plans/:id/utilization` | — | — |
-| POST | `/inventory/container-pallet/load-plans` | — | — |
-| POST | `/inventory/container-pallet/load-plans/:id/transition` | — | — |
-| POST | `/inventory/container-pallet/load-plans/:id/pallets` | — | — |
-| DELETE | `/inventory/container-pallet/load-plans/:id/pallets/:palletId` | — | — |
-| POST | `/inventory/container-pallet/load-plans/:id/items` | — | — |
-| GET | `/inventory/container-pallet/packing-plans` | — | — |
-| GET | `/inventory/container-pallet/packing-plans/:id` | — | — |
-| POST | `/inventory/container-pallet/packing-plans` | — | — |
-| POST | `/inventory/container-pallet/packing-plans/:id/transition` | — | — |
-| POST | `/inventory/container-pallet/packing-plans/:id/cartons` | — | — |
-| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/seal` | — | — |
-| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/label` | — | — |
-| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/items` | — | — |
+| GET | `/inventory/asl/dashboard` | — | `inventory.asl.read` |
+| GET | `/inventory/asl/expiring` | — | `inventory.asl.read` |
+| GET | `/inventory/asl` | — | `inventory.asl.read` |
+| POST | `/inventory/asl` | — | `inventory.asl.manage` |
+| GET | `/inventory/asl/:id` | — | `inventory.asl.read` |
+| PUT | `/inventory/asl/:id` | — | `inventory.asl.manage` |
+| PATCH | `/inventory/asl/:id/approve` | — | `inventory.asl.manage` |
+| PATCH | `/inventory/asl/:id/disqualify` | — | `inventory.asl.manage` |
+| PATCH | `/inventory/asl/:id/conditional` | — | `inventory.asl.manage` |
+| PATCH | `/inventory/asl/:id/set-preferred` | — | `inventory.asl.manage` |
+| PATCH | `/inventory/asl/:id/unset-preferred` | — | `inventory.asl.manage` |
+| GET | `/inventory/asl/:id/change-log` | — | `inventory.asl.read` |
+| POST | `/inventory/asl/:id/price-tiers` | — | `inventory.asl.manage` |
+| DELETE | `/inventory/asl/:id/price-tiers/:tierId` | — | `inventory.asl.manage` |
+| GET | `/inventory/asl/:id/effective-price` | — | `inventory.asl.read` |
+| GET | `/inventory/asl/attributes/:productId` | — | `inventory.asl.read` |
+| POST | `/inventory/asl/attributes` | — | `inventory.asl.manage` |
+| DELETE | `/inventory/asl/attributes/:id` | — | `inventory.asl.manage` |
+| GET | `/inventory/asl/compliance/rules` | — | `inventory.asl.read` |
+| POST | `/inventory/asl/compliance/rules` | — | `inventory.asl.manage` |
+| GET | `/inventory/asl/compliance/check/:productId` | — | `inventory.asl.read` |
+| GET | `/inventory/asl/sourcing-report/:productId` | — | `inventory.asl.read` |
+| GET | `/inventory/catch-weight-recall/dashboard` | — | `inventory.catch_weight_recall.read` |
+| GET | `/inventory/catch-weight-recall/configs` | — | `inventory.catch_weight_recall.read` |
+| GET | `/inventory/catch-weight-recall/configs/:id` | — | `inventory.catch_weight_recall.read` |
+| POST | `/inventory/catch-weight-recall/configs` | — | `inventory.catch_weight_recall.manage` |
+| PATCH | `/inventory/catch-weight-recall/configs/:id/deactivate` | — | `inventory.catch_weight_recall.manage` |
+| GET | `/inventory/catch-weight-recall/readings` | — | `inventory.catch_weight_recall.read` |
+| POST | `/inventory/catch-weight-recall/readings` | — | `inventory.catch_weight_recall.manage` |
+| GET | `/inventory/catch-weight-recall/configs/:id/variance-summary` | — | `inventory.catch_weight_recall.read` |
+| GET | `/inventory/catch-weight-recall/tares` | — | `inventory.catch_weight_recall.read` |
+| POST | `/inventory/catch-weight-recall/tares` | — | `inventory.catch_weight_recall.manage` |
+| GET | `/inventory/catch-weight-recall/recalls` | — | `inventory.catch_weight_recall.read` |
+| GET | `/inventory/catch-weight-recall/recalls/:id` | — | `inventory.catch_weight_recall.read` |
+| GET | `/inventory/catch-weight-recall/recalls/:id/impact-report` | — | `inventory.catch_weight_recall.read` |
+| POST | `/inventory/catch-weight-recall/recalls` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/issue` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/complete` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/cancel` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/affected-stock` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/affected-stock/:stockId/quarantine` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/send-notices` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/customer-notices/:noticeId/acknowledge` | — | `inventory.catch_weight_recall.manage` |
+| POST | `/inventory/catch-weight-recall/recalls/:id/disposal-records` | — | `inventory.catch_weight_recall.manage` |
+| GET | `/api/inventory/cold-chain-writeoff/dashboard` | Cold chain & write-off dashboard | `inventory.cold_chain_writeoff.read` |
+| GET | `/api/inventory/cold-chain-writeoff/requirements` | List cold-chain requirements | `inventory.cold_chain_writeoff.read` |
+| POST | `/api/inventory/cold-chain-writeoff/requirements` | List cold-chain requirements | `inventory.cold_chain_writeoff.manage` |
+| DELETE | `/api/inventory/cold-chain-writeoff/requirements/:productId` | Upsert cold-chain requirement for a product | `inventory.cold_chain_writeoff.manage` |
+| GET | `/api/inventory/cold-chain-writeoff/requirements/:productId/compliance` | Deactivate cold-chain requirement | `inventory.cold_chain_writeoff.read` |
+| GET | `/api/inventory/cold-chain-writeoff/excursions` | List temperature excursions | `inventory.cold_chain_writeoff.read` |
+| POST | `/api/inventory/cold-chain-writeoff/excursions` | List temperature excursions | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/excursions/:id/review` | Log a temperature excursion | `inventory.cold_chain_writeoff.manage` |
+| GET | `/api/inventory/cold-chain-writeoff/excursions/summary` | Review/update excursion status | `inventory.cold_chain_writeoff.read` |
+| GET | `/api/inventory/cold-chain-writeoff/write-downs` | List stock write-down requests | `inventory.cold_chain_writeoff.read` |
+| POST | `/api/inventory/cold-chain-writeoff/write-downs` | List stock write-down requests | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/approve` | Create write-down request | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/reject` | Approve write-down request | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-downs/:id/apply` | Reject write-down request | `inventory.cold_chain_writeoff.manage` |
+| GET | `/api/inventory/cold-chain-writeoff/write-offs` | List stock write-off records | `inventory.cold_chain_writeoff.read` |
+| POST | `/api/inventory/cold-chain-writeoff/write-offs` | List stock write-off records | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/approve` | Create write-off record | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/reject` | Approve write-off | `inventory.cold_chain_writeoff.manage` |
+| PATCH | `/api/inventory/cold-chain-writeoff/write-offs/:id/complete` | Reject write-off | `inventory.cold_chain_writeoff.manage` |
+| GET | `/inventory/container-pallet/dashboard` | — | `inventory.container_pallet.read` |
+| GET | `/inventory/container-pallet/pallet-types` | — | `inventory.container_pallet.read` |
+| POST | `/inventory/container-pallet/pallet-types` | — | `inventory.container_pallet.manage` |
+| PATCH | `/inventory/container-pallet/pallet-types/:id` | — | `inventory.container_pallet.manage` |
+| DELETE | `/inventory/container-pallet/pallet-types/:id` | — | `inventory.container_pallet.manage` |
+| GET | `/inventory/container-pallet/container-types` | — | `inventory.container_pallet.read` |
+| POST | `/inventory/container-pallet/container-types` | — | `inventory.container_pallet.manage` |
+| PATCH | `/inventory/container-pallet/container-types/:id` | — | `inventory.container_pallet.manage` |
+| DELETE | `/inventory/container-pallet/container-types/:id` | — | `inventory.container_pallet.manage` |
+| GET | `/inventory/container-pallet/load-plans` | — | `inventory.container_pallet.read` |
+| GET | `/inventory/container-pallet/load-plans/:id` | — | `inventory.container_pallet.read` |
+| GET | `/inventory/container-pallet/load-plans/:id/utilization` | — | `inventory.container_pallet.read` |
+| POST | `/inventory/container-pallet/load-plans` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/load-plans/:id/transition` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/load-plans/:id/pallets` | — | `inventory.container_pallet.manage` |
+| DELETE | `/inventory/container-pallet/load-plans/:id/pallets/:palletId` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/load-plans/:id/items` | — | `inventory.container_pallet.manage` |
+| GET | `/inventory/container-pallet/packing-plans` | — | `inventory.container_pallet.read` |
+| GET | `/inventory/container-pallet/packing-plans/:id` | — | `inventory.container_pallet.read` |
+| POST | `/inventory/container-pallet/packing-plans` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/packing-plans/:id/transition` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/seal` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/label` | — | `inventory.container_pallet.manage` |
+| POST | `/inventory/container-pallet/packing-plans/:id/cartons/:cartonId/items` | — | `inventory.container_pallet.manage` |
+| GET | `/inventory/costing/dashboard` | — | `inventory.costing_methods.read` |
+| POST | `/inventory/costing/profiles` | — | `inventory.costing_methods.manage` |
+| GET | `/inventory/costing/profiles` | — | `inventory.costing_methods.read` |
+| GET | `/inventory/costing/profiles/:id` | — | `inventory.costing_methods.read` |
+| POST | `/inventory/costing/profiles/:id/layers` | — | `inventory.costing_methods.manage` |
+| GET | `/inventory/costing/profiles/:id/layers` | — | `inventory.costing_methods.read` |
+| POST | `/inventory/costing/profiles/:id/consume` | — | `inventory.costing_methods.manage` |
+| POST | `/inventory/costing/adjustments` | — | `inventory.costing_methods.manage` |
+| GET | `/inventory/costing/adjustments` | — | `inventory.costing_methods.read` |
+| GET | `/inventory/costing/valuation` | — | `inventory.costing_methods.read` |
 | GET | `/inventory/costing/valuation/:productId` | Get product valuation | `inventory.stock.read` |
 | GET | `/inventory/costing/valuation-report` | Get valuation report | `inventory.stock.read` |
 | POST | `/inventory/costing/landed-cost` | Calculate landed cost | `inventory.stock.read` |
 | GET | `/inventory/costing/barcode/:barcode` | Lookup barcode | `inventory.stock.adjust` |
-| GET | `/inventory/demand-forecasting/dashboard` | — | — |
-| GET | `/inventory/demand-forecasting/replenishment-summary` | — | — |
-| GET | `/inventory/demand-forecasting/forecast-accuracy` | — | — |
-| GET | `/inventory/demand-forecasting/reorder-alerts` | — | — |
-| GET | `/inventory/demand-forecasting/forecasts` | — | — |
-| POST | `/inventory/demand-forecasting/forecasts` | — | — |
-| POST | `/inventory/demand-forecasting/forecasts/run-engine` | — | — |
-| GET | `/inventory/demand-forecasting/forecasts/:id` | — | — |
-| PATCH | `/inventory/demand-forecasting/forecasts/:id/actual` | — | — |
-| PATCH | `/inventory/demand-forecasting/forecasts/:id/archive` | — | — |
-| GET | `/inventory/demand-forecasting/reorder-points` | — | — |
-| POST | `/inventory/demand-forecasting/reorder-points/calculate` | — | — |
-| GET | `/inventory/demand-forecasting/reorder-points/:id` | — | — |
-| PATCH | `/inventory/demand-forecasting/reorder-points/:id/deactivate` | — | — |
-| GET | `/inventory/demand-forecasting/safety-stock` | — | — |
-| POST | `/inventory/demand-forecasting/safety-stock` | — | — |
-| DELETE | `/inventory/demand-forecasting/safety-stock/:id` | — | — |
-| GET | `/inventory/demand-forecasting/replenishment-orders` | — | — |
-| POST | `/inventory/demand-forecasting/replenishment-orders` | — | — |
-| POST | `/inventory/demand-forecasting/replenishment-orders/auto-generate` | — | — |
-| GET | `/inventory/demand-forecasting/replenishment-orders/:id` | — | — |
-| POST | `/inventory/demand-forecasting/replenishment-orders/:id/approve` | — | — |
-| PATCH | `/inventory/demand-forecasting/replenishment-orders/:id/status` | — | — |
-| PATCH | `/inventory/demand-forecasting/replenishment-orders/:id/cancel` | — | — |
-| GET | `/inventory/demand-forecasting/stockout-predictions` | — | — |
-| POST | `/inventory/demand-forecasting/stockout-predictions/generate` | — | — |
-| GET | `/inventory/demand-forecasting/stockout-predictions/:id` | — | — |
-| PATCH | `/inventory/demand-forecasting/stockout-predictions/:id/acknowledge` | — | — |
-| GET | `/inventory/hazmat/dashboard` | — | — |
-| GET | `/inventory/hazmat/compliance-report` | — | — |
-| GET | `/inventory/hazmat/hazard-class-summary` | — | — |
-| GET | `/inventory/hazmat/un-search` | — | — |
-| GET | `/inventory/hazmat/classifications` | — | — |
-| POST | `/inventory/hazmat/classifications` | — | — |
-| GET | `/inventory/hazmat/classifications/:id` | — | — |
-| PUT | `/inventory/hazmat/classifications/:id` | — | — |
-| DELETE | `/inventory/hazmat/classifications/:id` | — | — |
-| GET | `/inventory/hazmat/classifications/:id/compatibility` | — | — |
-| GET | `/inventory/hazmat/sds` | — | — |
-| POST | `/inventory/hazmat/sds` | — | — |
-| GET | `/inventory/hazmat/sds/expiring` | — | — |
-| GET | `/inventory/hazmat/sds/:id` | — | — |
-| PATCH | `/inventory/hazmat/sds/:id/acknowledge` | — | — |
-| PATCH | `/inventory/hazmat/sds/:id/expire` | — | — |
-| PATCH | `/inventory/hazmat/sds/:id/supersede` | — | — |
-| GET | `/inventory/hazmat/storage-rules` | — | — |
-| POST | `/inventory/hazmat/storage-rules` | — | — |
-| GET | `/inventory/hazmat/storage-rules/check` | — | — |
-| GET | `/inventory/hazmat/manifests` | — | — |
-| POST | `/inventory/hazmat/manifests` | — | — |
-| GET | `/inventory/hazmat/manifests/:id` | — | — |
-| POST | `/inventory/hazmat/manifests/:id/lines` | — | — |
-| DELETE | `/inventory/hazmat/manifests/:id/lines/:lineId` | — | — |
-| PATCH | `/inventory/hazmat/manifests/:id/submit` | — | — |
-| PATCH | `/inventory/hazmat/manifests/:id/acknowledge` | — | — |
-| PATCH | `/inventory/hazmat/manifests/:id/in-transit` | — | — |
-| PATCH | `/inventory/hazmat/manifests/:id/deliver` | — | — |
-| PATCH | `/inventory/hazmat/manifests/:id/cancel` | — | — |
-| GET | `/inventory/hazmat/incidents` | — | — |
-| POST | `/inventory/hazmat/incidents` | — | — |
-| GET | `/inventory/hazmat/incidents/:id` | — | — |
-| PUT | `/inventory/hazmat/incidents/:id` | — | — |
-| PATCH | `/inventory/hazmat/incidents/:id/close` | — | — |
-| GET | `/inventory/analytics/dashboard` | Aggregate inventory analytics dashboard | — |
-| GET | `/inventory/analytics/health-score` | Aggregate inventory analytics dashboard | — |
-| GET | `/inventory/analytics/slow-moving` | Inventory health score with component breakdown | — |
-| GET | `/inventory/analytics/dio` | Slow-moving inventory items (no outbound in N days) | — |
-| GET | `/inventory/analytics/fill-rate` | Days Inventory Outstanding (DIO) per product | — |
-| GET | `/inventory/analytics/volume-trends` | Pick-wave fill rate report | — |
-| GET | `/inventory/analytics/shrinkage` | Daily inbound/outbound volume trend data | — |
-| GET | `/inventory/analytics/capacity-utilization` | Shrinkage and loss analysis from negative adjustments | — |
-| GET | `/inventory/analytics/multi-warehouse` | Bin and quantity utilization per warehouse | — |
-| GET | `/inventory/automation/dashboard` | Automation rules and holds overview | — |
-| GET | `/inventory/automation/replenishment-rules` | Automation rules and holds overview | — |
-| POST | `/inventory/automation/replenishment-rules` | List bin replenishment rules | — |
-| PATCH | `/inventory/automation/replenishment-rules/:id` | Create a bin replenishment rule | — |
-| DELETE | `/inventory/automation/replenishment-rules/:id` | Update replenishment rule thresholds | — |
-| POST | `/inventory/automation/replenishment-rules/evaluate` | Deactivate a replenishment rule | — |
-| GET | `/inventory/automation/holds` | Evaluate all active rules for a warehouse | — |
-| POST | `/inventory/automation/holds` | Place an inventory hold | — |
-| POST | `/inventory/automation/holds/:id/release` | Place an inventory hold | — |
-| POST | `/inventory/automation/holds/:id/cancel` | Release an inventory hold | — |
-| GET | `/inventory/labor/standards` | List labor time standards | — |
-| POST | `/inventory/labor/standards` | List labor time standards | — |
-| PATCH | `/inventory/labor/standards/:id` | Create a labor time standard | — |
-| DELETE | `/inventory/labor/standards/:id` | Update a labor time standard | — |
-| GET | `/inventory/labor/task-logs` | Deactivate a labor time standard | — |
-| POST | `/inventory/labor/task-logs` | Log a worker task (start + optional completion) | — |
-| PATCH | `/inventory/labor/task-logs/:id/complete` | Log a worker task (start + optional completion) | — |
-| GET | `/inventory/labor/shift-templates` | Mark a task log as completed | — |
-| POST | `/inventory/labor/shift-templates` | List warehouse shift templates | — |
-| DELETE | `/inventory/labor/shift-templates/:id` | Create a warehouse shift template | — |
-| GET | `/inventory/labor/dashboard` | Deactivate a shift template | — |
-| GET | `/inventory/labor/workers/:workerId/productivity` | Labor productivity dashboard (7d) | — |
-| GET | `/inventory/logistics/carriers` | — | — |
-| POST | `/inventory/logistics/carriers` | — | — |
-| PATCH | `/inventory/logistics/carriers/:id` | — | — |
-| DELETE | `/inventory/logistics/carriers/:id` | — | — |
-| GET | `/inventory/logistics/carriers/:carrierId/service-levels` | — | — |
-| POST | `/inventory/logistics/carriers/service-levels` | — | — |
-| GET | `/inventory/logistics/asns` | — | — |
-| GET | `/inventory/logistics/asns/:id` | — | — |
-| POST | `/inventory/logistics/asns` | — | — |
-| POST | `/inventory/logistics/asns/:id/in-transit` | — | — |
-| POST | `/inventory/logistics/asns/:id/arrived` | — | — |
-| POST | `/inventory/logistics/asns/:id/receive` | — | — |
-| POST | `/inventory/logistics/asns/:id/cancel` | — | — |
-| GET | `/inventory/logistics/inbound` | — | — |
-| POST | `/inventory/logistics/inbound` | — | — |
-| PATCH | `/inventory/logistics/inbound/:id/status` | — | — |
-| POST | `/inventory/logistics/inbound/:id/tracking` | — | — |
-| GET | `/inventory/logistics/outbound` | — | — |
-| POST | `/inventory/logistics/outbound` | — | — |
-| POST | `/inventory/logistics/outbound/:id/ship` | — | — |
-| POST | `/inventory/logistics/outbound/:id/deliver` | — | — |
-| POST | `/inventory/logistics/outbound/:id/exception` | — | — |
-| POST | `/inventory/logistics/outbound/:id/tracking` | — | — |
-| GET | `/inventory/logistics/dashboard` | — | — |
-| GET | `/inventory/logistics/exceptions` | — | — |
+| GET | `/api/inventory/customer-returns/dashboard` | — | `inventory.customer_returns.read` |
+| GET | `/api/inventory/customer-returns/rmas` | — | `inventory.customer_returns.read` |
+| POST | `/api/inventory/customer-returns/rmas` | — | `inventory.customer_returns.manage` |
+| GET | `/api/inventory/customer-returns/rmas/:id` | — | `inventory.customer_returns.read` |
+| PATCH | `/api/inventory/customer-returns/rmas/:id/approve` | — | `inventory.customer_returns.manage` |
+| PATCH | `/api/inventory/customer-returns/rmas/:id/reject` | — | `inventory.customer_returns.manage` |
+| PATCH | `/api/inventory/customer-returns/rmas/:id/receive` | — | `inventory.customer_returns.manage` |
+| PATCH | `/api/inventory/customer-returns/rmas/:rmaId/lines/:lineId/inspect` | — | `inventory.customer_returns.manage` |
+| PATCH | `/api/inventory/customer-returns/rmas/:id/close` | — | `inventory.customer_returns.manage` |
+| GET | `/api/inventory/customer-returns/credits` | — | `inventory.customer_returns.read` |
+| POST | `/api/inventory/customer-returns/rmas/:rmaId/credit` | — | `inventory.customer_returns.manage` |
+| PATCH | `/api/inventory/customer-returns/credits/:id/void` | — | `inventory.customer_returns.manage` |
+| POST | `/api/inventory/customer-returns/restocks` | — | `inventory.customer_returns.manage` |
+| GET | `/api/inventory/customer-returns/restocks` | — | `inventory.customer_returns.read` |
+| GET | `/inventory/demand-forecasting/dashboard` | — | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/replenishment-summary` | — | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/forecast-accuracy` | — | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/reorder-alerts` | — | `inventory.demand_forecast.read` |
+| GET | `/inventory/demand-forecasting/forecasts` | — | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/forecasts` | — | `inventory.demand_forecast.manage` |
+| POST | `/inventory/demand-forecasting/forecasts/run-engine` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/forecasts/:id` | — | `inventory.demand_forecast.read` |
+| PATCH | `/inventory/demand-forecasting/forecasts/:id/actual` | — | `inventory.demand_forecast.manage` |
+| PATCH | `/inventory/demand-forecasting/forecasts/:id/archive` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/reorder-points` | — | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/reorder-points/calculate` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/reorder-points/:id` | — | `inventory.demand_forecast.read` |
+| PATCH | `/inventory/demand-forecasting/reorder-points/:id/deactivate` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/safety-stock` | — | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/safety-stock` | — | `inventory.demand_forecast.manage` |
+| DELETE | `/inventory/demand-forecasting/safety-stock/:id` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/replenishment-orders` | — | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/replenishment-orders` | — | `inventory.demand_forecast.manage` |
+| POST | `/inventory/demand-forecasting/replenishment-orders/auto-generate` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/replenishment-orders/:id` | — | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/replenishment-orders/:id/approve` | — | `inventory.demand_forecast.manage` |
+| PATCH | `/inventory/demand-forecasting/replenishment-orders/:id/status` | — | `inventory.demand_forecast.manage` |
+| PATCH | `/inventory/demand-forecasting/replenishment-orders/:id/cancel` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/stockout-predictions` | — | `inventory.demand_forecast.read` |
+| POST | `/inventory/demand-forecasting/stockout-predictions/generate` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/demand-forecasting/stockout-predictions/:id` | — | `inventory.demand_forecast.read` |
+| PATCH | `/inventory/demand-forecasting/stockout-predictions/:id/acknowledge` | — | `inventory.demand_forecast.manage` |
+| GET | `/inventory/freight-claims/dashboard` | — | `inventory.freight_claims.read` |
+| POST | `/inventory/freight-claims/damage-reports` | — | `inventory.freight_claims.manage` |
+| GET | `/inventory/freight-claims/damage-reports` | — | `inventory.freight_claims.read` |
+| GET | `/inventory/freight-claims/damage-reports/:id` | — | `inventory.freight_claims.read` |
+| PATCH | `/inventory/freight-claims/damage-reports/:id/submit` | — | `inventory.freight_claims.manage` |
+| PATCH | `/inventory/freight-claims/damage-reports/:id/review` | — | `inventory.freight_claims.manage` |
+| POST | `/inventory/freight-claims/claims` | — | `inventory.freight_claims.manage` |
+| GET | `/inventory/freight-claims/claims` | — | `inventory.freight_claims.read` |
+| GET | `/inventory/freight-claims/claims/:id` | — | `inventory.freight_claims.read` |
+| PATCH | `/inventory/freight-claims/claims/:id/status` | — | `inventory.freight_claims.manage` |
+| POST | `/inventory/freight-claims/claims/:id/events` | — | `inventory.freight_claims.manage` |
+| GET | `/inventory/freight-claims/claims/:id/events` | — | `inventory.freight_claims.read` |
+| GET | `/inventory/hazmat/dashboard` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/compliance-report` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/hazard-class-summary` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/un-search` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/classifications` | — | `inventory.hazmat.read` |
+| POST | `/inventory/hazmat/classifications` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/classifications/:id` | — | `inventory.hazmat.read` |
+| PUT | `/inventory/hazmat/classifications/:id` | — | `inventory.hazmat.manage` |
+| DELETE | `/inventory/hazmat/classifications/:id` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/classifications/:id/compatibility` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/sds` | — | `inventory.hazmat.read` |
+| POST | `/inventory/hazmat/sds` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/sds/expiring` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/sds/:id` | — | `inventory.hazmat.read` |
+| PATCH | `/inventory/hazmat/sds/:id/acknowledge` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/sds/:id/expire` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/sds/:id/supersede` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/storage-rules` | — | `inventory.hazmat.read` |
+| POST | `/inventory/hazmat/storage-rules` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/storage-rules/check` | — | `inventory.hazmat.read` |
+| GET | `/inventory/hazmat/manifests` | — | `inventory.hazmat.read` |
+| POST | `/inventory/hazmat/manifests` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/manifests/:id` | — | `inventory.hazmat.read` |
+| POST | `/inventory/hazmat/manifests/:id/lines` | — | `inventory.hazmat.manage` |
+| DELETE | `/inventory/hazmat/manifests/:id/lines/:lineId` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/manifests/:id/submit` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/manifests/:id/acknowledge` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/manifests/:id/in-transit` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/manifests/:id/deliver` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/manifests/:id/cancel` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/incidents` | — | `inventory.hazmat.read` |
+| POST | `/inventory/hazmat/incidents` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/hazmat/incidents/:id` | — | `inventory.hazmat.read` |
+| PUT | `/inventory/hazmat/incidents/:id` | — | `inventory.hazmat.manage` |
+| PATCH | `/inventory/hazmat/incidents/:id/close` | — | `inventory.hazmat.manage` |
+| GET | `/inventory/analytics/dashboard` | Aggregate inventory analytics dashboard | `inventory.analytics.read` |
+| GET | `/inventory/analytics/health-score` | Aggregate inventory analytics dashboard | `inventory.analytics.read` |
+| GET | `/inventory/analytics/slow-moving` | Inventory health score with component breakdown | `inventory.analytics.read` |
+| GET | `/inventory/analytics/dio` | Slow-moving inventory items (no outbound in N days) | `inventory.analytics.read` |
+| GET | `/inventory/analytics/fill-rate` | Days Inventory Outstanding (DIO) per product | `inventory.analytics.read` |
+| GET | `/inventory/analytics/volume-trends` | Pick-wave fill rate report | `inventory.analytics.read` |
+| GET | `/inventory/analytics/shrinkage` | Daily inbound/outbound volume trend data | `inventory.analytics.read` |
+| GET | `/inventory/analytics/capacity-utilization` | Shrinkage and loss analysis from negative adjustments | `inventory.analytics.read` |
+| GET | `/inventory/analytics/multi-warehouse` | Bin and quantity utilization per warehouse | `inventory.analytics.read` |
+| GET | `/inventory/automation/dashboard` | Automation rules and holds overview | `inventory.automation.read` |
+| GET | `/inventory/automation/replenishment-rules` | Automation rules and holds overview | `inventory.automation.read` |
+| POST | `/inventory/automation/replenishment-rules` | List bin replenishment rules | `inventory.automation.manage` |
+| PATCH | `/inventory/automation/replenishment-rules/:id` | Create a bin replenishment rule | `inventory.automation.manage` |
+| DELETE | `/inventory/automation/replenishment-rules/:id` | Update replenishment rule thresholds | `inventory.automation.manage` |
+| POST | `/inventory/automation/replenishment-rules/evaluate` | Deactivate a replenishment rule | `inventory.automation.manage` |
+| GET | `/inventory/automation/holds` | Evaluate all active rules for a warehouse | `inventory.automation.read` |
+| POST | `/inventory/automation/holds` | Place an inventory hold | `inventory.automation.manage` |
+| POST | `/inventory/automation/holds/:id/release` | Place an inventory hold | `inventory.automation.manage` |
+| POST | `/inventory/automation/holds/:id/cancel` | Release an inventory hold | `inventory.automation.manage` |
+| GET | `/inventory/labor/standards` | List labor time standards | `inventory.labor.read` |
+| POST | `/inventory/labor/standards` | List labor time standards | `inventory.labor.manage` |
+| PATCH | `/inventory/labor/standards/:id` | Create a labor time standard | `inventory.labor.manage` |
+| DELETE | `/inventory/labor/standards/:id` | Update a labor time standard | `inventory.labor.manage` |
+| GET | `/inventory/labor/task-logs` | Deactivate a labor time standard | `inventory.labor.read` |
+| POST | `/inventory/labor/task-logs` | Log a worker task (start + optional completion) | `inventory.labor.manage` |
+| PATCH | `/inventory/labor/task-logs/:id/complete` | Log a worker task (start + optional completion) | `inventory.labor.manage` |
+| GET | `/inventory/labor/shift-templates` | Mark a task log as completed | `inventory.labor.read` |
+| POST | `/inventory/labor/shift-templates` | List warehouse shift templates | `inventory.labor.manage` |
+| DELETE | `/inventory/labor/shift-templates/:id` | Create a warehouse shift template | `inventory.labor.manage` |
+| GET | `/inventory/labor/dashboard` | Deactivate a shift template | `inventory.labor.read` |
+| GET | `/inventory/labor/workers/:workerId/productivity` | Labor productivity dashboard (7d) | `inventory.labor.read` |
+| GET | `/inventory/logistics/carriers` | — | `inventory.logistics.read` |
+| POST | `/inventory/logistics/carriers` | — | `inventory.logistics.manage` |
+| PATCH | `/inventory/logistics/carriers/:id` | — | `inventory.logistics.manage` |
+| DELETE | `/inventory/logistics/carriers/:id` | — | `inventory.logistics.manage` |
+| GET | `/inventory/logistics/carriers/:carrierId/service-levels` | — | `inventory.logistics.read` |
+| POST | `/inventory/logistics/carriers/service-levels` | — | `inventory.logistics.manage` |
+| GET | `/inventory/logistics/asns` | — | `inventory.logistics.read` |
+| GET | `/inventory/logistics/asns/:id` | — | `inventory.logistics.read` |
+| POST | `/inventory/logistics/asns` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/asns/:id/in-transit` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/asns/:id/arrived` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/asns/:id/receive` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/asns/:id/cancel` | — | `inventory.logistics.manage` |
+| GET | `/inventory/logistics/inbound` | — | `inventory.logistics.read` |
+| POST | `/inventory/logistics/inbound` | — | `inventory.logistics.manage` |
+| PATCH | `/inventory/logistics/inbound/:id/status` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/inbound/:id/tracking` | — | `inventory.logistics.manage` |
+| GET | `/inventory/logistics/outbound` | — | `inventory.logistics.read` |
+| POST | `/inventory/logistics/outbound` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/outbound/:id/ship` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/outbound/:id/deliver` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/outbound/:id/exception` | — | `inventory.logistics.manage` |
+| POST | `/inventory/logistics/outbound/:id/tracking` | — | `inventory.logistics.manage` |
+| GET | `/inventory/logistics/dashboard` | — | `inventory.logistics.read` |
+| GET | `/inventory/logistics/exceptions` | — | `inventory.logistics.read` |
 | GET | `/inventory/products` | Get products | `inventory.product.read` |
 | GET | `/inventory/products/stats` | Get inventory stats | `inventory.product.read` |
 | GET | `/inventory/products/:id` | Get product by id | `inventory.product.read` |
@@ -2148,105 +2184,129 @@
 | POST | `/inventory/kits/:id/disassemble` | Disassemble kits (consume finished kit stock, produce components) | `inventory.stock.create` |
 | GET | `/inventory/valuations` | Get valuation report | `inventory.stock.read` |
 | GET | `/inventory/aging` | Get inventory aging | `inventory.stock.read` |
-| GET | `/inventory/landed-cost/dashboard` | — | — |
-| GET | `/inventory/landed-cost/charge-type-summary` | — | — |
-| GET | `/inventory/landed-cost/allocation-report` | — | — |
-| GET | `/inventory/landed-cost/vouchers` | — | — |
-| POST | `/inventory/landed-cost/vouchers` | — | — |
-| GET | `/inventory/landed-cost/vouchers/:id` | — | — |
-| PUT | `/inventory/landed-cost/vouchers/:id` | — | — |
-| DELETE | `/inventory/landed-cost/vouchers/:id` | — | — |
-| PATCH | `/inventory/landed-cost/vouchers/:id/submit` | — | — |
-| PATCH | `/inventory/landed-cost/vouchers/:id/cancel` | — | — |
-| PATCH | `/inventory/landed-cost/vouchers/:id/allocate` | — | — |
-| GET | `/inventory/landed-cost/vouchers/:id/charge-lines` | — | — |
-| POST | `/inventory/landed-cost/vouchers/:id/charge-lines` | — | — |
-| PUT | `/inventory/landed-cost/vouchers/:id/charge-lines/:lineId` | — | — |
-| DELETE | `/inventory/landed-cost/vouchers/:id/charge-lines/:lineId` | — | — |
-| GET | `/inventory/landed-cost/vouchers/:id/receipt-links` | — | — |
-| POST | `/inventory/landed-cost/vouchers/:id/receipt-links` | — | — |
-| DELETE | `/inventory/landed-cost/vouchers/:id/receipt-links/:stockEntryId` | — | — |
-| GET | `/inventory/landed-cost/vouchers/:id/allocations` | — | — |
-| GET | `/inventory/lot-serial/dashboard` | — | — |
-| GET | `/inventory/lot-serial/expiry-report` | — | — |
-| GET | `/inventory/lot-serial/batches` | — | — |
-| GET | `/inventory/lot-serial/batches/:id` | — | — |
-| POST | `/inventory/lot-serial/batches` | — | — |
-| PATCH | `/inventory/lot-serial/batches/:id/quarantine` | — | — |
-| PATCH | `/inventory/lot-serial/batches/:id/release-quarantine` | — | — |
-| PATCH | `/inventory/lot-serial/batches/:id/expire` | — | — |
-| GET | `/inventory/lot-serial/batches/:id/movements` | — | — |
-| POST | `/inventory/lot-serial/lot-movements` | — | — |
-| GET | `/inventory/lot-serial/serials` | — | — |
-| GET | `/inventory/lot-serial/serials/:id` | — | — |
-| POST | `/inventory/lot-serial/serials` | — | — |
-| PATCH | `/inventory/lot-serial/serials/:id/sold` | — | — |
-| PATCH | `/inventory/lot-serial/serials/:id/returned` | — | — |
-| PATCH | `/inventory/lot-serial/serials/:id/scrap` | — | — |
-| POST | `/inventory/lot-serial/pick-suggestions/generate` | — | — |
-| GET | `/inventory/lot-serial/pick-suggestions` | — | — |
-| PATCH | `/inventory/lot-serial/pick-suggestions/:id/confirm` | — | — |
-| PATCH | `/inventory/lot-serial/pick-suggestions/:id/cancel` | — | — |
-| POST | `/inventory/lot-serial/expiry-alerts/generate` | — | — |
-| GET | `/inventory/lot-serial/expiry-alerts` | — | — |
-| PATCH | `/inventory/lot-serial/expiry-alerts/:id/acknowledge` | — | — |
-| GET | `/inventory/lot-serial/quarantine` | — | — |
-| GET | `/inventory/lot-serial/quarantine/:id` | — | — |
-| POST | `/inventory/lot-serial/quarantine` | — | — |
-| PATCH | `/inventory/lot-serial/quarantine/:id/release` | — | — |
-| PATCH | `/inventory/lot-serial/quarantine/:id/scrap` | — | — |
-| GET | `/inventory/packaging-gs1/dashboard` | — | — |
-| GET | `/inventory/packaging-gs1/specs` | — | — |
-| GET | `/inventory/packaging-gs1/specs/:id` | — | — |
-| GET | `/inventory/packaging-gs1/hierarchy` | — | — |
-| POST | `/inventory/packaging-gs1/specs` | — | — |
-| PATCH | `/inventory/packaging-gs1/specs/:id/deactivate` | — | — |
-| GET | `/inventory/packaging-gs1/barcodes` | — | — |
-| GET | `/inventory/packaging-gs1/barcodes/lookup` | — | — |
-| POST | `/inventory/packaging-gs1/barcodes` | — | — |
-| PATCH | `/inventory/packaging-gs1/barcodes/:id/deactivate` | — | — |
-| GET | `/inventory/packaging-gs1/gs1-ais` | — | — |
-| POST | `/inventory/packaging-gs1/gs1-ais` | — | — |
-| POST | `/inventory/packaging-gs1/gs1-ais/seed-standard` | — | — |
-| GET | `/inventory/packaging-gs1/label-templates` | — | — |
-| POST | `/inventory/packaging-gs1/label-templates` | — | — |
-| PATCH | `/inventory/packaging-gs1/label-templates/:id` | — | — |
-| POST | `/inventory/packaging-gs1/label-assignments` | — | — |
-| GET | `/inventory/packaging-gs1/label-assignments/resolve` | — | — |
-| GET | `/inventory/packaging-gs1/sscc` | — | — |
-| POST | `/inventory/packaging-gs1/sscc/allocate` | — | — |
-| POST | `/inventory/packaging-gs1/sscc/:sscc/mark-used` | — | — |
-| GET | `/inventory/quality-compliance/capas` | — | — |
-| GET | `/inventory/quality-compliance/capas/dashboard` | — | — |
-| GET | `/inventory/quality-compliance/capas/:id` | — | — |
-| POST | `/inventory/quality-compliance/capas` | — | — |
-| PATCH | `/inventory/quality-compliance/capas/:id` | — | — |
-| POST | `/inventory/quality-compliance/capas/:id/transition` | — | — |
-| POST | `/inventory/quality-compliance/capas/:id/actions` | — | — |
-| POST | `/inventory/quality-compliance/capas/actions/:actionId/complete` | — | — |
-| GET | `/inventory/quality-compliance/calibrations` | — | — |
-| GET | `/inventory/quality-compliance/calibrations/dashboard` | — | — |
-| GET | `/inventory/quality-compliance/calibrations/overdue` | — | — |
-| GET | `/inventory/quality-compliance/calibrations/:id` | — | — |
-| POST | `/inventory/quality-compliance/calibrations` | — | — |
-| POST | `/inventory/quality-compliance/calibrations/:id/result` | — | — |
-| GET | `/inventory/quality-compliance/deviations` | — | — |
-| GET | `/inventory/quality-compliance/deviations/dashboard` | — | — |
-| GET | `/inventory/quality-compliance/deviations/:id` | — | — |
-| POST | `/inventory/quality-compliance/deviations` | — | — |
-| POST | `/inventory/quality-compliance/deviations/:id/review` | — | — |
-| POST | `/inventory/quality-compliance/deviations/:id/close` | — | — |
-| POST | `/inventory/quality-compliance/deviations/:id/escalate-to-capa` | — | — |
-| GET | `/inventory/quality-compliance/sops` | — | — |
-| GET | `/inventory/quality-compliance/sops/due-soon` | — | — |
-| GET | `/inventory/quality-compliance/sops/search` | — | — |
-| GET | `/inventory/quality-compliance/sops/:id` | — | — |
-| POST | `/inventory/quality-compliance/sops` | — | — |
-| POST | `/inventory/quality-compliance/sops/:id/submit-review` | — | — |
-| POST | `/inventory/quality-compliance/sops/:id/approve` | — | — |
-| POST | `/inventory/quality-compliance/sops/:id/obsolete` | — | — |
-| POST | `/inventory/quality-compliance/sops/:id/revise` | — | — |
-| GET | `/inventory/quality-compliance/dashboard` | — | — |
+| GET | `/inventory/landed-cost/dashboard` | — | `inventory.landed_cost.read` |
+| GET | `/inventory/landed-cost/charge-type-summary` | — | `inventory.landed_cost.read` |
+| GET | `/inventory/landed-cost/allocation-report` | — | `inventory.landed_cost.read` |
+| GET | `/inventory/landed-cost/vouchers` | — | `inventory.landed_cost.read` |
+| POST | `/inventory/landed-cost/vouchers` | — | `inventory.landed_cost.manage` |
+| GET | `/inventory/landed-cost/vouchers/:id` | — | `inventory.landed_cost.read` |
+| PUT | `/inventory/landed-cost/vouchers/:id` | — | `inventory.landed_cost.manage` |
+| DELETE | `/inventory/landed-cost/vouchers/:id` | — | `inventory.landed_cost.manage` |
+| PATCH | `/inventory/landed-cost/vouchers/:id/submit` | — | `inventory.landed_cost.manage` |
+| PATCH | `/inventory/landed-cost/vouchers/:id/cancel` | — | `inventory.landed_cost.manage` |
+| PATCH | `/inventory/landed-cost/vouchers/:id/allocate` | — | `inventory.landed_cost.manage` |
+| GET | `/inventory/landed-cost/vouchers/:id/charge-lines` | — | `inventory.landed_cost.read` |
+| POST | `/inventory/landed-cost/vouchers/:id/charge-lines` | — | `inventory.landed_cost.manage` |
+| PUT | `/inventory/landed-cost/vouchers/:id/charge-lines/:lineId` | — | `inventory.landed_cost.manage` |
+| DELETE | `/inventory/landed-cost/vouchers/:id/charge-lines/:lineId` | — | `inventory.landed_cost.manage` |
+| GET | `/inventory/landed-cost/vouchers/:id/receipt-links` | — | `inventory.landed_cost.read` |
+| POST | `/inventory/landed-cost/vouchers/:id/receipt-links` | — | `inventory.landed_cost.manage` |
+| DELETE | `/inventory/landed-cost/vouchers/:id/receipt-links/:stockEntryId` | — | `inventory.landed_cost.manage` |
+| GET | `/inventory/landed-cost/vouchers/:id/allocations` | — | `inventory.landed_cost.read` |
+| GET | `/inventory/lot-expiry/dashboard` | — | `inventory.lot_expiry.read` |
+| POST | `/inventory/lot-expiry/lots` | — | `inventory.lot_expiry.read` |
+| GET | `/inventory/lot-expiry/lots` | — | `inventory.lot_expiry.read` |
+| GET | `/inventory/lot-expiry/lots/:id` | — | `inventory.lot_expiry.read` |
+| PATCH | `/inventory/lot-expiry/lots/:id/quarantine` | — | `inventory.lot_expiry.manage` |
+| PATCH | `/inventory/lot-expiry/lots/:id/release` | — | `inventory.lot_expiry.manage` |
+| POST | `/inventory/lot-expiry/lots/:id/consume` | — | `inventory.lot_expiry.manage` |
+| GET | `/inventory/lot-expiry/fefo` | — | `inventory.lot_expiry.read` |
+| POST | `/inventory/lot-expiry/alerts/scan` | — | `inventory.lot_expiry.manage` |
+| GET | `/inventory/lot-expiry/alerts` | — | `inventory.lot_expiry.read` |
+| PATCH | `/inventory/lot-expiry/alerts/:id/dismiss` | — | `inventory.lot_expiry.manage` |
+| POST | `/inventory/lot-expiry/disposals` | — | `inventory.lot_expiry.manage` |
+| GET | `/inventory/lot-expiry/disposals` | — | `inventory.lot_expiry.read` |
+| GET | `/inventory/lot-serial/dashboard` | — | `inventory.lot_serial.read` |
+| GET | `/inventory/lot-serial/expiry-report` | — | `inventory.lot_serial.read` |
+| GET | `/inventory/lot-serial/batches` | — | `inventory.lot_serial.read` |
+| GET | `/inventory/lot-serial/batches/:id` | — | `inventory.lot_serial.read` |
+| POST | `/inventory/lot-serial/batches` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/batches/:id/quarantine` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/batches/:id/release-quarantine` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/batches/:id/expire` | — | `inventory.lot_serial.manage` |
+| GET | `/inventory/lot-serial/batches/:id/movements` | — | `inventory.lot_serial.read` |
+| POST | `/inventory/lot-serial/lot-movements` | — | `inventory.lot_serial.manage` |
+| GET | `/inventory/lot-serial/serials` | — | `inventory.lot_serial.read` |
+| GET | `/inventory/lot-serial/serials/:id` | — | `inventory.lot_serial.read` |
+| POST | `/inventory/lot-serial/serials` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/serials/:id/sold` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/serials/:id/returned` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/serials/:id/scrap` | — | `inventory.lot_serial.manage` |
+| POST | `/inventory/lot-serial/pick-suggestions/generate` | — | `inventory.lot_serial.manage` |
+| GET | `/inventory/lot-serial/pick-suggestions` | — | `inventory.lot_serial.read` |
+| PATCH | `/inventory/lot-serial/pick-suggestions/:id/confirm` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/pick-suggestions/:id/cancel` | — | `inventory.lot_serial.manage` |
+| POST | `/inventory/lot-serial/expiry-alerts/generate` | — | `inventory.lot_serial.manage` |
+| GET | `/inventory/lot-serial/expiry-alerts` | — | `inventory.lot_serial.read` |
+| PATCH | `/inventory/lot-serial/expiry-alerts/:id/acknowledge` | — | `inventory.lot_serial.manage` |
+| GET | `/inventory/lot-serial/quarantine` | — | `inventory.lot_serial.read` |
+| GET | `/inventory/lot-serial/quarantine/:id` | — | `inventory.lot_serial.read` |
+| POST | `/inventory/lot-serial/quarantine` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/quarantine/:id/release` | — | `inventory.lot_serial.manage` |
+| PATCH | `/inventory/lot-serial/quarantine/:id/scrap` | — | `inventory.lot_serial.manage` |
+| GET | `/api/inventory/minmax-replen/dashboard` | — | `inventory.minmax_replen.read` |
+| GET | `/api/inventory/minmax-replen/levels` | — | `inventory.minmax_replen.read` |
+| POST | `/api/inventory/minmax-replen/levels` | — | `inventory.minmax_replen.manage` |
+| PATCH | `/api/inventory/minmax-replen/levels/:id/deactivate` | — | `inventory.minmax_replen.manage` |
+| POST | `/api/inventory/minmax-replen/run` | — | `inventory.minmax_replen.manage` |
+| GET | `/api/inventory/minmax-replen/run-logs` | — | `inventory.minmax_replen.read` |
+| GET | `/api/inventory/minmax-replen/suggestions` | — | `inventory.minmax_replen.read` |
+| PATCH | `/api/inventory/minmax-replen/suggestions/:id/approve` | — | `inventory.minmax_replen.manage` |
+| PATCH | `/api/inventory/minmax-replen/suggestions/:id/order` | — | `inventory.minmax_replen.manage` |
+| PATCH | `/api/inventory/minmax-replen/suggestions/:id/receive` | — | `inventory.minmax_replen.manage` |
+| PATCH | `/api/inventory/minmax-replen/suggestions/:id/cancel` | — | `inventory.minmax_replen.manage` |
+| GET | `/inventory/packaging-gs1/dashboard` | — | `inventory.packaging_gs1.read` |
+| GET | `/inventory/packaging-gs1/specs` | — | `inventory.packaging_gs1.read` |
+| GET | `/inventory/packaging-gs1/specs/:id` | — | `inventory.packaging_gs1.read` |
+| GET | `/inventory/packaging-gs1/hierarchy` | — | `inventory.packaging_gs1.read` |
+| POST | `/inventory/packaging-gs1/specs` | — | `inventory.packaging_gs1.manage` |
+| PATCH | `/inventory/packaging-gs1/specs/:id/deactivate` | — | `inventory.packaging_gs1.manage` |
+| GET | `/inventory/packaging-gs1/barcodes` | — | `inventory.packaging_gs1.read` |
+| GET | `/inventory/packaging-gs1/barcodes/lookup` | — | `inventory.packaging_gs1.read` |
+| POST | `/inventory/packaging-gs1/barcodes` | — | `inventory.packaging_gs1.manage` |
+| PATCH | `/inventory/packaging-gs1/barcodes/:id/deactivate` | — | `inventory.packaging_gs1.manage` |
+| GET | `/inventory/packaging-gs1/gs1-ais` | — | `inventory.packaging_gs1.read` |
+| POST | `/inventory/packaging-gs1/gs1-ais` | — | `inventory.packaging_gs1.manage` |
+| POST | `/inventory/packaging-gs1/gs1-ais/seed-standard` | — | `inventory.packaging_gs1.manage` |
+| GET | `/inventory/packaging-gs1/label-templates` | — | `inventory.packaging_gs1.read` |
+| POST | `/inventory/packaging-gs1/label-templates` | — | `inventory.packaging_gs1.manage` |
+| PATCH | `/inventory/packaging-gs1/label-templates/:id` | — | `inventory.packaging_gs1.manage` |
+| POST | `/inventory/packaging-gs1/label-assignments` | — | `inventory.packaging_gs1.manage` |
+| GET | `/inventory/packaging-gs1/label-assignments/resolve` | — | `inventory.packaging_gs1.read` |
+| GET | `/inventory/packaging-gs1/sscc` | — | `inventory.packaging_gs1.read` |
+| POST | `/inventory/packaging-gs1/sscc/allocate` | — | `inventory.packaging_gs1.manage` |
+| POST | `/inventory/packaging-gs1/sscc/:sscc/mark-used` | — | `inventory.packaging_gs1.manage` |
+| GET | `/inventory/quality-compliance/capas` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/capas/dashboard` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/capas/:id` | — | `inventory.quality_compliance.read` |
+| POST | `/inventory/quality-compliance/capas` | — | `inventory.quality_compliance.manage` |
+| PATCH | `/inventory/quality-compliance/capas/:id` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/capas/:id/transition` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/capas/:id/actions` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/capas/actions/:actionId/complete` | — | `inventory.quality_compliance.manage` |
+| GET | `/inventory/quality-compliance/calibrations` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/calibrations/dashboard` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/calibrations/overdue` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/calibrations/:id` | — | `inventory.quality_compliance.read` |
+| POST | `/inventory/quality-compliance/calibrations` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/calibrations/:id/result` | — | `inventory.quality_compliance.manage` |
+| GET | `/inventory/quality-compliance/deviations` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/deviations/dashboard` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/deviations/:id` | — | `inventory.quality_compliance.read` |
+| POST | `/inventory/quality-compliance/deviations` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/deviations/:id/review` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/deviations/:id/close` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/deviations/:id/escalate-to-capa` | — | `inventory.quality_compliance.manage` |
+| GET | `/inventory/quality-compliance/sops` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/sops/due-soon` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/sops/search` | — | `inventory.quality_compliance.read` |
+| GET | `/inventory/quality-compliance/sops/:id` | — | `inventory.quality_compliance.read` |
+| POST | `/inventory/quality-compliance/sops` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/sops/:id/submit-review` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/sops/:id/approve` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/sops/:id/obsolete` | — | `inventory.quality_compliance.manage` |
+| POST | `/inventory/quality-compliance/sops/:id/revise` | — | `inventory.quality_compliance.manage` |
+| GET | `/inventory/quality-compliance/dashboard` | — | `inventory.quality_compliance.read` |
 | GET | `/inventory/rtv/reason-codes` | List return reason codes | `inventory.rtv.read` |
 | POST | `/inventory/rtv/reason-codes` | Create a return reason code | `inventory.rtv.read` |
 | PATCH | `/inventory/rtv/reason-codes/:id` | Update a return reason code | `inventory.rtv.manage` |
@@ -2265,132 +2325,158 @@
 | POST | `/inventory/rtv/shipments/:id/deliver` | Mark a shipment as delivered to vendor | `inventory.rtv.update` |
 | POST | `/inventory/rtv/shipments/:id/credit-memo` | Record vendor credit memo against a delivered shipment | `inventory.rtv.update` |
 | GET | `/inventory/rtv/dashboard` | RTV dashboard summary | `inventory.rtv.read` |
-| GET | `/inventory/stock-takes/dashboard` | — | — |
-| GET | `/inventory/stock-takes/accuracy-report` | — | — |
-| GET | `/inventory/stock-takes` | — | — |
-| POST | `/inventory/stock-takes` | — | — |
-| GET | `/inventory/stock-takes/:id` | — | — |
-| PUT | `/inventory/stock-takes/:id` | — | — |
-| PATCH | `/inventory/stock-takes/:id/start` | — | — |
-| PATCH | `/inventory/stock-takes/:id/cancel` | — | — |
-| PATCH | `/inventory/stock-takes/:id/generate-variances` | — | — |
-| PATCH | `/inventory/stock-takes/:id/approve` | — | — |
-| PATCH | `/inventory/stock-takes/:id/post` | — | — |
-| GET | `/inventory/stock-takes/:id/sheets` | — | — |
-| POST | `/inventory/stock-takes/:id/sheets` | — | — |
-| POST | `/inventory/stock-takes/:id/sheets/:sheetId/items` | — | — |
-| PATCH | `/inventory/stock-takes/:id/sheets/:sheetId/count` | — | — |
-| PATCH | `/inventory/stock-takes/:id/sheets/:sheetId/recount` | — | — |
-| GET | `/inventory/stock-takes/:id/variances` | — | — |
-| GET | `/inventory/stock-takes/:id/variance-report` | — | — |
-| PATCH | `/inventory/stock-takes/variances/:varianceId/approve` | — | — |
-| PATCH | `/inventory/stock-takes/variances/:varianceId/reject` | — | — |
-| GET | `/inventory/stock-valuation/dashboard` | — | — |
-| GET | `/inventory/stock-valuation/variance-report` | — | — |
-| GET | `/inventory/stock-valuation/valuation-summary` | — | — |
-| GET | `/inventory/stock-valuation/policies` | — | — |
-| POST | `/inventory/stock-valuation/policies` | — | — |
-| GET | `/inventory/stock-valuation/policies/:id` | — | — |
-| PATCH | `/inventory/stock-valuation/policies/:id/deactivate` | — | — |
-| GET | `/inventory/stock-valuation/ledger` | — | — |
-| POST | `/inventory/stock-valuation/ledger` | — | — |
-| GET | `/inventory/stock-valuation/product-valuation` | — | — |
-| POST | `/inventory/stock-valuation/compute-issue-cost` | — | — |
-| GET | `/inventory/stock-valuation/adjustments` | — | — |
-| POST | `/inventory/stock-valuation/adjustments` | — | — |
-| GET | `/inventory/stock-valuation/adjustments/:id` | — | — |
-| PATCH | `/inventory/stock-valuation/adjustments/:id/approve` | — | — |
-| PATCH | `/inventory/stock-valuation/adjustments/:id/post` | — | — |
-| PATCH | `/inventory/stock-valuation/adjustments/:id/reject` | — | — |
-| GET | `/inventory/stock-valuation/revaluations` | — | — |
-| POST | `/inventory/stock-valuation/revaluations` | — | — |
-| GET | `/inventory/stock-valuation/revaluations/:id` | — | — |
-| PATCH | `/inventory/stock-valuation/revaluations/:id/post` | — | — |
-| DELETE | `/inventory/stock-valuation/revaluations/:id` | — | — |
-| GET | `/inventory/supplier-quality/dashboard` | Supplier quality overview dashboard | — |
-| GET | `/inventory/supplier-quality/scorecards` | Supplier quality overview dashboard | — |
-| POST | `/inventory/supplier-quality/scorecards` | List supplier quality scorecards | — |
-| GET | `/inventory/supplier-quality/scorecards/vendor/:vendorId` | Create a supplier scorecard for a period | — |
-| GET | `/inventory/supplier-quality/ncrs` | Get score history for a specific vendor | — |
-| POST | `/inventory/supplier-quality/ncrs` | Raise a supplier NCR | — |
-| POST | `/inventory/supplier-quality/ncrs/:id/close` | Raise a supplier NCR | — |
-| GET | `/inventory/supplier-quality/cars` | Close an NCR with resolution notes | — |
-| POST | `/inventory/supplier-quality/cars` | List corrective action requests | — |
-| POST | `/inventory/supplier-quality/cars/:id/respond` | Raise a CAR against an NCR | — |
-| POST | `/inventory/supplier-quality/cars/:id/accept` | Vendor response to a CAR | — |
-| POST | `/inventory/supplier-quality/cars/:id/reject` | Accept a vendor CAR response | — |
-| GET | `/inventory/transfer-orders/dashboard` | — | — |
-| GET | `/inventory/transfer-orders/in-transit` | — | — |
-| GET | `/inventory/transfer-orders/receiving-report` | — | — |
-| GET | `/inventory/transfer-orders` | — | — |
-| POST | `/inventory/transfer-orders` | — | — |
-| GET | `/inventory/transfer-orders/:id` | — | — |
-| PUT | `/inventory/transfer-orders/:id` | — | — |
-| PATCH | `/inventory/transfer-orders/:id/submit` | — | — |
-| PATCH | `/inventory/transfer-orders/:id/approve` | — | — |
-| PATCH | `/inventory/transfer-orders/:id/ship` | — | — |
-| PATCH | `/inventory/transfer-orders/:id/receive` | — | — |
-| PATCH | `/inventory/transfer-orders/:id/cancel` | — | — |
-| PATCH | `/inventory/transfer-orders/:id/close-out` | — | — |
-| POST | `/inventory/transfer-orders/:id/lines` | — | — |
-| DELETE | `/inventory/transfer-orders/:id/lines/:lineId` | — | — |
-| GET | `/inventory/transfer-orders/:id/receipts` | — | — |
-| GET | `/inventory/warehouse-ops/dashboard` | — | — |
-| GET | `/inventory/warehouse-ops/tasks` | — | — |
-| GET | `/inventory/warehouse-ops/tasks/dashboard` | — | — |
-| GET | `/inventory/warehouse-ops/tasks/worker/:workerId` | — | — |
-| GET | `/inventory/warehouse-ops/tasks/:id` | — | — |
-| POST | `/inventory/warehouse-ops/tasks` | — | — |
-| PATCH | `/inventory/warehouse-ops/tasks/:id/assign` | — | — |
-| PATCH | `/inventory/warehouse-ops/tasks/:id/start` | — | — |
-| PATCH | `/inventory/warehouse-ops/tasks/:id/complete` | — | — |
-| PATCH | `/inventory/warehouse-ops/tasks/:id/cancel` | — | — |
-| GET | `/inventory/warehouse-ops/bin-transfers` | — | — |
-| GET | `/inventory/warehouse-ops/bin-transfers/:id` | — | — |
-| POST | `/inventory/warehouse-ops/bin-transfers` | — | — |
-| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/approve` | — | — |
-| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/reject` | — | — |
-| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/complete` | — | — |
-| GET | `/inventory/warehouse-ops/grn` | — | — |
-| GET | `/inventory/warehouse-ops/grn/dashboard` | — | — |
-| GET | `/inventory/warehouse-ops/grn/:id` | — | — |
-| POST | `/inventory/warehouse-ops/grn` | — | — |
-| PATCH | `/inventory/warehouse-ops/grn/:id/verify` | — | — |
-| PATCH | `/inventory/warehouse-ops/grn/:id/quality-check` | — | — |
-| PATCH | `/inventory/warehouse-ops/grn/:id/putaway` | — | — |
-| PATCH | `/inventory/warehouse-ops/grn/:id/reject` | — | — |
-| GET | `/inventory/warehouse-ops/packing` | — | — |
-| GET | `/inventory/warehouse-ops/packing/:id` | — | — |
-| POST | `/inventory/warehouse-ops/packing` | — | — |
-| POST | `/inventory/warehouse-ops/packing/:id/cartons` | — | — |
-| PATCH | `/inventory/warehouse-ops/packing/:sessionId/cartons/:cartonId/seal` | — | — |
-| PATCH | `/inventory/warehouse-ops/packing/:id/complete` | — | — |
-| GET | `/inventory/yard-management/dashboard` | — | — |
-| GET | `/inventory/yard-management/dock-doors` | — | — |
-| POST | `/inventory/yard-management/dock-doors` | — | — |
-| PUT | `/inventory/yard-management/dock-doors/:id` | — | — |
-| DELETE | `/inventory/yard-management/dock-doors/:id` | — | — |
-| GET | `/inventory/yard-management/dock-doors/schedule` | — | — |
-| GET | `/inventory/yard-management/appointments` | — | — |
-| GET | `/inventory/yard-management/appointments/range` | — | — |
-| GET | `/inventory/yard-management/appointments/turnaround-report` | — | — |
-| GET | `/inventory/yard-management/appointments/:id` | — | — |
-| POST | `/inventory/yard-management/appointments` | — | — |
-| PATCH | `/inventory/yard-management/appointments/:id/check-in` | — | — |
-| PATCH | `/inventory/yard-management/appointments/:id/start-loading` | — | — |
-| PATCH | `/inventory/yard-management/appointments/:id/complete` | — | — |
-| PATCH | `/inventory/yard-management/appointments/:id/no-show` | — | — |
-| PATCH | `/inventory/yard-management/appointments/:id/cancel` | — | — |
-| PATCH | `/inventory/yard-management/appointments/:id/reschedule` | — | — |
-| GET | `/inventory/yard-management/appointments/:id/gate-pass` | — | — |
-| GET | `/inventory/yard-management/yard-moves` | — | — |
-| POST | `/inventory/yard-management/yard-moves` | — | — |
-| PATCH | `/inventory/yard-management/yard-moves/:id/start` | — | — |
-| PATCH | `/inventory/yard-management/yard-moves/:id/complete` | — | — |
-| PATCH | `/inventory/yard-management/yard-moves/:id/cancel` | — | — |
-| GET | `/inventory/yard-management/yard-inventory` | — | — |
-| POST | `/inventory/yard-management/yard-inventory` | — | — |
-| PATCH | `/inventory/yard-management/yard-inventory/:id/depart` | — | — |
+| GET | `/inventory/stock-takes/dashboard` | — | `inventory.stock_take.read` |
+| GET | `/inventory/stock-takes/accuracy-report` | — | `inventory.stock_take.read` |
+| GET | `/inventory/stock-takes` | — | `inventory.stock_take.read` |
+| POST | `/inventory/stock-takes` | — | `inventory.stock_take.manage` |
+| GET | `/inventory/stock-takes/:id` | — | `inventory.stock_take.read` |
+| PUT | `/inventory/stock-takes/:id` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/start` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/cancel` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/generate-variances` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/approve` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/post` | — | `inventory.stock_take.manage` |
+| GET | `/inventory/stock-takes/:id/sheets` | — | `inventory.stock_take.read` |
+| POST | `/inventory/stock-takes/:id/sheets` | — | `inventory.stock_take.manage` |
+| POST | `/inventory/stock-takes/:id/sheets/:sheetId/items` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/sheets/:sheetId/count` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/:id/sheets/:sheetId/recount` | — | `inventory.stock_take.manage` |
+| GET | `/inventory/stock-takes/:id/variances` | — | `inventory.stock_take.read` |
+| GET | `/inventory/stock-takes/:id/variance-report` | — | `inventory.stock_take.read` |
+| PATCH | `/inventory/stock-takes/variances/:varianceId/approve` | — | `inventory.stock_take.manage` |
+| PATCH | `/inventory/stock-takes/variances/:varianceId/reject` | — | `inventory.stock_take.manage` |
+| GET | `/inventory/stock-valuation/dashboard` | — | `inventory.stock_valuation.read` |
+| GET | `/inventory/stock-valuation/variance-report` | — | `inventory.stock_valuation.read` |
+| GET | `/inventory/stock-valuation/valuation-summary` | — | `inventory.stock_valuation.read` |
+| GET | `/inventory/stock-valuation/policies` | — | `inventory.stock_valuation.read` |
+| POST | `/inventory/stock-valuation/policies` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/policies/:id` | — | `inventory.stock_valuation.read` |
+| PATCH | `/inventory/stock-valuation/policies/:id/deactivate` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/ledger` | — | `inventory.stock_valuation.read` |
+| POST | `/inventory/stock-valuation/ledger` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/product-valuation` | — | `inventory.stock_valuation.read` |
+| POST | `/inventory/stock-valuation/compute-issue-cost` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/adjustments` | — | `inventory.stock_valuation.read` |
+| POST | `/inventory/stock-valuation/adjustments` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/adjustments/:id` | — | `inventory.stock_valuation.read` |
+| PATCH | `/inventory/stock-valuation/adjustments/:id/approve` | — | `inventory.stock_valuation.manage` |
+| PATCH | `/inventory/stock-valuation/adjustments/:id/post` | — | `inventory.stock_valuation.manage` |
+| PATCH | `/inventory/stock-valuation/adjustments/:id/reject` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/revaluations` | — | `inventory.stock_valuation.read` |
+| POST | `/inventory/stock-valuation/revaluations` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/stock-valuation/revaluations/:id` | — | `inventory.stock_valuation.read` |
+| PATCH | `/inventory/stock-valuation/revaluations/:id/post` | — | `inventory.stock_valuation.manage` |
+| DELETE | `/inventory/stock-valuation/revaluations/:id` | — | `inventory.stock_valuation.manage` |
+| GET | `/inventory/supplier-quality/dashboard` | Supplier quality overview dashboard | `inventory.supplier_quality.read` |
+| GET | `/inventory/supplier-quality/scorecards` | Supplier quality overview dashboard | `inventory.supplier_quality.read` |
+| POST | `/inventory/supplier-quality/scorecards` | List supplier quality scorecards | `inventory.supplier_quality.manage` |
+| GET | `/inventory/supplier-quality/scorecards/vendor/:vendorId` | Create a supplier scorecard for a period | `inventory.supplier_quality.read` |
+| GET | `/inventory/supplier-quality/ncrs` | Get score history for a specific vendor | `inventory.supplier_quality.read` |
+| POST | `/inventory/supplier-quality/ncrs` | Raise a supplier NCR | `inventory.supplier_quality.manage` |
+| POST | `/inventory/supplier-quality/ncrs/:id/close` | Raise a supplier NCR | `inventory.supplier_quality.manage` |
+| GET | `/inventory/supplier-quality/cars` | Close an NCR with resolution notes | `inventory.supplier_quality.read` |
+| POST | `/inventory/supplier-quality/cars` | List corrective action requests | `inventory.supplier_quality.manage` |
+| POST | `/inventory/supplier-quality/cars/:id/respond` | Raise a CAR against an NCR | `inventory.supplier_quality.manage` |
+| POST | `/inventory/supplier-quality/cars/:id/accept` | Vendor response to a CAR | `inventory.supplier_quality.manage` |
+| POST | `/inventory/supplier-quality/cars/:id/reject` | Accept a vendor CAR response | `inventory.supplier_quality.manage` |
+| GET | `/inventory/transfer-orders/dashboard` | — | `inventory.transfer_orders.read` |
+| GET | `/inventory/transfer-orders/in-transit` | — | `inventory.transfer_orders.read` |
+| GET | `/inventory/transfer-orders/receiving-report` | — | `inventory.transfer_orders.read` |
+| GET | `/inventory/transfer-orders` | — | `inventory.transfer_orders.read` |
+| POST | `/inventory/transfer-orders` | — | `inventory.transfer_orders.manage` |
+| GET | `/inventory/transfer-orders/:id` | — | `inventory.transfer_orders.read` |
+| PUT | `/inventory/transfer-orders/:id` | — | `inventory.transfer_orders.manage` |
+| PATCH | `/inventory/transfer-orders/:id/submit` | — | `inventory.transfer_orders.manage` |
+| PATCH | `/inventory/transfer-orders/:id/approve` | — | `inventory.transfer_orders.manage` |
+| PATCH | `/inventory/transfer-orders/:id/ship` | — | `inventory.transfer_orders.manage` |
+| PATCH | `/inventory/transfer-orders/:id/receive` | — | `inventory.transfer_orders.manage` |
+| PATCH | `/inventory/transfer-orders/:id/cancel` | — | `inventory.transfer_orders.manage` |
+| PATCH | `/inventory/transfer-orders/:id/close-out` | — | `inventory.transfer_orders.manage` |
+| POST | `/inventory/transfer-orders/:id/lines` | — | `inventory.transfer_orders.manage` |
+| DELETE | `/inventory/transfer-orders/:id/lines/:lineId` | — | `inventory.transfer_orders.manage` |
+| GET | `/inventory/transfer-orders/:id/receipts` | — | `inventory.transfer_orders.read` |
+| GET | `/api/inventory/velocity-abc-xyz/dashboard` | — | `inventory.velocity_abc_xyz.read` |
+| GET | `/api/inventory/velocity-abc-xyz/runs` | — | `inventory.velocity_abc_xyz.read` |
+| POST | `/api/inventory/velocity-abc-xyz/runs` | — | `inventory.velocity_abc_xyz.manage` |
+| GET | `/api/inventory/velocity-abc-xyz/runs/:id` | — | `inventory.velocity_abc_xyz.read` |
+| DELETE | `/api/inventory/velocity-abc-xyz/runs/:id` | — | `inventory.velocity_abc_xyz.manage` |
+| POST | `/api/inventory/velocity-abc-xyz/runs/:id/compute` | — | `inventory.velocity_abc_xyz.manage` |
+| PATCH | `/api/inventory/velocity-abc-xyz/runs/:id/activate` | — | `inventory.velocity_abc_xyz.manage` |
+| GET | `/api/inventory/velocity-abc-xyz/runs/:runId/items` | — | `inventory.velocity_abc_xyz.read` |
+| GET | `/api/inventory/velocity-abc-xyz/products/:productId/current-class` | — | `inventory.velocity_abc_xyz.read` |
+| GET | `/api/inventory/velocity-abc-xyz/policies` | — | `inventory.velocity_abc_xyz.read` |
+| POST | `/api/inventory/velocity-abc-xyz/policies` | — | `inventory.velocity_abc_xyz.manage` |
+| DELETE | `/api/inventory/velocity-abc-xyz/policies/:id` | — | `inventory.velocity_abc_xyz.manage` |
+| POST | `/api/inventory/velocity-abc-xyz/snapshots` | — | `inventory.velocity_abc_xyz.manage` |
+| GET | `/api/inventory/velocity-abc-xyz/products/:productId/snapshots` | — | `inventory.velocity_abc_xyz.read` |
+| GET | `/inventory/vmi/dashboard` | — | `inventory.vmi.read` |
+| POST | `/inventory/vmi/agreements` | — | `inventory.vmi.manage` |
+| GET | `/inventory/vmi/agreements` | — | `inventory.vmi.read` |
+| GET | `/inventory/vmi/agreements/:id` | — | `inventory.vmi.read` |
+| PATCH | `/inventory/vmi/agreements/:id/activate` | — | `inventory.vmi.manage` |
+| PATCH | `/inventory/vmi/agreements/:id/suspend` | — | `inventory.vmi.manage` |
+| PATCH | `/inventory/vmi/agreements/:id/terminate` | — | `inventory.vmi.manage` |
+| POST | `/inventory/vmi/snapshots` | — | `inventory.vmi.manage` |
+| GET | `/inventory/vmi/snapshots` | — | `inventory.vmi.read` |
+| POST | `/inventory/vmi/orders` | — | `inventory.vmi.manage` |
+| GET | `/inventory/vmi/orders` | — | `inventory.vmi.read` |
+| PATCH | `/inventory/vmi/orders/:id/status` | — | `inventory.vmi.manage` |
+| GET | `/inventory/warehouse-ops/dashboard` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/tasks` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/tasks/dashboard` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/tasks/worker/:workerId` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/tasks/:id` | — | `inventory.warehouse_ops.read` |
+| POST | `/inventory/warehouse-ops/tasks` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/assign` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/start` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/complete` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/tasks/:id/cancel` | — | `inventory.warehouse_ops.manage` |
+| GET | `/inventory/warehouse-ops/bin-transfers` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/bin-transfers/:id` | — | `inventory.warehouse_ops.read` |
+| POST | `/inventory/warehouse-ops/bin-transfers` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/approve` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/reject` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/bin-transfers/:id/complete` | — | `inventory.warehouse_ops.manage` |
+| GET | `/inventory/warehouse-ops/grn` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/grn/dashboard` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/grn/:id` | — | `inventory.warehouse_ops.read` |
+| POST | `/inventory/warehouse-ops/grn` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/grn/:id/verify` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/grn/:id/quality-check` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/grn/:id/putaway` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/grn/:id/reject` | — | `inventory.warehouse_ops.manage` |
+| GET | `/inventory/warehouse-ops/packing` | — | `inventory.warehouse_ops.read` |
+| GET | `/inventory/warehouse-ops/packing/:id` | — | `inventory.warehouse_ops.read` |
+| POST | `/inventory/warehouse-ops/packing` | — | `inventory.warehouse_ops.manage` |
+| POST | `/inventory/warehouse-ops/packing/:id/cartons` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/packing/:sessionId/cartons/:cartonId/seal` | — | `inventory.warehouse_ops.manage` |
+| PATCH | `/inventory/warehouse-ops/packing/:id/complete` | — | `inventory.warehouse_ops.manage` |
+| GET | `/inventory/yard-management/dashboard` | — | `inventory.yard_management.read` |
+| GET | `/inventory/yard-management/dock-doors` | — | `inventory.yard_management.read` |
+| POST | `/inventory/yard-management/dock-doors` | — | `inventory.yard_management.manage` |
+| PUT | `/inventory/yard-management/dock-doors/:id` | — | `inventory.yard_management.manage` |
+| DELETE | `/inventory/yard-management/dock-doors/:id` | — | `inventory.yard_management.manage` |
+| GET | `/inventory/yard-management/dock-doors/schedule` | — | `inventory.yard_management.read` |
+| GET | `/inventory/yard-management/appointments` | — | `inventory.yard_management.read` |
+| GET | `/inventory/yard-management/appointments/range` | — | `inventory.yard_management.read` |
+| GET | `/inventory/yard-management/appointments/turnaround-report` | — | `inventory.yard_management.read` |
+| GET | `/inventory/yard-management/appointments/:id` | — | `inventory.yard_management.read` |
+| POST | `/inventory/yard-management/appointments` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/appointments/:id/check-in` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/appointments/:id/start-loading` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/appointments/:id/complete` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/appointments/:id/no-show` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/appointments/:id/cancel` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/appointments/:id/reschedule` | — | `inventory.yard_management.manage` |
+| GET | `/inventory/yard-management/appointments/:id/gate-pass` | — | `inventory.yard_management.read` |
+| GET | `/inventory/yard-management/yard-moves` | — | `inventory.yard_management.read` |
+| POST | `/inventory/yard-management/yard-moves` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/yard-moves/:id/start` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/yard-moves/:id/complete` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/yard-moves/:id/cancel` | — | `inventory.yard_management.manage` |
+| GET | `/inventory/yard-management/yard-inventory` | — | `inventory.yard_management.read` |
+| POST | `/inventory/yard-management/yard-inventory` | — | `inventory.yard_management.manage` |
+| PATCH | `/inventory/yard-management/yard-inventory/:id/depart` | — | `inventory.yard_management.manage` |
 
 ## localization
 

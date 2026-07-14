@@ -2,6 +2,39 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-14] Fix Issues — security/critical backlog drain (MILESTONE)
+
+**Gate**: MILESTONE (≥5 issues fixed, auth/RBAC surfaces touched — full turbo typecheck,
+full API suite (221 files / 2972 tests), both green)
+
+### Fixed
+- **#10 (critical, security)**: `POST /auth/login-demo` minted a real `SUPER_ADMIN` JWT
+  to any unauthenticated caller. Now returns 404 when `NODE_ENV=production`.
+- **#11 (high, security)**: 27 inventory controllers were guarded only by `JwtAuthGuard`
+  with no `@Permissions` decorators, so `RbacGuard`'s fail-open default let any
+  authenticated role (including VIEWER) read/mutate hazmat, warehouse-ops, valuations,
+  transfers, recalls, etc. Attached `RbacGuard` and added resource-level
+  `inventory.<resource>.read|manage` permissions to every route (45 new codes
+  registered in `packages/shared/src/permissions/registry.ts`).
+- **#12 (high, security)**: `ThrottlerModule` buckets were configured but `ThrottlerGuard`
+  was never registered as an `APP_GUARD`, so no endpoint was rate-limited. Wired it
+  globally and added stricter per-route `@Throttle` limits on login/login-demo/
+  forgot-password/reset-password.
+- **#15 (high, reliability)**: POS checkout's `deductInventory`/`increaseInventory`/
+  `earnLoyaltyPoints` swallowed all errors in empty `catch {}` blocks, letting sales
+  complete with silent stock drift and defeating the surrounding transaction's rollback.
+  Errors now propagate; oversell is rejected instead of clamped to zero.
+- **#13 (medium, tech-debt)**: `packages/database` had no `typecheck` script, so
+  `pnpm turbo typecheck` silently skipped the tenant-scoping Prisma extension. Added the
+  script and typed the `$allOperations` callback to clear the hidden TS7031 errors.
+- **#2 (low, repo hygiene)**: removed 6 stale compiled `.js`/`.js.map` files committed
+  under `apps/api/src` (drifted from source) and ignored `apps/api/src/**/*.js(.map)`.
+
+### Remaining open (deferred — large mechanical scope, next `/fix-issues` run)
+- **#14 (medium)**: ~190 unpaginated `findMany` calls across inventory services.
+- **#3, #4, #5, #6 (low)**: `: any` typing debt in advanced-finance, POS, Builder Studio,
+  and inventory service/controller layers (Critical Rule 1).
+
 ## [2026-07-13] Inventory Cycle 38 — Lot/Batch Expiry Management (FAST)
 
 **Sub-domain**: inventory-cycle38-lot-expiry | **Gate**: FAST
