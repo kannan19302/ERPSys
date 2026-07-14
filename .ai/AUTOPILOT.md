@@ -137,6 +137,30 @@ then exercises them all).
    adoption, no matter how finished it looks. A stale-lock takeover (rule 1) releases
    the *slug* for fresh work — it never adopts the previous holder's pending files.
 
+## Multi-Collaborator Focus Selection (binding — applies to /start, /issue-scan, /fix-issues)
+
+When more than one collaborator (human-driven session or agent) is active at the same
+time, module choice is negotiated with the user instead of silently assumed:
+
+1. **Detect collaborators** at bootstrap: `node scripts/claim.mjs list` + Collab
+   Board §1 Active Claims. "Active" = a lock with a heartbeat in the last 2h.
+2. **If other active collaborators exist AND a user is present** (interactive
+   session): ASK the user which module they want to focus on for this session
+   (Claude Code: `AskUserQuestion`, options = focus module + 2–3 modules with no
+   active claim, marking each option that is free vs. occupied).
+3. **Collision rule**: if the user picks a module that another active collaborator
+   already holds (any lock whose sub-domain belongs to that module), do not proceed
+   silently — intimate them: say WHO holds it (agent name + slug + scope from the
+   lock), and ask them to choose a different module. If they insist after being
+   informed, coordinate at sub-domain level instead: pick only sub-domains of that
+   module with no lock, and never touch the held slugs.
+4. **Unattended sessions** (no user to ask): never prompt — auto-select the highest-
+   priority work whose module/sub-domain has no active claim, exactly as the claim
+   protocol already requires.
+5. The user's module choice binds this session's P3–P7 work for the rest of the
+   session (it overrides `MODULE_FOCUS.md` § 1 for this session only); P0–P2
+   emergencies may still touch any module.
+
 ## Step 1 — SELECT (the priority ladder)
 
 **Focus-module constraint (binding)**: read [`MODULE_FOCUS.md`](MODULE_FOCUS.md) § 1
@@ -153,7 +177,7 @@ exactly **one** item per cycle. Never skip a higher rung because a lower one is 
 | Priority | Source | Rule |
 |:--|:--|:--|
 | **P0 — Broken build/tests** | Run `pnpm turbo typecheck` and the API test suite (or read Reality Gates in `SCORECARD.md` and re-verify). | If either fails, fixing it IS the work item. Nothing else ships on a red build. |
-| **P1 — Observed failures & unfinished work** | `.ai/FEEDBACK.md` (regenerated in Step 0): unresolved runtime errors and open admin alerts **outrank everything below** — real users hitting real errors beats any backlog feature. Also: `.ai/CHANGELOG.md` follow-ups and half-wired features **that are committed on `main` and not covered by any lock or `[pending]` entry**. | Fix the highest-frequency unresolved error first; mark it resolved via the error-reports API when done. **Never adopt another session's pending/uncommitted/unmerged work here** — that is human-gated (Step 0 rule 5); autonomous cycles start fresh tasks only. |
+| **P1 — Observed failures & unfinished work** | Open GitHub issues labeled `severity:critical`/`severity:high` (filed by `/issue-scan`; work them via the `/fix-issues` protocol ordering). `.ai/FEEDBACK.md` (regenerated in Step 0): unresolved runtime errors and open admin alerts **outrank everything below** — real users hitting real errors beats any backlog feature. Also: `.ai/CHANGELOG.md` follow-ups and half-wired features **that are committed on `main` and not covered by any lock or `[pending]` entry**. | Fix the highest-frequency unresolved error first; mark it resolved via the error-reports API when done. **Never adopt another session's pending/uncommitted/unmerged work here** — that is human-gated (Step 0 rule 5); autonomous cycles start fresh tasks only. |
 | **P2 — Conflict Log** | Collab Board §4. | Resolve any logged conflict before new work. |
 | **P3 — Up Next queue** | Collab Board §2 — pick from the top, skipping items overlapping Active Claims. | This is the primary steady-state source of work. |
 | **P4 — Quality gaps** | `SCORECARD.md` modules/dimensions below 10 (e.g. auth D4/D5, admin D1); `MODULE_REGISTRY.md` § Production Readiness & Hardening open phases; RBAC decorator-stacking defect notes. | Pick the lowest-scoring dimension of the lowest-scoring module. |
