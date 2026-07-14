@@ -630,31 +630,36 @@ export class PosService {
   }
 
   private async deductInventory(tx: any, tenantId: string, _orgId: string, productId: string, qty: number) {
-    try { const inventory = await tx.inventoryItem.findFirst({ where: { tenantId, productId } }); if (inventory) { const newQty = Number(inventory.quantity) - qty; await tx.inventoryItem.update({ where: { id: inventory.id }, data: { quantity: Math.max(0, newQty) } }); } } catch { }
+    const inventory = await tx.inventoryItem.findFirst({ where: { tenantId, productId } });
+    if (!inventory) return;
+    const newQty = Number(inventory.quantity) - qty;
+    if (newQty < 0) {
+      throw new BadRequestException(`Insufficient stock for product ${productId}: requested ${qty}, available ${Number(inventory.quantity)}`);
+    }
+    await tx.inventoryItem.update({ where: { id: inventory.id }, data: { quantity: newQty } });
   }
 
   private async increaseInventory(tx: any, tenantId: string, _orgId: string, productId: string, qty: number) {
-    try { const inventory = await tx.inventoryItem.findFirst({ where: { tenantId, productId } }); if (inventory) { await tx.inventoryItem.update({ where: { id: inventory.id }, data: { quantity: { increment: qty } } }); } } catch { }
+    const inventory = await tx.inventoryItem.findFirst({ where: { tenantId, productId } });
+    if (inventory) { await tx.inventoryItem.update({ where: { id: inventory.id }, data: { quantity: { increment: qty } } }); }
   }
 
   private async earnLoyaltyPoints(tx: any, tenantId: string, customerId: string, amount: number, orderId: string) {
-    try {
-      const program = await tx.posLoyaltyProgram.findFirst({ where: { tenantId, status: 'ACTIVE' } });
-      if (!program) return;
-      let member = await tx.posLoyaltyMember.findFirst({ where: { tenantId, customerId } });
-      const pointsEarned = Math.floor(amount * Number(program.pointsPerUnit));
-      if (member) {
-        const newPoints = member.points + pointsEarned;
-        const newVisitCount = member.visitCount + 1;
-        let tier = member.tier;
-        const tiers: Array<{ name: string; minPoints: number }> = program.tiers || [];
-        for (const t of [...tiers].sort((a, b) => b.minPoints - a.minPoints)) { if (newPoints >= t.minPoints) { tier = t.name; break; } }
-        member = await tx.posLoyaltyMember.update({ where: { id: member.id }, data: { points: newPoints, lifetimePoints: { increment: pointsEarned }, lifetimeSpent: { increment: amount }, visitCount: newVisitCount, lastVisit: new Date(), tier } });
-      } else {
-        const customer = await tx.customer.findFirst({ where: { id: customerId } });
-        member = await tx.posLoyaltyMember.create({ data: { tenantId, programId: program.id, customerId, name: customer?.name || 'Unknown', email: customer?.email || null, points: pointsEarned, lifetimePoints: pointsEarned, lifetimeSpent: new Prisma.Decimal(amount), visitCount: 1, tier: 'BRONZE', lastVisit: new Date(), status: 'ACTIVE' } });
-      }
-      await tx.posLoyaltyTransaction.create({ data: { tenantId, programId: program.id, memberId: member.id, orderId, type: 'EARN', points: pointsEarned, balance: member.points, notes: 'Earned from order' } });
-    } catch { }
+    const program = await tx.posLoyaltyProgram.findFirst({ where: { tenantId, status: 'ACTIVE' } });
+    if (!program) return;
+    let member = await tx.posLoyaltyMember.findFirst({ where: { tenantId, customerId } });
+    const pointsEarned = Math.floor(amount * Number(program.pointsPerUnit));
+    if (member) {
+      const newPoints = member.points + pointsEarned;
+      const newVisitCount = member.visitCount + 1;
+      let tier = member.tier;
+      const tiers: Array<{ name: string; minPoints: number }> = program.tiers || [];
+      for (const t of [...tiers].sort((a, b) => b.minPoints - a.minPoints)) { if (newPoints >= t.minPoints) { tier = t.name; break; } }
+      member = await tx.posLoyaltyMember.update({ where: { id: member.id }, data: { points: newPoints, lifetimePoints: { increment: pointsEarned }, lifetimeSpent: { increment: amount }, visitCount: newVisitCount, lastVisit: new Date(), tier } });
+    } else {
+      const customer = await tx.customer.findFirst({ where: { id: customerId } });
+      member = await tx.posLoyaltyMember.create({ data: { tenantId, programId: program.id, customerId, name: customer?.name || 'Unknown', email: customer?.email || null, points: pointsEarned, lifetimePoints: pointsEarned, lifetimeSpent: new Prisma.Decimal(amount), visitCount: 1, tier: 'BRONZE', lastVisit: new Date(), status: 'ACTIVE' } });
+    }
+    await tx.posLoyaltyTransaction.create({ data: { tenantId, programId: program.id, memberId: member.id, orderId, type: 'EARN', points: pointsEarned, balance: member.points, notes: 'Earned from order' } });
   }
 }
