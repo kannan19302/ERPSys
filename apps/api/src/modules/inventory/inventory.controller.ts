@@ -7,6 +7,7 @@ import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { InventoryService } from './inventory.service';
 import { InventoryWarehousesService } from './inventory-warehouses.service';
+import { InventoryQaService } from './inventory-qa.service';
 import {
   CreateProductInput, UpdateProductInput,
   CreateWarehouseInput, UpdateWarehouseInput,
@@ -49,6 +50,7 @@ export class InventoryController {
   constructor(
     private readonly inventoryService: InventoryService,
     private readonly inventoryWarehousesService: InventoryWarehousesService,
+    private readonly inventoryQaService: InventoryQaService,
   ) {}
 
   // ─── PRODUCTS ─────────────────────────────────────
@@ -1181,7 +1183,7 @@ export class InventoryController {
     @Query('status') status?: string,
     @Query('search') search?: string,
   ) {
-    return this.inventoryService.getQAInspections(req.user.tenantId, {
+    return this.inventoryQaService.getQAInspections(req.user.tenantId, {
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,
       status, search,
@@ -1192,7 +1194,7 @@ export class InventoryController {
   @Get('qa-inspections/:id')
   @Permissions('inventory.stock.read')
   async getQAInspectionById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.inventoryService.getQAInspectionById(req.user.tenantId, id);
+    return this.inventoryQaService.getQAInspectionById(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create q a inspection' })
@@ -1200,7 +1202,7 @@ export class InventoryController {
   @Permissions('inventory.stock.create')
   async createQAInspection(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateQAInspectionInput) {
     const orgId = req.user.orgId || 'org-system-default';
-    return this.inventoryService.createQAInspection(req.user.tenantId, orgId, req.user.userId, dto);
+    return this.inventoryQaService.createQAInspection(req.user.tenantId, orgId, req.user.userId, dto);
   }
 
   @ApiOperation({ summary: 'Submit q a inspection' })
@@ -1211,14 +1213,14 @@ export class InventoryController {
     @Param('id') id: string,
     @ZodBody(z.any()) dto: SubmitQAInspectionInput,
   ) {
-    return this.inventoryService.submitQAInspection(req.user.tenantId, id, req.user.userId, dto);
+    return this.inventoryQaService.submitQAInspection(req.user.tenantId, id, req.user.userId, dto);
   }
 
   @ApiOperation({ summary: 'Route a resolved inspection disposition to a downstream action (e.g. batch quarantine)' })
   @Post('qa-inspections/:id/route-disposition')
   @Permissions('inventory.stock.update')
   async routeQAInspectionDisposition(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.inventoryService.routeQAInspectionDisposition(req.user.tenantId, id, req.user.userId);
+    return this.inventoryQaService.routeQAInspectionDisposition(req.user.tenantId, id, req.user.userId);
   }
 
   // ─── QA INSPECTION TEMPLATES ──────────────────────────
@@ -1227,7 +1229,7 @@ export class InventoryController {
   @Get('qa-inspection-templates')
   @Permissions('inventory.stock.read')
   async getQAInspectionTemplates(@Req() req: AuthenticatedRequest, @Query('page') page?: string, @Query('limit') limit?: string, @Query('productId') productId?: string) {
-    return this.inventoryService.getQAInspectionTemplates(req.user.tenantId, {
+    return this.inventoryQaService.getQAInspectionTemplates(req.user.tenantId, {
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,
       productId,
@@ -1238,21 +1240,21 @@ export class InventoryController {
   @Post('qa-inspection-templates')
   @Permissions('inventory.stock.create')
   async createQAInspectionTemplate(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) dto: CreateQAInspectionTemplateInput) {
-    return this.inventoryService.createQAInspectionTemplate(req.user.tenantId, dto);
+    return this.inventoryQaService.createQAInspectionTemplate(req.user.tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Update QA inspection template' })
   @Patch('qa-inspection-templates/:id')
   @Permissions('inventory.stock.update')
   async updateQAInspectionTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: UpdateQAInspectionTemplateInput) {
-    return this.inventoryService.updateQAInspectionTemplate(req.user.tenantId, id, dto);
+    return this.inventoryQaService.updateQAInspectionTemplate(req.user.tenantId, id, dto);
   }
 
   @ApiOperation({ summary: 'Delete QA inspection template' })
   @Delete('qa-inspection-templates/:id')
   @Permissions('inventory.stock.delete')
   async deleteQAInspectionTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.inventoryService.deleteQAInspectionTemplate(req.user.tenantId, id);
+    return this.inventoryQaService.deleteQAInspectionTemplate(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: 'Create QA inspection pre-populated from a template' })
@@ -1260,7 +1262,7 @@ export class InventoryController {
   @Permissions('inventory.stock.create')
   async createQAInspectionFromTemplate(@Req() req: AuthenticatedRequest, @Param('id') id: string, @ZodBody(z.any()) dto: CreateQAInspectionInput) {
     const orgId = req.user.orgId || 'org-system-default';
-    return this.inventoryService.createQAInspectionFromTemplate(req.user.tenantId, orgId, req.user.userId, id, dto);
+    return this.inventoryQaService.createQAInspectionFromTemplate(req.user.tenantId, orgId, req.user.userId, id, dto);
   }
 
   // ─── REORDER RULES ──────────────────────────────────

@@ -3,6 +3,7 @@ import { InventoryController } from './inventory.controller';
 import { InventoryService } from './inventory.service';
 import { InventoryWarehousesService } from './inventory-warehouses.service';
 import { InventoryProductsService } from './inventory-products.service';
+import { InventoryQaService } from './inventory-qa.service';
 import { InventoryEventHandler } from './inventory.event-handler';
 import { CostingService } from './costing.service';
 import { CostingController } from './costing.controller';
@@ -34,6 +35,7 @@ import { InventoryAnalyticsController } from './inventory-analytics.controller';
     InventoryService,
     InventoryWarehousesService,
     InventoryProductsService,
+    InventoryQaService,
     InventoryEventHandler,
     CostingService,
     DemandForecastingService,
@@ -47,6 +49,7 @@ import { InventoryAnalyticsController } from './inventory-analytics.controller';
     InventoryService,
     InventoryWarehousesService,
     InventoryProductsService,
+    InventoryQaService,
     CostingService,
     DemandForecastingService,
     RtvService,

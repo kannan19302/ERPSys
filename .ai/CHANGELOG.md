@@ -8,6 +8,15 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Inventory — god-class decomposition: extract QA inspections into `InventoryQaService`
+
+- Extracted all quality-inspection and QA-inspection-template logic (`getQAInspections`, `getQAInspectionById`, `createQAInspection`, `submitQAInspection`, `routeQAInspectionDisposition`, template CRUD, `createQAInspectionFromTemplate`) from `inventory.service.ts` into a new `apps/api/src/modules/inventory/inventory-qa.service.ts`, following the strangler-fig pattern already used for `inventory-warehouses.service.ts` and `inventory-products.service.ts`.
+- `InventoryController` now injects and calls `InventoryQaService` directly for the QA endpoints; `InventoryService` keeps thin delegating methods for any internal callers.
+- Avoided a `forwardRef` circular dependency between the two services by dropping `InventoryQaService`'s optional back-reference to `InventoryService.quarantineBatch` in favor of its own direct batch-quarantine transaction (already present as a fallback) — kept the dependency graph one-directional (`InventoryService → InventoryQaService`).
+- Added `inventory-qa.service.spec.ts` unit tests (pagination, not-found, template creation) with mocked Prisma.
+- Verified: `tsc --noEmit` clean, `pnpm architecture:check` clean (no circular-dependency violation), new spec file passing (3/3).
+- Continues item 1 in `.ai/MODULE_REGISTRY.md` § Collab Board ("god-class decomposition, Enterprise Hardening Phase 1") — `inventory.service.ts` now has warehouses, product catalog, and QA inspections decomposed out.
+
 ## [2026-07-17] Supply Chain — Inventory Cycle 16: ASN, Inbound Logistics, Carrier Management, and Outbound Shipment Tracking
 
 - Registered new `supply-chain.asn.*`, `supply-chain.exception.*`, and carrier update/delete permissions inside `packages/shared/src/permissions/registry.ts`.
