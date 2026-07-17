@@ -9,6 +9,13 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Repository maintenance — production-grade folder cleanup and gitignore hardening
+
+- Backed up and removed the production compose `deploy/` directory and root `RUNBOOK.md` file to keep the workspace root clean, since deployment targets are managed outside the repository.
+- Backed up and removed `docs/EXTENSION_SERVICE_CONTRACT.md`, retaining only the mandatory `docs/ARCHITECTURE_FOUNDATION.md` file required by the codebase's automated compliance gates.
+- Hardened `.gitignore` to ignore the entire `.vscode/` configuration directory and local agent settings/checkout directories (`.agents/`, `.claude/worktrees/`).
+- Verified all code checks and turborepo builds are green (`pnpm architecture:check`, `pnpm foundation:check`, `pnpm build`).
+
 ## [2026-07-17] Repository maintenance — cleaned unused scripts and duplicate env files
 
 - Removed duplicate `.env` files in `apps/api/` and `packages/database/`, copying `OLLAMA_BASE_URL` and `OLLAMA_MODEL` to the root `.env` to ensure backend configuration compatibility.

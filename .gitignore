@@ -16,7 +16,7 @@ apps/api/src/**/*.js.map
 .env.*.local
 
 # IDE
-.vscode/settings.json
+.vscode/
 .idea/
 *.swp
 *.swo
@@ -61,5 +61,7 @@ storybook-static/
 
 # Local agent/tool settings & scratch
 .claude/settings.local.json
+.claude/worktrees/
+.agents/
 tsc_errors.txt
 *.tmp
