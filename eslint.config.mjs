@@ -56,6 +56,27 @@ export default [
     },
   },
   {
+    files: ['apps/api/src/modules/**/*.controller.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@unerp/database',
+              message: 'Database/Prisma direct access in module controllers is forbidden. Move all database queries to services.',
+            },
+            {
+              name: '@prisma/client',
+              importNames: ['PrismaClient'],
+              message: 'Prisma Client direct usage in module controllers is forbidden. Move all database queries to services.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'],
     plugins: {
       'react-hooks': reactHooksPlugin,

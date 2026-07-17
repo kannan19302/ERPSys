@@ -1231,6 +1231,34 @@ export class ProcurementService {
   }
 
   /**
+   * PUBLIC RFQ DETAIL LOOKUP
+   */
+  async getPublicRFQByNumber(rfqNumber: string): Promise<any> {
+    const rfqObj = await prisma.rFQ.findFirst({
+      where: { rfqNumber, deletedAt: null },
+      include: {
+        lineItems: { include: { product: true } },
+      },
+    });
+    if (!rfqObj) {
+      throw new NotFoundException(`RFQ number ${rfqNumber} not found`);
+    }
+    return {
+      id: rfqObj.id,
+      rfqNumber: rfqObj.rfqNumber,
+      notes: rfqObj.notes,
+      expectedDate: rfqObj.expectedDate,
+      lineItems: rfqObj.lineItems.map((li: any) => ({
+        id: li.id,
+        productId: li.productId,
+        description: li.description,
+        quantity: Number(li.quantity),
+        product: li.product ? { name: li.product.name, sku: li.product.sku } : null,
+      })),
+    };
+  }
+
+  /**
    * PUBLIC RFQ BID SUBMISSION
    */
   async submitPublicBid(rfqNumber: string, dto: any): Promise<any> {

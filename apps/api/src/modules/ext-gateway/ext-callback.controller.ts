@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Request } from 'express';
-import { prisma } from '@unerp/database';
 import { verifyTenantToken, decodeTokenUnverified, TENANT_TOKEN_HEADER, TenantContextClaims } from '@unerp/service-kit';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { secretForApp } from './ext-secret.util';
+import { ExtCallbackService } from './ext-callback.service';
 
 /**
  * Callback API for extension services that need core-resident data (their app's
@@ -12,9 +12,11 @@ import { secretForApp } from './ext-secret.util';
  * no cookies. Reads are scoped to the app's own schemas; writes additionally
  * require a `<slug>:write` scope in the token (#9, #10).
  */
-@ApiTags('ext-callback')
+@ApiTags('ext-gateway')
 @Controller('ext-callback')
 export class ExtCallbackController {
+  constructor(private readonly callbackService: ExtCallbackService) {}
+
   /** Verify the echoed tenant token using the app's own secret (#2). */
   private authorize(req: Request): TenantContextClaims {
     const raw = String(req.headers[TENANT_TOKEN_HEADER] || '');
@@ -33,27 +35,6 @@ export class ExtCallbackController {
     }
   }
 
-  private async loadRecords(tenantId: string, slug: string, where?: Record<string, unknown>, limit?: number) {
-    const schema = await prisma.schemaRegistry.findUnique({
-      where: { tenantId_slug: { tenantId, slug } },
-      select: { id: true },
-    });
-    if (!schema) return [];
-    const rows = await prisma.customRecord.findMany({
-      where: {
-        tenantId,
-        schemaId: schema.id,
-        // Equality filters on JSON data fields (Prisma JSON path filter).
-        ...(where && Object.keys(where).length
-          ? { AND: Object.entries(where).map(([k, v]) => ({ data: { path: [k], equals: v as any } })) }
-          : {}),
-      },
-      select: { id: true, data: true, createdAt: true },
-      ...(limit ? { take: Math.min(Math.max(1, limit), 500) } : {}),
-    });
-    return rows.map((r) => ({ _id: r.id, _createdAt: r.createdAt, ...((r.data || {}) as any) }));
-  }
-
   @ApiOperation({ summary: "Read an extension app's provisioned records (optional equality filters)" })
   @Get('records/:slug')
   async records(@Req() req: Request, @Param('slug') slug: string, @Query('where') whereRaw?: string, @Query('limit') limitRaw?: string) {
@@ -63,7 +44,7 @@ export class ExtCallbackController {
     if (whereRaw) {
       try { where = JSON.parse(whereRaw); } catch { throw new BadRequestException('`where` must be JSON'); }
     }
-    return this.loadRecords(claims.tenantId, slug, where, limitRaw ? Number(limitRaw) : undefined);
+    return this.callbackService.loadRecords(claims.tenantId, slug, where, limitRaw ? Number(limitRaw) : undefined);
   }
 
   @ApiOperation({ summary: 'Read several schemas in one round trip' })
@@ -74,7 +55,7 @@ export class ExtCallbackController {
     const out: Record<string, any[]> = {};
     for (const slug of slugs) {
       this.assertOwnSchema(claims, slug);
-      out[slug] = await this.loadRecords(claims.tenantId, slug);
+      out[slug] = await this.callbackService.loadRecords(claims.tenantId, slug);
     }
     return out;
   }
@@ -87,15 +68,6 @@ export class ExtCallbackController {
     if (!claims.scopes?.includes(`${claims.appSlug}:write`)) {
       throw new ForbiddenException(`Token lacks the "${claims.appSlug}:write" scope`);
     }
-    const schema = await prisma.schemaRegistry.findUnique({
-      where: { tenantId_slug: { tenantId: claims.tenantId, slug } },
-      select: { id: true },
-    });
-    if (!schema) throw new BadRequestException(`Schema "${slug}" is not provisioned for this tenant`);
-    const rec = await prisma.customRecord.create({
-      data: { tenantId: claims.tenantId, schemaId: schema.id, data: (body?.data || {}) as any },
-      select: { id: true, data: true, createdAt: true },
-    });
-    return { _id: rec.id, _createdAt: rec.createdAt, ...((rec.data || {}) as any) };
+    return this.callbackService.createRecord(claims.tenantId, slug, body?.data || {});
   }
 }

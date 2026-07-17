@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { DatePicker } from './date-picker';
+import { DatePicker, type DatePickerProps } from './date-picker';
 import { useState } from 'react';
 
 const meta: Meta<typeof DatePicker> = {
@@ -14,7 +14,7 @@ export default meta;
 
 type Story = StoryObj<typeof DatePicker>;
 
-const DatePickerWrapper = (props: any) => {
+const DatePickerWrapper = (props: DatePickerProps) => {
   const [value, setValue] = useState<Date | undefined>(props.value);
   return <DatePicker {...props} value={value} onChange={setValue} />;
 };

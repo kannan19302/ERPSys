@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, UseGuards, Req, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, UseGuards, Req, Query } from '@nestjs/common';
 import { z } from 'zod';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
 import { Request } from 'express';
@@ -878,21 +878,7 @@ export class AdvancedHrController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(z.any()) dto: { employeeCode: string; timestamp?: string; actionType?: 'CHECK_IN' | 'CHECK_OUT' }
   ) {
-    // We can import prisma or fetch employee directly. To avoid importing prisma, we fetch via standard query inside service or controller.
-    // Let's use the Prisma Client from @unerp/database package directly
-    const { prisma } = require('@unerp/database');
-    const emp = await prisma.employee.findFirst({ where: { tenantId: req.user.tenantId, employeeCode: dto.employeeCode } });
-    if (!emp) throw new NotFoundException(`Employee with code ${dto.employeeCode} not found.`);
-    
-    const today = new Date(); today.setHours(0,0,0,0);
-    const existing = await prisma.attendanceRecord.findFirst({ where: { tenantId: req.user.tenantId, employeeId: emp.id, date: today } });
-    
-    const action = dto.actionType || (existing ? 'CHECK_OUT' : 'CHECK_IN');
-    if (action === 'CHECK_IN') {
-      return this.hrService.checkIn(req.user.tenantId, emp.id);
-    } else {
-      return this.hrService.checkOut(req.user.tenantId, emp.id);
-    }
+    return this.hrService.checkInRFID(req.user.tenantId, dto.employeeCode, dto.actionType);
   }
 
   // ── GAPS: Self Service Portal ──

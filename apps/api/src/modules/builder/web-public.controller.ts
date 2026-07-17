@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Body, Param, Query, Headers, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
 import { createWebFormSubmissionSchema, type CreateWebFormSubmissionInput, webCheckoutSchema, type WebCheckoutInput } from '@unerp/shared';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { WebCollectionsService } from './web-collections.service';
@@ -21,10 +20,7 @@ export class WebPublicController {
   ) {}
 
   private async resolveTenantId(tenantSlug?: string): Promise<string> {
-    const slug = tenantSlug || 'system';
-    const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true } });
-    if (!tenant) throw new NotFoundException('Site not found');
-    return tenant.id;
+    return this.studio.resolveTenantId(tenantSlug);
   }
 
   // ── Multi-site serving (resolved by request Host) ──

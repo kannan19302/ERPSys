@@ -78,17 +78,14 @@ export class SsoController {
   @Get('config/:tenantSlug')
   async getSsoConfig(@Param('tenantSlug') tenantSlug: string) {
     // Public endpoint — returns SSO entry points for the login page
-    const tenant = await (await import('@unerp/database')).prisma.tenant.findUnique({
-      where: { slug: tenantSlug } });
-    if (!tenant) return { configured: false };
-
-    const config = await this.ssoService.getSsoConfig(tenant.id);
+    const config = await this.ssoService.getSsoConfigByTenantSlug(tenantSlug);
     if (!config) return { configured: false };
 
     return {
       configured: true,
       samlEntryPoint: config.samlEntryPoint || null,
       oidcAuthorizationUrl: config.oidcAuthorizationUrl || null,
-      oidcClientId: config.oidcClientId || null };
+      oidcClientId: config.oidcClientId || null
+    };
   }
 }

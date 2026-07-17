@@ -206,4 +206,11 @@ export class WebStudioService {
 
     return { reply: result.content };
   }
+
+  async resolveTenantId(tenantSlug?: string): Promise<string> {
+    const slug = tenantSlug || 'system';
+    const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true } });
+    if (!tenant) throw new NotFoundException('Site not found');
+    return tenant.id;
+  }
 }

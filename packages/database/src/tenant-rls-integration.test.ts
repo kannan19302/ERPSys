@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { prisma, runWithTenantSession } from './index';
 
 describe('RLS Tenant Isolation Database Integration', () => {

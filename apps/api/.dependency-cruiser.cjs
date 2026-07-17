@@ -8,6 +8,19 @@ module.exports = {
       from: {},
       to: { circular: true },
     },
+    {
+      name: 'no-cross-module-deep-imports',
+      severity: 'error',
+      comment: 'Direct deep imports between different NestJS modules are forbidden. Use common interfaces or event boundaries.',
+      from: {
+        path: '^src/modules/([^/]+)',
+        pathNot: '(^src/modules/ecommerce/|\\.spec\\.ts$|/tests/)'
+      },
+      to: {
+        path: '^src/modules/([^/]+)',
+        pathNot: '^src/modules/$1'
+      }
+    },
   ],
   options: {
     doNotFollow: { path: 'node_modules' },

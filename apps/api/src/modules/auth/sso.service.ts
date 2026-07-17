@@ -102,4 +102,10 @@ export class SsoService {
     });
     return { saved: true };
   }
+
+  async getSsoConfigByTenantSlug(tenantSlug: string) {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
+    if (!tenant) return null;
+    return this.getSsoConfig(tenant.id);
+  }
 }

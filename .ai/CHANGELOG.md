@@ -9,6 +9,19 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Architecture - Enforced NestJS Module Boundaries and Thin Controllers in CI
+
+- Implemented strict static validation check in `.dependency-cruiser.cjs` to forbid direct module-to-module imports (`no-cross-module-deep-imports`), excluding test files and allowed baseline exceptions (`ecommerce` to `sales` imports).
+- Configured ESLint rule `no-restricted-imports` on `apps/api/src/modules/**/*.controller.ts` files to strictly block importing `@unerp/database` or `PrismaClient` from `@prisma/client`.
+- Refactored 5 module controllers to remove direct database/Prisma access, delegating queries to services:
+  - `ProcurementPublicController.getPublicRFQByNumber` -> delegated to `ProcurementService.getPublicRFQByNumber`.
+  - `WebPublicController.resolveTenantId` -> delegated to `WebStudioService.resolveTenantId`.
+  - `SSOController.getSsoConfig` -> delegated to `SsoService.getSsoConfigByTenantSlug`.
+  - `ExtCallbackController` -> delegated to new `ExtCallbackService` to handle record fetching/creation.
+  - `AdvancedHrController.checkInRFID` -> delegated to `AdvancedHrService.checkInRFID`.
+- Refactored `packages/database/src/index.ts` and `packages/database/src/tenant-rls-integration.test.ts` to fix pre-existing `any` typings and unused imports, achieving clean workspace compile and lint runs.
+- Verified NestJS API builds cleanly and all 3,025 vitest tests pass successfully.
+
 ## [2026-07-17] Dashboard — replaced hardcoded grid preview layout width with useContainerWidth
 
 - Refactored `apps/web/app/(dashboard)/dashboard/page.tsx` custom widget grid layout rendering to measure width dynamically.

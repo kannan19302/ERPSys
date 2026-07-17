@@ -124,6 +124,21 @@ export class AdvancedHrService {
     });
   }
 
+  async checkInRFID(tenantId: string, employeeCode: string, actionType?: 'CHECK_IN' | 'CHECK_OUT') {
+    const emp = await prisma.employee.findFirst({ where: { tenantId, employeeCode } });
+    if (!emp) throw new NotFoundException(`Employee with code ${employeeCode} not found.`);
+    
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const existing = await prisma.attendanceRecord.findFirst({ where: { tenantId, employeeId: emp.id, date: today } });
+    
+    const action = actionType || (existing ? 'CHECK_OUT' : 'CHECK_IN');
+    if (action === 'CHECK_IN') {
+      return this.checkIn(tenantId, emp.id);
+    } else {
+      return this.checkOut(tenantId, emp.id);
+    }
+  }
+
   // ── TIER 1: Employee Documents ──
   async getEmployeeDocuments(tenantId: string, employeeId: string) {
     const docs = await prisma.employeeDocument.findMany({ where: { tenantId, employeeId } });

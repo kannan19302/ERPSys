@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ComboBox, type ComboBoxOption } from './combobox';
+import { ComboBox, type ComboBoxOption, type ComboBoxProps } from './combobox';
 import { useState } from 'react';
 
 const meta: Meta<typeof ComboBox> = {
@@ -23,7 +23,7 @@ const OPTIONS: ComboBoxOption[] = [
   { value: 'workday', label: 'Workday Financials' },
 ];
 
-const ComboBoxWrapper = (props: any) => {
+const ComboBoxWrapper = (props: ComboBoxProps) => {
   const [value, setValue] = useState(props.value);
   return <ComboBox {...props} value={value} onChange={setValue} />;
 };

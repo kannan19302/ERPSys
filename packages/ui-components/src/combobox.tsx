@@ -15,7 +15,7 @@ export interface ComboBoxProps {
   /** Current selected value (string or array of strings for multiple) */
   value?: string | string[];
   /** Callback fired when selection changes */
-  onChange?: (value: any) => void;
+  onChange?: (value: string | string[] | null) => void;
   /** Placeholder text when value is empty */
   placeholder?: string;
   /** Placeholder text for the search input */

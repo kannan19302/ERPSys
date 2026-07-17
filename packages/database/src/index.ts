@@ -41,8 +41,8 @@ export const prisma = basePrisma.$extends({
       }: {
         model: string;
         operation: string;
-        args: any;
-        query: (args: any) => Promise<unknown>;
+        args: unknown;
+        query: (args: unknown) => Promise<unknown>;
       }) {
         const session = getTenantSession();
         if (!session || MODELS_WITHOUT_TENANT.has(model)) {
@@ -52,20 +52,33 @@ export const prisma = basePrisma.$extends({
         const scopedArgs = applyTenantScope(model, operation, args, session.tenantId);
 
         if (RLS_PROTECTED_MODELS.has(model)) {
-          const execute = async (client: any) => {
+          const execute = async (client: { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> }) => {
             await client.$executeRaw`SELECT set_config('app.current_tenant_id', ${session.tenantId}, true)`;
           };
 
-          const transaction = (rest as any).__internalParams?.transaction;
-          if (transaction?.kind === 'itx' && typeof (basePrisma as any)._createItxClient === 'function') {
-            const itxClient = (basePrisma as any)._createItxClient(transaction);
+          const transaction = (
+            (rest as Record<string, unknown>).__internalParams as
+              | { transaction?: { kind: string } }
+              | undefined
+          )?.transaction;
+
+          if (transaction?.kind === 'itx' && typeof (basePrisma as unknown as { _createItxClient: (tx: unknown) => unknown })._createItxClient === 'function') {
+            const itxClient = (basePrisma as unknown as { _createItxClient: (tx: unknown) => { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> } })._createItxClient(transaction);
             await execute(itxClient);
             return query(scopedArgs);
           } else {
             return basePrisma.$transaction(async (tx) => {
               await execute(tx);
               const modelProp = getModelPropertyName(model);
-              return (tx as any)[modelProp][operation](scopedArgs);
+              const txModel = (tx as unknown as Record<string, Record<string, (args: unknown) => Promise<unknown>>>)[modelProp];
+              if (!txModel) {
+                throw new Error(`Model ${modelProp} not found on transaction client`);
+              }
+              const queryFn = txModel[operation];
+              if (!queryFn) {
+                throw new Error(`Operation ${operation} not found on model ${modelProp}`);
+              }
+              return queryFn(scopedArgs);
             });
           }
         }
