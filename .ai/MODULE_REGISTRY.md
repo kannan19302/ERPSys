@@ -115,6 +115,44 @@
 > Full protocol lives in [AGENTS.md § Multi-Agent Collaboration Protocol](../AGENTS.md).
 > This section is the _live state_; AGENTS.md is the _rulebook_.
 
+### 0. Current Focus Module (binding, per `.ai/AUTOPILOT.md` § Shared binding 16)
+
+> The ADP locks onto **exactly one module at a time** for P2.5/P3/P4 feature
+> work and drives it to completion before rotating — it does not spread
+> feature effort across the weakest module every cycle. P0/P1 (broken build,
+> security/critical/high issues) are always exempt and picked regardless of
+> focus.
+
+- **Focus**: **Inventory & Supply Chain**
+- **In focus since**: 2026-07-12
+- **Why**: weakest-health unclaimed module once Finance and CRM both reached
+  Complete (see Rotation history below).
+- **Live progress**: § System Progress Dashboard below (feature count via
+  `feature-ledger.mjs`, health score via `module-health.mjs`).
+
+**Completion criteria (binding — ALL five must hold before rotating):**
+
+1. 500+ weighted feature points (`node scripts/feature-ledger.mjs`).
+2. Full CRUD with pagination/sorting on every entity in the module.
+3. 80%+ test coverage on the module's service files.
+4. Feature parity or superiority vs. the top 10 ERP market leaders — see
+   `.ai/MARKET_BENCHMARK.md`.
+5. UAT sign-off — `business-analyst-uat` walkthrough documented as
+   `.ai/UAT_<MODULE>_<date>.md`.
+
+Only when all five hold does a session mark the module COMPLETE below (with
+evidence), pick the next-weakest unclaimed module via `module-health.mjs`,
+and update this section + Rotation history in the same commit as the code
+that closed it out. Never rotate mid-cycle; never rotate without all five.
+
+**Rotation history:**
+
+| Module                   | Status      | Started    | Completed  | Evidence                                                                |
+| :------------------------ | :---------- | :--------- | :--------- | :------------------------------------------------------------------------ |
+| Finance & Accounting      | ✅ COMPLETE | —          | 2026-07-11 | `.ai/UAT_FINANCE_2026-07-11.md`                                          |
+| CRM & Sales               | ✅ COMPLETE | —          | 2026-07-11 | `.ai/UAT_CRM_2026-07-11.md`                                              |
+| Inventory & Supply Chain  | 🟡 IN FOCUS | 2026-07-12 | —          | 746 features, 74/100 health as of 2026-07-17 (see dashboard below)      |
+
 ### 1. Active Claims
 
 > One row per agent session currently touching the repo. Add your row when you
@@ -135,14 +173,12 @@
 > to §1 with your claim, and when done move it to §3 with a one-line result +
 > link to the commit.
 >
-> **Focus filter (binding, per `.ai/MODULE_FOCUS.md`)**: feature items are only
-> pickable if they belong to the **Current Focus Module** (now: **Inventory &
-> Supply Chain** — drive it to 500+ distinct working features; Finance &
-> Accounting and CRM & Sales are both DONE as of 2026-07-11, see
-> `.ai/MODULE_FOCUS.md` §5/§6, `.ai/UAT_FINANCE_2026-07-11.md`, and
-> `.ai/UAT_CRM_2026-07-11.md`). Non-focus feature items (e.g. `[benchmark]`
-> HR items below) stay queued for their module's turn. P0/P1/P2 items (broken
-> build, runtime failures, conflicts, cross-cutting hardening) are exempt.
+> **Focus filter (binding, per § 0 Current Focus Module above and
+> `.ai/AUTOPILOT.md` § Shared binding 16)**: feature items are only pickable
+> if they belong to the **Current Focus Module** (now: **Inventory & Supply
+> Chain**). Non-focus feature items (e.g. `[benchmark]` HR items below) stay
+> queued for their module's turn. P0/P1/P2 items (broken build, runtime
+> failures, conflicts, cross-cutting hardening) are exempt.
 
 0. ~~**[P0] Wire RLS session context into the shared Prisma extension**~~ ✅ RESOLVED 2026-07-17 — wired RLS setting context transaction-locally in `$allOperations` and added full integration tests. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
 1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (DONE), `inventory.service.ts` (PARTIALLY DECOMPOSED: warehouses, product catalog, and QA inspections decomposed — see `.ai/CHANGELOG.md` 2026-07-17), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.

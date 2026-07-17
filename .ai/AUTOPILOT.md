@@ -103,6 +103,19 @@
 15. **Entity scaffolding.** For MVM-level work (basic CRUD + list + detail + tests),
     use `node scripts/scaffold-entity.mjs` to generate boilerplate. Customize the
     generated code for business logic. See script `--help` for usage.
+16. **Focus module (binding, per [MODULE_REGISTRY.md § 0 Current Focus
+    Module](MODULE_REGISTRY.md)).** The ADP locks onto exactly one module at
+    a time for P2.5/P3/P4 work and drives it to completion before rotating —
+    it does not spread feature effort across the weakest module every cycle.
+    Read MODULE_REGISTRY § 0 at bootstrap. P2.5/P3/P4 feature selection MUST
+    stay inside that module; non-focus feature items stay queued. P0/P1
+    (broken build, security/critical/high issues) are always exempt and
+    picked regardless of focus. At cycle end, check the module against § 0's
+    Completion criteria — if ALL five hold, mark it COMPLETE (with evidence),
+    pick the next-weakest unclaimed module via `module-health.mjs`, and
+    update § 0's Current focus + Rotation history in the same commit
+    as the code that closed it out. Never rotate mid-cycle and never rotate
+    without all five criteria met.
 
 ---
 
@@ -136,20 +149,27 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    start the dev stack if needed. Leave any work you didn't create alone
    (uncommitted files, other branches) — log it on the Collab Board, never
    commit over it.
-1. **Focus question (interactive runs only — the ONE question)**: regenerate the
-   feature ledger, then `AskUserQuestion` for the focus module, showing each
-   module's feature count, health score, and who holds it if claimed. After the
-   answer, zero further questions. Unattended runs skip and pick the weakest
-   unclaimed module (lowest health score).
-2. **Select by the priority ladder**:
+1. **Focus question (interactive runs only — the ONE question)**: read
+   MODULE_REGISTRY § 0's Current focus. If it's still IN FOCUS (completion
+   criteria not all met), state it and proceed with zero questions — do not
+   ask again each run. Only `AskUserQuestion` when either (a) there is no
+   current focus (first run, or the prior focus just rotated to COMPLETE) or
+   (b) the user's message explicitly asks to change focus — show each
+   candidate module's feature count, health score, and claim holder. After the
+   answer, zero further questions. Unattended runs never ask: they continue
+   the current focus, or if it just completed, auto-pick the weakest
+   unclaimed module and record it in `MODULE_REGISTRY.md` § 0.
+2. **Select by the priority ladder** (P2.5/P3/P4 constrained to
+   `MODULE_REGISTRY.md` § 0's Current focus module — binding #16):
    - **P0**: Broken build/tests
    - **P1**: Open `security`/critical/high issues (incl. #17/#19/#21)
    - **P2**: Unfinished shipped work / Collab Board Up Next
-   - **P2.5**: Any module below MVM threshold (50 features) — MUST be addressed
-     before adding features to any module above 200. Use parallel DEV if multiple
-     skeleton modules exist.
-   - **P3**: Module deepening vs market leaders (check `.ai/MARKET_BENCHMARK.md`)
-   - **P4**: New capability
+   - **P2.5**: Focus module below MVM threshold (50 features) — MUST be
+     addressed before deepening it further. (Parallel DEV across up to 3
+     skeleton modules is permitted only when no module currently holds focus —
+     see binding #16 rotation.)
+   - **P3**: Focus module deepening vs market leaders (check `.ai/MARKET_BENCHMARK.md`)
+   - **P4**: New capability, still inside the focus module
      Benchmark against the top 10 ERP suites (see [instructions.md § 12](instructions.md#12-pm-agent-market-research-protocol))
      when picking P3/P4 — build what closes a real competitive gap, not filler.
 3. **Claim** the sub-domain lock(s), add the Collab Board row(s).
@@ -169,7 +189,9 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
 7. **Review inline**: diff vs Critical Rules; security checklist on sensitive surfaces.
 8. **Record + Ship**: CHANGELOG entry + MODULE_REGISTRY update + regenerated ledger
    in the same commit as the code; release the lock; run `node scripts/pre-push-gate.mjs`;
-   run `node scripts/module-health.mjs`; push to `main` (binding #4).
+   run `node scripts/module-health.mjs`; check the focus module against
+   MODULE_REGISTRY § 0's Completion criteria and rotate if ALL five hold
+   (binding #16); push to `main` (binding #4).
    Delete all temp files/scripts created during the cycle.
    Generate cycle report: `node scripts/cycle-report.mjs`.
    Report: features shipped (with count + delta + maturity levels), why selected,
@@ -279,8 +301,10 @@ and `docs/ARCHITECTURE_FOUNDATION.md`.
 
 ## Continuous operation
 
-Unattended runs (scheduler/CI) never prompt: DEV flow picks the weakest unclaimed
-module (lowest health score); QA flow scans the whole repo security-first;
+Unattended runs (scheduler/CI) never prompt: DEV flow stays on `MODULE_REGISTRY.md` § 0's
+Current focus module until its completion criteria are met (binding #16), only
+auto-picking a new weakest-unclaimed module the run after one completes; QA flow
+scans the whole repo security-first (not focus-filtered — bugs anywhere are P0/P1);
 INTEGRATION flow picks the weakest cross-module workflow. All end with everything
 committed, pushed to `origin/main` (never a branch), temp files cleaned, feature
 ledger regenerated, health scores computed, cycle report generated, and CHANGELOG +

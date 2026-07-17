@@ -8,6 +8,30 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] ADP — restore a binding, sticky Current Focus Module concept
+
+- `.ai/MODULE_REGISTRY.md` referenced a `MODULE_FOCUS.md` file in five places
+  (the Collab Board's "Focus filter" note) that no longer existed — it was one
+  of the files deleted in the 2026-07-17 knowledge-base compaction to exactly
+  4 tracked files. Meanwhile `AUTOPILOT.md`'s actual DEV-flow selection logic
+  contradicted the intent: unattended runs picked "the weakest unclaimed
+  module" every single cycle instead of sticking to one module until done.
+- Added **§ 0 Current Focus Module** to `MODULE_REGISTRY.md` (no new file, to
+  keep the 4-file contract intact) with the current focus (Inventory & Supply
+  Chain, in focus since 2026-07-12), five binding completion criteria (500+
+  feature points, full CRUD, 80%+ coverage, market parity, UAT sign-off), and
+  a Rotation history table carrying forward Finance/CRM's prior completions.
+- Added binding #16 to `AUTOPILOT.md` § Shared bindings: P2.5/P3/P4 selection
+  MUST stay inside the current focus module (P0/P1 always exempt); rotation
+  only happens when all five completion criteria hold, in the same commit
+  that closes the module out.
+- Reworded the DEV-flow focus question (step 1) and priority ladder (step 2)
+  so interactive runs ask the focus question only on first run or an explicit
+  user request to change focus (not every cycle), and unattended runs
+  continue the existing focus instead of re-picking the weakest module each
+  time. Added a completion/rotation check to the ship step (step 8) and
+  corrected the "Continuous operation" section to match.
+
 ## [2026-07-17] Inventory — god-class decomposition: extract QA inspections into `InventoryQaService`
 
 - Extracted all quality-inspection and QA-inspection-template logic (`getQAInspections`, `getQAInspectionById`, `createQAInspection`, `submitQAInspection`, `routeQAInspectionDisposition`, template CRUD, `createQAInspectionFromTemplate`) from `inventory.service.ts` into a new `apps/api/src/modules/inventory/inventory-qa.service.ts`, following the strangler-fig pattern already used for `inventory-warehouses.service.ts` and `inventory-products.service.ts`.
