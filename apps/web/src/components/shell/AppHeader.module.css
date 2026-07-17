@@ -302,3 +302,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+@media (max-width: 768px) {
+  .searchContainer {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .actionBtn span {
+    display: none;
+  }
+  .header {
+    padding: 0 var(--space-3);
+  }
+}

@@ -8,12 +8,9 @@
 
 @import '../tokens/design-tokens.css';
 
-/* Define Cascade Layers */
-@layer reset, base, components, utilities, overrides;
-
-/* Import stylesheets into designated layers */
-@import './layers/reset.css' layer(reset);
-@import './layers/base.css' layer(base);
-@import './layers/components.css' layer(components);
-@import './layers/utilities.css' layer(utilities);
-@import './layers/overrides.css' layer(overrides);
+/* Import stylesheets */
+@import './layers/reset.css';
+@import './layers/base.css';
+@import './layers/components.css';
+@import './layers/utilities.css';
+@import './layers/overrides.css';

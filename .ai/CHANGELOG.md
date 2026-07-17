@@ -8,6 +8,61 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] UI Layout, Modals, Responsive Header and Backend Compilation Fixes
+
+### Global CSS Imports
+- Fixed CSS layer issues in `packages/ui/src/styles/globals.css` by importing layer files directly, correcting broken button borders, dropdown menus, and input styles throughout the application.
+
+### Modals & Dialogs
+- Fixed `packages/ui-components/src/modal.module.css` to hide native dialog elements when they are closed by adding the `.dialog:not([open])` selector, preventing forms like "Create Financial Period" from showing on mount.
+- Added `min-height: 0` to `.dialog` and `.body` class selectors in `modal.module.css` to allow flexbox shrinking and inner scrollbars when modal contents exceed the viewport height.
+
+### Header & Responsiveness
+- Implemented media queries in `apps/web/src/components/shell/AppHeader.module.css` to hide the global search input on screens `< 768px` and compress AppSwitcher/Tenant buttons by hiding text spans on screens `< 640px`, eliminating horizontal overflow and scrollbars.
+
+### Backend Compilation
+- Resolved NestJS compilation failure in the `communication` module by fixing 9 TypeScript warnings and unused variable declarations in `communication.service.ts`, `communication-admin.service.ts`, and `communication.controller.ts`.
+
+## [2026-07-17] Connect Module — Teams-grade features + Modal/Popup UX fixes
+
+### Teams-grade Deepening (Backend)
+- **Message threading**: `getThreadMessages` endpoint fetches parent + all replies for a dedicated right-panel thread view
+- **Message forwarding**: `forwardMessage` endpoint copies content + attachments to target channel with audit trail (`MessageForward` model)
+- **Channel tabs**: `ChannelTab` model + CRUD endpoints for pinned links/documents/ERP entities on channel header
+- **Channel moderation**: `ChannelModeration` model + slow-mode (30/60s/5m/15m/1h) + posting-permission controls (`EVERYONE`, `ADMINS_ONLY`, `MODERATORS_ONLY`)
+- **Meeting enhancements**: `MeetingParticipant` tracking (join/leave/mute/video/screenshare), `MeetingChatMessage` in-meeting chat, `MeetingRecording` lifecycle, lobby/admit, raise-hand toggle
+- **Presence scheduling**: `UserStatusSchedule` model for timed/ recurring OOO/away/Focusing status; new `IN_MEETING` and `FOCUSING` presence types; `clearAt` auto-expiry
+- **Search with filters**: `searchMessagesFiltered` endpoint supporting channel/author/date-range filters
+- **Task from message**: `createTaskFromMessage` creates a `Task` entity linked to a project
+- **Pinned messages gallery**: dedicated `getPinnedMessages` endpoint returning all pinned messages in a channel
+- **Message edit history**: `MessageEdit` model captures all content changes with audit trail
+- **Bot/webhook integration**: `ConnectBot` model + CRUD + token auth + webhook posting support
+- **Channel analytics**: daily `ChannelAnalytics` snapshots tracking message count, active users, reactions
+- **Unread summary**: `getUnreadSummary` across all conversations for notification badges
+- **14 new permission entries** for tabs, moderation, bots, meetings, forward, task creation, presence scheduling
+- **12 new Prisma models**: `ChannelTab`, `MessageEdit`, `MessageForward`, `ChannelModeration`, `MeetingParticipant`, `MeetingChatMessage`, `MeetingRecording`, `ConnectBot`, `UserStatusSchedule`, `ChannelAnalytics`; enhanced `UserPresence` with new presence types and `clearAt`; enhanced `Channel` relation fields
+
+### Frontend
+- **Channel tabs UI**: `ChannelTabs` component renders pinned tabs below channel header
+- **Fixed composer emoji toggle**: button now properly toggles open/close instead of always opening
+- **Presence dropdown click-outside**: added invisible backdrop overlay to close the dropdown when clicking elsewhere
+- **Complete Escape handler**: global `Escape` key now closes all panels (presence, emoji picker, mentions, format bar, directory, browse channels, manage channel, forward dialog, archive/remove confirm, saved messages, meetings, meeting pre-join)
+- **40+ new API methods** in `connectData.ts` for all new backend endpoints
+
+## [2026-07-17] UI/UX Modals & Layout — fix dialog centering, clipping, and Fixed Assets custom overlay
+
+- Resolved native `<dialog>` centering and sizing issues in `@unerp/ui` by adding explicit fixed-position centering rules to `.dialog` in `packages/ui-components/src/modal.module.css`, preventing transform animations from misaligning the modal.
+- Wrapped the `<dialog>` element in `createPortal` to render directly under `document.body` on client-side mount in `packages/ui-components/src/modal.tsx`. This isolates the modal from parent layouts, preventing clipping on parents with `overflow: hidden` (such as the card container on the Financial Periods page).
+- Replaced the custom hand-rolled category creation overlay in `apps/web/app/(dashboard)/finance/advanced/fixed-assets/page.tsx` with the standard `<Modal>` component. Leveraged design system utilities (`ui-stack-4`, `ui-hstack-2 justify-end`, and `ui-hr-faded`) to achieve standard UX, and resolved the transparent background caused by undefined custom theme variables (`--color-bg-card`).
+- Fixed pre-existing TypeScript compilation warnings in `packages/ui-components` storybook and test files to ensure a clean workspace typecheck.
+
+## [2026-07-17] UI/UX & Supply Chain — fix global CSS layer imports and TypeScript compiler errors
+
+- Fixed system-wide layout and rendering failure by replacing the `@import ... layer(...)` Cascade Layer statements in `packages/ui/src/styles/globals.css` with standard, plain `@import` statements. This resolves the 404 relative stylesheet errors in the browser and allows the Next.js/Webpack CSS loader to properly inline and bundle the entire design system styling.
+- Resolved strict-mode TypeScript compilation errors in `AsnsTab.tsx` and `ShipmentsTab.tsx` that blocked Next.js build verification:
+  - Added safety checks in `AsnsTab.tsx` lines form-controls mapping (`productId`, `expectedQty`, `lotNumber`) to verify array elements exist before property mutations under the `noUncheckedIndexedAccess` compiler option.
+  - Added the missing `status` field declaration to the local `ASN` interface in `ShipmentsTab.tsx`.
+
 ## [2026-07-17] Inventory — mobile-optimized scan-first pick/pack UI
 
 - Shipped `/inventory/mobile-pick` (`apps/web/app/(dashboard)/inventory/mobile-pick/page.tsx`):

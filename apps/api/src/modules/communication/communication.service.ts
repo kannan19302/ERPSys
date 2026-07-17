@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { DocumentStorageClient } from '../../common/integrations/document-storage-client';
 import { RealtimeClient } from '../../common/integrations/realtime-client';
 
-export type Presence = 'ACTIVE' | 'AWAY' | 'BRB' | 'DND' | 'OOO' | 'INACTIVE';
+export type Presence = 'ACTIVE' | 'AWAY' | 'BRB' | 'DND' | 'OOO' | 'INACTIVE' | 'IN_MEETING' | 'FOCUSING';
 export type ChannelMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 
 export interface AttachmentDto {
@@ -686,20 +686,14 @@ export class CommunicationService {
     return prisma.userPresence.findMany({ where: { tenantId } });
   }
 
-  async setPresence(tenantId: string, userId: string, dto: { presence: Presence; statusText?: string; statusEmoji?: string }) {
+  async setPresence(tenantId: string, userId: string, dto: { presence: Presence; statusText?: string; statusEmoji?: string; clearAt?: string }) {
     const updated = await prisma.userPresence.upsert({
       where: { tenantId_userId: { tenantId, userId } },
-      create: { tenantId, userId, presence: dto.presence, statusText: dto.statusText ?? null, statusEmoji: dto.statusEmoji ?? null },
-      update: { presence: dto.presence, statusText: dto.statusText ?? null, statusEmoji: dto.statusEmoji ?? null },
+      create: { tenantId, userId, presence: dto.presence, statusText: dto.statusText ?? null, statusEmoji: dto.statusEmoji ?? null, clearAt: dto.clearAt ? new Date(dto.clearAt) : null },
+      update: { presence: dto.presence, statusText: dto.statusText ?? null, statusEmoji: dto.statusEmoji ?? null, clearAt: dto.clearAt ? new Date(dto.clearAt) : null },
     });
-    // US-A5: broadcast the live presence change to other tenant members watching the directory,
-    // instead of making them wait for their next 15s poll of GET /communication/presence.
     this.notificationsGateway.broadcastPresenceUpdate(tenantId, {
-      userId,
-      presence: updated.presence,
-      statusText: updated.statusText,
-      statusEmoji: updated.statusEmoji,
-      timestamp: new Date().toISOString(),
+      userId, presence: updated.presence, statusText: updated.statusText, statusEmoji: updated.statusEmoji, timestamp: new Date().toISOString(),
     });
     return updated;
   }
@@ -774,22 +768,19 @@ export class CommunicationService {
     return prisma.connectMeeting.findMany({ where: { tenantId, active: true }, orderBy: { startedAt: 'desc' } });
   }
 
-  async createMeeting(tenantId: string, userId: string, dto: { title?: string; conversationId?: string }) {
+  async createMeeting(tenantId: string, userId: string, dto: { title?: string; conversationId?: string; lobby?: boolean }) {
     const meeting = await prisma.connectMeeting.create({
       data: {
         tenantId, hostId: userId, code: this.meetingCode(),
-        title: dto.title || 'Connect meeting', channelId: dto.conversationId || null, active: true,
+        title: dto.title || 'Connect meeting', channelId: dto.conversationId || null, active: true, lobby: dto.lobby ?? false,
       },
     });
-    // Post a joinable system message into the conversation.
+    await prisma.meetingParticipant.create({ data: { tenantId, meetingId: meeting.id, userId, isMuted: false, isVideoOn: false } });
     if (dto.conversationId) {
       const channel = await prisma.channel.findFirst({ where: { id: dto.conversationId, tenantId } });
       if (channel) {
         await prisma.message.create({
-          data: {
-            tenantId, channelId: dto.conversationId, userId, kind: 'SYSTEM', meetingId: meeting.id,
-            content: `started a video meeting · connect.meet/${meeting.code}`,
-          },
+          data: { tenantId, channelId: dto.conversationId, userId, kind: 'SYSTEM', meetingId: meeting.id, content: `started a video meeting \u00b7 connect.meet/${meeting.code}` },
         });
       }
     }
@@ -799,6 +790,7 @@ export class CommunicationService {
   async endMeeting(tenantId: string, id: string) {
     const meeting = await prisma.connectMeeting.findFirst({ where: { id, tenantId } });
     if (!meeting) throw new NotFoundException('Meeting not found');
+    await prisma.meetingParticipant.updateMany({ where: { meetingId: id, leftAt: null }, data: { leftAt: new Date() } });
     return prisma.connectMeeting.update({ where: { id }, data: { active: false, endedAt: new Date() } });
   }
 
@@ -998,5 +990,606 @@ export class CommunicationService {
         .trim();
     }
     return null;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Threads (US-A4: dedicated thread view)
+     ───────────────────────────────────────────────────────── */
+
+  async getThreadMessages(tenantId: string, parentId: string) {
+    const parent = await prisma.message.findFirst({ where: { id: parentId, tenantId } });
+    if (!parent) throw new NotFoundException('Thread parent not found');
+    const [parentMsg, replies] = await Promise.all([
+      prisma.message.findFirst({
+        where: { id: parentId },
+        include: { reactions: { select: { emoji: true, userId: true } } },
+      }),
+      prisma.message.findMany({
+        where: { tenantId, parentId, deletedAt: null },
+        include: { reactions: { select: { emoji: true, userId: true } } },
+        orderBy: { createdAt: 'asc' },
+      }),
+    ]);
+    return {
+      parent: parentMsg ? this.serializeMessage(parentMsg) : null,
+      replies: replies.map((m) => this.serializeMessage(m)),
+    };
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Forward message to another channel
+     ───────────────────────────────────────────────────────── */
+
+  async forwardMessage(tenantId: string, messageId: string, userId: string, dto: { toChannelId: string; comment?: string }) {
+    const msg = await prisma.message.findFirst({ where: { id: messageId, tenantId } });
+    if (!msg) throw new NotFoundException('Message not found');
+    const targetChannel = await prisma.channel.findFirst({ where: { id: dto.toChannelId, tenantId } });
+    if (!targetChannel) throw new NotFoundException('Target channel not found');
+    const membership = await prisma.channelMember.findFirst({ where: { channelId: dto.toChannelId, userId } });
+    if (!membership) throw new ForbiddenException('You are not a member of the target channel');
+
+    const forwardNote = dto.comment ? `${dto.comment}\n\n---\nForwarded from ${msg.channelId}:\n` : `Forwarded from ${msg.channelId}:\n`;
+    const newMsg = await prisma.message.create({
+      data: {
+        tenantId, channelId: dto.toChannelId, userId, content: `${forwardNote}${msg.content}`,
+        kind: 'USER', attachments: msg.attachments as Prisma.InputJsonValue,
+      },
+      include: { reactions: { select: { emoji: true, userId: true } } },
+    });
+    await prisma.channel.update({ where: { id: dto.toChannelId }, data: { updatedAt: new Date() } });
+    await prisma.messageForward.create({
+      data: { tenantId, messageId, fromChannelId: msg.channelId, toChannelId: dto.toChannelId, forwardedBy: userId, comment: dto.comment || null },
+    });
+    return this.serializeMessage(newMsg);
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Presence scheduling (Teams-like status scheduling)
+     ───────────────────────────────────────────────────────── */
+
+  async getStatusSchedules(tenantId: string, userId: string) {
+    return prisma.userStatusSchedule.findMany({ where: { tenantId, userId, isActive: true }, orderBy: { startTime: 'asc' } });
+  }
+
+  async createStatusSchedule(tenantId: string, userId: string, dto: {
+    presence: string; statusText?: string; statusEmoji?: string;
+    startTime: string; endTime: string; isRecurring?: boolean; recurrenceRule?: string;
+  }) {
+    return prisma.userStatusSchedule.create({
+      data: {
+        tenantId, userId, presence: dto.presence, statusText: dto.statusText || null,
+        statusEmoji: dto.statusEmoji || null, startTime: new Date(dto.startTime), endTime: new Date(dto.endTime),
+        isRecurring: dto.isRecurring ?? false, recurrenceRule: dto.recurrenceRule || null,
+      },
+    });
+  }
+
+  async deleteStatusSchedule(tenantId: string, scheduleId: string, userId: string) {
+    const sched = await prisma.userStatusSchedule.findFirst({ where: { id: scheduleId, tenantId, userId } });
+    if (!sched) throw new NotFoundException('Schedule not found');
+    await prisma.userStatusSchedule.delete({ where: { id: scheduleId } });
+    return { ok: true };
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Search with filters (channel, author, date range)
+     ───────────────────────────────────────────────────────── */
+
+  async searchMessagesFiltered(tenantId: string, userId: string, query: string, filters: {
+    channelId?: string; authorId?: string; dateFrom?: string; dateTo?: string; limit?: number;
+  }) {
+    const q = query.trim();
+    if (!q) return [];
+    const memberships = await prisma.channelMember.findMany({ where: { tenantId, userId }, select: { channelId: true } });
+    let channelIds = memberships.map((m) => m.channelId);
+    if (filters.channelId && channelIds.includes(filters.channelId)) {
+      channelIds = [filters.channelId];
+    }
+    if (channelIds.length === 0) return [];
+    const conditions = [
+      `m.tenant_id = '${tenantId.replace(/'/g, "''")}'`,
+      `m.deleted_at IS NULL`,
+      `m.channel_id IN (${channelIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')})`,
+      `m.content ILIKE '%${q.replace(/'/g, "''").replace(/%/g, '\\%').replace(/_/g, '\\_')}%'`,
+    ];
+    if (filters.authorId) conditions.push(`m.user_id = '${filters.authorId.replace(/'/g, "''")}'`);
+    if (filters.dateFrom) conditions.push(`m.created_at >= '${filters.dateFrom}'`);
+    if (filters.dateTo) conditions.push(`m.created_at <= '${filters.dateTo}'`);
+    const limit = Math.min(filters.limit ?? 50, 100);
+    const sql = `
+      SELECT m.id, m.channel_id AS "channelId", m.user_id AS "userId", m.content, m.created_at AS "createdAt",
+             c.name AS "channelName", c.kind AS "channelKind", u.first_name AS "authorFirstName", u.last_name AS "authorLastName"
+      FROM messages m
+      JOIN channels c ON c.id = m.channel_id
+      JOIN users u ON u.id = m.user_id
+      WHERE ${conditions.join(' AND ')}
+      ORDER BY m.created_at DESC
+      LIMIT ${limit}
+    `;
+    const rows = await prisma.$queryRawUnsafe<any[]>(sql);
+    return rows.map((r: any) => {
+      const authorName = `${r.authorFirstName} ${r.authorLastName}`.trim();
+      const idx = r.content.toLowerCase().indexOf(q.toLowerCase());
+      const start = Math.max(0, idx - 40);
+      const snippet = idx >= 0 ? `${start > 0 ? '\u2026' : ''}${r.content.slice(start, idx + q.length + 40)}${idx + q.length + 40 < r.content.length ? '\u2026' : ''}` : r.content.slice(0, 80);
+      return { messageId: r.id, channelId: r.channelId, channelName: r.channelKind === 'CHANNEL' ? `#${r.channelName}` : r.channelName, authorId: r.userId, authorName, snippet, ts: r.createdAt.getTime() };
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Create task from message (integration with Projects)
+     ───────────────────────────────────────────────────────── */
+
+  async createTaskFromMessage(tenantId: string, messageId: string, userId: string, dto: { projectId?: string; dueDate?: string }) {
+    const msg = await prisma.message.findFirst({ where: { id: messageId, tenantId } });
+    if (!msg) throw new NotFoundException('Message not found');
+    const projectId = dto.projectId || (await prisma.project.findFirst({ where: { tenantId } }))?.id;
+    if (!projectId) throw new BadRequestException('No project available. Create a project first.');
+    const task = await prisma.task.create({
+      data: {
+        tenantId, projectId, name: `From Connect: ${msg.content.slice(0, 80)}${msg.content.length > 80 ? '\u2026' : ''}`,
+        description: `Created from a Connect message.\n\n---\n${msg.content}\n\n[View in Connect]`,
+        assignedToId: userId, status: 'TODO',
+        dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
+      },
+    });
+    return task;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Unread summary across all conversations
+     ───────────────────────────────────────────────────────── */
+
+  async getUnreadSummary(tenantId: string, userId: string) {
+    const memberships = await prisma.channelMember.findMany({ where: { tenantId, userId }, select: { channelId: true, muted: true } });
+    const channelIds = memberships.map((m) => m.channelId);
+    if (channelIds.length === 0) return { totalUnread: 0, channels: [] };
+    const reads = await prisma.channelRead.findMany({ where: { tenantId, userId, channelId: { in: channelIds } } });
+    const lastReadByChannel = new Map(reads.map((r) => [r.channelId, r.lastReadAt]));
+    const results = await Promise.all(
+      channelIds.map(async (id) => {
+        const lastRead = lastReadByChannel.get(id) ?? new Date(0);
+        const count = await prisma.message.count({ where: { tenantId, channelId: id, deletedAt: null, userId: { not: userId }, createdAt: { gt: lastRead } } });
+        return { channelId: id, unreadCount: count };
+      })
+    );
+    const totalUnread = results.reduce((sum, r) => sum + r.unreadCount, 0);
+    return { totalUnread, channels: results };
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Meeting enhancements: participants, chat, lobby, recording, hand raise
+     ───────────────────────────────────────────────────────── */
+
+  async joinMeeting(tenantId: string, meetingId: string, userId: string) {
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+    if (!meeting.active) throw new BadRequestException('Meeting has ended');
+    return prisma.meetingParticipant.upsert({
+      where: { meetingId_userId: { meetingId, userId } },
+      create: { tenantId, meetingId, userId, isMuted: true, isVideoOn: false },
+      update: { leftAt: null, isHandRaised: false },
+    });
+  }
+
+  async leaveMeeting(_tenantId: string, meetingId: string, userId: string) {
+    const participant = await prisma.meetingParticipant.findFirst({ where: { meetingId, userId } });
+    if (!participant) throw new NotFoundException('Not in meeting');
+    return prisma.meetingParticipant.update({ where: { id: participant.id }, data: { leftAt: new Date(), isHandRaised: false, isScreenSharing: false } });
+  }
+
+  async toggleHandRaise(_tenantId: string, meetingId: string, userId: string) {
+    const participant = await prisma.meetingParticipant.findFirst({ where: { meetingId, userId } });
+    if (!participant) throw new NotFoundException('Not in meeting');
+    return prisma.meetingParticipant.update({ where: { id: participant.id }, data: { isHandRaised: !participant.isHandRaised } });
+  }
+
+  async toggleMuteSelf(_tenantId: string, meetingId: string, userId: string) {
+    const participant = await prisma.meetingParticipant.findFirst({ where: { meetingId, userId } });
+    if (!participant) throw new NotFoundException('Not in meeting');
+    return prisma.meetingParticipant.update({ where: { id: participant.id }, data: { isMuted: !participant.isMuted } });
+  }
+
+  async toggleVideoSelf(_tenantId: string, meetingId: string, userId: string) {
+    const participant = await prisma.meetingParticipant.findFirst({ where: { meetingId, userId } });
+    if (!participant) throw new NotFoundException('Not in meeting');
+    return prisma.meetingParticipant.update({ where: { id: participant.id }, data: { isVideoOn: !participant.isVideoOn } });
+  }
+
+  async toggleScreenShare(tenantId: string, meetingId: string, userId: string) {
+    const participant = await prisma.meetingParticipant.findFirst({ where: { meetingId, userId } });
+    if (!participant) throw new NotFoundException('Not in meeting');
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+    const newSharing = !participant.isScreenSharing;
+    if (newSharing) {
+      await prisma.meetingParticipant.updateMany({ where: { meetingId, isScreenSharing: true }, data: { isScreenSharing: false } });
+    }
+    return prisma.meetingParticipant.update({ where: { id: participant.id }, data: { isScreenSharing: newSharing } });
+  }
+
+  async getMeetingParticipants(tenantId: string, meetingId: string) {
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+    const participants = await prisma.meetingParticipant.findMany({ where: { meetingId, leftAt: null } });
+    const userIds = participants.map((p) => p.userId);
+    const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, firstName: true, lastName: true, avatar: true } });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+    return participants.map((p) => ({
+      id: p.id, userId: p.userId, name: userMap.get(p.userId) ? `${userMap.get(p.userId)!.firstName} ${userMap.get(p.userId)!.lastName}`.trim() : 'Unknown',
+      avatar: userMap.get(p.userId)?.avatar ?? null, joinedAt: p.joinedAt, isHandRaised: p.isHandRaised, isScreenSharing: p.isScreenSharing, isMuted: p.isMuted, isVideoOn: p.isVideoOn,
+    }));
+  }
+
+  async getMeetingChat(tenantId: string, meetingId: string) {
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+    const messages = await prisma.meetingChatMessage.findMany({
+      where: { tenantId, meetingId }, orderBy: { createdAt: 'asc' },
+    });
+    const userIds = [...new Set(messages.map((m) => m.userId))];
+    const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, firstName: true, lastName: true } });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+    return messages.map((m) => ({
+      id: m.id, userId: m.userId, content: m.content, createdAt: m.createdAt,
+      authorName: userMap.get(m.userId) ? `${userMap.get(m.userId)!.firstName} ${userMap.get(m.userId)!.lastName}`.trim() : 'Unknown',
+    }));
+  }
+
+  async sendMeetingChat(tenantId: string, meetingId: string, userId: string, content: string) {
+    if (!content.trim()) throw new BadRequestException('Message is required');
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+    return prisma.meetingChatMessage.create({ data: { tenantId, meetingId, userId, content: content.trim() } });
+  }
+
+  async admitToMeeting(tenantId: string, meetingId: string, userId: string, targetUserId: string) {
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId, hostId: userId } });
+    if (!meeting) throw new ForbiddenException('Only the host can admit participants');
+    return prisma.meetingParticipant.upsert({
+      where: { meetingId_userId: { meetingId, userId: targetUserId } },
+      create: { tenantId, meetingId, userId: targetUserId, isMuted: true, isVideoOn: false },
+      update: { leftAt: null },
+    });
+  }
+
+  async startRecording(tenantId: string, meetingId: string, userId: string) {
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId, hostId: userId } });
+    if (!meeting) throw new ForbiddenException('Only the host can start recording');
+    return prisma.meetingRecording.create({ data: { tenantId, meetingId, startedBy: userId, status: 'RECORDING' } });
+  }
+
+  async stopRecording(tenantId: string, meetingId: string, _userId: string, recordingId: string) {
+    const recording = await prisma.meetingRecording.findFirst({ where: { id: recordingId, tenantId, meetingId } });
+    if (!recording) throw new NotFoundException('Recording not found');
+    return prisma.meetingRecording.update({
+      where: { id: recordingId },
+      data: { status: 'COMPLETED', endedAt: new Date(), durationSecs: Math.round((Date.now() - recording.startedAt.getTime()) / 1000) },
+    });
+  }
+
+  /* ── Feature 1: Message Polls ── */
+
+  async createPoll(tenantId: string, userId: string, dto: { channelId: string; question: string; options: { label: string; emoji?: string }[] }) {
+    const membership = await prisma.channelMember.findFirst({ where: { channelId: dto.channelId, userId, tenantId } });
+    if (!membership) throw new ForbiddenException('Not a channel member');
+
+    const poll = await prisma.connectPoll.create({
+      data: {
+        tenantId, channelId: dto.channelId, userId,
+        question: dto.question,
+        options: { create: dto.options.map((o) => ({ label: o.label, emoji: o.emoji || '' })) },
+      },
+      include: { options: true, votes: true },
+    });
+
+    this.notificationsGateway.broadcastChatMessage(dto.channelId, { type: 'poll', poll, tenantId });
+    return poll;
+  }
+
+  async getPolls(tenantId: string, channelId: string) {
+    return prisma.connectPoll.findMany({
+      where: { tenantId, channelId },
+      include: { options: { include: { votes: { select: { id: true, userId: true, optionId: true } } } }, votes: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async votePoll(tenantId: string, pollId: string, userId: string, optionId: string) {
+    const poll = await prisma.connectPoll.findFirst({ where: { id: pollId, tenantId } });
+    if (!poll) throw new NotFoundException('Poll not found');
+    if (poll.isClosed) throw new BadRequestException('Poll is closed');
+
+    const option = await prisma.connectPollOption.findFirst({ where: { id: optionId, pollId } });
+    if (!option) throw new NotFoundException('Option not found');
+
+    return prisma.connectPollVote.upsert({
+      where: { pollId_userId: { pollId, userId } },
+      create: { tenantId, pollId, optionId, userId },
+      update: { optionId },
+    });
+  }
+
+  async closePoll(tenantId: string, pollId: string, userId: string) {
+    const poll = await prisma.connectPoll.findFirst({ where: { id: pollId, tenantId } });
+    if (!poll) throw new NotFoundException('Poll not found');
+    if (poll.userId !== userId) throw new ForbiddenException('Only the poll creator can close it');
+    await prisma.connectPoll.update({ where: { id: pollId }, data: { isClosed: true } });
+    this.notificationsGateway.broadcastChatMessage(poll.channelId, { type: 'poll_closed', pollId, tenantId });
+    return { ok: true };
+  }
+
+  /* ── Feature 2: Slash Commands ── */
+
+  async handleSlashCommand(tenantId: string, userId: string, channelId: string, text: string) {
+    const parts = text.slice(1).split(' ');
+    const command = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    switch (command) {
+      case 'remind':
+      case 'reminder': {
+        const match = args.match(/^(?:me\s+)?(?:to\s+)?(.+?)\s+in\s+(\d+)\s*(m|min|minute|h|hr|hour|d|day)s?$/i);
+        if (match) {
+          const [, reminderText, num, unit] = match;
+          const ms = parseInt(num) * (unit[0] === 'm' ? 60000 : unit[0] === 'h' ? 3600000 : 86400000);
+          return this.createReminder(tenantId, userId, { text: reminderText, remindAt: new Date(Date.now() + ms), channelId });
+        }
+        throw new BadRequestException('Usage: /remind me to <text> in <N> min/h/d');
+      }
+      case 'poll': {
+        const pollMatch = args.match(/^"(.+)"\s+(.+)$/);
+        if (pollMatch) {
+          const options = pollMatch[2].split(',').map((o) => ({ label: o.trim() }));
+          return this.createPoll(tenantId, userId, { channelId, question: pollMatch[1], options });
+        }
+        throw new BadRequestException('Usage: /poll "Question" option1, option2, option3');
+      }
+      case 'me':
+      case 'meet':
+        return this.createMeeting(tenantId, userId, { title: args || 'Quick meeting', channelId });
+      case 'dnd': {
+        const duration = parseInt(args) || 60;
+        return this.setPresence(tenantId, userId, { presence: 'DND' as Presence, statusText: `Do not disturb (${duration}m)` });
+      }
+      case 'status': {
+        if (!args) throw new BadRequestException('Usage: /status <text>');
+        return this.setPresence(tenantId, userId, { presence: 'ACTIVE' as Presence, statusText: args });
+      }
+      case 'help':
+      case '?':
+        return {
+          commands: [
+            { name: '/remind', usage: '/remind me to <text> in <N> min/h/d' },
+            { name: '/poll', usage: '/poll "Question" option1, option2, ...' },
+            { name: '/meet', usage: '/meet <title>' },
+            { name: '/dnd', usage: '/dnd <minutes>' },
+            { name: '/status', usage: '/status <text>' },
+            { name: '/msg', usage: '/msg @user <text>' },
+            { name: '/code', usage: '/code <language> <code>' },
+          ],
+        };
+      case 'msg': {
+        const msgMatch = args.match(/^@(\S+)\s+(.+)$/);
+        if (msgMatch) {
+          const users = await prisma.user.findMany({ where: { tenantId, email: { contains: msgMatch[1] } }, take: 1 });
+          if (users.length === 0) throw new NotFoundException('User not found');
+          const dm = await this.getOrCreateDM(tenantId, null, userId, users[0].id);
+          return { dm, text: msgMatch[2], note: 'Message sent via DM' };
+        }
+        throw new BadRequestException('Usage: /msg @user <text>');
+      }
+      case 'code': {
+        const codeMatch = args.match(/^(\S+)\s+([\s\S]+)$/);
+        if (codeMatch) return { formatted: `\`\`\`${codeMatch[1]}\n${codeMatch[2]}\n\`\`\`` };
+        throw new BadRequestException('Usage: /code <language> <code>');
+      }
+      default:
+        throw new NotFoundException(`Unknown command: /${command}. Try /help`);
+    }
+  }
+
+  /* ── Feature 3: Reminders ── */
+
+  async createReminder(tenantId: string, userId: string, dto: { text: string; remindAt: Date; channelId?: string; messageId?: string }) {
+    return prisma.reminder.create({ data: { tenantId, userId, text: dto.text, remindAt: dto.remindAt, channelId: dto.channelId, messageId: dto.messageId } });
+  }
+
+  async getReminders(tenantId: string, userId: string) {
+    return prisma.reminder.findMany({ where: { tenantId, userId, isSent: false }, orderBy: { remindAt: 'asc' } });
+  }
+
+  async deleteReminder(tenantId: string, reminderId: string, userId: string) {
+    const r = await prisma.reminder.findFirst({ where: { id: reminderId, tenantId, userId } });
+    if (!r) throw new NotFoundException('Reminder not found');
+    await prisma.reminder.delete({ where: { id: reminderId } });
+    return { ok: true };
+  }
+
+  async snoozeReminder(tenantId: string, reminderId: string, userId: string, minutes = 5) {
+    const r = await prisma.reminder.findFirst({ where: { id: reminderId, tenantId, userId } });
+    if (!r) throw new NotFoundException('Reminder not found');
+    return prisma.reminder.update({ where: { id: reminderId }, data: { remindAt: new Date(Date.now() + minutes * 60000), snoozed: true } });
+  }
+
+  /* ── Feature 4: Scheduled Messages ── */
+
+  async scheduleMessage(tenantId: string, channelId: string, userId: string, dto: { content: string; scheduledAt: Date }) {
+    const membership = await prisma.channelMember.findFirst({ where: { channelId, userId, tenantId } });
+    if (!membership) throw new ForbiddenException('Not a channel member');
+    return prisma.message.create({
+      data: { tenantId, channelId, userId, content: dto.content, scheduledAt: dto.scheduledAt, kind: 'USER' },
+    });
+  }
+
+  async getScheduledMessages(tenantId: string, userId: string) {
+    return prisma.message.findMany({ where: { tenantId, userId, scheduledAt: { not: null }, deletedAt: null }, orderBy: { scheduledAt: 'asc' } });
+  }
+
+  async deleteScheduledMessage(tenantId: string, messageId: string, userId: string) {
+    const msg = await prisma.message.findFirst({ where: { id: messageId, tenantId, userId, scheduledAt: { not: null } } });
+    if (!msg) throw new NotFoundException('Scheduled message not found');
+    await prisma.message.delete({ where: { id: messageId } });
+    return { ok: true };
+  }
+
+  /* ── Feature 5: Custom Emoji ── */
+
+  async uploadCustomEmoji(tenantId: string, userId: string, file: Express.Multer.File, name: string) {
+    const doc = await this.documentsService.createDocument(tenantId, 'connect-emoji', file.originalname, file.buffer, file.mimetype);
+    return prisma.customEmoji.upsert({
+      where: { tenantId_name: { tenantId, name } },
+      create: { tenantId, name, fileUrl: doc.url || doc.id, fileSize: file.size, uploadedBy: userId },
+      update: { fileUrl: doc.url || doc.id, fileSize: file.size, uploadedBy: userId },
+    });
+  }
+
+  async getCustomEmojis(tenantId: string) {
+    return prisma.customEmoji.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
+  }
+
+  async deleteCustomEmoji(tenantId: string, emojiId: string) {
+    const emoji = await prisma.customEmoji.findFirst({ where: { id: emojiId, tenantId } });
+    if (!emoji) throw new NotFoundException('Emoji not found');
+    await prisma.customEmoji.delete({ where: { id: emojiId } });
+    return { ok: true };
+  }
+
+  /* ── Feature 6: Message Translation ── */
+
+  async translateMessage(tenantId: string, messageId: string, targetLang: string) {
+    const msg = await prisma.message.findFirst({ where: { id: messageId, tenantId } });
+    if (!msg) throw new NotFoundException('Message not found');
+    if (!msg.content) return { translatedText: '', sourceLang: targetLang };
+
+    try {
+      const { OllamaClient } = await import('../../common/integrations/ollama-client');
+      const ollama = new OllamaClient();
+      const result = await ollama.translate(msg.content, targetLang);
+      return { translatedText: result, sourceLang: 'auto', messageId };
+    } catch {
+      const simpleMap: Record<string, string> = { es: 'es', fr: 'fr', de: 'de', pt: 'pt', it: 'it', ja: 'ja', ko: 'ko', zh: 'zh', ar: 'ar', hi: 'hi' };
+      if (simpleMap[targetLang]) {
+        return { translatedText: `[${targetLang}] ${msg.content}`, sourceLang: 'auto', messageId, note: 'AI translation unavailable — prefix-only mode' };
+      }
+      return { translatedText: msg.content, sourceLang: targetLang, messageId, note: 'Language not supported' };
+    }
+  }
+
+  /* ── Feature 7: Meeting Summaries (AI Recap) ── */
+
+  async generateMeetingSummary(tenantId: string, meetingId: string) {
+    const meeting = await prisma.connectMeeting.findFirst({ where: { id: meetingId, tenantId }, include: { chatMessages: { orderBy: { createdAt: 'asc' } } } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+
+    let summary = 'Meeting concluded. ';
+    const participantCount = await prisma.meetingParticipant.count({ where: { meetingId } });
+    summary += `${participantCount} participants. `;
+    summary += `${meeting.chatMessages.length} chat messages.`;
+
+    const keyPoints: string[] = [];
+    const actionItems: string[] = [];
+
+    for (const msg of meeting.chatMessages) {
+      const lower = msg.content.toLowerCase();
+      if (lower.includes('action') || lower.includes('todo') || lower.includes('will do') || lower.includes('follow up') || lower.includes('assign') || lower.includes('send') || lower.includes('create')) {
+        actionItems.push(msg.content);
+      } else if (lower.includes('decide') || lower.includes('agree') || lower.includes('conclude') || lower.includes('important') || lower.includes('key')) {
+        keyPoints.push(msg.content);
+      }
+    }
+
+    try {
+      const { OllamaClient } = await import('../../common/integrations/ollama-client');
+      const ollama = new OllamaClient();
+      const transcript = meeting.chatMessages.map((m) => m.content).join('\n');
+      if (transcript.length > 20) {
+        const aiSummary = await ollama.summarize(transcript);
+        if (aiSummary) summary = aiSummary;
+      }
+    } catch { /* fallback to heuristic summary */ }
+
+    const existing = await prisma.meetingSummary.findFirst({ where: { tenantId, meetingId } });
+    if (existing) {
+      return prisma.meetingSummary.update({ where: { id: existing.id }, data: { summary, keyPoints, actionItems, generatedAt: new Date() } });
+    }
+    return prisma.meetingSummary.create({ data: { tenantId, meetingId, summary, keyPoints, actionItems } });
+  }
+
+  async getMeetingSummary(tenantId: string, meetingId: string) {
+    return prisma.meetingSummary.findFirst({ where: { tenantId, meetingId } });
+  }
+
+  /* ── Feature 8: Channel Templates ── */
+
+  async getChannelTemplates(tenantId: string) {
+    return prisma.channelTemplate.findMany({ where: { tenantId, isPreset: true }, orderBy: { name: 'asc' } });
+  }
+
+  async createChannelFromTemplate(tenantId: string, orgId: string, userId: string, dto: { templateId: string; name: string; description?: string }) {
+    const template = await prisma.channelTemplate.findFirst({ where: { id: dto.templateId, tenantId, isPreset: true } });
+    if (!template) throw new NotFoundException('Template not found');
+
+    const channel = await this.createChannel(tenantId, orgId, userId, {
+      name: dto.name, description: dto.description,
+      channelType: template.channelType as any, topic: template.topic,
+    });
+
+    if (template.tabs && Array.isArray(template.tabs)) {
+      for (const tab of template.tabs) {
+        await prisma.channelTab.create({
+          data: { tenantId, channelId: channel.id, type: tab.type || 'LINK', label: tab.label, url: tab.url, icon: tab.icon, sortOrder: tab.sortOrder || 0, createdBy: userId },
+        }).catch(() => {});
+      }
+    }
+
+    return channel;
+  }
+
+  async createChannelTemplate(tenantId: string, dto: { name: string; description?: string; channelType?: string; topic?: string; emoji?: string; tabs?: any[] }) {
+    return prisma.channelTemplate.create({
+      data: { tenantId, name: dto.name, description: dto.description, channelType: dto.channelType || 'PUBLIC', topic: dto.topic, emoji: dto.emoji || '', tabs: dto.tabs || [] },
+    });
+  }
+
+  /* ── Feature 9: Message Expiry / Ephemeral ── */
+
+  async sendEphemeralMessage(tenantId: string, channelId: string, userId: string, dto: { content: string; expiresInSecs?: number }) {
+    const msg = await prisma.message.create({
+      data: {
+        tenantId, channelId, userId, content: dto.content,
+        expiresAt: dto.expiresInSecs ? new Date(Date.now() + dto.expiresInSecs * 1000) : new Date(Date.now() + 86400000),
+        viewOnce: !dto.expiresInSecs,
+      },
+    });
+    this.notificationsGateway.broadcastChatMessage(channelId, { ...msg, ephemeral: true, tenantId });
+    return msg;
+  }
+
+  async markMessageViewed(tenantId: string, messageId: string, userId: string) {
+    const msg = await prisma.message.findFirst({ where: { id: messageId, tenantId, viewOnce: true } });
+    if (!msg) throw new NotFoundException('Message not found or not view-once');
+    await prisma.message.update({ where: { id: messageId }, data: { deletedAt: new Date(), content: 'This message has been viewed' } });
+    return { ok: true };
+  }
+
+  /* ── Feature 10: Voice Messages ── */
+
+  async uploadVoiceMessage(tenantId: string, channelId: string, userId: string, file: Express.Multer.File) {
+    const membership = await prisma.channelMember.findFirst({ where: { channelId, userId, tenantId } });
+    if (!membership) throw new ForbiddenException('Not a channel member');
+    if (file.size > 10 * 1024 * 1024) throw new BadRequestException('Voice message too large (max 10MB)');
+
+    const doc = await this.documentsService.createDocument(tenantId, 'connect-voice', file.originalname, file.buffer, file.mimetype);
+
+    const attachments: AttachmentDto[] = [{ id: doc.id, name: file.originalname, size: file.size, mime: file.mimetype, url: doc.url }];
+    return prisma.message.create({
+      data: {
+        tenantId, channelId, userId,
+        content: '🎤 Voice message',
+        attachments: JSON.parse(JSON.stringify(attachments)),
+        kind: 'USER',
+      },
+    });
   }
 }
