@@ -187,7 +187,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
-| 2026-07-17 | antigravity | **Database RLS Integration**: Wired transaction-scoped PostgreSQL RLS context (`app.current_tenant_id`) into shared Prisma Client `$allOperations` hook and added database-isolation integration tests. | pending |
+| 2026-07-17 | antigravity | **Database RLS Integration**: Wired transaction-scoped PostgreSQL RLS context (`app.current_tenant_id`) into shared Prisma Client `$allOperations` hook and added database-isolation integration tests. | 96c1ccf |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Hardened .gitignore rules to prevent tracking of alternate lockfiles, custom env files, desktop.ini, and eslint cache. | 1b4910f |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Backed up and removed deploy/ and RUNBOOK.md, removed docs/extension-contract, and hardened .gitignore rules. | 5a45223 |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Deleted duplicate `.env` files in apps/api & packages/database, deleted unused `check-duplicate-classnames.mjs` script, and pruned stale git worktrees. | 1c6570f |
