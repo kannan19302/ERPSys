@@ -166,6 +166,7 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'transfer-approvals': 'Transfer Approvals',
   'movement-history': 'Movement History & Labels',
   'pick-waves': 'Wave Picking',
+  'mobile-pick': 'Mobile Scan Pick/Pack',
   consignment: 'Consignment Inventory',
   'reorder-rules': 'Reorder Rules & Automation',
   'qa-templates': 'QA Templates & Routing',

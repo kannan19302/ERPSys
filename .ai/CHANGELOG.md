@@ -8,6 +8,27 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Inventory — mobile-optimized scan-first pick/pack UI
+
+- Shipped `/inventory/mobile-pick` (`apps/web/app/(dashboard)/inventory/mobile-pick/page.tsx`):
+  a one-item-at-a-time, large-touch-target picking flow for handheld/mobile
+  devices, closing Up Next item 5q (the last open sub-gap of the wave-pick
+  program). Reuses the existing, already-shipped backend
+  (`GET/POST /inventory/pick-waves*`, `recordPick` with scanned-serial
+  verification) — no new API surface. Auto-focused scan input accepts
+  keyboard-wedge barcode-scanner input (SKU or serial), a stepper for picked
+  quantity, progress bar, skip/confirm per item, and pack/complete on the
+  wave once every item is picked. Added to the Inventory nav
+  (`moduleNav.tsx`/`registry.tsx`) and `apps/web/e2e/smoke.spec.ts`
+  `SMOKE_ROUTES`. Verified live against the running dev stack (real
+  `/api/v1/inventory/pick-waves` 200 OK, correct empty-state render, mobile
+  viewport reflow) after restarting the dev container to pick up a stale
+  `@unerp/ui-components` workspace link (pre-existing container issue,
+  unrelated to this change — confirmed by reproducing the same failure on
+  the pre-existing `/inventory/pick-waves` page before the restart).
+  In-passing: found and flagged (not fixed, out of scope) a pre-existing
+  duplicate `Demand Forecasting` nav entry causing a React key warning.
+
 ## [2026-07-17] ADP — restore a binding, sticky Current Focus Module concept
 
 - `.ai/MODULE_REGISTRY.md` referenced a `MODULE_FOCUS.md` file in five places
