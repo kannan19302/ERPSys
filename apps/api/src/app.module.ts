@@ -69,6 +69,10 @@ import { PickWavesModule } from './modules/inventory/pick-waves.module';
 import { AsnModule } from './modules/inventory/asn.module';
 import { ShipmentTrackingModule } from './modules/inventory/shipment-tracking.module';
 import { SavedViewsModule } from './modules/saved-views/saved-views.module';
+// QUARANTINED (Track 0.2, 2026-07-18): modules/blockchain is provisional and must
+// not be registered until Track E re-platforms it on the transactional outbox
+// (.ai/FOUNDATION_HARDENING_ROADMAP.md § 10). It is excluded from the build in
+// tsconfig.json and guarded by scripts/check-module-boundaries.mjs.
 
 @Module({
   imports: [
@@ -215,6 +219,8 @@ import { SavedViewsModule } from './modules/saved-views/saved-views.module';
 
     // Module #35 — Fixed Asset Management
     FixedAssetsModule,
+
+    // Blockchain layer: NOT registered — quarantined until Track E (see import note above).
   ],
   controllers: [HealthController, MetricsController],
   providers: [

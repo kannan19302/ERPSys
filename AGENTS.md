@@ -26,12 +26,19 @@
 The Autonomous Development Protocol ([.ai/AUTOPILOT.md](.ai/AUTOPILOT.md)) has exactly
 two flows; all other flows are retired:
 
-- **"Start"** (or "start", "/start", "continue", "next") → the **DEV flow**: do NOT
-  ask what to build (one focus-module question in interactive runs, then zero).
-  Bootstrap → select one work item via the priority ladder (broken build > open
-  security/critical issues > unfinished work / Up Next > module deepening vs market
-  leaders > new capability) → claim → plan → build end-to-end (DB → API → UI →
-  tests) → verify gates → review → record in the 3-file system → land on `main` → report.
+- **"Start"** (or "start", "/start", "continue", "next") → the **DEV flow**,
+  **phase-gated** (AUTOPILOT § The Program Ladder): do NOT ask what to build (one
+  focus-module question in interactive Phase M/X runs, then zero; Phase F never asks).
+  Bootstrap → **harden checkpoint** (every 10th completed DEV cycle auto-runs a full
+  QA cycle; tracked in MODULE_REGISTRY § Cycle Ledger) → **phase gate**
+  (`.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate unmet ⇒ Phase F: foundation
+  tracks only, in dependency order; sealed ⇒ Phase M: every module to 500+ features,
+  core → industry; all Complete ⇒ Phase X: new apps/modules) → select via the
+  priority ladder (broken build > security/critical issues > [Phase F: roadmap
+  items] > unfinished work > module deepening > new capability) → claim →
+  **mandatory plan written to `.ai/IMPLEMENTATION_PLAN.md`** (no approvals; one
+  overwrite per cycle) → build end-to-end (DB → API → UI → tests) → verify gates →
+  review → record in the 3-file system + Cycle Ledger → land on `main` → report.
 - **"harden"** (or "/harden", "find and fix") → the **QA flow**: scan security-first,
   file each verified flaw as a GitHub issue BEFORE fixing, fix at root cause, verify,
   close — a closed find→file→fix→close loop.

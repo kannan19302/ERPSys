@@ -8,6 +8,12 @@ description: Run one full QA-flow cycle for UniERP — find flaws security-first
 Execute the **QA flow** of `.ai/AUTOPILOT.md` exactly. That file is the single
 source of truth; this is the operating summary:
 
+> **Two ways this flow runs** (AUTOPILOT § Shared bindings #17): explicitly
+> (user types "harden") or as the **mandatory checkpoint** the "Start" flow
+> auto-executes after every 10 completed DEV cycles. Either way, log the run in
+> `MODULE_REGISTRY.md` § Cycle Ledger; only the mandatory checkpoint resets
+> `Next run` to `DEV` — an explicit user harden never resets the 10-cycle clock.
+
 ## 0. Bootstrap
 
 Read `AGENTS.md` Critical Rules and `.ai/AUTOPILOT.md`; `git pull`; start the dev

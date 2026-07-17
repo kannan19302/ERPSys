@@ -36,6 +36,34 @@ function resolveImport(sourceFile, specifier) {
   return possibilities.find(existsSync) ?? null;
 }
 
+// Track 0.2 (FOUNDATION_HARDENING_ROADMAP § 5): the blockchain island is
+// quarantined until Track E re-platforms it on the outbox. No file outside
+// modules/blockchain may import the @unerp/blockchain package or anything
+// under modules/blockchain (anchor services included).
+const blockchainRoot = resolve(modulesRoot, 'blockchain');
+const quarantineViolations = [];
+for (const file of filesIn(apiRoot)) {
+  if (normalize(file).startsWith(normalize(blockchainRoot))) continue;
+  if (/\.spec\.ts$/.test(file)) continue;
+  const source = readFileSync(file, 'utf8');
+  for (const match of source.matchAll(importPattern)) {
+    const specifier = match[1];
+    if (specifier === '@unerp/blockchain' || specifier.startsWith('@unerp/blockchain/')) {
+      quarantineViolations.push(`${file.replace(process.cwd(), '.')} -> ${specifier}`);
+      continue;
+    }
+    const target = resolveImport(file, specifier);
+    if (target && normalize(target).startsWith(normalize(blockchainRoot))) {
+      quarantineViolations.push(`${file.replace(process.cwd(), '.')} -> ${specifier}`);
+    }
+  }
+}
+if (quarantineViolations.length > 0) {
+  console.error('Blockchain is quarantined (Track 0.2): no module may import @unerp/blockchain or modules/blockchain until Track E re-platforms it on the outbox.');
+  console.error(quarantineViolations.join('\n'));
+  process.exit(1);
+}
+
 const violations = [];
 for (const file of filesIn(modulesRoot)) {
   if (file.includes(`${normalize('/tests/')}`) || /\.spec\.ts$/.test(file)) continue;

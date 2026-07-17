@@ -27,7 +27,8 @@ function requireText(relativePath, text) {
 }
 
 // The foundation document keeps its remediation designs until the blockers close.
-const foundation = read('docs/ARCHITECTURE_FOUNDATION.md');
+// (Canonical location moved to .ai/ — docs/ARCHITECTURE_FOUNDATION.md no longer exists.)
+const foundation = read('.ai/ARCHITECTURE_FOUNDATION.md');
 for (const heading of [
   '## #17 transactional outbox design',
   '### #19 reconciliation plan and controlled exception',
@@ -36,8 +37,30 @@ for (const heading of [
   if (!foundation.includes(heading)) failures.push(`Foundation document is missing ${heading}`);
 }
 
-// The .ai knowledge base is exactly four markdown files (+ locks/ runtime dir).
-const allowedAiFiles = new Set(['AUTOPILOT.md', 'CHANGELOG.md', 'HANDBOOK.md', 'MODULE_REGISTRY.md', 'instructions.md', 'MARKET_BENCHMARK.md']);
+// The hardening roadmap carries the sequenced tracks, lift gate, and seal clause,
+// and the ADP must be wired to it (Program Ladder / Phase F gate / Cycle Ledger).
+const roadmap = read('.ai/FOUNDATION_HARDENING_ROADMAP.md');
+for (const heading of ['## 12. Feature-freeze LIFT gate', '## 12b. Foundation SEALED']) {
+  if (!roadmap.includes(heading)) failures.push(`Foundation roadmap is missing ${heading}`);
+}
+requireText('.ai/AUTOPILOT.md', 'FOUNDATION_HARDENING_ROADMAP');
+requireText('.ai/AUTOPILOT.md', 'The Program Ladder');
+requireText('.claude/skills/start/SKILL.md', 'FOUNDATION_HARDENING_ROADMAP');
+requireText('.ai/MODULE_REGISTRY.md', '## Cycle Ledger');
+requireText('.ai/IMPLEMENTATION_PLAN.md', 'Implementation Plan');
+
+// The .ai knowledge base allowlist (+ locks/ runtime dir).
+const allowedAiFiles = new Set([
+  'AUTOPILOT.md',
+  'CHANGELOG.md',
+  'HANDBOOK.md',
+  'MODULE_REGISTRY.md',
+  'instructions.md',
+  'MARKET_BENCHMARK.md',
+  'ARCHITECTURE_FOUNDATION.md',
+  'FOUNDATION_HARDENING_ROADMAP.md',
+  'IMPLEMENTATION_PLAN.md',
+]);
 const generatedAiFiles = new Set(['FEATURE_LEDGER.md']); // gitignored generator output
 for (const entry of readdirSync(path.join(root, '.ai'), { withFileTypes: true })) {
   if (entry.isDirectory()) {

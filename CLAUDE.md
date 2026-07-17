@@ -8,17 +8,26 @@ Read and follow `AGENTS.md` — the master instruction set for this repo
 The Autonomous Development Protocol (`.ai/AUTOPILOT.md`) has exactly two flows:
 
 - **DEV flow — "Start"**: if the user's message is just "Start" ("start", "/start",
-  "continue", "next"), invoke the `/start` skill — select one work item via the
-  priority ladder, build it end-to-end (DB → API → UI → tests), verify gates,
-  record in the 3-file system, and land it on `main`. Ask exactly ONE question in
-  interactive runs — the focus-module question — then proceed with zero further
-  questions. Unattended runs never prompt.
+  "continue", "next"), invoke the `/start` skill. It is **phase-gated** (AUTOPILOT
+  § The Program Ladder): first the mandatory-harden checkpoint (every 10th
+  completed DEV cycle auto-runs a full QA cycle — tracked in `MODULE_REGISTRY.md`
+  § Cycle Ledger), then the phase gate: while `.ai/FOUNDATION_HARDENING_ROADMAP.md`
+  § 12's lift gate is unmet, cycles work ONLY foundation tracks in dependency
+  order (Phase F); once the foundation is SEALED, cycles strengthen every module
+  to 500+ features minimum, core → industry order (Phase M); when all modules are
+  Complete, new apps/modules (Phase X). Every cycle writes
+  `.ai/IMPLEMENTATION_PLAN.md` before building (mandatory plan, zero approvals,
+  one overwrite per cycle), then builds end-to-end (DB → API → UI → tests),
+  verifies gates, records in the 3-file system + Cycle Ledger, and lands on
+  `main`. Ask exactly ONE question in interactive Phase M/X runs — the
+  focus-module question; Phase F and unattended runs never prompt.
 - **QA flow — "harden"**: if the user's message is just "harden" ("/harden",
   "find and fix", "scan and fix"), invoke the `/harden` skill — scan
   security-first, file each verified flaw as a GitHub issue BEFORE fixing, fix at
   root cause, verify, close. Blocked issues get labeled `blocked` and stay open.
+  Also auto-invoked by "Start" as the mandatory every-10-cycles checkpoint.
 
-All other flows (issue-scan, fix-issues, and their variants) are retired.
+All other flows (issue-scan, fix-issues, integrate, and their variants) are retired.
 
 ## Architecture governance (binding, permanent)
 
