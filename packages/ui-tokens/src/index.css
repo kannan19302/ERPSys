@@ -1,0 +1,18 @@
+/* ─────────────────────────────────────────────────
+   @unerp/ui-tokens — UniERP Design System tokens
+   Layering: base (primitives) → themes (semantic
+   color/density overrides via [data-theme=…]).
+   Import ONCE at the app root (or via @unerp/ui).
+   Customer branding: inject CSS vars at runtime via
+   @unerp/ui-theme applyBranding().
+   ───────────────────────────────────────────────── */
+@import './base.css';
+@import './themes/light.css';
+@import './themes/dark.css';
+@import './themes/enterprise.css';
+@import './themes/modern.css';
+@import './themes/minimal.css';
+@import './themes/classic.css';
+@import './themes/compact.css';
+@import './themes/high-contrast.css';
+@import './charts.css';

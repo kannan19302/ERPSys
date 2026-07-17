@@ -1,0 +1,16 @@
+.s1 { font-size: var(--text-md); font-weight: var(--weight-bold); }
+.s2 { align-items: center; background: var(--color-primary); border-radius: var(--radius-md); border: none; color: var(--color-text-inverse); cursor: pointer; display: flex; font-size: var(--text-sm); font-weight: var(--weight-semibold); gap: var(--space-2); padding: var(--space-2) var(--space-4); }
+.s3 { background: var(--color-bg-elevated); border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); }
+.s4 { border-radius: var(--radius-full); font-size: 11px; font-weight: var(--weight-semibold); padding: 3px 10px; }
+.s5 { display: grid; gap: var(--space-2); grid-template-columns: 1fr 1fr; }
+.s6 { color: var(--color-text-tertiary); font-size: 10px; margin-bottom: 2px; }
+.s7 { background: var(--color-bg); border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 11px; padding: 2px 6px; }
+.s8 { background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; }
+.s9 { color: var(--color-text-tertiary); font-size: 10px; margin-bottom: 4px; }
+.s10 { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.s11 { background: var(--color-primary-light); border-radius: var(--radius-full); color: var(--color-primary); font-size: 10px; padding: 2px 8px; }
+.s12 { align-items: center; background: none; border-radius: var(--radius-md); border: 1px solid var(--color-border); color: var(--color-text-secondary); cursor: pointer; display: flex; font-size: 11px; gap: 4px; padding: 4px 10px; }
+.s13 { align-items: center; background: none; border-radius: var(--radius-md); border: 1px solid var(--color-error); color: var(--color-error); cursor: pointer; display: flex; font-size: 11px; gap: 4px; padding: 4px 10px; }
+.s14 { align-items: center; display: flex; font-size: var(--text-sm); font-weight: var(--weight-bold); gap: var(--space-2); margin-bottom: var(--space-3); }
+.s15 { color: var(--color-text-secondary); display: block; font-size: 10px; font-weight: var(--weight-bold); margin-bottom: 2px; }
+.s16 { background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border); color: var(--color-text); font-size: 12px; padding: 6px 10px; width: 100%; }

@@ -1,0 +1,18 @@
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
+.title { margin: 0; font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--color-text); }
+.description { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-text-secondary); }
+.card { padding: 0; overflow: hidden; }
+.loading { padding: var(--space-8); text-align: center; color: var(--color-text-secondary); }
+.table { width: 100%; border-collapse: collapse; }
+.categoryHeading, .channelHeading { padding: var(--space-3) var(--space-4); font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.categoryHeading { text-align: left; }
+.channelHeading, .channelCell { text-align: center; }
+.channelHeading { width: var(--space-24); }
+.row { border-bottom: 1px solid var(--color-border); }
+.categoryCell, .channelCell { padding: var(--space-3) var(--space-4); }
+.categoryCell { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-text); }
+.toggle { width: var(--space-10); height: var(--space-5); border-radius: var(--radius-full); border: none; background: var(--color-border); position: relative; cursor: pointer; transition: background var(--duration-fast) var(--ease-default); }
+.toggleOn { background: var(--color-primary); }
+.toggle:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: var(--space-1); }
+.toggleThumb { position: absolute; top: var(--space-0\.5); left: var(--space-0\.5); width: var(--space-4); height: var(--space-4); border-radius: var(--radius-full); background: var(--color-bg-elevated); transition: transform var(--duration-fast) var(--ease-default); box-shadow: var(--shadow-sm); }
+.toggleOn .toggleThumb { transform: translateX(var(--space-5)); }

@@ -1,0 +1,5 @@
+.s1 { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5); }
+.s2 { align-items: center; display: flex; font-size: var(--text-base); font-weight: var(--weight-semibold); gap: 8px; margin-bottom: var(--space-4); }
+.s3 { align-items: center; display: flex; gap: 10px; }
+.s4 { border-top: 1px solid var(--color-border-light); border: none; }
+.s5 { background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border); color: var(--color-text); font-size: var(--text-sm); max-width: 300px; outline: none; padding: 8px 12px; width: 100%; }

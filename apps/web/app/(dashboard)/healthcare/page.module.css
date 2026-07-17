@@ -1,0 +1,8 @@
+.s1 { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.s2 { text-decoration: none; }
+.s3 { align-items: center; background: var(--color-bg); border-radius: var(--radius-lg); border: 1px solid var(--color-border); cursor: pointer; display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-4); transition: all 0.2s ease; }
+.s4 { align-items: center; border-radius: var(--radius-md); display: flex; flex-shrink: 0; height: 36px; justify-content: center; width: 36px; }
+.s5 { color: var(--color-text); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.s6 { color: var(--color-text-tertiary); margin-left: auto; }
+.qlHover { transition: border-color .15s ease, background .15s ease; }
+.qlHover:hover { border-color: var(--color-primary); background: var(--color-primary-light); }

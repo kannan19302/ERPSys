@@ -1,0 +1,4 @@
+.s1 { align-items: center; background: var(--color-primary-light); border-radius: var(--radius-md); color: var(--color-primary); display: flex; flex-shrink: 0; height: 32px; justify-content: center; width: 32px; }
+.s2 { font-weight: var(--weight-bold); }
+.s3 { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.s4 { align-items: center; color: var(--color-text-secondary); display: flex; font-size: var(--text-sm); gap: var(--space-2); }

@@ -1,0 +1,72 @@
+.p1 { display: flex; justify-content: center; align-items: center; min-height: 400px; }
+.p2 { display: flex; flex-direction: column; align-items: center; padding: var(--space-12); }
+.p3 { color: var(--color-danger); margin-bottom: var(--space-4); }
+.p4 { font-size: var(--text-lg); font-weight: bold; }
+.p5 { margin-top: var(--space-4); }
+.p6 { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); display: flex; align-items: center; padding: var(--space-2); border-radius: var(--radius-md); transition: background 0.2s; }
+.p7 { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--color-warning-light); border: 1px solid var(--color-warning); border-radius: var(--radius-md); color: var(--color-warning-text); font-size: var(--text-sm); }
+.p8 { grid-column: span 2 / span 2; display: flex; flex-direction: column; gap: var(--space-4); }
+.p9 { display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-3); }
+.p10 { display: flex; gap: var(--space-3); align-items: center; }
+.p11 { font-size: var(--text-md); font-weight: bold; }
+.p12 { background: var(--color-bg-sunken); padding: var(--space-4); border-radius: var(--radius-md); }
+.p13 { font-size: var(--text-xs); color: var(--color-text-secondary); display: flex; align-items: center; gap: var(--space-1); }
+.p14 { font-size: var(--text-sm); font-weight: bold; margin-top: var(--space-1); }
+.p15 { font-size: var(--text-xs); color: var(--color-text-secondary); display: flex; align-items: center; gap: var(--space-1); }
+.p16 { font-size: var(--text-sm); font-weight: bold; margin-top: var(--space-1); }
+.p17 { font-size: var(--text-xs); color: var(--color-text-secondary); display: flex; align-items: center; gap: var(--space-1); }
+.p18 { font-size: var(--text-sm); font-weight: bold; margin-top: var(--space-1); }
+.p19 { display: flex; border-bottom: 1px solid var(--color-border); margin-top: var(--space-2); }
+.p20 { padding: var(--space-2) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); transition: all 0.2s; }
+.p21 { padding: var(--space-2) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); transition: all 0.2s; display: flex; align-items: center; gap: var(--space-1); }
+.p22 { width: 100%; border-collapse: collapse; text-align: left; }
+.p23 { border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: bold; text-transform: uppercase; }
+.p24 { padding: var(--space-3) var(--space-2); }
+.p25 { padding: var(--space-3) var(--space-2); }
+.p26 { padding: var(--space-3) var(--space-2); }
+.p27 { padding: var(--space-3) var(--space-2); }
+.p28 { padding: var(--space-3) var(--space-2); text-align: right; }
+.p29 { border-bottom: 1px solid var(--color-border); font-size: var(--text-sm); }
+.p30 { padding: var(--space-3) var(--space-2); font-weight: var(--weight-medium); }
+.p31 { padding: var(--space-3) var(--space-2); }
+.p32 { padding: var(--space-3) var(--space-2); }
+.p33 { font-weight: bold; }
+.p34 { padding: var(--space-3) var(--space-2); }
+.p35 { padding: var(--space-3) var(--space-2); text-align: right; font-weight: bold; }
+.p36 { display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-end; margin-top: var(--space-4); padding-right: var(--space-4); }
+.p37 { color: var(--color-text); font-weight: bold; }
+.p38 { color: var(--color-text); font-weight: bold; }
+.p39 { font-size: var(--text-sm); font-weight: bold; border-top: 1px solid var(--color-border); padding-top: var(--space-2); margin-top: var(--space-1); }
+.p40 { padding: var(--space-4); border-radius: var(--radius-md); display: flex; gap: var(--space-3); }
+.p41 { flex-shrink: 0; }
+.p42 { flex-shrink: 0; }
+.p43 { font-weight: bold; font-size: var(--text-md); }
+.p44 { font-size: var(--text-xs); margin-top: var(--space-1); opacity: 0.9; }
+.p45 { width: 100%; border-collapse: collapse; text-align: left; font-size: var(--text-xs); }
+.p46 { background: var(--color-bg-sunken); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: bold; }
+.p47 { padding: var(--space-3); text-align: center; border-right: 1px solid var(--color-border); }
+.p48 { padding: var(--space-3); text-align: center; }
+.p49 { padding: var(--space-3); text-align: center; }
+.p50 { background: var(--color-bg-sunken); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: bold; }
+.p51 { padding: var(--space-2); text-align: center; }
+.p52 { padding: var(--space-2); text-align: center; }
+.p53 { padding: var(--space-2); text-align: center; border-right: 1px solid var(--color-border); }
+.p54 { padding: var(--space-2); text-align: center; }
+.p55 { padding: var(--space-2); text-align: center; }
+.p56 { border-bottom: 1px solid var(--color-border); color: var(--color-text); }
+.p57 { padding: var(--space-3); font-weight: bold; }
+.p58 { padding: var(--space-3); text-align: center; }
+.p59 { padding: var(--space-3); text-align: center; }
+.p60 { padding: var(--space-3); text-align: center; border-right: 1px solid var(--color-border); }
+.p61 { padding: var(--space-3); text-align: center; }
+.p62 { padding: var(--space-3); text-align: center; }
+.p63 { padding: var(--space-3); text-align: center; }
+.p64 { font-size: var(--text-sm); font-weight: bold; color: var(--color-text); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-2); margin-bottom: var(--space-3); }
+.p65 { display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-xs); color: var(--color-text-secondary); }
+.p66 { font-weight: bold; color: var(--color-text); }
+.p67 { padding-left: var(--space-4); margin-top: var(--space-1); }
+.p68 { border-top: 1px solid var(--color-border); padding-top: var(--space-2); margin-top: var(--space-2); }
+.p69 { font-weight: bold; color: var(--color-text); }
+.p70 { font-size: var(--text-sm); font-weight: bold; color: var(--color-text); margin-bottom: var(--space-2); }
+.p71 { font-size: var(--text-xs); color: var(--color-text-secondary); line-height: 1.4; }
+.p6:hover, .p6:focus-visible { background: var(--color-bg-sunken); }

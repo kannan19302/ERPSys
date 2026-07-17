@@ -1,0 +1,7 @@
+.p1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.p2 { background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); text-align: center; }
+.p3 { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.p4 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.p5 { text-align: center; padding: var(--space-3); }
+.p6 { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: var(--color-bg-elevated); display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto var(--space-2); font-size: var(--text-sm); }
+.p7 { font-weight: var(--weight-semibold); font-size: var(--text-sm); margin-bottom: var(--space-1); }

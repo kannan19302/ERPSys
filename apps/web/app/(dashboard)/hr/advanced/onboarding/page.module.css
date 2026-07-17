@@ -1,0 +1,176 @@
+.s0 {
+  padding: 8px 16px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.s1 {
+  margin: 0 0 var(--space-3);
+}
+
+.s2 {
+  grid-column: 1 / -1;
+}
+
+.s3 {
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.s4 {
+  color: var(--color-text-tertiary);
+  margin-bottom: 8px;
+}
+
+.s5 {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.s6 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin: 12px 0 4px;
+}
+
+.s7 {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-sunken);
+  border-radius: 3px;
+  margin-bottom: 16px;
+}
+
+.s8 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.s9 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.s10 {
+  cursor: pointer;
+}
+
+.s11 {
+  color: var(--color-warning-text);
+}
+
+.s12 {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.s13 {
+  flex: 1;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.s14 {
+  padding: 2px 8px;
+  height: auto;
+  font-size: 11px;
+}
+
+.s15 {
+  padding: 2px 8px;
+  height: auto;
+  font-size: 11px;
+}
+
+.s16 {
+  font-size: 11px;
+  padding: 2px 4px;
+  width: 85px;
+  height: 24px;
+  background: var(--color-bg);
+}
+
+.s17 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--color-text-secondary);
+}
+
+.s18 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--color-danger);
+}
+
+.s19 {
+  padding-left: 24px;
+  margin-top: 2px;
+}
+
+.s20 {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 12px;
+}
+
+.s21 {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.s22 {
+  padding: 4px 10px;
+  height: auto;
+  font-size: 11px;
+}
+
+.auto0 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-6);
+}
+
+.dyn0 {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.dyn1 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.dyn2 {
+  font-size: 13px;
+  flex: 1;
+}
+
+.dyn3 {
+  font-size: 11px;
+  padding: 2px 6px;
+  width: 100%;
+  height: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+

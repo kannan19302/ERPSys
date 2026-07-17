@@ -1,0 +1,70 @@
+/* ════════════════════════════════════════════════
+   DARK THEME
+   ════════════════════════════════════════════════ */
+
+[data-theme='dark'] {
+  /* ── Surfaces ── */
+  --color-bg: #0f1117;
+  --color-bg-elevated: #1a1b2e;
+  --color-bg-sunken: #0a0b12;
+  --color-bg-hover: #252740;
+  --color-bg-active: #2d2f4a;
+  --color-bg-overlay: rgb(0 0 0 / 0.7);
+
+  /* ── Borders ── */
+  --color-border: #2d2f4a;
+  --color-border-strong: #3d3f5c;
+  --color-border-focus: #818cf8;
+
+  /* ── Text ── */
+  --color-text: #e8e8f0;
+  --color-text-secondary: #9ca3af;
+  --color-text-tertiary: #6b7280;
+  --color-text-inverse: #0f1117;
+  --color-text-link: #818cf8;
+
+  /* ── Brand / Primary ── */
+  --color-primary: #818cf8;
+  --color-primary-hover: #6366f1;
+  --color-primary-active: #5457e5;
+  --color-primary-light: rgb(99 102 241 / 0.15);
+  --color-primary-text: #0f1117;
+
+  /* ── Success ── */
+  --color-success: #34d399;
+  --color-success-hover: #10b981;
+  --color-success-light: rgb(16 185 129 / 0.15);
+  --color-success-text: #a7f3d0;
+
+  /* ── Warning ── */
+  --color-warning: #fbbf24;
+  --color-warning-hover: #f59e0b;
+  --color-warning-light: rgb(245 158 11 / 0.15);
+  --color-warning-text: #fef3c7;
+
+  /* ── Danger ── */
+  --color-danger: #fb7185;
+  --color-danger-hover: #f43f5e;
+  --color-danger-light: rgb(244 63 94 / 0.15);
+  --color-danger-text: #fecdd3;
+
+  /* ── Info ── */
+  --color-info: #38bdf8;
+  --color-info-hover: #0ea5e9;
+  --color-info-light: rgb(14 165 233 / 0.15);
+  --color-info-text: #bae6fd;
+
+  /* ── Sidebar ── */
+  --color-sidebar-bg: #1a1b2e;
+  --color-sidebar-text: #9ca3af;
+  --color-sidebar-text-active: #f3f4f6;
+  --color-sidebar-hover: rgb(255 255 255 / 0.05);
+  --color-sidebar-active: rgb(255 255 255 / 0.1);
+  --color-sidebar-border: #2d2f4a;
+
+  /* ── Shadows (darker for dark mode) ── */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-glow: 0 0 20px rgb(129 140 248 / 0.2);
+}

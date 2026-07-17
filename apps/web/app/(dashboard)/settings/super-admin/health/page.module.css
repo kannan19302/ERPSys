@@ -1,0 +1,76 @@
+.loadingState {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-10);
+}
+
+.warning {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-800);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.statusDot {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+}
+
+.statusLabel {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  text-transform: capitalize;
+}
+
+.lastUpdated {
+  color: var(--color-gray-400);
+  font-size: var(--text-xs);
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+  gap: var(--space-4);
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.blueIcon {
+  color: var(--color-blue-600);
+}
+
+.purpleIcon {
+  color: var(--color-purple-600);
+}
+
+.metricLabel {
+  color: var(--color-gray-600);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.metricValue {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+}
+
+.progressTrack {
+  width: 100%;
+  height: var(--space-1\.5);
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-100);
+}
+
+.progressValue {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-default);
+}

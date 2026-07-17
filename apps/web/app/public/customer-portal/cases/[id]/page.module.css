@@ -1,0 +1,10 @@
+.s1 { display: flex; justify-content: center; padding: 60px; }
+.s2 { padding: 24px; }
+.s3 { margin: 0 auto; max-width: 800px; padding: 24px; }
+.s4 { align-items: flex-start; display: flex; justify-content: space-between; }
+.s5 { opacity: 0.65; }
+.s6 { margin-top: 24px; }
+.s7 { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.s8 { border-radius: 6px; max-width: 80%; padding: 10px; }
+.s9 { font-size: 12px; margin-bottom: 4px; opacity: 0.6; }
+.s10 { display: flex; gap: 8px; }

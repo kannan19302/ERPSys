@@ -1,0 +1,40 @@
+{
+  "name": "@unerp/ui-notifications",
+  "version": "0.1.0",
+  "description": "UniERP Design System — toast system and banners",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint src/",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^0.460.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@unerp/config": "workspace:*",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.7.0",
+    "tsup": "^8.0.0"
+  },
+  "module": "./dist/index.mjs"
+}

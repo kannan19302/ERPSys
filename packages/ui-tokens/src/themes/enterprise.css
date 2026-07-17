@@ -1,0 +1,5 @@
+/* Enterprise — the default UniERP look. Alias of the light theme. */
+[data-theme='enterprise'] {
+  /* Inherits every token from :root (light defaults). */
+  color-scheme: light;
+}

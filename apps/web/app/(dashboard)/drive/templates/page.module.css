@@ -1,0 +1,20 @@
+.p1 { display: flex; justify-content: center; padding: var(--space-10); }
+.p2 { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
+.p3 { position: relative; flex: 1; max-width: 400px; }
+.p4 { position: absolute; left: var(--space-3); top: 50%; transform: translateY(-50%); color: var(--color-text-tertiary); }
+.p5 { width: 100%; padding: var(--space-2.5) var(--space-4) var(--space-2.5) var(--space-8); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-bg-elevated); font-size: var(--text-sm); color: var(--color-text); }
+.p6 { display: flex; align-items: center; gap: var(--space-2); background: var(--color-primary); color: var(--color-text-inverse); border: none; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.p7 { background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+.p8 { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.p9 { border-bottom: 2px solid var(--color-border); }
+.p10 { text-align: left; padding: var(--space-3) var(--space-4); font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; font-weight: var(--weight-bold); }
+.p11 { color: var(--color-error); flex-shrink: 0; }
+.p12 { padding: var(--space-3) var(--space-4); color: var(--color-text-secondary); }
+.p13 { font-size: 10px; background: var(--color-bg); padding: 2px 8px; border-radius: var(--radius-full); color: var(--color-primary); font-weight: var(--weight-semibold); }
+.p14 { padding: var(--space-3) var(--space-4); color: var(--color-text-secondary); }
+.p15 { padding: var(--space-3) var(--space-4); font-size: 11px; color: var(--color-text-tertiary); }
+.p16 { padding: var(--space-3) var(--space-4); font-size: 11px; }
+.p17 { background: none; border: none; cursor: pointer; color: var(--color-primary); padding: 4px; }
+.p18 { background: none; border: none; cursor: pointer; color: var(--color-success); padding: 4px; }
+.p19 { background: none; border: none; cursor: pointer; color: var(--color-error); padding: 4px; }
+.p20 { padding: var(--space-8); text-align: center; color: var(--color-text-tertiary); font-size: var(--text-sm); }

@@ -1,0 +1,15 @@
+/* ─────────────────────────────────────────────────
+   Skeleton Component — Styles
+   ───────────────────────────────────────────────── */
+
+.skeleton {
+  display: block;
+  background: linear-gradient(90deg, var(--color-bg-sunken) 25%, var(--color-border) 37%, var(--color-bg-sunken) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.text_container {
+  display: flex;
+  flex-direction: column;
+}

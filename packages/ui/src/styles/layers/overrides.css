@@ -1,0 +1,41 @@
+/* ─────────────────────────────────────────────────
+   BUILDER STUDIO & MODULE OVERRIDES
+   ───────────────────────────────────────────────── */
+
+/* Drag and drop overrides (dnd-kit/reactflow canvas) */
+.builder-canvas-drag-active {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -2px;
+  background-color: var(--color-primary-light);
+}
+
+/* Reactflow specific dark-mode overrides */
+.react-flow__node {
+  background: var(--color-bg-elevated) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+.react-flow__handle {
+  background: var(--color-primary) !important;
+}
+
+.react-flow__edge-path {
+  stroke: var(--color-border-strong) !important;
+}
+
+/* Print Overrides */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .ui-sidebar,
+  .ui-header,
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

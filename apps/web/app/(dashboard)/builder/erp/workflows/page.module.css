@@ -1,0 +1,26 @@
+.s1 { border-radius: 12px; font-size: 10px; font-weight: 600; padding: 2px 8px; }
+.s2 { align-items: center; display: flex; gap: var(--space-3); padding: var(--space-4); }
+.s3 { align-items: center; border-radius: var(--radius-md); display: flex; height: 40px; justify-content: center; width: 40px; }
+.s4 { color: var(--color-text); font-size: var(--text-xl); font-weight: var(--weight-bold); margin: 0; }
+.s5 { max-width: 28rem; position: relative; }
+.s6 { padding-left: var(--space-8); }
+.s7 { color: var(--color-text-secondary); padding: var(--space-10); text-align: center; }
+.s8 { padding: var(--space-10); text-align: center; }
+.s9 { color: var(--color-text-tertiary); display: block; margin: 0 auto var(--space-3); opacity: 0.3; }
+.s10 { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.s11 { padding: var(--space-4); transition: all var(--duration-fast); }
+.s12 { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: var(--space-3); }
+.s13 { align-items: center; background: #7c3aed20; border-radius: var(--radius-md); display: flex; height: 32px; justify-content: center; width: 32px; }
+.s14 { color: #7c3aed; }
+.s15 { color: var(--color-text); font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0; }
+.s16 { background: transparent; border: none; cursor: pointer; }
+.s17 { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.s18 { background: #3b82f620; border-radius: 12px; color: var(--color-primary); font-size: 10px; font-weight: 600; padding: 2px 8px; }
+.s19 { align-items: center; display: flex; gap: var(--space-1); margin-bottom: var(--space-3); }
+.s20 { color: var(--color-text-tertiary); font-size: var(--text-xs); margin-left: auto; }
+.s21 { flex: 1; justify-content: center; padding: var(--space-1.5); }
+.s22 { padding: var(--space-1.5) var(--space-2.5); }
+.s23 { background: transparent; border: 1px solid var(--color-border); color: var(--color-danger); padding: var(--space-1.5) var(--space-2.5); }
+
+.workflowCard:hover,
+.workflowCard:focus-within { box-shadow: var(--shadow-md); transform: translateY(-1px); }

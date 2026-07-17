@@ -1,0 +1,272 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AdvancedFinanceController } from '../advanced-finance.controller';
+
+function createMockService() {
+  const mocks: Record<string, any> = {};
+  return new Proxy({}, {
+    get: (_target, prop: string) => {
+      if (!mocks[prop]) {
+        mocks[prop] = vi.fn().mockResolvedValue({});
+      }
+      return mocks[prop];
+    }
+  });
+}
+
+describe('AdvancedFinanceController', () => {
+  let controller: AdvancedFinanceController;
+  let glService: any;
+  let budgetingService: any;
+  let bankingService: any;
+  let expenseService: any;
+  let revenueService: any;
+  let taxService: any;
+  let treasuryService: any;
+  let consolidationService: any;
+  let reportingService: any;
+  let periodService: any;
+  let paymentTermsService: any;
+  let bankFeedsService: any;
+  let cashFlowForecastService: any;
+  let interCompanyService: any;
+  let fxRevaluationService: any;
+
+  let serviceMap: Record<string, any>;
+
+  beforeEach(() => {
+    glService = createMockService();
+    budgetingService = createMockService();
+    bankingService = createMockService();
+    expenseService = createMockService();
+    revenueService = createMockService();
+    taxService = createMockService();
+    treasuryService = createMockService();
+    consolidationService = createMockService();
+    reportingService = createMockService();
+    periodService = createMockService();
+    paymentTermsService = createMockService();
+    bankFeedsService = createMockService();
+    cashFlowForecastService = createMockService();
+    interCompanyService = createMockService();
+    fxRevaluationService = createMockService();
+
+    serviceMap = {
+      glService,
+      budgetingService,
+      bankingService,
+      expenseService,
+      revenueService,
+      taxService,
+      treasuryService,
+      consolidationService,
+      reportingService,
+      periodService,
+      paymentTermsService,
+      bankFeedsService,
+      cashFlowForecastService,
+      interCompanyService,
+      fxRevaluationService,
+    };
+
+    controller = new AdvancedFinanceController(
+      glService,
+      budgetingService,
+      bankingService,
+      expenseService,
+      revenueService,
+      taxService,
+      treasuryService,
+      consolidationService,
+      reportingService,
+      periodService,
+      paymentTermsService,
+      bankFeedsService,
+      cashFlowForecastService,
+      interCompanyService,
+      fxRevaluationService,
+    );
+  });
+
+  const mockReq = { user: { tenantId: 'tenant-1', orgId: 'org-1', userId: 'user-1' } } as unknown as any;
+
+  const getEndpoints = [
+    { method: 'getExchangeRates', serviceName: 'treasuryService' },
+    { method: 'getAccounts', serviceName: 'glService' },
+    { method: 'getCostCenters', serviceName: 'glService' },
+    { method: 'getJournals', serviceName: 'glService' },
+    { method: 'getBudgets', serviceName: 'budgetingService' },
+    { method: 'getBankReconciliations', serviceName: 'bankingService' },
+    { method: 'getFinancialPeriods', serviceName: 'periodService' },
+    { method: 'getBankAccounts', serviceName: 'bankingService' },
+    { method: 'getCreditNotes', serviceName: 'taxService' },
+    { method: 'getDebitNotes', serviceName: 'taxService' },
+    { method: 'getDunningLevels', serviceName: 'taxService' },
+    { method: 'getDunningRuns', serviceName: 'taxService' },
+    { method: 'getPaymentSchedules', serviceName: 'treasuryService' },
+    { method: 'getPaymentRuns', serviceName: 'treasuryService' },
+    { method: 'getForecastScenarios', serviceName: 'treasuryService' },
+    { method: 'getTaxRules', serviceName: 'taxService' },
+    { method: 'getWithholdingTaxes', serviceName: 'taxService' },
+    { method: 'getTaxFilings', serviceName: 'taxService' },
+    { method: 'getInvestmentPortfolios', serviceName: 'treasuryService' },
+    { method: 'getTreasuryTransactions', serviceName: 'treasuryService' },
+    { method: 'getInterCompanyTransfers', serviceName: 'treasuryService' },
+    { method: 'getPaymentTerms', serviceName: 'paymentTermsService' },
+    { method: 'exportForecastCsv', serviceName: 'cashFlowForecastService' },
+  ];
+
+  getEndpoints.forEach(({ method, serviceName }) => {
+    it(`should call ${serviceName}.${method} successfully`, async () => {
+      const targetService = serviceMap[serviceName];
+      await (controller as any)[method]!(mockReq);
+       expect(targetService[method].mock.calls[0][0]).toBe('tenant-1');
+    });
+  });
+
+  it('should call getProfitAndLoss', async () => {
+    await controller.getProfitAndLoss(mockReq, "start", "end");
+    expect(reportingService.getProfitAndLoss).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end', undefined);
+  });
+
+  it('should call getBalanceSheet', async () => {
+    await controller.getBalanceSheet(mockReq, "date");
+    expect(reportingService.getBalanceSheet).toHaveBeenCalledWith('tenant-1', 'org-1', 'date', undefined);
+  });
+
+  it('should call getCashFlow', async () => {
+    await controller.getCashFlow(mockReq, "start", "end");
+    expect(reportingService.getCashFlowStatement).toHaveBeenCalledWith('tenant-1', 'org-1', 'start', 'end', undefined);
+  });
+
+  it('should call getCashFlowProjections via cashFlowForecastService.get13WeekForecast', async () => {
+    await controller.getCashFlowProjections(mockReq, 'scen-1');
+    expect(cashFlowForecastService.get13WeekForecast).toHaveBeenCalledWith('tenant-1', 'scen-1');
+  });
+
+  it('should call getCashFlowScenarios via cashFlowForecastService.getScenarios', async () => {
+    await controller.getCashFlowScenarios(mockReq);
+    expect(cashFlowForecastService.getScenarios).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call getIntercompanyStats via interCompanyService.getConsolidatedStats', async () => {
+    await controller.getIntercompanyStats(mockReq);
+    expect(interCompanyService.getConsolidatedStats).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call createFxRevaluationRun via fxRevaluationService.createRevaluationRun', async () => {
+    const dto = { runDate: '2026-07-08T00:00:00Z', targetCurrency: 'EUR', notes: 'test run' };
+    await controller.createFxRevaluationRun(mockReq, dto);
+    expect(fxRevaluationService.createRevaluationRun).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
+  });
+
+  it('should call postFxRevaluationRun via fxRevaluationService.postRevaluationRun', async () => {
+    await controller.postFxRevaluationRun(mockReq, 'run-1');
+    expect(fxRevaluationService.postRevaluationRun).toHaveBeenCalledWith('tenant-1', 'run-1');
+  });
+
+  it('should call getFxRevaluationRunDetails via fxRevaluationService.getRevaluationRunDetails', async () => {
+    await controller.getFxRevaluationRunDetails(mockReq, 'run-1');
+    expect(fxRevaluationService.getRevaluationRunDetails).toHaveBeenCalledWith('tenant-1', 'run-1');
+  });
+
+  it('should call getFxRevaluationRuns via fxRevaluationService.getRevaluationRuns', async () => {
+    await controller.getFxRevaluationRuns(mockReq);
+    expect(fxRevaluationService.getRevaluationRuns).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call getIntercompanyTransactions via interCompanyService.getTransactions', async () => {
+    await controller.getIntercompanyTransactions(mockReq, 'PENDING', 'org-1', 'org-2', '2', '20');
+    expect(interCompanyService.getTransactions).toHaveBeenCalledWith('tenant-1', {
+      status: 'PENDING',
+      fromOrgId: 'org-1',
+      toOrgId: 'org-2',
+      page: 2,
+      limit: 20,
+    });
+  });
+
+  it('should call autoMatchIntercompanyTransactions via interCompanyService.autoMatchTransactions', async () => {
+    await controller.autoMatchIntercompanyTransactions(mockReq);
+    expect(interCompanyService.autoMatchTransactions).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call manualMatchIntercompanyTransactions via interCompanyService.manualMatchTransactions', async () => {
+    const dto = { fromInvoiceId: 'inv-1', toInvoiceId: 'sched-1', description: 'match description' };
+    await controller.manualMatchIntercompanyTransactions(mockReq, dto);
+    expect(interCompanyService.manualMatchTransactions).toHaveBeenCalledWith('tenant-1', dto);
+  });
+
+  it('should call eliminateIntercompanyTransaction via interCompanyService.eliminateTransaction', async () => {
+    await controller.eliminateIntercompanyTransaction(mockReq, 'tx-1');
+    expect(interCompanyService.eliminateTransaction).toHaveBeenCalledWith('tenant-1', 'tx-1');
+  });
+
+  it('should call getBankConnections via bankFeedsService.getConnections', async () => {
+    await controller.getBankConnections(mockReq);
+    expect(bankFeedsService.getConnections).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('should call createBankConnection via bankFeedsService.createConnection', async () => {
+    const dto = { bankName: 'Chase', accountNumber: '123', accountType: 'SAVINGS', bankAccountId: 'ba-1' };
+    await controller.createBankConnection(mockReq, dto);
+    expect(bankFeedsService.createConnection).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
+  });
+
+  it('should call saveForecastWeekOverride via cashFlowForecastService.saveForecastWeekOverride', async () => {
+    const dto = { weekStart: '2026-07-08T00:00:00Z', adjustments: 1000, comments: 'test' };
+    await controller.saveForecastWeekOverride(mockReq, dto);
+    expect(cashFlowForecastService.saveForecastWeekOverride).toHaveBeenCalledWith('tenant-1', expect.any(Date), dto);
+  });
+
+  it('should call createCashFlowScenario via cashFlowForecastService.createScenario', async () => {
+    const dto = { name: 'Optimistic' };
+    await controller.createCashFlowScenario(mockReq, dto);
+    expect(cashFlowForecastService.createScenario).toHaveBeenCalledWith('tenant-1', 'org-1', dto);
+  });
+
+  it('should call updateCashFlowScenario via cashFlowForecastService.updateScenario', async () => {
+    const dto = { name: 'Optimistic v2' };
+    await controller.updateCashFlowScenario(mockReq, 'scen-1', dto);
+    expect(cashFlowForecastService.updateScenario).toHaveBeenCalledWith('tenant-1', 'scen-1', dto);
+  });
+
+  it('should call deleteCashFlowScenario via cashFlowForecastService.deleteScenario', async () => {
+    await controller.deleteCashFlowScenario(mockReq, 'scen-1');
+    expect(cashFlowForecastService.deleteScenario).toHaveBeenCalledWith('tenant-1', 'scen-1');
+  });
+
+  it('should call compareForecastScenarios via cashFlowForecastService.compareForecastScenarios', async () => {
+    await controller.compareForecastScenarios(mockReq, 'scen-1');
+    expect(cashFlowForecastService.compareForecastScenarios).toHaveBeenCalledWith('tenant-1', 'scen-1');
+  });
+
+  const postEndpoints = [
+    { method: 'createAccount', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'glService' },
+    { method: 'createCostCenter', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'glService' },
+    { method: 'createJournal', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'glService' },
+    { method: 'createBudget', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'budgetingService' },
+    { method: 'createBankReconciliation', args: [mockReq, {}], expectedArgs: ['tenant-1', {}], serviceName: 'bankingService' },
+    { method: 'createFinancialPeriod', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'periodService' },
+    { method: 'createBankAccount', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'bankingService' },
+    { method: 'createCreditNote', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
+    { method: 'createDebitNote', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
+    { method: 'createDunningLevel', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
+    { method: 'createPaymentSchedule', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
+    { method: 'createPaymentRun', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
+    { method: 'createForecastScenario', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
+    { method: 'createTaxRule', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
+    { method: 'createWithholdingTax', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
+    { method: 'createTaxFiling', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'taxService' },
+    { method: 'createInvestmentPortfolio', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
+    { method: 'createTreasuryTransaction', args: [mockReq, {}], expectedArgs: ['tenant-1', 'org-1', {}], serviceName: 'treasuryService' },
+    { method: 'createPaymentTerm', args: [mockReq, {}], expectedArgs: ['tenant-1', {}], serviceName: 'paymentTermsService' },
+  ];
+
+  postEndpoints.forEach(({ method, args, expectedArgs, serviceName }) => {
+    it(`should call ${serviceName}.${method} successfully`, async () => {
+      const targetService = serviceMap[serviceName];
+      await (controller as any)[method]!(...args);
+      expect(targetService[method]).toHaveBeenCalledWith(...expectedArgs);
+    });
+  });
+});

@@ -1,0 +1,3 @@
+.s1 { align-items: center; display: flex; height: 400px; justify-content: center; }
+.s2 { display: flex; flex-direction: column; gap: var(--space-6); height: calc(100vh - 120px); }
+.s3 { flex: 1; min-height: 0; position: relative; }

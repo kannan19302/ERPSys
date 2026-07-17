@@ -1,0 +1,7 @@
+.grid { margin-bottom: var(--space-6); }
+.stageCard { background: var(--color-bg-sunken); border-radius: var(--radius-sm); padding: var(--space-3); }
+.stageHeader { display: flex; justify-content: space-between; margin-bottom: var(--space-1); }
+.average { font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.stageMetrics { color: var(--color-text-secondary); display: flex; font-size: var(--text-xs); gap: var(--space-3); }
+.stagnatingCard { background: var(--color-danger-bg); border: 1px solid var(--color-danger-border); border-radius: var(--radius-sm); padding: var(--space-3); }
+.stagnatingDescription { color: var(--color-text-secondary); font-size: var(--text-xs); margin: var(--space-1) 0 0; }

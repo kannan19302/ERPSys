@@ -1,0 +1,6 @@
+.s1 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: 16px; }
+.s2 { display: flex; flex-direction: column; gap: 16px; max-width: 400px; }
+.s3 { color: var(--color-text-secondary); display: block; font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+.s4 { display: flex; gap: 8px; }
+.s5 { flex: 1; min-width: 0; }
+.s6 { background: var(--color-primary); border-radius: var(--radius-md); border: none; color: var(--color-text-inverse); cursor: pointer; font-size: var(--text-sm); font-weight: 500; padding: 10px 20px; }

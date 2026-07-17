@@ -1,0 +1,6 @@
+.s1 { background: var(--color-bg-sunken); border-radius: var(--radius-full); flex: 1; height: 6px; max-width: 120px; overflow: hidden; }
+.s2 { border-radius: var(--radius-full); height: 100%; }
+.s3 { font-weight: var(--weight-semibold); }
+.s4 { color: var(--color-success); font-size: var(--text-xs); }
+.s5 { border-radius: var(--radius-lg); border: 2px dashed var(--color-border); cursor: pointer; padding: var(--space-8); text-align: center; }
+.s6 { color: var(--color-text-tertiary); margin-bottom: var(--space-2); }

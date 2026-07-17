@@ -1,0 +1,7 @@
+.s1 { align-items: center; background: var(--color-primary-light); border-radius: var(--radius-md); color: var(--color-primary); display: flex; flex-shrink: 0; height: 32px; justify-content: center; width: 32px; }
+.s2 { background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; padding: 2px; }
+.s3 { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.s4 { background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; padding: 4px; }
+.s5 { background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: var(--space-2); max-height: 200px; overflow-y: auto; padding: var(--space-3); }
+.s6 { align-items: center; cursor: pointer; display: flex; font-size: var(--text-sm); gap: var(--space-2); }
+.s7 { accent-color: var(--color-primary); }

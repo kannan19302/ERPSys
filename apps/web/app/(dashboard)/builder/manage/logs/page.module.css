@@ -1,0 +1,5 @@
+.s1 { align-items: center; display: flex; gap: var(--space-3); }
+.s2 { flex: 1; max-width: 360px; position: relative; }
+.s3 { padding-left: 30px; }
+.s4 { color: var(--color-text-tertiary); padding: 40px; text-align: center; }
+.s5 { color: var(--color-text-tertiary); left: 10px; position: absolute; top: 50%; transform: translateY(-50%); }

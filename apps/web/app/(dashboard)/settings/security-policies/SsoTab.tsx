@@ -1,0 +1,147 @@
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Card, Button, Spinner, Badge, Tabs, TextField, FormField, Textarea,
+} from '@unerp/ui';
+import { Key, CheckCircle, Shield } from 'lucide-react';
+import { useApiClient } from '@unerp/framework';
+import styles from './SsoTab.module.css';
+
+interface SsoConfig {
+  id: string;
+  providerType: string;
+  name: string;
+  clientId: string | null;
+  clientSecret: string | null;
+  issuerUrl: string | null;
+  samlEntryPoint: string | null;
+  samlIssuer: string | null;
+  samlCert: string | null;
+  isActive: boolean;
+}
+
+export default function SsoTab() {
+  const client = useApiClient();
+  const [selectedProvider, setSelectedProvider] = useState<'OIDC' | 'SAML'>('OIDC');
+  const [form, setForm] = useState({
+    name: 'Google Workspace', clientId: '', clientSecret: '', issuerUrl: '',
+    samlEntryPoint: '', samlIssuer: '', samlCert: '', isActive: true,
+  });
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  const fetchConfig = useCallback(async () => {
+    try {
+      const data = await client.get<SsoConfig[]>('/admin/security/sso');
+      const active = data.find((c) => c.providerType === selectedProvider);
+      if (active) {
+        setForm({
+          name: active.name, clientId: active.clientId || '', clientSecret: active.clientSecret || '',
+          issuerUrl: active.issuerUrl || '', samlEntryPoint: active.samlEntryPoint || '',
+          samlIssuer: active.samlIssuer || '', samlCert: active.samlCert || '', isActive: active.isActive,
+        });
+      } else {
+        setForm({
+          name: selectedProvider === 'OIDC' ? 'Google Workspace' : 'Okta Enterprise',
+          clientId: '', clientSecret: '', issuerUrl: '', samlEntryPoint: '', samlIssuer: '', samlCert: '', isActive: true,
+        });
+      }
+    } catch { /* use defaults */ }
+  }, [client, selectedProvider]);
+
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveStatus('saving');
+    try {
+      await client.post('/admin/security/sso', { providerType: selectedProvider, ...form });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch {
+      setSaveStatus('error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateField = (key: string, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className={styles.s1}>
+      <div className="ui-flex-end">
+        {saveStatus === 'saved' && (
+          <Badge variant="success"><CheckCircle size={12} className="mr-1" /> Saved</Badge>
+        )}
+      </div>
+
+      <Tabs
+        tabs={[
+          { key: 'OIDC', label: 'OpenID Connect (OIDC)', icon: <Key size={14} /> },
+          { key: 'SAML', label: 'SAML 2.0', icon: <Shield size={14} /> },
+        ]}
+        value={selectedProvider}
+        onChange={(key) => setSelectedProvider(key as 'OIDC' | 'SAML')}
+      />
+
+      <Card>
+        <form onSubmit={handleSave} className="p-5 ui-stack-4">
+          <TextField
+            label="Provider Name"
+            placeholder={selectedProvider === 'OIDC' ? 'Google Workspace' : 'Okta Enterprise'}
+            required
+            value={form.name}
+            onChange={(e) => updateField('name', e.target.value)}
+          />
+
+          {selectedProvider === 'OIDC' ? (
+            <>
+              <TextField label="Client ID" placeholder="your-client-id" value={form.clientId} onChange={(e) => updateField('clientId', e.target.value)} />
+              <TextField label="Client Secret" type="password" placeholder="your-client-secret" value={form.clientSecret} onChange={(e) => updateField('clientSecret', e.target.value)} />
+              <TextField label="Issuer URL" placeholder="https://accounts.google.com" value={form.issuerUrl} onChange={(e) => updateField('issuerUrl', e.target.value)} hint="The OIDC discovery endpoint URL" />
+            </>
+          ) : (
+            <>
+              <TextField label="SAML Entry Point" placeholder="https://idp.example.com/sso/saml" value={form.samlEntryPoint} onChange={(e) => updateField('samlEntryPoint', e.target.value)} />
+              <TextField label="SAML Issuer / Entity ID" placeholder="https://idp.example.com" value={form.samlIssuer} onChange={(e) => updateField('samlIssuer', e.target.value)} />
+              <FormField label="X.509 Certificate" hint="Paste the PEM-encoded certificate from your identity provider">
+                <Textarea
+                  rows={5}
+                  value={form.samlCert}
+                  onChange={(e) => updateField('samlCert', e.target.value)}
+                  placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
+                  className={styles.s2}
+                />
+              </FormField>
+            </>
+          )}
+
+          <div className={styles.s3}>
+            <input
+              type="checkbox" id="sso-active"
+              checked={form.isActive} onChange={(e) => updateField('isActive', e.target.checked)}
+              className={styles.s4}
+            />
+            <label htmlFor="sso-active" className={styles.s5}>
+              <span className="font-medium">Enable SSO Provider</span>
+              <span className={styles.s6}>
+                Users will be able to sign in using this identity provider
+              </span>
+            </label>
+          </div>
+
+          <div className={styles.s7}>
+            <Button variant="secondary" type="button" onClick={() => fetchConfig()}>Reset</Button>
+            <Button variant="primary" type="submit" disabled={saving}>
+              {saving ? <><Spinner size="sm" /> Saving...</> : 'Save Configuration'}
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}

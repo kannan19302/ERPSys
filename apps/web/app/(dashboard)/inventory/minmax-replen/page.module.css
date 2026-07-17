@@ -1,0 +1,6 @@
+.s1 { background: transparent; border-radius: var(--radius-sm); border: 1px solid var(--color-danger); color: var(--color-danger); cursor: pointer; font-size: 0.75rem; padding: 2px 8px; }
+.s2 { display: flex; flex-wrap: wrap; gap: 4px; }
+.s3 { background: var(--color-success); border-radius: 4px; border: none; color: var(--color-bg-elevated); cursor: pointer; font-size: 0.75rem; padding: 2px 8px; }
+.s4 { background: #ca8a04; border-radius: 4px; border: none; color: var(--color-bg-elevated); cursor: pointer; font-size: 0.75rem; padding: 2px 8px; }
+.s5 { background: #4b5563; border-radius: 4px; border: none; color: var(--color-bg-elevated); cursor: pointer; font-size: 0.75rem; padding: 2px 8px; }
+.s6 { background: transparent; border-radius: 4px; border: 1px solid var(--color-danger); color: var(--color-danger); cursor: pointer; font-size: 0.75rem; padding: 2px 8px; }

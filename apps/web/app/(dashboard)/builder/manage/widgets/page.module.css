@@ -1,0 +1,5 @@
+.s1 { display: flex; gap: 8px; }
+.s2 { font-size: 11px; padding: 4px 10px; }
+.s3 { color: var(--color-danger-hover); font-size: 11px; padding: 4px 10px; }
+.s4 { font-weight: 600; margin: 0; }
+.s5 { background: var(--color-bg-subtle); border-radius: var(--radius-md); font-family: monospace; font-size: 12px; margin: 0; overflow-x: auto; padding: var(--space-3); }

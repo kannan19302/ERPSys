@@ -1,0 +1,38 @@
+.s1 { align-items: center; cursor: pointer; display: flex; flex-direction: column; gap: var(--space-2); width: 88px; }
+.s2 { border-radius: 18px; display: grid; gap: 4px; grid-template-columns: 1fr 1fr; height: 72px; padding: 10px; transition: all 0.15s ease; width: 72px; }
+.s3 { align-items: center; border-radius: 5px; display: flex; justify-content: center; }
+.s4 { border-radius: 5px; }
+.s5 { align-items: center; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); color: white; display: flex; font-size: 10px; font-weight: 700; height: 20px; justify-content: center; min-width: 20px; padding: 0 5px; position: absolute; right: -6px; top: -6px; }
+.s6 { -webkit-box-orient: vertical; -webkit-line-clamp: 2px; color: var(--color-text); display: -webkit-box; font-size: 12px; line-height: 1.2; max-width: 88px; overflow: hidden; text-align: center; text-overflow: ellipsis; }
+.s7 { text-decoration: none; }
+.s8 { align-items: center; border-radius: 18px; display: flex; height: 72px; justify-content: center; transition: all 0.15s ease; width: 72px; }
+.s9 { display: flex; flex-direction: column; gap: var(--space-6); min-height: 80vh; position: relative; }
+.s10 { align-items: center; display: flex; justify-content: center; padding-top: var(--space-8); }
+.s11 { box-shadow: var(--shadow-xl); max-width: 100%; position: relative; width: 940px; }
+.s12 { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; padding: var(--space-5) var(--space-6); }
+.s13 { color: var(--color-text); font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0; }
+.s14 { align-items: center; background: none; border: none; color: var(--color-primary); cursor: pointer; display: flex; font-size: var(--text-sm); gap: 4px; margin-top: 2px; padding: 0; }
+.s15 { position: relative; width: 240px; }
+.s16 { color: var(--color-text-tertiary); left: 10px; position: absolute; top: 50%; transform: translateY(-50%); }
+.s17 { font-size: 13px; padding-left: 34px; }
+.s18 { background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; padding: 0; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+.s19 { min-height: 400px; padding: var(--space-6); }
+.s20 { color: var(--color-text-tertiary); padding: var(--space-10); text-align: center; }
+.s21 { display: block; margin: 0 auto var(--space-3); opacity: 0.3; }
+.s22 { font-size: var(--text-sm); margin: 0; }
+.s23 { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.s24 { align-items: center; display: flex; flex-direction: column; gap: var(--space-1); width: 88px; }
+.s25 { color: var(--color-text-tertiary); font-size: 9px; text-align: center; }
+.s26 { align-items: center; background: var(--color-bg); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; padding: var(--space-3) var(--space-6); }
+.s27 { align-items: center; color: var(--color-primary); display: flex; font-size: var(--text-xs); gap: 4px; text-decoration: none; }
+.s28 { background: none; border: none; color: var(--color-text-secondary); cursor: pointer; font-size: var(--text-xs); }
+.s29 { align-items: center; animation: fadeIn 0.15s ease; backdrop-filter: blur(4px); background: rgba(0,0,0,0.3); display: flex; inset: 0; justify-content: center; position: fixed; z-index: 50; }
+.s30 { animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); background: var(--color-bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--color-border); box-shadow: var(--shadow-2xl); max-height: 80vh; max-width: 92vw; overflow: hidden; width: 640px; }
+.s31 { border-radius: 12px; display: grid; gap: 3px; grid-template-columns: 1fr 1fr; height: 40px; padding: 8px; width: 40px; }
+.s32 { align-items: center; border-radius: 3px; display: flex; justify-content: center; }
+.s33 { align-items: center; background: var(--color-bg-sunken); border-radius: var(--radius-full); border: none; color: var(--color-text-secondary); cursor: pointer; display: flex; height: 32px; justify-content: center; width: 32px; }
+.s34 { max-height: 60vh; overflow-y: auto; padding: var(--space-6); }
+.folderTile { background: color-mix(in srgb, var(--tile-color) 9%, transparent); border: 1.5px solid color-mix(in srgb, var(--tile-color) 19%, transparent); }
+.folderTile:hover { background: color-mix(in srgb, var(--tile-color) 16%, transparent); box-shadow: 0 8px 20px color-mix(in srgb, var(--tile-color) 19%, transparent); transform: scale(1.05); }
+.appTile { background: color-mix(in srgb, var(--tile-color) 10%, transparent); }
+.appTile:hover { background: color-mix(in srgb, var(--tile-color) 16%, transparent); box-shadow: 0 8px 20px color-mix(in srgb, var(--tile-color) 19%, transparent); transform: scale(1.05); }

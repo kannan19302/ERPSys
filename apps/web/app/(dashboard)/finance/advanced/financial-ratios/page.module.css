@@ -1,0 +1,5 @@
+.s1 { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.s2 { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.s3 { align-items: center; display: flex; justify-content: space-between; padding: var(--space-4); }
+.s4 { color: var(--color-text-tertiary); font-size: var(--text-xs); margin-top: 2px; }
+.s5 { font-size: var(--text-xl); font-weight: var(--weight-bold); }

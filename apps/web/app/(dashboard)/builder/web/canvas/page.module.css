@@ -1,0 +1,8 @@
+.s1 { background-color: var(--color-background, #ffffff); color: var(--color-text, #111111); font-family: var(--font-body, sans-serif); min-height: 100vh; }
+.s2 { align-items: center; display: flex; height: 100vh; justify-content: center; opacity: 0.5; }
+.s3 { cursor: pointer; outline-offset: -2px; position: relative; transition: outline 0.2s; }
+.s4 { background: var(--color-primary, #3B82F6); border-bottom-left-radius: 4px; color: white; font-size: 12px; font-weight: bold; padding: 4px 8px; position: absolute; right: 0; top: 0; z-index: 10; }
+.s5 { pointer-events: none; }
+.s6 { align-items: center; display: flex; height: 100vh; justify-content: center; }
+.section:hover:not(.selected) { outline: 2px dashed color-mix(in srgb, var(--color-primary) 50%, transparent); }
+.selected { outline-color: var(--color-primary); }

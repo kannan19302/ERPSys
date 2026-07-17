@@ -1,0 +1,36 @@
+{
+  "name": "@unerp/ui-tokens",
+  "version": "0.1.0",
+  "description": "UniERP Design System — design tokens (base primitives + themes)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./base.css": "./src/base.css",
+    "./charts.css": "./src/charts.css",
+    "./index.css": "./src/index.css",
+    "./themes/*": "./src/themes/*"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint src/",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@unerp/config": "workspace:*",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.7.0",
+    "tsup": "^8.0.0"
+  },
+  "module": "./dist/index.mjs"
+}

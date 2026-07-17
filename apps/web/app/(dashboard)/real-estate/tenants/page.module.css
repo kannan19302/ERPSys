@@ -1,0 +1,2 @@
+.s1 { align-items: center; display: flex; justify-content: space-between; padding: var(--space-4); }
+.s2 { border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: var(--weight-medium); padding: 4px 8px; }

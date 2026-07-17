@@ -1,0 +1,5 @@
+.s1 { align-items: center; background: transparent; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; display: flex; font-size: var(--text-sm); gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+.s2 { align-items: center; background: var(--color-success-light); border-radius: var(--radius-md); border: 1px solid var(--color-success); color: var(--color-success); display: flex; font-size: var(--text-sm); gap: var(--space-2); padding: var(--space-3); }
+.s3 { color: var(--color-text-secondary); display: inline-block; font-size: var(--text-xs); line-height: 1.4; max-width: 400px; }
+.s4 { border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: 2px 8px; }
+.s5 { background: transparent; border: none; }

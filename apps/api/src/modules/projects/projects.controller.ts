@@ -1,0 +1,251 @@
+import { Controller, Get, Post, Put, Delete, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { z } from 'zod';
+import { ZodBody } from '../../common/decorators/zod-body.decorator';
+import { Request } from 'express';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RbacGuard } from '../../common/guards/rbac.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
+import { ProjectsService } from './projects.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
+}
+
+@ApiTags('projects')
+@ApiBearerAuth()
+@Controller('projects')
+@UseGuards(JwtAuthGuard, RbacGuard)
+export class ProjectsController {
+  constructor(private readonly projectsService: ProjectsService) {}
+
+  @ApiOperation({ summary: 'Get projects' })
+  @Get()
+  @Permissions('projects.project.read')
+  async getProjects(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.projectsService.getProjects(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get resource workload for a week (defaults to the current week)' })
+  @Get('resource-workload')
+  @Permissions('projects.project.read')
+  async getResourceWorkload(@Req() req: AuthenticatedRequest, @Query('weekStart') weekStart?: string): Promise<unknown> {
+    return this.projectsService.getResourceWorkload(req.user.tenantId, weekStart);
+  }
+
+  @ApiOperation({ summary: 'Get project revenue recognition schedule (time-based percentage-of-completion)' })
+  @Get('revenue-recognition')
+  @Permissions('projects.project.read')
+  async getRevenueRecognition(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.projectsService.getRevenueRecognition(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get portfolios' })
+  @Get('portfolios')
+  @Permissions('projects.project.read')
+  async getPortfolios(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.projectsService.getPortfolios(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Create portfolio' })
+  @Post('portfolios')
+  @Permissions('projects.project.create')
+  async createPortfolio(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.any()) dto: { name: string; description?: string; strategicAlignment?: string; budget?: number }
+  ): Promise<unknown> {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.projectsService.createPortfolio(req.user.tenantId, orgId, dto);
+  }
+
+  @ApiOperation({ summary: 'Get WIP summary across all projects' })
+  @Get('wip-summary')
+  @Permissions('projects.project.read')
+  async getWipSummary(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    return this.projectsService.getWipSummary(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: 'Get project by id' })
+  @Get(':id')
+  @Permissions('projects.project.read')
+  async getProjectById(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getProjectById(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create project' })
+  @Post()
+  @Permissions('projects.project.create')
+  async createProject(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.any()) dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string; estimatedCost?: number; contractValue?: number }
+  ): Promise<unknown> {
+    const orgId = req.user.orgId || 'org-system-default';
+    return this.projectsService.createProject(req.user.tenantId, orgId, dto, req.user.userId || 'system');
+  }
+
+  @ApiOperation({ summary: 'Get tasks' })
+  @Get(':id/tasks')
+  @Permissions('projects.project.read')
+  async getTasks(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getTasks(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create task' })
+  @Post(':id/tasks')
+  @Permissions('projects.task.create')
+  async createTask(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.any()) dto: { name: string; description?: string; priority?: string; dueDate?: string; assignedToId?: string }
+  ): Promise<unknown> {
+    return this.projectsService.createTask(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Log time' })
+  @Post('tasks/:taskId/timesheets')
+  @Permissions('projects.timesheet.create')
+  async logTime(
+    @Req() req: AuthenticatedRequest,
+    @Param('taskId') taskId: string,
+    @ZodBody(z.any()) dto: { employeeId: string; date: string; hours: number; notes?: string }
+  ): Promise<unknown> {
+    return this.projectsService.logTime(req.user.tenantId, taskId, dto);
+  }
+
+  @ApiOperation({ summary: 'Save baseline' })
+  @Post(':id/baseline')
+  @Permissions('projects.project.create')
+  async saveBaseline(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.any()) dto: { baselineSchedule: string }
+  ): Promise<unknown> {
+    return this.projectsService.saveBaseline(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Compute critical path' })
+  @Post(':id/critical-path')
+  @Permissions('projects.project.read')
+  async computeCriticalPath(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string
+  ): Promise<unknown> {
+    return this.projectsService.computeCriticalPath(req.user.tenantId, id);
+  }
+
+  // --- Risks endpoints ---
+  @ApiOperation({ summary: 'Get risks' })
+  @Get(':projectId/risks')
+  @Permissions('projects.project.read')
+  async getRisks(@Req() req: AuthenticatedRequest, @Param('projectId') projectId: string): Promise<unknown> {
+    return this.projectsService.getRisks(req.user.tenantId, projectId);
+  }
+
+  @ApiOperation({ summary: 'Create risk' })
+  @Post(':projectId/risks')
+  @Permissions('projects.project.create')
+  async createRisk(
+    @Req() req: AuthenticatedRequest,
+    @Param('projectId') projectId: string,
+    @ZodBody(z.any()) dto: { title: string; description?: string; probability: string; impact: string; mitigationPlan?: string }
+  ): Promise<unknown> {
+    return this.projectsService.createRisk(req.user.tenantId, projectId, dto);
+  }
+
+  @ApiOperation({ summary: 'Update risk' })
+  @Put('risks/:riskId')
+  @Permissions('projects.project.create')
+  async updateRisk(
+    @Req() req: AuthenticatedRequest,
+    @Param('riskId') riskId: string,
+    @ZodBody(z.any()) dto: { title?: string; description?: string; probability?: string; impact?: string; mitigationPlan?: string; status?: string }
+  ): Promise<unknown> {
+    return this.projectsService.updateRisk(req.user.tenantId, riskId, dto);
+  }
+
+  // --- Change Requests endpoints ---
+  @ApiOperation({ summary: 'Get change requests' })
+  @Get(':projectId/change-requests')
+  @Permissions('projects.project.read')
+  async getChangeRequests(@Req() req: AuthenticatedRequest, @Param('projectId') projectId: string): Promise<unknown> {
+    return this.projectsService.getChangeRequests(req.user.tenantId, projectId);
+  }
+
+  @ApiOperation({ summary: 'Create change request' })
+  @Post(':projectId/change-requests')
+  @Permissions('projects.project.create')
+  async createChangeRequest(
+    @Req() req: AuthenticatedRequest,
+    @Param('projectId') projectId: string,
+    @ZodBody(z.any()) dto: { title: string; description?: string; requestedAmount: number; requestedScheduleDays: number }
+  ): Promise<unknown> {
+    return this.projectsService.createChangeRequest(req.user.tenantId, projectId, dto);
+  }
+
+  @ApiOperation({ summary: 'Approve change request' })
+  @Put('change-requests/:changeRequestId/approve')
+  @Permissions('projects.project.create')
+  async approveChangeRequest(
+    @Req() req: AuthenticatedRequest,
+    @Param('changeRequestId') changeRequestId: string
+  ): Promise<unknown> {
+    return this.projectsService.approveChangeRequest(req.user.tenantId, changeRequestId, req.user.userId || 'system');
+  }
+
+  // --- EVM calculator endpoint ---
+  @ApiOperation({ summary: 'Get project e v m' })
+  @Get(':id/evm')
+  @Permissions('projects.project.read')
+  async getProjectEVM(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getProjectEVM(req.user.tenantId, id);
+  }
+
+  // --- Finance Integration Auto-billing endpoint ---
+  @ApiOperation({ summary: 'Generate project invoice' })
+  @Post(':id/invoice')
+  @Permissions('finance.invoice.create')
+  async generateProjectInvoice(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.generateProjectInvoice(req.user.tenantId, id, req.user.userId || 'system');
+  }
+
+  // --- Project Costing & WIP Valuation (POC) ---
+
+  @ApiOperation({ summary: 'Get project WIP details' })
+  @Get(':id/wip')
+  @Permissions('projects.project.read')
+  async getProjectWip(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getProjectWip(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Create cost entry for project' })
+  @Post(':id/costs')
+  @Permissions('projects.project.create')
+  async createCostEntry(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @ZodBody(z.any()) dto: { type: string; amount: number; date: string; description?: string }
+  ): Promise<unknown> {
+    return this.projectsService.createCostEntry(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Get cost entries for project' })
+  @Get(':id/costs')
+  @Permissions('projects.project.read')
+  async getCostEntries(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<unknown> {
+    return this.projectsService.getCostEntries(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Delete cost entry' })
+  @Delete('costs/:costEntryId')
+  @Permissions('projects.project.create')
+  async deleteCostEntry(@Req() req: AuthenticatedRequest, @Param('costEntryId') costEntryId: string): Promise<unknown> {
+    return this.projectsService.deleteCostEntry(req.user.tenantId, costEntryId);
+  }
+}
+

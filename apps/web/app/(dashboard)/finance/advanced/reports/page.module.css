@@ -1,0 +1,33 @@
+.s1 { height: 20px; width: 20px; }
+.s2 { border-bottom: 1px solid var(--color-border); text-align: center; }
+.s3 { color: var(--color-text-secondary); margin-top: var(--space-2); }
+.s4 { color: var(--color-success); font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
+.s5 { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.s6 { color: var(--color-danger); font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
+.s7 { color: var(--color-primary); font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
+.s8 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
+.s9 { border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: var(--space-5); }
+.s10 { color: var(--color-primary); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.s11 { align-items: center; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; font-size: var(--text-sm); gap: var(--space-2); padding: var(--space-3); }
+.s12 { display: grid; gap: var(--space-3); }
+.s13 { font-size: var(--text-xs); font-weight: var(--weight-medium); margin-bottom: var(--space-1); }
+.s14 { border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: var(--space-4); }
+.s15 { color: var(--color-text-secondary); text-align: center; }
+.s16 { margin-bottom: var(--space-3); }
+.s17 { align-items: center; display: flex; flex: 1; justify-content: center; }
+.s18 { text-align: center; }
+.s19 { color: var(--color-primary); margin-bottom: var(--space-4); }
+.s20 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); }
+.s21 { color: var(--color-text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-4); }
+.s22 { display: grid; gap: var(--space-6); }
+.s23 { text-align: left; }
+.s24 { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: space-between; padding: var(--space-4); }
+.s25 { align-items: center; display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.s26 { align-items: center; display: flex; font-size: var(--text-sm); gap: var(--space-2); }
+.s27 { font-size: var(--text-sm); padding-inline: var(--space-2); }
+.s28 { color: var(--color-text-secondary); height: 16px; width: 16px; }
+.s29 { background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border); color: var(--color-text-primary); font-size: var(--text-sm); padding: var(--space-1) var(--space-2); }
+.s30 { flex: 1; padding: var(--space-6); }
+.s31 { align-items: center; color: var(--color-text-secondary); display: flex; flex-direction: column; height: 100%; justify-content: center; }
+.s32 { font-size: var(--text-lg); }
+.s33 { font-size: var(--text-sm); margin-top: var(--space-1); }

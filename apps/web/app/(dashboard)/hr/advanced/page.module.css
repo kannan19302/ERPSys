@@ -1,0 +1,13 @@
+.page { display: flex; flex-direction: column; gap: var(--space-8); animation: fadeInUp .4s ease-out; }
+.groupHeader { display: flex; align-items: center; gap: var(--space-3); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-2); }
+.groupIcon, .moduleIcon { display: flex; align-items: center; justify-content: center; }
+.groupTitle { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.moduleCount { margin-left: auto; padding: 2px 8px; border-radius: var(--radius-full); background: var(--color-bg-sunken); color: var(--color-text-tertiary); font-size: var(--text-xs); }
+.moduleLink { text-decoration: none; }
+.moduleCard { height: 100%; cursor: pointer; border: 1px solid transparent; transition: box-shadow .2s ease, border-color .2s ease; }
+.moduleCard:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+.moduleContent { display: flex; height: 100%; align-items: flex-start; gap: var(--space-4); }
+.moduleIcon { flex-shrink: 0; border-radius: var(--radius-lg); background: var(--color-primary-light); color: var(--color-primary); }
+.moduleCopy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; }
+.moduleTitle { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.chevron { flex-shrink: 0; margin-block: auto; color: var(--color-text-secondary); }

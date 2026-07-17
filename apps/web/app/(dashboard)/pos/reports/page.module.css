@@ -1,0 +1,8 @@
+.p1 { text-align: center; padding: var(--space-8); color: var(--color-text-secondary); }
+.p2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-4); }
+.p3 { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.p4 { font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.p5 { display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--text-sm); }
+.p6 { text-align: center; padding: var(--space-8); color: var(--color-text-secondary); }
+.p7 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3); }
+.p8 { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; }

@@ -1,0 +1,31 @@
+.p1 { display: grid; grid-template-columns: 200px 1fr 280px; gap: var(--space-4); align-items: start; }
+.p2 { font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: var(--space-3); }
+.p3 { display: flex; align-items: center; gap: var(--space-2); width: 100%; padding: var(--space-2.5) var(--space-3); margin-bottom: var(--space-1); border: 1px dashed var(--color-border); border-radius: var(--radius-md); background: transparent; cursor: pointer; font-size: 12px; color: var(--color-text); text-transform: capitalize; }
+.p4 { background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); min-height: 500px; }
+.p5 { font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.p6 { background: none; border: 1px solid var(--color-border); padding: 4px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 11px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; }
+.p7 { background: var(--color-primary); color: var(--color-text-inverse); border: none; padding: 4px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 11px; font-weight: var(--weight-semibold); }
+.p8 { border: none; background: transparent; font-weight: var(--weight-semibold); font-size: 12px; color: var(--color-text); outline: none; width: 200px; }
+.p9 { display: flex; gap: 2px; }
+.p10 { background: none; border: none; cursor: pointer; color: var(--color-error); padding: 0 4px; }
+.p11 { width: 100%; min-height: 50px; padding: var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-bg); font-size: 12px; color: var(--color-text); resize: vertical; font-family: inherit; }
+.p12 { font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: var(--space-3); }
+.p13 { display: inline; margin-right: 4px; }
+.p14 { margin-bottom: var(--space-2.5); }
+.p15 { font-size: 10px; color: var(--color-text-secondary); font-weight: var(--weight-bold); display: block; margin-bottom: 2px; }
+.p16 { width: 100%; padding: 4px 8px; border-radius: var(--radius-md); border: 1px solid var(--color-border); font-size: 12px; background: var(--color-bg); color: var(--color-text); }
+.p17 { margin-top: var(--space-3); }
+.p18 { font-size: 10px; color: var(--color-text-secondary); font-weight: var(--weight-bold); display: block; margin-bottom: 4px; }
+.p19 { width: 100%; padding: var(--space-3); border: 1px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: transparent; color: var(--color-text-secondary); font-size: 11px; display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
+.templateBlock { border: 1px solid var(--color-border); border-left: 3px solid var(--block-color); border-radius: var(--radius-md); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.paletteIcon { color: var(--block-color); }
+.moveButton { background: none; border: 0; color: var(--color-text-tertiary); cursor: pointer; font-size: var(--text-sm); }
+.moveButton:disabled { cursor: not-allowed; opacity: 0.3; }
+.p3:hover, .p3:focus-visible { border-color: var(--block-color); color: var(--block-color); }
+.p3[data-block-type='header'], .templateBlock[data-block-type='header'] { --block-color: var(--color-primary); }
+.p3[data-block-type='text'], .templateBlock[data-block-type='text'] { --block-color: var(--color-success); }
+.p3[data-block-type='image'], .templateBlock[data-block-type='image'] { --block-color: var(--color-warning); }
+.p3[data-block-type='table'], .templateBlock[data-block-type='table'] { --block-color: var(--color-info); }
+.p3[data-block-type='signature'], .templateBlock[data-block-type='signature'] { --block-color: var(--color-error); }
+.p3[data-block-type='footer'], .templateBlock[data-block-type='footer'] { --block-color: var(--color-secondary); }
+.s1 { background: none; border: none; color: var(--color-text-tertiary); font-size: 14px; }

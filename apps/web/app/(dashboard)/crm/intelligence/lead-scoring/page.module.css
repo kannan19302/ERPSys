@@ -1,0 +1,65 @@
+.modelsGrid {
+  margin-bottom: var(--space-6);
+}
+
+.modelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trainAction,
+.featureSection {
+  margin-top: var(--space-4);
+}
+
+.metricValue,
+.featureCount {
+  margin: 0;
+  font-weight: var(--weight-bold);
+}
+
+.metricValue {
+  font-size: var(--text-lg);
+}
+
+.featureCount,
+.factorPoints {
+  font-size: var(--text-sm);
+}
+
+.featureSection {
+  margin-top: var(--space-3);
+}
+
+.sectionHint,
+.factorDescription {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+.featureList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.factorDescription {
+  margin-bottom: var(--space-3);
+}
+
+.factorRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-sunken);
+}
+
+.factorPoints {
+  color: var(--color-primary);
+  font-weight: var(--weight-bold);
+}

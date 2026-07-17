@@ -1,0 +1,13 @@
+.s1 { height: 100%; }
+.s2 { height: 16px; width: 16px; }
+.s3 { display: flex; flex-direction: column; min-height: 0; }
+.s4 { background: var(--color-bg-subtle); }
+.s5 { max-height: 500px; min-height: 300px; overflow-y: auto; }
+.s6 { margin: 0 auto var(--space-4); opacity: 0.4; }
+.s7 { max-width: 80%; }
+.s8 { line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.s9 { padding: 0 var(--space-1); }
+.s10 { background: var(--color-bg-muted); }
+.s11 { border-bottom: none; border-top: 1px solid var(--color-border); }
+.s12 { align-items: flex-end; }
+.s13 { flex-shrink: 0; height: 40px; }

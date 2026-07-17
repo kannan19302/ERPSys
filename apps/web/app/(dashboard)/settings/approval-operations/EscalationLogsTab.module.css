@@ -1,0 +1,9 @@
+.s1 { align-items: center; background: var(--color-warning); border-radius: var(--radius-md); border: none; color: black; cursor: pointer; display: flex; font-size: var(--text-xs); font-weight: bold; gap: 6px; padding: var(--space-2) var(--space-4); }
+.s2 { background: var(--color-bg-elevated); border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: var(--space-5); }
+.s3 { align-items: center; color: var(--color-text-secondary); display: flex; font-size: var(--text-sm); font-weight: bold; gap: 6px; margin-bottom: var(--space-4); }
+.s4 { color: var(--color-text-secondary); font-size: var(--text-sm); padding: var(--space-4); }
+.s5 { border-radius: var(--radius-md); border: 1px dashed var(--color-border); color: var(--color-text-tertiary); font-size: var(--text-xs); padding: var(--space-4); text-align: center; }
+.s6 { align-items: center; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; justify-content: space-between; padding: var(--space-4); }
+.s7 { font-size: var(--text-sm); font-weight: bold; margin: 0; }
+.s8 { color: var(--color-text-secondary); display: flex; font-size: 11px; gap: var(--space-4); margin-top: var(--space-2); }
+.s9 { align-items: center; background: var(--color-warning-light); border-radius: var(--radius-sm); color: var(--color-warning); display: flex; font-size: 10px; font-weight: bold; gap: 4px; padding: var(--space-1) var(--space-2); }

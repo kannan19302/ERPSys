@@ -1,0 +1,49 @@
+# ============================================================
+# Docker Ignore — UniERP
+# ============================================================
+# For PRODUCTION builds (apps/api/Dockerfile, apps/web/Dockerfile):
+#   These Dockerfiles COPY the source into the image, so we
+#   exclude heavy/unnecessary directories.
+#
+# For DEV mode (Dockerfile.dev + docker-compose.dev.yml):
+#   The monorepo is bind-mounted, so this file only affects
+#   the initial COPY of scripts/docker-entrypoint.sh.
+# ============================================================
+
+# Version control
+.git
+.github
+
+# IDE / Editor
+.vscode
+.idea
+.cursor
+.claude
+.ai
+
+# Build artifacts (rebuilt inside container)
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/test-results
+**/playwright-report
+**/tsconfig.tsbuildinfo
+
+# Logs
+**/*.log
+
+# Local env files (container has its own env vars)
+# Note: .env is loaded by docker-compose from the host, not COPY'd
+**/.env
+**/.env.*
+!**/.env.example
+
+# OS files
+**/Thumbs.db
+**/.DS_Store
+
+# Docker files (prevent recursive context)
+docker-compose*.yml
+Dockerfile*

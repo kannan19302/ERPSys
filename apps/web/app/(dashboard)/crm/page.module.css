@@ -1,0 +1,18 @@
+.p20 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-4); }
+.p21 { font-weight: var(--weight-semibold); font-size: var(--text-sm); margin-bottom: var(--space-1); }
+.p22 { font-size: var(--text-xs); color: var(--color-text-secondary); margin-bottom: 0.125rem; }
+.p23 { font-size: 0.5625rem; color: var(--color-primary); margin-top: var(--space-1); font-weight: 500; }
+.p24 { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--color-border); }
+.p25 { position: fixed; inset: 0rem; background: var(--color-bg-overlay); display: flex; align-items: center; justify-content: center; z-index: 300; padding: var(--space-4); }
+.p26 { background: var(--color-bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--color-border); width: 100%; max-width: 30rem; box-shadow: var(--shadow-xl); }
+.p27 { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+.p28 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0rem; }
+.p29 { text-align: center; padding: var(--space-4) 0; }
+.p210 { color: var(--color-success); margin-bottom: var(--space-3); }
+.p211 { font-weight: var(--weight-semibold); margin: 0rem; }
+.p212 { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); background: var(--color-danger-light); border: 1px solid var(--color-danger); border-radius: var(--radius-md); color: var(--color-danger-text); font-size: var(--text-xs); }
+.p213 { gap: var(--space-3); }
+.p214 { display: flex; justify-content: flex-end; gap: var(--space-2); border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
+.tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--color-border); }
+.tab { padding: var(--space-2-5) var(--space-4); font-size: var(--text-sm); color: var(--color-text-secondary); cursor: pointer; background: none; border: 0; border-bottom: 2px solid transparent; }
+.tabActive { color: var(--color-primary); font-weight: var(--weight-semibold); border-bottom-color: var(--color-primary); }

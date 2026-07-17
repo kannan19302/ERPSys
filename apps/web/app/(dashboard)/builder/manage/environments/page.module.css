@@ -1,0 +1,5 @@
+.s1 { align-items: center; display: inline-flex; font-size: 11px; gap: 6px; padding: 4px 10px; }
+.s2 { align-items: center; border: 1px solid var(--color-border); color: var(--color-primary); display: inline-flex; font-size: 11px; gap: 6px; padding: 4px 10px; }
+.s3 { color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: 600; }
+.s4 { min-width: 200px; }
+.s5 { color: var(--color-text-secondary); padding: var(--space-12); text-align: center; }

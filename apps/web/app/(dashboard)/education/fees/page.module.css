@@ -1,0 +1,2 @@
+.s1 { border-bottom: 1px solid var(--color-border); display: flex; gap: var(--space-2); padding-bottom: var(--space-1); }
+.s2 { background: none; border: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-medium); padding: 8px 16px; }

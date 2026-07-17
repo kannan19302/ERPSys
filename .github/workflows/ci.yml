@@ -1,0 +1,48 @@
+# Minimal CI — one job, the gates that actually catch regressions.
+#
+# NOTE: while this repo is PRIVATE, GitHub Actions minutes are billed. Runs fail
+# instantly with "job was not started" until Settings → Billing is fixed or the
+# repo is made public. The pipeline itself is intentionally cheap (~5-6 min).
+#
+# Heavier gates (E2E smoke, Storybook, Docker image) run locally per
+# .ai/AUTOPILOT.md § Gate tiers; they return to CI post-v1.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Build, Typecheck & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXTAUTH_SECRET: ci-test-secret-do-not-use-in-production-abcdef1234567890
+      PII_ENCRYPTION_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm migration:discipline
+      - run: pnpm foundation:check
+      - run: pnpm --filter @unerp/database exec prisma generate
+      - run: pnpm --filter @unerp/database build
+      - run: pnpm --filter @unerp/shared build
+      - run: pnpm --filter @unerp/auth build
+      - run: pnpm --filter @unerp/service-kit build
+      - run: pnpm --filter @unerp/api build
+      # next build ignores type errors, so tsc --noEmit is the real web gate.
+      - run: pnpm --filter @unerp/api typecheck
+      - run: pnpm --filter @unerp/web typecheck
+      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test

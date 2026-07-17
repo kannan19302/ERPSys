@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@unerp/ui-tokens": ["../ui-tokens/dist/index.d.ts"],
+      "@unerp/ui-components": ["../ui-components/dist/index.d.ts"],
+      "@unerp/ui-theme": ["../ui-theme/dist/index.d.ts"],
+      "@unerp/ui-layout": ["../ui-layout/dist/index.d.ts"],
+      "@unerp/ui-charts": ["../ui-charts/dist/index.d.ts"],
+      "@unerp/ui-data-grid": ["../ui-data-grid/dist/index.d.ts"],
+      "@unerp/ui-dashboard": ["../ui-dashboard/dist/index.d.ts"],
+      "@unerp/ui-notifications": ["../ui-notifications/dist/index.d.ts"],
+      "@unerp/ui-hooks": ["../ui-hooks/dist/index.d.ts"],
+      "@unerp/ui-utils": ["../ui-utils/dist/index.d.ts"],
+      "@unerp/ui-icons": ["../ui-icons/dist/index.d.ts"],
+      "@unerp/ui-form-engine": ["../ui-form-engine/dist/index.d.ts"],
+      "@unerp/ui-workflow": ["../ui-workflow/dist/index.d.ts"],
+      "@unerp/shared": ["../shared/dist/index.d.ts"],
+      "@unerp/auth": ["../auth/dist/index.d.ts"]
+    }
+  }
+}

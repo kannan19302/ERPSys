@@ -1,0 +1,2 @@
+.s1 { align-items: center; background: var(--color-success-light); border-radius: var(--radius-full); color: var(--color-success); display: flex; flex-shrink: 0; height: 36px; justify-content: center; width: 36px; }
+.s2 { font-size: 11px; }

@@ -1,0 +1,18 @@
+.s1 { align-items: center; display: flex; justify-content: center; min-height: 300px; }
+.s2 { border-radius: var(--radius-md); box-shadow: var(--shadow-lg); color: var(--color-text-inverse); font-size: var(--text-sm); font-weight: var(--weight-medium); padding: var(--space-3) var(--space-5); position: fixed; right: var(--space-4); top: var(--space-4); z-index: 500; }
+.s3 { color: var(--color-warning); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.s4 { color: var(--color-text-secondary); font-size: var(--text-sm); margin-top: var(--space-1); }
+.s5 { color: var(--color-success); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.s6 { color: var(--color-danger); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.s7 { font-size: var(--text-xs); font-weight: var(--weight-medium); }
+.s8 { color: var(--color-danger); font-size: var(--text-xs); }
+.s9 { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.s10 { display: flex; gap: var(--space-1); justify-content: flex-end; }
+.s11 { align-items: center; background: rgba(0,0,0,0.5); bottom: 0; display: flex; justify-content: center; left: 0; position: fixed; right: 0; top: 0; z-index: 300; }
+.s12 { background: var(--color-bg-elevated); border-radius: var(--radius-xl); border: 1px solid var(--color-border); box-shadow: var(--shadow-xl); max-width: 560px; width: 100%; }
+.s13 { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; padding: var(--space-4) var(--space-5); }
+.s14 { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0; }
+.s15 { color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: var(--weight-semibold); margin-bottom: var(--space-1); }
+.s16 { color: var(--color-danger); font-size: var(--text-sm); margin-bottom: var(--space-3); }
+.s17 { background: var(--color-bg-sunken); border-radius: var(--radius-md); color: var(--color-text); font-size: var(--text-xs); margin: 0; max-height: 200px; overflow: auto; padding: var(--space-3); }
+.s18 { border-top: 1px solid var(--color-border); display: flex; gap: var(--space-2); justify-content: flex-end; padding-top: var(--space-4); }

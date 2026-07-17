@@ -1,0 +1,13 @@
+.message { padding: 8px 16px; border-radius: var(--radius-md); background: var(--color-primary-light); color: var(--color-primary); font-size: var(--text-sm); }
+.formTitle { margin: 0 0 var(--space-3); }
+.threeColumns { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+.questionGrid { display: grid; grid-template-columns: 3fr 1fr; gap: var(--space-3); }
+.emptyState { padding: var(--space-8); text-align: center; }
+.emptyIcon { margin-bottom: var(--space-2); color: var(--color-text-tertiary); }
+.feedbackHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+.responses { display: flex; flex-direction: column; gap: var(--space-2); border-top: 1px solid var(--color-border); padding-top: var(--space-2); }
+.response { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); }
+.responseHeader { display: flex; justify-content: space-between; font-weight: var(--weight-semibold); }
+.rating { display: flex; align-items: center; gap: 2px; color: var(--color-primary); }
+.comment { color: var(--color-text-secondary); font-style: italic; }
+@media (max-width: 48rem) { .threeColumns, .questionGrid { grid-template-columns: 1fr; } }

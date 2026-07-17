@@ -1,0 +1,122 @@
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.budgetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.budgetCard,
+.claimRow {
+  border-radius: var(--radius-md);
+  background: var(--color-bg-sunken);
+}
+
+.budgetCard {
+  padding: var(--space-3);
+}
+
+.budgetValue {
+  margin-top: var(--space-1);
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+}
+
+.balanceRow {
+  padding: var(--space-2) 0;
+}
+
+.claimsSection {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.claimList,
+.claimAmount {
+  display: flex;
+  flex-direction: column;
+}
+
+.claimList {
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.claimRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.claimAmount {
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-overlay);
+}
+
+.modal {
+  width: 100%;
+  max-width: 32.5rem;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-elevated);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.modalClose {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.formControl {
+  width: 100%;
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
+.formControl:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.notesField {
+  resize: vertical;
+}
+
+@media (max-width: 48rem) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,10 @@
+.refreshButton { background: transparent; border: 1px solid var(--color-border); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); cursor: pointer; font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-2); color: var(--color-text); }
+.refreshButton:hover:not(:disabled) { background: var(--color-bg-hover); border-color: var(--color-border-strong); }
+.refreshButton:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: var(--space-1); }
+.metricGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--space-24), 1fr)); gap: var(--space-4); }
+.metricLabel { font-size: var(--text-xs); color: var(--color-text-secondary); font-weight: var(--weight-bold); }
+.metricDetail { font-size: var(--text-xs); color: var(--color-success); margin-top: var(--space-0\.5); }
+.storageHeading { font-size: var(--text-sm); font-weight: var(--weight-bold); display: flex; align-items: center; gap: var(--space-2); }
+.storageAmount { font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.progressTrack { width: 100%; height: var(--space-3); background: var(--color-bg); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: var(--space-2); }
+.progressTrack > div { height: 100%; background: var(--color-primary); transition: width var(--duration-slower) var(--ease-default); }

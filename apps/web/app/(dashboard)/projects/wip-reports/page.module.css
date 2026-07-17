@@ -1,0 +1,2 @@
+.p1 { font-size: 9px; color: var(--color-text-tertiary); }
+.p2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }

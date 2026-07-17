@@ -1,0 +1,25 @@
+.s1 { border-radius: 12px; font-size: 10px; font-weight: 600; padding: 2px 8px; }
+.s2 { background: #3b82f620; border-radius: 12px; color: var(--color-primary); font-size: 10px; font-weight: 600; padding: 2px 8px; }
+.s3 { align-items: center; background: rgba(0,0,0,0.6); bottom: 0; display: flex; justify-content: center; left: 0; position: fixed; right: 0; top: 0; z-index: 1000; }
+.s4 { max-height: 80vh; overflow: auto; width: 560px; z-index: 1001; }
+.s5 { border-bottom: 1px solid var(--color-border); padding: var(--space-4); }
+.s6 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0; }
+.s7 { background: transparent; border: none; cursor: pointer; font-size: 20px; }
+.s8 { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.s9 { border-radius: 2px; flex: 1; height: 4px; }
+.s10 { display: flex; justify-content: space-between; margin-top: var(--space-1.5); }
+.s11 { font-size: 11px; }
+.s12 { border-radius: var(--radius-md); border: 2px dashed var(--color-border); cursor: pointer; padding: var(--space-6); text-align: center; transition: all var(--duration-fast); }
+.s13 { display: none; }
+.s14 { color: var(--color-primary); display: block; margin: 0 auto var(--space-2); }
+.s15 { font-weight: var(--weight-semibold); margin: 0; }
+.s16 { color: var(--color-text-tertiary); display: block; margin: 0 auto var(--space-2); opacity: 0.4; }
+.s17 { color: var(--color-text-secondary); margin: 0; }
+.s18 { color: var(--color-text-secondary); font-size: var(--text-sm); margin: 0; }
+.s19 { color: var(--color-text-secondary); font-size: var(--text-xs); width: 100px; }
+.s20 { background: var(--color-bg-elevated); border-radius: var(--radius-md); padding: var(--space-3); }
+.s21 { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0 0 var(--space-2) 0; }
+.s22 { display: grid; font-size: var(--text-xs); gap: var(--space-2); grid-template-columns: 1fr 1fr; }
+
+.fileDropzone:hover,
+.fileDropzone:focus-visible { border-color: var(--color-primary); background: var(--color-primary-light); }

@@ -1,0 +1,33 @@
+/* High Contrast — WCAG-oriented: strong borders, pure surfaces, dark text. */
+[data-theme='high-contrast'] {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-sunken: #f0f0f0;
+  --color-bg-hover: #e0e0e0;
+  --color-bg-active: #cccccc;
+  --color-border: #000000;
+  --color-border-strong: #000000;
+  --color-border-focus: #0000cc;
+  --color-text: #000000;
+  --color-text-secondary: #1f1f1f;
+  --color-text-tertiary: #333333;
+  --color-text-link: #0000cc;
+  --color-primary: #0000cc;
+  --color-primary-hover: #0000a3;
+  --color-primary-active: #00007a;
+  --color-primary-light: #e5e5ff;
+  --color-success: #006400;
+  --color-success-text: #003300;
+  --color-warning: #8a5a00;
+  --color-warning-text: #4d3200;
+  --color-danger: #b30000;
+  --color-danger-text: #660000;
+  --color-info: #004f8a;
+  --color-info-text: #002b4d;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-glow: none;
+}

@@ -1,0 +1,5 @@
+.searchIcon { position: absolute; top: var(--space-2-5); left: var(--space-2-5); opacity: .5; }
+.searchInput { padding-left: var(--space-8); }
+.email { opacity: .6; }
+.selectedCard { margin-top: var(--space-4); }
+.formInline { margin-bottom: var(--space-4); }

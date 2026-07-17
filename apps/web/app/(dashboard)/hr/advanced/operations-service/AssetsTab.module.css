@@ -1,0 +1,10 @@
+.s0 {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.s1 {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-sunken);
+}

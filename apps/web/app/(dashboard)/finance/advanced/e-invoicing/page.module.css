@@ -1,0 +1,21 @@
+.s1 { align-items: center; display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: space-between; }
+.s2 { align-items: flex-end; display: flex; gap: var(--space-2); }
+.s3 { color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: var(--weight-medium); }
+.s4 { align-items: center; border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; font-size: var(--text-sm); padding-block: var(--space-2); padding-inline: var(--space-3); }
+.s5 { border-radius: var(--radius-md); border: 1px solid var(--color-border); font-size: var(--text-sm); padding-block: var(--space-3); padding-inline: var(--space-4); }
+.s6 { font-size: var(--text-xl); font-weight: var(--weight-semibold); }
+.s7 { overflow-x: auto; padding: var(--space-6); }
+.s8 { display: block; text-align: right; }
+.s9 { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.s10 { align-items: center; border-radius: var(--radius-sm); display: inline-flex; font-size: var(--text-xs); gap: var(--space-1); padding-inline: var(--space-2); }
+.s11 { align-items: center; display: flex; justify-content: center; padding: var(--space-4); }
+.s12 { border-radius: var(--radius-xl); display: flex; flex-direction: column; width: 100%; }
+.s13 { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; padding: var(--space-5); }
+.s14 { color: var(--color-success); height: 20px; width: 20px; }
+.s15 { border-radius: 9999px; font-size: var(--text-xs); padding-inline: var(--space-2); }
+.s16 { height: 20px; width: 20px; }
+.s17 { color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: var(--weight-medium); margin-bottom: var(--space-1); }
+.s18 { border-radius: var(--radius-sm); font-size: var(--text-xs); padding: var(--space-2); }
+.s19 { align-items: center; display: flex; justify-content: space-between; margin-bottom: var(--space-1); }
+.s20 { align-items: center; color: var(--color-primary); display: inline-flex; font-size: var(--text-xs); gap: var(--space-1); }
+.s21 { border-radius: var(--radius-sm); font-size: var(--text-xs); overflow-x: auto; padding: var(--space-3); }

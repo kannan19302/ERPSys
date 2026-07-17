@@ -1,0 +1,5 @@
+.s1 { display: flex; flex-wrap: wrap; gap: 4px; }
+.s2 { display: flex; gap: 4px; }
+.s3 { align-items: center; display: flex; gap: 8px; }
+.s4 { background: #e5e7eb; border-radius: 9999px; height: 0.5rem; width: 6rem; }
+.s5 { background: #22c55e; border-radius: 9999px; height: 0.5rem; }

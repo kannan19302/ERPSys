@@ -1,0 +1,180 @@
+/* ─────────────────────────────────────────────────
+   Stepper, FormSection & AutosaveIndicator Styles
+   ───────────────────────────────────────────────── */
+
+/* ── Stepper ── */
+.stepper_container {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+}
+
+.step_wrapper {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 0%;
+}
+
+.step_wrapper:last-child {
+  flex: 0 0 auto;
+}
+
+.step_node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step_node_clickable {
+  cursor: pointer;
+}
+
+.step_circle {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xs);
+  transition: all var(--duration-fast) var(--ease-default);
+  box-sizing: border-box;
+}
+
+.circle_completed {
+  background: var(--color-success);
+  color: #fff;
+  border: 2px solid var(--color-success);
+}
+
+.circle_active {
+  background: var(--color-primary);
+  color: #fff;
+  border: 2px solid var(--color-primary);
+}
+
+.circle_inactive {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+}
+
+.step_label {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  text-align: center;
+  max-width: 100px;
+}
+
+.label_active {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.label_inactive {
+  font-weight: var(--weight-normal);
+  color: var(--color-text-secondary);
+}
+
+.step_desc {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  max-width: 100px;
+}
+
+.step_line {
+  flex: 1;
+  height: 2px;
+  margin-top: 15px;
+  margin-inline: var(--space-2);
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.line_completed {
+  background: var(--color-success);
+}
+
+.line_incomplete {
+  background: var(--color-border);
+}
+
+/* ── FormSection ── */
+.section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.section_header {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-bg-sunken);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section_header_clickable {
+  cursor: pointer;
+}
+
+.section_title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.section_desc {
+  margin: 2px 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.chevron {
+  transition: transform var(--duration-fast);
+  color: var(--color-text-tertiary);
+  font-size: 18px;
+}
+
+.chevron_open {
+  transform: rotate(180deg);
+}
+
+.section_body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── AutosaveIndicator ── */
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+}
+
+.indicator_saving {
+  color: var(--color-text-secondary);
+}
+
+.indicator_saved {
+  color: var(--color-success);
+}
+
+.indicator_error {
+  color: var(--color-danger);
+}
+
+.saving_spinner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-text-secondary);
+  border-top-color: transparent;
+  animation: spin 0.6s linear infinite;
+}

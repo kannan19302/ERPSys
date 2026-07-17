@@ -1,0 +1,14 @@
+.s1 { align-items: center; display: flex; height: 50vh; justify-content: center; }
+.s2 { color: var(--color-primary); height: 32px; width: 32px; }
+.s3 { display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-6); }
+.s4 { width: 16px; }
+.s5 { margin-right: var(--space-2); width: 16px; }
+.s6 { display: flex; flex-wrap: wrap; gap: var(--space-4); padding: var(--space-4); }
+.s7 { align-items: center; display: flex; flex: 1; min-width: 250px; position: relative; }
+.s8 { color: var(--color-text-secondary); left: var(--space-3); position: absolute; width: 16px; }
+.s9 { padding-left: var(--space-10); width: 100%; }
+.s10 { width: 200px; }
+.s11 { width: 150px; }
+.s12 { color: var(--color-primary); font-weight: var(--weight-semibold); }
+.s13 { align-items: center; display: inline-flex; font-size: var(--text-xs); gap: var(--space-1); padding-block: var(--space-1); padding-inline: var(--space-3); }
+.s14 { height: 12px; width: 12px; }

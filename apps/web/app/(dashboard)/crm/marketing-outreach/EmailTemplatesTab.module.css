@@ -1,0 +1,112 @@
+.style0 {
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.style1 {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  max-width: calc(var(--space-1) * 75);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.style2 {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}
+
+.style3 {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: var(--space-1);
+}
+
+.style4 {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: var(--space-1);
+}
+
+.style5 {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: var(--space-1);
+}
+
+.style6 {
+  padding: var(--space-3) var(--space-4);
+  position: relative;
+}
+
+.style7 {
+  position: absolute;
+  left: 28;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+}
+
+.style8 {
+  width: 100%;
+  max-width: calc(var(--space-1) * 100);
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  outline: none;
+}
+
+.style9 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-3);
+}
+
+.style10 {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.style11 {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-sunken);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.style12 {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+.style13 {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+
+.style14 {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-1);
+}
+.s1 { color: var(--color-text-secondary); font-family: inherit; font-size: var(--text-sm); line-height: 1.6; margin: 0; white-space: pre-wrap; }

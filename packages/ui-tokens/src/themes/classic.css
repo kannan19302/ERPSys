@@ -1,0 +1,15 @@
+/* Classic — conservative blue, squarer corners, denser serifs optional. */
+[data-theme='classic'] {
+  color-scheme: light;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-primary-active: #1e3a8a;
+  --color-primary-light: #eff6ff;
+  --color-border-focus: #1d4ed8;
+  --color-text-link: #1d4ed8;
+  --color-sidebar-bg: #f3f4f6;
+}

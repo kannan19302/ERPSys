@@ -1,0 +1,35 @@
+/* ─────────────────────────────────────────────────
+   Chart Tokens — UniERP Design System
+   Categorical series palette + contrast color.
+   Themes may override any of these.
+   ───────────────────────────────────────────────── */
+
+:root {
+  --chart-1: #4f46e5;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --chart-6: #06b6d4;
+  --chart-7: #d946ef;
+  --chart-8: #ec4899;
+  --chart-9: #10b981;
+  --chart-10: #6366f1;
+  --chart-contrast: #ffffff;
+  --chart-grid: var(--color-border);
+  --chart-axis-text: var(--color-text-secondary);
+}
+
+[data-theme='dark'] {
+  --chart-1: #818cf8;
+  --chart-2: #4ade80;
+  --chart-3: #fbbf24;
+  --chart-4: #f87171;
+  --chart-5: #a78bfa;
+  --chart-6: #22d3ee;
+  --chart-7: #e879f9;
+  --chart-8: #f472b6;
+  --chart-9: #34d399;
+  --chart-10: #a5b4fc;
+  --chart-contrast: #0f1117;
+}

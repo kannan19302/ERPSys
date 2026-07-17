@@ -1,0 +1,10 @@
+.s1 { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.s2 { align-self: center; padding: 12px; width: fit-content; }
+.s3 { background: #ff5f57; }
+.s4 { background: #febc2e; }
+.s5 { background: #28c840; }
+.s6 { align-items: center; background: var(--color-bg-sunken); border-bottom: 1px solid var(--color-border); display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 16px; }
+.s7 { color: var(--color-text-secondary); font-size: 11px; font-weight: 600; margin-right: 8px; }
+.s8 { border-radius: var(--radius-full); cursor: pointer; font-size: 10px; font-weight: 600; padding: 3px 10px; transition: all 0.2s ease; }
+.s9 { overflow: hidden; }
+.s10 { text-align: center; }

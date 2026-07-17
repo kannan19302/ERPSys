@@ -1,0 +1,16 @@
+.loading { display: flex; justify-content: center; padding: var(--space-10); }
+.error { padding: var(--space-3) var(--space-4); background: var(--color-warning-light); color: var(--color-warning-text); border-radius: var(--radius-md); font-size: var(--text-sm); }
+.kpiGrid, .healthGrid { display: grid; gap: var(--space-4); }
+.kpiGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr)); }
+.kpiCard { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); }
+.kpiIcon { background: var(--color-info-light); color: var(--color-info); border-radius: var(--radius-md); padding: var(--space-2); display: flex; }
+.kpiLabel { font-size: var(--text-xs); color: var(--color-text-secondary); }
+.kpiValue { font-size: var(--text-xl); font-weight: var(--weight-semibold); }
+.healthCard { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.healthTitle { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+.healthGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.25rem), 1fr)); }
+.healthStatus { font-size: var(--text-sm); font-weight: var(--weight-medium); text-transform: capitalize; }
+.metricHeader { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1); }
+.metricIcon, .metricLabel { color: var(--color-text-secondary); }
+.metricLabel { font-size: var(--text-xs); }
+.metricValue { font-size: var(--text-md); font-weight: var(--weight-semibold); }

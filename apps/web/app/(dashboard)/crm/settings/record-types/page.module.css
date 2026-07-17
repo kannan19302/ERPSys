@@ -1,0 +1,261 @@
+.style0 {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.style1 {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.style2 {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.style3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.style4 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.style5 {
+  font-size: 16px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.style6 {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+}
+
+.style7 {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.style8 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.style9 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.style10 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.style11 {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: var(--color-primary-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.style12 {
+  font-weight: var(--weight-semibold);
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.style13 {
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.style14 {
+  display: flex;
+  gap: 4px;
+}
+
+.style15 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-primary);
+  padding: 4px;
+}
+
+.style16 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px;
+}
+
+.style17 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-danger);
+  padding: 4px;
+}
+
+.style18 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.style19 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.style20 {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.style21 {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.style22 {
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  padding: 24px;
+  width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.style23 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.style24 {
+  margin: calc(var(--space-1) * 0);
+  color: var(--text-primary);
+}
+
+.style25 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+}
+
+.style26 {
+  display: grid;
+  gap: 16px;
+}
+
+.style27 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.style28 {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.style29 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.style30 {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.style31 {
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  padding: 24px;
+  width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.style32 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.style33 {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: rgba(239,68,68,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.style34 {
+  margin: calc(var(--space-1) * 0);
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.style35 {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.style36 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.s1 { border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; padding: 8px 16px; }
+.s2 { margin-left: 4px; opacity: 0.7; }
+.s3 { padding-left: 32px; width: 200px; }
+.s4 { color: var(--text-secondary); font-size: 14px; line-height: 1.5; margin: 0 0 16px; }
+.s5 { min-height: 80px; resize: vertical; }
+.s6 { margin-bottom: 12px; opacity: 0.4; }

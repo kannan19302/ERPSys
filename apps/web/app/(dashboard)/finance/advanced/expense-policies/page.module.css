@@ -1,0 +1,2 @@
+.s1 { display: flex; justify-content: flex-end; padding: var(--space-4); }
+.s2 { font-weight: var(--weight-semibold); padding: var(--space-4); }

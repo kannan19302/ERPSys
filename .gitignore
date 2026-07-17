@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+*.tsbuildinfo
+apps/api/src/**/*.js
+apps/api/src/**/*.js.map
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+
+# Turbo
+.turbo/
+
+# Prisma
+packages/database/prisma/*.db
+packages/database/prisma/*.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Docker
+docker/data/
+var/
+
+# service-kit ships its compiled contract for git-subdir installs by app repos
+!packages/service-kit/dist
+!packages/service-kit/dist/**
+dump.rdb
+
+# Storybook
+storybook-static/
+
+# Generated AI-agent artifacts (regenerate locally; never commit)
+.ai/FEATURE_LEDGER.md
+.ai/ISSUE_INVENTORY.jsonl
+.ai/locks/*.lock
+
+# Local agent/tool settings & scratch
+.claude/settings.local.json
+tsc_errors.txt
+*.tmp

@@ -1,0 +1,10 @@
+.s1 { align-items: center; background: var(--color-bg-sunken); display: flex; justify-content: center; min-height: 100vh; }
+.s2 { background: var(--color-bg-elevated); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); max-width: 400px; padding: var(--space-8); text-align: center; }
+.s3 { align-items: center; background: var(--color-success-light); border-radius: 50%; color: var(--color-success); display: flex; height: 48px; justify-content: center; margin: 0 auto var(--space-4); width: 48px; }
+.s4 { font-size: var(--text-xl); font-weight: var(--weight-bold); margin-bottom: var(--space-2); }
+.s5 { color: var(--color-text-secondary); }
+.s6 { background: var(--color-bg-sunken); min-height: 100vh; padding: var(--space-8); }
+.s7 { margin: 0 auto; max-width: 900px; }
+.s8 { margin-bottom: var(--space-6); text-align: center; }
+.s9 { color: var(--color-text); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.s10 { color: var(--color-text-secondary); margin-top: var(--space-2); }

@@ -1,0 +1,3 @@
+.s1 { align-items: center; background: var(--color-primary-light); border-radius: var(--radius-md); color: var(--color-primary); display: flex; flex-shrink: 0; height: 32px; justify-content: center; width: 32px; }
+.s2 { align-items: center; color: var(--color-text-secondary); display: flex; font-size: var(--text-xs); gap: 4px; }
+.s3 { background: rgba(16,185,129,0.08); border-radius: var(--radius-md); color: var(--color-success); font-size: var(--text-sm); padding: var(--space-3) var(--space-4); }

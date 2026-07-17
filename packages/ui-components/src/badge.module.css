@@ -1,0 +1,54 @@
+/* ─────────────────────────────────────────────────
+   Badge Component — Styles
+   ───────────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ── Sizes ── */
+.sm {
+  padding: 2px 8px;
+  font-size: var(--text-xs);
+}
+
+.md {
+  padding: 4px 12px;
+  font-size: var(--text-sm);
+}
+
+/* ── Variants ── */
+.default {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-secondary);
+}
+
+.primary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.success {
+  background: var(--color-success-light);
+  color: var(--color-success-text);
+}
+
+.warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning-text);
+}
+
+.danger {
+  background: var(--color-danger-light);
+  color: var(--color-danger-text);
+}
+
+.info {
+  background: var(--color-info-light);
+  color: var(--color-info-text);
+}

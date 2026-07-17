@@ -1,0 +1,118 @@
+.s1 {
+  padding: var(--space-12);
+  text-align: center;
+}
+
+.s2 {
+  margin: 0 auto var(--space-4);
+  opacity: 0.3;
+}
+
+.s3 {
+  gap: var(--space-4);
+}
+
+.s4 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary);
+  margin-top: var(--space-1);
+}
+
+.s5 {
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  background: var(--color-primary-light);
+}
+
+.s6 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-danger);
+  margin-top: var(--space-1);
+}
+
+.s7 {
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  background: var(--color-danger-light);
+}
+
+.s8 {
+  color: var(--color-danger);
+}
+
+.s9 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-danger);
+  margin-top: var(--space-1);
+}
+
+.s10 {
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  background: rgba(127,29,29,0.1);
+}
+
+.s11 {
+  color: var(--color-danger);
+}
+
+.s12 {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-3);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.s13 {
+  display: flex;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  gap: 2px;
+}
+
+.s14 {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.s15 {
+  overflow: hidden;
+}
+
+.s16 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.s17 {
+  font-family: monospace;
+  font-weight: var(--weight-medium);
+}
+
+.s18 {
+  color: var(--color-success);
+}
+
+.s19 {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border);
+}
+
+.segment { transition: width var(--duration-normal) ease; cursor: pointer; }
+.legendMarker { width: var(--space-3); height: var(--space-3); border-radius: var(--radius-xs); flex-shrink: 0; }
+.bucketHeader { padding: var(--space-4) var(--space-5); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.bucketIcon { padding: var(--space-2); border-radius: var(--radius-lg); }
+.bucketTotal { font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.bucketTable { border-top-width: var(--border-width-2, 2px); border-top-style: solid; }
+.overdueDays { font-weight: var(--weight-semibold); }

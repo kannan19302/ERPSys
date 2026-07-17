@@ -1,0 +1,5 @@
+/* ─────────────────────────────────────────────────
+   DEPRECATED SHIM — tokens moved to @unerp/ui-tokens.
+   Kept so existing '@unerp/ui/tokens' imports keep working.
+   ───────────────────────────────────────────────── */
+@import '../../../ui-tokens/src/index.css';

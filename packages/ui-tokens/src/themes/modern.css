@@ -1,0 +1,16 @@
+/* Modern — softer radii, vibrant primary, airier surfaces. */
+[data-theme='modern'] {
+  color-scheme: light;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --color-bg: #f8fafc;
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-active: #5b21b6;
+  --color-primary-light: #f5f3ff;
+  --color-border-focus: #7c3aed;
+  --color-text-link: #7c3aed;
+  --shadow-glow: 0 0 20px rgb(124 58 237 / 0.15);
+}

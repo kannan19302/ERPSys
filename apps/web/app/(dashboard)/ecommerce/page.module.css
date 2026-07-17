@@ -1,0 +1,8 @@
+.s1 { color: var(--color-danger-text); padding: var(--space-6); text-align: center; }
+.s2 { margin-top: var(--space-4); }
+.s3 { align-items: center; display: flex; gap: var(--space-3); padding: var(--space-4); }
+.s4 { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5); }
+.s5 { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; padding-bottom: var(--space-4); }
+.s6 { align-items: center; cursor: pointer; display: inline-flex; gap: var(--space-2); }
+.s7 { cursor: pointer; height: 18px; width: 18px; }
+.s8 { display: grid; gap: var(--space-4); grid-template-columns: repeat(2, 1fr); }

@@ -1,0 +1,41 @@
+/* ─────────────────────────────────────────────────
+   Card Component — Styles
+   ───────────────────────────────────────────────── */
+
+.card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  transition: box-shadow var(--duration-normal) var(--ease-default),
+              transform var(--duration-normal) var(--ease-default),
+              border-color var(--duration-normal) var(--ease-default);
+}
+
+/* ── Padding variations ── */
+.p_none {
+  padding: 0;
+}
+
+.p_sm {
+  padding: var(--space-4);
+}
+
+.p_md {
+  padding: var(--space-6);
+}
+
+.p_lg {
+  padding: var(--space-8);
+}
+
+/* ── Hover styles ── */
+.hoverable {
+  cursor: pointer;
+}
+
+.hoverable:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--elevation-hover);
+  transform: translateY(-2px);
+}

@@ -1,0 +1,20 @@
+.p20 { padding: var(--space-8); }
+.p21 { padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; }
+.p22 { padding: 0 var(--space-4) var(--space-4) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+.p23 { color: var(--color-text-secondary); padding: var(--space-4) 0; }
+.p24 { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); }
+.p25 { padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; }
+.p26 { margin: 0rem; display: flex; align-items: center; gap: var(--space-2); }
+.p27 { padding: 0 var(--space-4) var(--space-4) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+.p28 { color: var(--color-text-secondary); padding: var(--space-4) 0; }
+.p29 { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); }
+.p210 { margin: 0rem; display: flex; align-items: center; gap: var(--space-2); }
+.p211 { padding: 0 var(--space-4) var(--space-4) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+.p212 { color: var(--color-text-secondary); padding: var(--space-4) 0; }
+.p213 { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); }
+.p214 { flex: 1; color: var(--color-primary); }
+.p215 { padding: var(--space-4); font-size: var(--text-sm); color: var(--color-text-secondary); }
+.p216 { position: fixed; inset: 0rem; background: var(--color-bg-overlay); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.p217 { padding: var(--space-6); width: 26.25rem; display: flex; flex-direction: column; gap: var(--space-4); }
+.p218 { position: fixed; inset: 0rem; background: var(--color-bg-overlay); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.p219 { padding: var(--space-6); width: 26.25rem; display: flex; flex-direction: column; gap: var(--space-4); }

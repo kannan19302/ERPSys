@@ -1,0 +1,236 @@
+.style0 {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-10);
+}
+
+.style1 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+.style2 {
+  width: var(--space-4);
+  height: var(--space-4);
+  margin-right: var(--space-2);
+}
+
+.style3 {
+  max-width: calc(var(--space-1) * 100);
+  position: relative;
+}
+
+.style4 {
+  width: var(--space-4);
+  height: var(--space-4);
+  position: absolute;
+  left: 12;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+}
+
+.style5 {
+  padding-left: calc(var(--space-1) * 9);
+}
+
+.style6 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.style7 {
+  padding: var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.style8 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.style9 {
+  width: calc(var(--space-1) * 5.5);
+  height: calc(var(--space-1) * 5.5);
+  color: var(--color-primary);
+}
+
+.style10 {
+  margin: calc(var(--space-1) * 0);
+  font-size: var(--font-size-xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+
+.style11 {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.style12 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-success);
+  text-transform: uppercase;
+}
+
+.style13 {
+  width: var(--space-3);
+  height: var(--space-3);
+}
+
+.style14 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-warning);
+  text-transform: uppercase;
+}
+
+.style15 {
+  width: var(--space-3);
+  height: var(--space-3);
+}
+
+.style16 {
+  display: flex;
+  gap: var(--spacing-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.style17 {
+  width: calc(var(--space-1) * 3.5);
+  height: calc(var(--space-1) * 3.5);
+}
+
+.style18 {
+  padding: var(--spacing-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.style19 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--spacing-1);
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary);
+}
+
+.style20 {
+  width: calc(var(--space-1) * 3.5);
+  height: calc(var(--space-1) * 3.5);
+}
+
+.style21 {
+  text-align: center;
+  padding: var(--spacing-10);
+  color: var(--color-text-secondary);
+}
+
+.style22 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.style23 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.style24 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+}
+
+.style25 {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.style26 {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.style27 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  padding: calc(var(--space-1) * 0);
+}
+
+.style28 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.style29 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary);
+}
+
+.style30 {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: flex-start;
+}
+
+.style31 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.style32 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}
+
+.style33 {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.style34 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  padding: calc(var(--space-1) * 0);
+}
+.s1 { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: 1.6; margin: 0; padding-left: 16px; }
+.s2 { line-height: 1.5; margin: 0; }
+.s3 { height: 48px; margin-bottom: var(--spacing-3); opacity: 0.4; width: 48px; }

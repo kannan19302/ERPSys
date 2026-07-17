@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "(?i)\\b(add|create|build|implement|i want|let's add|can we add|we should add|new feature|new module|new page|new endpoint|new entity|new service|new component|new screen|new functionality|new capability|integrate|introduce|support for)\\b",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[PM Gate] New feature/functionality detected. Before any implementation, the product-manager agent MUST check .ai/MODULE_REGISTRY.md to confirm this doesn't already exist. Invoke: 'Use product-manager to check if [feature] already exists'\""
+          }
+        ]
+      }
+    ]
+  }
+}

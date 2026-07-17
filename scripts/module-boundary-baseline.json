@@ -1,0 +1,4 @@
+[
+  ".\\src\\modules\\ecommerce\\ecommerce-checkout.service.ts -> ../sales/sales.service (ecommerce -> sales)",
+  ".\\src\\modules\\ecommerce\\ecommerce.module.ts -> ../sales/sales.module (ecommerce -> sales)"
+]

@@ -1,0 +1,12 @@
+.p20 { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) 0; }
+.p21 { margin: 0rem; font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.p22 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.p23 { text-decoration: none; }
+.p24 { cursor: pointer; border: 1px solid transparent; height: 100%; }
+.p25 { display: flex; align-items: flex-start; gap: var(--space-4); }
+.p26 { padding: var(--space-3); border-radius: var(--radius-lg); background-color: var(--color-primary-light); color: var(--color-primary); flex-shrink: 0; }
+.p27 { flex: 1; min-width: 0rem; }
+.p28 { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.p29 { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p210 { font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: var(--space-1); margin: 0rem; }
+.p211 { color: var(--color-text-secondary); flex-shrink: 0; margin-top: var(--space-1); }

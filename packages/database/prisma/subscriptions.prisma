@@ -1,0 +1,6 @@
+// ─────────────────────────────────────────────────
+// Subscription Billing — Finance module extension
+// ─────────────────────────────────────────────────
+// Added to schema.prisma as models. These are included
+// here for documentation; actual insertion is via replace_in_file.
+// ─────────────────────────────────────────────────

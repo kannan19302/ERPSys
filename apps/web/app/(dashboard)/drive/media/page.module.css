@@ -1,0 +1,6 @@
+.p1 { font-size: var(--text-xs); color: var(--color-text-secondary); margin-bottom: var(--space-1); }
+.p2 { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.p3 { font-size: 10px; color: var(--color-success); margin-left: 4px; }
+.rule { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: var(--space-2); }
+.toggle { width: 40px; height: 22px; border-radius: var(--radius-full); cursor: pointer; position: relative; }
+.toggleHandle { width: 18px; height: 18px; border-radius: var(--radius-full); background: var(--color-text-inverse); position: absolute; top: 2px; box-shadow: var(--shadow-sm); }

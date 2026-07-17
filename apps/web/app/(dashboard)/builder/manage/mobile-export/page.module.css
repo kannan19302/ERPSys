@@ -1,0 +1,7 @@
+.s1 { display: flex; gap: 8px; }
+.s2 { font-size: 11px; padding: 4px 10px; }
+.s3 { align-items: center; display: inline-flex; font-size: 11px; gap: 4px; padding: 4px 10px; text-decoration: none; }
+.s4 { display: grid; gap: var(--space-6); grid-template-columns: 1fr 2fr; }
+.s5 { align-items: center; display: flex; font-size: var(--text-sm); font-weight: 700; gap: 6px; margin: 0 0 var(--space-4) 0; }
+.s6 { font-weight: 600; margin: 0; }
+.s7 { background: var(--color-bg-subtle); border-radius: var(--radius-md); font-family: monospace; font-size: 11px; margin: 0; overflow-x: auto; padding: var(--space-3); white-space: pre-wrap; }

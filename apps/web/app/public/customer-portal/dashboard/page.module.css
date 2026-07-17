@@ -1,0 +1,12 @@
+.s1 { display: flex; justify-content: center; padding: 60px; }
+.s2 { margin: 0 auto; max-width: 1000px; padding: 24px; }
+.s3 { align-items: center; display: flex; justify-content: space-between; margin-bottom: 20px; }
+.s4 { opacity: 0.6; }
+.s5 { display: grid; gap: 12px; grid-template-columns: repeat(4, 1fr); margin-bottom: 24px; }
+.s6 { display: flex; gap: 8px; margin-bottom: 16px; }
+.s7 { display: flex; flex-wrap: wrap; gap: 6px; }
+.s8 { align-items: center; display: flex; gap: 8px; padding: 8px; }
+.s9 { width: 120px; }
+.s10 { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.s11 { border-radius: 6px; border: 1px solid var(--border-color, #ddd); margin-bottom: 16px; padding: 12px; }
+.s12 { cursor: pointer; }

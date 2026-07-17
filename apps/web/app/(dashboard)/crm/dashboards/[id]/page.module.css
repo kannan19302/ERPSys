@@ -1,0 +1,48 @@
+.widgetIcon, .buttonIcon { width: var(--space-4); height: var(--space-4); }
+.buttonIcon { margin-right: var(--space-2); }
+.metricContent { padding: var(--space-3); text-align: center; }
+.metricValue { color: var(--color-text-primary); font-size: var(--text-3xl); font-weight: var(--weight-bold); }
+.metricChange { color: var(--color-success); font-size: var(--text-xs); margin-top: var(--space-1); }
+.barChart { align-items: flex-end; display: flex; gap: var(--space-2); height: var(--space-20); padding: var(--space-2); }
+.barColumn { align-items: center; display: flex; flex: 1; flex-direction: column; gap: var(--space-1); }
+.barFill { background: var(--color-primary); border-radius: var(--radius-sm) var(--radius-sm) 0 0; width: 100%; }
+.chartLabel, .widgetSource { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.pieChart { align-items: center; display: flex; gap: var(--space-3); justify-content: center; padding: var(--space-2); }
+.pie { background: conic-gradient(var(--color-primary) 0% 35%, var(--color-success) 35% 60%, var(--color-warning) 60% 80%, var(--color-border) 80% 100%); border-radius: var(--radius-full); height: var(--space-16); width: var(--space-16); }
+.pieLegend { color: var(--color-text-secondary); display: flex; flex-direction: column; font-size: var(--text-xs); gap: var(--space-1); }
+.funnel { align-items: center; display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-2); }
+.funnelStage { background: var(--color-primary); border-radius: var(--radius-sm); color: var(--color-text-inverse); font-size: var(--text-xs); padding: var(--space-1) 0; text-align: center; }
+.tableVisualization, .leaderboard { color: var(--color-text-secondary); font-size: var(--text-xs); padding: var(--space-2); }
+.tableHeader, .tableRow { display: grid; gap: var(--space-1); grid-template-columns: repeat(3, 1fr); }
+.tableHeader { border-bottom: 1px solid var(--color-border); color: var(--color-text-primary); font-weight: var(--weight-semibold); margin-bottom: var(--space-1); padding-bottom: var(--space-1); }
+.tableRow { padding: var(--space-1) 0; }
+.leaderboardRow { align-items: center; display: flex; justify-content: space-between; padding: var(--space-1) 0; }
+.withDivider { border-bottom: 1px solid var(--color-border); }
+.rank { color: var(--color-primary); margin-right: var(--space-2); }
+.leaderboardValue { color: var(--color-text-primary); font-weight: var(--weight-semibold); }
+.visualizationFallback { color: var(--color-text-secondary); font-size: var(--text-sm); padding: var(--space-3); }
+.page { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6); }
+.loading { display: flex; justify-content: center; margin-top: var(--space-10); }
+.description { color: var(--color-text-secondary); font-size: var(--text-sm); margin: 0; }
+.dashboardLayout { display: flex; gap: var(--space-4); }
+.widgetPalette { display: flex; flex: 0 0 calc(var(--space-20) * 2.5); flex-direction: column; gap: var(--space-2); }
+.paletteTitle { color: var(--color-text-primary); font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0 0 var(--space-1); }
+.paletteButton { align-items: center; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text-primary); cursor: pointer; display: flex; font-size: var(--text-sm); gap: var(--space-2); padding: var(--space-2) var(--space-3); text-align: left; width: 100%; }
+.paletteButton:hover, .paletteButton:focus-visible { background: var(--color-bg-secondary); border-color: var(--color-primary); outline: none; }
+.widgetGrid { display: grid; flex: 1; gap: var(--space-3); grid-auto-rows: calc(var(--space-12) + var(--space-3)); grid-template-columns: repeat(12, 1fr); }
+.widgetCard { display: flex; flex-direction: column; padding: var(--space-3); }
+.editMode { border: 2px dashed var(--color-border); }
+.widgetHeader { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; gap: var(--space-2); margin-bottom: var(--space-2); padding-bottom: var(--space-2); }
+.widgetTitle { color: var(--color-text-primary); flex: 1; font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.widgetSource { text-transform: uppercase; }
+.widgetContent { flex: 1; overflow: hidden; }
+.emptyState { color: var(--color-text-secondary); padding: var(--space-10); text-align: center; }
+.emptyIcon { height: var(--space-12); margin-bottom: var(--space-3); opacity: .4; width: var(--space-12); }
+.modalOverlay { align-items: center; background: var(--color-bg-overlay); display: flex; inset: 0; justify-content: center; position: fixed; z-index: var(--z-modal); }
+.modal { display: flex; flex-direction: column; gap: var(--space-4); max-width: calc(var(--space-24) * 5); padding: var(--space-6); width: 100%; }
+.modalTitle { color: var(--color-text-primary); font-size: var(--text-xl); font-weight: var(--weight-semibold); margin: 0; }
+.closeIcon { height: var(--space-5); width: var(--space-5); }
+.formGroup { display: flex; flex-direction: column; gap: var(--space-1); }
+.formLabel { color: var(--color-text-primary); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.formControl { appearance: auto; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-sizing: border-box; color: var(--color-text-primary); font-size: var(--text-sm); padding: var(--space-2) var(--space-3); width: 100%; }
+.modalActions { display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-2); }

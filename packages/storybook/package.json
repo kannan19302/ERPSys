@@ -1,0 +1,38 @@
+{
+  "name": "@unerp/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UniERP Design System — Storybook workshop for all @unerp/ui-* packages",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@unerp/ui": "workspace:*",
+    "@unerp/ui-charts": "workspace:*",
+    "@unerp/ui-components": "workspace:*",
+    "@unerp/ui-dashboard": "workspace:*",
+    "@unerp/ui-data-grid": "workspace:*",
+    "@unerp/ui-hooks": "workspace:*",
+    "@unerp/ui-icons": "workspace:*",
+    "@unerp/ui-layout": "workspace:*",
+    "@unerp/ui-notifications": "workspace:*",
+    "@unerp/ui-theme": "workspace:*",
+    "@unerp/ui-tokens": "workspace:*",
+    "@unerp/ui-utils": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^8.6.14",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/addon-links": "^8.6.14",
+    "@storybook/blocks": "^8.6.14",
+    "@storybook/react": "^8.6.14",
+    "@storybook/react-vite": "^8.6.14",
+    "@types/react": "^19.0.0",
+    "@unerp/config": "workspace:*",
+    "storybook": "^8.6.14",
+    "typescript": "^5.7.0"
+  }
+}

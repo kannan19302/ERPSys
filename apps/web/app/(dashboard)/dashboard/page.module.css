@@ -1,0 +1,56 @@
+.metricTitle { color: var(--color-text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.metricIcon { align-items: center; background: linear-gradient(155deg, var(--color-primary-light), var(--color-bg-elevated)); border-radius: var(--radius-lg); box-shadow: inset 0 0 0 1px var(--color-primary-light); color: var(--color-primary); display: flex; flex-shrink: 0; height: var(--space-9); justify-content: center; width: var(--space-9); }
+.metricValue { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: -0.01em; margin: 0 0 var(--space-1); }
+.metricChangeRow, .metricTrend, .widgetHeader, .legendItem, .timelineItem, .appFooter, .quickAction { align-items: center; display: flex; }
+.metricChangeRow { gap: var(--space-1); }
+.metricTrend { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.metricTrendUp { color: var(--color-success); }
+.metricTrendDown { color: var(--color-danger); }
+.tabs { margin-bottom: calc(var(--space-2) * -1); }
+.loading, .emptyChart, .emptyCatalog, .emptyTimeline { color: var(--color-text-secondary); text-align: center; }
+.loading { padding: var(--space-10); }
+.customDashboard { background: var(--color-bg-elevated); border-radius: var(--radius-xl); box-shadow: var(--elevation-2); min-height: 37.5rem; padding: var(--space-4); }
+.widget { background: var(--color-bg-sunken); border: 1px solid var(--color-border); border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; }
+.widgetHeader { background: var(--color-bg-elevated); border-bottom: 1px solid var(--color-border); gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+.widgetTitle { color: var(--color-text-secondary); flex: 1; font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.widgetContent { align-items: center; color: var(--color-border-strong); display: flex; flex: 1; justify-content: center; }
+.widgetKpi { color: var(--color-text); font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+.metricsGrid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr)); }
+.contentGrid { display: grid; gap: var(--space-6); grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); }
+.sectionTitle, .sectionTitleNoMargin { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+.sectionTitle { margin: 0 0 var(--space-4); }
+.sectionTitleNoMargin { margin: 0; }
+.emptyChart { padding: var(--space-10) 0; }
+.distribution { align-items: center; display: flex; flex-wrap: wrap; gap: var(--space-6); justify-content: center; min-height: 11.25rem; }
+.donut { align-items: center; background: conic-gradient(var(--color-primary) 0% 40%, var(--color-success) 40% 70%, var(--color-warning) 70% 90%, var(--color-info) 90% 100%); border-radius: 50%; display: flex; height: 10rem; justify-content: center; position: relative; width: 10rem; }
+.donutCenter { align-items: center; background-color: var(--color-bg-elevated); border-radius: 50%; display: flex; flex-direction: column; height: 7.5rem; justify-content: center; position: absolute; width: 7.5rem; }
+.donutValue { color: var(--color-text); font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.donutLabel { color: var(--color-text-secondary); font-size: var(--text-xs); text-transform: uppercase; }
+.legend { display: flex; flex-direction: column; font-size: var(--text-xs); }
+.legendItem { gap: var(--space-2); }
+.legendDot { border-radius: 50%; height: var(--space-2); width: var(--space-2); }
+.legendDot0 { background: var(--color-primary); }.legendDot1 { background: var(--color-success); }.legendDot2 { background: var(--color-warning); }.legendDot3 { background: var(--color-info); }
+.monthlyChart { display: flex; flex-direction: column; justify-content: space-between; }
+.bars { align-items: flex-end; display: flex; flex: 1; gap: var(--space-3); justify-content: space-between; padding-inline: var(--space-2); }
+.barGroup { align-items: center; display: flex; flex: 1; flex-direction: column; height: 100%; justify-content: flex-end; position: relative; }
+.barTooltip { background-color: var(--color-text); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); color: var(--color-bg-elevated); margin-bottom: var(--space-1); opacity: 0; padding: var(--space-1) var(--space-2); pointer-events: none; position: absolute; transition: opacity var(--duration-fast) var(--ease-out); white-space: nowrap; }
+.barGroup:hover .barTooltip, .barGroup:focus-within .barTooltip { opacity: 1; }
+.bar { background: linear-gradient(to top, var(--color-primary-light), var(--color-primary)); border: 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0; box-shadow: var(--elevation-1); cursor: pointer; transition: filter var(--duration-fast) var(--ease-out); width: 100%; }
+.bar:hover, .bar:focus-visible { filter: brightness(1.1); outline: none; }
+.monthLabels { border-top: 1px solid var(--color-border); color: var(--color-text-secondary); display: flex; justify-content: space-between; padding-inline: var(--space-2); }
+.monthLabel { text-align: center; }
+.titleRow { margin-bottom: var(--space-4); }
+.appsBadge, .timelineBadge { background: var(--color-primary-light); border-radius: var(--radius-sm); color: var(--color-primary); }
+.appsBadge { font-size: var(--text-xs); font-weight: var(--weight-bold); padding: var(--space-1) var(--space-2); }
+.emptyCatalog { padding: var(--space-10); }
+.appsGrid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr)); }
+.appCard { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); transition: border-color var(--duration-fast) var(--ease-out); }
+.appCard:hover, .appCard:focus-visible { border-color: var(--color-primary); outline: none; }
+.appName { color: var(--color-text); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.statusBadge { border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: var(--weight-bold); padding: var(--space-1) var(--space-2); }
+.statusActive { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); }.statusPending { background: color-mix(in srgb, var(--color-warning) 10%, transparent); color: var(--color-warning); }
+.appMetrics { background: var(--color-bg-sunken); border-radius: var(--radius-md); display: grid; gap: var(--space-2); grid-template-columns: repeat(4, 1fr); padding: var(--space-2); text-align: center; }
+.appMetricValue { font-size: var(--text-sm); font-weight: var(--weight-bold); }.appMetricPrimary, .appVersion { color: var(--color-primary); }.appMetricLabel { color: var(--color-text-secondary); font-size: var(--text-xs); }
+.appFooter { color: var(--color-text-secondary); font-size: var(--text-xs); justify-content: space-between; }.appVersion { font-weight: var(--weight-semibold); }
+.emptyTimeline { padding: var(--space-6); }.timelineItem { align-items: flex-start; border-bottom: 1px solid var(--color-border); justify-content: space-between; padding-bottom: var(--space-3); }.timelineBadge { font-size: var(--text-xs); padding: var(--space-1) var(--space-2); }.timelineData { color: var(--color-text-secondary); font-size: var(--text-xs); margin-top: var(--space-1); max-width: 37.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.timelineTime { color: var(--color-text-tertiary); font-size: var(--text-xs); white-space: nowrap; }
+.quickAction { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-medium); gap: var(--space-3); padding: var(--space-3); text-align: left; transition: background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out); }.quickAction:hover, .quickAction:focus-visible { background: var(--color-primary-light); border-color: var(--color-primary); outline: none; }.quickActionTitle { font-size: var(--text-sm); margin: 0; }.quickActionDescription { color: var(--color-text-secondary); font-size: var(--text-xs); margin: 0; }.logEntry { display: flex; flex-direction: column; gap: var(--space-1); }

@@ -1,0 +1,8 @@
+.s1 { align-items: center; cursor: pointer; display: flex; font-size: var(--text-sm); gap: var(--space-1); }
+.s2 { cursor: pointer; }
+.s3 { align-items: center; background: var(--color-success); border-radius: var(--radius-md); border: none; color: var(--color-text-inverse); cursor: pointer; display: flex; font-size: var(--text-sm); font-weight: var(--weight-semibold); gap: var(--space-2); padding: var(--space-2) var(--space-4); }
+.s4 { align-items: center; background: var(--color-error); border-radius: var(--radius-md); border: none; color: var(--color-text-inverse); cursor: pointer; display: flex; font-size: var(--text-sm); font-weight: var(--weight-semibold); gap: var(--space-2); padding: var(--space-2) var(--space-4); }
+.s5 { background: var(--color-bg); border-radius: var(--radius-full); color: var(--color-text-secondary); font-size: 10px; padding: 2px 8px; }
+.s6 { font-size: 10px; font-weight: var(--weight-bold); }
+.s7 { font-size: 11px; }
+.s8 { display: inline; margin-right: 4px; }

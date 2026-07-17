@@ -1,0 +1,8 @@
+.kpiGrid { margin-bottom: var(--space-8); }
+.featureLink { color: inherit; text-decoration: none; }
+.featureCard { border: 1px solid var(--color-border); cursor: pointer; padding: var(--space-5); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.featureCard:hover, .featureCard:focus-within { border-color: var(--color-primary); box-shadow: var(--shadow-sm); }
+.featureHeader { align-items: center; display: flex; gap: var(--space-3); margin-bottom: var(--space-3); }
+.featureIcon { align-items: center; background: color-mix(in srgb, var(--feature-color) 12%, transparent); border-radius: var(--radius-md); display: flex; height: var(--space-10); justify-content: center; width: var(--space-10); }
+.featureTitle { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0; }
+.featureAction { align-items: center; color: var(--color-primary); display: flex; font-size: var(--text-xs); font-weight: var(--weight-medium); gap: var(--space-1); margin-top: var(--space-3); }

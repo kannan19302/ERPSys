@@ -1,0 +1,2 @@
+.s1 { align-items: center; color: var(--color-text-secondary); display: flex; height: 100vh; justify-content: center; }
+.s2 { border-radius: 50%; border-top-color: var(--color-primary); border: 3px solid var(--color-border); height: 24px; margin-right: 8px; width: 24px; }
