@@ -9,6 +9,13 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Repository maintenance — cleaned unused scripts and duplicate env files
+
+- Removed duplicate `.env` files in `apps/api/` and `packages/database/`, copying `OLLAMA_BASE_URL` and `OLLAMA_MODEL` to the root `.env` to ensure backend configuration compatibility.
+- Deleted `scripts/check-duplicate-classnames.mjs` styling migration analysis helper as the style migration is now 100% complete.
+- Pruned stale git worktrees (`dazzling-greider-09765e` and `nervous-herschel-b0b1d7`) and deleted their branches, cleaning up massive duplicate codebase checkouts and `node_modules` from disk.
+- Ran all verification gates (`architecture:check`, `foundation:check`, and full production compilation `pnpm run build`) green.
+
 ## [2026-07-17] Repository maintenance — removed unused style migration scripts
 
 - Deleted three obsolete style migration scripts from the `scripts/` folder: `migrate-phase8-styles.mjs`, `migrate-remaining-styles.mjs`, and `migrate-ui.mjs`.
