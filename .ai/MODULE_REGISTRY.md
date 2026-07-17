@@ -14,6 +14,7 @@
 
 | Date | Total LOC | Delta | Notable modules/features added that session |
 |:---|:---|:---|:-|
+| 2026-07-17 | 465,861 | +80 | Wired transaction-scoped PostgreSQL RLS session context (app.current_tenant_id) inside `$allOperations` hook in shared Prisma Client extension, and added full database isolation integration tests. |
 | 2026-07-16 | 465,781 | -1,145 | UI Migration Phase 11 & Phase 12 completed: Migrated all remaining ~141 pages across HR, Projects, Drive, Manufacturing, Inventory, Supply Chain, Healthcare, Education, Real Estate, Field Service, SaaS, Storefront, etc. to extract inline styles and resolve CSS Modules filename dependencies. Production build passes clean with 0 errors/warnings. |
 | 2026-07-16 | 466,926 | -40 | UI Migration Phase 1 of 12 (CRM & Sales API Gateway) completed: Migrated all remaining 9 pages (quotations, sales-orders, documents, reports, territories, workflows, and settings for approvals, custom-fields, and record-types) to useApiClient and RouteGuard. |
 | 2026-07-16 | 466,966 | -4 | Hardened visual builder page: removed eslint-disable, migrated 20+ raw fetch/localStorage calls to useApiClient framework hook, wrapped with RouteGuard. |
@@ -88,7 +89,7 @@
 > HR items below) stay queued for their module's turn. P0/P1/P2 items (broken
 > build, runtime failures, conflicts, cross-cutting hardening) are exempt.
 
-0. **[P0] Wire RLS session context into the shared Prisma extension** — `packages/database/src/index.ts`'s `$allOperations` hook needs to `set_config('app.current_tenant_id', ...)` for the 12 RLS-protected models (`users`, `invoices`, `payments`, `employees`, `patients`, `payroll_runs`, `journals`, `customers`, `vendors`, `sales_orders`, `purchase_orders`, `audit_logs`) using the existing `getTenantSession()`, or those tables stay invisible to any DB role without BYPASSRLS — confirmed live via `psql` 2026-07-12. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
+0. ~~**[P0] Wire RLS session context into the shared Prisma extension**~~ ✅ RESOLVED 2026-07-17 — wired RLS setting context transaction-locally in `$allOperations` and added full integration tests. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
 1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
 2. **`dependency-cruiser`/ESLint module-boundary lint** — enforce "no cross-module deep imports, no business logic in controllers" in CI (Enterprise Hardening Phase 1 exit criteria).
 3. **CI test-suite scope decision** — `test:coverage` still excludes `*.coverage.spec.ts`; decide whether to run the full suite in CI now that it's stable (Enterprise Hardening Phase 0 follow-up).
@@ -186,6 +187,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-17 | antigravity | **Database RLS Integration**: Wired transaction-scoped PostgreSQL RLS context (`app.current_tenant_id`) into shared Prisma Client `$allOperations` hook and added database-isolation integration tests. | pending |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Hardened .gitignore rules to prevent tracking of alternate lockfiles, custom env files, desktop.ini, and eslint cache. | 1b4910f |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Backed up and removed deploy/ and RUNBOOK.md, removed docs/extension-contract, and hardened .gitignore rules. | 5a45223 |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Deleted duplicate `.env` files in apps/api & packages/database, deleted unused `check-duplicate-classnames.mjs` script, and pruned stale git worktrees. | 1c6570f |

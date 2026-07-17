@@ -9,6 +9,13 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Database — wired transaction-scoped RLS session context and added integration tests
+
+- Wired transaction-local PostgreSQL RLS session context (`app.current_tenant_id`) inside the shared Prisma Client extension (`packages/database/src/index.ts`) `$allOperations` hook for the 11 RLS-protected models.
+- Resolved transaction context lookup: uses `__internalParams.transaction` to obtain the transaction client (`_createItxClient`) inside interactive transactions, and automatically wraps standalone queries on RLS-protected models inside a `basePrisma.$transaction` block.
+- Wrote full RLS database integration tests in `packages/database/src/tenant-rls-integration.test.ts` to assert policy existence, RLS enabled/forced configuration, correct context setting inside tenant sessions, and absence of bleeding outside sessions.
+- Replayed migrations, seeded default developer data, and verified all 30 database tests pass successfully.
+
 ## [2026-07-17] Repository maintenance — gitignore safety hardening
 
 - Hardened `.gitignore` rules to ignore all `.env.*` files (excluding `.env.example`), prevent tracking of alternative package lockfiles (`package-lock.json`, `yarn.lock`), block OS metadata (`desktop.ini`), and ignore linter cache files (`.eslintcache`).

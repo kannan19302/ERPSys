@@ -18,6 +18,17 @@ const basePrisma = new PrismaClient({
       : ['error'],
 });
 
+const RLS_PROTECTED_MODELS = new Set([
+  'User', 'Invoice', 'Payment', 'Employee', 'PayrollRun',
+  'Journal', 'Customer', 'Vendor', 'SalesOrder', 'PurchaseOrder',
+  'AuditLog'
+]);
+
+function getModelPropertyName(modelName: string): string {
+  if (!modelName) return '';
+  return modelName.charAt(0).toLowerCase() + modelName.slice(1);
+}
+
 export const prisma = basePrisma.$extends({
   query: {
     $allModels: {
@@ -26,18 +37,40 @@ export const prisma = basePrisma.$extends({
         operation,
         args,
         query,
+        ...rest
       }: {
         model: string;
         operation: string;
-        args: unknown;
-        query: (args: unknown) => Promise<unknown>;
+        args: any;
+        query: (args: any) => Promise<unknown>;
       }) {
         const session = getTenantSession();
         if (!session || MODELS_WITHOUT_TENANT.has(model)) {
           return query(args);
         }
 
-        return query(applyTenantScope(model, operation, args, session.tenantId));
+        const scopedArgs = applyTenantScope(model, operation, args, session.tenantId);
+
+        if (RLS_PROTECTED_MODELS.has(model)) {
+          const execute = async (client: any) => {
+            await client.$executeRaw`SELECT set_config('app.current_tenant_id', ${session.tenantId}, true)`;
+          };
+
+          const transaction = (rest as any).__internalParams?.transaction;
+          if (transaction?.kind === 'itx' && typeof (basePrisma as any)._createItxClient === 'function') {
+            const itxClient = (basePrisma as any)._createItxClient(transaction);
+            await execute(itxClient);
+            return query(scopedArgs);
+          } else {
+            return basePrisma.$transaction(async (tx) => {
+              await execute(tx);
+              const modelProp = getModelPropertyName(model);
+              return (tx as any)[modelProp][operation](scopedArgs);
+            });
+          }
+        }
+
+        return query(scopedArgs);
       },
     },
   },
