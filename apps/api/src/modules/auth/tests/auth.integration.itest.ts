@@ -10,7 +10,14 @@ import { prisma } from '@unerp/database';
 import { hashPassword, verifyTypedToken, TOKEN_TYPE } from '@unerp/auth';
 import { authenticator } from 'otplib';
 import { AuthService } from '../auth.service';
-import { generateTotpSecret, createResetToken, generateRecoveryCodes } from '../auth-crypto';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { generateTotpSecret, generateRecoveryCodes } from '../auth-crypto';
+
+/** Minimal ExecutionContext exposing a request with a bearer token. */
+function ctxWithToken(token: string) {
+  const req = { headers: { authorization: `Bearer ${token}` }, cookies: {} };
+  return { switchToHttp: () => ({ getRequest: () => req }) } as never;
+}
 
 const svc = new AuthService();
 const SLUG = `itest-${Date.now()}`;
@@ -113,5 +120,26 @@ describe('auth integration (live DB)', () => {
     expect(good.token).toBeTruthy();
 
     await prisma.user.update({ where: { id: userId }, data: { mfaEnabled: false, mfaSecret: null, mfaRecoveryCodes: [] } });
+  });
+
+  it('session is revocable: guard accepts then rejects after revoke', async () => {
+    const guard = new JwtAuthGuard();
+    const res = await svc.login({ email: EMAIL, password: PASSWORD, tenantSlug: SLUG }) as { token: string };
+
+    // Token is accepted while the session is active.
+    await expect(guard.canActivate(ctxWithToken(res.token))).resolves.toBe(true);
+
+    // Revoke, then the very same token is rejected.
+    const decoded = (await import('@unerp/auth')).verifyToken(res.token) as { sid: string };
+    await svc.revokeSessionById(decoded.sid);
+    await expect(guard.canActivate(ctxWithToken(res.token))).rejects.toThrow(/revoked|expired/i);
+  });
+
+  it('stores an encrypted MFA secret (not plaintext) on enrollment', async () => {
+    const setup = await svc.generateMfaSecret(userId);
+    const row = await prisma.user.findUnique({ where: { id: userId } });
+    expect(row?.mfaSecret).toMatch(/^v1:/); // encrypted-at-rest marker
+    expect(row?.mfaSecret).not.toContain(setup.secret);
+    await prisma.user.update({ where: { id: userId }, data: { mfaSecret: null, mfaPending: false } });
   });
 });

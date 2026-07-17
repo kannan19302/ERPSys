@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, UnauthorizedException, NotFoundException, Logger } from '@nestjs/common';
+import { randomBytes } from 'node:crypto';
 import { prisma } from '@unerp/database';
 import { UserRole, Role } from '@prisma/client';
 import {
@@ -18,6 +19,8 @@ import {
   matchRecoveryCode,
   createResetToken,
   hashResetToken,
+  encryptSecret,
+  decryptSecret,
 } from './auth-crypto';
 
 /** Failed logins allowed before the account is temporarily locked. */
@@ -28,6 +31,15 @@ const LOCK_DURATION_MS = 15 * 60 * 1000;
 const MFA_CHALLENGE_TTL = '5m';
 /** How long a password-reset token is valid. */
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+/** Session lifetime; matches the JWT's default 1-day expiry. */
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** Request-derived context recorded on a session for the "active sessions" UI. */
+export interface SessionContext {
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  device?: string | null;
+}
 
 @Injectable()
 export class AuthService {
@@ -196,13 +208,33 @@ export class AuthService {
 
   /**
    * Builds the standard authenticated login response with a fresh session token.
+   * A revocable `UserSession` row is created and its id embedded as the token's
+   * `sid`, so JwtAuthGuard can reject the token the moment the session is revoked.
    */
   private async issueSession(
     user: { id: string; tenantId: string; email: string; firstName: string; lastName: string; avatar?: string | null; tenant: { id: string; name: string; slug: string } },
+    context?: SessionContext,
   ) {
     const { roles, permissions } = await this.resolveRolesAndPermissions(user.id);
 
+    // Create the session first so its id can be sealed into the token.
+    const sid = randomBytes(18).toString('hex');
+    const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+    await prisma.userSession.create({
+      data: {
+        id: sid,
+        tenantId: user.tenantId,
+        userId: user.id,
+        token: sid,
+        ipAddress: context?.ipAddress ?? null,
+        browser: context?.userAgent ?? null,
+        device: context?.device ?? null,
+        expiresAt,
+      },
+    });
+
     const token = signSessionToken({
+      sid,
       userId: user.id,
       tenantId: user.tenantId,
       email: user.email,
@@ -238,7 +270,7 @@ export class AuthService {
   /**
    * Authenticates a user and issues a JWT token (or an MFA challenge).
    */
-  async login(dto: LoginInput & { tenantSlug?: string }) {
+  async login(dto: LoginInput & { tenantSlug?: string }, context?: SessionContext) {
     let tenantId = '';
 
     if (dto.tenantSlug) {
@@ -325,7 +357,7 @@ export class AuthService {
       } as const;
     }
 
-    return this.issueSession(user);
+    return this.issueSession(user, context);
   }
 
   /**
@@ -611,7 +643,7 @@ export class AuthService {
 
     await prisma.user.update({
       where: { id: userId },
-      data: { mfaSecret: secret, mfaPending: true },
+      data: { mfaSecret: encryptSecret(secret), mfaPending: true },
     });
 
     const { otpauthUrl, qrDataUrl } = await buildTotpEnrollment(user.email, secret);
@@ -629,7 +661,7 @@ export class AuthService {
       throw new BadRequestException('MFA has not been configured for this user.');
     }
 
-    if (!verifyTotp(code, user.mfaSecret)) {
+    if (!verifyTotp(code, decryptSecret(user.mfaSecret))) {
       throw new BadRequestException('Invalid verification code.');
     }
 
@@ -657,7 +689,7 @@ export class AuthService {
    * Completes an MFA login: validates the challenge token from step one, then
    * the TOTP code (or a single-use recovery code), and issues a session.
    */
-  async verifyMfaLogin(challengeToken: string, code: string) {
+  async verifyMfaLogin(challengeToken: string, code: string, context?: SessionContext) {
     const payload = verifyTypedToken<{ userId: string }>(challengeToken, TOKEN_TYPE.MFA_CHALLENGE);
     if (!payload?.userId) {
       throw new UnauthorizedException('MFA session expired. Please sign in again.');
@@ -672,7 +704,7 @@ export class AuthService {
       throw new BadRequestException('MFA is not configured for this user.');
     }
 
-    const totpOk = verifyTotp(code, user.mfaSecret);
+    const totpOk = verifyTotp(code, decryptSecret(user.mfaSecret));
 
     if (!totpOk) {
       // Fall back to single-use recovery codes.
@@ -689,6 +721,18 @@ export class AuthService {
       });
     }
 
-    return this.issueSession(user);
+    return this.issueSession(user, context);
+  }
+
+  /**
+   * Marks a session inactive so its token is rejected on the next request.
+   * Idempotent — unknown or already-revoked ids are a no-op.
+   */
+  async revokeSessionById(sid: string) {
+    if (!sid) return;
+    await prisma.userSession.updateMany({
+      where: { id: sid, isActive: true },
+      data: { isActive: false },
+    });
   }
 }

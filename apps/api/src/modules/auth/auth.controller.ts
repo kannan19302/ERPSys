@@ -22,12 +22,21 @@ const COOKIE_OPTIONS = {
 
 interface AuthenticatedRequest extends Request {
   user: {
+    sid?: string;
     userId: string;
     tenantId: string;
     email: string;
     firstName: string;
     lastName: string;
     roles: string[];
+  };
+}
+
+/** Pulls IP / user-agent off the request for the active-sessions record. */
+function sessionContext(req: Request) {
+  return {
+    ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || null,
+    userAgent: (req.headers['user-agent'] as string) || null,
   };
 }
 
@@ -52,6 +61,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @ZodBody(z.any()) body: Record<string, unknown>,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const validationPipe = new ZodValidationPipe(loginSchema);
@@ -60,7 +70,7 @@ export class AuthController {
     const result = await this.authService.login({
       ...loginData,
       tenantSlug: body.tenantSlug as string | undefined,
-    });
+    }, sessionContext(req));
 
     // Only a completed login carries a session token; an MFA challenge does not.
     if ('token' in result) {
@@ -71,10 +81,14 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Logout' })
-  @Permissions('auth.create')
   @Post('logout')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async logout(@Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) res: Response) {
+    // Revoke the server-side session so the token is dead even if it is replayed.
+    if (req.user?.sid) {
+      await this.authService.revokeSessionById(req.user.sid);
+    }
     res.clearCookie(AUTH_COOKIE, { path: '/' });
     return { message: 'Logged out' };
   }
@@ -159,9 +173,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async verifyMfaLogin(
     @Body(new ZodValidationPipe(mfaLoginSchema)) body: MfaLoginInput,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.verifyMfaLogin(body.challengeToken, body.code);
+    const result = await this.authService.verifyMfaLogin(body.challengeToken, body.code, sessionContext(req));
     res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
     return result;
   }

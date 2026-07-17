@@ -6,6 +6,8 @@ import {
   matchRecoveryCode,
   createResetToken,
   hashResetToken,
+  encryptSecret,
+  decryptSecret,
 } from '../auth-crypto';
 import { authenticator } from 'otplib';
 
@@ -41,6 +43,32 @@ describe('auth-crypto', () => {
       const { plain, hashes } = await generateRecoveryCodes(2);
       const idx = await matchRecoveryCode(plain[0]!.toUpperCase(), hashes);
       expect(idx).toBe(0);
+    });
+  });
+
+  describe('secret encryption at rest', () => {
+    it('round-trips an encrypted secret', () => {
+      const secret = generateTotpSecret();
+      const enc = encryptSecret(secret);
+      expect(enc).toMatch(/^v1:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+$/);
+      expect(enc).not.toContain(secret);
+      expect(decryptSecret(enc)).toBe(secret);
+    });
+
+    it('produces a different ciphertext each time (random IV)', () => {
+      expect(encryptSecret('ABCDEF')).not.toBe(encryptSecret('ABCDEF'));
+    });
+
+    it('passes legacy plaintext through unchanged', () => {
+      expect(decryptSecret('LEGACYPLAINTEXTSECRET')).toBe('LEGACYPLAINTEXTSECRET');
+    });
+
+    it('rejects a tampered ciphertext', () => {
+      const enc = encryptSecret('secret');
+      const parts = enc.split(':');
+      // Flip a byte in the ciphertext body — GCM auth tag must reject it.
+      parts[3] = parts[3]!.replace(/.$/, (c) => (c === '0' ? '1' : '0'));
+      expect(() => decryptSecret(parts.join(':'))).toThrow();
     });
   });
 

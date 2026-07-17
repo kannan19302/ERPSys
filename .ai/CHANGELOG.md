@@ -8,6 +8,38 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Auth Hardening Pass Two — Revocable Sessions + MFA Secrets Encrypted at Rest
+
+Follow-up to the pass-one hardening below.
+
+### Revocable server-side sessions
+- Every issued session now creates a `UserSession` row (id sealed into the JWT
+  as `sid`, with IP / user-agent / expiry). The previously-unused table is now
+  the source of truth for the "Active Sessions" admin view.
+- `JwtAuthGuard` is now async and rejects a token whose session is missing,
+  inactive, or expired — so revocation takes effect on the next request. Tokens
+  minted before this change carry no `sid` and remain valid until they expire.
+- `/auth/logout` now requires a valid session and marks it inactive, so the JWT
+  is dead even if replayed (previously logout only cleared the cookie).
+
+### MFA secrets encrypted at rest
+- TOTP secrets are stored AES-256-GCM encrypted (`encryptSecret`/`decryptSecret`
+  in `auth-crypto.ts`), keyed from `MFA_ENCRYPTION_KEY` (falls back to
+  `NEXTAUTH_SECRET`). Legacy plaintext values are read transparently, so no data
+  migration is needed. No schema change — reuses the existing `mfa_secret` column.
+
+### Verification
+- 4 new crypto unit tests (encrypt round-trip, random IV, legacy passthrough,
+  tamper rejection). 2 new live-DB integration tests (guard accepts→rejects a
+  token across a revoke; enrollment persists a `v1:`-prefixed ciphertext, not
+  plaintext). Full auth/admin/common suite: 287 passing.
+
+### Still open
+- **Real WebAuthn passkeys** — blocked in this environment: `@simplewebauthn`
+  cannot be installed (OneDrive file-lock `EACCES` during pnpm install), and a
+  passkey ceremony needs a real authenticator to verify. Pass-one already
+  removed the fake passkey login, so nothing insecure ships in the meantime.
+
 ## [2026-07-17] Auth Hardening — Bypass Removal, Real TOTP MFA, Lockout, Single-Use Reset (UI + DB + Backend)
 
 Closed five unauthenticated account-takeover paths and replaced the mock
