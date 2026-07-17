@@ -9,81 +9,63 @@
 
 ## Cycle
 
-- **Cycle #:** 1 (first cycle under the Program Ladder)
-- **Phase:** F — Foundation (lift gate unmet: #17/#19/#21 open, Tracks A–I open)
+- **Cycle #:** 2
+- **Phase:** F — Foundation (lift gate unmet)
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-0`)
+- **Agent/session:** fable-5 (claim: `foundation-track-a`)
 
 ## Scope & rationale
 
-**Track 0 — Governance & blockchain quarantine** (`.ai/FOUNDATION_HARDENING_ROADMAP.md` § 5),
-the first unblocked item in the dependency order (0 → A → B∥C → D → E → F/G/H/I).
+**Track A — #19 migration trust (ROOT blocker), preparation slice**
+(`.ai/FOUNDATION_HARDENING_ROADMAP.md` § 6). Track 0 closed in cycle 1; Track A
+is the next item in dependency order and blocks B (#17) and C (#21).
 
-Priority-ladder rung: **P-F** (no P0 broken build blocking this work; no open
-P1 security issue selected this cycle — #17/#19/#21 are foundation blockers
-addressed by Tracks A–C, which depend on Track 0's governance being landed).
+A.3/A.4's reconciling SQL requires **named DB-owner + code-owner sign-off** and
+is NEVER auto-applied (roadmap § 13). This cycle therefore delivers everything
+up to that gate:
 
-**Duplicate-check:** CHANGELOG already contains the Track 0.1 roadmap entry and
-the 0.4 dated architecture exception — written by a prior session but **never
-committed**. MODULE_REGISTRY has a Collab Board row for the blockchain
-integration (status `pending`). What does NOT exist: the 0.2 CI quarantine
-guard, and the 0.3 "provisional / freeze-exception" marking. Nothing here
-re-implements existing capability.
-
-**Stranded-tree note:** the working tree carries uncommitted prior-session work
-(ADP rewiring docs/skills, Connect phase 2, blockchain module, roadmap). The
-binding "always land work on main" rule requires landing it; Track 0 is
-precisely the governance record for that state. This cycle verifies the tree
-(typecheck + architecture gates), lands it in logical commits, and adds the
-quarantine guard so the blockchain island cannot be wired before Track E.
+Priority rung: **P-F**. Duplicate-check: `report-migration-reconciliation.mjs`
+and `check-migration-discipline.mjs` exist (landed cycle 1); no baselines, no
+classification report, and no mapping ledger exist anywhere in `.ai/` — this
+cycle produces them. Nothing re-implements existing tooling.
 
 ## Ordered work items
 
-1. Commit the claim lock (per claim.mjs protocol).
-2. **0.2 CI guard**: extend `scripts/check-module-boundaries.mjs` (runs inside
-   `pnpm architecture:check`) with a blockchain-quarantine rule — fail if any
-   file outside `apps/api/src/modules/blockchain` imports `@unerp/blockchain`
-   or anything under `modules/blockchain` (covers `*BlockchainService`).
-   Confirm `BLOCKCHAIN_ENABLED` stays default-off.
-3. **0.3**: mark the blockchain module + migration `20260717180000` as
-   "provisional / freeze-exception, not to be wired (see Track E)" in
-   MODULE_REGISTRY (Collab Board row + module note).
-4. **0.1/0.4**: already drafted in CHANGELOG — verify present, land them.
-5. Verify: `pnpm architecture:check`, `node scripts/check-foundation-readiness.mjs`,
-   scoped API typecheck.
-6. Record + ship: CHANGELOG cycle entry, MODULE_REGISTRY § Cycle Ledger
-   (DEV counter → 1, Next run: DEV, 9 until harden) in the same commit as the
-   code; mark Track 0 ✅ in the roadmap with evidence; release lock; land on
-   `main` and push.
+1. **A.1 (baselines):** pg_dump backups of the drifted shared dev DB
+   (schema + custom-format data dump) into a local `var/track-a-baselines/`
+   (gitignored); committed row-count baseline per table in the Track A report.
+2. **A.2 (report):** create a disposable shadow DB on the local Postgres;
+   run `pnpm migration:reconciliation:report` (migrations → schema.prisma);
+   additionally measure real drift: `prisma migrate diff --from-url <dev DB>
+   --to-schema-datamodel` and `--from-url --to-migrations`. Classify every
+   destructive op as (a) proven rename, (b) additive/backfill, (c) rejected
+   unknown.
+3. **A.4-prep (mapping ledger draft):** `.ai/TRACK_A_RECONCILIATION_2026-07-18.md`
+   with the classification tables, the `landed_cost_receipt_links.updatedAt`
+   retention decision (A.3) marked AWAITING SIGN-OFF, and the generated
+   candidate SQL saved (NOT applied) for owner review.
+4. Record + ship: CHANGELOG entry, Cycle Ledger 1 → 2, roadmap Track A items
+   annotated "prepared, awaiting sign-off"; release lock; land on `main`.
 
 ## Acceptance criteria / Definition of Done
 
-- A deliberate test import of `@unerp/blockchain` from a non-blockchain module
-  makes `architecture:check` fail; removing it goes green (proof captured in
-  CHANGELOG entry).
-- `check-foundation-readiness.mjs` green; API typecheck green.
-- Roadmap § 5 exit gate satisfied: guard in CI path, exception recorded,
-  roadmap in tracked files. Track 0 marked ✅ with commit hash.
-- Working tree clean; all work on `origin/main`.
+- Backup files exist locally with recorded sizes/checksums; row-count baseline
+  committed.
+- Reconciliation report runs green (exit 0) and its full output is classified
+  in the committed Track A doc — zero unclassified destructive ops.
+- Candidate SQL generated and committed for review; **zero SQL applied to any
+  non-disposable database**; dev DB untouched (read-only + dumps only).
+- Ledger/CHANGELOG updated in the same commit; tree clean on `main`.
 
 ## Gate tier & rollback note
 
-- **Gate tier:** FAST (docs + one CI-script rule; no schema, no API surface,
-  no UI). The stranded feature code lands as-is after typecheck verification —
-  it is prior recorded work, not this cycle's feature scope.
-- **Rollback:** the quarantine rule is a single self-contained block in
-  `check-module-boundaries.mjs`; revert that block to restore prior behavior.
-  Doc changes revert cleanly. No data/schema impact.
+- **Gate tier:** FAST (no schema, API, or UI changes; read-only DB access +
+  docs/reports). `migration:discipline` not triggered (no migration files
+  added).
+- **Rollback:** delete the report/baseline docs; no runtime impact possible —
+  nothing is applied to any database except creating/dropping the disposable
+  shadow DB (`unerp_shadow_track_a`).
 
 ## Addenda (dated, append-only during the cycle)
 
-- **2026-07-18 — quarantine hardened to full dormancy.** Verification found the
-  blockchain module does not compile: `@unerp/blockchain` was never linked
-  (`pnpm install` fails on OneDrive EACCES — known env limitation), its `dist`
-  was never built, and `@hyperledger/fabric-gateway` is not installed. With
-  `BlockchainModule` registered in `app.module.ts`, the API typecheck fails
-  inside the island. Resolution within Track 0 scope: unregister
-  `BlockchainModule` from `app.module.ts` (dated Track E pointer left in
-  place), exclude `modules/blockchain` from the API tsconfig, and drop the
-  app.module exemption from the quarantine guard (now zero legitimate
-  importers). Code stays in-repo untouched for Track E re-platforming.
+—

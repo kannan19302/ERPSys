@@ -8,6 +8,32 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 2 (Phase F) — Track A prep: baselines + reconciliation report; sign-off gate reached
+
+Track A (#19 migration trust) preparation slice — everything up to the
+named-owner sign-off gate (roadmap § 13 forbids auto-applying reconciling SQL).
+Deliverables in `.ai/TRACK_A_RECONCILIATION_2026-07-18.md` +
+`.ai/TRACK_A_CANDIDATE_RECONCILIATION_2026-07-18.sql` (review artifact, NOT applied):
+
+- **A.1 baselines**: schema-only + full `-Fc` pg_dump of the dev DB with SHA-256s
+  (local gitignored `var/track-a-baselines/`); exact per-table row counts (655
+  tables, 333 rows total — seed-level data only).
+- **A.2 classification (headline findings)**: dev DB has **zero drift** vs the
+  128-migration history (empty `migrate diff`) — the real divergence is
+  migrations vs `schema.prisma` (un-migrated naming-convention edits). 134
+  rename candidates (125 mechanical snake↔camel), 9 text→enum conversions, 2
+  additive, 1 true drop (`landed_cost_receipt_links.updatedAt` = the A.3
+  decision). All 23 affected tables have 0 rows → reconciliation provably
+  lossless here.
+- **A.4-prep**: mapping ledger drafted as rule+exceptions (L-1…L-4) with
+  validation queries; approvals section empty — ⚠️ AWAITING DB-owner +
+  code-owner sign-off. Next Track A cycle (post-sign-off): `--create-only`
+  candidate with hand-edited RENAMEs → clone-verify (A.5) → `db:deploy` →
+  CI replay + empty-diff gates (A.6).
+- Disposable `unerp_shadow_track_a` created for the report and dropped after.
+  No SQL applied to any non-disposable DB; dev DB accessed read-only + dumps.
+- **Cycle Ledger**: DEV cycles 1 → 2; next mandatory harden in 8.
+
 ## [2026-07-18] Cycle 1 (Phase F) — Track 0 closed: governance landed + blockchain quarantined
 
 First DEV cycle under the Program Ladder. Scope: Foundation Hardening Roadmap

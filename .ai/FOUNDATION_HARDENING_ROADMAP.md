@@ -164,6 +164,17 @@ is recorded; the roadmap is in the tracked files.
 
 ## 6. Track A — #19 migration trust (ROOT BLOCKER) 🔒 needs owner sign-off
 
+> **Status 2026-07-18 (cycle 2): A.1 + A.2 COMPLETE; A.3/A.4 PREPARED, ⚠️ awaiting
+> named-owner sign-off** — see `.ai/TRACK_A_RECONCILIATION_2026-07-18.md`.
+> Key findings that refine this track: (1) the dev DB has ZERO drift from the
+> recorded 128-migration history (`migrate diff` dev→migrations is empty) — the
+> divergence is migrations vs `schema.prisma` (un-migrated schema edits, mostly
+> naming-convention `@map` work); (2) all 23 affected tables hold 0 rows (dev DB
+> total: 333 seed rows), so the reconciliation is provably lossless in this
+> environment. Classification: 125 mechanical case-convention renames, 9
+> text→enum conversions, 2 additive, 1 drop (`landed_cost_receipt_links.updatedAt`
+> — the A.3 decision). Candidate SQL committed for review (NOT applied).
+
 **Goal:** schema evolution becomes trustworthy — recorded history and the live DB provably converge
 with zero data loss.
 

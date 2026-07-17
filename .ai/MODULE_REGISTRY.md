@@ -115,14 +115,15 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 1
+- **DEV cycles completed:** 2
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 9
+- **Cycles until mandatory harden:** 8
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
 |--:|:-----|:-----|:------|:------|:--------------------------------|:-------|
 | 1 | 2026-07-18 | DEV | F | Track 0 — governance + blockchain quarantine; land stranded tree | Track 0 closed (0.1–0.4 + full-dormancy hardening); guard proof red/green; architecture:check + readiness + API/web typechecks green | see CHANGELOG 2026-07-18 cycle-1 entry |
+| 2 | 2026-07-18 | DEV | F | Track A (#19) prep — baselines + reconciliation classification + mapping ledger | A.1/A.2 complete, A.3/A.4 prepared ⚠️ awaiting owner sign-off; zero dev-DB drift vs history; 23 affected tables all empty; candidate SQL committed unapplied | see CHANGELOG 2026-07-18 cycle-2 entry |
 
 ## Collab Board — Multi-Agent Sync
 
@@ -180,6 +181,7 @@ that closed it out. Never rotate mid-cycle; never rotate without all five.
 
 | Agent                             | Session started  | Scope (module/files)                                                                                                                                                                                                                                                                                                                                                                                               | Branch                   | Status         |
 | :-------------------------------- | :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------- | :------------- |
+| claude-code (fable-5)             | 2026-07-18       | **Phase F / Track A prep** — #19 baselines + reconciliation report + mapping ledger (claim `foundation-track-a`); ⚠️ ended at the named-owner sign-off gate — see `.ai/TRACK_A_RECONCILIATION_2026-07-18.md` § 6                                                                                                                                                                                                     | main                     | 🟢 COMPLETED   |
 | claude-code (fable-5)             | 2026-07-18       | **Phase F / Track 0** — governance + blockchain quarantine: CI guard in `check-module-boundaries.mjs`, registry marking, landing the stranded working tree on `main` (claim `foundation-track-0`)                                                                                                                                                                                                                    | main                     | 🟢 COMPLETED   |
 | antigravity                       | 2026-07-17       | Fixed global CSS import layers, native modal open-on-mount layout, mobile header responsiveness, and NestJS server compiler crash.                                                                                                                                                                                                                                                                                | main                     | 🟢 COMPLETED   |
 | claude-code                       | 2026-07-17       | Inventory: mobile-optimized scan-first pick/pack UI (5q) — `/inventory/mobile-pick`                                                                                                                                                                                                                                                                                                                                | main                     | 🟢 COMPLETED   |
@@ -203,7 +205,7 @@ that closed it out. Never rotate mid-cycle; never rotate without all five.
 > queued for their module's turn. P0/P1/P2 items (broken build, runtime
 > failures, conflicts, cross-cutting hardening) are exempt.
 
-0a. **[P-F] Foundation Hardening Roadmap — Tracks A–I** (`.ai/FOUNDATION_HARDENING_ROADMAP.md`, Track 0.1 record) — while the § 12 lift gate is unmet, DEV cycles pick the next unblocked track item in dependency order: **next up = Track A (#19 migration trust — needs named DB-owner sign-off for A.3/A.4)**, then B (#17 outbox) ∥ C (#21 RLS), D, E (blockchain re-platform), F/G/H/I. Track 0 closed 2026-07-18 (cycle 1).
+0a. **[P-F] Foundation Hardening Roadmap — Tracks A–I** (`.ai/FOUNDATION_HARDENING_ROADMAP.md`, Track 0.1 record) — while the § 12 lift gate is unmet, DEV cycles pick the next unblocked track item in dependency order: **Track A is at the sign-off gate** (A.1/A.2 done cycle 2; a named DB-owner + code-owner must approve `.ai/TRACK_A_RECONCILIATION_2026-07-18.md` § 4 before the reconciling migration is generated) — then A.4–A.6 execute, then B (#17 outbox) ∥ C (#21 RLS), D, E (blockchain re-platform), F/G/H/I. Sign-off-independent prep on B/C (design-contract validation, test scaffolds that add no migrations) is the only pickable Track work while the gate is open. Track 0 closed 2026-07-18 (cycle 1).
 0. ~~**[P0] Wire RLS session context into the shared Prisma extension**~~ ✅ RESOLVED 2026-07-17 — wired RLS setting context transaction-locally in `$allOperations` and added full integration tests. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
 1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (DONE), `inventory.service.ts` (PARTIALLY DECOMPOSED: warehouses, product catalog, and QA inspections decomposed — see `.ai/CHANGELOG.md` 2026-07-17), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
 2. ~~**`dependency-cruiser`/ESLint module-boundary lint**~~ ✅ RESOLVED 2026-07-17 — configured dependency-cruiser module boundary check and ESLint controller database import restriction rules in CI, refactored 5 module controllers to delegate database access to service methods.
