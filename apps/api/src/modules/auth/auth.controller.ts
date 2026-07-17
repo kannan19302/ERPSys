@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { registerSchema, loginSchema, RegisterInput, LoginInput, forgotPasswordSchema, resetPasswordSchema, ForgotPasswordInput, ResetPasswordInput } from '@unerp/shared';
+import { registerSchema, loginSchema, RegisterInput, LoginInput, forgotPasswordSchema, resetPasswordSchema, ForgotPasswordInput, ResetPasswordInput, mfaLoginSchema, MfaLoginInput } from '@unerp/shared';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 const AUTH_COOKIE = 'auth_token';
@@ -62,7 +62,10 @@ export class AuthController {
       tenantSlug: body.tenantSlug as string | undefined,
     });
 
-    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    // Only a completed login carries a session token; an MFA challenge does not.
+    if ('token' in result) {
+      res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    }
 
     return result;
   }
@@ -150,45 +153,15 @@ export class AuthController {
     return this.authService.verifyMfaAndEnable(req.user.userId, body.code, body.enable);
   }
 
-  @ApiOperation({ summary: 'Generate Passkey Registration Options' })
-  @Post('passkey/register-options')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  async getPasskeyRegisterOptions(@Req() req: AuthenticatedRequest) {
-    return this.authService.generatePasskeyRegisterOptions(req.user.userId);
-  }
-
-  @ApiOperation({ summary: 'Register Passkey Credential' })
-  @Post('passkey/register')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  async registerPasskey(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: { credentialID: string; publicKey: string },
-  ) {
-    return this.authService.verifyPasskeyRegister(req.user.userId, body);
-  }
-
-  @ApiOperation({ summary: 'Login with Passkey' })
-  @Post('passkey/login')
-  @HttpCode(HttpStatus.OK)
-  async loginPasskey(
-    @Body() body: { credentialID: string },
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const result = await this.authService.verifyPasskeyLogin(body.credentialID);
-    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
-    return result;
-  }
-
   @ApiOperation({ summary: 'Verify MFA and Login' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('mfa/verify-login')
   @HttpCode(HttpStatus.OK)
   async verifyMfaLogin(
-    @Body() body: { userId: string; code: string },
+    @Body(new ZodValidationPipe(mfaLoginSchema)) body: MfaLoginInput,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.verifyMfaLogin(body.userId, body.code);
+    const result = await this.authService.verifyMfaLogin(body.challengeToken, body.code);
     res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
     return result;
   }

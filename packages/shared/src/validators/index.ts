@@ -80,11 +80,33 @@ export type ExportInput = z.infer<typeof exportSchema>;
 
 // ── Auth Schemas ──
 
+/**
+ * Shared strong-password policy. Used by register and reset so the rules can
+ * never drift apart, and re-exported for the client-side strength meter.
+ */
+export const strongPassword = z
+  .string()
+  .min(12, 'Password must be at least 12 characters')
+  .max(128, 'Password must be at most 128 characters')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+
 export const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
+
+export const mfaLoginSchema = z.object({
+  challengeToken: z.string().min(1, 'Challenge token is required'),
+  code: z
+    .string()
+    .min(6, 'Enter your 6-digit code or a recovery code')
+    .max(20, 'Invalid code'),
+});
+export type MfaLoginInput = z.infer<typeof mfaLoginSchema>;
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -94,13 +116,7 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export const resetPasswordSchema = z
   .object({
     token: z.string().min(1, 'Token is required'),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+    password: strongPassword,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -112,13 +128,7 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export const registerSchema = z
   .object({
     email: z.string().email('Invalid email address'),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+    password: strongPassword,
     confirmPassword: z.string(),
     firstName: z.string().min(1, 'First name is required').max(100),
     lastName: z.string().min(1, 'Last name is required').max(100),

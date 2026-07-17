@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Spinner, Badge, FormField, Select } from '@unerp/ui';
 import { Smartphone, CheckCircle, Shield, AlertTriangle } from 'lucide-react';
 import { useApiClient } from '@unerp/framework';
+import PersonalMfaCard from './PersonalMfaCard';
 import styles from './MfaTab.module.css';
 
 interface MfaSettings {
@@ -105,6 +106,8 @@ export default function MfaTab() {
           </div>
         </form>
       </Card>
+
+      <PersonalMfaCard />
     </div>
   );
 }

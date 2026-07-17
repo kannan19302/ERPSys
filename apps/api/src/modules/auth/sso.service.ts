@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
-import { signToken } from '@unerp/auth';
+import { signSessionToken } from '@unerp/auth';
 
 interface SsoProfile {
   email: string;
@@ -58,7 +58,7 @@ export class SsoService {
     const roles = userRoles.map((ur) => ur.role.name);
 
     // Generate token
-    const token = signToken({
+    const token = signSessionToken({
       userId: user.id,
       tenantId: tenant.id,
       email: user.email,

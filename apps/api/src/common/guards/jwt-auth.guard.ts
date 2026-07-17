@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { verifyToken } from '@unerp/auth';
+import { verifyTypedToken, TOKEN_TYPE } from '@unerp/auth';
 
 const AUTH_COOKIE = 'auth_token';
 
@@ -23,7 +23,9 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing authentication credentials');
     }
 
-    const decoded = verifyToken(token);
+    // Purpose-scoped: a password-reset or MFA-challenge token carries a valid
+    // signature but must never be accepted as a session.
+    const decoded = verifyTypedToken(token, TOKEN_TYPE.SESSION);
     if (!decoded) {
       throw new UnauthorizedException('Invalid or expired authentication token');
     }

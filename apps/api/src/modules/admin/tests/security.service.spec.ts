@@ -43,6 +43,7 @@ vi.mock('@unerp/database', () => {
 vi.mock('@unerp/auth', () => {
   return {
     signToken: vi.fn(() => 'mock-jwt-token'),
+    signSessionToken: vi.fn(() => 'mock-jwt-token'),
   };
 });
 

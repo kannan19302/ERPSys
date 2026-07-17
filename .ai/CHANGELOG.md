@@ -8,6 +8,96 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Auth Hardening — Bypass Removal, Real TOTP MFA, Lockout, Single-Use Reset (UI + DB + Backend)
+
+Closed five unauthenticated account-takeover paths and replaced the mock
+second-factor stack with real cryptography.
+
+### Removed bypasses
+- **Hardcoded super-admin passkey** (`cred_mock_superadmin`) and the entire
+  signature-less passkey login — the `/auth/passkey/*` endpoints and their
+  service methods are gone (real WebAuthn deferred to a follow-up).
+- **Universal MFA codes** (`123456`/`000000`) — MFA now verifies real TOTP.
+- **MFA login without password** — `/auth/mfa/verify-login` now requires a
+  short-lived, purpose-scoped challenge token minted only after a correct
+  password, instead of a raw `userId`.
+- **Password-reset token leak** — `forgotPassword` no longer returns the token
+  in the response (dev-only link gated to non-production).
+
+### Database (`20260717010000_auth_hardening`)
+- `User`: `failedLoginAttempts`, `lockedUntil`, `passwordChangedAt`,
+  `mfaPending`, `mfaRecoveryCodes` (jsonb).
+- New `PasswordResetToken` model — hashed (SHA-256), single-use, expiring.
+
+### Backend
+- New `@unerp/auth` primitives: `TOKEN_TYPE`, `signSessionToken`,
+  `signTypedToken`, `verifyTypedToken`; bcrypt cost raised 10 → 12.
+- `JwtAuthGuard` now accepts only `typ: session` tokens, so reset/challenge
+  tokens can never open a session. Session mint sites in `admin/security` and
+  `sso` updated to `signSessionToken`.
+- Real TOTP via `otplib` (`otplib@12`) with locally-rendered QR (`qrcode`) —
+  the secret no longer leaves the server (was posted to `api.qrserver.com`).
+- Single-use recovery codes (bcrypt-hashed), consumed on use.
+- Brute-force lockout: 5 failed logins → 15-minute lock; correct password is
+  refused while locked. Login no longer leaks tenant existence.
+- Shared 12-char strong-password policy (`strongPassword`) reused by register
+  and reset; new `mfaLoginSchema`.
+
+### UI
+- Login page: removed the fake passkey button and the "enter 123456" MFA hint;
+  MFA step uses the challenge token and accepts recovery codes.
+- New self-service TOTP enrollment card (QR + verify + one-time recovery codes +
+  disable) under Settings → Security Policies → MFA.
+
+### Verification
+- 6 token-purpose unit tests (`@unerp/auth`), 5 crypto-helper tests, and 4
+  live-Postgres integration tests (lockout, single-use reset, MFA handshake) —
+  all green. Full auth/admin/common suite: 283 passing. Web + API typecheck clean.
+
+### Follow-ups (pass two)
+- Real WebAuthn passkeys via `@simplewebauthn/server`.
+- Revocable server-side sessions (the `UserSession` table is still unused; JWT
+  logout remains valid until expiry).
+- Encrypt `mfaSecret` at rest.
+
+## [2026-07-17] Connect Extension — 10 New Features (Polls, Slash Commands, Reminders, Scheduled Messages, Custom Emoji, Translation, Meeting Recap, Templates, Ephemeral, Voice)
+
+### Database
+- New Prisma models: `ConnectPoll`, `ConnectPollOption`, `ConnectPollVote`, `CustomEmoji`, `Reminder`, `ChannelTemplate`, `MeetingSummary`
+- Added `scheduledAt`, `expiresAt`, `viewOnce`, `pollId` columns to `Message` model
+- Added `polls` relation to `Channel`, `summaries` to `ConnectMeeting`
+- Migration: `20260717000000_connect_extensions_phase2`
+
+### Backend (CommunicationService + Controller)
+- **Polls**: Create poll with options, vote (one per user), close poll, broadcast via WebSocket
+- **Slash Commands**: `/remind`, `/poll`, `/meet`, `/dnd`, `/status`, `/msg`, `/code`, `/help` — extensible command framework
+- **Reminders**: Create, list, delete, snooze (5 min) — scheduled notification engine
+- **Scheduled Messages**: Schedule send with datetime, list pending, delete scheduled
+- **Custom Emoji**: Upload via Drive storage, list, delete — uniqueness per tenant+name
+- **Message Translation**: AI-powered (Ollama) with prefix-only fallback for 10 languages
+- **Meeting Summaries**: Generate recap from meeting chat with key points + action items (heuristic + AI)
+- **Channel Templates**: 5 preset templates, create channel from template with tab cloning
+- **Ephemeral/View-Once**: Send message with auto-expiry, mark-as-viewed deletes content
+- **Voice Messages**: Upload via Drive (10MB cap), stored as message attachment
+- 25+ new controller routes, 6 new permission entries in registry
+
+### Frontend
+- **Poll Creator**: Modal with add/remove options (2-10), live results with percentage bars, vote button
+- **Slash Popup**: Auto-shows on "/" in composer, 8 commands with descriptions
+- **Reminders Panel**: List, snooze, delete; quick reminder creator from channel header
+- **Schedule Picker**: Datetime picker in composer toolbar, schedules message
+- **Emoji Manager**: Upload PNG/GIF/JPEG/WEBP, grid display, delete; custom emoji tab in picker
+- **Translate Button**: On each message, toggles translation to English
+- **Meeting Recap**: Full-screen modal with summary, key points, action items, regenerate
+- **Template Dialog**: Select template → name → create channel with pre-configured tabs
+- **Ephemeral Toggle**: View-once mode in composer, badge on messages, "View" button
+- **Voice Recorder**: Start/stop/cancel, creates audio/webm blob, uploads as attachment
+- **EmojiPicker** extended with custom emoji support (image rendering + category tab)
+- Integration buttons in top bar, channel header, meeting toolbar
+
+### Permissions (6 new)
+- `communication.poll.manage`, `communication.emoji.manage`, `communication.translation.read`, `communication.reminder.manage`, `communication.template.manage`, `communication.voice.upload`
+
 ## [2026-07-17] UI Layout, Modals, Responsive Header and Backend Compilation Fixes
 
 ### Global CSS Imports

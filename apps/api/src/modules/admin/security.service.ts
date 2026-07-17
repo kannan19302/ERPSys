@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
-import { signToken } from '@unerp/auth';
+import { signSessionToken } from '@unerp/auth';
 
 @Injectable()
 export class SecurityService {
@@ -304,7 +304,7 @@ export class SecurityService {
     }
 
     const roles = user.roles.map((r: any) => r.role.name);
-    const token = signToken({
+    const token = signSessionToken({
       userId: user.id,
       tenantId: user.tenantId,
       email: user.email,

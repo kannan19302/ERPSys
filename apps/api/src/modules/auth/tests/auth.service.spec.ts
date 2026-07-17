@@ -58,6 +58,10 @@ vi.mock('@unerp/auth', () => {
     hashPassword: vi.fn().mockResolvedValue('hashed_pass_123'),
     comparePassword: vi.fn().mockResolvedValue(true),
     signToken: vi.fn().mockReturnValue('jwt_token_abc'),
+    signSessionToken: vi.fn().mockReturnValue('jwt_session_abc'),
+    signTypedToken: vi.fn().mockReturnValue('typed_token_abc'),
+    verifyTypedToken: vi.fn().mockReturnValue({ userId: 'user-123' }),
+    TOKEN_TYPE: { SESSION: 'session', PASSWORD_RESET: 'password-reset', MFA_CHALLENGE: 'mfa-challenge' },
   };
 });
 

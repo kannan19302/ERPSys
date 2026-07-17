@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@unerp/ui';
-import { Shield, Lock, Mail, ChevronRight, AlertCircle, Building, Eye, EyeOff, Sparkles, Fingerprint } from 'lucide-react';
+import { Shield, Lock, Mail, ChevronRight, AlertCircle, Building, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { apiPost, apiGet, ApiRequestError } from '../../../src/lib/api';
 
 const FEATURES = [
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
   // MFA validation states
   const [mfaRequired, setMfaRequired] = useState(false);
-  const [mfaUserId, setMfaUserId] = useState('');
+  const [mfaChallengeToken, setMfaChallengeToken] = useState('');
   const [mfaCode, setMfaCode] = useState('');
 
   // Autoload token sync
@@ -125,7 +125,7 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(result.user));
         router.push('/apps');
       } else {
-        const data = await apiPost<{ token: string; user: Record<string, unknown>; mfaRequired?: boolean; userId?: string }>('/auth/login', {
+        const data = await apiPost<{ token: string; user: Record<string, unknown>; mfaRequired?: boolean; challengeToken?: string }>('/auth/login', {
           email,
           password,
           tenantSlug: tenantSlug || undefined,
@@ -133,7 +133,7 @@ export default function LoginPage() {
 
         if (data.mfaRequired) {
           setMfaRequired(true);
-          setMfaUserId(data.userId || '');
+          setMfaChallengeToken(data.challengeToken || '');
           setLoading(false);
           return;
         }
@@ -171,7 +171,7 @@ export default function LoginPage() {
 
     try {
       const data = await apiPost<{ token: string; user: Record<string, unknown> }>('/auth/mfa/verify-login', {
-        userId: mfaUserId,
+        challengeToken: mfaChallengeToken,
         code: mfaCode,
       });
 
@@ -180,26 +180,6 @@ export default function LoginPage() {
       router.push('/apps');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid MFA verification code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasskeyLogin = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Direct high-fidelity simulated Passkey assertion login bypass
-      const data = await apiPost<{ token: string; user: Record<string, unknown> }>('/auth/passkey/login', {
-        credentialID: 'cred_mock_superadmin',
-      });
-
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      router.push('/apps');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Passkey validation failed.');
     } finally {
       setLoading(false);
     }
@@ -298,24 +278,20 @@ export default function LoginPage() {
             {/* MFA INTERCEPT FORM */}
             {mfaRequired ? (
               <form onSubmit={handleMfaVerify} className={styles.s11}>
-                <div className={styles.s12}>
-                  <Sparkles size={12} className={styles.s41} />
-                  <strong>[Dev Sandbox Bypass]</strong> You may enter <strong>123456</strong> or <strong>000000</strong>.
-                </div>
-
                 <div className="auth-field-group">
-                  <label className="auth-label">Authenticator TOTP Code</label>
+                  <label className="auth-label">Authenticator code or recovery code</label>
                   <div className="auth-input-wrapper">
                     <Lock size={16} className="auth-input-icon" />
                     <input
                       type="text"
                       required
-                      maxLength={6}
+                      maxLength={20}
                       className={`auth-input ${styles.s13}`}
                       placeholder="123456"
                       value={mfaCode}
                       onChange={(e) => setMfaCode(e.target.value)}
-                      
+                      autoComplete="one-time-code"
+                      autoFocus
                     />
                   </div>
                 </div>
@@ -471,18 +447,6 @@ export default function LoginPage() {
                     <>Sign In <ChevronRight size={16} /></>
                   )}
                 </button>
-
-                {/* Biometric Passkey trigger option */}
-                {!forgotPasswordMode && !isSsoConfigured && (
-                  <button
-                    type="button"
-                    onClick={handlePasskeyLogin}
-                    className={`passkey-login-btn ${styles.s27} ${styles.passkeyHover}`}
-                  >
-                    <Fingerprint size={16} className={styles.s43} />
-                    Sign in with Passkey / Biometrics
-                  </button>
-                )}
 
                 {forgotPasswordMode && (
                   <button

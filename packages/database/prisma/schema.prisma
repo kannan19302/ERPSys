@@ -66,15 +66,22 @@ model User {
   deletedAt    DateTime? @map("deleted_at")
   preferences  Json      @default("{}")
 
-  mfaEnabled Boolean @default(false) @map("mfa_enabled")
-  mfaSecret  String? @map("mfa_secret")
+  mfaEnabled       Boolean @default(false) @map("mfa_enabled")
+  mfaSecret        String? @map("mfa_secret")
+  mfaPending       Boolean @default(false) @map("mfa_pending")
+  mfaRecoveryCodes Json    @default("[]") @map("mfa_recovery_codes")
 
-  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  roles            UserRole[]
-  userSessions     UserSession[]
-  groupMemberships UserGroupMember[]
-  passkeys         Passkey[]
-  savedViews       SavedView[]
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  passwordChangedAt   DateTime? @map("password_changed_at")
+
+  tenant             Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roles              UserRole[]
+  userSessions       UserSession[]
+  groupMemberships   UserGroupMember[]
+  passkeys           Passkey[]
+  savedViews         SavedView[]
+  passwordResetTokens PasswordResetToken[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -99,6 +106,22 @@ model SavedView {
   @@index([tenantId])
   @@index([userId])
   @@map("saved_views")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String    @map("tenant_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 model Passkey {
@@ -2089,9 +2112,16 @@ model Channel {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  messages Message[]
-  members  ChannelMember[]
-  space    ConnectSpace?   @relation(fields: [spaceId], references: [id])
+  messages    Message[]
+  members     ChannelMember[]
+  space       ConnectSpace?   @relation(fields: [spaceId], references: [id])
+  tabs        ChannelTab[]
+  moderation  ChannelModeration?
+  bots        ConnectBot[]
+  analytics   ChannelAnalytics[]
+  forwardsFrom MessageForward[] @relation("ForwardFromChannel")
+  forwardsTo   MessageForward[] @relation("ForwardToChannel")
+  polls        ConnectPoll[]
 
   @@index([tenantId])
   @@index([tenantId, spaceId])
@@ -2115,10 +2145,17 @@ model Message {
   meetingId   String?   @map("meeting_id")
   editedAt    DateTime? @map("edited_at")
   deletedAt   DateTime? @map("deleted_at")
+  scheduledAt DateTime? @map("scheduled_at")
+  expiresAt   DateTime? @map("expires_at")
+  viewOnce    Boolean   @default(false) @map("view_once")
+  pollId      String?   @map("poll_id")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   bookmarks MessageBookmark[]
+  edits     MessageEdit[]
+  forwards  MessageForward[]
+  poll      ConnectPoll?          @relation(fields: [pollId], references: [id], onDelete: SetNull)
 
   channel   Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
   parent    Message?          @relation("MessageThread", fields: [parentId], references: [id], onDelete: Cascade)
@@ -2128,6 +2165,7 @@ model Message {
   @@index([tenantId])
   @@index([channelId, parentId])
   @@index([tenantId, deletedAt])
+  @@index([scheduledAt])
   @@map("messages")
 }
 
@@ -2208,13 +2246,14 @@ model MessageBookmark {
 }
 
 model UserPresence {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  userId      String   @map("user_id")
-  presence    String   @default("ACTIVE") // ACTIVE, AWAY, BRB, DND, OOO, INACTIVE
-  statusText  String?  @map("status_text")
-  statusEmoji String?  @map("status_emoji")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  userId      String    @map("user_id")
+  presence    String    @default("ACTIVE") // ACTIVE, AWAY, BRB, DND, OOO, INACTIVE, IN_MEETING, FOCUSING
+  statusText  String?   @map("status_text")
+  statusEmoji String?   @map("status_emoji")
+  clearAt     DateTime? @map("clear_at")  // auto-clear status after this time
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@unique([tenantId, userId])
   @@index([tenantId])
@@ -2229,8 +2268,14 @@ model ConnectMeeting {
   title     String
   hostId    String    @map("host_id")
   active    Boolean   @default(true)
+  lobby     Boolean   @default(false) @map("lobby")
   startedAt DateTime  @default(now()) @map("started_at")
   endedAt   DateTime? @map("ended_at")
+
+  participants MeetingParticipant[]
+  chatMessages MeetingChatMessage[]
+  recordings   MeetingRecording[]
+  summaries    MeetingSummary[]
 
   @@index([tenantId])
   @@map("connect_meetings")
@@ -2270,6 +2315,318 @@ model Notification {
 
   @@index([tenantId, userId])
   @@map("notifications")
+}
+
+// ════════════════════════════════════════════════
+// CONNECT PHASE 2 (Communication Deepening) — Teams-grade Collaboration
+// Added 2026-07-17: threading, tabs, moderation, bots, meetings, presence scheduling, edit history
+// ════════════════════════════════════════════════
+
+/// Tabs pinned to a channel header (links, documents, integrations)
+model ChannelTab {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  channelId String   @map("channel_id")
+  type      String   @default("LINK") // LINK, DOCUMENT, ERP_ENTITY, CUSTOM
+  label     String
+  icon      String?  @default("Link")
+  url       String?  @map("url")
+  entityType String? @map("entity_type")
+  entityId   String? @map("entity_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, channelId])
+  @@map("channel_tabs")
+}
+
+/// Edit history log for messages (audit trail)
+model MessageEdit {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  previousContent String @map("previous_content") @db.Text
+  newContent      String @map("new_content") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, messageId])
+  @@map("message_edits")
+}
+
+/// Forward/share record for messages
+model MessageForward {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  messageId     String   @map("message_id")
+  fromChannelId String   @map("from_channel_id")
+  toChannelId   String   @map("to_channel_id")
+  forwardedBy   String   @map("forwarded_by")
+  comment       String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fromChannel Channel @relation("ForwardFromChannel", fields: [fromChannelId], references: [id])
+  toChannel   Channel @relation("ForwardToChannel", fields: [toChannelId], references: [id])
+
+  @@index([tenantId, toChannelId])
+  @@map("message_forwards")
+}
+
+/// Channel moderation settings
+model ChannelModeration {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  channelId     String   @unique @map("channel_id")
+  slowModeSecs  Int      @default(0) @map("slow_mode_secs") // 0 = disabled, 30, 60, 300, 900, 3600
+  whoCanPost    String   @default("EVERYONE") @map("who_can_post") // EVERYONE, ADMINS_ONLY, MODERATORS_ONLY
+  onlyAdminsCanPin Boolean @default(false) @map("only_admins_can_pin")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("channel_moderation")
+}
+
+/// Meeting participant tracking
+model MeetingParticipant {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  meetingId       String   @map("meeting_id")
+  userId          String   @map("user_id")
+  joinedAt        DateTime @default(now()) @map("joined_at")
+  leftAt          DateTime? @map("left_at")
+  isHandRaised    Boolean  @default(false) @map("is_hand_raised")
+  isScreenSharing Boolean  @default(false) @map("is_screen_sharing")
+  isMuted         Boolean  @default(true) @map("is_muted")
+  isVideoOn       Boolean  @default(false) @map("is_video_on")
+
+  meeting ConnectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@index([tenantId, meetingId])
+  @@map("meeting_participants")
+}
+
+/// In-meeting chat messages
+model MeetingChatMessage {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  meetingId String   @map("meeting_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  meeting ConnectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, meetingId])
+  @@map("meeting_chat_messages")
+}
+
+/// Meeting recording metadata
+model MeetingRecording {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  meetingId     String   @map("meeting_id")
+  startedAt     DateTime @default(now()) @map("started_at")
+  endedAt       DateTime? @map("ended_at")
+  fileUrl       String?  @map("file_url")
+  fileSize      Int?     @map("file_size")
+  durationSecs  Int?     @map("duration_secs")
+  status        String   @default("RECORDING") // RECORDING, COMPLETED, FAILED, PROCESSING
+  startedBy     String   @map("started_by")
+
+  meeting ConnectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, meetingId])
+  @@map("meeting_recordings")
+}
+
+/// Bot/webhook integrations for channels
+model ConnectBot {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  channelId   String   @map("channel_id")
+  name        String
+  avatar      String?  @default("🤖")
+  webhookUrl  String?  @unique @map("webhook_url")
+  token       String?  @map("token")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, channelId])
+  @@map("connect_bots")
+}
+
+/// Scheduled presence/status changes
+model UserStatusSchedule {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  presence     String   // ACTIVE, AWAY, DND, OOO, etc.
+  statusText   String?  @map("status_text")
+  statusEmoji  String?  @map("status_emoji")
+  startTime    DateTime @map("start_time")
+  endTime      DateTime @map("end_time")
+  isRecurring  Boolean  @default(false) @map("is_recurring")
+  recurrenceRule String? @map("recurrence_rule")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@index([tenantId, startTime, endTime])
+  @@map("user_status_schedules")
+}
+
+/// Daily channel activity snapshots for analytics
+model ChannelAnalytics {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  channelId    String   @map("channel_id")
+  date         DateTime @map("date")
+  messageCount Int      @default(0) @map("message_count")
+  activeUsers  Int      @default(0) @map("active_users")
+  reactions    Int      @default(0)
+  threads      Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, channelId, date])
+  @@index([tenantId, channelId])
+  @@map("channel_analytics")
+}
+
+// ════════════════════════════════════════════════
+// CONNECT EXTENSIONS (Phase 2+ Enhancements)
+// ════════════════════════════════════════════════
+
+/// Message polls with multiple choice
+model ConnectPoll {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  channelId String   @map("channel_id")
+  messageId String?  @map("message_id")
+  userId    String   @map("user_id")
+  question  String   @db.Text
+  isClosed  Boolean  @default(false) @map("is_closed")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  options  ConnectPollOption[]
+  messages Message[]
+  votes    ConnectPollVote[]
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, channelId])
+  @@map("connect_polls")
+}
+
+model ConnectPollOption {
+  id     String @id @default(cuid())
+  pollId String @map("poll_id")
+  label  String
+  emoji  String @default("")
+
+  poll   ConnectPoll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes  ConnectPollVote[]
+
+  @@map("connect_poll_options")
+}
+
+model ConnectPollVote {
+  id       String   @id @default(cuid())
+  tenantId String   @map("tenant_id")
+  pollId   String   @map("poll_id")
+  optionId String   @map("option_id")
+  userId   String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  option ConnectPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  poll   ConnectPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@index([tenantId, pollId])
+  @@map("connect_poll_votes")
+}
+
+/// Custom emoji uploads for the tenant
+model CustomEmoji {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String   @map("name")
+  fileUrl   String   @map("file_url")
+  fileSize  Int      @default(0) @map("file_size")
+  uploadedBy String  @map("uploaded_by")
+  category  String   @default("custom")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("custom_emojis")
+}
+
+/// User reminders (scheduled notifications)
+model Reminder {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  text      String   @db.Text
+  remindAt  DateTime @map("remind_at")
+  channelId String?  @map("channel_id")
+  messageId String?  @map("message_id")
+  isSent    Boolean  @default(false) @map("is_sent")
+  snoozed   Boolean  @default(false)
+  recurRule String?  @map("recur_rule")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId, remindAt])
+  @@index([remindAt, isSent])
+  @@map("reminders")
+}
+
+/// Channel creation templates
+model ChannelTemplate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?  @db.Text
+  channelType String   @default("PUBLIC") @map("channel_type")
+  topic       String?
+  emoji       String   @default("")
+  tabs        Json     @default("[]")
+  isPreset    Boolean  @default(true) @map("is_preset")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@map("channel_templates")
+}
+
+/// Meeting summaries (AI-generated)
+model MeetingSummary {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  meetingId      String   @map("meeting_id")
+  summary        String   @db.Text
+  keyPoints      Json     @default("[]") @map("key_points")
+  actionItems    Json     @default("[]") @map("action_items")
+  generatedAt    DateTime @default(now()) @map("generated_at")
+
+  meeting ConnectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, meetingId])
+  @@map("meeting_summaries")
 }
 
 // ════════════════════════════════════════════════
