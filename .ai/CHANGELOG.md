@@ -8,6 +8,20 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Supply Chain — Inventory Cycle 16: ASN, Inbound Logistics, Carrier Management, and Outbound Shipment Tracking
+
+- Registered new `supply-chain.asn.*`, `supply-chain.exception.*`, and carrier update/delete permissions inside `packages/shared/src/permissions/registry.ts`.
+- Created backend Zod validation schemas and TypeScript definitions in a local `supply-chain.dto.ts` DTO package.
+- Implemented robust business logic in `SupplyChainService` for transactional ASN creation, receipt verification (calculating discrepancy shortages/overages logging `AsnDiscrepancy` rows), carrier CRUD, inbound/outbound shipments, tracking updates (transitioning shipment statuses on milestone codes), and exception reporting/resolution.
+- Exposed validation-backed endpoints in NestJS `SupplyChainController` using Zod body decorators and permission guards.
+- Wrote full unit test suite in `supply-chain.service.spec.ts` asserting ASN receiving discrepancies, status transitions on tracking events, and exceptions life-cycle.
+- Created Next.js frontend component `AsnsTab.tsx` providing visual tables, ASN details drawer, ASN creation modal with dynamic line items, and ASN receipt reporting.
+- Wired Next.js frontend `CarriersTab.tsx` to live REST APIs supporting carrier CRUD.
+- Wired Next.js frontend `TrackingTab.tsx` to active inbound/outbound tracking timelines.
+- Wired Next.js frontend `ShipmentsTab.tsx` to live Inbound/Outbound shipments, detailing milestones, event logging, and exceptions.
+- Fixed singular/plural permission mismatch in `operations/page.tsx` and integrated the new tabs.
+- Verified workspace builds, depcruise architecture checks, and all specs pass cleanly.
+
 ## [2026-07-17] ADP Governance - Supreme Governance and 12 ADP Velocity Improvements
 
 - Created the supreme governance document `instructions.md` inside `.ai/` consolidating coding standards, full-system architecture flows (7 ASCII diagrams), and UI/DB/Security policies.

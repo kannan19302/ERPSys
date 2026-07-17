@@ -1,34 +1,62 @@
 'use client';
 import styles from './operations.module.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Card, Button, Badge, DataTable, type Column, Modal, TextField, FormField, Select, KPICard,
+  Card, Button, Badge, DataTable, type Column, Modal, TextField, FormField, Select, KPICard, Spinner,
 } from '@unerp/ui';
-import { Truck, Plus, Star, DollarSign, Clock } from 'lucide-react';
+import { useApiClient, RouteGuard } from '@unerp/framework';
+import { Truck, Plus, Star, DollarSign, Clock, Mail, Phone, ExternalLink } from 'lucide-react';
 
 interface Carrier {
   id: string;
+  code: string;
   name: string;
-  type: string;
-  contactEmail: string;
-  contactPhone: string;
-  rating: number;
-  avgDeliveryDays: number;
-  costPerKg: number;
-  status: 'ACTIVE' | 'INACTIVE';
-  shipmentCount: number;
+  trackingUrl: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  isActive: boolean;
 }
 
-const MOCK_CARRIERS: Carrier[] = [
-  { id: '1', name: 'FedEx', type: 'EXPRESS', contactEmail: 'business@fedex.com', contactPhone: '+1-800-463-3339', rating: 4.5, avgDeliveryDays: 3, costPerKg: 12.50, status: 'ACTIVE', shipmentCount: 45 },
-  { id: '2', name: 'UPS', type: 'STANDARD', contactEmail: 'support@ups.com', contactPhone: '+1-800-742-5877', rating: 4.3, avgDeliveryDays: 5, costPerKg: 8.75, status: 'ACTIVE', shipmentCount: 32 },
-  { id: '3', name: 'DHL Express', type: 'INTERNATIONAL', contactEmail: 'sales@dhl.com', contactPhone: '+1-800-225-5345', rating: 4.7, avgDeliveryDays: 4, costPerKg: 15.00, status: 'ACTIVE', shipmentCount: 18 },
-  { id: '4', name: 'USPS', type: 'ECONOMY', contactEmail: 'help@usps.com', contactPhone: '+1-800-275-8777', rating: 3.8, avgDeliveryDays: 7, costPerKg: 5.25, status: 'ACTIVE', shipmentCount: 22 },
-];
-
 export default function CarriersTab() {
-  const [carriers] = useState(MOCK_CARRIERS);
+  const client = useApiClient();
+  const [carriers, setCarriers] = useState<Carrier[]>([]);
+  const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [form, setForm] = useState({
+    code: '',
+    name: '',
+    trackingUrl: '',
+    contactEmail: '',
+    contactPhone: '',
+  });
+
+  const fetchCarriers = async () => {
+    try {
+      const data = await client.get<Carrier[] | { data?: Carrier[] }>('/supply-chain/carriers');
+      setCarriers(Array.isArray(data) ? data : data.data || []);
+    } catch { /* empty */ }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => {
+    fetchCarriers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client]);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.code || !form.name) return;
+    setSaving(true);
+    try {
+      await client.post('/supply-chain/carriers', form);
+      setCreateOpen(false);
+      setForm({ code: '', name: '', trackingUrl: '', contactEmail: '', contactPhone: '' });
+      fetchCarriers();
+    } catch { /* handled */ }
+    finally { setSaving(false); }
+  };
 
   const columns: Column<Carrier>[] = [
     {
@@ -40,58 +68,81 @@ export default function CarriersTab() {
           </div>
           <div>
             <div className="ui-heading-sm">{row.name}</div>
-            <div className="ui-text-xs-tertiary">{row.contactEmail}</div>
+            <div className="ui-text-xs-tertiary">Code: {row.code}</div>
           </div>
         </div>
       ),
     },
-    { key: 'type', header: 'Service Type', render: (row) => <Badge variant="info">{row.type}</Badge> },
     {
-      key: 'rating', header: 'Rating',
+      key: 'contact', header: 'Contact',
       render: (row) => (
-        <div className="ui-flex ui-items-center ui-gap-1">
-          <Star size={12} className={styles.starIcon} />
-          <span className="ui-heading-sm">{row.rating}</span>
+        <div className="ui-stack-1">
+          {row.contactEmail && (
+            <div className="ui-hstack-1 ui-items-center text-xs text-muted">
+              <Mail size={12} className="mr-1" /> {row.contactEmail}
+            </div>
+          )}
+          {row.contactPhone && (
+            <div className="ui-hstack-1 ui-items-center text-xs text-muted">
+              <Phone size={12} className="mr-1" /> {row.contactPhone}
+            </div>
+          )}
+          {!row.contactEmail && !row.contactPhone && <span className="text-xs text-tertiary">—</span>}
         </div>
       ),
     },
-    { key: 'avgDeliveryDays', header: 'Avg Delivery', render: (row) => <span className="text-sm">{row.avgDeliveryDays} days</span> },
-    { key: 'costPerKg', header: 'Cost/kg', align: 'right' as const, render: (row) => <span className="font-semibold">${row.costPerKg.toFixed(2)}</span> },
-    { key: 'shipmentCount', header: 'Shipments', render: (row) => <span className="text-sm">{row.shipmentCount}</span> },
-    { key: 'status', header: 'Status', render: (row) => <Badge variant={row.status === 'ACTIVE' ? 'success' : 'default'}>{row.status}</Badge> },
+    {
+      key: 'trackingUrl', header: 'Tracking Link',
+      render: (row) => row.trackingUrl ? (
+        <a href={row.trackingUrl} target="_blank" rel="noopener noreferrer" className="ui-hstack-1 ui-items-center text-xs text-primary hover:underline">
+          <ExternalLink size={12} className="mr-1" /> Open
+        </a>
+      ) : <span className="text-xs text-tertiary">—</span>,
+    },
+    {
+      key: 'status', header: 'Status',
+      render: (row) => <Badge variant={row.isActive ? 'success' : 'default'}>{row.isActive ? 'ACTIVE' : 'INACTIVE'}</Badge>,
+    },
   ];
 
+  if (loading) {
+    return (
+      <div className="ui-center-pad">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
   return (
-    <div className="ui-stack-6">
-      <div className="ui-flex-end">
-        <Button variant="primary" onClick={() => setCreateOpen(true)}><Plus size={14} className="mr-2" /> Add Carrier</Button>
-      </div>
-
-      <div className="ui-grid-auto">
-        <KPICard title="Active Carriers" value={carriers.filter(c => c.status === 'ACTIVE').length} icon={<Truck size={18} />} color="var(--color-primary)" />
-        <KPICard title="Avg Cost/kg" value={`$${(carriers.reduce((a, c) => a + c.costPerKg, 0) / carriers.length).toFixed(2)}`} icon={<DollarSign size={18} />} color="var(--color-info)" />
-        <KPICard title="Avg Delivery" value={`${Math.round(carriers.reduce((a, c) => a + c.avgDeliveryDays, 0) / carriers.length)} days`} icon={<Clock size={18} />} color="var(--color-success)" />
-      </div>
-
-      <Card padding="none">
-        <DataTable columns={columns} data={carriers} rowKey={r => r.id}
-          emptyTitle="No carriers" emptyMessage="Add shipping carriers to manage your logistics network." emptyIcon={<Truck size={48} />} />
-      </Card>
-
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Add Carrier" size="md"
-        footer={<><Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button><Button variant="primary">Save Carrier</Button></>}>
-        <div className="ui-stack-4">
-          <TextField label="Carrier Name" required placeholder="FedEx" />
-          <div className="ui-grid-2 ui-gap-3">
-            <FormField label="Service Type"><Select><option value="EXPRESS">Express</option><option value="STANDARD">Standard</option><option value="ECONOMY">Economy</option><option value="INTERNATIONAL">International</option></Select></FormField>
-            <TextField label="Cost per kg ($)" type="number" step="0.01" placeholder="12.50" />
-          </div>
-          <div className="ui-grid-2 ui-gap-3">
-            <TextField label="Contact Email" type="email" placeholder="business@carrier.com" />
-            <TextField label="Contact Phone" placeholder="+1-800-000-0000" />
-          </div>
+    <RouteGuard permission="supply-chain.carrier.read">
+      <div className="ui-stack-6">
+        <div className="ui-flex-end">
+          <Button variant="primary" onClick={() => setCreateOpen(true)}><Plus size={14} className="mr-2" /> Add Carrier</Button>
         </div>
-      </Modal>
-    </div>
+
+        <div className="ui-grid-auto">
+          <KPICard title="Active Carriers" value={carriers.filter(c => c.isActive).length} icon={<Truck size={18} />} color="var(--color-primary)" />
+          <KPICard title="Total Configured" value={carriers.length} icon={<Star size={18} />} color="var(--color-info)" />
+        </div>
+
+        <Card padding="none">
+          <DataTable columns={columns} data={carriers} rowKey={r => r.id}
+            emptyTitle="No carriers" emptyMessage="Add shipping carriers to manage your logistics network." emptyIcon={<Truck size={48} />} />
+        </Card>
+
+        <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Add Carrier" size="md"
+          footer={<><Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button><Button variant="primary" onClick={handleCreate} disabled={saving}>Save Carrier</Button></>}>
+          <div className="ui-stack-4">
+            <TextField label="Carrier Code (Unique)" required value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="FEDEX" />
+            <TextField label="Carrier Name" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="FedEx" />
+            <TextField label="Tracking URL Format" value={form.trackingUrl} onChange={e => setForm({ ...form, trackingUrl: e.target.value })} placeholder="https://track.fedex.com/track/input?tracknum={trackingNumber}" />
+            <div className="ui-grid-2 ui-gap-3">
+              <TextField label="Contact Email" type="email" value={form.contactEmail} onChange={e => setForm({ ...form, contactEmail: e.target.value })} placeholder="business@carrier.com" />
+              <TextField label="Contact Phone" value={form.contactPhone} onChange={e => setForm({ ...form, contactPhone: e.target.value })} placeholder="+1-800-000-0000" />
+            </div>
+          </div>
+        </Modal>
+      </div>
+    </RouteGuard>
   );
 }

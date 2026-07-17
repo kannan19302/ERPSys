@@ -51,7 +51,10 @@ export default function SupplyChainDashboard() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [client]);
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

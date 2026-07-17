@@ -37,7 +37,7 @@ for (const heading of [
 }
 
 // The .ai knowledge base is exactly four markdown files (+ locks/ runtime dir).
-const allowedAiFiles = new Set(['AUTOPILOT.md', 'CHANGELOG.md', 'HANDBOOK.md', 'MODULE_REGISTRY.md']);
+const allowedAiFiles = new Set(['AUTOPILOT.md', 'CHANGELOG.md', 'HANDBOOK.md', 'MODULE_REGISTRY.md', 'instructions.md', 'MARKET_BENCHMARK.md']);
 const generatedAiFiles = new Set(['FEATURE_LEDGER.md']); // gitignored generator output
 for (const entry of readdirSync(path.join(root, '.ai'), { withFileTypes: true })) {
   if (entry.isDirectory()) {

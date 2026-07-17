@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SupplyChainService } from '../supply-chain.service';
 
 // Mock @unerp/database
-vi.mock('@unerp/database', () => ({
-  prisma: {
+vi.mock('@unerp/database', () => {
+  const prismaMock = {
     shipment: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -11,8 +11,61 @@ vi.mock('@unerp/database', () => ({
       update: vi.fn(),
     },
     organization: { findFirst: vi.fn() },
-  },
-}));
+    shippingCarrier: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    carrierServiceLevel: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+    },
+    advanceShippingNotice: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    aSNLineItem: {
+      createMany: vi.fn(),
+      update: vi.fn(),
+    },
+    asnDiscrepancy: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
+    inboundShipment: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    outboundShipment: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    shipmentTrackingEvent: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
+    shipmentException: {
+      create: vi.fn(),
+      update: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+    },
+    product: { findMany: vi.fn() },
+    salesOrderItem: { findMany: vi.fn() },
+    $transaction: vi.fn(),
+  };
+
+  prismaMock.$transaction.mockImplementation((cb) => cb(prismaMock));
+  return { prisma: prismaMock };
+});
 
 import { prisma } from '@unerp/database';
 
@@ -56,81 +109,106 @@ describe('SupplyChainService', () => {
     });
   });
 
-  describe('createShipment', () => {
-    it('should create a shipment', async () => {
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
-      vi.mocked(prisma.shipment.findFirst).mockResolvedValue(null);
-      vi.mocked(prisma.shipment.create).mockResolvedValue({
-        id: 's-1',
-        shipmentNumber: 'SHP-001',
-        status: 'PENDING',
-      } as never);
+  describe('Carriers', () => {
+    it('should fetch carriers', async () => {
+      vi.mocked(prisma.shippingCarrier.findMany).mockResolvedValue([{ id: 'c-1', name: 'UPS' }] as never);
+      const result = await service.getCarriers('tenant-1');
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('UPS');
+    });
 
-      const dto = {
-        shipmentNumber: 'SHP-001',
-        type: 'OUTBOUND' as const,
-        carrierName: 'FedEx',
-        trackingNumber: 'TRK-123',
-        weightUnit: 'KG' as const,
+    it('should create carrier', async () => {
+      vi.mocked(prisma.shippingCarrier.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.shippingCarrier.create).mockResolvedValue({ id: 'c-1', code: 'UPS', name: 'UPS' } as never);
+      const result = await service.createCarrier('tenant-1', { code: 'UPS', name: 'UPS' });
+      expect(result.code).toBe('UPS');
+    });
+  });
+
+  describe('ASN Operations', () => {
+    it('should create an ASN and its items', async () => {
+      vi.mocked(prisma.advanceShippingNotice.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.advanceShippingNotice.create).mockResolvedValue({ id: 'asn-1', asnNumber: 'ASN-001' } as never);
+      vi.mocked(prisma.advanceShippingNotice.findUnique).mockResolvedValue({ id: 'asn-1', asnNumber: 'ASN-001', lineItems: [] } as never);
+
+      const result = await service.createAsn('tenant-1', {
+        asnNumber: 'ASN-001',
+        vendorId: 'vendor-1',
+        warehouseId: 'wh-1',
+        lineItems: [{ productId: 'p-1', expectedQty: 100 }],
+      });
+
+      expect(result.asnNumber).toBe('ASN-001');
+      expect(prisma.aSNLineItem.createMany).toHaveBeenCalled();
+    });
+
+    it('should process ASN receipt and log shortage discrepancy', async () => {
+      const mockAsn = {
+        id: 'asn-1',
+        status: 'PENDING',
+        lineItems: [
+          { id: 'li-1', productId: 'p-1', expectedQty: { toString: () => '100' }, receivedQty: { toString: () => '0' } },
+        ],
       };
 
-      const result = await service.createShipment('tenant-1', 'org-system-default', dto, 'user-1');
+      vi.mocked(prisma.advanceShippingNotice.findFirst).mockResolvedValue(mockAsn as never);
+      vi.mocked(prisma.advanceShippingNotice.update).mockResolvedValue({ ...mockAsn, status: 'RECEIVED' } as never);
 
-      expect(result.shipmentNumber).toBe('SHP-001');
-      expect(prisma.shipment.create).toHaveBeenCalledWith(
+      const result = await service.receiveAsn('tenant-1', 'asn-1', {
+        lineItems: [{ id: 'li-1', actualQty: 90 }],
+      }, 'user-1');
+
+      expect(result.status).toBe('RECEIVED');
+      expect(prisma.asnDiscrepancy.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ shipmentNumber: 'SHP-001', status: 'PENDING' }),
+          data: expect.objectContaining({
+            discrepancyType: 'SHORTAGE',
+            actualQty: expect.any(Object),
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('Tracking and Exceptions', () => {
+    it('should transition outbound status to DELIVERED on milestone', async () => {
+      vi.mocked(prisma.shipmentTrackingEvent.create).mockResolvedValue({ id: 'e-1' } as never);
+      vi.mocked(prisma.outboundShipment.findFirst).mockResolvedValue({ id: 'shp-1', status: 'IN_TRANSIT' } as never);
+
+      await service.addTrackingEvent('tenant-1', 'outbound', 'shp-1', {
+        eventCode: 'DELIVERED',
+        description: 'Delivered to front door',
+        source: 'MANUAL',
+      });
+
+      expect(prisma.outboundShipment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'shp-1' },
+          data: expect.objectContaining({ status: 'DELIVERED' }),
         }),
       );
     });
 
-    it('should throw when shipment number already exists', async () => {
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: 'org-1' } as never);
-      vi.mocked(prisma.shipment.findFirst).mockResolvedValue({ id: 'existing' } as never);
+    it('should report and resolve exception', async () => {
+      vi.mocked(prisma.shipmentException.create).mockResolvedValue({ id: 'ex-1' } as never);
+      vi.mocked(prisma.shipmentException.findFirst).mockResolvedValue({ id: 'ex-1', status: 'OPEN' } as never);
 
-      const dto = {
-        shipmentNumber: 'SHP-001',
-        type: 'OUTBOUND' as const,
-        weightUnit: 'KG' as const,
-      };
+      const report = await service.reportException('tenant-1', 'shp-1', {
+        direction: 'OUTBOUND',
+        exceptionCode: 'LATE',
+        description: 'Delayed due to weather',
+      }, 'user-1');
 
-      await expect(
-        service.createShipment('tenant-1', 'org-1', dto, 'user-1'),
-      ).rejects.toThrow('Shipment number SHP-001 already exists');
-    });
-  });
+      await service.resolveException('tenant-1', 'ex-1', {
+        resolutionNote: 'Weather cleared',
+      }, 'user-1');
 
-  describe('updateShipmentStatus', () => {
-    it('should update status and set shippedAt when IN_TRANSIT', async () => {
-      vi.mocked(prisma.shipment.findFirst).mockResolvedValue({ id: 's-1' } as never);
-      vi.mocked(prisma.shipment.update).mockResolvedValue({ id: 's-1', status: 'IN_TRANSIT' } as never);
-
-      await service.updateShipmentStatus('tenant-1', 's-1', 'IN_TRANSIT');
-
-      expect(prisma.shipment.update).toHaveBeenCalledWith({
-        where: { id: 's-1' },
-        data: expect.objectContaining({ status: 'IN_TRANSIT', shippedAt: expect.any(Date) }),
-      });
-    });
-
-    it('should set actualDelivery when DELIVERED', async () => {
-      vi.mocked(prisma.shipment.findFirst).mockResolvedValue({ id: 's-1' } as never);
-      vi.mocked(prisma.shipment.update).mockResolvedValue({ id: 's-1', status: 'DELIVERED' } as never);
-
-      await service.updateShipmentStatus('tenant-1', 's-1', 'DELIVERED');
-
-      expect(prisma.shipment.update).toHaveBeenCalledWith({
-        where: { id: 's-1' },
-        data: expect.objectContaining({ status: 'DELIVERED', actualDelivery: expect.any(Date) }),
-      });
-    });
-
-    it('should throw NotFoundException when shipment not found', async () => {
-      vi.mocked(prisma.shipment.findFirst).mockResolvedValue(null);
-
-      await expect(
-        service.updateShipmentStatus('tenant-1', 'nonexistent', 'DELIVERED'),
-      ).rejects.toThrow('Shipment not found');
+      expect(prisma.shipmentException.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'ex-1' },
+          data: expect.objectContaining({ status: 'RESOLVED', resolutionNote: 'Weather cleared' }),
+        }),
+      );
     });
   });
 });

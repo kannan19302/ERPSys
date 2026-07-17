@@ -3,13 +3,14 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader, Tabs, Spinner } from '@unerp/ui';
 import { RouteGuard } from '@unerp/framework';
-import { Package, MapPin, Truck, Route as RouteIcon } from 'lucide-react';
+import { Package, MapPin, Truck, Route as RouteIcon, ClipboardList } from 'lucide-react';
 import ShipmentsTab from './ShipmentsTab';
 import TrackingTab from './TrackingTab';
 import CarriersTab from './CarriersTab';
 import RoutesTab from './RoutesTab';
+import AsnsTab from './AsnsTab';
 
-const TAB_KEYS = ['shipments', 'tracking', 'carriers', 'routes'] as const;
+const TAB_KEYS = ['shipments', 'tracking', 'carriers', 'routes', 'asns'] as const;
 type TabKey = typeof TAB_KEYS[number];
 
 function isTabKey(value: string | null): value is TabKey {
@@ -36,7 +37,7 @@ function OperationsHubContent() {
   };
 
   return (
-    <RouteGuard permission="supply-chain.shipments.read">
+    <RouteGuard permission="supply-chain.shipment.read">
       <div className="ui-stack-6">
         <PageHeader
           title="Operations"
@@ -53,6 +54,7 @@ function OperationsHubContent() {
             { key: 'tracking', label: 'Shipment Tracking', icon: <MapPin size={14} /> },
             { key: 'carriers', label: 'Carrier Management', icon: <Truck size={14} /> },
             { key: 'routes', label: 'Route Optimization', icon: <RouteIcon size={14} /> },
+            { key: 'asns', label: 'Advance Shipping Notices (ASN)', icon: <ClipboardList size={14} /> },
           ]}
           value={activeTab}
           onChange={handleChange}
@@ -69,6 +71,9 @@ function OperationsHubContent() {
         </div>
         <div className={activeTab === 'routes' ? '' : 'hidden'}>
           {visited.has('routes') && <RoutesTab />}
+        </div>
+        <div className={activeTab === 'asns' ? '' : 'hidden'}>
+          {visited.has('asns') && <AsnsTab />}
         </div>
       </div>
     </RouteGuard>

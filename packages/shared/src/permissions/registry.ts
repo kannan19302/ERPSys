@@ -325,9 +325,16 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('supply-chain', 'shipment', 'update', 'endpoint', 'Update shipments'),
   p('supply-chain', 'carrier', 'read', 'endpoint', 'View carriers'),
   p('supply-chain', 'carrier', 'create', 'endpoint', 'Create carriers'),
+  p('supply-chain', 'carrier', 'update', 'endpoint', 'Update carriers'),
+  p('supply-chain', 'carrier', 'delete', 'endpoint', 'Delete carriers'),
   p('supply-chain', 'route', 'read', 'endpoint', 'View routes'),
   p('supply-chain', 'forecast', 'read', 'endpoint', 'View demand forecasts'),
   p('supply-chain', 'forecast', 'create', 'endpoint', 'Create demand forecasts'),
+  p('supply-chain', 'asn', 'read', 'endpoint', 'View advance shipping notices'),
+  p('supply-chain', 'asn', 'create', 'endpoint', 'Create advance shipping notices'),
+  p('supply-chain', 'asn', 'update', 'endpoint', 'Update/receive advance shipping notices'),
+  p('supply-chain', 'exception', 'read', 'endpoint', 'View shipment exceptions'),
+  p('supply-chain', 'exception', 'update', 'endpoint', 'Manage/resolve shipment exceptions'),
 
   // Manufacturing (extended)
   p('manufacturing', 'production-plan', 'read', 'endpoint', 'View production plans'),
