@@ -9,6 +9,14 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Inventory - Decomposed Products & Catalog Operations from God-Class
+
+- Refactored the `InventoryService` god-class by extracting all products, categories, variants, and units-of-measure operations into a new dedicated service `InventoryProductsService`.
+- Replaced the extracted operations inside `InventoryService` with delegated forwards, keeping full backward compatibility.
+- Implemented a constructor fallback in `InventoryService` to instantiate `InventoryProductsService` dynamically when not supplied by Dependency Injection, ensuring all manual testing/spec suites continue to run seamlessly.
+- Registered and exported `InventoryProductsService` in `InventoryModule`.
+- Verified NestJS API builds cleanly, architecture boundary checks pass, and all 3,025 vitest tests pass.
+
 ## [2026-07-17] Architecture - Enforced NestJS Module Boundaries and Thin Controllers in CI
 
 - Implemented strict static validation check in `.dependency-cruiser.cjs` to forbid direct module-to-module imports (`no-cross-module-deep-imports`), excluding test files and allowed baseline exceptions (`ecommerce` to `sales` imports).

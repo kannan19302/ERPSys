@@ -91,7 +91,7 @@
 > build, runtime failures, conflicts, cross-cutting hardening) are exempt.
 
 0. ~~**[P0] Wire RLS session context into the shared Prisma extension**~~ ✅ RESOLVED 2026-07-17 — wired RLS setting context transaction-locally in `$allOperations` and added full integration tests. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
-1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (2,905 LOC), `inventory.service.ts` (1,792 LOC), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
+1. **God-class decomposition (Enterprise Hardening Phase 1, in progress)** — `builder.service.ts` (DONE), `inventory.service.ts` (PARTIALLY DECOMPOSED: warehouses and product catalog decomposed), `advanced-finance`/`procurement`/`manufacturing` services (>1,200 LOC each). Strangler-fig pattern per the completed CRM decomposition — see § Production Readiness & Hardening below.
 2. ~~**`dependency-cruiser`/ESLint module-boundary lint**~~ ✅ RESOLVED 2026-07-17 — configured dependency-cruiser module boundary check and ESLint controller database import restriction rules in CI, refactored 5 module controllers to delegate database access to service methods.
 3. **CI test-suite scope decision** — `test:coverage` still excludes `*.coverage.spec.ts`; decide whether to run the full suite in CI now that it's stable (Enterprise Hardening Phase 0 follow-up).
 4. **Studio Phase 2 — Business Logic visual rule/flow editor** (Form/Page/Workflow canvas editors are already built and confirmed — `FormBuilderWorkspace.tsx` uses `@dnd-kit`, `WorkflowEditorWorkspace.tsx` uses `reactflow`, `PageBuilderWorkspace.tsx` is a grid canvas; only the Business Logic editor, to replace form-driven automation rules, remains open) — see § Studio Backlog below.
@@ -188,6 +188,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-17 | antigravity | **Inventory God-Class Decomposition**: Decomposed products, categories, variants, and units-of-measure catalog logic from `InventoryService` (3,279 LOC) into a new dedicated `InventoryProductsService`, maintaining full backward compatibility. | pending |
 | 2026-07-17 | antigravity | **Module Boundaries & Thin Controllers**: Configured dependency-cruiser cross-module boundaries validation and ESLint controller database import restriction rules in CI, and refactored 5 module controllers to delegate queries to services. | pending |
 | 2026-07-17 | antigravity | **Dashboard Preview Width**: Migrated hardcoded preview layout width to useContainerWidth dynamic hook. | 4a06de1 |
 | 2026-07-17 | antigravity | **Database RLS Integration**: Wired transaction-scoped PostgreSQL RLS context (`app.current_tenant_id`) into shared Prisma Client `$allOperations` hook and added database-isolation integration tests. | 96c1ccf |
@@ -577,11 +578,11 @@ Goal: move from "heuristic 10/10" to genuine enterprise-grade readiness (SAP/Ora
 - **Phase 1 — Architecture guardrails & god-class decomposition: IN PROGRESS.** CRM god-class **DONE**
   (`crm.service.ts` 2,330 → 322 LOC facade + 10 domain services, strangler-fig pattern, gates green).
   `builder.service.ts` **DONE** (decomposed 2,906 LOC into 6 services + facade facade, redirected controller, all tests green).
-  `inventory.service.ts` **IN PROGRESS** (warehouses decomposed, others open).
+  `inventory.service.ts` **IN PROGRESS** (warehouses and product catalog decomposed, others open).
   Follow-up: `crm.service.coverage.spec.ts` needs repointing to exercise the moved domain logic for
   real (currently instantiates `CrmService` with no sub-services). **Next god-classes still open**:
   remaining inventory domain services, advanced-finance/procurement/manufacturing services (>1,200 LOC each).
-  `dependency-cruiser`/ESLint module-boundary lint (no cross-module deep imports, no business logic in controllers) not yet added to CI.
+  `dependency-cruiser`/ESLint module-boundary lint (no cross-module deep imports, no business logic in controllers) **DONE** 2026-07-17 added to CI.
 - **Phase 2 — Data & tenant integrity: substantially COMPLETE.** Central tenant-isolation enforcement
   closed 2026-07-01: `TenantInterceptor` now registered globally (`APP_INTERCEPTOR`), fixed an
   args-mutation bug where `findMany()`-style calls with no options silently skipped scoping, added
