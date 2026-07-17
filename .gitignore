@@ -2,6 +2,10 @@
 node_modules/
 .pnpm-store/
 
+# Lockfiles (pnpm monorepo only)
+package-lock.json
+yarn.lock
+
 # Build outputs
 dist/
 .next/
@@ -10,10 +14,10 @@ out/
 apps/api/src/**/*.js
 apps/api/src/**/*.js.map
 
-# Environment
+# Environment / Secrets (safety-hardened)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -24,6 +28,8 @@ apps/api/src/**/*.js.map
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+ehthumbs.db
 
 # Testing
 coverage/
@@ -37,10 +43,14 @@ playwright-report/
 packages/database/prisma/*.db
 packages/database/prisma/*.db-journal
 
-# Logs
+# Logs & Caches
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+.stylelintcache
 
 # Docker
 docker/data/

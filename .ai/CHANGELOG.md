@@ -9,6 +9,11 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Repository maintenance — gitignore safety hardening
+
+- Hardened `.gitignore` rules to ignore all `.env.*` files (excluding `.env.example`), prevent tracking of alternative package lockfiles (`package-lock.json`, `yarn.lock`), block OS metadata (`desktop.ini`), and ignore linter cache files (`.eslintcache`).
+- Verified all code checks are green (`pnpm foundation:check`).
+
 ## [2026-07-17] Repository maintenance — production-grade folder cleanup and gitignore hardening
 
 - Backed up and removed the production compose `deploy/` directory and root `RUNBOOK.md` file to keep the workspace root clean, since deployment targets are managed outside the repository.

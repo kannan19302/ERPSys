@@ -186,6 +186,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-17 | antigravity | **Repository Maintenance**: Hardened .gitignore rules to prevent tracking of alternate lockfiles, custom env files, desktop.ini, and eslint cache. | 1b4910f |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Backed up and removed deploy/ and RUNBOOK.md, removed docs/extension-contract, and hardened .gitignore rules. | 5a45223 |
 | 2026-07-17 | antigravity | **Repository Maintenance**: Deleted duplicate `.env` files in apps/api & packages/database, deleted unused `check-duplicate-classnames.mjs` script, and pruned stale git worktrees. | 1c6570f |
 | 2026-07-17 | antigravity | **Unused Scripts Cleanup**: Deleted `migrate-phase8-styles.mjs`, `migrate-remaining-styles.mjs`, and `migrate-ui.mjs` style migration scripts and their references. | 647fd73 |
