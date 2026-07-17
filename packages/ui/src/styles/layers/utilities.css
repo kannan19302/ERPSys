@@ -148,7 +148,7 @@
 /* ── Phase 4.2 migration: exact-copy classes for recurring inline patterns ──
    Each rule below is a verbatim copy of a high-frequency inline style found
    across the settings/crm/builder/finance/connect modules, so converting the
-   inline style to the class produces zero visual change. See scripts/migrate-ui.mjs. */
+   inline style to the class produces zero visual change. */
 .ui-text-xs-soft { font-size: var(--text-xs); color: var(--color-text-muted); }
 .ui-text-xs-bold-muted { font-size: var(--text-xs); color: var(--color-text-secondary); font-weight: bold; }
 .ui-hr-faded { margin: 0 auto var(--space-4) auto; opacity: 0.3; }

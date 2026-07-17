@@ -9,6 +9,12 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Repository maintenance — removed unused style migration scripts
+
+- Deleted three obsolete style migration scripts from the `scripts/` folder: `migrate-phase8-styles.mjs`, `migrate-remaining-styles.mjs`, and `migrate-ui.mjs`.
+- Cleaned up the reference to `scripts/migrate-ui.mjs` in `packages/ui/src/styles/layers/utilities.css`.
+- Ran `pnpm foundation:check` to ensure the repository remains synchronized and all foundation rules pass.
+
 ## [2026-07-17] ADP restructure — two flows, 4-file knowledge base, minimal CI, fresh history
 
 - **Two flows only**: the Autonomous Development Protocol now has exactly `Start` (DEV — build one feature batch end-to-end) and `harden` (QA — find→file→fix→close). The `issue-scan` and `fix-issues` skills, the `issue-scout` agent, and the `.agents`/`.codex` mirror trees were retired; `.ai/AUTOPILOT.md` was rewritten as one concise protocol document covering both flows, shared bindings (architecture governance, launch blockers #17/#19/#21, 3-file tracking, land-on-main, claims), gate tiers, and the agent roster.
