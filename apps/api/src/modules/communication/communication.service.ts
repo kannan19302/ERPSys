@@ -1323,7 +1323,7 @@ export class CommunicationService {
 
   async handleSlashCommand(tenantId: string, userId: string, channelId: string, text: string) {
     const parts = text.slice(1).split(' ');
-    const command = parts[0].toLowerCase();
+    const command = (parts[0] || '').toLowerCase();
     const args = parts.slice(1).join(' ');
 
     switch (command) {
@@ -1331,8 +1331,10 @@ export class CommunicationService {
       case 'reminder': {
         const match = args.match(/^(?:me\s+)?(?:to\s+)?(.+?)\s+in\s+(\d+)\s*(m|min|minute|h|hr|hour|d|day)s?$/i);
         if (match) {
-          const [, reminderText, num, unit] = match;
-          const ms = parseInt(num) * (unit[0] === 'm' ? 60000 : unit[0] === 'h' ? 3600000 : 86400000);
+          const reminderText = match[1] || '';
+          const num = match[2] || '0';
+          const unit = (match[3] || 'm')[0];
+          const ms = parseInt(num) * (unit === 'm' ? 60000 : unit === 'h' ? 3600000 : 86400000);
           return this.createReminder(tenantId, userId, { text: reminderText, remindAt: new Date(Date.now() + ms), channelId });
         }
         throw new BadRequestException('Usage: /remind me to <text> in <N> min/h/d');
@@ -1340,14 +1342,16 @@ export class CommunicationService {
       case 'poll': {
         const pollMatch = args.match(/^"(.+)"\s+(.+)$/);
         if (pollMatch) {
-          const options = pollMatch[2].split(',').map((o) => ({ label: o.trim() }));
-          return this.createPoll(tenantId, userId, { channelId, question: pollMatch[1], options });
+          const question = pollMatch[1] || '';
+          const optionsStr = pollMatch[2] || '';
+          const options = optionsStr.split(',').map((o) => ({ label: o.trim() }));
+          return this.createPoll(tenantId, userId, { channelId, question, options });
         }
         throw new BadRequestException('Usage: /poll "Question" option1, option2, option3');
       }
       case 'me':
       case 'meet':
-        return this.createMeeting(tenantId, userId, { title: args || 'Quick meeting', channelId });
+        return this.createMeeting(tenantId, userId, { title: args || 'Quick meeting' });
       case 'dnd': {
         const duration = parseInt(args) || 60;
         return this.setPresence(tenantId, userId, { presence: 'DND' as Presence, statusText: `Do not disturb (${duration}m)` });
@@ -1374,8 +1378,10 @@ export class CommunicationService {
         if (msgMatch) {
           const users = await prisma.user.findMany({ where: { tenantId, email: { contains: msgMatch[1] } }, take: 1 });
           if (users.length === 0) throw new NotFoundException('User not found');
-          const dm = await this.getOrCreateDM(tenantId, null, userId, users[0].id);
-          return { dm, text: msgMatch[2], note: 'Message sent via DM' };
+          const org = await prisma.organization.findFirst({ where: { tenantId } });
+          const targetUser = users[0]!;
+          const dm = await this.getOrCreateDM(tenantId, org?.id || 'default', userId, targetUser.id);
+          return { dm, text: msgMatch[2] || '', note: 'Message sent via DM' };
         }
         throw new BadRequestException('Usage: /msg @user <text>');
       }
@@ -1436,11 +1442,13 @@ export class CommunicationService {
   /* ── Feature 5: Custom Emoji ── */
 
   async uploadCustomEmoji(tenantId: string, userId: string, file: Express.Multer.File, name: string) {
-    const doc = await this.documentsService.createDocument(tenantId, 'connect-emoji', file.originalname, file.buffer, file.mimetype);
+    const doc = await this.documentsService.createDocument(tenantId, 'connect-emoji', { name: file.originalname }, userId, file);
+    const docId = (doc as any)?.id;
+    const versionUrl = (doc as any)?.versions?.[0]?.fileUrl;
     return prisma.customEmoji.upsert({
       where: { tenantId_name: { tenantId, name } },
-      create: { tenantId, name, fileUrl: doc.url || doc.id, fileSize: file.size, uploadedBy: userId },
-      update: { fileUrl: doc.url || doc.id, fileSize: file.size, uploadedBy: userId },
+      create: { tenantId, name, fileUrl: versionUrl || docId, fileSize: file.size, uploadedBy: userId },
+      update: { fileUrl: versionUrl || docId, fileSize: file.size, uploadedBy: userId },
     });
   }
 
@@ -1532,13 +1540,13 @@ export class CommunicationService {
 
     const channel = await this.createChannel(tenantId, orgId, userId, {
       name: dto.name, description: dto.description,
-      channelType: template.channelType as any, topic: template.topic,
+      topic: template.topic ?? undefined,
     });
 
     if (template.tabs && Array.isArray(template.tabs)) {
-      for (const tab of template.tabs) {
+      for (const tab of template.tabs as { type?: string; label?: string; url?: string; icon?: string; sortOrder?: number }[]) {
         await prisma.channelTab.create({
-          data: { tenantId, channelId: channel.id, type: tab.type || 'LINK', label: tab.label, url: tab.url, icon: tab.icon, sortOrder: tab.sortOrder || 0, createdBy: userId },
+          data: { tenantId, channelId: channel.id, type: tab.type || 'LINK', label: tab.label || '', url: tab.url, icon: tab.icon, sortOrder: tab.sortOrder || 0, createdBy: userId },
         }).catch(() => {});
       }
     }
@@ -1566,7 +1574,7 @@ export class CommunicationService {
     return msg;
   }
 
-  async markMessageViewed(tenantId: string, messageId: string, userId: string) {
+  async markMessageViewed(tenantId: string, messageId: string, _userId: string) {
     const msg = await prisma.message.findFirst({ where: { id: messageId, tenantId, viewOnce: true } });
     if (!msg) throw new NotFoundException('Message not found or not view-once');
     await prisma.message.update({ where: { id: messageId }, data: { deletedAt: new Date(), content: 'This message has been viewed' } });
@@ -1580,9 +1588,12 @@ export class CommunicationService {
     if (!membership) throw new ForbiddenException('Not a channel member');
     if (file.size > 10 * 1024 * 1024) throw new BadRequestException('Voice message too large (max 10MB)');
 
-    const doc = await this.documentsService.createDocument(tenantId, 'connect-voice', file.originalname, file.buffer, file.mimetype);
+    const org = await prisma.organization.findFirst({ where: { tenantId } });
+    const doc = await this.documentsService.createDocument(tenantId, org?.id || 'default', { name: file.originalname }, userId, file);
 
-    const attachments: AttachmentDto[] = [{ id: doc.id, name: file.originalname, size: file.size, mime: file.mimetype, url: doc.url }];
+    const docId = (doc as any)?.id;
+    const versionUrl = (doc as any)?.versions?.[0]?.fileUrl;
+    const attachments: AttachmentDto[] = [{ id: docId, name: file.originalname, size: file.size, mime: file.mimetype, url: versionUrl || '' }];
     return prisma.message.create({
       data: {
         tenantId, channelId, userId,

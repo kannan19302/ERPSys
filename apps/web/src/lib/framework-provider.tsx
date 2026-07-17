@@ -2,7 +2,7 @@
 
 import { FrameworkProvider } from '@unerp/framework';
 import type { ReactNode } from 'react';
-import { inventoryModule } from '@/modules/inventory';
+import { registeredModules } from '@/modules';
 
 function readCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -24,9 +24,6 @@ function getTenantId(): string | null {
   return null;
 }
 
-/** Registered framework modules; add each module here as it's migrated. */
-const modules = [inventoryModule];
-
 export function AppFrameworkProvider({ children }: { children: ReactNode }) {
   return (
     <FrameworkProvider
@@ -36,7 +33,7 @@ export function AppFrameworkProvider({ children }: { children: ReactNode }) {
         getCsrfToken: () => readCookie('csrf_token'),
         getTenantId,
       }}
-      modules={modules}
+      modules={registeredModules}
     >
       {children}
     </FrameworkProvider>

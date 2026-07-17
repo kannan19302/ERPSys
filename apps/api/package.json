@@ -39,6 +39,7 @@
     "@unerp/auth": "workspace:*",
     "@unerp/database": "workspace:*",
     "@unerp/shared": "workspace:*",
+    "@unerp/blockchain": "workspace:*",
     "bullmq": "^5.79.1",
     "cookie-parser": "^1.4.7",
     "exceljs": "^4.4.0",

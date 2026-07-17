@@ -6,7 +6,7 @@ import {
   Building2, Plus, Calendar, Settings, ShieldCheck, ClipboardList,
   Wrench, Activity, AlertCircle, RefreshCw, Eye, ArrowRight
 } from 'lucide-react';
-import { Card, Button, ListPageTemplate, type ListColumn } from '@unerp/ui';
+import { Card, Button, ListPageTemplate, type ListColumn, Modal } from '@unerp/ui';
 import { apiGet, apiPost } from '@/lib/api';
 
 interface FixedAsset {
@@ -349,133 +349,129 @@ export default function FixedAssetsDashboard() {
       </div>
 
       {/* Category Creation Modal */}
-      {showCategoryModal && (
-        <div className={styles.s26}>
-          <div className={styles.s27}>
-            <div className={styles.s28}>
-              <h3 className="ui-heading-lg">Add Asset Category</h3>
-              <button onClick={() => setShowCategoryModal(false)} className={styles.s29}>&times;</button>
+      <Modal
+        open={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        title="Add Asset Category"
+        size="md"
+      >
+        <form onSubmit={handleCreateCategory}>
+          <div className="ui-stack-4">
+            <div className="ui-stack-1">
+              <label className="ui-text-xs-label">Category Name</label>
+              <input
+                required
+                className="ui-input"
+                placeholder="IT Equipment, Plant & Machinery"
+                value={categoryFormData.name}
+                onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+              />
             </div>
 
-            <form onSubmit={handleCreateCategory}>
-              <div className={styles.s30}>
-                <div className="ui-stack-1">
-                  <label className="ui-text-xs-label">Category Name</label>
-                  <input
-                    required
-                    className="ui-input"
-                    placeholder="IT Equipment, Plant & Machinery"
-                    value={categoryFormData.name}
-                    onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
-                  />
-                </div>
+            <div className="ui-stack-1">
+              <label className="ui-text-xs-label">Description</label>
+              <textarea
+                className={`ui-input ${styles.s31}`}
+                placeholder="Provide details about category boundaries..."
+                value={categoryFormData.description}
+                onChange={e => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
+              />
+            </div>
 
-                <div className="ui-stack-1">
-                  <label className="ui-text-xs-label">Description</label>
-                  <textarea
-                    className={`ui-input ${styles.s31}`}
-
-                    placeholder="Provide details about category boundaries..."
-                    value={categoryFormData.description}
-                    onChange={e => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
-                  />
-                </div>
-
-                <div className="ui-grid-2">
-                  <div className="ui-stack-1">
-                    <label className="ui-text-xs-label">Depreciation Method</label>
-                    <select
-                      className="ui-input"
-                      value={categoryFormData.depreciationMethod}
-                      onChange={e => setCategoryFormData({ ...categoryFormData, depreciationMethod: e.target.value })}
-                    >
-                      <option value="SLM">Straight Line (SLM)</option>
-                      <option value="WDV">Written Down Value (WDV)</option>
-                    </select>
-                  </div>
-
-                  <div className="ui-stack-1">
-                    <label className="ui-text-xs-label">Expected Life (Months)</label>
-                    <input
-                      type="number"
-                      required
-                      className="ui-input"
-                      placeholder="36"
-                      value={categoryFormData.expectedLifeMonths}
-                      onChange={e => setCategoryFormData({ ...categoryFormData, expectedLifeMonths: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="ui-stack-1">
-                  <label className="ui-text-xs-label">Depreciation Rate % (Only for WDV)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className="ui-input"
-                    placeholder="20"
-                    value={categoryFormData.depreciationRate}
-                    onChange={e => setCategoryFormData({ ...categoryFormData, depreciationRate: e.target.value })}
-                  />
-                </div>
-
-                <h4 className={styles.s32}>
-                  Accounts Mapping (Double-Entry Ledger)
-                </h4>
-
-                <div className="ui-stack-1">
-                  <label className="ui-text-xs-label">Asset Cost GL Account</label>
-                  <select
-                    className="ui-input"
-                    value={categoryFormData.assetAccountId}
-                    onChange={e => setCategoryFormData({ ...categoryFormData, assetAccountId: e.target.value })}
-                  >
-                    <option value="">Select Asset Account</option>
-                    {accounts.map(acc => (
-                      <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="ui-grid-2">
-                  <div className="ui-stack-1">
-                    <label className="ui-text-xs-label">Accum. Depreciation Account</label>
-                    <select
-                      className="ui-input"
-                      value={categoryFormData.depreciationAccountId}
-                      onChange={e => setCategoryFormData({ ...categoryFormData, depreciationAccountId: e.target.value })}
-                    >
-                      <option value="">Select Account</option>
-                      {accounts.map(acc => (
-                        <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="ui-stack-1">
-                    <label className="ui-text-xs-label">Depreciation Expense Account</label>
-                    <select
-                      className="ui-input"
-                      value={categoryFormData.expenseAccountId}
-                      onChange={e => setCategoryFormData({ ...categoryFormData, expenseAccountId: e.target.value })}
-                    >
-                      <option value="">Select Account</option>
-                      {accounts.map(acc => (
-                        <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+            <div className="ui-grid-2">
+              <div className="ui-stack-1">
+                <label className="ui-text-xs-label">Depreciation Method</label>
+                <select
+                  className="ui-input"
+                  value={categoryFormData.depreciationMethod}
+                  onChange={e => setCategoryFormData({ ...categoryFormData, depreciationMethod: e.target.value })}
+                >
+                  <option value="SLM">Straight Line (SLM)</option>
+                  <option value="WDV">Written Down Value (WDV)</option>
+                </select>
               </div>
 
-              <div className={styles.s33}>
-                <Button type="button" variant="outline" onClick={() => setShowCategoryModal(false)}>Cancel</Button>
-                <Button type="submit">Create Category</Button>
+              <div className="ui-stack-1">
+                <label className="ui-text-xs-label">Expected Life (Months)</label>
+                <input
+                  type="number"
+                  required
+                  className="ui-input"
+                  placeholder="36"
+                  value={categoryFormData.expectedLifeMonths}
+                  onChange={e => setCategoryFormData({ ...categoryFormData, expectedLifeMonths: e.target.value })}
+                />
               </div>
-            </form>
+            </div>
+
+            <div className="ui-stack-1">
+              <label className="ui-text-xs-label">Depreciation Rate % (Only for WDV)</label>
+              <input
+                type="number"
+                step="0.01"
+                className="ui-input"
+                placeholder="20"
+                value={categoryFormData.depreciationRate}
+                onChange={e => setCategoryFormData({ ...categoryFormData, depreciationRate: e.target.value })}
+              />
+            </div>
+
+            <h4 className={styles.s32}>
+              Accounts Mapping (Double-Entry Ledger)
+            </h4>
+
+            <div className="ui-stack-1">
+              <label className="ui-text-xs-label">Asset Cost GL Account</label>
+              <select
+                className="ui-input"
+                value={categoryFormData.assetAccountId}
+                onChange={e => setCategoryFormData({ ...categoryFormData, assetAccountId: e.target.value })}
+              >
+                <option value="">Select Asset Account</option>
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="ui-grid-2">
+              <div className="ui-stack-1">
+                <label className="ui-text-xs-label">Accum. Depreciation Account</label>
+                <select
+                  className="ui-input"
+                  value={categoryFormData.depreciationAccountId}
+                  onChange={e => setCategoryFormData({ ...categoryFormData, depreciationAccountId: e.target.value })}
+                >
+                  <option value="">Select Account</option>
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="ui-stack-1">
+                <label className="ui-text-xs-label">Depreciation Expense Account</label>
+                <select
+                  className="ui-input"
+                  value={categoryFormData.expenseAccountId}
+                  onChange={e => setCategoryFormData({ ...categoryFormData, expenseAccountId: e.target.value })}
+                >
+                  <option value="">Select Account</option>
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <hr className="ui-hr-faded" />
+            <div className="ui-hstack-2 justify-end">
+              <Button type="button" variant="outline" onClick={() => setShowCategoryModal(false)}>Cancel</Button>
+              <Button type="submit">Create Category</Button>
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

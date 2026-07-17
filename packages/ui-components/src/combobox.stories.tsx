@@ -24,8 +24,8 @@ const OPTIONS: ComboBoxOption[] = [
 ];
 
 const ComboBoxWrapper = (props: ComboBoxProps) => {
-  const [value, setValue] = useState(props.value);
-  return <ComboBox {...props} value={value} onChange={setValue} />;
+  const [value, setValue] = useState<string | string[] | undefined>(props.value);
+  return <ComboBox {...props} value={value} onChange={(val) => setValue(val ?? undefined)} />;
 };
 
 export const SingleSelect: Story = {

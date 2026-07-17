@@ -1,7 +1,19 @@
 // Types, presentation metadata, and the live API client for the Connect app.
 // All data comes from the backend (/api/v1/communication/*) — no seed/mock data.
 
-export type Presence = 'ACTIVE' | 'AWAY' | 'BRB' | 'DND' | 'OOO' | 'INACTIVE';
+export type Presence = 'ACTIVE' | 'AWAY' | 'BRB' | 'DND' | 'OOO' | 'INACTIVE' | 'IN_MEETING' | 'FOCUSING';
+
+export interface ChannelTab { id: string; channelId: string; type: string; label: string; icon?: string | null; url?: string | null; entityType?: string | null; entityId?: string | null; sortOrder: number; }
+export interface ChannelModeration { slowModeSecs: number; whoCanPost: string; onlyAdminsCanPin: boolean; }
+export interface MeetingParticipant { id: string; userId: string; name: string; avatar?: string | null; joinedAt: string; isHandRaised: boolean; isScreenSharing: boolean; isMuted: boolean; isVideoOn: boolean; }
+export interface MeetingChatMsg { id: string; userId: string; content: string; createdAt: string; authorName: string; }
+export interface MeetingRecording { id: string; meetingId: string; startedAt: string; status: string; }
+export interface ConnectBot { id: string; channelId: string; name: string; avatar?: string | null; webhookUrl?: string | null; token?: string | null; isActive: boolean; }
+export interface UserStatusSchedule { id: string; presence: string; statusText?: string | null; startTime: string; endTime: string; isRecurring: boolean; recurrenceRule?: string | null; }
+export interface MessageEditEntry { id: string; messageId: string; userId: string; previousContent: string; newContent: string; createdAt: string; }
+export interface ChannelAnalytics { snapshots: Array<{ date: string; messageCount: number; activeUsers: number; reactions: number; }>; totals: { messageCount: number; activeUsers: number; reactions: number; }; }
+export interface UnreadSummary { totalUnread: number; channels: Array<{ channelId: string; unreadCount: number; }>; }
+export interface ThreadView { parent: ConnectMessage | null; replies: ConnectMessage[]; }
 
 export const PRESENCE_META: Record<Presence, { label: string; color: string; icon: string; ring?: boolean }> = {
   ACTIVE: { label: 'Active', color: '#10b981', icon: '🟢' },
@@ -10,9 +22,11 @@ export const PRESENCE_META: Record<Presence, { label: string; color: string; ico
   DND: { label: 'Do not disturb', color: '#f43f5e', icon: '⛔', ring: true },
   OOO: { label: 'Out of office', color: '#a855f7', icon: '🏖️' },
   INACTIVE: { label: 'Offline', color: '#9ca3af', icon: '⚫' },
+  IN_MEETING: { label: 'In a meeting', color: '#6366f1', icon: '📅' },
+  FOCUSING: { label: 'Focusing', color: '#14b8a6', icon: '🎯', ring: true },
 };
 
-export const PRESENCE_ORDER: Presence[] = ['ACTIVE', 'AWAY', 'BRB', 'DND', 'OOO', 'INACTIVE'];
+export const PRESENCE_ORDER: Presence[] = ['ACTIVE', 'IN_MEETING', 'FOCUSING', 'AWAY', 'BRB', 'DND', 'OOO', 'INACTIVE'];
 
 export const EMOJI_PALETTE = ['👍', '❤️', '😂', '🎉', '🙌', '👀', '🔥', '✅', '⚠️', '🚀', '💡', '🤝'];
 
@@ -220,6 +234,18 @@ export interface ConnectMessage {
   bookmarked?: boolean;
 }
 
+/* ── New Connect Extension Types ── */
+export interface PollOption { id: string; label: string; emoji: string; votes?: { id: string; userId: string; optionId: string }[] }
+export interface PollVote { id: string; userId: string; optionId: string }
+export interface ConnectPoll { id: string; channelId: string; userId: string; question: string; isClosed: boolean; options: PollOption[]; votes: PollVote[]; createdAt: string }
+export interface CustomEmoji { id: string; name: string; fileUrl: string; fileSize: number; category: string }
+export interface Reminder { id: string; text: string; remindAt: string; channelId?: string | null; messageId?: string | null; isSent: boolean; snoozed: boolean }
+export interface ChannelTemplate { id: string; name: string; description?: string | null; channelType: string; topic?: string | null; emoji: string; tabs: any[] }
+export interface MeetingSummary { id: string; summary: string; keyPoints: string[]; actionItems: string[]; generatedAt: string }
+export interface TranslateResult { translatedText: string; sourceLang: string; messageId: string; note?: string }
+export interface SlashCommandResult { commands?: { name: string; usage: string }[]; dm?: any; text?: string; formatted?: string; note?: string; id?: string; options?: any[] }
+export interface ScheduledMessage { id: string; content: string; scheduledAt: string; channelId: string; userId: string }
+
 export interface Meeting { id: string; title: string; code: string; channelId?: string | null; active: boolean; startedAt: string }
 export type RsvpStatus = 'accepted' | 'declined' | 'tentative' | 'pending';
 export type RecurrenceRule = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
@@ -342,6 +368,12 @@ export const SHORTCUTS: { key: string; mod: string; label: string }[] = [
   { key: 'Shift+N', mod: 'Ctrl', label: 'New channel' },
   { key: 'E', mod: 'Ctrl', label: 'Edit last message' },
   { key: '/', mod: 'Ctrl', label: 'Focus composer' },
+  { key: 'Shift+X', mod: 'Ctrl', label: 'Toggle thread panel' },
+  { key: 'Shift+M', mod: 'Ctrl', label: 'Toggle mute channel' },
+  { key: 'U', mod: 'Ctrl', label: 'Mark all read' },
+  { key: 'Shift+T', mod: 'Ctrl', label: 'Create task from message' },
+  { key: 'Up', mod: '', label: 'Edit last message' },
+  { key: 'Esc', mod: '', label: 'Close panel / cancel' },
 ];
 
 /* ── API client ── */
@@ -485,4 +517,152 @@ export const api = {
     req<Array<{ userId: string; name: string; avatar: string | null; seenAt: string }>>(`/messages/${messageId}/read-receipts`),
   getLinkPreview: (url: string) =>
     req<{ url: string; title?: string; description?: string; image?: string; siteName?: string }>(`/communication/link-preview?url=${encodeURIComponent(url)}`),
+
+  /* ── Threads ── */
+  getThread: (parentId: string) => req<ThreadView>(`/communication/messages/${parentId}/thread`),
+
+  /* ── Forward ── */
+  forwardMessage: (messageId: string, toChannelId: string, comment?: string) =>
+    req<ConnectMessage>(`/communication/messages/${messageId}/forward`, { method: 'POST', body: JSON.stringify({ toChannelId, comment }) }),
+
+  /* ── Presence Scheduling ── */
+  getStatusSchedules: () => req<UserStatusSchedule[]>('/communication/status-schedules'),
+  createStatusSchedule: (body: {
+    presence: string; statusText?: string; statusEmoji?: string;
+    startTime: string; endTime: string; isRecurring?: boolean; recurrenceRule?: string;
+  }) => req<UserStatusSchedule>('/communication/status-schedules', { method: 'POST', body: JSON.stringify(body) }),
+  deleteStatusSchedule: (id: string) => req<{ ok: boolean }>(`/communication/status-schedules/${id}`, { method: 'DELETE' }),
+
+  /* ── Search with filters ── */
+  searchFiltered: (q: string, filters?: { channelId?: string; authorId?: string; dateFrom?: string; dateTo?: string }) => {
+    const params = new URLSearchParams({ q });
+    if (filters?.channelId) params.set('channelId', filters.channelId);
+    if (filters?.authorId) params.set('authorId', filters.authorId);
+    if (filters?.dateFrom) params.set('dateFrom', filters.dateFrom);
+    if (filters?.dateTo) params.set('dateTo', filters.dateTo);
+    return req<SearchResult[]>(`/communication/search/filtered?${params}`);
+  },
+
+  /* ── Task from message ── */
+  createTaskFromMessage: (messageId: string, projectId?: string, dueDate?: string) =>
+    req<any>(`/communication/messages/${messageId}/create-task`, { method: 'POST', body: JSON.stringify({ projectId, dueDate }) }),
+
+  /* ── Unread summary ── */
+  getUnreadSummary: () => req<UnreadSummary>('/communication/unread-summary'),
+
+  /* ── Meeting Enhancements ── */
+  joinMeeting: (meetingId: string) => req<MeetingParticipant>(`/communication/meetings/${meetingId}/join`, { method: 'POST' }),
+  leaveMeeting: (meetingId: string) => req<MeetingParticipant>(`/communication/meetings/${meetingId}/leave`, { method: 'POST' }),
+  toggleHandRaise: (meetingId: string) => req<MeetingParticipant>(`/communication/meetings/${meetingId}/raise-hand`, { method: 'POST' }),
+  toggleMuteMeeting: (meetingId: string) => req<MeetingParticipant>(`/communication/meetings/${meetingId}/mute`, { method: 'POST' }),
+  toggleVideoMeeting: (meetingId: string) => req<MeetingParticipant>(`/communication/meetings/${meetingId}/video`, { method: 'POST' }),
+  toggleScreenShare: (meetingId: string) => req<MeetingParticipant>(`/communication/meetings/${meetingId}/screen-share`, { method: 'POST' }),
+  getMeetingParticipants: (meetingId: string) => req<MeetingParticipant[]>(`/communication/meetings/${meetingId}/participants`),
+  getMeetingChat: (meetingId: string) => req<MeetingChatMsg[]>(`/communication/meetings/${meetingId}/chat`),
+  sendMeetingChat: (meetingId: string, content: string) =>
+    req<MeetingChatMsg>(`/communication/meetings/${meetingId}/chat`, { method: 'POST', body: JSON.stringify({ content }) }),
+  admitToMeeting: (meetingId: string, targetUserId: string) =>
+    req<MeetingParticipant>(`/communication/meetings/${meetingId}/admit/${targetUserId}`, { method: 'POST' }),
+  startRecording: (meetingId: string) => req<MeetingRecording>(`/communication/meetings/${meetingId}/recordings/start`, { method: 'POST' }),
+  stopRecording: (meetingId: string, recordingId: string) =>
+    req<MeetingRecording>(`/communication/meetings/${meetingId}/recordings/${recordingId}/stop`, { method: 'POST' }),
+
+  /* ── Channel Tabs ── */
+  getTabs: (channelId: string) => req<ChannelTab[]>(`/communication/channels/${channelId}/tabs`),
+  createTab: (channelId: string, body: { type: string; label: string; icon?: string; url?: string; entityType?: string; entityId?: string }) =>
+    req<ChannelTab>(`/communication/channels/${channelId}/tabs`, { method: 'POST', body: JSON.stringify(body) }),
+  updateTab: (tabId: string, body: any) => req<ChannelTab>(`/communication/tabs/${tabId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteTab: (tabId: string) => req<{ ok: boolean }>(`/communication/tabs/${tabId}`, { method: 'DELETE' }),
+
+  /* ── Channel Moderation ── */
+  getModeration: (channelId: string) => req<ChannelModeration>(`/communication/channels/${channelId}/moderation`),
+  setSlowMode: (channelId: string, slowModeSecs: number) =>
+    req<ChannelModeration>(`/communication/channels/${channelId}/moderation/slow-mode`, { method: 'PUT', body: JSON.stringify({ slowModeSecs }) }),
+  setWhoCanPost: (channelId: string, whoCanPost: string) =>
+    req<ChannelModeration>(`/communication/channels/${channelId}/moderation/who-can-post`, { method: 'PUT', body: JSON.stringify({ whoCanPost }) }),
+
+  /* ── Pinned Messages ── */
+  getPinnedMessages: (channelId: string) => req<ConnectMessage[]>(`/communication/channels/${channelId}/pinned`),
+
+  /* ── Channel Analytics ── */
+  getChannelAnalytics: (channelId: string, days?: number) =>
+    req<ChannelAnalytics>(`/communication/channels/${channelId}/analytics${days ? `?days=${days}` : ''}`),
+
+  /* ── Message Edit History ── */
+  getMessageEditHistory: (messageId: string) => req<MessageEditEntry[]>(`/communication/messages/${messageId}/edit-history`),
+
+  /* ── Bots ── */
+  getBots: (channelId: string) => req<ConnectBot[]>(`/communication/channels/${channelId}/bots`),
+  createBot: (channelId: string, body: { name: string; avatar?: string }) =>
+    req<ConnectBot>(`/communication/channels/${channelId}/bots`, { method: 'POST', body: JSON.stringify(body) }),
+  updateBot: (botId: string, body: any) => req<ConnectBot>(`/communication/bots/${botId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteBot: (botId: string) => req<{ ok: boolean }>(`/communication/bots/${botId}`, { method: 'DELETE' }),
+  regenerateBotToken: (botId: string) => req<ConnectBot>(`/communication/bots/${botId}/regenerate-token`, { method: 'POST' }),
+  setWebhookUrl: (botId: string, webhookUrl: string) =>
+    req<ConnectBot>(`/communication/bots/${botId}/webhook`, { method: 'PUT', body: JSON.stringify({ webhookUrl }) }),
+
+  /* ── Feature 1: Polls ── */
+  createPoll: (channelId: string, question: string, options: { label: string; emoji?: string }[]) =>
+    req<ConnectPoll>(`/communication/polls`, { method: 'POST', body: JSON.stringify({ channelId, question, options }) }),
+  getPolls: (channelId: string) => req<ConnectPoll[]>(`/communication/channels/${channelId}/polls`),
+  votePoll: (pollId: string, optionId: string) =>
+    req<PollVote>(`/communication/polls/${pollId}/vote`, { method: 'POST', body: JSON.stringify({ optionId }) }),
+  closePoll: (pollId: string) => req<{ ok: boolean }>(`/communication/polls/${pollId}/close`, { method: 'POST' }),
+
+  /* ── Feature 2: Slash Commands ── */
+  runCommand: (channelId: string, text: string) =>
+    req<SlashCommandResult>(`/communication/commands`, { method: 'POST', body: JSON.stringify({ channelId, text }) }),
+
+  /* ── Feature 3: Reminders ── */
+  createReminder: (text: string, remindAt: Date, channelId?: string, messageId?: string) =>
+    req<Reminder>(`/communication/reminders`, { method: 'POST', body: JSON.stringify({ text, remindAt, channelId, messageId }) }),
+  getReminders: () => req<Reminder[]>(`/communication/reminders`),
+  deleteReminder: (reminderId: string) => req<{ ok: boolean }>(`/communication/reminders/${reminderId}`, { method: 'DELETE' }),
+  snoozeReminder: (reminderId: string, minutes?: number) =>
+    req<Reminder>(`/communication/reminders/${reminderId}/snooze`, { method: 'POST', body: JSON.stringify({ minutes }) }),
+
+  /* ── Feature 4: Scheduled Messages ── */
+  scheduleMessage: (channelId: string, content: string, scheduledAt: Date) =>
+    req<ScheduledMessage>(`/communication/channels/${channelId}/schedule`, { method: 'POST', body: JSON.stringify({ content, scheduledAt }) }),
+  getScheduledMessages: () => req<ScheduledMessage[]>(`/communication/scheduled`),
+  deleteScheduledMessage: (messageId: string) => req<{ ok: boolean }>(`/communication/scheduled/${messageId}`, { method: 'DELETE' }),
+
+  /* ── Feature 5: Custom Emoji ── */
+  getCustomEmojis: () => req<CustomEmoji[]>(`/communication/emoji`),
+  deleteCustomEmoji: (emojiId: string) => req<{ ok: boolean }>(`/communication/emoji/${emojiId}`, { method: 'DELETE' }),
+
+  /* ── Feature 6: Translation ── */
+  translateMessage: (messageId: string, targetLang: string) =>
+    req<TranslateResult>(`/communication/messages/${messageId}/translate`, { method: 'POST', body: JSON.stringify({ targetLang }) }),
+
+  /* ── Feature 7: Meeting Summaries ── */
+  generateMeetingSummary: (meetingId: string) => req<MeetingSummary>(`/communication/meetings/${meetingId}/summary`, { method: 'POST' }),
+  getMeetingSummary: (meetingId: string) => req<MeetingSummary | null>(`/communication/meetings/${meetingId}/summary`),
+
+  /* ── Feature 8: Channel Templates ── */
+  getChannelTemplates: () => req<ChannelTemplate[]>(`/communication/channel-templates`),
+  createFromTemplate: (templateId: string, name: string, description?: string) =>
+    req<any>(`/communication/channel-templates/apply`, { method: 'POST', body: JSON.stringify({ templateId, name, description }) }),
+  createChannelTemplate: (data: { name: string; description?: string; channelType?: string; topic?: string; emoji?: string; tabs?: any[] }) =>
+    req<ChannelTemplate>(`/communication/channel-templates`, { method: 'POST', body: JSON.stringify(data) }),
+
+  /* ── Feature 9: Ephemeral Messages ── */
+  sendEphemeral: (channelId: string, content: string, expiresInSecs?: number) =>
+    req<any>(`/communication/channels/${channelId}/ephemeral`, { method: 'POST', body: JSON.stringify({ content, expiresInSecs }) }),
+  markMessageViewed: (messageId: string) => req<{ ok: boolean }>(`/communication/messages/${messageId}/viewed`, { method: 'POST' }),
+
+  /* ── Feature 10: Voice Messages ── */
+  uploadVoice: (channelId: string, file: File, onProgress?: (pct: number) => void) => {
+    return new Promise<any>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const form = new FormData();
+      form.append('file', file);
+      xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100)); };
+      xhr.onload = () => { if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText)); else reject(new Error(xhr.statusText)); };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.open('POST', `${BASE}/channels/${channelId}/voice`);
+      xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token') || ''}`);
+      xhr.send(form);
+    });
+  },
 };

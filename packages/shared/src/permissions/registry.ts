@@ -287,6 +287,19 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p('communication', 'notification', 'update', 'endpoint', 'Update notification status'),
   p('communication', 'email-template', 'read', 'endpoint', 'View email templates'),
   p('communication', 'email-template', 'create', 'endpoint', 'Create email templates'),
+  p('communication', 'channel', 'moderate', 'endpoint', 'Channel moderation (slow mode, posting permissions)'),
+  p('communication', 'channel', 'tab', 'endpoint', 'Manage channel tabs'),
+  p('communication', 'message', 'forward', 'endpoint', 'Forward messages between channels'),
+  p('communication', 'presence', 'schedule', 'endpoint', 'Schedule presence/status changes'),
+  p('communication', 'bot', 'manage', 'endpoint', 'Manage channel bots and webhooks'),
+  p('communication', 'meeting', 'manage', 'endpoint', 'Manage meetings (recordings, lobby, participants)'),
+  p('communication', 'message', 'task', 'endpoint', 'Create tasks from messages'),
+  p('communication', 'poll', 'manage', 'endpoint', 'Create and manage polls'),
+  p('communication', 'emoji', 'manage', 'endpoint', 'Upload and manage custom emojis'),
+  p('communication', 'translation', 'read', 'endpoint', 'Translate messages'),
+  p('communication', 'reminder', 'manage', 'endpoint', 'Create and manage reminders'),
+  p('communication', 'template', 'manage', 'endpoint', 'Manage channel templates'),
+  p('communication', 'voice', 'upload', 'endpoint', 'Upload voice messages'),
 
   // Projects
   p('projects', 'project', 'read', 'endpoint', 'View projects'),
@@ -783,6 +796,18 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   { code: 'reporting.saved-views.read', module: 'reporting', resource: 'saved-views', action: 'read', level: 'endpoint', description: 'View saved list views' },
   { code: 'reporting.saved-views.create', module: 'reporting', resource: 'saved-views', action: 'create', level: 'endpoint', description: 'Create/update saved list views' },
   { code: 'reporting.saved-views.delete', module: 'reporting', resource: 'saved-views', action: 'delete', level: 'endpoint', description: 'Delete saved list views' },
+
+  // Blockchain Integration
+  p('blockchain', 'network', 'read', 'endpoint', 'View blockchain network health and status'),
+  p('blockchain', 'document', 'verify', 'endpoint', 'Verify document authenticity on blockchain'),
+  p('blockchain', 'document', 'read', 'endpoint', 'View document blockchain transaction records'),
+  p('blockchain', 'finance', 'verify', 'endpoint', 'Verify GL journal entry integrity on blockchain'),
+  p('blockchain', 'finance', 'read', 'endpoint', 'View GL journal entry blockchain records'),
+  p('blockchain', 'supply-chain', 'read', 'endpoint', 'View supply chain provenance logs from blockchain'),
+  p('blockchain', 'supply-chain', 'write', 'endpoint', 'Issue recalls or update shipments on blockchain'),
+  p('blockchain', 'procurement', 'match', 'endpoint', 'Execute automated blockchain 3-way match'),
+  p('blockchain', 'procurement', 'read', 'endpoint', 'View purchase order blockchain history'),
+  p('blockchain', 'transactions', 'read', 'endpoint', 'List all blockchain transaction audit logs'),
 ];
 
 // ── Query helpers (role editor / access-control UI) ──

@@ -38,9 +38,11 @@ describe('DatePicker', () => {
     await userEvent.click(dayButton);
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange.mock.calls[0][0].getDate()).toBe(20);
-    expect(onChange.mock.calls[0][0].getMonth()).toBe(6); // July
-    expect(onChange.mock.calls[0][0].getFullYear()).toBe(2026);
+    const calledDate = onChange.mock.calls[0]?.[0] as Date;
+    expect(calledDate).toBeDefined();
+    expect(calledDate.getDate()).toBe(20);
+    expect(calledDate.getMonth()).toBe(6); // July
+    expect(calledDate.getFullYear()).toBe(2026);
   });
 
   it('allows clearing selected value', async () => {

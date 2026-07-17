@@ -46,7 +46,9 @@ model Tenant {
   assetDepreciations   AssetDepreciation[]
   assetTransferLogs    AssetTransferLog[]
   assetMaintenanceLogs AssetMaintenanceLog[]
-  savedViews           SavedView[]
+  savedViews              SavedView[]
+  blockchainTransactions  BlockchainTransaction[]
+  blockchainVerifications BlockchainVerification[]
 
   @@map("tenants")
 }
@@ -15267,4 +15269,86 @@ model ShipmentException {
   @@index([tenantId, shipmentId])
   @@index([tenantId, status])
   @@map("shipment_exceptions")
+}
+
+// ════════════════════════════════════════════════
+// BLOCKCHAIN INTEGRATION
+// ════════════════════════════════════════════════
+
+/// Status of a blockchain transaction submission
+enum BlockchainTxStatus {
+  PENDING    /// Queued, not yet submitted to Fabric
+  SUBMITTED  /// Submitted to Fabric, awaiting confirmation
+  CONFIRMED  /// Confirmed in a committed block
+  FAILED     /// Submission failed (Fabric error)
+  RETRYING   /// Queued for retry after failure
+}
+
+/// Result of a blockchain verification check
+enum VerificationResult {
+  VERIFIED      /// On-chain hash matches local data
+  TAMPERED      /// Hash mismatch — data was modified after anchoring
+  NOT_FOUND     /// No on-chain record exists yet
+  NETWORK_ERROR /// Fabric was unreachable during verification
+}
+
+/// Tracks every on-chain submission — the PostgreSQL shadow of Fabric transactions
+model BlockchainTransaction {
+  id            String              @id @default(cuid())
+  tenantId      String              @map("tenant_id")
+  /// The type of ERP entity anchored (e.g. DOCUMENT, GL_JOURNAL)
+  entityType    String              @map("entity_type")
+  /// The PostgreSQL ID of the entity
+  entityId      String              @map("entity_id")
+  /// Fabric channel name
+  channelName   String              @map("channel_name")
+  /// Fabric chaincode name
+  chaincodeName String              @map("chaincode_name")
+  /// SHA-256 hash of the data that was anchored
+  dataHash      String              @map("data_hash")
+  /// Current submission status
+  status        BlockchainTxStatus  @default(PENDING)
+  /// Fabric transaction ID (set when CONFIRMED)
+  transactionId String?             @map("transaction_id")
+  /// Fabric block number (set when CONFIRMED, stored as string for bigint safety)
+  blockNumber   String?             @map("block_number")
+  /// When the transaction was confirmed in a block
+  confirmedAt   DateTime?           @map("confirmed_at")
+  /// Error message on failure
+  errorMessage  String?             @map("error_message")
+  /// Number of retry attempts
+  retryCount    Int                 @default(0) @map("retry_count")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, status])
+  @@index([transactionId])
+  @@map("blockchain_transactions")
+}
+
+/// Tracks verification checks — when a user or system verified on-chain integrity
+model BlockchainVerification {
+  id          String             @id @default(cuid())
+  tenantId    String             @map("tenant_id")
+  entityType  String             @map("entity_type")
+  entityId    String             @map("entity_id")
+  /// Result of the verification check
+  result      VerificationResult
+  /// Hash computed from current local data
+  localHash   String?            @map("local_hash")
+  /// Hash retrieved from the blockchain
+  onChainHash String?            @map("on_chain_hash")
+  /// When this verification was performed
+  verifiedAt  DateTime           @default(now()) @map("verified_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, result])
+  @@map("blockchain_verifications")
 }

@@ -332,8 +332,11 @@ export default function AsnsTab() {
                     value={item.productId}
                     onChange={(e) => {
                       const updated = [...formItems];
-                      updated[idx].productId = e.target.value;
-                      setFormItems(updated);
+                      const current = updated[idx];
+                      if (current) {
+                        current.productId = e.target.value;
+                        setFormItems(updated);
+                      }
                     }}
                     placeholder="Product ID"
                   />
@@ -344,8 +347,11 @@ export default function AsnsTab() {
                     value={item.expectedQty}
                     onChange={(e) => {
                       const updated = [...formItems];
-                      updated[idx].expectedQty = Number(e.target.value);
-                      setFormItems(updated);
+                      const current = updated[idx];
+                      if (current) {
+                        current.expectedQty = Number(e.target.value);
+                        setFormItems(updated);
+                      }
                     }}
                   />
                   <div className="ui-hstack-2">
@@ -354,8 +360,11 @@ export default function AsnsTab() {
                       value={item.lotNumber || ''}
                       onChange={(e) => {
                         const updated = [...formItems];
-                        updated[idx].lotNumber = e.target.value;
-                        setFormItems(updated);
+                        const current = updated[idx];
+                        if (current) {
+                          current.lotNumber = e.target.value;
+                          setFormItems(updated);
+                        }
                       }}
                       placeholder="Lot #"
                     />

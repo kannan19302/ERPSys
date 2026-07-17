@@ -15,6 +15,7 @@ interface Carrier {
 interface ASN {
   id: string;
   asnNumber: string;
+  status: string;
 }
 
 interface TrackingEvent {

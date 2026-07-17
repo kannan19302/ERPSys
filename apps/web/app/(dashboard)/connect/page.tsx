@@ -13,6 +13,7 @@ import {
   FileText, File, CheckSquare, Square, Hand, CircleDot, Layout, Grid3X3,
   Captions, Shield, Clock, ScreenShare, ScreenShareOff, Volume2, VolumeX,
   MessageCircle, Disc, MoreVertical, LogOut, PanelRightOpen, UserCheck,
+  BarChart3, Timer, Flag,
 } from 'lucide-react';
 import {
   Modal as UiModal, ConfirmDialog, Drawer, Tabs, Badge, FormField, Input, Select,
@@ -24,7 +25,7 @@ import {
   StagedAttachment, ChannelMemberInfo, ChannelMemberRole, NotifyLevel, BrowseChannel, SearchResult,
   PRESENCE_META, PRESENCE_ORDER, EMOJI_CATEGORIES, ALL_EMOJIS, STATUS_SUGGESTIONS, SHORTCUTS,
   NOTIFY_LEVEL_LABELS, MAX_ATTACHMENT_BYTES, WS_BASE,
-  api, uid, initials, avatarColor, formatBytes, formatTime, formatDateSmart, formatDateDivider,
+  ChannelTab, api, uid, initials, avatarColor, formatBytes, formatTime, formatDateSmart, formatDateDivider,
   parseMarkdown, isImageMime, attachmentUrl, uploadAttachment, parseForwarded,
 } from './connectData';
 import ConnectCalendar from './Calendar';
@@ -195,6 +196,33 @@ export default function ConnectPage() {
   const [forwardSearch, setForwardSearch] = useState('');
   const [forwarding, setForwarding] = useState(false);
 
+  // New feature states
+  const [polls, setPolls] = useState<{ [channelId: string]: import('./connectData').ConnectPoll[] }>({});
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
+  const [showSlashPopup, setShowSlashPopup] = useState(false);
+  const [slashCommand, setSlashCommand] = useState('');
+  const [remindersOpen, setRemindersOpen] = useState(false);
+  const [reminders, setReminders] = useState<import('./connectData').Reminder[]>([]);
+  const [showSchedulePicker, setShowSchedulePicker] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState('');
+  const [showEmojiManager, setShowEmojiManager] = useState(false);
+  const [customEmojis, setCustomEmojis] = useState<import('./connectData').CustomEmoji[]>([]);
+  const [translatingMsg, setTranslatingMsg] = useState<string | null>(null);
+  const [translations, setTranslations] = useState<{ [msgId: string]: import('./connectData').TranslateResult }>({});
+  const [showMeetingRecap, setShowMeetingRecap] = useState(false);
+  const [meetingSummary, setMeetingSummary] = useState<import('./connectData').MeetingSummary | null>(null);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [templates, setTemplates] = useState<import('./connectData').ChannelTemplate[]>([]);
+  const [ephemeralMode, setEphemeralMode] = useState(false);
+  const [voiceRecorder, setVoiceRecorder] = useState<{ state: 'idle' | 'recording' | 'done'; blob?: Blob; duration?: number }>({ state: 'idle' });
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [scheduledMsgs, setScheduledMsgs] = useState<import('./connectData').ScheduledMessage[]>([]);
+  const [showReminderCreator, setShowReminderCreator] = useState(false);
+  const [reminderText, setReminderText] = useState('');
+  const [reminderMinutes, setReminderMinutes] = useState(30);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
@@ -359,7 +387,14 @@ export default function ConnectPage() {
       if (e.ctrlKey && e.key === 'k') { e.preventDefault(); setSwitcher(''); }
       if (e.ctrlKey && e.key === 'n') { e.preventDefault(); setPeople({ mode: 'dm', selected: [], search: '' }); }
       if (e.ctrlKey && e.key === '/') { e.preventDefault(); composerRef.current?.focus(); }
-      if (e.key === 'Escape') { setSwitcher(null); setPeople(null); setChannelInfo(false); setProfileCard(null); setShowKeyboardShortcuts(false); setPinnedView(false); }
+      if (e.key === 'Escape') {
+        setSwitcher(null); setPeople(null); setChannelInfo(false); setProfileCard(null);
+        setShowKeyboardShortcuts(false); setPinnedView(false); setSavedMessagesOpen(false);
+        setPresenceOpen(false); setEmojiFor(null); setMentionQuery(null);
+        setShowFormatBar(false); setDirectoryModalOpen(false); setBrowseOpen(false);
+        setManageChannelOpen(false); setForwardMsg(null); setArchiveConfirm(false); setRemoveConfirm(null);
+        setActiveMeeting((cur) => cur ? null : cur);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -789,7 +824,7 @@ export default function ConnectPage() {
 
   return (
     <RouteGuard permission="communication.read">
-    <div className={styles.s19}>
+    <div className={styles.s19} data-active-channel={activeId || ''}>
       {/* ═══ Top bar ═══ */}
       <div className={styles.s20}>
         <div className={styles.s21}>
@@ -808,38 +843,44 @@ export default function ConnectPage() {
               <ChevronDown size={13} />
             </button>
             {presenceOpen && (
-              <div className={styles.s26}>
-                <div className={styles.s27}>
-                  <div className={styles.s28}>Set a status</div>
-                  <div className={styles.s29}>
-                    <input value={statusEmoji} onChange={(e) => setStatusEmoji(e.target.value)} placeholder="😊" className={styles.s30} />
-                    <input value={statusDraft} onChange={(e) => setStatusDraft(e.target.value)} placeholder="What's your status?" className={styles.s31} />
+              <>
+                <div onClick={() => setPresenceOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
+                <div className={styles.s26}>
+                  <div className={styles.s27}>
+                    <div className={styles.s28}>Set a status</div>
+                    <div className={styles.s29}>
+                      <input value={statusEmoji} onChange={(e) => setStatusEmoji(e.target.value)} placeholder="😊" className={styles.s30} />
+                      <input value={statusDraft} onChange={(e) => setStatusDraft(e.target.value)} placeholder="What's your status?" className={styles.s31} />
+                    </div>
+                    <div className={styles.s32}>
+                      {STATUS_SUGGESTIONS.map((s) => (
+                        <button key={s.text} onClick={() => { setStatusEmoji(s.emoji); setStatusDraft(s.text); }} className={styles.s33}>
+                          {s.emoji} {s.text}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => { setMyPresence(me.presence, statusDraft); setPresenceOpen(false); }} className={styles.s34}>Save status</button>
                   </div>
-                  <div className={styles.s32}>
-                    {STATUS_SUGGESTIONS.map((s) => (
-                      <button key={s.text} onClick={() => { setStatusEmoji(s.emoji); setStatusDraft(s.text); }} className={styles.s33}>
-                        {s.emoji} {s.text}
+                  <div className={styles.s35}>
+                    <div className={styles.s36}>Presence</div>
+                    {PRESENCE_ORDER.map((p) => (
+                      <button key={p} onClick={() => { setMyPresence(p); setPresenceOpen(false); }} style={{ background: me.presence === p ? 'var(--color-primary-light)' : 'transparent', color: me.presence === p ? 'var(--color-primary)' : 'var(--color-text)' }} className={styles.s37}>
+                        <PresenceDot presence={p} size={8} border={me.presence === p ? 'var(--color-primary-light)' : 'transparent'} />
+                        {PRESENCE_META[p].label}
                       </button>
                     ))}
                   </div>
-                  <button onClick={() => { setMyPresence(me.presence, statusDraft); setPresenceOpen(false); }} className={styles.s34}>Save status</button>
                 </div>
-                <div className={styles.s35}>
-                  <div className={styles.s36}>Presence</div>
-                  {PRESENCE_ORDER.map((p) => (
-                    <button key={p} onClick={() => { setMyPresence(p); setPresenceOpen(false); }} style={{ background: me.presence === p ? 'var(--color-primary-light)' : 'transparent', color: me.presence === p ? 'var(--color-primary)' : 'var(--color-text)' }} className={styles.s37}>
-                      <PresenceDot presence={p} size={8} border={me.presence === p ? 'var(--color-primary-light)' : 'transparent'} />
-                      {PRESENCE_META[p].label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              </>
             )}
           </div>
 
           <button onClick={() => setSwitcher('')} style={tbtn()} title="Ctrl+K"><Search size={15} /> Search</button>
           <button onClick={startMeeting} style={tbtn({ background: 'var(--color-primary)', color: '#fff', border: 'none' })}><Video size={15} /> Meet</button>
           <button onClick={openCalendar} style={tbtn()}><Calendar size={15} /> Calendar</button>
+          <button onClick={() => { setShowTemplateDialog(true); api.getChannelTemplates().then(setTemplates).catch(() => {}); }} style={tbtn()} title="Channel templates"><FileText size={15} /> Templates</button>
+          <button onClick={() => { api.getReminders().then(setReminders).catch(() => {}); setRemindersOpen(true); }} style={tbtn()} title="Reminders"><Bell size={15} /> Reminders</button>
+          <button onClick={() => { api.getCustomEmojis().then(setCustomEmojis).catch(() => {}); setShowEmojiManager(true); }} style={tbtn()} title="Custom emoji"><Smile size={15} /> Emoji</button>
           <button onClick={() => setShowKeyboardShortcuts(true)} className={styles.s38} title="Keyboard shortcuts"><Command size={16} /></button>
         </div>
       </div>
@@ -975,6 +1016,8 @@ export default function ConnectPage() {
                   {activeConv.topic && <p className={styles.s67}>{activeConv.topic}</p>}
                 </div>
                 <div className="ui-flex ui-items-center ui-gap-1">
+                  <button onClick={() => setShowPollCreator(true)} className={styles.s82} title="Create poll"><BarChart3 size={15} /></button>
+                  <button onClick={() => { api.getReminders().then(setReminders).catch(() => {}); setShowReminderCreator(true); }} className={styles.s82} title="Set reminder"><Bell size={15} /></button>
                   {/* Members stack */}
                   <button onClick={() => setChannelInfo(true)} className={styles.s68}>
                     <div className={styles.s69}>
@@ -1036,6 +1079,9 @@ export default function ConnectPage() {
                   </button>
                 </div>
               </div>
+
+              {/* ─ Channel tabs ─ */}
+              {activeConv.kind === 'CHANNEL' && activeConv.id && <ChannelTabs channelId={activeConv.id} />}
 
               {/* ─ Pinned messages bar ─ */}
               {pinned.length > 0 && !pinnedView && (
@@ -1133,25 +1179,41 @@ export default function ConnectPage() {
                 )}
 
                 <div className={styles.s99}>
-                  <div className={styles.s100}>
+                  <div className={styles.s100} style={{ position: 'relative' }}>
                     <button onClick={() => setShowFormatBar(!showFormatBar)} title="Formatting" style={{ color: showFormatBar ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} className={styles.s82}><Bold size={16} /></button>
                     <button onClick={() => fileRef.current?.click()} title="Attach" className={styles.s101}><Paperclip size={16} /></button>
                     <input ref={fileRef} type="file" multiple hidden onChange={(e) => { onFiles(e.target.files); if (fileRef.current) fileRef.current.value = ''; }} />
-                    <textarea ref={composerRef} value={composer}
-                      onChange={(e) => {
-                        setComposer(e.target.value);
-                        const mt = /(?:^|\s)@(\w*)$/.exec(e.target.value); setMentionQuery(mt ? (mt[1] ?? '') : null);
-                        if (socketRef.current && activeId) socketRef.current.emit('typing', { channelId: activeId });
-                      }}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                      placeholder={`Message ${activeConv.kind === 'CHANNEL' ? '#' + activeConv.name : activeConv.name}...`}
-                      rows={1} className={styles.s102} />
-                    <button onClick={() => setEmojiFor('composer')} aria-label="Add emoji" className={styles.s101}><Smile size={16} /></button>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      {showSlashPopup && <SlashPopup onClose={() => setShowSlashPopup(false)} onCommand={(cmd) => setComposer(cmd + ' ')} />}
+                      <textarea ref={composerRef} value={composer}
+                        onChange={(e) => {
+                          setComposer(e.target.value);
+                          const mt = /(?:^|\s)@(\w*)$/.exec(e.target.value); setMentionQuery(mt ? (mt[1] ?? '') : null);
+                          setShowSlashPopup(e.target.value === '/');
+                          if (socketRef.current && activeId) socketRef.current.emit('typing', { channelId: activeId });
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                        placeholder={`Message ${activeConv.kind === 'CHANNEL' ? '#' + activeConv.name : activeConv.name}...`}
+                        rows={1} className={styles.s102} />
+                    </div>
+                    <button onClick={() => setShowSchedulePicker(!showSchedulePicker)} title="Schedule send" style={{ color: showSchedulePicker ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} className={styles.s82}><Clock size={16} /></button>
+                    <button onClick={() => { setEphemeralMode(!ephemeralMode); }} title="View-once / Expiring" style={{ color: ephemeralMode ? 'var(--color-danger)' : 'var(--color-text-secondary)' }} className={styles.s82}><EyeOff size={16} /></button>
+                    <VoiceRecorder onDone={(blob) => { const f = new Blob([blob], { type: 'audio/webm' }); const fakeFile = { name: `voice-${Date.now()}.webm`, size: f.size, type: 'audio/webm', blob: f } as any; const dt = new DataTransfer(); dt.items.add(fakeFile); onFiles(dt.files); }} />
+                    <button onClick={() => setEmojiFor(emojiFor === 'composer' ? null : 'composer')} aria-label="Add emoji" className={styles.s101}><Smile size={16} /></button>
                     <button onClick={handleSend} disabled={(!composer.trim() && staged.length === 0) || staged.some((a) => a.status === 'uploading')} aria-label="Send message" style={{ background: (composer.trim() || staged.length) ? 'var(--color-primary)' : 'var(--color-border)' }} className={styles.s103}><Send size={16} /></button>
                   </div>
+                  {showSchedulePicker && (
+                    <div style={{ padding: '8px 12px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input type="datetime-local" value={scheduleAt} onChange={(e) => setScheduleAt(e.target.value)} style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid var(--color-border)', fontSize: 13 }} />
+                      <button onClick={async () => {
+                        if (!scheduleAt || !composer.trim() || !activeId) return;
+                        try { await api.scheduleMessage(activeId, composer, new Date(scheduleAt)); setComposer(''); setShowSchedulePicker(false); toast.success('Message scheduled!'); } catch { toast.error('Failed to schedule'); }
+                      }} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', cursor: 'pointer', fontSize: 13 }}>Schedule</button>
+                    </div>
+                  )}
                   {emojiFor === 'composer' && (
                     <div className={styles.s104}>
-                      <EmojiPicker onPick={(e) => { setComposer((p) => p + e); setEmojiFor(null); }} />
+                      <EmojiPicker onPick={(e) => { setComposer((p) => p + e); setEmojiFor(null); }} customEmojis={customEmojis} />
                     </div>
                   )}
                 </div>
@@ -1604,6 +1666,7 @@ export default function ConnectPage() {
                   )}
                 </button>
                 <button onClick={() => setMeetingState((s) => ({ ...s, showParticipants: !s.showParticipants, showChat: false }))} title="People" style={{ background: ms.showParticipants ? 'rgba(138,180,248,.2)' : 'transparent', color: ms.showParticipants ? '#8ab4f8' : '#e8eaed' }} className={styles.s234}><Users size={18} /></button>
+                <button onClick={() => { api.generateMeetingSummary(activeMeeting.id).then((s) => setMeetingSummary(s)).catch(() => {}); setShowMeetingRecap(true); }} title="Meeting recap" style={{ background: showMeetingRecap ? 'rgba(138,180,248,.2)' : 'transparent', color: showMeetingRecap ? '#8ab4f8' : '#e8eaed' }} className={styles.s234}><FileText size={18} /></button>
               </div>
             </div>
           </div>
@@ -2049,6 +2112,42 @@ export default function ConnectPage() {
           </div>
         )}
       </UiModal>
+
+      {/* New Feature Modals */}
+      {showPollCreator && <PollCreator onClose={() => setShowPollCreator(false)} />}
+      {remindersOpen && <RemindersPanel onClose={() => setRemindersOpen(false)} />}
+      {showEmojiManager && <EmojiManager onClose={() => setShowEmojiManager(false)} />}
+      {showMeetingRecap && activeMeeting && <MeetingRecap meetingId={activeMeeting.id} onClose={() => setShowMeetingRecap(false)} />}
+      {showTemplateDialog && <TemplateDialog onClose={() => setShowTemplateDialog(false)} />}
+      {showReminderCreator && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 12, padding: 24, width: 380 }}>
+            <h3 style={{ margin: '0 0 12px' }}>⏰ Set Reminder</h3>
+            <input value={reminderText} onChange={(e) => setReminderText(e.target.value)} placeholder="What should we remind you about?" style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--color-border)', marginBottom: 12 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span>In</span>
+              <input type="number" value={reminderMinutes} onChange={(e) => setReminderMinutes(parseInt(e.target.value) || 30)} min={1} style={{ width: 80, padding: 8, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+              <select value={reminderMinutes >= 1440 ? 'days' : reminderMinutes >= 60 ? 'hours' : 'mins'} onChange={(e) => { setReminderMinutes(e.target.value === 'mins' ? 30 : e.target.value === 'hours' ? 2 : 1); }} style={{ padding: 8, borderRadius: 8, border: '1px solid var(--color-border)' }}>
+                <option value="mins">minutes</option><option value="hours">hours</option><option value="days">days</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowReminderCreator(false)} style={{ flex: 1, background: 'none', border: '1px solid var(--color-border)', borderRadius: 8, padding: '10px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={async () => {
+                if (!reminderText.trim()) return;
+                try {
+                  let ms = reminderMinutes * 60000;
+                  const unit = document.querySelector('select')?.value;
+                  if (unit === 'hours') ms = reminderMinutes * 3600000;
+                  if (unit === 'days') ms = reminderMinutes * 86400000;
+                  await api.createReminder(reminderText, new Date(Date.now() + ms), activeId || undefined);
+                  toast.success('Reminder set!'); setShowReminderCreator(false); setReminderText('');
+                } catch { toast.error('Failed to set reminder'); }
+              }} style={{ flex: 1, background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', cursor: 'pointer' }}>Set Reminder</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </RouteGuard>
   );
@@ -2155,6 +2254,14 @@ function MessageRow(p: RowProps) {
           </div>
         ) : (
           <div className={styles.s317}>{renderContent(m.content)}</div>
+        )}
+
+        {!m.deleted && (m as any).viewOnce && <EphemeralBadge message={m} onView={() => {}} />}
+        {!m.deleted && !m.parentId && (m as any).pollId && <PollBlockInline pollId={(m as any).pollId} channelId={m.conversationId} />}
+        {!m.deleted && (
+          <div style={{ marginTop: 2 }}>
+            <TranslateButton messageId={m.id} content={m.content} />
+          </div>
         )}
 
         {/* Inline image previews */}
@@ -2290,7 +2397,7 @@ const RECENT_EMOJI_KEY = 'connect:recentEmoji';
 
 /** Shared emoji picker (spec §7c) — consolidates the 3 duplicated inline EMOJI_PALETTE grids into
  *  one component: search + category tabs + a localStorage-backed "Recent" category. */
-function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
+function EmojiPicker({ onPick, customEmojis }: { onPick: (emoji: string) => void; customEmojis?: import('./connectData').CustomEmoji[] }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('recent');
   const [recent, setRecent] = useState<string[]>([]);
@@ -2307,11 +2414,14 @@ function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
     onPick(emoji);
   };
 
+  const customBlock = customEmojis && customEmojis.length > 0 && !query.trim() && (category === 'custom' || category === 'recent') ? customEmojis : [];
   const results = query.trim()
     ? ALL_EMOJIS.filter((e) => e.name.toLowerCase().includes(query.trim().toLowerCase()))
-    : category === 'recent'
-      ? recent.map((emoji) => ALL_EMOJIS.find((e) => e.emoji === emoji) ?? { emoji, name: 'recently used' })
-      : (EMOJI_CATEGORIES.find((c) => c.key === category)?.emojis ?? []);
+    : category === 'custom' && customEmojis?.length
+      ? customEmojis.map((e) => ({ emoji: '', name: e.name, url: e.fileUrl }))
+      : category === 'recent'
+        ? recent.map((emoji) => ALL_EMOJIS.find((e) => e.emoji === emoji) ?? { emoji, name: 'recently used' })
+        : (EMOJI_CATEGORIES.find((c) => c.key === category)?.emojis ?? []);
 
   return (
     <div className={styles.s341}>
@@ -2330,15 +2440,21 @@ function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
               {c.icon}
             </button>
           ))}
+          {customEmojis && customEmojis.length > 0 && (
+            <button onClick={() => setCategory('custom')} aria-label="Custom emoji" title="Custom emoji"
+              style={{ background: category === 'custom' ? 'var(--color-primary-light)' : 'none' }} className={styles.s345}>
+              <Smile size={15} />
+            </button>
+          )}
         </div>
       )}
       <div className={styles.s346}>
         {results.length === 0 && <span className={styles.s347}>
           {category === 'recent' && !query.trim() ? 'No recently used emoji yet' : 'No emoji found'}
         </span>}
-        {results.map((e) => (
-          <button key={e.emoji} onClick={() => pick(e.emoji)} aria-label={e.name} title={e.name}
-            className={styles.s348}>{e.emoji}</button>
+        {results.map((e, i) => (
+          <button key={(e as any).url ? `c-${i}` : e.emoji} onClick={() => pick((e as any).url || e.emoji)} aria-label={e.name} title={e.name}
+            className={styles.s348}>{(e as any).url ? <img src={(e as any).url} alt={e.name} style={{ width: 22, height: 22, objectFit: 'contain' }} /> : e.emoji}</button>
         ))}
       </div>
     </div>
@@ -2464,6 +2580,329 @@ function SeenReceipts({ messageId, memberById }: { messageId: string; memberById
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Feature 1: Poll Creator ── */
+function PollCreator({ onClose }: { onClose: () => void }) {
+  const [question, setQuestion] = useState('');
+  const [options, setOptions] = useState<string[]>(['', '']);
+  const [creating, setCreating] = useState(false);
+  const toast = useToast();
+  const addOption = () => setOptions((o) => [...o, '']);
+  const removeOption = (i: number) => setOptions((o) => o.filter((_, idx) => idx !== i));
+  const updateOption = (i: number, v: string) => setOptions((o) => o.map((x, idx) => idx === i ? v : x));
+  const submit = async () => {
+    if (!question.trim() || options.filter(Boolean).length < 2) return;
+    setCreating(true);
+    try {
+      const activeId = (document.querySelector('[data-active-channel]') as HTMLElement)?.dataset.activeChannel || '';
+      await api.createPoll(activeId, question, options.filter(Boolean).map((o) => ({ label: o })));
+      toast.success('Poll created!');
+      onClose();
+    } catch { toast.error('Failed to create poll'); } finally { setCreating(false); }
+  };
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 12, padding: 24, width: 480, maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ margin: 0 }}>Create Poll</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+        </div>
+        <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask a question..." style={{ width: '100%', marginBottom: 12, padding: 10, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+        {options.map((o, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <input value={o} onChange={(e) => updateOption(i, e.target.value)} placeholder={`Option ${i + 1}`} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+            {options.length > 2 && <button onClick={() => removeOption(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}><X size={18} /></button>}
+          </div>
+        ))}
+        <button onClick={addOption} disabled={options.length >= 10} style={{ background: 'none', border: '1px dashed var(--color-border)', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', width: '100%', marginBottom: 16 }}>+ Add option</button>
+        <button onClick={submit} disabled={creating || !question.trim() || options.filter(Boolean).length < 2} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', width: '100%' }}>{creating ? 'Creating...' : 'Create Poll'}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Feature 1 (cont): Poll Results ── */
+function PollBlock({ poll, channelId, onRefresh }: { poll: import('./connectData').ConnectPoll; channelId: string; onRefresh: () => void }) {
+  const toast = useToast();
+  const totalVotes = poll.votes?.length || 0;
+  const votedOption = poll.votes?.find((v) => v.userId === 'self')?.optionId;
+  const vote = async (optionId: string) => { try { await api.votePoll(poll.id, optionId); onRefresh(); } catch { toast.error('Vote failed'); } };
+  return (
+    <div style={{ padding: '12px 0', borderTop: '1px solid var(--color-border)' }}>
+      <div style={{ fontWeight: 600, marginBottom: 8 }}>{poll.question}</div>
+      {poll.options?.map((opt) => {
+        const count = opt.votes?.length || 0;
+        const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+        const isVoted = votedOption === opt.id;
+        return (
+          <button key={opt.id} onClick={() => !poll.isClosed && vote(opt.id)} disabled={poll.isClosed} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', marginBottom: 4, borderRadius: 8, border: isVoted ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', background: isVoted ? 'var(--color-primary-light)' : 'transparent', cursor: poll.isClosed ? 'default' : 'pointer', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'var(--color-primary-light)', width: `${pct}%`, opacity: 0.2, transition: 'width 0.3s' }} />
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between' }}>
+              <span>{opt.emoji} {opt.label}</span>
+              <span>{count} ({pct}%)</span>
+            </div>
+          </button>
+        );
+      })}
+      {poll.isClosed && <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 4 }}>🔒 Poll closed</div>}
+    </div>
+  );
+}
+
+/* ── Feature 1 (cont): PollBlockInline (fetches poll by id) ── */
+function PollBlockInline({ pollId, channelId }: { pollId: string; channelId: string }) {
+  const [poll, setPoll] = useState<import('./connectData').ConnectPoll | null>(null);
+  const toast = useToast();
+  useEffect(() => { api.getPolls(channelId).then((p) => setPoll(p.find((x) => x.id === pollId) || null)).catch(() => {}); }, [pollId, channelId]);
+  if (!poll) return null;
+  return <PollBlock poll={poll} channelId={channelId} onRefresh={() => api.getPolls(channelId).then((p) => setPoll(p.find((x) => x.id === pollId) || null))} />;
+}
+
+/* ── Feature 2: Slash Command Popup ── */
+function SlashPopup({ onClose, onCommand }: { onClose: () => void; onCommand: (cmd: string) => void }) {
+  const commands = [
+    { cmd: '/remind', desc: 'Set a reminder', icon: '🔔' },
+    { cmd: '/poll', desc: 'Create a poll', icon: '📊' },
+    { cmd: '/meet', desc: 'Start a meeting', icon: '📹' },
+    { cmd: '/dnd', desc: 'Do not disturb (N min)', icon: '🔕' },
+    { cmd: '/status', desc: 'Set your status', icon: '💬' },
+    { cmd: '/msg', desc: 'Send a DM', icon: '✉️' },
+    { cmd: '/code', desc: 'Format as code', icon: '💻' },
+    { cmd: '/help', desc: 'Show all commands', icon: '❓' },
+  ];
+  return (
+    <div style={{ position: 'absolute', bottom: '100%', left: 0, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.15)', width: 300, maxHeight: 320, overflow: 'auto', zIndex: 100, marginBottom: 4 }}>
+      {commands.map((c) => (
+        <button key={c.cmd} onClick={() => { onCommand(c.cmd); onClose(); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 14 }} className={styles.s82}>
+          <span>{c.icon}</span>
+          <div><div style={{ fontWeight: 600 }}>{c.cmd}</div><div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{c.desc}</div></div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Feature 3: Reminders Panel ── */
+function RemindersPanel({ onClose }: { onClose: () => void }) {
+  const [reminders, setReminders] = useState<import('./connectData').Reminder[]>([]);
+  const toast = useToast();
+  useEffect(() => { api.getReminders().then(setReminders).catch(() => {}); }, []);
+  const del = async (id: string) => { try { await api.deleteReminder(id); setReminders((r) => r.filter((x) => x.id !== id)); } catch {} };
+  const snooze = async (id: string) => { try { await api.snoozeReminder(id, 5); toast.success('Snoozed 5 min'); api.getReminders().then(setReminders); } catch {} };
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 12, padding: 24, width: 400, maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}><h3 style={{ margin: 0 }}>⏰ Reminders</h3><button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button></div>
+        {reminders.length === 0 && <div style={{ color: 'var(--color-text-secondary)', textAlign: 'center', padding: 20 }}>No reminders</div>}
+        {reminders.map((r) => (
+          <div key={r.id} style={{ padding: 12, borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ fontWeight: 500 }}>{r.text}</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>⏰ {new Date(r.remindAt).toLocaleString()}</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+              <button onClick={() => snooze(r.id)} style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}>Snooze 5m</button>
+              <button onClick={() => del(r.id)} style={{ background: 'none', border: '1px solid var(--color-danger)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, color: 'var(--color-danger)' }}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Feature 5: Emoji Manager ── */
+function EmojiManager({ onClose }: { onClose: () => void }) {
+  const [emojis, setEmojis] = useState<import('./connectData').CustomEmoji[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const toast = useToast();
+  useEffect(() => { api.getCustomEmojis().then(setEmojis).catch(() => {}); }, []);
+  const upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true);
+    try {
+      const name = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+      const form = new FormData(); form.append('file', file);
+      await fetch(`http://localhost:3001/api/v1/communication/emoji?name=${name}`, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, body: form });
+      toast.success('Emoji uploaded!');
+      api.getCustomEmojis().then(setEmojis);
+    } catch { toast.error('Upload failed'); } finally { setUploading(false); }
+  };
+  const del = async (id: string) => { try { await api.deleteCustomEmoji(id); setEmojis((e) => e.filter((x) => x.id !== id)); } catch {} };
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 12, padding: 24, width: 420, maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}><h3 style={{ margin: 0 }}>😃 Custom Emoji</h3><button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button></div>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', padding: 12, border: '2px dashed var(--color-border)', borderRadius: 8, cursor: 'pointer', marginBottom: 16 }}>
+          <input type="file" accept="image/png,image/gif,image/jpeg,image/webp" onChange={upload} hidden />
+          <span>{uploading ? 'Uploading...' : '📁 Upload emoji (PNG/GIF/JPEG/WEBP)'}</span>
+        </label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {emojis.map((e) => (
+            <div key={e.id} style={{ textAlign: 'center', padding: 8, border: '1px solid var(--color-border)', borderRadius: 8 }}>
+              <img src={e.fileUrl} alt={e.name} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+              <div style={{ fontSize: 10, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}</div>
+              <button onClick={() => del(e.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: 'var(--color-danger)' }}>Delete</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Feature 7: Meeting Recap Panel ── */
+function MeetingRecap({ meetingId, onClose }: { meetingId: string; onClose: () => void }) {
+  const [summary, setSummary] = useState<import('./connectData').MeetingSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const toast = useToast();
+  useEffect(() => { api.getMeetingSummary(meetingId).then((s) => { setSummary(s); setLoading(false); }).catch(() => setLoading(false)); }, [meetingId]);
+  const generate = async () => {
+    setGenerating(true);
+    try { const s = await api.generateMeetingSummary(meetingId); setSummary(s); toast.success('Summary generated!'); } catch { toast.error('Generation failed'); } finally { setGenerating(false); }
+  };
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 12, padding: 24, width: 520, maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}><h3 style={{ margin: 0 }}>📋 Meeting Recap</h3><button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button></div>
+        {loading && <div style={{ textAlign: 'center', padding: 20 }}>Loading...</div>}
+        {!loading && !summary && <div style={{ textAlign: 'center', padding: 20 }}><p>No summary yet</p><button onClick={generate} disabled={generating} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer' }}>{generating ? 'Generating...' : '✨ Generate Summary'}</button></div>}
+        {summary && (
+          <>
+            <p style={{ whiteSpace: 'pre-wrap' }}>{summary.summary}</p>
+            {summary.keyPoints?.length > 0 && <><h4 style={{ margin: '12px 0 8px' }}>Key Points</h4><ul>{summary.keyPoints.map((p, i) => <li key={i}>{p}</li>)}</ul></>}
+            {summary.actionItems?.length > 0 && <><h4 style={{ margin: '12px 0 8px' }}>Action Items</h4><ul>{summary.actionItems.map((a, i) => <li key={i}>✅ {a}</li>)}</ul></>}
+            <button onClick={generate} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', cursor: 'pointer', marginTop: 12 }}>🔄 Regenerate</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Feature 8: Channel Template Dialog ── */
+function TemplateDialog({ onClose }: { onClose: () => void }) {
+  const [templates, setTemplates] = useState<import('./connectData').ChannelTemplate[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [creating, setCreating] = useState(false);
+  const toast = useToast();
+  useEffect(() => { api.getChannelTemplates().then(setTemplates).catch(() => {}); }, []);
+  const submit = async () => {
+    if (!selected || !name.trim()) return;
+    setCreating(true);
+    try { await api.createFromTemplate(selected, name); toast.success('Channel created!'); onClose(); } catch { toast.error('Failed'); } finally { setCreating(false); }
+  };
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 12, padding: 24, width: 420, maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}><h3 style={{ margin: 0 }}>📋 Channel Templates</h3><button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button></div>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Channel name" style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--color-border)', marginBottom: 16 }} />
+        {templates.map((t) => (
+          <button key={t.id} onClick={() => setSelected(t.id)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 12, marginBottom: 6, borderRadius: 8, border: selected === t.id ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', background: selected === t.id ? 'var(--color-primary-light)' : 'transparent', cursor: 'pointer' }}>
+            <div style={{ fontWeight: 600 }}>{t.emoji} {t.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{t.description}</div>
+          </button>
+        ))}
+        <button onClick={submit} disabled={creating || !name.trim() || !selected} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', width: '100%', marginTop: 12 }}>{creating ? 'Creating...' : 'Create Channel'}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Feature 9: Ephemeral Badge ── */
+function EphemeralBadge({ message, onView }: { message: import('./connectData').ConnectMessage; onView: () => void }) {
+  const [viewed, setViewed] = useState(false);
+  if (viewed || (message as any).viewOnceViewed) return <div style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)', fontSize: 12 }}>This message has been viewed</div>;
+  return (
+    <div style={{ padding: '8px 12px', background: 'var(--color-warning-light)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+      <EyeOff size={14} />
+      <span>View-once message</span>
+      <button onClick={async () => { try { await api.markMessageViewed(message.id); setViewed(true); } catch {} }} style={{ marginLeft: 'auto', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12 }}>View</button>
+    </div>
+  );
+}
+
+/* ── Feature 10: Voice Recorder ── */
+function VoiceRecorder({ onDone }: { onDone: (blob: Blob) => void }) {
+  const [state, setState] = useState<'idle' | 'recording' | 'done'>('idle');
+  const [duration, setDuration] = useState(0);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+
+  const start = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        stream.getTracks().forEach((t) => t.stop());
+        onDone(blob);
+      };
+      recorder.start();
+      setState('recording');
+      timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
+    } catch { setState('idle'); }
+  };
+  const stop = () => { recorderRef.current?.stop(); setState('done'); if (timerRef.current) clearInterval(timerRef.current); };
+  const cancel = () => { recorderRef.current?.stop(); setState('idle'); if (timerRef.current) clearInterval(timerRef.current); setDuration(0); };
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', background: 'var(--color-bg-elevated)', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+      {state === 'idle' && <button onClick={start} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mic size={16} /></button>}
+      {state === 'recording' && <><span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>🔴 {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')}</span><button onClick={stop} style={{ background: 'var(--color-danger)', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 12 }}>Stop</button><button onClick={cancel} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}>Cancel</button></>}
+      {state === 'done' && <span style={{ color: 'var(--color-success)', fontSize: 12 }}>✅ Voice message ready</span>}
+    </div>
+  );
+}
+
+/* ── New Feature Integration: Translation Button ── */
+function TranslateButton({ messageId, content }: { messageId: string; content: string }) {
+  const [translating, setTranslating] = useState(false);
+  const [result, setResult] = useState<import('./connectData').TranslateResult | null>(null);
+  const toast = useToast();
+  const translate = async () => {
+    if (result) { setResult(null); return; }
+    setTranslating(true);
+    try { const r = await api.translateMessage(messageId, 'en'); setResult(r); } catch { toast.error('Translation failed'); } finally { setTranslating(false); }
+  };
+  return (
+    <>
+      <button onClick={translate} disabled={translating} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'var(--color-text-secondary)', padding: '2px 4px' }} title="Translate to English">
+        {translating ? '...' : result ? 'Original' : '🌐 Translate'}
+      </button>
+      {result && <div style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)', fontSize: 13, marginTop: 4, padding: '6px 10px', background: 'var(--color-bg-subtle)', borderRadius: 6 }}>{result.translatedText}</div>}
+    </>
+  );
+}
+
+/* ── Channel Tabs (Teams-style pinned tabs at channel header) ── */
+function ChannelTabs({ channelId }: { channelId: string }) {
+  const [tabs, setTabs] = useState<ChannelTab[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    api.getTabs(channelId).then(setTabs).catch(() => setTabs([])).finally(() => setLoading(false));
+  }, [channelId]);
+
+  if (loading || tabs.length === 0) return null;
+
+  return (
+    <div className={styles.s365}>
+      {tabs.map((tab) => (
+        <a key={tab.id} href={tab.url || '#'} target={tab.url ? '_blank' : undefined} rel="noopener" className={styles.s366}>
+          {tab.icon ? <span className={styles.s367}>{tab.icon}</span> : <Link2 size={14} />}
+          <span>{tab.label}</span>
+        </a>
+      ))}
     </div>
   );
 }

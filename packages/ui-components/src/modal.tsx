@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, type FC, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FC, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from './button';
 import styles from './modal.module.css';
@@ -28,11 +29,16 @@ export const Modal: FC<ModalProps> = ({
   closeOnOverlay = true,
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Keep dialog.open in sync with React open prop
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return;
+    if (!dialog || !mounted) return;
 
     let originalOverflow: string | undefined;
     if (open) {
@@ -53,12 +59,12 @@ export const Modal: FC<ModalProps> = ({
         document.body.style.overflow = originalOverflow;
       }
     };
-  }, [open]);
+  }, [open, mounted]);
 
   // Handle native ESC cancel and overlay clicks (light dismiss)
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return;
+    if (!dialog || !mounted) return;
 
     const handleCancel = (e: Event) => {
       e.preventDefault();
@@ -86,14 +92,18 @@ export const Modal: FC<ModalProps> = ({
       dialog.removeEventListener('cancel', handleCancel);
       dialog.removeEventListener('click', handleOverlayClick);
     };
-  }, [onClose, closeOnOverlay]);
+  }, [onClose, closeOnOverlay, mounted]);
 
   const dialogClass = [
     styles.dialog,
     styles[size],
   ].join(' ');
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <dialog
       ref={dialogRef}
       className={dialogClass}
@@ -120,7 +130,8 @@ export const Modal: FC<ModalProps> = ({
           {footer}
         </div>
       )}
-    </dialog>
+    </dialog>,
+    document.body
   );
 };
 

@@ -841,7 +841,7 @@ export class CommunicationController {
   @Post('channel-templates/apply')
   @Permissions('communication.channel.create')
   async createFromTemplate(@Req() req: AuthenticatedRequest, @ZodBody(z.object({ templateId: z.string(), name: z.string(), description: z.string().optional() })) dto: any) {
-    return this.communicationService.createChannelFromTemplate(req.user.tenantId, req.user.orgId, req.user.userId, dto);
+    return this.communicationService.createChannelFromTemplate(req.user.tenantId, req.user.orgId || 'default', req.user.userId, dto);
   }
 
   @ApiOperation({ summary: 'Create new template' })

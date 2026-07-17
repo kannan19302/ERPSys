@@ -116,6 +116,9 @@ importers:
       '@unerp/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@unerp/blockchain':
+        specifier: workspace:*
+        version: link:../../packages/blockchain
       '@unerp/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -173,7 +176,7 @@ importers:
     devDependencies:
       '@nestjs/cli':
         specifier: ^11.0.0
-        version: 11.0.23(@types/node@22.19.20)(esbuild@0.27.7)(postcss@8.5.15)(prettier@3.8.4)
+        version: 11.0.23(@types/node@22.19.20)(postcss@8.5.15)(prettier@3.8.4)
       '@nestjs/testing':
         specifier: ^11.0.0
         version: 11.1.26(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(@nestjs/platform-express@11.1.26)
@@ -323,6 +326,37 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.8
         version: 9.0.10
+      '@unerp/config':
+        specifier: workspace:*
+        version: link:../config
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.20)(jsdom@25.0.1)(terser@5.48.0)
+
+  packages/blockchain:
+    dependencies:
+      '@grpc/grpc-js':
+        specifier: ^1.12.0
+        version: 1.14.4
+      '@hyperledger/fabric-gateway':
+        specifier: ^1.7.0
+        version: 1.11.0
+      '@unerp/shared':
+        specifier: workspace:*
+        version: link:../shared
+      crypto:
+        specifier: ^1.0.1
+        version: 1.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
       '@unerp/config':
         specifier: workspace:*
         version: link:../config
@@ -1858,6 +1892,14 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@hyperledger/fabric-gateway@1.11.0':
+    resolution: {integrity: sha512-XxO4fnnOwb2LDiuzPivdRr6C0fp3bIW55aZi3AjvNT37tchUA1+I8md8hp4lMo1mHcGyX1VAMOEOz8lgguZ4Hg==}
+    engines: {node: '>=20.9.0'}
+
+  '@hyperledger/fabric-protos@0.3.7':
+    resolution: {integrity: sha512-p69dVT+QKrL7OZOuWRrimopNUAQL+VpgVEovud5MGqHSMl20S5hZy0aWqmIW+qasRgJiHLNuU0T6xVfXJIeHKg==}
+    engines: {node: '>=16.13.0'}
+
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
     engines: {node: '>=18'}
@@ -2432,6 +2474,10 @@ packages:
 
   '@noble/ciphers@1.3.0':
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
+    engines: {node: ^14.21.3 || >=16}
+
+  '@noble/curves@1.9.7':
+    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
     engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.8.0':
@@ -4491,6 +4537,10 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
+  crypto@1.0.1:
+    resolution: {integrity: sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==}
+    deprecated: This package is no longer supported. It's now a built-in Node module. If you've depended on crypto, you should switch to the one that's built-in.
+
   css.escape@1.5.1:
     resolution: {integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==}
 
@@ -5196,6 +5246,9 @@ packages:
   google-logging-utils@1.1.3:
     resolution: {integrity: sha512-eAmLkjDjAFCVXg7A1unxHsLf961m6y17QFqXqAXGj/gVkKFrEICfStRfwUlGNfeCEjNRa32JEWOUTlYXPyyKvA==}
     engines: {node: '>=14'}
+
+  google-protobuf@3.21.4:
+    resolution: {integrity: sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==}
 
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
@@ -6186,6 +6239,10 @@ packages:
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
+
+  pkcs11js@2.1.6:
+    resolution: {integrity: sha512-+t5jxzB749q8GaEd1yNx3l98xYuaVK6WW/Vjg1Mk1Iy5bMu/A5W4O/9wZGrpOknWF6lFQSb12FXX+eSNxdriwA==}
+    engines: {node: '>=18.0.0'}
 
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
@@ -8438,6 +8495,20 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@hyperledger/fabric-gateway@1.11.0':
+    dependencies:
+      '@grpc/grpc-js': 1.14.4
+      '@hyperledger/fabric-protos': 0.3.7
+      '@noble/curves': 1.9.7
+      google-protobuf: 3.21.4
+    optionalDependencies:
+      pkcs11js: 2.1.6
+
+  '@hyperledger/fabric-protos@0.3.7':
+    dependencies:
+      '@grpc/grpc-js': 1.14.4
+      google-protobuf: 3.21.4
+
   '@img/colour@1.1.0':
     optional: true
 
@@ -8781,7 +8852,7 @@ snapshots:
       bullmq: 5.79.1
       tslib: 2.8.1
 
-  '@nestjs/cli@11.0.23(@types/node@22.19.20)(esbuild@0.27.7)(postcss@8.5.15)(prettier@3.8.4)':
+  '@nestjs/cli@11.0.23(@types/node@22.19.20)(postcss@8.5.15)(prettier@3.8.4)':
     dependencies:
       '@angular-devkit/core': 19.2.27(chokidar@4.0.3)
       '@angular-devkit/schematics': 19.2.27(chokidar@4.0.3)
@@ -8792,14 +8863,14 @@ snapshots:
       chokidar: 4.0.3
       cli-table3: 0.6.5
       commander: 4.1.1
-      fork-ts-checker-webpack-plugin: 9.1.0(typescript@5.9.3)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15))
+      fork-ts-checker-webpack-plugin: 9.1.0(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.15))
       glob: 13.0.6
       node-emoji: 1.11.0
       ora: 5.4.1
       tsconfig-paths: 4.2.0
       tsconfig-paths-webpack-plugin: 4.2.0
       typescript: 5.9.3
-      webpack: 5.106.2(esbuild@0.27.7)(postcss@8.5.15)
+      webpack: 5.106.2(postcss@8.5.15)
       webpack-node-externals: 3.0.0
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -8960,6 +9031,10 @@ snapshots:
     optional: true
 
   '@noble/ciphers@1.3.0': {}
+
+  '@noble/curves@1.9.7':
+    dependencies:
+      '@noble/hashes': 1.8.0
 
   '@noble/hashes@1.8.0': {}
 
@@ -11374,6 +11449,8 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
+  crypto@1.0.1: {}
+
   css.escape@1.5.1: {}
 
   cssstyle@4.6.0:
@@ -12099,7 +12176,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.3)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15)):
+  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.15)):
     dependencies:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
@@ -12114,7 +12191,7 @@ snapshots:
       semver: 7.8.5
       tapable: 2.3.3
       typescript: 5.9.3
-      webpack: 5.106.2(esbuild@0.27.7)(postcss@8.5.15)
+      webpack: 5.106.2(postcss@8.5.15)
 
   form-data@4.0.6:
     dependencies:
@@ -12279,6 +12356,8 @@ snapshots:
       slash: 3.0.0
 
   google-logging-utils@1.1.3: {}
+
+  google-protobuf@3.21.4: {}
 
   gopd@1.2.0: {}
 
@@ -13219,6 +13298,9 @@ snapshots:
 
   pirates@4.0.7: {}
 
+  pkcs11js@2.1.6:
+    optional: true
+
   pkg-types@1.3.1:
     dependencies:
       confbox: 0.1.8
@@ -14056,15 +14138,14 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  terser-webpack-plugin@5.6.1(esbuild@0.27.7)(postcss@8.5.15)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15)):
+  terser-webpack-plugin@5.6.1(postcss@8.5.15)(webpack@5.106.2(postcss@8.5.15)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.48.0
-      webpack: 5.106.2(esbuild@0.27.7)(postcss@8.5.15)
+      webpack: 5.106.2(postcss@8.5.15)
     optionalDependencies:
-      esbuild: 0.27.7
       postcss: 8.5.15
 
   terser@5.48.0:
@@ -14424,7 +14505,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15):
+  webpack@5.106.2(postcss@8.5.15):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.9
@@ -14447,7 +14528,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
-      terser-webpack-plugin: 5.6.1(esbuild@0.27.7)(postcss@8.5.15)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15))
+      terser-webpack-plugin: 5.6.1(postcss@8.5.15)(webpack@5.106.2(postcss@8.5.15))
       watchpack: 2.5.1
       webpack-sources: 3.5.0
     transitivePeerDependencies:
