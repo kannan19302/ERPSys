@@ -186,6 +186,7 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | Date | Agent | What | Commit/ref |
 |:---|:---|:---|:---|
+| 2026-07-17 | antigravity | **Unused Scripts Cleanup**: Deleted `migrate-phase8-styles.mjs`, `migrate-remaining-styles.mjs`, and `migrate-ui.mjs` style migration scripts and their references. | 647fd73 |
 | 2026-07-16 | codex-root | **UI Migration Phase 10**: Converted all 69 Finance, Procurement, Sales, and POS checklist pages to token CSS Modules and CSS hover/focus behavior; web typecheck passes. | pending |
 | 2026-07-16 | codex-root | **UI Migration Phase 9**: Converted the 56 explicit Settings and Dashboard checklist paths to token CSS Modules and CSS hover/focus behavior; web typecheck passes. The tracker’s 84-file dashboard count is stale. | pending |
 | 2026-07-16 | codex-root | **UI Migration Phase 8**: Migrated 42 existing Builder and Apps pages to token CSS Modules and CSS hover/focus rules; four tracker paths are absent and recorded as N/A. Rebuilt UI declarations and web typecheck passes. | pending |
