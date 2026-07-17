@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useApiQuery } from '../../../src/lib/hooks/useApi';
-import GridLayout from 'react-grid-layout';
+import GridLayout, { useContainerWidth } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { RouteGuard, useApiClient } from '@unerp/framework';
@@ -86,6 +86,7 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const dashboardId = searchParams?.get('dashboardId');
   const router = useRouter();
+  const { width, containerRef, mounted } = useContainerWidth();
   const [user, setUser] = useState<{ firstName: string; lastName: string; tenantId?: string } | null>(null);
   
   const [customDashboard, setCustomDashboard] = useState<any>(null);
@@ -240,41 +241,43 @@ function DashboardContent() {
       {loadingCustom ? (
         <div className={styles.loading}>Loading dashboard...</div>
       ) : customDashboard ? (
-        <div className={styles.customDashboard}>
-          <GridLayout
-            className="layout"
-            layout={customLayout}
-            // @ts-ignore
-            cols={12}
-            rowHeight={40}
-            width={1200} // Hardcoded width for simple preview, or could use responsive grid
-            isDraggable={false}
-            isResizable={false}
-            margin={[16, 16]}
-          >
-            {customLayout.map(l => {
-              const widget = customWidgets.find(w => w.id === l.i);
-              if (!widget) return <div key={l.i}></div>;
-              
-              const typeIcons: Record<string, any> = { kpi: Hash, bar: BarChart2, line: TrendingUp, pie: PieChart, table: TableIcon };
-              const typeColors: Record<string, string> = { kpi: 'var(--color-success)', bar: 'var(--color-info)', line: 'var(--color-warning)', pie: 'var(--color-primary)', table: 'var(--color-text-secondary)' };
-              const Icon = typeIcons[widget.type] || LayoutDashboard;
-              const color = typeColors[widget.type] || 'var(--color-text-secondary)';
-              
-              return (
-                <div key={l.i} className={styles.widget}>
-                  <div className={styles.widgetHeader}>
-                    <Icon size={14} color={color} />
-                    <span className={styles.widgetTitle}>{widget.title}</span>
+        <div ref={containerRef} className={styles.customDashboard}>
+          {mounted && (
+            <GridLayout
+              className="layout"
+              layout={customLayout}
+              // @ts-ignore
+              cols={12}
+              rowHeight={40}
+              width={width || 1200}
+              isDraggable={false}
+              isResizable={false}
+              margin={[16, 16]}
+            >
+              {customLayout.map(l => {
+                const widget = customWidgets.find(w => w.id === l.i);
+                if (!widget) return <div key={l.i}></div>;
+                
+                const typeIcons: Record<string, any> = { kpi: Hash, bar: BarChart2, line: TrendingUp, pie: PieChart, table: TableIcon };
+                const typeColors: Record<string, string> = { kpi: 'var(--color-success)', bar: 'var(--color-info)', line: 'var(--color-warning)', pie: 'var(--color-primary)', table: 'var(--color-text-secondary)' };
+                const Icon = typeIcons[widget.type] || LayoutDashboard;
+                const color = typeColors[widget.type] || 'var(--color-text-secondary)';
+                
+                return (
+                  <div key={l.i} className={styles.widget}>
+                    <div className={styles.widgetHeader}>
+                      <Icon size={14} color={color} />
+                      <span className={styles.widgetTitle}>{widget.title}</span>
+                    </div>
+                    <div className={styles.widgetContent}>
+                      {widget.type === 'kpi' && <span className={styles.widgetKpi}>--</span>}
+                      {widget.type !== 'kpi' && <BarChart2 size={32} opacity={0.5} />}
+                    </div>
                   </div>
-                  <div className={styles.widgetContent}>
-                    {widget.type === 'kpi' && <span className={styles.widgetKpi}>--</span>}
-                    {widget.type !== 'kpi' && <BarChart2 size={32} opacity={0.5} />}
-                  </div>
-                </div>
-              );
-            })}
-          </GridLayout>
+                );
+              })}
+            </GridLayout>
+          )}
         </div>
       ) : activeTab === 'global' ? (
         loadingGlobal ? (

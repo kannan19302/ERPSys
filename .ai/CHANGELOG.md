@@ -9,6 +9,12 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Dashboard — replaced hardcoded grid preview layout width with useContainerWidth
+
+- Refactored `apps/web/app/(dashboard)/dashboard/page.tsx` custom widget grid layout rendering to measure width dynamically.
+- Replaced the deprecated `WidthProvider` HOC wrapper with the modern React hook `useContainerWidth()` from `react-grid-layout`, conforming to design guidelines that discourage hardcoded layout pixel values.
+- Verified typechecking and production build compiles cleanly.
+
 ## [2026-07-17] Database — wired transaction-scoped RLS session context and added integration tests
 
 - Wired transaction-local PostgreSQL RLS session context (`app.current_tenant_id`) inside the shared Prisma Client extension (`packages/database/src/index.ts`) `$allOperations` hook for the 11 RLS-protected models.
