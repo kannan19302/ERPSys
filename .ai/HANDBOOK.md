@@ -6,6 +6,11 @@
 > the domain glossary into a single file. Every AI agent and human developer
 > MUST follow these conventions without exception.
 >
+> **⚡ Read [instructions.md](./instructions.md) FIRST** — it is the supreme
+> governance document that consolidates all architecture flows, coding standards,
+> velocity targets, and repo hygiene policies. This handbook provides detailed
+> reference material for the rules defined there.
+>
 > For live module status/dependencies, see [`.ai/MODULE_REGISTRY.md`](./MODULE_REGISTRY.md)
 > (includes the Collab Board — check "Active Claims" before starting work).
 > For the historical record of what changed, see [`.ai/CHANGELOG.md`](./CHANGELOG.md).
@@ -126,6 +131,7 @@ packages/auth ─► packages/shared
 ```
 
 **Rules:**
+
 - `apps/` may depend on `packages/`
 - `packages/` may depend on other `packages/`
 - `packages/` MUST NOT depend on `apps/`
@@ -187,10 +193,10 @@ modules/<module-name>/
 
 ```typescript
 // finance.module.ts
-import { Module } from '@nestjs/common';
-import { FinanceController } from './finance.controller';
-import { FinanceService } from './finance.service';
-import { DatabaseModule } from '@unerp/database';
+import { Module } from "@nestjs/common";
+import { FinanceController } from "./finance.controller";
+import { FinanceService } from "./finance.service";
+import { DatabaseModule } from "@unerp/database";
 
 @Module({
   imports: [DatabaseModule],
@@ -205,20 +211,28 @@ export class FinanceModule {}
 
 ```typescript
 // finance.controller.ts
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { FinanceService } from './finance.service';
-import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { TenantGuard } from '@/common/guards/tenant.guard';
-import { RbacGuard } from '@/common/guards/rbac.guard';
-import { Permissions } from '@/common/decorators/permissions.decorator';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
+import { FinanceService } from "./finance.service";
+import { CreateInvoiceDto } from "./dto/create-invoice.dto";
+import { TenantGuard } from "@/common/guards/tenant.guard";
+import { RbacGuard } from "@/common/guards/rbac.guard";
+import { Permissions } from "@/common/decorators/permissions.decorator";
 
-@Controller('finance')
+@Controller("finance")
 @UseGuards(TenantGuard, RbacGuard)
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
 
-  @Post('invoices')
-  @Permissions('finance.invoice.create')
+  @Post("invoices")
+  @Permissions("finance.invoice.create")
   async createInvoice(@Body() dto: CreateInvoiceDto) {
     return this.financeService.createInvoice(dto);
   }
@@ -229,11 +243,11 @@ export class FinanceController {
 
 ```typescript
 // finance.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@unerp/database';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { InvoiceCreatedEvent } from './events/invoice-created.event';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "@unerp/database";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { CreateInvoiceDto } from "./dto/create-invoice.dto";
+import { InvoiceCreatedEvent } from "./events/invoice-created.event";
 
 @Injectable()
 export class FinanceService {
@@ -251,10 +265,7 @@ export class FinanceService {
     });
 
     // Emit domain event for other modules to react
-    this.eventEmitter.emit(
-      'invoice.created',
-      new InvoiceCreatedEvent(invoice),
-    );
+    this.eventEmitter.emit("invoice.created", new InvoiceCreatedEvent(invoice));
 
     return invoice;
   }
@@ -296,6 +307,7 @@ The current unresolved ledger entry, `landed_cost_receipt_links.updatedAt`, has 
 ```
 
 Examples:
+
 - `finance.invoice.created`
 - `finance.payment.received`
 - `inventory.stock.depleted`
@@ -327,11 +339,11 @@ export class InvoiceCreatedEvent {
 
 ```typescript
 // In inventory module — listening to finance events
-import { OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from "@nestjs/event-emitter";
 
 @Injectable()
 export class InventoryEventHandler {
-  @OnEvent('finance.invoice.created')
+  @OnEvent("finance.invoice.created")
   async handleInvoiceCreated(event: InvoiceCreatedEvent) {
     // Reduce stock for each line item
     for (const item of event.lineItems) {
@@ -347,15 +359,15 @@ export class InventoryEventHandler {
 
 #### 4.5 Core Event Map
 
-| Source Module | Event | Listeners |
-|:---|:---|:---|
-| Finance | `invoice.created` | Inventory (reduce stock), Accounting (post journal entry) |
-| Finance | `payment.received` | CRM (update customer status), Notifications |
-| Sales | `order.confirmed` | Inventory (reserve stock), Finance (create invoice) |
-| Inventory | `stock.depleted` | Procurement (auto-reorder), Notifications |
-| HR | `employee.onboarded` | Finance (add to payroll), IT (provision accounts) |
-| CRM | `lead.converted` | Sales (create opportunity), Notifications |
-| Procurement | `purchase.approved` | Finance (create AP entry), Inventory (expect delivery) |
+| Source Module | Event                | Listeners                                                 |
+| :------------ | :------------------- | :-------------------------------------------------------- |
+| Finance       | `invoice.created`    | Inventory (reduce stock), Accounting (post journal entry) |
+| Finance       | `payment.received`   | CRM (update customer status), Notifications               |
+| Sales         | `order.confirmed`    | Inventory (reserve stock), Finance (create invoice)       |
+| Inventory     | `stock.depleted`     | Procurement (auto-reorder), Notifications                 |
+| HR            | `employee.onboarded` | Finance (add to payroll), IT (provision accounts)         |
+| CRM           | `lead.converted`     | Sales (create opportunity), Notifications                 |
+| Procurement   | `purchase.approved`  | Finance (create AP entry), Inventory (expect delivery)    |
 
 ### 5. Frontend Architecture (Next.js)
 
@@ -487,6 +499,7 @@ Phase 16-20: Enterprise SaaS Platform (API platform, i18n, PWA, CI/CD, billing)
 ```
 
 Because modules communicate through enforced boundaries (not direct imports), extracting a module to a separate service requires:
+
 1. Move the module code to a new NestJS app
 2. Replace the transactional-outbox dispatcher with the selected broker adapter
 3. Preserve published API/event contracts; do not expose implementation internals
@@ -501,36 +514,37 @@ Because modules communicate through enforced boundaries (not direct imports), ex
 
 #### 1.1 Files & Directories
 
-| Type | Convention | Example |
-|:---|:---|:---|
-| Directories | `kebab-case` | `purchase-orders/`, `sales-reports/` |
-| React Components | `kebab-case.tsx` | `invoice-list.tsx`, `page-header.tsx` |
-| NestJS files | `kebab-case` with suffix | `finance.controller.ts`, `create-invoice.dto.ts` |
-| Test files | `*.spec.ts` or `*.test.ts` | `finance.service.spec.ts` |
-| CSS files | `kebab-case.css` | `invoice-list.css`, `design-tokens.css` |
-| Constants files | `kebab-case.ts` | `error-codes.ts`, `permissions.ts` |
-| Type files | `kebab-case.ts` | `invoice.types.ts`, `user.types.ts` |
+| Type             | Convention                 | Example                                          |
+| :--------------- | :------------------------- | :----------------------------------------------- |
+| Directories      | `kebab-case`               | `purchase-orders/`, `sales-reports/`             |
+| React Components | `kebab-case.tsx`           | `invoice-list.tsx`, `page-header.tsx`            |
+| NestJS files     | `kebab-case` with suffix   | `finance.controller.ts`, `create-invoice.dto.ts` |
+| Test files       | `*.spec.ts` or `*.test.ts` | `finance.service.spec.ts`                        |
+| CSS files        | `kebab-case.css`           | `invoice-list.css`, `design-tokens.css`          |
+| Constants files  | `kebab-case.ts`            | `error-codes.ts`, `permissions.ts`               |
+| Type files       | `kebab-case.ts`            | `invoice.types.ts`, `user.types.ts`              |
 
 #### 1.2 Code Identifiers
 
-| Type | Convention | Example |
-|:---|:---|:---|
-| Variables | `camelCase` | `invoiceTotal`, `lineItems` |
-| Functions | `camelCase` | `calculateTax()`, `getInvoiceById()` |
-| Classes | `PascalCase` | `FinanceService`, `InvoiceController` |
-| Interfaces | `PascalCase` (no `I` prefix) | `Invoice`, `CreateInvoiceDto` |
-| Types | `PascalCase` | `InvoiceStatus`, `PaymentMethod` |
-| Enums | `PascalCase` (values UPPER_SNAKE) | `InvoiceStatus.PAID`, `Role.ADMIN` |
-| Constants | `UPPER_SNAKE_CASE` | `MAX_RETRY_COUNT`, `DEFAULT_PAGE_SIZE` |
-| Database tables | `snake_case` (plural) | `invoices`, `purchase_orders` |
-| Database columns | `snake_case` | `tenant_id`, `created_at`, `total_amount` |
-| API endpoints | `kebab-case` (plural nouns) | `/api/v1/invoices`, `/api/v1/purchase-orders` |
-| Event names | `dot.separated` | `finance.invoice.created` |
-| Environment vars | `UPPER_SNAKE_CASE` | `DATABASE_URL`, `REDIS_HOST` |
+| Type             | Convention                        | Example                                       |
+| :--------------- | :-------------------------------- | :-------------------------------------------- |
+| Variables        | `camelCase`                       | `invoiceTotal`, `lineItems`                   |
+| Functions        | `camelCase`                       | `calculateTax()`, `getInvoiceById()`          |
+| Classes          | `PascalCase`                      | `FinanceService`, `InvoiceController`         |
+| Interfaces       | `PascalCase` (no `I` prefix)      | `Invoice`, `CreateInvoiceDto`                 |
+| Types            | `PascalCase`                      | `InvoiceStatus`, `PaymentMethod`              |
+| Enums            | `PascalCase` (values UPPER_SNAKE) | `InvoiceStatus.PAID`, `Role.ADMIN`            |
+| Constants        | `UPPER_SNAKE_CASE`                | `MAX_RETRY_COUNT`, `DEFAULT_PAGE_SIZE`        |
+| Database tables  | `snake_case` (plural)             | `invoices`, `purchase_orders`                 |
+| Database columns | `snake_case`                      | `tenant_id`, `created_at`, `total_amount`     |
+| API endpoints    | `kebab-case` (plural nouns)       | `/api/v1/invoices`, `/api/v1/purchase-orders` |
+| Event names      | `dot.separated`                   | `finance.invoice.created`                     |
+| Environment vars | `UPPER_SNAKE_CASE`                | `DATABASE_URL`, `REDIS_HOST`                  |
 
 #### 1.3 Boolean Naming
 
 Always use a verb prefix for booleans:
+
 - ✅ `isActive`, `hasPermission`, `canEdit`, `shouldNotify`
 - ❌ `active`, `permission`, `edit`, `notify`
 
@@ -561,7 +575,10 @@ function calculateTotal(items: InvoiceLineItem[]): number {
 
 // ❌ WRONG — never use `any`
 function calculateTotal(items: any[]): any {
-  return items.reduce((sum: any, item: any) => sum + item.quantity * item.unitPrice, 0);
+  return items.reduce(
+    (sum: any, item: any) => sum + item.quantity * item.unitPrice,
+    0,
+  );
 }
 
 // ✅ CORRECT — use `unknown` with type guard when type is uncertain
@@ -580,19 +597,19 @@ Always order imports in this sequence, with a blank line between groups:
 
 ```typescript
 // 1. Node.js built-ins
-import { readFile } from 'node:fs/promises';
+import { readFile } from "node:fs/promises";
 
 // 2. External packages
-import { Injectable } from '@nestjs/common';
-import { z } from 'zod';
+import { Injectable } from "@nestjs/common";
+import { z } from "zod";
 
 // 3. Internal packages (monorepo)
-import { PrismaService } from '@unerp/database';
-import { type Invoice } from '@unerp/shared/types';
+import { PrismaService } from "@unerp/database";
+import { type Invoice } from "@unerp/shared/types";
 
 // 4. Relative imports (parent first, then siblings, then children)
-import { FinanceService } from '../finance.service';
-import { CreateInvoiceDto } from './create-invoice.dto';
+import { FinanceService } from "../finance.service";
+import { CreateInvoiceDto } from "./create-invoice.dto";
 ```
 
 #### 2.4 Export Rules
@@ -603,8 +620,8 @@ import { CreateInvoiceDto } from './create-invoice.dto';
 
 ```typescript
 // packages/shared/src/types/index.ts
-export type { Invoice, InvoiceLineItem, InvoiceStatus } from './invoice.types';
-export type { User, UserRole } from './user.types';
+export type { Invoice, InvoiceLineItem, InvoiceStatus } from "./invoice.types";
+export type { User, UserRole } from "./user.types";
 ```
 
 ### 3. React / Next.js Conventions
@@ -693,24 +710,31 @@ All DTOs use Zod schemas from `packages/shared`:
 
 ```typescript
 // packages/shared/src/validators/invoice.validator.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const createInvoiceSchema = z.object({
   customerId: z.string().uuid(),
   dueDate: z.string().datetime(),
-  lineItems: z.array(z.object({
-    productId: z.string().uuid(),
-    quantity: z.number().int().positive(),
-    unitPrice: z.number().positive(),
-    description: z.string().max(500).optional(),
-  })).min(1),
+  lineItems: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        quantity: z.number().int().positive(),
+        unitPrice: z.number().positive(),
+        description: z.string().max(500).optional(),
+      }),
+    )
+    .min(1),
   notes: z.string().max(2000).optional(),
 });
 
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 
 // apps/api/src/modules/finance/dto/create-invoice.dto.ts
-import { createInvoiceSchema, type CreateInvoiceInput } from '@unerp/shared/validators';
+import {
+  createInvoiceSchema,
+  type CreateInvoiceInput,
+} from "@unerp/shared/validators";
 
 export class CreateInvoiceDto implements CreateInvoiceInput {
   // Validated by Zod pipe in controller
@@ -724,14 +748,16 @@ export class CreateInvoiceDto implements CreateInvoiceInput {
 ```typescript
 // Use NestJS built-in exceptions
 throw new NotFoundException(`Invoice ${id} not found`);
-throw new BadRequestException('Invalid invoice data');
-throw new ForbiddenException('Insufficient permissions');
-throw new ConflictException('Invoice already exists');
+throw new BadRequestException("Invalid invoice data");
+throw new ForbiddenException("Insufficient permissions");
+throw new ConflictException("Invoice already exists");
 
 // Custom business errors extend a base class
 export class InsufficientStockError extends BadRequestException {
   constructor(productId: string, requested: number, available: number) {
-    super(`Insufficient stock for product ${productId}: requested ${requested}, available ${available}`);
+    super(
+      `Insufficient stock for product ${productId}: requested ${requested}, available ${available}`,
+    );
   }
 }
 ```
@@ -767,6 +793,7 @@ Follow Conventional Commits:
 **Scopes**: `finance`, `hr`, `crm`, `inventory`, `ui`, `database`, `auth`, `api`, `web`, `shared`
 
 Examples:
+
 ```
 feat(finance): add invoice creation endpoint
 fix(inventory): correct stock calculation on partial shipments
@@ -782,6 +809,7 @@ chore(deps): update Prisma to v6.2.0
 ```
 
 Examples:
+
 ```
 feat/finance/invoice-crud
 fix/inventory/stock-sync
@@ -850,6 +878,7 @@ All AI agents must adhere to the following human-computer interaction (HCI) psyc
 ##### 8.2 CSS Tokens
 
 Always use the design system tokens defined in `@unerp/ui-tokens` (`packages/ui-tokens/src/`; the legacy `@unerp/ui/tokens` path is a compatibility shim).
+
 - **Never hardcode hex colors** (e.g., `color: #ffffff`). Use `color: var(--color-bg-elevated)`.
 - **Never hardcode pixel padding** (e.g., `padding: 16px`). Use `padding: var(--space-4)`.
 - Keep button hover states clean and subtle: `background: transparent` transitioning to `var(--color-bg-hover)` is preferred over hard boxed borders.
@@ -859,6 +888,7 @@ Always use the design system tokens defined in `@unerp/ui-tokens` (`packages/ui-
 > AI agents and developers MUST NOT leave one-off scripts in the repository.
 
 #### Rules
+
 - **No throwaway scripts committed.** Fix scripts, patch scripts, debug helpers, and scratch files must be deleted before the task is marked complete.
 - **`scripts/` is for persistent tooling only** (e.g., `scorecard.mjs`, `dev-start.ps1`). One-off migration fixers, bulk-rename scripts, or ad-hoc patchers do not belong there.
 - **No placeholder test files.** Do not commit empty or trivial test stubs (e.g., `expect(true).toBe(true)`).
@@ -1219,7 +1249,7 @@ model StorefrontOrderPayment {
 (URL-based), not JWT — a distinct, non-standard tenant-resolution path flagged for security-auditor
 review. All six models still carry a direct `tenantId` column and are auto-scoped by the same Prisma
 tenant-scoping extension (`packages/database/src/tenant-scope.ts`) as every other table; the slug-based
-public guard is only responsible for resolving *which* `tenantId` to inject before the extension runs,
+public guard is only responsible for resolving _which_ `tenantId` to inject before the extension runs,
 never for bypassing the extension itself.
 
 **Status field convention**: `Cart.status` and `StorefrontOrderPayment.status` follow this repo's
@@ -1321,13 +1351,13 @@ POST    /api/v1/finance/invoices/:id/void         # Action: Void invoice
 
 ### 2. HTTP Methods
 
-| Method | Use | Idempotent | Request Body |
-|:---|:---|:---|:---|
-| `GET` | Retrieve resource(s) | Yes | No |
-| `POST` | Create resource / trigger action | No | Yes |
-| `PATCH` | Partial update | Yes | Yes (partial) |
-| `DELETE` | Remove resource (soft delete) | Yes | No |
-| `PUT` | Full replace (rare, avoid) | Yes | Yes (full) |
+| Method   | Use                              | Idempotent | Request Body  |
+| :------- | :------------------------------- | :--------- | :------------ |
+| `GET`    | Retrieve resource(s)             | Yes        | No            |
+| `POST`   | Create resource / trigger action | No         | Yes           |
+| `PATCH`  | Partial update                   | Yes        | Yes (partial) |
+| `DELETE` | Remove resource (soft delete)    | Yes        | No            |
+| `PUT`    | Full replace (rare, avoid)       | Yes        | Yes (full)    |
 
 ### 3. Request Format
 
@@ -1357,14 +1387,14 @@ POST    /api/v1/finance/invoices/:id/void         # Action: Void invoice
 GET /api/v1/finance/invoices?status=PAID&customerId=clx1abc123&sort=-createdAt&page=1&limit=25
 ```
 
-| Parameter | Type | Description |
-|:---|:---|:---|
-| `page` | number | Page number (1-indexed, default: 1) |
-| `limit` | number | Items per page (default: 25, max: 100) |
-| `sort` | string | Sort field. Prefix with `-` for descending |
-| `search` | string | Full-text search across searchable fields |
-| `status` | string | Filter by status |
-| `from` / `to` | ISO date | Date range filter |
+| Parameter     | Type     | Description                                |
+| :------------ | :------- | :----------------------------------------- |
+| `page`        | number   | Page number (1-indexed, default: 1)        |
+| `limit`       | number   | Items per page (default: 25, max: 100)     |
+| `sort`        | string   | Sort field. Prefix with `-` for descending |
+| `search`      | string   | Full-text search across searchable fields  |
+| `status`      | string   | Filter by status                           |
+| `from` / `to` | ISO date | Date range filter                          |
 
 ### 4. Response Format
 
@@ -1389,7 +1419,12 @@ GET /api/v1/finance/invoices?status=PAID&customerId=clx1abc123&sort=-createdAt&p
     "relationships": {
       "customer": { "id": "clx1def456", "name": "Acme Corp" },
       "lineItems": [
-        { "id": "clx1ghi789", "productId": "clx1jkl012", "quantity": 5, "unitPrice": 99.99 }
+        {
+          "id": "clx1ghi789",
+          "productId": "clx1jkl012",
+          "quantity": 5,
+          "unitPrice": 99.99
+        }
       ]
     }
   }
@@ -1433,19 +1468,19 @@ GET /api/v1/finance/invoices?status=PAID&customerId=clx1abc123&sort=-createdAt&p
 
 #### 4.4 HTTP Status Codes
 
-| Code | Usage |
-|:---|:---|
-| `200` | Successful GET, PATCH |
-| `201` | Successful POST (resource created) |
-| `204` | Successful DELETE (no content) |
+| Code  | Usage                                        |
+| :---- | :------------------------------------------- |
+| `200` | Successful GET, PATCH                        |
+| `201` | Successful POST (resource created)           |
+| `204` | Successful DELETE (no content)               |
 | `400` | Bad request (malformed JSON, invalid params) |
-| `401` | Not authenticated |
-| `403` | Not authorized (missing permissions) |
-| `404` | Resource not found |
-| `409` | Conflict (duplicate, version mismatch) |
-| `422` | Validation error (valid JSON, invalid data) |
-| `429` | Rate limit exceeded |
-| `500` | Internal server error |
+| `401` | Not authenticated                            |
+| `403` | Not authorized (missing permissions)         |
+| `404` | Resource not found                           |
+| `409` | Conflict (duplicate, version mismatch)       |
+| `422` | Validation error (valid JSON, invalid data)  |
+| `429` | Rate limit exceeded                          |
+| `500` | Internal server error                        |
 
 ### 5. Versioning
 
@@ -1456,14 +1491,15 @@ GET /api/v1/finance/invoices?status=PAID&customerId=clx1abc123&sort=-createdAt&p
 
 ### 6. Rate Limiting
 
-| Tier | Limit | Window |
-|:---|:---|:---|
-| Free | 100 requests | Per minute |
-| Starter | 500 requests | Per minute |
+| Tier         | Limit         | Window     |
+| :----------- | :------------ | :--------- |
+| Free         | 100 requests  | Per minute |
+| Starter      | 500 requests  | Per minute |
 | Professional | 2000 requests | Per minute |
-| Enterprise | Custom | Custom |
+| Enterprise   | Custom        | Custom     |
 
 Response headers:
+
 ```
 X-RateLimit-Limit: 500
 X-RateLimit-Remaining: 423
@@ -1497,6 +1533,7 @@ For operations on multiple resources:
 ```
 
 Response:
+
 ```json
 {
   "data": {
@@ -1521,95 +1558,95 @@ Response:
 
 ### Core Stack
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Language** | TypeScript | ^5.7 | End-to-end type safety, strict mode required |
-| **Runtime** | Node.js | ^22 LTS | Latest LTS with native TypeScript support |
-| **Package Manager** | pnpm | ^9 | Strict dependencies, disk-efficient, fast |
-| **Monorepo** | Turborepo | ^2 | Incremental builds, remote caching, pipeline orchestration |
+| Category            | Technology | Version | Rationale                                                  |
+| :------------------ | :--------- | :------ | :--------------------------------------------------------- |
+| **Language**        | TypeScript | ^5.7    | End-to-end type safety, strict mode required               |
+| **Runtime**         | Node.js    | ^22 LTS | Latest LTS with native TypeScript support                  |
+| **Package Manager** | pnpm       | ^9      | Strict dependencies, disk-efficient, fast                  |
+| **Monorepo**        | Turborepo  | ^2      | Incremental builds, remote caching, pipeline orchestration |
 
 ### Frontend
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Framework** | Next.js | ^15 | App Router, RSC, SSR, built-in API routes |
-| **UI Primitives** | Radix UI | latest | Accessible, unstyled, composable primitives |
-| **Styling** | Vanilla CSS + CSS Modules | — | Full control, no build-time dependencies, CSS-native features |
-| **Icons** | Lucide React | latest | Tree-shakeable, consistent, MIT licensed |
-| **Charts** | Recharts | latest | React-native, composable, responsive charts |
-| **Forms** | React Hook Form | ^7 | Performant, minimal re-renders, Zod integration |
-| **Data Fetching** | TanStack Query + tRPC | latest | Type-safe, cached, declarative server state |
-| **Tables** | TanStack Table | latest | Headless, sortable, filterable, paginated |
-| **Date Handling** | date-fns | latest | Tree-shakeable, immutable, TypeScript-first |
-| **Toasts** | Sonner | latest | Simple, beautiful, accessible notifications |
+| Category          | Technology                | Version | Rationale                                                     |
+| :---------------- | :------------------------ | :------ | :------------------------------------------------------------ |
+| **Framework**     | Next.js                   | ^15     | App Router, RSC, SSR, built-in API routes                     |
+| **UI Primitives** | Radix UI                  | latest  | Accessible, unstyled, composable primitives                   |
+| **Styling**       | Vanilla CSS + CSS Modules | —       | Full control, no build-time dependencies, CSS-native features |
+| **Icons**         | Lucide React              | latest  | Tree-shakeable, consistent, MIT licensed                      |
+| **Charts**        | Recharts                  | latest  | React-native, composable, responsive charts                   |
+| **Forms**         | React Hook Form           | ^7      | Performant, minimal re-renders, Zod integration               |
+| **Data Fetching** | TanStack Query + tRPC     | latest  | Type-safe, cached, declarative server state                   |
+| **Tables**        | TanStack Table            | latest  | Headless, sortable, filterable, paginated                     |
+| **Date Handling** | date-fns                  | latest  | Tree-shakeable, immutable, TypeScript-first                   |
+| **Toasts**        | Sonner                    | latest  | Simple, beautiful, accessible notifications                   |
 
 ### Backend
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Framework** | NestJS | ^11 | Modular architecture, DI, guards, pipes, enterprise-ready |
-| **Validation** | Zod | ^3 | Shared validation schemas between frontend & backend |
-| **Events** | @nestjs/event-emitter | latest | In-process domain events for module communication |
-| **Queues** | BullMQ | latest | Redis-backed job queues for async processing |
-| **File Upload** | Multer (via NestJS) | — | Streaming file uploads with size/type validation |
-| **PDF Generation** | @react-pdf/renderer | latest | React-based PDF templates for invoices/reports |
-| **Email** | Nodemailer + React Email | latest | Templated transactional emails |
-| **Scheduling** | @nestjs/schedule | latest | Cron jobs for recurring tasks (reports, cleanups) |
-| **WebSockets** | @nestjs/websockets | latest | Real-time updates (notifications, dashboards) |
+| Category           | Technology               | Version | Rationale                                                 |
+| :----------------- | :----------------------- | :------ | :-------------------------------------------------------- |
+| **Framework**      | NestJS                   | ^11     | Modular architecture, DI, guards, pipes, enterprise-ready |
+| **Validation**     | Zod                      | ^3      | Shared validation schemas between frontend & backend      |
+| **Events**         | @nestjs/event-emitter    | latest  | In-process domain events for module communication         |
+| **Queues**         | BullMQ                   | latest  | Redis-backed job queues for async processing              |
+| **File Upload**    | Multer (via NestJS)      | —       | Streaming file uploads with size/type validation          |
+| **PDF Generation** | @react-pdf/renderer      | latest  | React-based PDF templates for invoices/reports            |
+| **Email**          | Nodemailer + React Email | latest  | Templated transactional emails                            |
+| **Scheduling**     | @nestjs/schedule         | latest  | Cron jobs for recurring tasks (reports, cleanups)         |
+| **WebSockets**     | @nestjs/websockets       | latest  | Real-time updates (notifications, dashboards)             |
 
 ### Database & Storage
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Database** | PostgreSQL | ^16 | ACID, JSONB, RLS, window functions, CTEs |
-| **ORM** | Prisma | ^6 | Type-safe queries, migrations, schema-as-code |
-| **Cache** | Redis | ^7 | Session store, cache layer, BullMQ backend |
-| **File Storage** | S3-compatible (MinIO for dev) | — | Document storage, attachments, exports |
-| **Search** | PostgreSQL Full-Text Search | — | Good enough for Phase 0-2; Elasticsearch for Phase 3+ |
+| Category         | Technology                    | Version | Rationale                                             |
+| :--------------- | :---------------------------- | :------ | :---------------------------------------------------- |
+| **Database**     | PostgreSQL                    | ^16     | ACID, JSONB, RLS, window functions, CTEs              |
+| **ORM**          | Prisma                        | ^6      | Type-safe queries, migrations, schema-as-code         |
+| **Cache**        | Redis                         | ^7      | Session store, cache layer, BullMQ backend            |
+| **File Storage** | S3-compatible (MinIO for dev) | —       | Document storage, attachments, exports                |
+| **Search**       | PostgreSQL Full-Text Search   | —       | Good enough for Phase 0-2; Elasticsearch for Phase 3+ |
 
 ### Authentication & Security
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Auth Framework** | Auth.js (NextAuth v5) | ^5 | Multi-provider, JWT/session, edge-compatible |
-| **Password Hashing** | bcrypt | latest | Industry standard, configurable work factor |
-| **JWT** | jose | latest | Edge-compatible JWT library |
-| **Rate Limiting** | @nestjs/throttler | latest | API rate limiting per tenant |
-| **Security Headers** | Helmet | latest | OWASP security headers |
-| **CORS** | NestJS built-in | — | Configurable origin whitelist |
+| Category             | Technology            | Version | Rationale                                    |
+| :------------------- | :-------------------- | :------ | :------------------------------------------- |
+| **Auth Framework**   | Auth.js (NextAuth v5) | ^5      | Multi-provider, JWT/session, edge-compatible |
+| **Password Hashing** | bcrypt                | latest  | Industry standard, configurable work factor  |
+| **JWT**              | jose                  | latest  | Edge-compatible JWT library                  |
+| **Rate Limiting**    | @nestjs/throttler     | latest  | API rate limiting per tenant                 |
+| **Security Headers** | Helmet                | latest  | OWASP security headers                       |
+| **CORS**             | NestJS built-in       | —       | Configurable origin whitelist                |
 
 ### Testing
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Unit/Integration** | Vitest | latest | Fast, ESM-native, Jest-compatible API |
-| **E2E** | Playwright | latest | Cross-browser, reliable, built-in assertions |
-| **API Testing** | Supertest | latest | HTTP assertion library for NestJS controllers |
-| **Mocking** | Vitest built-in + MSW | latest | Service worker-based API mocking |
-| **Coverage** | Vitest c8/istanbul | — | 80% minimum coverage target |
+| Category             | Technology            | Version | Rationale                                     |
+| :------------------- | :-------------------- | :------ | :-------------------------------------------- |
+| **Unit/Integration** | Vitest                | latest  | Fast, ESM-native, Jest-compatible API         |
+| **E2E**              | Playwright            | latest  | Cross-browser, reliable, built-in assertions  |
+| **API Testing**      | Supertest             | latest  | HTTP assertion library for NestJS controllers |
+| **Mocking**          | Vitest built-in + MSW | latest  | Service worker-based API mocking              |
+| **Coverage**         | Vitest c8/istanbul    | —       | 80% minimum coverage target                   |
 
 ### DevOps & Tooling
 
-| Category | Technology | Version | Rationale |
-|:---|:---|:---|:---|
-| **Linting** | ESLint | ^9 (flat config) | Code quality, consistency |
-| **Formatting** | Prettier | ^3 | Opinionated formatting, end of style debates |
-| **Git Hooks** | Husky + lint-staged | latest | Pre-commit linting and formatting |
-| **CI/CD** | GitHub Actions | — | Automated testing, building, deployment |
-| **Containerization** | Docker + Docker Compose | — | Reproducible local dev and deployment |
-| **Process Manager** | PM2 (production) | latest | Node.js process management, clustering |
+| Category             | Technology              | Version          | Rationale                                    |
+| :------------------- | :---------------------- | :--------------- | :------------------------------------------- |
+| **Linting**          | ESLint                  | ^9 (flat config) | Code quality, consistency                    |
+| **Formatting**       | Prettier                | ^3               | Opinionated formatting, end of style debates |
+| **Git Hooks**        | Husky + lint-staged     | latest           | Pre-commit linting and formatting            |
+| **CI/CD**            | GitHub Actions          | —                | Automated testing, building, deployment      |
+| **Containerization** | Docker + Docker Compose | —                | Reproducible local dev and deployment        |
+| **Process Manager**  | PM2 (production)        | latest           | Node.js process management, clustering       |
 
 ### Package Naming
 
 All internal packages use the `@unerp/` scope:
 
-| Package | npm Name | Description |
-|:---|:---|:---|
-| `packages/database` | `@unerp/database` | Prisma client & types |
-| `packages/shared` | `@unerp/shared` | Types, validators, utils |
-| `packages/ui` | `@unerp/ui` | Design system components |
-| `packages/auth` | `@unerp/auth` | Auth providers & RBAC |
-| `packages/config` | `@unerp/config` | Shared tool configs |
+| Package             | npm Name          | Description              |
+| :------------------ | :---------------- | :----------------------- |
+| `packages/database` | `@unerp/database` | Prisma client & types    |
+| `packages/shared`   | `@unerp/shared`   | Types, validators, utils |
+| `packages/ui`       | `@unerp/ui`       | Design system components |
+| `packages/auth`     | `@unerp/auth`     | Auth providers & RBAC    |
+| `packages/config`   | `@unerp/config`   | Shared tool configs      |
 
 ### Adding New Dependencies
 
@@ -1626,14 +1663,14 @@ Before adding a new dependency, you MUST:
 
 Do NOT add these — we have alternatives:
 
-| Don't Use | Use Instead | Reason |
-|:---|:---|:---|
-| Moment.js | date-fns | Moment is legacy, not tree-shakeable |
-| Lodash (full) | Native JS / lodash-es (specific imports) | Bundle bloat |
-| Axios | Native fetch / tRPC | No need for HTTP client library |
-| Redux | React Query + React Context | Over-engineered for our use case |
-| Tailwind CSS | Vanilla CSS + CSS Modules | Full control, no utility-class lock-in |
-| Express | NestJS (built on Express internally) | NestJS provides structure we need |
+| Don't Use     | Use Instead                              | Reason                                 |
+| :------------ | :--------------------------------------- | :------------------------------------- |
+| Moment.js     | date-fns                                 | Moment is legacy, not tree-shakeable   |
+| Lodash (full) | Native JS / lodash-es (specific imports) | Bundle bloat                           |
+| Axios         | Native fetch / tRPC                      | No need for HTTP client library        |
+| Redux         | React Query + React Context              | Over-engineered for our use case       |
+| Tailwind CSS  | Vanilla CSS + CSS Modules                | Full control, no utility-class lock-in |
+| Express       | NestJS (built on Express internally)     | NestJS provides structure we need      |
 
 ---
 
@@ -1659,11 +1696,11 @@ Do NOT add these — we have alternatives:
 
 #### 1.1 Token Strategy
 
-| Token | Lifetime | Storage | Purpose |
-|:---|:---|:---|:---|
-| Access Token (JWT) | 15 minutes | Memory only | API authorization |
-| Refresh Token | 7 days | HttpOnly cookie | Token renewal |
-| Session Token | 24 hours | Redis | Server-side session |
+| Token              | Lifetime   | Storage         | Purpose             |
+| :----------------- | :--------- | :-------------- | :------------------ |
+| Access Token (JWT) | 15 minutes | Memory only     | API authorization   |
+| Refresh Token      | 7 days     | HttpOnly cookie | Token renewal       |
+| Session Token      | 24 hours   | Redis           | Server-side session |
 
 #### 1.2 JWT Payload
 
@@ -1688,6 +1725,7 @@ Do NOT add these — we have alternatives:
 ```
 
 Examples:
+
 ```
 finance.invoice.create
 finance.invoice.read
@@ -1778,17 +1816,21 @@ prisma.$use(async (params, next) => {
   const tenantId = getTenantFromContext();
 
   // Auto-inject tenant_id on create
-  if (params.action === 'create') {
+  if (params.action === "create") {
     params.args.data.tenantId = tenantId;
   }
 
   // Auto-filter by tenant_id on all reads
-  if (['findMany', 'findFirst', 'findUnique', 'count'].includes(params.action)) {
+  if (
+    ["findMany", "findFirst", "findUnique", "count"].includes(params.action)
+  ) {
     params.args.where = { ...params.args.where, tenantId };
   }
 
   // Auto-filter on updates/deletes
-  if (['update', 'updateMany', 'delete', 'deleteMany'].includes(params.action)) {
+  if (
+    ["update", "updateMany", "delete", "deleteMany"].includes(params.action)
+  ) {
     params.args.where = { ...params.args.where, tenantId };
   }
 
@@ -1821,33 +1863,36 @@ export const idParamSchema = z.object({
   id: z.string().cuid2(),
 });
 
-export const dateRangeSchema = z.object({
-  from: z.string().datetime().optional(),
-  to: z.string().datetime().optional(),
-}).refine(
-  (data) => !data.from || !data.to || new Date(data.from) <= new Date(data.to),
-  { message: "'from' must be before 'to'" }
-);
+export const dateRangeSchema = z
+  .object({
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+  })
+  .refine(
+    (data) =>
+      !data.from || !data.to || new Date(data.from) <= new Date(data.to),
+    { message: "'from' must be before 'to'" },
+  );
 ```
 
 ### 5. Data Protection
 
 #### 5.1 Encryption
 
-| Data Type | At Rest | In Transit |
-|:---|:---|:---|
-| Passwords | bcrypt (cost factor 12) | TLS 1.3 |
-| PII (SSN, Tax ID) | AES-256-GCM | TLS 1.3 |
-| Financial data | AES-256-GCM | TLS 1.3 |
-| General data | Transparent DB encryption | TLS 1.3 |
-| File uploads | Server-side encryption (S3) | TLS 1.3 |
+| Data Type         | At Rest                     | In Transit |
+| :---------------- | :-------------------------- | :--------- |
+| Passwords         | bcrypt (cost factor 12)     | TLS 1.3    |
+| PII (SSN, Tax ID) | AES-256-GCM                 | TLS 1.3    |
+| Financial data    | AES-256-GCM                 | TLS 1.3    |
+| General data      | Transparent DB encryption   | TLS 1.3    |
+| File uploads      | Server-side encryption (S3) | TLS 1.3    |
 
 #### 5.2 PII Handling
 
 ```typescript
 // Mark PII fields in Prisma schema with comments
 model Employee {
-  // ... 
+  // ...
   ssn           String?  @map("ssn") // PII: Encrypted at rest
   bankAccount   String?  @map("bank_account") // PII: Encrypted at rest
   // ...
@@ -1865,37 +1910,39 @@ export class EncryptionService {
 
 ```typescript
 // Applied globally via NestJS
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // Required for CSS-in-JS
-      imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", process.env.API_URL],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // Required for CSS-in-JS
+        imgSrc: ["'self'", "data:", "blob:"],
+        connectSrc: ["'self'", process.env.API_URL],
+      },
     },
-  },
-  crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: true,
-  crossOriginResourcePolicy: { policy: 'same-site' },
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-}));
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: true,
+    crossOriginResourcePolicy: { policy: "same-site" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  }),
+);
 ```
 
 ### 7. Audit Logging
 
 #### 7.1 What to Log
 
-| Event | Log Level | Details |
-|:---|:---|:---|
-| Login success | INFO | userId, IP, userAgent |
-| Login failure | WARN | email, IP, userAgent, reason |
-| Resource created | INFO | entityType, entityId, userId |
-| Resource updated | INFO | entityType, entityId, userId, changedFields |
-| Resource deleted | WARN | entityType, entityId, userId |
-| Permission denied | WARN | userId, resource, requiredPermission |
-| Rate limit exceeded | WARN | userId/IP, endpoint |
-| System error | ERROR | Stack trace, request context |
+| Event               | Log Level | Details                                     |
+| :------------------ | :-------- | :------------------------------------------ |
+| Login success       | INFO      | userId, IP, userAgent                       |
+| Login failure       | WARN      | email, IP, userAgent, reason                |
+| Resource created    | INFO      | entityType, entityId, userId                |
+| Resource updated    | INFO      | entityType, entityId, userId, changedFields |
+| Resource deleted    | WARN      | entityType, entityId, userId                |
+| Permission denied   | WARN      | userId, resource, requiredPermission        |
+| Rate limit exceeded | WARN      | userId/IP, endpoint                         |
+| System error        | ERROR     | Stack trace, request context                |
 
 #### 7.2 Never Log
 
@@ -1927,11 +1974,11 @@ app.use(helmet({
         └─────────────┘
 ```
 
-| Type | Tool | Target | Coverage Goal |
-|:---|:---|:---|:---|
-| Unit | Vitest | Services, validators, utils, helpers | 80%+ |
-| Integration | Vitest + Supertest | Controllers, API endpoints, DB operations | Key paths |
-| E2E | Playwright | Full user workflows (login → create → verify) | Critical flows |
+| Type        | Tool               | Target                                        | Coverage Goal  |
+| :---------- | :----------------- | :-------------------------------------------- | :------------- |
+| Unit        | Vitest             | Services, validators, utils, helpers          | 80%+           |
+| Integration | Vitest + Supertest | Controllers, API endpoints, DB operations     | Key paths      |
+| E2E         | Playwright         | Full user workflows (login → create → verify) | Critical flows |
 
 ### 2. File Organization
 
@@ -1963,13 +2010,16 @@ apps/web/e2e/
 
 ```typescript
 // finance.service.spec.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FinanceService } from '../finance.service';
-import { PrismaService } from '@unerp/database';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { createMockInvoice, createMockInvoiceDto } from './fixtures/invoice.fixtures';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { FinanceService } from "../finance.service";
+import { PrismaService } from "@unerp/database";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import {
+  createMockInvoice,
+  createMockInvoiceDto,
+} from "./fixtures/invoice.fixtures";
 
-describe('FinanceService', () => {
+describe("FinanceService", () => {
   let service: FinanceService;
   let prisma: PrismaService;
   let eventEmitter: EventEmitter2;
@@ -1991,8 +2041,8 @@ describe('FinanceService', () => {
     service = new FinanceService(prisma, eventEmitter);
   });
 
-  describe('createInvoice', () => {
-    it('should create an invoice and emit an event', async () => {
+  describe("createInvoice", () => {
+    it("should create an invoice and emit an event", async () => {
       // Arrange
       const dto = createMockInvoiceDto();
       const expected = createMockInvoice(dto);
@@ -2009,16 +2059,16 @@ describe('FinanceService', () => {
         }),
       });
       expect(eventEmitter.emit).toHaveBeenCalledWith(
-        'invoice.created',
+        "invoice.created",
         expect.objectContaining({ invoiceId: expected.id }),
       );
     });
 
-    it('should throw NotFoundException when customer does not exist', async () => {
+    it("should throw NotFoundException when customer does not exist", async () => {
       // Arrange
-      const dto = createMockInvoiceDto({ customerId: 'nonexistent' });
+      const dto = createMockInvoiceDto({ customerId: "nonexistent" });
       vi.mocked(prisma.invoice.create).mockRejectedValue(
-        new Error('Foreign key constraint failed'),
+        new Error("Foreign key constraint failed"),
       );
 
       // Act & Assert
@@ -2032,9 +2082,9 @@ describe('FinanceService', () => {
 
 ```typescript
 // fixtures/invoice.fixtures.ts
-import { createId } from '@paralleldrive/cuid2';
-import type { Invoice } from '@unerp/shared/types';
-import type { CreateInvoiceInput } from '@unerp/shared/validators';
+import { createId } from "@paralleldrive/cuid2";
+import type { Invoice } from "@unerp/shared/types";
+import type { CreateInvoiceInput } from "@unerp/shared/validators";
 
 export function createMockInvoiceDto(
   overrides: Partial<CreateInvoiceInput> = {},
@@ -2047,10 +2097,10 @@ export function createMockInvoiceDto(
         productId: createId(),
         quantity: 1,
         unitPrice: 100,
-        description: 'Test product',
+        description: "Test product",
       },
     ],
-    notes: 'Test invoice',
+    notes: "Test invoice",
     ...overrides,
   };
 }
@@ -2062,12 +2112,12 @@ export function createMockInvoice(
   return {
     id: createId(),
     tenantId: createId(),
-    invoiceNumber: 'INV-2026-0001',
-    status: 'DRAFT',
+    invoiceNumber: "INV-2026-0001",
+    status: "DRAFT",
     subtotal: 100,
     taxAmount: 10,
     totalAmount: 110,
-    currency: 'USD',
+    currency: "USD",
     createdAt: new Date(),
     updatedAt: new Date(),
     ...dto,
@@ -2080,14 +2130,14 @@ export function createMockInvoice(
 
 ```typescript
 // finance.controller.spec.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { FinanceModule } from '../finance.module';
-import { DatabaseModule } from '@unerp/database';
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { Test } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import * as request from "supertest";
+import { FinanceModule } from "../finance.module";
+import { DatabaseModule } from "@unerp/database";
 
-describe('FinanceController (Integration)', () => {
+describe("FinanceController (Integration)", () => {
   let app: INestApplication;
   let authToken: string;
 
@@ -2107,36 +2157,38 @@ describe('FinanceController (Integration)', () => {
     await app.close();
   });
 
-  describe('POST /api/v1/finance/invoices', () => {
-    it('should create an invoice and return 201', async () => {
+  describe("POST /api/v1/finance/invoices", () => {
+    it("should create an invoice and return 201", async () => {
       const dto = {
-        customerId: 'test_customer_id',
-        dueDate: '2026-07-10T00:00:00Z',
-        lineItems: [{ productId: 'test_product_id', quantity: 1, unitPrice: 100 }],
+        customerId: "test_customer_id",
+        dueDate: "2026-07-10T00:00:00Z",
+        lineItems: [
+          { productId: "test_product_id", quantity: 1, unitPrice: 100 },
+        ],
       };
 
       const response = await request(app.getHttpServer())
-        .post('/api/v1/finance/invoices')
-        .set('Authorization', `Bearer ${authToken}`)
+        .post("/api/v1/finance/invoices")
+        .set("Authorization", `Bearer ${authToken}`)
         .send(dto)
         .expect(201);
 
-      expect(response.body.data).toHaveProperty('id');
-      expect(response.body.data.attributes.status).toBe('DRAFT');
+      expect(response.body.data).toHaveProperty("id");
+      expect(response.body.data.attributes.status).toBe("DRAFT");
     });
 
-    it('should return 401 without auth token', async () => {
+    it("should return 401 without auth token", async () => {
       await request(app.getHttpServer())
-        .post('/api/v1/finance/invoices')
+        .post("/api/v1/finance/invoices")
         .send({})
         .expect(401);
     });
 
-    it('should return 422 with invalid data', async () => {
+    it("should return 422 with invalid data", async () => {
       await request(app.getHttpServer())
-        .post('/api/v1/finance/invoices')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({ customerId: '' }) // Missing required fields
+        .post("/api/v1/finance/invoices")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ customerId: "" }) // Missing required fields
         .expect(422);
     });
   });
@@ -2147,40 +2199,42 @@ describe('FinanceController (Integration)', () => {
 
 ```typescript
 // e2e/finance/create-invoice.spec.ts
-import { test, expect } from '@playwright/test';
-import { loginAsAdmin, seedTestData } from '../helpers';
+import { test, expect } from "@playwright/test";
+import { loginAsAdmin, seedTestData } from "../helpers";
 
-test.describe('Create Invoice Flow', () => {
+test.describe("Create Invoice Flow", () => {
   test.beforeEach(async ({ page }) => {
     await seedTestData();
     await loginAsAdmin(page);
   });
 
-  test('should create a new invoice from the finance dashboard', async ({ page }) => {
+  test("should create a new invoice from the finance dashboard", async ({
+    page,
+  }) => {
     // Navigate to invoices
-    await page.goto('/finance/invoices');
-    await expect(page.getByRole('heading', { name: 'Invoices' })).toBeVisible();
+    await page.goto("/finance/invoices");
+    await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
 
     // Click create button
-    await page.getByRole('link', { name: 'Create Invoice' }).click();
-    await expect(page).toHaveURL('/finance/invoices/new');
+    await page.getByRole("link", { name: "Create Invoice" }).click();
+    await expect(page).toHaveURL("/finance/invoices/new");
 
     // Fill form
-    await page.getByLabel('Customer').click();
-    await page.getByRole('option', { name: 'Acme Corp' }).click();
-    await page.getByLabel('Due Date').fill('2026-07-10');
+    await page.getByLabel("Customer").click();
+    await page.getByRole("option", { name: "Acme Corp" }).click();
+    await page.getByLabel("Due Date").fill("2026-07-10");
 
     // Add line item
-    await page.getByRole('button', { name: 'Add Line Item' }).click();
-    await page.getByLabel('Product').first().click();
-    await page.getByRole('option', { name: 'Widget Pro' }).click();
-    await page.getByLabel('Quantity').first().fill('5');
+    await page.getByRole("button", { name: "Add Line Item" }).click();
+    await page.getByLabel("Product").first().click();
+    await page.getByRole("option", { name: "Widget Pro" }).click();
+    await page.getByLabel("Quantity").first().fill("5");
 
     // Submit
-    await page.getByRole('button', { name: 'Create Invoice' }).click();
+    await page.getByRole("button", { name: "Create Invoice" }).click();
 
     // Verify
-    await expect(page.getByText('Invoice created successfully')).toBeVisible();
+    await expect(page.getByText("Invoice created successfully")).toBeVisible();
     await expect(page).toHaveURL(/\/finance\/invoices\/[a-z0-9]+/);
   });
 });
@@ -2220,6 +2274,7 @@ describe('<ClassName or FunctionName>', () => {
 ```
 
 Examples:
+
 - ✅ `should create an invoice and emit an event`
 - ✅ `should throw NotFoundException when customer does not exist`
 - ✅ `should return paginated results with correct meta`
@@ -2254,72 +2309,73 @@ skipped. Each stage must succeed before the next begins.
 Every push and pull request triggers these gates in parallel. **All must
 pass** before any deployment stage begins.
 
-| Gate | What it checks | Blocking? |
-|:---|:---|:---|
-| Lint & Type Check | ESLint + TypeScript strict compilation | Yes |
-| Unit Tests | Vitest (463+ tests, coverage report) | Yes |
-| Build Web | Next.js production build | Yes |
-| Docker Build (API) | Dockerfile builds cleanly | Yes |
-| Build Storybook | Design system compiles | Yes |
-| Migration Drift Check | Prisma schema matches migrations | Yes |
-| Production-Readiness Scorecard | 10/10 across 33 modules (7 dimensions) | Yes |
-| Security Scan | CodeQL + dependency audit | Non-blocking |
-| E2E (Playwright) | End-to-end browser tests | Non-blocking |
+| Gate                           | What it checks                         | Blocking?    |
+| :----------------------------- | :------------------------------------- | :----------- |
+| Lint & Type Check              | ESLint + TypeScript strict compilation | Yes          |
+| Unit Tests                     | Vitest (463+ tests, coverage report)   | Yes          |
+| Build Web                      | Next.js production build               | Yes          |
+| Docker Build (API)             | Dockerfile builds cleanly              | Yes          |
+| Build Storybook                | Design system compiles                 | Yes          |
+| Migration Drift Check          | Prisma schema matches migrations       | Yes          |
+| Production-Readiness Scorecard | 10/10 across 33 modules (7 dimensions) | Yes          |
+| Security Scan                  | CodeQL + dependency audit              | Non-blocking |
+| E2E (Playwright)               | End-to-end browser tests               | Non-blocking |
 
 #### Stage 1 — Development
 
-| Property | Value |
-|:---|:---|
-| **GitHub Environment** | `Development` |
-| **Trigger** | Push to `main` (after all gates pass) |
-| **Approval** | None (automatic) |
-| **Wait timer** | None |
-| **Branch policy** | `main` only |
-| **Actions** | Build image → push to GHCR → deploy API + Web → smoke test |
+| Property               | Value                                                      |
+| :--------------------- | :--------------------------------------------------------- |
+| **GitHub Environment** | `Development`                                              |
+| **Trigger**            | Push to `main` (after all gates pass)                      |
+| **Approval**           | None (automatic)                                           |
+| **Wait timer**         | None                                                       |
+| **Branch policy**      | `main` only                                                |
+| **Actions**            | Build image → push to GHCR → deploy API + Web → smoke test |
 
 **Policy**: All quality gates must pass. Deployment is fully automated.
 If any gate fails, no deployment occurs.
 
 #### Stage 2 — Quality (QA)
 
-| Property | Value |
-|:---|:---|
-| **GitHub Environment** | `quality` |
-| **Trigger** | Development deployment succeeds |
-| **Approval** | None (automatic after dev passes) |
-| **Wait timer** | Configurable (recommended: 5 minutes) |
-| **Branch policy** | `main` only |
-| **Actions** | Migrate DB → deploy → run regression suite → validate |
+| Property               | Value                                                 |
+| :--------------------- | :---------------------------------------------------- |
+| **GitHub Environment** | `quality`                                             |
+| **Trigger**            | Development deployment succeeds                       |
+| **Approval**           | None (automatic after dev passes)                     |
+| **Wait timer**         | Configurable (recommended: 5 minutes)                 |
+| **Branch policy**      | `main` only                                           |
+| **Actions**            | Migrate DB → deploy → run regression suite → validate |
 
 **Policy**: Development must succeed first. Automated regression tests
 run against the QA environment. Any failure blocks promotion to staging.
 
 #### Stage 3 — Staging (UAT)
 
-| Property | Value |
-|:---|:---|
-| **GitHub Environment** | `staging` |
-| **Trigger** | QA deployment succeeds |
-| **Approval** | None (automatic after QA passes) |
-| **Wait timer** | Configurable (recommended: 15 minutes for UAT window) |
-| **Branch policy** | `main` only |
-| **Actions** | Migrate DB → deploy → UAT smoke tests → tag release candidate |
+| Property               | Value                                                         |
+| :--------------------- | :------------------------------------------------------------ |
+| **GitHub Environment** | `staging`                                                     |
+| **Trigger**            | QA deployment succeeds                                        |
+| **Approval**           | None (automatic after QA passes)                              |
+| **Wait timer**         | Configurable (recommended: 15 minutes for UAT window)         |
+| **Branch policy**      | `main` only                                                   |
+| **Actions**            | Migrate DB → deploy → UAT smoke tests → tag release candidate |
 
 **Policy**: QA must succeed first. UAT smoke tests validate business
 flows. A release candidate tag is created for audit traceability.
 
 #### Stage 4 — Production
 
-| Property | Value |
-|:---|:---|
-| **GitHub Environment** | `production` |
-| **Trigger** | Staging deployment succeeds |
-| **Approval** | **Required — @kannan19302 only** |
-| **Wait timer** | Until approval is granted |
-| **Branch policy** | `main` only |
-| **Actions** | Pre-deployment checklist → migrate DB → blue-green deploy → health check → tag release |
+| Property               | Value                                                                                  |
+| :--------------------- | :------------------------------------------------------------------------------------- |
+| **GitHub Environment** | `production`                                                                           |
+| **Trigger**            | Staging deployment succeeds                                                            |
+| **Approval**           | **Required — @kannan19302 only**                                                       |
+| **Wait timer**         | Until approval is granted                                                              |
+| **Branch policy**      | `main` only                                                                            |
+| **Actions**            | Pre-deployment checklist → migrate DB → blue-green deploy → health check → tag release |
 
 **Policy**: This is the most protected stage.
+
 - All prior stages (Development, QA, Staging) must pass.
 - **Manual approval from @kannan19302 is mandatory.**
 - Even if all policies are satisfied, deployment waits for explicit approval.
@@ -2329,13 +2385,13 @@ flows. A release candidate tag is created for audit traceability.
 
 ### 2. Branch Strategy
 
-| Branch | Purpose | Deploys to | Protection |
-|:---|:---|:---|:---|
-| `main` | Integration branch — all PRs merge here | Development → QA → Staging → Production | Protected: require PR, require reviews, no force push |
-| `develop` | Feature integration (optional) | CI gates only (no deployment) | Protected |
-| `feature/*` | Individual feature work | CI gates on PR | None |
-| `release/*` | Release preparation | CI gates only | Protected |
-| `hotfix/*` | Emergency production fixes | Fast-track through pipeline | Require @kannan19302 review |
+| Branch      | Purpose                                 | Deploys to                              | Protection                                            |
+| :---------- | :-------------------------------------- | :-------------------------------------- | :---------------------------------------------------- |
+| `main`      | Integration branch — all PRs merge here | Development → QA → Staging → Production | Protected: require PR, require reviews, no force push |
+| `develop`   | Feature integration (optional)          | CI gates only (no deployment)           | Protected                                             |
+| `feature/*` | Individual feature work                 | CI gates on PR                          | None                                                  |
+| `release/*` | Release preparation                     | CI gates only                           | Protected                                             |
+| `hotfix/*`  | Emergency production fixes              | Fast-track through pipeline             | Require @kannan19302 review                           |
 
 #### Branch Protection Rules (main)
 
@@ -2370,13 +2426,13 @@ RUNBOOK.md                               @kannan19302
 
 ### 4. Environment Protection Matrix
 
-| Rule | Development | Quality | Staging | Production |
-|:---|:---|:---|:---|:---|
-| Required reviewers | None | None | None | @kannan19302 |
-| Wait timer | 0 min | 5 min | 15 min | Until approval |
-| Branch policy | main | main | main | main |
-| Admin bypass | Yes | Yes | No | No |
-| Deployment logs | Retained | Retained | Retained | Retained |
+| Rule               | Development | Quality  | Staging  | Production     |
+| :----------------- | :---------- | :------- | :------- | :------------- |
+| Required reviewers | None        | None     | None     | @kannan19302   |
+| Wait timer         | 0 min       | 5 min    | 15 min   | Until approval |
+| Branch policy      | main        | main     | main     | main           |
+| Admin bypass       | Yes         | Yes      | No       | No             |
+| Deployment logs    | Retained    | Retained | Retained | Retained       |
 
 ### 5. Access Control
 
@@ -2412,18 +2468,19 @@ Contributors may NOT:
 
 ### 6. Secrets Management
 
-| Secret | Environments | Purpose |
-|:---|:---|:---|
-| `DATABASE_URL` | All | PostgreSQL connection string (unique per env) |
-| `REDIS_URL` | All | Redis connection string |
-| `NEXTAUTH_SECRET` | All | Auth.js signing key (unique per env) |
-| `PII_ENCRYPTION_KEY` | All | AES-256 encryption for PII (unique per env) |
-| `NEXTAUTH_URL` | All | Frontend URL |
-| `NEXT_PUBLIC_API_URL` | All | API URL (unique per env) |
-| `SENTRY_DSN` | Staging, Production | Error tracking |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Staging, Production | OpenTelemetry |
+| Secret                        | Environments        | Purpose                                       |
+| :---------------------------- | :------------------ | :-------------------------------------------- |
+| `DATABASE_URL`                | All                 | PostgreSQL connection string (unique per env) |
+| `REDIS_URL`                   | All                 | Redis connection string                       |
+| `NEXTAUTH_SECRET`             | All                 | Auth.js signing key (unique per env)          |
+| `PII_ENCRYPTION_KEY`          | All                 | AES-256 encryption for PII (unique per env)   |
+| `NEXTAUTH_URL`                | All                 | Frontend URL                                  |
+| `NEXT_PUBLIC_API_URL`         | All                 | API URL (unique per env)                      |
+| `SENTRY_DSN`                  | Staging, Production | Error tracking                                |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Staging, Production | OpenTelemetry                                 |
 
 **Rules**:
+
 - Secrets are scoped per environment — never shared across stages.
 - Production secrets are only accessible by the `production` environment.
 - Secrets must never appear in logs, image layers, or source code.
@@ -2465,6 +2522,7 @@ for operational procedures.
 To fully enable this policy, configure the following in GitHub repo settings:
 
 #### Branch Protection (Settings → Branches → main)
+
 - [ ] Require pull request before merging
 - [ ] Require 1 approving review
 - [ ] Dismiss stale reviews on new push
@@ -2475,17 +2533,20 @@ To fully enable this policy, configure the following in GitHub repo settings:
 - [ ] Do not allow deletions
 
 #### Environments (Settings → Environments)
+
 - [ ] `Development`: No protection rules, main branch only
 - [ ] `quality`: 5-minute wait timer, main branch only
 - [ ] `staging`: 15-minute wait timer, main branch only
 - [ ] `production`: Required reviewer @kannan19302, main branch only
 
 #### Security (Settings → Security)
+
 - [ ] Enable code scanning (for CodeQL results upload)
 - [ ] Enable Dependabot alerts
 - [ ] Enable secret scanning
 
 #### General (Settings → General)
+
 - [ ] Default branch: `main`
 - [ ] Disable forking (if private)
 - [ ] Disable wiki (documentation is in `.ai/`)
@@ -2499,27 +2560,36 @@ The Builder Studio in UniERP is designed to democratize application development 
 When working on features related to the Builder Studio, all AI Agents MUST adhere to the following critical principles:
 
 ### 1. No Code Required for Users
+
 Never build UI or features that require the end-user to manually write, copy, or paste code snippets (like React components, JSX, or complex configuration objects).
-* **If a user wants to publish a form**, provide a visual wizard that deploys the form to a dynamic route or overrides an existing route automatically.
-* **If a user wants to add custom logic**, provide a visual workflow builder or rule engine, not a JavaScript eval box.
+
+- **If a user wants to publish a form**, provide a visual wizard that deploys the form to a dynamic route or overrides an existing route automatically.
+- **If a user wants to add custom logic**, provide a visual workflow builder or rule engine, not a JavaScript eval box.
 
 ### 2. Dynamic over Hardcoded
+
 When a user builds a form or a page in the Builder Studio, it must integrate seamlessly with the rest of the application without requiring a server restart or manual file edits.
-* **Page Registry**: Custom pages and forms are stored in a database (or `localStorage` during prototyping) and rendered dynamically using wildcard catch-all routes (e.g., `apps/web/app/(dashboard)/app/[module]/[slug]/page.tsx`).
-* **Sidebar Integration**: The sidebar navigation dynamically queries the Page Registry to inject newly created pages into the correct Module headers automatically.
+
+- **Page Registry**: Custom pages and forms are stored in a database (or `localStorage` during prototyping) and rendered dynamically using wildcard catch-all routes (e.g., `apps/web/app/(dashboard)/app/[module]/[slug]/page.tsx`).
+- **Sidebar Integration**: The sidebar navigation dynamically queries the Page Registry to inject newly created pages into the correct Module headers automatically.
 
 ### 3. Direct Visual Manipulation
+
 Users should interact with UI elements directly on the canvas.
-* Prefer drag-and-drop handles for resizing columns and heights.
-* Provide contextual floating menus or property sidebars instead of hidden JSON configurations.
-* Elements should snap to the 12-column global grid (`ui-grid-12`, formerly `frappe-grid-12`) to ensure responsiveness and alignment.
+
+- Prefer drag-and-drop handles for resizing columns and heights.
+- Provide contextual floating menus or property sidebars instead of hidden JSON configurations.
+- Elements should snap to the 12-column global grid (`ui-grid-12`, formerly `frappe-grid-12`) to ensure responsiveness and alignment.
 
 ### 4. Developer Mode (Minimal)
+
 If a technical feature must be exposed (like webhook URLs or iframe embed codes for external websites), it must be clearly separated from the primary "Internal ERP" deployment flows.
-* Label these features clearly as "For Developers".
-* Provide one-click "Copy to Clipboard" buttons.
+
+- Label these features clearly as "For Developers".
+- Provide one-click "Copy to Clipboard" buttons.
 
 ### 5. Summary
+
 The success of the Builder Studio is measured by how quickly a non-technical manager can build a custom CRM Lead Form and deploy it to their team's dashboard without ever seeing a line of code. Everything you build must serve this goal.
 
 ---
@@ -2531,88 +2601,88 @@ The success of the Builder Studio is measured by how quickly a non-technical man
 
 ### General ERP Terms
 
-| Term | Definition |
-|:---|:---|
-| **ERP** | Enterprise Resource Planning — integrated software managing core business processes |
-| **Module** | A self-contained functional area (e.g., Finance, HR, Inventory) |
-| **Tenant** | An organization/company using the system (in multi-tenant SaaS context) |
+| Term              | Definition                                                                             |
+| :---------------- | :------------------------------------------------------------------------------------- |
+| **ERP**           | Enterprise Resource Planning — integrated software managing core business processes    |
+| **Module**        | A self-contained functional area (e.g., Finance, HR, Inventory)                        |
+| **Tenant**        | An organization/company using the system (in multi-tenant SaaS context)                |
 | **Multi-tenancy** | Architecture where a single instance serves multiple organizations with data isolation |
-| **RLS** | Row-Level Security — PostgreSQL feature enforcing data isolation at the database level |
-| **RBAC** | Role-Based Access Control — authorization based on user roles and permissions |
+| **RLS**           | Row-Level Security — PostgreSQL feature enforcing data isolation at the database level |
+| **RBAC**          | Role-Based Access Control — authorization based on user roles and permissions          |
 
 ### Finance Terms
 
-| Term | Definition |
-|:---|:---|
-| **General Ledger (GL)** | The master accounting record; all financial transactions flow here |
-| **Chart of Accounts (CoA)** | Structured list of all accounts used by an organization |
-| **Accounts Payable (AP)** | Money the company owes to vendors/suppliers |
-| **Accounts Receivable (AR)** | Money owed to the company by customers |
-| **Journal Entry** | A record of a financial transaction in double-entry bookkeeping |
-| **Invoice** | A document requesting payment from a customer for goods/services |
-| **Bill** | An invoice received from a vendor (the AP equivalent of an invoice) |
-| **Credit Note** | A document reducing the amount owed by a customer |
-| **Debit Note** | A document increasing the amount owed by a customer |
-| **Fiscal Year** | The 12-month period used for financial reporting (may differ from calendar year) |
-| **Tax Rate** | Percentage applied to taxable transactions |
-| **Payment Terms** | Agreement on when payment is due (e.g., Net 30 = due in 30 days) |
-| **Reconciliation** | Process of matching bank transactions with accounting records |
+| Term                         | Definition                                                                       |
+| :--------------------------- | :------------------------------------------------------------------------------- |
+| **General Ledger (GL)**      | The master accounting record; all financial transactions flow here               |
+| **Chart of Accounts (CoA)**  | Structured list of all accounts used by an organization                          |
+| **Accounts Payable (AP)**    | Money the company owes to vendors/suppliers                                      |
+| **Accounts Receivable (AR)** | Money owed to the company by customers                                           |
+| **Journal Entry**            | A record of a financial transaction in double-entry bookkeeping                  |
+| **Invoice**                  | A document requesting payment from a customer for goods/services                 |
+| **Bill**                     | An invoice received from a vendor (the AP equivalent of an invoice)              |
+| **Credit Note**              | A document reducing the amount owed by a customer                                |
+| **Debit Note**               | A document increasing the amount owed by a customer                              |
+| **Fiscal Year**              | The 12-month period used for financial reporting (may differ from calendar year) |
+| **Tax Rate**                 | Percentage applied to taxable transactions                                       |
+| **Payment Terms**            | Agreement on when payment is due (e.g., Net 30 = due in 30 days)                 |
+| **Reconciliation**           | Process of matching bank transactions with accounting records                    |
 
 ### HR Terms
 
-| Term | Definition |
-|:---|:---|
-| **Employee** | A person employed by the organization |
-| **Payroll** | The process of calculating and distributing employee wages |
-| **Leave** | Time off from work (vacation, sick, personal, etc.) |
-| **Attendance** | Record of employee work hours and presence |
-| **Department** | An organizational unit within a company |
-| **Designation** | An employee's job title or role |
-| **Onboarding** | Process of integrating a new employee into the organization |
-| **Offboarding** | Process of managing an employee's departure |
+| Term            | Definition                                                  |
+| :-------------- | :---------------------------------------------------------- |
+| **Employee**    | A person employed by the organization                       |
+| **Payroll**     | The process of calculating and distributing employee wages  |
+| **Leave**       | Time off from work (vacation, sick, personal, etc.)         |
+| **Attendance**  | Record of employee work hours and presence                  |
+| **Department**  | An organizational unit within a company                     |
+| **Designation** | An employee's job title or role                             |
+| **Onboarding**  | Process of integrating a new employee into the organization |
+| **Offboarding** | Process of managing an employee's departure                 |
 
 ### Inventory & Supply Chain Terms
 
-| Term | Definition |
-|:---|:---|
-| **SKU** | Stock Keeping Unit — unique identifier for a product variant |
-| **Warehouse** | A physical location where inventory is stored |
-| **Bin** | A specific storage location within a warehouse |
-| **Stock Entry** | A record of stock movement (receipt, issue, transfer) |
-| **Reorder Point** | Inventory level that triggers a new purchase order |
-| **Lead Time** | Time between placing and receiving an order |
-| **FIFO** | First In, First Out — inventory valuation method |
-| **LIFO** | Last In, First Out — inventory valuation method |
-| **BOM** | Bill of Materials — list of raw materials needed to manufacture a product |
-| **MRP** | Material Requirements Planning — planning production based on demand |
+| Term              | Definition                                                                |
+| :---------------- | :------------------------------------------------------------------------ |
+| **SKU**           | Stock Keeping Unit — unique identifier for a product variant              |
+| **Warehouse**     | A physical location where inventory is stored                             |
+| **Bin**           | A specific storage location within a warehouse                            |
+| **Stock Entry**   | A record of stock movement (receipt, issue, transfer)                     |
+| **Reorder Point** | Inventory level that triggers a new purchase order                        |
+| **Lead Time**     | Time between placing and receiving an order                               |
+| **FIFO**          | First In, First Out — inventory valuation method                          |
+| **LIFO**          | Last In, First Out — inventory valuation method                           |
+| **BOM**           | Bill of Materials — list of raw materials needed to manufacture a product |
+| **MRP**           | Material Requirements Planning — planning production based on demand      |
 
 ### Sales & CRM Terms
 
-| Term | Definition |
-|:---|:---|
-| **Lead** | A potential customer who has shown interest |
-| **Opportunity** | A qualified lead with a potential deal |
-| **Pipeline** | Visual representation of sales opportunities by stage |
-| **Quotation** | A formal price proposal sent to a potential customer |
-| **Sales Order** | A confirmed order from a customer |
-| **Delivery Note** | A document accompanying goods being delivered |
-| **Return** | Goods sent back by a customer |
-| **RFQ** | Request for Quotation — asking vendors for pricing |
-| **Purchase Order (PO)** | A formal order sent to a vendor |
+| Term                    | Definition                                            |
+| :---------------------- | :---------------------------------------------------- |
+| **Lead**                | A potential customer who has shown interest           |
+| **Opportunity**         | A qualified lead with a potential deal                |
+| **Pipeline**            | Visual representation of sales opportunities by stage |
+| **Quotation**           | A formal price proposal sent to a potential customer  |
+| **Sales Order**         | A confirmed order from a customer                     |
+| **Delivery Note**       | A document accompanying goods being delivered         |
+| **Return**              | Goods sent back by a customer                         |
+| **RFQ**                 | Request for Quotation — asking vendors for pricing    |
+| **Purchase Order (PO)** | A formal order sent to a vendor                       |
 
 ### Technical Terms
 
-| Term | Definition |
-|:---|:---|
-| **DTO** | Data Transfer Object — object used to transfer data between layers |
-| **Domain Event** | A notification that something significant happened in a module |
-| **Middleware** | Code that runs between request and handler (auth, logging, tenant injection) |
-| **Guard** | NestJS construct that determines if a request should be handled |
-| **Pipe** | NestJS construct that transforms/validates input data |
-| **Interceptor** | NestJS construct that adds logic before/after handler execution |
-| **BFF** | Backend For Frontend — an API layer tailored to a specific frontend |
-| **RSC** | React Server Components — React components that render on the server |
-| **tRPC** | TypeScript RPC — type-safe API calls without schema definition |
-| **ORM** | Object-Relational Mapping — maps database tables to code objects |
-| **Migration** | A versioned change to the database schema |
-| **Seed** | Initial data loaded into the database for development/testing |
+| Term             | Definition                                                                   |
+| :--------------- | :--------------------------------------------------------------------------- |
+| **DTO**          | Data Transfer Object — object used to transfer data between layers           |
+| **Domain Event** | A notification that something significant happened in a module               |
+| **Middleware**   | Code that runs between request and handler (auth, logging, tenant injection) |
+| **Guard**        | NestJS construct that determines if a request should be handled              |
+| **Pipe**         | NestJS construct that transforms/validates input data                        |
+| **Interceptor**  | NestJS construct that adds logic before/after handler execution              |
+| **BFF**          | Backend For Frontend — an API layer tailored to a specific frontend          |
+| **RSC**          | React Server Components — React components that render on the server         |
+| **tRPC**         | TypeScript RPC — type-safe API calls without schema definition               |
+| **ORM**          | Object-Relational Mapping — maps database tables to code objects             |
+| **Migration**    | A versioned change to the database schema                                    |
+| **Seed**         | Initial data loaded into the database for development/testing                |

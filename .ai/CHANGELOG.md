@@ -2,12 +2,28 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
-
 > **Compacted 2026-07-17**: entries before 2026-07-15 (267 entries covering the
 > build-out of all 31 modules, the Finance/Inventory deepening cycles, the
 > marketplace/extension platform, Web Studio CMS, Connect, and the UniERP
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
+
+## [2026-07-17] ADP Governance - Supreme Governance and 12 ADP Velocity Improvements
+
+- Created the supreme governance document `instructions.md` inside `.ai/` consolidating coding standards, full-system architecture flows (7 ASCII diagrams), and UI/DB/Security policies.
+- Updated `AGENTS.md` and `HANDBOOK.md` to establish `instructions.md` as the supreme pre-work reading reference.
+- Enhanced `AUTOPILOT.md` protocol to inject the 12 approved ADP performance and velocity improvements:
+  - Configured 500+ weighted feature point completion goals.
+  - Set velocity targets to 40+ features per DEV cycle and 10+ fixes / 10+ feature suggestions per QA cycle.
+  - Implemented the Feature Distribution Rebalancing priority ladder, blocking new features in complete modules (500+) until all modules exceed the Minimum Viable Module (MVM) threshold of 50 features.
+  - Added a new cross-module **INTEGRATION flow** trigger (`integrate`) to scope, wire, and verify end-to-end multi-module business processes.
+  - Added parallel DEV cycles for skeleton modules, micro-harden checkpoints every 10 features, and a weekly-cached PM research catalog (`MARKET_BENCHMARK.md`).
+- Created automated tool scripts in `scripts/`:
+  - `module-health.mjs`: Scans modular APIs to calculate health scores (0-100) and automatically injects/updates the System Progress Dashboard in `MODULE_REGISTRY.md`.
+  - `pre-push-gate.mjs`: Runs pre-push checks enforcing CHANGELOG, MODULE_REGISTRY, no stray scripts/files, no console.logs, and strict type verification.
+  - `cycle-report.mjs`: Computes structured JSON run files (`cycle-report.json`) tracking feature counts, git commits, and cycle metadata.
+  - `scaffold-entity.mjs`: Template generator for creating complete end-to-end entity boilerplate code (Prisma → DTOs → Services → Controllers).
+- Updated `claim.mjs` with a garbage-collection `gc` command to automatically prune stale locks older than 48 hours.
 
 ## [2026-07-17] Inventory - Decomposed Products & Catalog Operations from God-Class
 
@@ -235,7 +251,6 @@
   - **tsup configuration**: Corrected `tsup.config.ts` in `packages/ui-components` by marking `.css` files as external (`/\.css$/`) and adding the `onSuccess` callback to run the `copy-css.mjs` script. This enables esbuild to generate raw imports (e.g., `import styles from './button.module.css'`) instead of compiling them to empty objects (`{}`), allowing Next.js to compile them natively via `transpilePackages`.
   - **Modal unit tests**: Fixed a failing test in `modal.test.tsx` (`renders nothing when closed`) to verify that the native HTML5 `<dialog>` element does not have the `open` attribute when closed, rather than checking JSDOM's document content directly.
 
-
 ## [2026-07-16] UI Migration Phase 0 & Phase 1 — Critical Fixes & Shell Decomposition
 
 - **Phase 0 — Critical Fixes**:
@@ -282,6 +297,7 @@
 **Scope**: Full codebase audit of 486 pages across 28 modules for UI framework compliance.
 
 **Audit Findings**:
+
 - 454/486 pages (93.4%) needed migration — only 32 were fully compliant
 - 14,250 inline `style={{}}` violations identified
 - 1,082 hardcoded hex colors found
@@ -289,6 +305,7 @@
 - 21/30 detail pages missing `<ChangeHistory>` component
 
 **Phase 1 — CSS Utility Class Expansion** (`packages/ui/src/styles/globals.css`):
+
 - Expanded from 1,053 → 1,905 lines with ~120 new `.ui-*` utility classes
 - Added: `.ui-page-header`, `.ui-tabs`/`.ui-tab`, `.ui-badge-*`, `.ui-stack-*`, `.ui-hstack-*`,
   `.ui-flex-between`/`.ui-flex-end`/`.ui-flex-center`, `.ui-modal-*`, `.ui-search-input`,
@@ -299,11 +316,13 @@
   `overflow-x-auto`, `text-center`, `cursor-pointer`, etc.
 
 **Phase 2 — Migration Script** (`scripts/migrate-ui.mjs`):
+
 - Built automated regex-based migration tool with 65 pattern replacement rules
 - Supports `--dry-run`, `--apply`, `--report`, `--module=name`
 - Safe className merging when existing className attributes are present
 
 **Phase 3 — Automated Migration Execution**:
+
 - Pass 1: 3,625 replacements across 407 files
 - Pass 2: 752 more replacements across 251 files
 - **Total: 4,377 inline styles replaced with CSS utility classes (29.5% reduction)**
@@ -505,6 +524,7 @@
 **Why**: Migrate Finance masters (Invoices, Payments, Journals, Chart of Accounts, Bank Accounts, Payment Terms) to schema-driven framework views.
 
 **Changes**:
+
 - **Resource Definitions**: Registered `invoiceResource`, `paymentResource`, `journalResource`, `accountResource`, `bankAccountResource`, and `paymentTermResource` inside `apps/web/src/modules/finance.ts` and registered them with the `financeModule` definition.
 - **Invoices dashboard page**: Rewrote the main finance dashboard list page to delegate rendering to framework `ListView` and `FormView`.
 - **Journal Entries, Bank Accounts, Chart of Accounts, and Payment Terms list pages**: Refactored to utilize standard framework `ListView` and `FormView` schema-driven views, decommissioning raw API fetching and local token parsing.
@@ -516,6 +536,7 @@
 **Why**: Complete the migration of all remaining CRM pages (Opportunities, Cases, Price Books, Products, Vendors, Activities) to the schema-driven framework views.
 
 **Changes**:
+
 - **Resource Definitions**: Registered `opportunityResource`, `caseResource`, `priceBookResource`, `crmProductResource`, `vendorResource`, and `activityResource` inside `apps/web/src/modules/crm.ts` and registered them with the `crmModule` definition.
 - **Opportunities list & detail**: Replaced opportunities list page with `ListView` and `FormView`. Replaced detail page with `DetailView`, incorporating stage-progression widgets, line-item lists, and item addition modals, and adding `<ChangeHistory />` at the bottom.
 - **Cases list & detail**: Migrated cases list to `ListView` and detail view to `DetailView` with SLA timer cards, status transition actions, and `<ChangeHistory />`.
@@ -528,6 +549,7 @@
 **Why**: Fulfill Phase 2 UI framework plan migration goals — integrate saved views with server-side API endpoints, support link field autocompletes, and migrate the remaining CRM masters to framework views.
 
 **Changes**:
+
 - **Link Field Autocomplete**: Created `LinkAutocomplete` component inside `packages/framework/src/views/FormView.tsx` to search resources asynchronously via typeahead, resolve IDs to labels, and render in `FieldInput`. Fixed type checks to support `unknown` inputs.
 - **Server-Persisted Saved Views**: Added `SavedView` model to `packages/database/prisma/schema.prisma` with multi-tenant row-level security and user relations. Generated Prisma Client and pushed to database. Created NestJS SavedViews API module (`apps/api/src/modules/saved-views/`) exposing CRUD routes. Implemented `ServerSavedViewStore` in `packages/framework/src/views/saved-views.ts` to sync local state asynchronously via client requests. Added vitest unit tests covering `ServerSavedViewStore` loading, saving, and deletion sync.
 - **CRM Masters Migrated**: Migrated CRM Contacts, Leads, and Contracts list and detail pages from complex manual fetches to schema-driven `ListView`, `DetailView`, and `FormView` wrappers. Added `ChangeHistory` timelines at the bottom of all migrated detail pages. Added `contactResource`, `leadResource`, and `contractResource` definitions to `apps/web/src/modules/crm.ts`.
@@ -541,6 +563,7 @@
 hand-written fetch/table/form pages with schema-driven framework views.
 
 **Changes**:
+
 - New `apps/web/src/modules/crm.ts` (customerResource + crmModule); CRM customers page
   rewritten from 472 → 57 lines using ListView/FormView/RouteGuard; mock-data fallback
   and hand-rolled modal/filter/pagination deleted.
@@ -564,6 +587,7 @@ lacked table-stakes ERP list features (bulk actions, filters, saved views, expor
 blocked migrating the ~500 hand-written pages onto it.
 
 **Changes**:
+
 - `@unerp/ui-data-grid` `DataTable`: controlled row multi-select with select-all +
   indeterminate header checkbox, bulk-action toolbar, windowed rendering for large
   datasets (`virtualized`/`rowHeight`/`maxHeight`), new `ColumnPicker` component and
@@ -591,6 +615,7 @@ saved views (store interface is pluggable). Phase 2 (page migration wave) is nex
 **Why**: Completely eliminate legacy `.frappe-*` CSS references across the codebase to ensure system uniqueness and visual consistency with the UniERP Design System (per AGENTS.md rule 5).
 
 **Changes**:
+
 - Removed all legacy `.frappe-*` class name aliases from `packages/ui/src/styles/globals.css` (specifically: `.frappe-card`, `.frappe-btn`, `.frappe-form-group`, `.frappe-dropdown-*`, `.frappe-breadcrumb-*`, etc.).
 - Renamed all dropdown and breadcrumb section comments in `globals.css` to UniERP terminology.
 - Added new `.ui-text-muted`, `.ui-text-primary`, `.ui-text-bold`, and `.ui-radio-group` utility classes to `globals.css` to replace orphan classes.
@@ -713,6 +738,7 @@ shared-package build step instead of erroring with `TS2307: Cannot find module`.
 
 **Merged to `main` and deleted** (10 stale sub-branches consolidated, none left
 except `main`):
+
 - `claude/goal-start-ib21qn` (52 commits) — Inventory cycles 41-43: ASN management,
   cross-dock, pick-waves, shipment-tracking (DB + API + UI + tests, 4 Prisma
   migrations). Conflicts resolved in favor of main's already-split `@unerp/ui-*`
@@ -761,4 +787,3 @@ sync (or with OneDrive paused) to close this gap. Recommend moving the working
 copy off OneDrive-synced storage for local dev generally, since live file sync
 racing against `pnpm`/Prisma symlink creation is a recurring source of this class
 of error.
-

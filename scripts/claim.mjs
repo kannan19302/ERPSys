@@ -126,5 +126,29 @@ if (cmd === 'list') {
   process.exit(0);
 }
 
-console.error('usage: claim.mjs <acquire|heartbeat|release|list> [slug] [--agent name] [--scope desc]');
+if (cmd === 'gc') {
+  const files = readdirSync(locksDir).filter((f) => f.endsWith('.lock'));
+  const STALE_GC_MS = 48 * 60 * 60 * 1000; // 48 hours
+  let count = 0;
+  for (const f of files) {
+    const lockP = path.join(locksDir, f);
+    const l = readLock(lockP);
+    if (!l) continue;
+    const a = age(l.heartbeatAt);
+    if (a > STALE_GC_MS) {
+      console.log(`GC: Expired lock ${l.slug} held by ${l.agent} (${fmtAge(a)} stale)`);
+      try {
+        unlinkSync(lockP);
+        count++;
+      } catch (err) {
+        console.error(`Failed to delete lock ${l.slug}:`, err.message);
+      }
+    }
+  }
+  console.log(`GC complete. Removed ${count} expired locks.`);
+  process.exit(0);
+}
+
+console.error('usage: claim.mjs <acquire|heartbeat|release|list|gc> [slug] [--agent name] [--scope desc]');
 process.exit(2);
+
