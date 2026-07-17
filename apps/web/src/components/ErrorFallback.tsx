@@ -11,7 +11,21 @@ interface ErrorFallbackProps {
   message?: string;
   error?: Error & { digest?: string; requestId?: string };
   reset?: () => void;
+  /**
+   * Hide the crash-report form + stack details (used by 404s, where there is
+   * nothing to report) and show quick links to common destinations instead.
+   */
+  lightweight?: boolean;
 }
+
+const QUICK_LINKS: Array<{ label: string; href: string }> = [
+  { label: 'All Apps', href: '/apps' },
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Finance', href: '/finance' },
+  { label: 'CRM & Sales', href: '/crm' },
+  { label: 'Inventory', href: '/inventory' },
+  { label: 'Settings', href: '/settings' },
+];
 
 export function ErrorFallback({
   statusCode = 500,
@@ -19,6 +33,7 @@ export function ErrorFallback({
   message = 'An unexpected system error occurred.',
   error,
   reset,
+  lightweight = false,
 }: ErrorFallbackProps) {
   const router = useRouter();
   const [showDetails, setShowDetails] = useState(false);
@@ -170,6 +185,34 @@ export function ErrorFallback({
             )}
           </div>
 
+          {/* 404s get destination shortcuts instead of a crash report */}
+          {lightweight && (
+            <>
+              <hr style={{ border: 0, borderTop: '1px solid var(--color-border)', margin: 'var(--space-2) 0' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>
+                  Jump to a common destination
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                  {QUICK_LINKS.map((l) => (
+                    <button
+                      key={l.href}
+                      className="ui-btn ui-btn-secondary"
+                      style={{ fontSize: 'var(--text-sm)' }}
+                      onClick={() => router.push(l.href)}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
+                  Tip: press <kbd style={{ padding: '1px 5px', border: '1px solid var(--color-border)', borderRadius: 4 }}>Ctrl</kbd>+<kbd style={{ padding: '1px 5px', border: '1px solid var(--color-border)', borderRadius: 4 }}>K</kbd> anywhere to search every app, page, and record.
+                </span>
+              </div>
+            </>
+          )}
+
+          {!lightweight && (<>
           <hr style={{ border: 0, borderTop: '1px solid var(--color-border)', margin: 'var(--space-2) 0' }} />
 
           {/* Collapsible Technical Details (Developer/System Admin perspective) */}
@@ -314,6 +357,7 @@ export function ErrorFallback({
               </form>
             )}
           </div>
+          </>)}
         </div>
       </div>
     </div>

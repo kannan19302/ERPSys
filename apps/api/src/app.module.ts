@@ -7,6 +7,7 @@ import { TenantInterceptor } from './common/guards/tenant.interceptor';
 import { HealthController } from './health.controller';
 import { MetricsController } from './metrics.controller';
 import { AuthModule } from './modules/auth/auth.module';
+import { SearchModule } from './modules/search/search.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { HrModule } from './modules/hr/hr.module';
@@ -67,7 +68,7 @@ import { CrossDockModule } from './modules/inventory/cross-dock.module';
 import { PickWavesModule } from './modules/inventory/pick-waves.module';
 import { AsnModule } from './modules/inventory/asn.module';
 import { ShipmentTrackingModule } from './modules/inventory/shipment-tracking.module';
-import { SavedViewsModule } from './modules/saved-views/saved-views.module';
+import { SavedViewsModule } from './modules/saved-views/saved-views.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { SavedViewsModule } from './modules/saved-views/saved-views.module';
 
     // Register ERP Foundation & Core Modules (Phase 0-1)
     AuthModule,
+    SearchModule,
     AdminModule,
     FinanceModule,
     HrModule,
@@ -131,7 +133,7 @@ import { SavedViewsModule } from './modules/saved-views/saved-views.module';
     CrossDockModule,
     PickWavesModule,
     AsnModule,
-    ShipmentTrackingModule,
+    ShipmentTrackingModule,
 
     // Phase 2 — Procurement, Sales & Supply Chain
     ProcurementModule,

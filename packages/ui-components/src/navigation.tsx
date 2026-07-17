@@ -5,7 +5,13 @@ import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import styles from './navigation.module.css';
 
 // ── Tabs ──────────────────────────────────────────────
-export interface TabItem { key: string; label: ReactNode; icon?: ReactNode; }
+export interface TabItem {
+  key: string;
+  label: ReactNode;
+  icon?: ReactNode;
+  /** Short "what does this tab show?" hint, surfaced as a hover tooltip. */
+  description?: string;
+}
 export interface TabsProps {
   tabs: TabItem[];
   value: string;
@@ -24,6 +30,7 @@ const TabButton: FC<{ tab: TabItem; active: boolean; onClick: () => void }> = ({
       aria-selected={active}
       onClick={onClick}
       className={btnClass}
+      title={tab.description}
     >
       {tab.icon}{tab.label}
     </button>

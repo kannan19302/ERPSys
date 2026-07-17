@@ -8,6 +8,57 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-17] Platform Shell & Framework UX Program (user-directed 10-item batch)
+
+User-requested platform-wide UX upgrades, implemented at the framework/shell
+level so every module inherits them:
+
+### Framework (`@unerp/framework`)
+- **ListView view modes**: table / kanban / chart switcher (reuses `ViewSwitcher`,
+  `KanbanBoard` from the design system). Auto-enabled when a resource has a
+  status field or an explicit `list.kanban/chart.groupBy`. Kanban drag persists
+  the group field via the update mutation; cards open the record.
+- **Drill-down contract**: chart segments are clickable — clicking filters the
+  table view to the segment's real records. Non-table modes fetch a 200-row
+  window instead of one page.
+- **Schema-level info hints**: `ResourceSchema.description` + `NavItemDef.description`
+  render as (i) tooltips; toolbar actions (Export CSV, New X) carry explanatory
+  tooltips. `ApiClient` gained a `put()` method.
+
+### Design system (`@unerp/ui-components`)
+- New `InfoHint` primitive — the platform-wide "(i) what does this do?"
+  affordance. `TabItem.description` renders as a tab tooltip.
+
+### Shell (apps/web)
+- **Multi-theme switcher** in the header: all 8 ui-tokens themes + system,
+  driven by the root `ThemeProvider` (the old local light/dark state is gone).
+- **Realtime notification center**: bell placeholder replaced with a real panel
+  over `/communication/notifications` + the `/ws` gateway `notification` event
+  (unread badge, mark read / mark-all-read, deep links, 60s poll fallback).
+- **Command palette**: now indexes Apps, every sidebar page of every app,
+  Actions (theme switch, sign out), and live tenant records via the new search
+  API, with grouped results and debounced querying.
+- **Tenant switcher is real**: header now lists actual memberships and switching
+  re-issues the session server-side, then reloads.
+- **404 page**: lightweight variant with quick-destination buttons and a Ctrl+K
+  hint (crash-report form now reserved for 500s). Sidebar items support
+  `description` tooltips; collapsed sidebar icons show their name on hover.
+
+### API (apps/api)
+- **`GET /search/global?q=`** (new `SearchModule`): tenant-scoped, RBAC-filtered
+  cross-entity search (customers, leads, products, employees, invoices, sales
+  orders, purchase orders, projects — each gated by that entity's `.read`
+  permission), throttled 30/min.
+- **`GET /auth/tenants` + `POST /auth/switch-tenant`**: email-based membership
+  list and session re-issue against another tenant (old session revoked first;
+  cookie replaced).
+
+### Verification
+- Typecheck clean: framework, api, web. `architecture:check` green.
+- Framework 15/15 and auth 5/5 unit tests pass. (Pre-existing, unrelated
+  modal.test failure from in-flight uncommitted modal.tsx changes was flagged
+  as a separate task, not included in this change.)
+
 ## [2026-07-17] Auth Hardening Pass Two — Revocable Sessions + MFA Secrets Encrypted at Rest
 
 Follow-up to the pass-one hardening below.

@@ -23,5 +23,6 @@ export {
 } from './protected-component';
 export { DatePicker, type DatePickerProps } from './date-picker';
 export { ComboBox, type ComboBoxProps, type ComboBoxOption } from './combobox';
+export { InfoHint, type InfoHintProps } from './info-hint';
 
 

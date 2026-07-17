@@ -116,6 +116,34 @@ export class AuthController {
     return this.authService.updateProfile(req.user.userId, dto);
   }
 
+  @ApiOperation({ summary: 'List tenants this account can sign in to' })
+  @Permissions('auth.read')
+  @Get('tenants')
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  async listTenants(@Req() req: AuthenticatedRequest) {
+    return this.authService.listUserTenants(req.user.userId);
+  }
+
+  @ApiOperation({ summary: 'Switch the active tenant (re-issues the session)' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('switch-tenant')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async switchTenant(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ tenantSlug: z.string().min(1).max(100) })) body: { tenantSlug: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.switchTenant(
+      req.user.userId,
+      req.user.sid,
+      body.tenantSlug,
+      sessionContext(req),
+    );
+    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    return result;
+  }
+
   @ApiOperation({ summary: 'Request password reset' })
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('forgot-password')

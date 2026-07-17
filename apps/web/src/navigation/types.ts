@@ -7,6 +7,8 @@ export interface SidebarItem {
   icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties; className?: string }>;
   isHeader?: boolean;
   items?: SidebarItem[];
+  /** Short "what does this page do?" hint, shown as a hover tooltip. */
+  description?: string;
 }
 
 /** The resolved navigation for the active module (sidebar title + entries). */

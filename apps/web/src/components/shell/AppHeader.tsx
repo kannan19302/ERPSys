@@ -2,20 +2,36 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  ChevronDown, Search, Bell, Sun, Moon, LogOut, User as UserIcon, Settings, Menu 
+import {
+  ChevronDown, Search, Sun, Moon, Monitor, Palette, Check, LogOut, User as UserIcon, Settings, Menu, Building2
 } from 'lucide-react';
+import { useTheme, type ThemeSetting } from '@unerp/ui';
 import { AppSwitcher } from './AppSwitcher';
+import { NotificationCenter } from './NotificationCenter';
 import styles from './AppHeader.module.css';
+
+/** Human labels + one-line explanations for every design-system theme. */
+const THEME_INFO: Record<string, { label: string; hint: string }> = {
+  system: { label: 'System', hint: 'Follow your operating system light/dark preference' },
+  light: { label: 'Light', hint: 'Default bright theme' },
+  dark: { label: 'Dark', hint: 'Low-light theme for dim environments' },
+  enterprise: { label: 'Enterprise', hint: 'Conservative corporate look with denser chrome' },
+  modern: { label: 'Modern', hint: 'Soft contemporary neutrals' },
+  minimal: { label: 'Minimal', hint: 'Stripped-back, whitespace-first look' },
+  classic: { label: 'Classic', hint: 'Traditional ERP styling' },
+  compact: { label: 'Compact', hint: 'Tighter spacing to fit more data on screen' },
+  'high-contrast': { label: 'High contrast', hint: 'Maximum-contrast accessibility theme' },
+};
+
+export interface TenantOption { id?: string; name: string; slug: string }
 
 interface AppHeaderProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   theme: 'light' | 'dark';
-  toggleTheme: () => void;
-  currentTenant: { name: string; slug: string };
-  tenants: Array<{ name: string; slug: string }>;
-  handleTenantSwitch: (t: { name: string; slug: string }) => void;
+  currentTenant: TenantOption;
+  tenants: TenantOption[];
+  handleTenantSwitch: (t: TenantOption) => void;
   user: { firstName: string; lastName: string; email: string; avatar?: string } | null;
   handleLogout: () => void;
   searchQuery: string;
@@ -41,11 +57,66 @@ interface AppHeaderProps {
   GLOBAL_SEARCH_ITEMS: any[];
 }
 
+function ThemeMenu({ iconBtnStyle }: { iconBtnStyle: string }) {
+  const { setting, resolvedTheme, setTheme, themes } = useTheme();
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, []);
+
+  const options: ThemeSetting[] = ['system', ...themes];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={iconBtnStyle}
+        aria-label="Choose color theme"
+        title="Theme — switch between the design-system color themes"
+      >
+        {setting === 'system' ? <Monitor size={16} /> : resolvedTheme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+      </button>
+      {open && (
+        <div className="ui-dropdown ui-dropdown-right" style={{ minWidth: 230 }}>
+          <p className="ui-dropdown-header" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Palette size={12} /> Theme
+          </p>
+          {options.map((t) => {
+            const info = THEME_INFO[t] ?? { label: t, hint: '' };
+            const active = setting === t;
+            return (
+              <button
+                key={t}
+                onClick={() => { setTheme(t); }}
+                className={`ui-dropdown-item ${active ? 'active' : ''}`}
+                title={info.hint}
+              >
+                <span style={{ width: 14, display: 'inline-flex', flexShrink: 0 }}>
+                  {active && <Check size={13} />}
+                </span>
+                <span className="ui-flex-col" style={{ alignItems: 'flex-start' }}>
+                  <span>{info.label}</span>
+                  <span className="ui-text-micro">{info.hint}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AppHeader({
   collapsed,
   setCollapsed,
   theme,
-  toggleTheme,
   currentTenant,
   tenants,
   handleTenantSwitch,
@@ -108,21 +179,29 @@ export function AppHeader({
             />
           )}
 
-          {/* Tenant Selector Dropdown */}
+          {/* Tenant Selector — real memberships from /auth/tenants */}
           <div className="relative" ref={tenantDropdownRef}>
             <button
               onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
               className={btnStyle}
+              title={
+                tenants.length > 1
+                  ? 'Organization — switch between the organizations your account belongs to'
+                  : 'Organization — the tenant you are currently signed in to'
+              }
             >
+              <Building2 size={13} style={{ flexShrink: 0, opacity: 0.7 }} />
               <span>{currentTenant.name}</span>
-              <ChevronDown
-                size={13}
-                className={`${styles.chevronIcon} ${tenantDropdownOpen ? styles.chevronRotated : ''}`}
-              />
+              {tenants.length > 1 && (
+                <ChevronDown
+                  size={13}
+                  className={`${styles.chevronIcon} ${tenantDropdownOpen ? styles.chevronRotated : ''}`}
+                />
+              )}
             </button>
-            {tenantDropdownOpen && (
+            {tenantDropdownOpen && tenants.length > 1 && (
               <div className="ui-dropdown ui-dropdown-left ui-dropdown-tenant">
-                <p className="ui-dropdown-header">Switch Tenant</p>
+                <p className="ui-dropdown-header">Switch organization</p>
                 {tenants.map((t) => {
                   const isTenantActive = currentTenant.slug === t.slug;
                   return (
@@ -130,6 +209,7 @@ export function AppHeader({
                       key={t.slug}
                       onClick={() => handleTenantSwitch(t)}
                       className={`ui-dropdown-item ${isTenantActive ? 'active' : ''}`}
+                      title={isTenantActive ? 'Currently active organization' : `Sign in to ${t.name} with this account`}
                     >
                       {t.name}
                     </button>
@@ -195,23 +275,11 @@ export function AppHeader({
           </div>
         )}
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className={iconBtnStyle}
-          aria-label="Toggle color theme"
-        >
-          {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
+        {/* Theme Menu — all design-system themes, not just light/dark */}
+        <ThemeMenu iconBtnStyle={iconBtnStyle} />
 
-        {/* Notification Bell */}
-        <button
-          className={iconBtnStyle}
-          aria-label="View notifications"
-        >
-          <Bell size={16} />
-          <span className={styles.notificationBadge} />
-        </button>
+        {/* Realtime Notification Center */}
+        <NotificationCenter iconBtnStyle={iconBtnStyle} />
 
         {/* Separator */}
         <div className={styles.divider} />

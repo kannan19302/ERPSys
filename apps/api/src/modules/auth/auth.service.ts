@@ -454,6 +454,56 @@ export class AuthService {
   }
 
   /**
+   * Lists every tenant this account can sign in to. Identity is email-based:
+   * the same verified email in another tenant is the same person, so the list
+   * is all ACTIVE user rows sharing the caller's email (Slack-workspace model).
+   */
+  async listUserTenants(userId: string) {
+    const me = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, tenantId: true },
+    });
+    if (!me) throw new NotFoundException('User not found');
+
+    const memberships = await prisma.user.findMany({
+      where: { email: me.email, status: 'ACTIVE' },
+      select: { tenantId: true, tenant: { select: { id: true, name: true, slug: true } } },
+      orderBy: { tenant: { name: 'asc' } },
+    });
+    return memberships.map((m) => ({ ...m.tenant, current: m.tenantId === me.tenantId }));
+  }
+
+  /**
+   * Re-issues the session against another tenant the caller's email belongs to.
+   * The caller already authenticated (password + MFA where enabled) for this
+   * email, so switching does not re-prompt — mirroring how login without a slug
+   * resolves the tenant. The old session is revoked before the new one is cut,
+   * so exactly one tenant scope is live per switch.
+   */
+  async switchTenant(userId: string, currentSid: string | undefined, tenantSlug: string, context?: SessionContext) {
+    const me = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    if (!me) throw new UnauthorizedException('Invalid session');
+
+    const target = await prisma.user.findFirst({
+      where: {
+        email: me.email,
+        status: 'ACTIVE',
+        tenant: { slug: tenantSlug },
+      },
+      include: { tenant: true },
+    });
+    if (!target) {
+      throw new UnauthorizedException('No active membership in that organization');
+    }
+
+    if (currentSid) await this.revokeSessionById(currentSid);
+    return this.issueSession(target, context);
+  }
+
+  /**
    * Issues a single-use, hashed password reset token. Always responds the same
    * way whether or not the email exists, to avoid account enumeration.
    */

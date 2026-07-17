@@ -17,6 +17,8 @@ interface SidebarItem {
   icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   isHeader?: boolean;
   items?: SidebarItem[];
+  /** Short "what does this page do?" hint, shown as a hover tooltip. */
+  description?: string;
 }
 
 interface AppSidebarProps {
@@ -86,6 +88,9 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
       <Link
         key={item.name}
         href={href}
+        // The "(i) what does this do?" affordance: explicit description when the
+        // nav registry provides one; the item name when collapsed to icon-only.
+        title={item.description ?? (collapsed ? item.name : undefined)}
         aria-current={isActive ? 'page' : undefined}
         className={`${styles.navItem} ${isActive ? styles.navItemActive : ''} ${collapsed ? styles.navItemCollapsed : styles.navItemExpanded}`}
         style={{

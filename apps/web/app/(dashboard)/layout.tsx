@@ -11,7 +11,7 @@ import styles from './layout.module.css';
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { DemoBanner, Spinner } from '@unerp/ui';
+import { DemoBanner, Spinner, useTheme } from '@unerp/ui';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -62,7 +62,10 @@ export default function DashboardLayout({
   const pathname = usePathname() || '';
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  // Theme now lives in the root ThemeProvider (all design-system themes).
+  // Downstream shell components only need a light/dark hint for their CSS pairs.
+  const { resolvedTheme } = useTheme();
+  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light';
   
   // Header Dropdowns visibility states
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -118,12 +121,9 @@ export default function DashboardLayout({
   const searchDropdownRef = React.useRef<HTMLDivElement>(null);
 
   const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; avatar?: string } | null>(null);
-  const [currentTenant, setCurrentTenant] = useState({ name: 'Acme Corp', slug: 'acme' });
-  const tenants = [
-    { name: 'Acme Corp', slug: 'acme' },
-    { name: 'Stark Industries', slug: 'stark' },
-    { name: 'Wayne Enterprises', slug: 'wayne' },
-  ];
+  const [currentTenant, setCurrentTenant] = useState<{ id?: string; name: string; slug: string }>({ name: '…', slug: '' });
+  // Real memberships from the API — every tenant this account can sign in to.
+  const [tenants, setTenants] = useState<Array<{ id: string; name: string; slug: string }>>([]);
 
   // Click outside listener for all dropdowns
   useEffect(() => {
@@ -174,6 +174,10 @@ export default function DashboardLayout({
         if (profile.tenant) setCurrentTenant(profile.tenant);
         setIsLoading(false);
 
+        client.get<Array<{ id: string; name: string; slug: string }>>('/auth/tenants')
+          .then((list) => { if (mounted && Array.isArray(list)) setTenants(list); })
+          .catch(() => { });
+
         const installedList = await client.get<string[]>('/saas/installed-apps');
         if (!mounted) return;
         setInstalledApps(installedList);
@@ -196,16 +200,8 @@ export default function DashboardLayout({
       }
     };
     loadSession();
-    const currentTheme = document.documentElement.getAttribute('data-theme') as 'light' | 'dark' || 'light';
-    setTheme(currentTheme);
     return () => { mounted = false; };
   }, [router, pathname, client]);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
-  };
 
   const handleLogout = async () => {
     try {
@@ -214,9 +210,17 @@ export default function DashboardLayout({
     router.push('/login');
   };
 
-  const handleTenantSwitch = (t: typeof currentTenant) => {
-    setCurrentTenant(t);
+  const handleTenantSwitch = async (t: { name: string; slug: string }) => {
     setTenantDropdownOpen(false);
+    if (t.slug === currentTenant.slug) return;
+    try {
+      // Server re-issues the session cookie scoped to the target tenant;
+      // a full reload drops every tenant-scoped cache in one stroke.
+      await client.post('/auth/switch-tenant', { tenantSlug: t.slug });
+      window.location.assign('/apps');
+    } catch {
+      // Membership missing or revoked — leave the current session untouched.
+    }
   };
 
   const isAppsLanding = pathname === '/apps' || pathname === '/apps/store';
@@ -301,9 +305,8 @@ export default function DashboardLayout({
             collapsed={collapsed}
             setCollapsed={setCollapsed}
             theme={theme}
-            toggleTheme={toggleTheme}
             currentTenant={currentTenant}
-            tenants={tenants}
+            tenants={tenants.length > 0 ? tenants : [currentTenant]}
             handleTenantSwitch={handleTenantSwitch}
             user={user}
             handleLogout={handleLogout}
@@ -374,6 +377,7 @@ export default function DashboardLayout({
           isOpen={cmdPaletteOpen}
           onClose={() => setCmdPaletteOpen(false)}
           GLOBAL_SEARCH_ITEMS={GLOBAL_SEARCH_ITEMS}
+          onLogout={handleLogout}
         />
 
         {/* Floating AI Chatbot Companion */}
