@@ -70,6 +70,8 @@ console.log(`✅ Generated DTO: ${dtoPath}`);
 // 2. Generate Service file
 const serviceContent = `import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@unerp/database';
+// Track G.9 platform contracts: list query + pagination meta come from @unerp/shared.
+import { buildPaginationMeta, listQuerySchema, type ListQuery } from '@unerp/shared';
 import { Create${entityName}Input, Update${entityName}Input } from './dto/${entityKebab}.dto';
 
 @Injectable()
@@ -87,8 +89,9 @@ export class ${entityName}Service {
     });
   }
 
-  async findAll(tenantId: string, query: any) {
-    const { page = 1, limit = 25, search } = query;
+  async findAll(tenantId: string, rawQuery: unknown & { search?: string }) {
+    const { page, limit, sortBy, sortOrder }: ListQuery = listQuerySchema.parse(rawQuery);
+    const search = typeof rawQuery === 'object' && rawQuery ? (rawQuery as { search?: string }).search : undefined;
     const where: any = { tenantId, deletedAt: null };
 
     if (search) {
@@ -98,25 +101,21 @@ export class ${entityName}Service {
       ];
     }
 
+    // Allowlist sortable fields — never pass client input straight to orderBy.
+    const sortableFields = new Set(['createdAt', 'updatedAt']);
+    const orderBy = sortBy && sortableFields.has(sortBy) ? { [sortBy]: sortOrder } : { createdAt: 'desc' as const };
+
     const [data, total] = await Promise.all([
       this.prisma.${entityLower}.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
       }),
       this.prisma.${entityLower}.count({ where }),
     ]);
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return { data, meta: buildPaginationMeta(page, limit, total) };
   }
 
   async findOne(tenantId: string, id: string) {

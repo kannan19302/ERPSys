@@ -9,6 +9,12 @@ import { z } from 'zod';
 
 export const cuidSchema = z.string().min(1, 'ID is required');
 
+/**
+ * @deprecated Track G.9 — use `listQuerySchema` from `@unerp/shared`
+ * (contracts) for new endpoints: it is the frozen platform list contract
+ * (`page`/`limit`/`sortBy`/`sortOrder`). This legacy shape (`sort`, `search`)
+ * remains for existing consumers only.
+ */
 export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().min(1).max(100).default(25),
@@ -17,16 +23,9 @@ export const paginationSchema = z.object({
 });
 export type PaginationInput = z.infer<typeof paginationSchema>;
 
-export const paginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
-  z.object({
-    data: z.array(itemSchema),
-    meta: z.object({
-      page: z.number(),
-      limit: z.number(),
-      total: z.number(),
-      totalPages: z.number(),
-    }),
-  });
+// Canonical response contract now lives in contracts/pagination (Track G.9);
+// re-exported via the package barrel. The old local definition was removed to
+// avoid two competing schemas for the same wire shape.
 
 export const dateRangeSchema = z
   .object({

@@ -8,6 +8,30 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 5 (Phase F) — Track G.9 closed: error envelope + pagination as executable contracts
+
+Autonomous run, iteration 2/10.
+
+- **`packages/shared/src/contracts/`** (new, exported from the package root):
+  `error-envelope.ts` — frozen envelope schema (statusCode/code/message/
+  requestId/timestamp/path/errors?), stable `ERROR_CODES` registry (incl.
+  `STALE_WRITE` reserved for G.2), `codeForStatus()`; `pagination.ts` —
+  `listQuerySchema` (coerced page/limit≤100/sortBy/sortOrder), strict
+  `paginationMetaSchema`, `paginatedResponseSchema(item)`,
+  `buildPaginationMeta()`.
+- **Consumers wired**: `AllExceptionsFilter` now imports the shared type +
+  `codeForStatus` (private duplicates deleted, behavior identical);
+  `scaffold-entity.mjs` emits contract-based list handling with a sortBy
+  allowlist (never client input straight into orderBy) — the exit-gate
+  "scaffolder default".
+- **Consolidation (plan addendum)**: `validators/index.ts` already had a loose
+  `paginatedResponseSchema` + legacy `paginationSchema` (sort/search) — the
+  loose response schema was REMOVED in favor of the canonical contract; the
+  legacy query schema stays `@deprecated` for existing consumers.
+- Gates: shared build + 43 shared tests (7 new contract tests) + API & web
+  typechecks + boundary check green. Roadmap G.9 ✅. **Ledger**: 4 → 5; next
+  mandatory harden in 5.
+
 ## [2026-07-18] Cycle 4 (Phase F) — Track G.6 closed: boot-time env validation + generated .env.example
 
 Autonomous 10-cycle run, cycle 1/10. Track A still at its sign-off gate →

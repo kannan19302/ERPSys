@@ -6,3 +6,4 @@ export * from './validators/index.js';
 export * from './constants/index.js';
 export * from './utils/index.js';
 export * from './permissions/registry.js';
+export * from './contracts/index.js';

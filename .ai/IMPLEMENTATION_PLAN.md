@@ -4,58 +4,60 @@
 
 ## Cycle
 
-- **Cycle #:** 4
-- **Phase:** F — Foundation (lift gate unmet)
+- **Cycle #:** 5
+- **Phase:** F — Foundation
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-g6`); autonomous 10-cycle run (user /goal), no focus question (Phase F)
+- **Agent/session:** fable-5 (claim: `foundation-track-g9`); autonomous 10-cycle run, iteration 2/10
 
 ## Scope & rationale
 
-**Track G.6 — boot-time env validation** (roadmap § 11b): "No boot-time env
-validation. Zod-validated typed config loaded at bootstrap; process refuses to
-start on invalid/missing env; `.env.example` generated from the schema so it
-can never drift."
+**Track G.9 — error envelope + pagination as executable contracts**
+(roadmap § 11b): today one `all-exceptions.filter.ts` implements the envelope
+privately and pagination is convention-only prose (rule 16b).
 
-Selected because: no P0/P1 open (build fixed cycle 3); Track A paused at the
-human sign-off gate → next unblocked, sign-off-independent, migration-free
-foundation item in G. **Duplicate-check:** no ConfigModule/joi/envalid/zod
-config anywhere in `apps/api/src` (verified by grep); `main.ts` hand-parses
-.env files with zero validation; a hand-written `.env.example` exists (drift
-unchecked). Env inventory captured by grep: ~32 variables across api +
-database + auth.
+**Duplicate-check:** `packages/shared/src/types/index.ts` has
+`PaginatedResponse`/`PaginationMeta` *interfaces* (types only — no runtime
+schema, no tests, not consumed by the filter); the filter defines its own
+private `ErrorEnvelope` interface; `scaffold-entity.mjs` hand-rolls
+page/limit. No runtime contract module exists → G.9 is open.
 
 ## Ordered work items
 
-1. `apps/api/src/common/config/env.schema.ts` — dependency-light Zod schema
-   (zod only, no Nest imports) covering the full grepped inventory; required
-   core (DATABASE_URL, REDIS_URL in prod), typed coercions (ports, booleans),
-   secrets min-length in production, sensible dev defaults; `.describe()` on
-   every key (drives the generator).
-2. `validateEnv()` — aggregate all failures into one readable report; exit 1
-   before Nest bootstrap. Wire into `main.ts` right after `loadEnv()`.
-   Non-production keeps dev-friendly defaults; production is strict.
-3. `scripts/generate-env-example.mjs` — imports the schema (Node 24 type
-   stripping), emits `.env.example` grouped + commented from `.describe()`
-   metadata; `--check` mode diffs against the committed file (CI drift gate).
-4. Unit tests (vitest): valid env passes; missing/invalid production env fails
-   with aggregated messages; boolean/port coercion.
-5. CI: add `node scripts/generate-env-example.mjs --check` step.
-6. Record + ship: CHANGELOG, Ledger 3 → 4, roadmap G.6 ✅, board rows, lock
-   release, land on `main`.
+1. `packages/shared/src/contracts/error-envelope.ts` — canonical error-code
+   registry (const map), Zod `errorEnvelopeSchema`, `ErrorEnvelope` type,
+   `codeForStatus()` helper (moved from the filter).
+2. `packages/shared/src/contracts/pagination.ts` — `listQuerySchema`
+   (coerced `page`≥1/25-default `limit`≤100/`sortBy`/`sortOrder`),
+   `ListQuery` type, `paginationMetaSchema`, `paginatedResponseSchema(item)`
+   builder, `buildPaginationMeta()` helper.
+3. Barrel `contracts/index.ts`, export from package root; deprecate (JSDoc)
+   the old type-only interfaces pointing at the contracts.
+4. Vitest suites for both contracts (validation edges, coercion, meta math).
+5. Consume: `AllExceptionsFilter` imports `ErrorEnvelope` + `codeForStatus`
+   from `@unerp/shared` (behavior identical); `scaffold-entity.mjs` template
+   emits `listQuerySchema`-based parsing + `buildPaginationMeta` so every new
+   module gets the contract by default (exit-gate "scaffolder default").
+6. Rebuild shared dist (tsc by path); shared tests + API typecheck + boundary
+   check; record (CHANGELOG, Ledger 4 → 5, roadmap G.9 ✅, board) and ship.
 
 ## Acceptance criteria
 
-- API refuses to boot with an invalid production env (unit-proven).
-- `.env.example` regenerated from schema; `--check` green in repo, red on
-  a deliberate edit (proof run).
-- API typecheck + targeted vitest green; boundary check green.
+- Contracts importable from `@unerp/shared` with runtime schemas + tests.
+- Filter compiles against the shared type with no behavior change.
+- Scaffolder emits contract-conformant list handling.
+- Shared vitest + API typecheck + boundary check green.
 
 ## Gate tier & rollback note
 
-- **FAST** — additive bootstrap validation; no schema/API surface change.
-- **Rollback:** remove the `validateEnv()` call in `main.ts` (one line); the
-  schema/generator are inert without it.
+- **FAST** — additive package code + internal refactor of one filter.
+- **Rollback:** filter can re-inline its interface (one import revert);
+  contracts module is additive.
 
 ## Addenda (dated, append-only)
 
-—
+- **2026-07-18** — duplicate-check correction: `validators/index.ts` already
+  held a loose runtime `paginationSchema` (legacy `sort`/`search` shape) and a
+  `paginatedResponseSchema` (missed by the initial grep, which covered
+  types/utils only). Consolidated instead of duplicated: contracts version is
+  canonical, validators' local response schema removed, legacy query schema
+  kept with `@deprecated` pointer.

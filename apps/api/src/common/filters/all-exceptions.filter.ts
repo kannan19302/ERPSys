@@ -8,19 +8,10 @@ import {
 import type { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
+import { codeForStatus, type ErrorEnvelope } from '@unerp/shared';
 import { pinoLogger } from '../services/logger.service';
 
 const REQUEST_ID_HEADER = 'x-request-id';
-
-interface ErrorEnvelope {
-  statusCode: number;
-  code: string;
-  message: string;
-  requestId: string;
-  timestamp: string;
-  path: string;
-  errors?: unknown;
-}
 
 /**
  * Global exception filter that converts every thrown error into a consistent
@@ -88,7 +79,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         ...base,
         statusCode: status,
-        code: this.codeForStatus(status),
+        code: codeForStatus(status),
         message,
         errors,
       };
@@ -163,18 +154,5 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? (obj.message as string[]).join(', ')
           : 'Request failed';
     return { message, errors: obj.errors ?? (Array.isArray(obj.message) ? obj.message : undefined) };
-  }
-
-  private codeForStatus(status: number): string {
-    const map: Record<number, string> = {
-      400: 'BAD_REQUEST',
-      401: 'UNAUTHORIZED',
-      403: 'FORBIDDEN',
-      404: 'NOT_FOUND',
-      409: 'CONFLICT',
-      422: 'UNPROCESSABLE_ENTITY',
-      429: 'RATE_LIMITED',
-    };
-    return map[status] ?? (status >= 500 ? 'INTERNAL_ERROR' : 'ERROR');
   }
 }
