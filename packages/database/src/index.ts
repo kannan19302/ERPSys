@@ -46,11 +46,20 @@ export const prisma = basePrisma.$extends({
         let scopedArgs = applySoftDeleteScope(model, operation, args);
 
         const session = getTenantSession();
-        if (!session || MODELS_WITHOUT_TENANT.has(model)) {
+        if (!session) {
           return query(scopedArgs);
         }
 
-        scopedArgs = applyTenantScope(model, operation, scopedArgs, session.tenantId);
+        // Models in MODELS_WITHOUT_TENANT have no tenantId column of their own
+        // (e.g. UserRole, a join table) so they're exempt from where-clause
+        // injection — but the RLS session GUC below must still be set
+        // whenever a tenant session exists, because these models can still
+        // `include` a relation into an RLS-protected tenant-scoped table
+        // (e.g. UserRole -> Role). Skipping the GUC here would silently
+        // return null/empty relations under the unerp_api runtime role.
+        if (!MODELS_WITHOUT_TENANT.has(model)) {
+          scopedArgs = applyTenantScope(model, operation, scopedArgs, session.tenantId);
+        }
 
         // Track C (#21): database-enforced RLS on ALL tenant-scoped tables.
         // Set app.current_tenant_id transaction-locally so the RLS policy

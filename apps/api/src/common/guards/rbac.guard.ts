@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { prisma } from '@unerp/database';
+import { prisma, runWithTenantSession } from '@unerp/database';
 import { hasPermission } from '@unerp/auth';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
@@ -26,11 +26,19 @@ export class RbacGuard implements CanActivate {
       throw new ForbiddenException('User session not found');
     }
 
-    // Retrieve the user's role assignments and associated roles
-    const userRoles = await prisma.userRole.findMany({
-      where: { userId: user.userId },
-      include: { role: true },
-    });
+    // Retrieve the user's role assignments and associated roles. This guard
+    // runs before the TenantInterceptor establishes request-scoped tenant
+    // context, so Role (RLS-protected, Track C / #21) would otherwise be
+    // invisible under the unerp_api runtime role. The JWT's tenantId was
+    // already signature-verified by JwtAuthGuard, so it's safe to scope here.
+    const userRoles = await runWithTenantSession(
+      { tenantId: user.tenantId, userId: user.userId ?? user.sub ?? '' },
+      () =>
+        prisma.userRole.findMany({
+          where: { userId: user.userId },
+          include: { role: true },
+        }),
+    );
 
     // Extract and parse permission strings from roles
     const userPermissions: string[] = [];

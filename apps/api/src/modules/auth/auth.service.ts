@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, UnauthorizedException, NotFoundException, Logger } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { prisma } from '@unerp/database';
+import { prisma, runWithTenantSession } from '@unerp/database';
 import { UserRole, Role } from '@prisma/client';
 import {
   hashPassword,
@@ -215,56 +215,58 @@ export class AuthService {
     user: { id: string; tenantId: string; email: string; firstName: string; lastName: string; avatar?: string | null; tenant: { id: string; name: string; slug: string } },
     context?: SessionContext,
   ) {
-    const { roles, permissions } = await this.resolveRolesAndPermissions(user.id);
+    return runWithTenantSession({ tenantId: user.tenantId, userId: user.id }, async () => {
+      const { roles, permissions } = await this.resolveRolesAndPermissions(user.id);
 
-    // Create the session first so its id can be sealed into the token.
-    const sid = randomBytes(18).toString('hex');
-    const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-    await prisma.userSession.create({
-      data: {
-        id: sid,
-        tenantId: user.tenantId,
+      // Create the session first so its id can be sealed into the token.
+      const sid = randomBytes(18).toString('hex');
+      const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+      await prisma.userSession.create({
+        data: {
+          id: sid,
+          tenantId: user.tenantId,
+          userId: user.id,
+          token: sid,
+          ipAddress: context?.ipAddress ?? null,
+          browser: context?.userAgent ?? null,
+          device: context?.device ?? null,
+          expiresAt,
+        },
+      });
+
+      const token = signSessionToken({
+        sid,
         userId: user.id,
-        token: sid,
-        ipAddress: context?.ipAddress ?? null,
-        browser: context?.userAgent ?? null,
-        device: context?.device ?? null,
-        expiresAt,
-      },
-    });
-
-    const token = signSessionToken({
-      sid,
-      userId: user.id,
-      tenantId: user.tenantId,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      roles,
-    });
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
-    });
-
-    return {
-      token,
-      user: {
-        id: user.id,
+        tenantId: user.tenantId,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        avatar: user.avatar,
         roles,
-        permissions,
-      },
-      tenant: {
-        id: user.tenant.id,
-        name: user.tenant.name,
-        slug: user.tenant.slug,
-      },
-    };
+      });
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
+      });
+
+      return {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatar: user.avatar,
+          roles,
+          permissions,
+        },
+        tenant: {
+          id: user.tenant.id,
+          name: user.tenant.name,
+          slug: user.tenant.slug,
+        },
+      };
+    });
   }
 
   /**
@@ -283,11 +285,13 @@ export class AuthService {
       }
       tenantId = tenant.id;
     } else {
-      // Look up user email across all tenants
-      const users = await prisma.user.findMany({
-        where: { email: dto.email.toLowerCase() },
-        select: { id: true, tenantId: true },
-      });
+      // Look up which tenant(s) this email belongs to. This runs before any
+      // tenant context exists, so a plain cross-tenant query would be blocked
+      // by RLS under the unerp_api runtime role — use the narrow
+      // SECURITY DEFINER lookup function instead (Track C / #21).
+      const users = await prisma.$queryRaw<Array<{ id: string; tenant_id: string }>>`
+        SELECT id, tenant_id FROM auth_lookup_user_tenants(${dto.email.toLowerCase()})
+      `;
 
       if (users.length === 0) {
         throw new UnauthorizedException('Invalid credentials');
@@ -298,20 +302,23 @@ export class AuthService {
 
       const targetUser = users[0];
       if (targetUser) {
-        tenantId = targetUser.tenantId;
+        tenantId = targetUser.tenant_id;
       }
     }
 
-    // Find user within the specified tenant scope
-    const user = await prisma.user.findFirst({
-      where: {
-        tenantId,
-        email: dto.email.toLowerCase(),
-      },
-      include: {
-        tenant: true,
-      },
-    });
+    // Find user within the specified tenant scope. Run inside a tenant
+    // session so the RLS-enforcing unerp_api role can see the row.
+    const user = await runWithTenantSession({ tenantId, userId: '' }, () =>
+      prisma.user.findFirst({
+        where: {
+          tenantId,
+          email: dto.email.toLowerCase(),
+        },
+        include: {
+          tenant: true,
+        },
+      }),
+    );
 
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
@@ -326,7 +333,7 @@ export class AuthService {
     // Validate password
     const isPasswordValid = await comparePassword(dto.password, user.passwordHash);
     if (!isPasswordValid) {
-      await this.registerFailedAttempt(user.id, user.failedLoginAttempts);
+      await this.registerFailedAttempt(user.id, user.tenantId, user.failedLoginAttempts);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -336,10 +343,12 @@ export class AuthService {
 
     // Password is correct — clear any accumulated failure count.
     if (user.failedLoginAttempts > 0 || user.lockedUntil) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { failedLoginAttempts: 0, lockedUntil: null },
-      });
+      await runWithTenantSession({ tenantId, userId: user.id }, () =>
+        prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginAttempts: 0, lockedUntil: null },
+        }),
+      );
     }
 
     // Second factor: issue a short-lived challenge token instead of the user id,
@@ -363,16 +372,18 @@ export class AuthService {
   /**
    * Increments the failed-login counter and locks the account past the threshold.
    */
-  private async registerFailedAttempt(userId: string, current: number) {
+  private async registerFailedAttempt(userId: string, tenantId: string, current: number) {
     const attempts = current + 1;
     const shouldLock = attempts >= MAX_FAILED_ATTEMPTS;
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        failedLoginAttempts: shouldLock ? 0 : attempts,
-        lockedUntil: shouldLock ? new Date(Date.now() + LOCK_DURATION_MS) : undefined,
-      },
-    });
+    await runWithTenantSession({ tenantId, userId }, () =>
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          failedLoginAttempts: shouldLock ? 0 : attempts,
+          lockedUntil: shouldLock ? new Date(Date.now() + LOCK_DURATION_MS) : undefined,
+        },
+      }),
+    );
   }
 
   /**
