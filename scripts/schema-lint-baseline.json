@@ -1,0 +1,10 @@
+{
+  "comment": "Track G.8 Float baseline — the ONLY Float fields allowed in schema.prisma. Never add to this list; shrink it. 'metric' entries are legitimately continuous quantities; 'money-QUEUED' entries are violations queued for Decimal conversion in the Track A reconciliation release (schema freeze blocks the migration today).",
+  "allowed": [
+    { "model": "Vendor", "field": "averageLeadTimeDays", "class": "metric" },
+    { "model": "Vendor", "field": "qualityScore", "class": "metric" },
+    { "model": "ExpenseReportItem", "field": "ocrConfidence", "class": "metric" },
+    { "model": "WebOrder", "field": "subtotal", "class": "money-QUEUED-for-Decimal(18,2)" },
+    { "model": "WebOrder", "field": "total", "class": "money-QUEUED-for-Decimal(18,2)" }
+  ]
+}

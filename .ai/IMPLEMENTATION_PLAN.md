@@ -4,60 +4,54 @@
 
 ## Cycle
 
-- **Cycle #:** 5
+- **Cycle #:** 6
 - **Phase:** F — Foundation
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-g9`); autonomous 10-cycle run, iteration 2/10
+- **Agent/session:** fable-5 (claim: `foundation-track-g8`); autonomous run, iteration 3/10
 
 ## Scope & rationale
 
-**Track G.9 — error envelope + pagination as executable contracts**
-(roadmap § 11b): today one `all-exceptions.filter.ts` implements the envelope
-privately and pagination is convention-only prose (rule 16b).
+**Track G.8 — money-type audit + Float schema lint** (roadmap § 11b).
+**Duplicate-check:** no schema-lint script exists in `scripts/` (checked:
+check-module-boundaries, check-migration-discipline, check-foundation-
+readiness, report-migration-reconciliation, repair-workspace-links,
+generate-env-example, scaffold/claim/feature tooling); no Float policy
+anywhere.
 
-**Duplicate-check:** `packages/shared/src/types/index.ts` has
-`PaginatedResponse`/`PaginationMeta` *interfaces* (types only — no runtime
-schema, no tests, not consumed by the filter); the filter defines its own
-private `ErrorEnvelope` interface; `scaffold-entity.mjs` hand-rolls
-page/limit. No runtime contract module exists → G.9 is open.
+**Audit result (5 Float columns in schema.prisma):**
+- `VendorScorecard.averageLeadTimeDays`, `.qualityScore` — analytic metrics →
+  Float acceptable.
+- `ExpenseItem.ocrConfidence` — 0–1 confidence score → Float acceptable.
+- **`WebOrder.subtotal`, `WebOrder.total` — MONEY as Float → violation.**
+  Conversion to `Decimal @db.Decimal(18,2)` requires a migration, which is
+  frozen while Track A reconciliation is pending (A.1 schema freeze).
+  → queued as an explicit follow-up in the Track A execution release; lint
+  baselines it so it cannot be forgotten silently (baseline file names it).
 
 ## Ordered work items
 
-1. `packages/shared/src/contracts/error-envelope.ts` — canonical error-code
-   registry (const map), Zod `errorEnvelopeSchema`, `ErrorEnvelope` type,
-   `codeForStatus()` helper (moved from the filter).
-2. `packages/shared/src/contracts/pagination.ts` — `listQuerySchema`
-   (coerced `page`≥1/25-default `limit`≤100/`sortBy`/`sortOrder`),
-   `ListQuery` type, `paginationMetaSchema`, `paginatedResponseSchema(item)`
-   builder, `buildPaginationMeta()` helper.
-3. Barrel `contracts/index.ts`, export from package root; deprecate (JSDoc)
-   the old type-only interfaces pointing at the contracts.
-4. Vitest suites for both contracts (validation edges, coercion, meta math).
-5. Consume: `AllExceptionsFilter` imports `ErrorEnvelope` + `codeForStatus`
-   from `@unerp/shared` (behavior identical); `scaffold-entity.mjs` template
-   emits `listQuerySchema`-based parsing + `buildPaginationMeta` so every new
-   module gets the contract by default (exit-gate "scaffolder default").
-6. Rebuild shared dist (tsc by path); shared tests + API typecheck + boundary
-   check; record (CHANGELOG, Ledger 4 → 5, roadmap G.9 ✅, board) and ship.
+1. `scripts/check-schema-lints.mjs` — parses `schema.prisma`:
+   (a) **no new `Float` fields** (baseline = the 5 above, in
+   `scripts/schema-lint-baseline.json`); (b) any Float (baselined or not)
+   whose name matches money/qty patterns is listed as a tracked violation and
+   only tolerated while in the baseline. Exit 1 on any non-baselined Float.
+2. Wire into CI (before typechecks) and into `pnpm migration:discipline`'s
+   path (script chaining in root package.json: `schema:lint`).
+3. Proof: deliberate `Float` addition → red; revert → green.
+4. Record + ship: CHANGELOG, Ledger 5 → 6, roadmap G.8 status (audit done,
+   lint live, WebOrder conversion queued behind Track A), board rows, lock,
+   `main`.
 
 ## Acceptance criteria
 
-- Contracts importable from `@unerp/shared` with runtime schemas + tests.
-- Filter compiles against the shared type with no behavior change.
-- Scaffolder emits contract-conformant list handling.
-- Shared vitest + API typecheck + boundary check green.
+- Lint green at HEAD; red on a deliberate new Float (proof run captured).
+- Baseline names the 2 money-Float columns as "queued for conversion".
+- CI + root script wired; no schema/migration changes this cycle.
 
 ## Gate tier & rollback note
 
-- **FAST** — additive package code + internal refactor of one filter.
-- **Rollback:** filter can re-inline its interface (one import revert);
-  contracts module is additive.
+- **FAST** — tooling + docs only. Rollback: remove one CI line + script files.
 
 ## Addenda (dated, append-only)
 
-- **2026-07-18** — duplicate-check correction: `validators/index.ts` already
-  held a loose runtime `paginationSchema` (legacy `sort`/`search` shape) and a
-  `paginatedResponseSchema` (missed by the initial grep, which covered
-  types/utils only). Consolidated instead of duplicated: contracts version is
-  canonical, validators' local response schema removed, legacy query schema
-  kept with `@deprecated` pointer.
+—

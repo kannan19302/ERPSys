@@ -8,6 +8,26 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 6 (Phase F) — Track G.8 closed: money-type audit + Float schema lint
+
+Autonomous run, iteration 3/10.
+
+- **Audit of the 5 Float columns**: `Vendor.averageLeadTimeDays`,
+  `Vendor.qualityScore`, `ExpenseReportItem.ocrConfidence` are legitimate
+  continuous metrics; **`WebOrder.subtotal` + `WebOrder.total` are money
+  stored as Float** — conversion to `Decimal @db.Decimal(18,2)` is queued
+  into the Track A reconciliation release (A.1 schema freeze blocks the
+  migration today) and is named in the lint baseline so it cannot be
+  silently forgotten.
+- **`scripts/check-schema-lints.mjs`** + shrink-only
+  `scripts/schema-lint-baseline.json`: any `Float` field outside the 5-entry
+  baseline fails; money-named baselined Floats are printed as tracked debt on
+  every run. Proof: green at HEAD → red on a deliberate `badPrice Float`
+  probe → green after revert.
+- Wired into CI (before typechecks), root `pnpm schema:lint`, and chained
+  into `pnpm migration:discipline`.
+- Roadmap G.8 ✅. **Ledger**: 5 → 6; next mandatory harden in 4.
+
 ## [2026-07-18] Cycle 5 (Phase F) — Track G.9 closed: error envelope + pagination as executable contracts
 
 Autonomous run, iteration 2/10.

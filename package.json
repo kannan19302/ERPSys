@@ -26,14 +26,15 @@
     "db:deploy": "pnpm --filter @unerp/database db:deploy",
     "db:push": "node scripts/forbid-db-push.mjs",
     "db:seed": "pnpm --filter @unerp/database db:seed",
-    "migration:discipline": "node scripts/check-migration-discipline.mjs",
+    "migration:discipline": "node scripts/check-migration-discipline.mjs && node scripts/check-schema-lints.mjs",
     "migration:reconciliation:report": "node scripts/report-migration-reconciliation.mjs",
     "db:studio": "pnpm --filter @unerp/database db:studio",
     "clean": "turbo run clean && rimraf node_modules",
     "prepare": "husky",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "publish-packages": "pnpm turbo build && changeset publish"
+    "publish-packages": "pnpm turbo build && changeset publish",
+    "schema:lint": "node scripts/check-schema-lints.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
