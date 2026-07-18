@@ -151,6 +151,79 @@ describe("AuthService", () => {
     });
   });
 
+  describe("refreshSession", () => {
+    it("rejects an unknown refresh token", async () => {
+      const { prisma } = await import("@unerp/database");
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
+
+      await expect(authService.refreshSession("0".repeat(64))).rejects.toThrow(
+        "Invalid or expired refresh token",
+      );
+    });
+
+    it("rejects an expired or inactive session", async () => {
+      const { prisma } = await import("@unerp/database");
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([
+        {
+          id: "sess-1",
+          user_id: "user-123",
+          tenant_id: "tenant-123",
+          refresh_expires_at: new Date(Date.now() - 1000),
+          is_active: true,
+          remember_me: false,
+        },
+      ] as never);
+
+      await expect(authService.refreshSession("0".repeat(64))).rejects.toThrow(
+        "Invalid or expired refresh token",
+      );
+    });
+
+    it("rotates the refresh token and issues a new access token", async () => {
+      const { prisma } = await import("@unerp/database");
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([
+        {
+          id: "sess-1",
+          user_id: "user-123",
+          tenant_id: "tenant-123",
+          refresh_expires_at: new Date(Date.now() + 60_000),
+          is_active: true,
+          remember_me: false,
+        },
+      ] as never);
+      vi.mocked(prisma.user.findFirst).mockResolvedValue({
+        id: "user-123",
+        tenantId: "tenant-123",
+        email: "admin@uni-erp.com",
+        firstName: "Super",
+        lastName: "Admin",
+        avatar: null,
+        tenant: { id: "tenant-123", name: "Acme", slug: "acme" },
+      } as never);
+      vi.mocked(prisma.userRole.findMany).mockResolvedValue([] as never);
+      const sessionUpdate = vi.fn().mockResolvedValue({});
+      (
+        prisma as unknown as {
+          userSession: { update: typeof sessionUpdate };
+        }
+      ).userSession = { update: sessionUpdate };
+
+      const result = await authService.refreshSession("0".repeat(64));
+
+      expect(result.token).toBe("jwt_session_abc");
+      expect(result.refreshToken).toHaveLength(64);
+      // Rotation must swap the stored hash.
+      expect(sessionUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "sess-1" },
+          data: expect.objectContaining({
+            refreshTokenHash: expect.any(String),
+          }),
+        }),
+      );
+    });
+  });
+
   describe("resendVerification", () => {
     it("returns the generic message for unknown emails", async () => {
       const { prisma } = await import("@unerp/database");

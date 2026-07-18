@@ -8531,6 +8531,9 @@ model UserSession {
   startedAt      DateTime  @default(now()) @map("started_at")
   lastActivityAt DateTime  @default(now()) @map("last_activity_at")
   expiresAt      DateTime? @map("expires_at")
+  refreshTokenHash String?   @unique @map("refresh_token_hash")
+  refreshExpiresAt DateTime? @map("refresh_expires_at")
+  rememberMe       Boolean   @default(false) @map("remember_me")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

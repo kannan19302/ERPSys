@@ -50,8 +50,46 @@ const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/",
-  maxAge: 24 * 60 * 60 * 1000, // 1 day, matches JWT expiry
+  maxAge: 24 * 60 * 60 * 1000, // outlives the short access token; guard enforces real expiry
 };
+
+const REFRESH_COOKIE = "refresh_token";
+/** Scoped to the auth routes so the refresh token never rides other requests. */
+const REFRESH_COOKIE_PATH = "/api/v1/auth";
+const refreshCookieOptions = (expiresAt: Date) => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: REFRESH_COOKIE_PATH,
+  expires: expiresAt,
+});
+
+/** Session payload with the refresh token split out for cookie transport. */
+type SessionResult = {
+  refreshToken?: string;
+  refreshExpiresAt?: Date;
+  token?: string;
+  [key: string]: unknown;
+};
+
+/**
+ * Moves the refresh token from the service result into httpOnly cookies and
+ * strips it from the JSON body — client JS must never see it.
+ */
+function sealSessionCookies(result: SessionResult, res: Response) {
+  if (result.token) {
+    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+  }
+  if (result.refreshToken && result.refreshExpiresAt) {
+    res.cookie(
+      REFRESH_COOKIE,
+      result.refreshToken,
+      refreshCookieOptions(result.refreshExpiresAt),
+    );
+  }
+  const { refreshToken: _rt, refreshExpiresAt: _re, ...body } = result;
+  return body;
+}
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -118,10 +156,34 @@ export class AuthController {
 
     // Only a completed login carries a session token; an MFA challenge does not.
     if ("token" in result) {
-      res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+      return sealSessionCookies(result as SessionResult, res);
     }
 
     return result;
+  }
+
+  @ApiOperation({ summary: "Rotate the refresh token and mint a new session" })
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Post("refresh")
+  @HttpCode(HttpStatus.OK)
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken =
+      (req.cookies?.[REFRESH_COOKIE] as string | undefined) ?? "";
+    try {
+      const result = await this.authService.refreshSession(
+        refreshToken,
+        sessionContext(req),
+      );
+      return sealSessionCookies(result as SessionResult, res);
+    } catch (err) {
+      // A dead refresh token ends the session client-side too.
+      res.clearCookie(AUTH_COOKIE, { path: "/" });
+      res.clearCookie(REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH });
+      throw err;
+    }
   }
 
   @ApiOperation({ summary: "Logout" })
@@ -137,6 +199,7 @@ export class AuthController {
       await this.authService.revokeSessionById(req.user.sid);
     }
     res.clearCookie(AUTH_COOKIE, { path: "/" });
+    res.clearCookie(REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH });
     return { message: "Logged out" };
   }
 
@@ -191,8 +254,7 @@ export class AuthController {
       body.tenantSlug,
       sessionContext(req),
     );
-    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
-    return result;
+    return sealSessionCookies(result as SessionResult, res);
   }
 
   @ApiOperation({ summary: "Request password reset" })
@@ -249,8 +311,7 @@ export class AuthController {
       throw new NotFoundException();
     }
     const result = await this.authService.loginDemo(body.role);
-    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
-    return result;
+    return sealSessionCookies(result as SessionResult, res);
   }
 
   @ApiOperation({ summary: "List active sessions for this account" })
@@ -339,8 +400,7 @@ export class AuthController {
       body.code,
       sessionContext(req),
     );
-    res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
-    return result;
+    return sealSessionCookies(result as SessionResult, res);
   }
 
   @ApiOperation({
@@ -438,7 +498,7 @@ export class AuthController {
       sessionContext(req),
     );
     if (result.status === "approved" && "token" in result) {
-      res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+      return sealSessionCookies(result as unknown as SessionResult, res);
     }
     return result;
   }

@@ -67,8 +67,17 @@ const hashChallengeToken = (token: string) =>
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 /** How long an email-verification token is valid. */
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-/** Session lifetime; matches the JWT's default 1-day expiry. */
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+/**
+ * Access-token lifetime. Short-lived by design (Phase 1.2): the rotating
+ * refresh token silently renews it, and revoking the session kills both.
+ */
+const ACCESS_TOKEN_TTL = (process.env.ACCESS_TOKEN_TTL || "15m") as Parameters<
+  typeof signSessionToken
+>[1];
+/** Refresh-token lifetime for a normal login. */
+const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** Refresh-token lifetime when the user checked "Remember me". */
+const REFRESH_TTL_REMEMBER_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Request-derived context recorded on a session for the "active sessions" UI. */
 export interface SessionContext {
@@ -452,6 +461,7 @@ export class AuthService {
       tenant: { id: string; name: string; slug: string };
     },
     context?: SessionContext,
+    opts?: { rememberMe?: boolean },
   ) {
     return runWithTenantSession(
       { tenantId: user.tenantId, userId: user.id },
@@ -461,8 +471,15 @@ export class AuthService {
         );
 
         // Create the session first so its id can be sealed into the token.
+        // The session (and its rotating refresh token) governs lifetime; the
+        // access token itself is short-lived (ACCESS_TOKEN_TTL).
         const sid = randomBytes(18).toString("hex");
-        const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+        const rememberMe = opts?.rememberMe ?? false;
+        const refreshTtlMs = rememberMe
+          ? REFRESH_TTL_REMEMBER_MS
+          : REFRESH_TTL_MS;
+        const refreshToken = randomBytes(32).toString("hex");
+        const refreshExpiresAt = new Date(Date.now() + refreshTtlMs);
         const parsedUa = parseUserAgent(context?.userAgent);
         await prisma.userSession.create({
           data: {
@@ -473,19 +490,25 @@ export class AuthService {
             ipAddress: context?.ipAddress ?? null,
             browser: parsedUa.browser,
             device: context?.device ?? parsedUa.device,
-            expiresAt,
+            expiresAt: refreshExpiresAt,
+            refreshTokenHash: hashResetToken(refreshToken),
+            refreshExpiresAt,
+            rememberMe,
           },
         });
 
-        const token = signSessionToken({
-          sid,
-          userId: user.id,
-          tenantId: user.tenantId,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          roles,
-        });
+        const token = signSessionToken(
+          {
+            sid,
+            userId: user.id,
+            tenantId: user.tenantId,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            roles,
+          },
+          ACCESS_TOKEN_TTL,
+        );
 
         await prisma.user.update({
           where: { id: user.id },
@@ -498,6 +521,109 @@ export class AuthService {
 
         return {
           token,
+          // Consumed by the controller to set the httpOnly refresh cookie;
+          // stripped from the JSON body before it reaches the client.
+          refreshToken,
+          refreshExpiresAt,
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar,
+            roles,
+            permissions,
+          },
+          tenant: {
+            id: user.tenant.id,
+            name: user.tenant.name,
+            slug: user.tenant.slug,
+          },
+        };
+      },
+    );
+  }
+
+  /**
+   * Rotates a refresh token: validates the presented (hashed) token, issues a
+   * fresh access token and a fresh refresh token, and invalidates the old
+   * refresh token in the same update. A replayed old token no longer matches
+   * any hash and is rejected. Unauthenticated: resolves tenant context via the
+   * SECURITY DEFINER lookup (Track C / #21).
+   */
+  async refreshSession(refreshToken: string, context?: SessionContext) {
+    const invalid = () =>
+      new UnauthorizedException("Invalid or expired refresh token");
+    if (!refreshToken) throw invalid();
+
+    const hash = hashResetToken(refreshToken);
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        user_id: string;
+        tenant_id: string;
+        refresh_expires_at: Date | null;
+        is_active: boolean;
+        remember_me: boolean;
+      }>
+    >`SELECT id, user_id, tenant_id, refresh_expires_at, is_active, remember_me FROM auth_lookup_refresh_token(${hash})`;
+    const session = rows[0];
+
+    if (
+      !session ||
+      !session.is_active ||
+      !session.refresh_expires_at ||
+      session.refresh_expires_at < new Date()
+    ) {
+      throw invalid();
+    }
+
+    return runWithTenantSession(
+      { tenantId: session.tenant_id, userId: session.user_id },
+      async () => {
+        const user = await prisma.user.findFirst({
+          where: { id: session.user_id, status: "ACTIVE" },
+          include: { tenant: true },
+        });
+        if (!user) throw invalid();
+
+        // Rotate: sliding expiry, single valid refresh token per session.
+        const nextRefreshToken = randomBytes(32).toString("hex");
+        const refreshTtlMs = session.remember_me
+          ? REFRESH_TTL_REMEMBER_MS
+          : REFRESH_TTL_MS;
+        const refreshExpiresAt = new Date(Date.now() + refreshTtlMs);
+        await prisma.userSession.update({
+          where: { id: session.id },
+          data: {
+            refreshTokenHash: hashResetToken(nextRefreshToken),
+            refreshExpiresAt,
+            expiresAt: refreshExpiresAt,
+            lastActivityAt: new Date(),
+            ipAddress: context?.ipAddress ?? undefined,
+          },
+        });
+
+        const { roles, permissions } = await this.resolveRolesAndPermissions(
+          user.id,
+        );
+        const token = signSessionToken(
+          {
+            sid: session.id,
+            userId: user.id,
+            tenantId: user.tenantId,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            roles,
+          },
+          ACCESS_TOKEN_TTL,
+        );
+
+        return {
+          token,
+          refreshToken: nextRefreshToken,
+          refreshExpiresAt,
           user: {
             id: user.id,
             email: user.email,
@@ -640,7 +766,7 @@ export class AuthService {
       } as const;
     }
 
-    return this.issueSession(user, context);
+    return this.issueSession(user, context, { rememberMe: dto.rememberMe });
   }
 
   /**
@@ -1175,7 +1301,8 @@ export class AuthService {
     if (!sid) return;
     await prisma.userSession.updateMany({
       where: { id: sid, isActive: true },
-      data: { isActive: false },
+      // Clearing the refresh hash kills silent renewal along with the session.
+      data: { isActive: false, refreshTokenHash: null },
     });
   }
 

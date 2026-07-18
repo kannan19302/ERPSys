@@ -30,9 +30,12 @@
       `auth_lookup_verification_token` SECURITY DEFINER lookups.
       Deferred: blocking sensitive actions until verified — lands with the
       trial/read-only write-guard middleware in 2.3.
-- [ ] 1.2 Refresh tokens + JWT rotation: short-lived access token, rotating
-      refresh token (httpOnly cookie), revocation on logout/device removal;
-      "Remember me" = extended refresh TTL
+- [x] 1.2 Refresh tokens + JWT rotation (2026-07-18): 15m access tokens
+      (ACCESS_TOKEN_TTL env), rotating single-use refresh token hashed on
+      UserSession (7d / 30d remember-me, sliding), httpOnly cookie scoped to
+      /api/v1/auth, `POST /auth/refresh` with `auth_lookup_refresh_token`
+      SECURITY DEFINER lookup, revocation clears the hash, web client does
+      deduplicated silent refresh-and-retry on 401, Remember-me checkbox wired.
 - [ ] 1.3 Google OAuth 2.0 (real): authorization-code flow, account linking by
       verified email, tenant-scoped; env-driven config
 - [ ] 1.4 Microsoft Entra ID OIDC (real): same pattern; both providers plug into

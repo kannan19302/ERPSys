@@ -188,6 +188,7 @@ export default function LoginPage() {
           email,
           password,
           tenantSlug: tenantSlug || undefined,
+          rememberMe,
         });
 
         if (data.mfaRequired) {
