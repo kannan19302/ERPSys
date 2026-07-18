@@ -37,6 +37,7 @@ loadEnv();
 // aggregated report). Must run after loadEnv() and before any module import
 // that reads process.env at load time.
 import { validateEnv } from './common/config/env.schema';
+import { deprecationMiddleware } from './common/versioning/deprecation.middleware';
 
 validateEnv();
 
@@ -97,6 +98,10 @@ async function bootstrap() {
 
   // Consistent error envelope for every thrown error
   app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Track G.1: RFC 9745/8594 Deprecation + Sunset headers for any surface in
+  // the deprecation registry (docs/API_VERSIONING_POLICY.md).
+  app.use(deprecationMiddleware());
 
   // Global prefix for all API routes (metrics and swagger excluded)
   app.setGlobalPrefix('api/v1', { exclude: ['metrics', 'swagger', 'swagger-json'] });

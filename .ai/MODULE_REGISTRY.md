@@ -115,9 +115,9 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 9
-- **Next run:** DEV
-- **Cycles until mandatory harden:** 1
+- **DEV cycles completed:** 10
+- **Next run:** HARDEN (mandatory)
+- **Cycles until mandatory harden:** 0 — the next "Start" MUST execute a full QA cycle
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -131,6 +131,7 @@
 | 7 | 2026-07-18 | DEV | F | Track G.2 — optimistic-locking convention | Mechanism closed: updateWithVersionGuard + STALE_WRITE 409 + scaffolder defaults (incl. Float→Decimal template fix); version backfill queued post-A; 5 tests green | see CHANGELOG 2026-07-18 cycle-7 entry |
 | 8 | 2026-07-18 | DEV | F | Track H.3 — backup + restore-verify automation | Landed + drilled: backup/verify scripts, 655-table exact-equality restore proof in 20.3s, runbook with RPO/RTO; PITR sub-item queued for prod topology | see CHANGELOG 2026-07-18 cycle-8 entry |
 | 9 | 2026-07-18 | DEV | F | Track G.3 — platform write idempotency | G.3 closed: global opt-in Idempotency-Key interceptor, Redis NX/EX store, replay/reuse/in-flight semantics, tenant-scoped; 7 tests + typecheck green | see CHANGELOG 2026-07-18 cycle-9 entry |
+| 10 | 2026-07-18 | DEV | F | Track G.1 — API versioning & deprecation policy | G.1 closed: policy doc + registry/middleware emitting RFC 9745/8594 headers; 5 tests green. Counter → 10: HARDEN armed | see CHANGELOG 2026-07-18 cycle-10 entry |
 
 ## Collab Board — Multi-Agent Sync
 

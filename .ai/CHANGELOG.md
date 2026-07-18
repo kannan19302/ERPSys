@@ -8,6 +8,29 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 10 (Phase F) — Track G.1 closed: API versioning & deprecation policy
+
+Autonomous run, iteration 7/10. **DEV counter reaches 10 → next run is the
+MANDATORY HARDEN checkpoint (binding #17).**
+
+- **`docs/API_VERSIONING_POLICY.md`** (platform contract, seals with v1.0):
+  URI major versions only; breaking change ⇒ new major served side-by-side
+  ≥1 documented release (≥6 months for extension-reachable surfaces) as a
+  thin adapter over shared services; mechanical deprecation clocks; nothing
+  removed with active in-window consumers; extension `EXT_API_VERSION`
+  two-version window mirrors REST deprecations; per-deprecation checklist +
+  history table.
+- **Live mechanism**: `common/versioning/deprecation-registry.ts` (typed,
+  longest-prefix match; empty — nothing is deprecated today) +
+  `deprecation.middleware.ts` emitting RFC 9745 `Deprecation`
+  (`@<unix-ts>`), RFC 8594 `Sunset` (HTTP-date) and
+  `Link rel="successor-version"/"deprecation"` headers; wired in `main.ts`
+  before the global prefix routes; zero-cost no-op while the registry is
+  empty. 5 unit tests.
+- Gates: versioning tests, API typecheck (true exit code), boundary check
+  green. Roadmap G.1 ✅.
+- **Cycle Ledger**: 9 → 10; **Next run: HARDEN (mandatory)**.
+
 ## [2026-07-18] Cycle 9 (Phase F) — Track G.3 closed: platform Idempotency-Key interceptor
 
 Autonomous run, iteration 6/10.
