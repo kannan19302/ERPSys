@@ -14,6 +14,16 @@ out/
 apps/api/src/**/*.js
 apps/api/src/**/*.js.map
 
+# Stray compiled output that sometimes lands in src/ instead of dist/ —
+# excludes hand-written ambient declarations (css.d.ts, matchers.d.ts).
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts.map
+apps/*/src/**/*.d.ts
+apps/*/src/**/*.d.ts.map
+!packages/*/src/**/css.d.ts
+!packages/*/src/**/matchers.d.ts
+
 # Environment / Secrets (safety-hardened)
 .env
 .env.*
