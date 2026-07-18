@@ -57,7 +57,10 @@ export const create${entityName}Schema = z.object({
 ${fields.map(f => `  ${f.name}: z.${f.type === 'number' ? 'number()' : f.type === 'boolean' ? 'boolean()' : 'string()'},`).join('\n')}
 });
 
-export const update${entityName}Schema = create${entityName}Schema.partial();
+// Track G.2: updates carry the version the client loaded (optimistic locking).
+export const update${entityName}Schema = create${entityName}Schema.partial().extend({
+  expectedVersion: z.coerce.number().int().min(1),
+});
 
 export type Create${entityName}Input = z.infer<typeof create${entityName}Schema>;
 export type Update${entityName}Input = z.infer<typeof update${entityName}Schema>;
@@ -69,7 +72,7 @@ console.log(`✅ Generated DTO: ${dtoPath}`);
 
 // 2. Generate Service file
 const serviceContent = `import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@unerp/database';
+import { PrismaService, updateWithVersionGuard } from '@unerp/database';
 // Track G.9 platform contracts: list query + pagination meta come from @unerp/shared.
 import { buildPaginationMeta, listQuerySchema, type ListQuery } from '@unerp/shared';
 import { Create${entityName}Input, Update${entityName}Input } from './dto/${entityKebab}.dto';
@@ -128,15 +131,15 @@ export class ${entityName}Service {
     return record;
   }
 
-  async update(tenantId: string, id: string, input: Update${entityName}Input, userId: string) {
-    await this.findOne(tenantId, id);
-    return this.prisma.${entityLower}.update({
-      where: { id },
-      data: {
-        ...input,
-        updatedBy: userId,
-      },
+  // Track G.2 optimistic locking: clients send the version they loaded; a
+  // concurrent edit surfaces as HTTP 409 STALE_WRITE via the global filter.
+  async update(tenantId: string, id: string, input: Update${entityName}Input & { expectedVersion: number }, userId: string) {
+    const { expectedVersion, ...data } = input;
+    await updateWithVersionGuard(this.prisma.${entityLower}, { entity: '${entityName}', id, tenantId, expectedVersion }, {
+      ...data,
+      updatedBy: userId,
     });
+    return this.findOne(tenantId, id);
   }
 
   async remove(tenantId: string, id: string, userId: string) {
@@ -231,13 +234,14 @@ Next Steps:
    model ${entityName} {
      id         String    @id @default(cuid())
      tenantId   String    @map("tenant_id")
+     version    Int       @default(1) // Track G.2 optimistic locking
      createdAt  DateTime  @default(now()) @map("created_at")
      updatedAt  DateTime  @updatedAt @map("updated_at")
      deletedAt  DateTime? @map("deleted_at")
      createdBy  String    @map("created_by")
      updatedBy  String    @map("updated_by")
-     // Fields:
-     ${fields.map(f => `${f.name} ${f.type === 'number' ? 'Float' : f.type === 'boolean' ? 'Boolean' : 'String'}`).join('\n     ')}
+     // Fields (Track G.8: numbers are Decimal — Float is lint-forbidden):
+     ${fields.map(f => `${f.name} ${f.type === 'number' ? 'Decimal @db.Decimal(18, 2)' : f.type === 'boolean' ? 'Boolean' : 'String'}`).join('\n     ')}
    }
-3. Run \`pnpm db:migrate --name add_${entityLower}\` to update the DB.
+3. Create the migration (db:push is disabled): prisma migrate dev --create-only, review, then \`pnpm db:deploy\`; run \`pnpm migration:discipline\`.
 `);

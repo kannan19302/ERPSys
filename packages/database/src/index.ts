@@ -100,3 +100,10 @@ export * from '@prisma/client';
 export { getTenantSession, runWithTenantSession } from './tenant-context.js';
 export { applyTenantScope, MODELS_WITHOUT_TENANT } from './tenant-scope.js';
 export { encryptField, decryptField, isEncrypted } from './encryption.js';
+export {
+  StaleWriteError,
+  RecordNotFoundForUpdateError,
+  updateWithVersionGuard,
+  type VersionedDelegate,
+  type VersionGuardTarget,
+} from './optimistic-locking.js';

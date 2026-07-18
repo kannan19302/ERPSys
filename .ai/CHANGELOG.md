@@ -8,6 +8,32 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 7 (Phase F) — Track G.2: optimistic-locking convention (mechanism complete)
+
+Autonomous run, iteration 4/10.
+
+- **`@unerp/database` → `updateWithVersionGuard`**: one conditional
+  `updateMany` on `(id, tenantId, version)` + atomic `version` increment;
+  0-row result probes (tenant-scoped — foreign-tenant rows are
+  indistinguishable from missing, no existence leak) and throws
+  `StaleWriteError` (carries `currentVersion`) or
+  `RecordNotFoundForUpdateError`. Guard rejects attempts to smuggle
+  `id`/`tenantId`/`version` through the data payload. 5 unit tests.
+- **Filter mapping**: `AllExceptionsFilter` → 409 `STALE_WRITE` (contract
+  code reserved in cycle 5's registry) with `errors.currentVersion`;
+  not-found → 404.
+- **Scaffolder defaults**: model template now includes
+  `version Int @default(1)`; update DTO gains required `expectedVersion`;
+  service update path uses the guard. Also fixed en passant: the template
+  emitted **`Float` for numeric fields** (a G.8 violation the new lint would
+  have caught on first use) → now `Decimal @db.Decimal(18,2)`; and its
+  "Next Steps" still recommended the disabled `db:push`-era `db:migrate` →
+  now the create-only → review → `db:deploy` → `migration:discipline` flow.
+- **Backfill queued**: adding `version` to existing aggregates is a
+  migration → post-Track-A window, recorded in the roadmap row.
+- Gates: database build + tests, API typecheck, boundary check green.
+  **Ledger**: 6 → 7; next mandatory harden in 3.
+
 ## [2026-07-18] Cycle 6 (Phase F) — Track G.8 closed: money-type audit + Float schema lint
 
 Autonomous run, iteration 3/10.

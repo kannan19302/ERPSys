@@ -8,6 +8,7 @@ import {
 import type { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
+import { RecordNotFoundForUpdateError, StaleWriteError } from '@unerp/database';
 import { codeForStatus, type ErrorEnvelope } from '@unerp/shared';
 import { pinoLogger } from '../services/logger.service';
 
@@ -59,6 +60,25 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
     };
+
+    // 0. Optimistic-locking outcomes (Track G.2)
+    if (exception instanceof StaleWriteError) {
+      return {
+        ...base,
+        statusCode: HttpStatus.CONFLICT,
+        code: 'STALE_WRITE',
+        message: exception.message,
+        errors: { currentVersion: exception.currentVersion },
+      };
+    }
+    if (exception instanceof RecordNotFoundForUpdateError) {
+      return {
+        ...base,
+        statusCode: HttpStatus.NOT_FOUND,
+        code: 'NOT_FOUND',
+        message: exception.message,
+      };
+    }
 
     // 1. Zod validation errors
     if (exception instanceof ZodError) {

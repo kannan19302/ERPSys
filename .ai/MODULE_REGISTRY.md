@@ -115,9 +115,9 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 6
+- **DEV cycles completed:** 7
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 4
+- **Cycles until mandatory harden:** 3
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -128,6 +128,7 @@
 | 4 | 2026-07-18 | DEV | F | Track G.6 — boot-time env validation | G.6 closed: 39-var Zod schema + fail-fast validateEnv in main.ts; generated .env.example + CI drift gate; 8 tests + typecheck green | see CHANGELOG 2026-07-18 cycle-4 entry |
 | 5 | 2026-07-18 | DEV | F | Track G.9 — error envelope + pagination contracts | G.9 closed: contracts module in @unerp/shared, filter + scaffolder consume it, validators duplicate consolidated; 43 shared tests + typechecks green | see CHANGELOG 2026-07-18 cycle-5 entry |
 | 6 | 2026-07-18 | DEV | F | Track G.8 — money-type audit + Float lint | G.8 closed: 3 metric Floats OK, 2 WebOrder money-Floats queued for Decimal behind Track A; shrink-only lint red/green proven, in CI + migration:discipline | see CHANGELOG 2026-07-18 cycle-6 entry |
+| 7 | 2026-07-18 | DEV | F | Track G.2 — optimistic-locking convention | Mechanism closed: updateWithVersionGuard + STALE_WRITE 409 + scaffolder defaults (incl. Float→Decimal template fix); version backfill queued post-A; 5 tests green | see CHANGELOG 2026-07-18 cycle-7 entry |
 
 ## Collab Board — Multi-Agent Sync
 

@@ -4,53 +4,59 @@
 
 ## Cycle
 
-- **Cycle #:** 6
+- **Cycle #:** 7
 - **Phase:** F — Foundation
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-g8`); autonomous run, iteration 3/10
+- **Agent/session:** fable-5 (claim: `foundation-track-g2`); autonomous run, iteration 4/10
 
 ## Scope & rationale
 
-**Track G.8 — money-type audit + Float schema lint** (roadmap § 11b).
-**Duplicate-check:** no schema-lint script exists in `scripts/` (checked:
-check-module-boundaries, check-migration-discipline, check-foundation-
-readiness, report-migration-reconciliation, repair-workspace-links,
-generate-env-example, scaffold/claim/feature tooling); no Float policy
-anywhere.
+**Track G.2 — optimistic-locking convention** (roadmap § 11b): ~2 `version Int`
+fields across 645 tables; lost-update protection effectively absent; no shared
+enforcement helper.
 
-**Audit result (5 Float columns in schema.prisma):**
-- `VendorScorecard.averageLeadTimeDays`, `.qualityScore` — analytic metrics →
-  Float acceptable.
-- `ExpenseItem.ocrConfidence` — 0–1 confidence score → Float acceptable.
-- **`WebOrder.subtotal`, `WebOrder.total` — MONEY as Float → violation.**
-  Conversion to `Decimal @db.Decimal(18,2)` requires a migration, which is
-  frozen while Track A reconciliation is pending (A.1 schema freeze).
-  → queued as an explicit follow-up in the Track A execution release; lint
-  baselines it so it cannot be forgotten silently (baseline file names it).
+**Duplicate-check:** grep confirms exactly 2 `version Int @default(1)` columns
+(schema lines 1481, 14128) and no locking helper in `packages/database/src`
+(encryption/tenant-context/tenant-scope only) nor `apps/api/src/common`.
+
+**Scope boundary:** adding `version` columns to existing aggregates is a
+migration → blocked by the Track A schema freeze; queued for the post-A
+window (like G.8's Decimal conversion). This cycle lands the *mechanical
+convention* so it exists platform-wide the moment columns can be added, and
+applies to new modules immediately via the scaffolder.
 
 ## Ordered work items
 
-1. `scripts/check-schema-lints.mjs` — parses `schema.prisma`:
-   (a) **no new `Float` fields** (baseline = the 5 above, in
-   `scripts/schema-lint-baseline.json`); (b) any Float (baselined or not)
-   whose name matches money/qty patterns is listed as a tracked violation and
-   only tolerated while in the baseline. Exit 1 on any non-baselined Float.
-2. Wire into CI (before typechecks) and into `pnpm migration:discipline`'s
-   path (script chaining in root package.json: `schema:lint`).
-3. Proof: deliberate `Float` addition → red; revert → green.
-4. Record + ship: CHANGELOG, Ledger 5 → 6, roadmap G.8 status (audit done,
-   lint live, WebOrder conversion queued behind Track A), board rows, lock,
-   `main`.
+1. `packages/database/src/optimistic-locking.ts` — `StaleWriteError` +
+   `updateWithVersionGuard(delegate, { id, tenantId, expectedVersion }, data)`:
+   single `updateMany` conditioned on `(id, tenantId, version)` with
+   `version: { increment: 1 }`; 0 affected rows → distinguish not-found vs
+   stale via a follow-up existence probe; typed, delegate-generic.
+2. Filter mapping: `StaleWriteError` → 409 `STALE_WRITE` (code already
+   reserved in the G.9 `ERROR_CODES` registry) in `AllExceptionsFilter`.
+3. Scaffolder: emitted update path uses `updateWithVersionGuard` with an
+   `expectedVersion` input (schema template includes `version Int @default(1)`
+   for NEW entities — new tables are not blocked by the freeze).
+4. Vitest unit tests (mock delegate): success increments; stale → 
+   `StaleWriteError`; missing row → not-found path; tenant mismatch behaves
+   as not-found (no cross-tenant probe leak).
+5. Gates: database pkg tests + build, API typecheck, boundary check.
+6. Record + ship: CHANGELOG, Ledger 6 → 7, roadmap G.2 status (convention
+   live + backfill queued), board, lock, `main`.
 
 ## Acceptance criteria
 
-- Lint green at HEAD; red on a deliberate new Float (proof run captured).
-- Baseline names the 2 money-Float columns as "queued for conversion".
-- CI + root script wired; no schema/migration changes this cycle.
+- Helper exported from `@unerp/database`, tests green.
+- Filter returns the contract envelope with code `STALE_WRITE` for stale
+  writes (unit-level assertion on mapping).
+- Scaffolder output contains version-guarded update + `version` column.
+- Existing-aggregate backfill explicitly queued (roadmap note), not silently
+  dropped.
 
 ## Gate tier & rollback note
 
-- **FAST** — tooling + docs only. Rollback: remove one CI line + script files.
+- **FAST** — additive helper + one filter case + scaffolder template.
+- **Rollback:** delete helper + filter case; scaffolder hunk revert.
 
 ## Addenda (dated, append-only)
 
