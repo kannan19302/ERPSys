@@ -1083,6 +1083,17 @@ second-factor stack with real cryptography.
 - **19 unit tests**: Coverage for all operation types, undefined args, explicit filter preservation, create/upsert bypass, and the `SOFT_DELETE_ENABLED_MODELS` set membership. All 66 tests pass (19 new + 47 existing).
 - Verification: `pnpm typecheck` green, `pnpm migration:discipline` green, `pnpm architecture:check` n/a (no API changes).
 
+## [2026-07-18] Cycle 16 — Phase F / Track G.7: Per-tenant rate limiting
+
+**Scope**: Rate limiting was global-only — one tenant could starve others. Added per-tenant, per-plan rate limits backed by Redis, with API key isolation.
+
+- **`apps/api/src/common/guards/tenant-throttler.guard.ts`**: Custom `TenantThrottlerGuard` extending `ThrottlerGuard`. Overrides `getTracker()` to use `tenant:{tenantId}` for authenticated requests (or `apikey:{tenantId}:{keyId}` for API keys, `ip:{ip}` fallback for unauthenticated). Overrides `handleRequest()` to dynamically adjust the rate limit based on `Tenant.plan` (free/starter/business/enterprise tiers).
+- **`apps/api/src/common/guards/tenant-throttler-storage.ts`**: `RedisThrottlerStorage` implementing `ThrottlerStorage` — uses existing `REDIS_URL` via `ioredis` for atomic `INCR` + `PEXPIRE` counters scoped to `throttle:{key}`. Includes `InMemoryThrottlerStorage` fallback for Redis-less dev/tests.
+- **Tenant plan tiers**: `free` (5/s, 30/min), `starter` (20/s, 200/min), `business` (50/s, 500/min), `enterprise` (100/s, 1000/min). Configurable via `TENANT_PLAN_LIMITS` const in the guard file — ready to be driven from `SaaSPlan` model once migrations are unfrozen.
+- **Updated `app.module.ts`**: Replaced stock `ThrottlerGuard` with `TenantThrottlerGuard`; added `RedisThrottlerStorage` (or `InMemoryThrottlerStorage` fallback) as `ThrottlerStorage` provider, overriding the default in-memory storage.
+- **10 unit tests**: Plan limit tiers, tracker key isolation (tenant/apikey/ip), InMemory storage expiration and blocking. All 76 tests green across API + database packages.
+- Verification: `pnpm typecheck` green, `pnpm architecture:check` green (2 legacy violations, 0 new), `pnpm migration:discipline` n/a.
+
 **Scope**: Full codebase audit of 486 pages across 28 modules for UI framework compliance.
 
 **Audit Findings**:

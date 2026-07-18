@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerStorage } from '@nestjs/throttler';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { TenantInterceptor } from './common/guards/tenant.interceptor';
+import { TenantThrottlerGuard } from './common/guards/tenant-throttler.guard';
+import { RedisThrottlerStorage, InMemoryThrottlerStorage } from './common/guards/tenant-throttler-storage';
 import { HealthController } from './health.controller';
 import { MetricsController } from './metrics.controller';
 import { AuthModule } from './modules/auth/auth.module';
@@ -245,8 +247,19 @@ import { InMemoryIdempotencyStore, RedisIdempotencyStore } from './common/idempo
         ),
     },
     { provide: APP_INTERCEPTOR, useExisting: IdempotencyInterceptor },
-    // Enforces the ThrottlerModule buckets configured above on every route.
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Track G.7: Per-tenant rate limiting with plan-based tiers and Redis backing.
+    // Replaces the stock ThrottlerGuard — uses tenantId as the tracker key for
+    // authenticated requests, falls back to IP for unauthenticated. Limits vary
+    // by subscription plan (free/starter/business/enterprise).
+    { provide: APP_GUARD, useClass: TenantThrottlerGuard },
+    // Redis-backed throttler storage (in-memory fallback when REDIS_URL is unset).
+    {
+      provide: ThrottlerStorage,
+      useFactory: () =>
+        process.env.REDIS_URL
+          ? new RedisThrottlerStorage(process.env.REDIS_URL)
+          : new InMemoryThrottlerStorage(),
+    },
   ],
 })
 export class AppModule {}
