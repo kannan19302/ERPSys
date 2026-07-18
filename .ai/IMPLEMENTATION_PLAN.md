@@ -4,55 +4,57 @@
 
 ## Cycle
 
-- **Cycle #:** 10
+- **Cycle #:** 11
 - **Phase:** F — Foundation
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-g1`); autonomous run, iteration 7/10
-- **Cadence note:** completing this cycle sets the DEV counter to 10 →
-  `Next run: HARDEN (mandatory)` per binding #17.
+- **Agent/session:** fable-5 (claim: `foundation-track-h4`); autonomous run, iteration 9/10
 
 ## Scope & rationale
 
-**Track G.1 — API versioning is a prefix, not a policy** (roadmap § 11b):
-only `setGlobalPrefix('api/v1')` in `main.ts`; no way to signal deprecation,
-no sunset policy, no tie-in to the extension `apiVersion` window.
+**Track H.4 — retention policy per data class** (roadmap § 11c): no retention
+matrix; no automated enforcement.
 
-**Duplicate-check:** no `Deprecation`/`Sunset` header emission anywhere in
-`apps/api/src` (grep); no versioning policy doc in `docs/`; service-kit
-exposes `EXT_API_VERSION` (number) with no platform policy document.
+**Duplicate-check:** `gdpr.service.ts` has tenant-configurable
+`retentionDays` records (a per-tenant policy CRUD) but no *platform* matrix,
+no enforcement job, and no coverage of the operational/log classes
+(AuditLog, ChangeHistory, Notification, WebhookDeliveryLog, UserSession,
+BackgroundJob — verified present in schema). No @nestjs/schedule; BullMQ
+exists but a standalone script is the leanest schedulable unit (cron/CI/Task
+Scheduler) and needs no API surface.
 
 ## Ordered work items
 
-1. `common/versioning/deprecation-registry.ts` — typed registry of
-   deprecations: `{ pathPrefix, deprecatedAt, sunsetAt, successor, link }`;
-   empty today (nothing is deprecated) but the mechanism is live and tested.
-2. `common/versioning/deprecation.middleware.ts` — Express middleware: on a
-   registry match adds RFC-compliant `Deprecation` (RFC 9745),
-   `Sunset` (RFC 8594) and `Link rel="successor-version"` headers. Wired in
-   `main.ts` for all API routes.
-3. `docs/API_VERSIONING_POLICY.md` — the written policy: URI versioning
-   (`/api/v1` → `/api/v2` served side-by-side ≥ 1 documented release),
-   deprecation clock rules, header semantics, extension `apiVersion`
-   window interplay (service-kit `EXT_API_VERSION`), and the §15.5
-   "deprecation as a product feature" doctrine hooks.
-4. Vitest: registry matching (longest-prefix), header emission, no-op on
-   unregistered paths, sunset formatting.
-5. Gates: api tests + typecheck (true exit codes) + boundary check.
-6. Record + ship: CHANGELOG, **Ledger 9 → 10 + `Next run: HARDEN
-   (mandatory)`**, roadmap G.1, board, lock, `main`.
+1. `scripts/retention-matrix.json` — the matrix (single source): data class →
+   Prisma model, timestamp column, retention days, mode (hard-delete),
+   condition notes (e.g. only `read` notifications; only terminal
+   BackgroundJob states; only expired/revoked sessions), legal-basis note.
+   Business documents are explicitly OUT (soft-delete + audit per G.4;
+   erasure via H.1).
+2. `scripts/enforce-retention.mjs` — loads the matrix, `--dry-run` (default:
+   reports counts, deletes nothing) and `--apply`; per-class `deleteMany`
+   with cutoff + class-specific conditions; JSON summary; audited via
+   console + exit codes. Uses the generated @prisma/client directly
+   (privileged maintenance path per roadmap C.3 doctrine, documented).
+3. `docs/DATA_RETENTION_MATRIX.md` — human matrix + how enforcement runs +
+   interplay with the tenant-level GDPR retention records + F-track
+   partitioning note.
+4. Verify: `--dry-run` against the dev DB (read-only counts); vitest not
+   needed for a script exercised end-to-end — proof = dry-run output.
+5. Record + ship: CHANGELOG, Ledger 10 → 11, roadmap H.4 status, board,
+   lock, `main`.
 
 ## Acceptance criteria
 
-- Registering a test deprecation makes responses carry correct
-  Deprecation/Sunset/Link headers (unit-proven); unregistered routes
-  untouched.
-- Policy doc exists and is referenced from the roadmap row.
-- Ledger flips the harden flag in the same commit.
+- Matrix covers the 6 platform classes with explicit conditions; dry-run
+  executes against dev DB and reports per-class candidates; `--apply`
+  deletes only matrix-matched rows (not run against dev data this cycle —
+  dev DB is seed-only; dry-run is the proof).
+- No schema changes.
 
 ## Gate tier & rollback note
 
-- **FAST** — additive middleware (registry empty in prod), docs.
-- **Rollback:** remove middleware wiring line; registry inert.
+- **FAST** — additive script + docs; default dry-run.
+- **Rollback:** delete script + doc.
 
 ## Addenda (dated, append-only)
 

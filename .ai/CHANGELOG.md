@@ -8,6 +8,25 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 11 (Phase F) — Track H.4 closed: retention matrix + enforcement
+
+Autonomous run, iteration 9/10.
+
+- **`scripts/retention-matrix.json`** — machine-readable matrix, 6 platform
+  classes: read notifications 180d, audit log + change history 730d, webhook
+  delivery logs 90d, sessions 30d past expiry (clock on `expiresAt` — live
+  sessions unmatchable), terminal background jobs 90d. Conditions inline
+  (e.g. unread notifications and PENDING/RUNNING jobs never touched).
+- **`scripts/enforce-retention.mjs`** — dry-run by default (counts only),
+  `--apply` to delete; JSON summary; loads root `.env`; privileged
+  maintenance path per C.3 doctrine (explicit scheduling only). Dry-run
+  executed against the dev DB: 6/6 classes green (0 candidates, seed data).
+- **`docs/DATA_RETENTION_MATRIX.md`** — human matrix + explicit
+  out-of-scope table (business docs = statutory retention via G.4; PII = H.1
+  erasure; files = Track F; outbox/blockchain join post-B/E) + GDPR
+  tenant-override and partitioning interplay.
+- Roadmap H.4 ✅. **Ledger**: 10 → 11; next mandatory harden after cycle 20.
+
 ## [2026-07-18] HARDEN checkpoint (mandatory, after DEV cycle 10) — 2 security flaws + 1 red test fixed
 
 Autonomous run, iteration 8/10. Full QA-flow cycle per binding #17: scan
