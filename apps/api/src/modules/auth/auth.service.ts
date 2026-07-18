@@ -450,7 +450,7 @@ export class AuthService {
    * A revocable `UserSession` row is created and its id embedded as the token's
    * `sid`, so JwtAuthGuard can reject the token the moment the session is revoked.
    */
-  private async issueSession(
+  async issueSession(
     user: {
       id: string;
       tenantId: string;

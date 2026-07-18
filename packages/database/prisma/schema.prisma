@@ -109,6 +109,7 @@ model User {
   savedViews         SavedView[]
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  identities              UserIdentity[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -149,6 +150,22 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("password_reset_tokens")
+}
+
+model UserIdentity {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  provider  String
+  subject   String
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+  @@index([userId])
+  @@map("user_identities")
 }
 
 model EmailVerificationToken {

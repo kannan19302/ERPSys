@@ -22,6 +22,9 @@ import {
 } from "lucide-react";
 import { apiPost, apiGet, ApiRequestError } from "../../../src/lib/api";
 
+/** Absolute API base for browser-navigation OAuth redirects (not fetch). */
+const OAUTH_API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+
 const FEATURES = [
   {
     title: "Unified Operations",
@@ -64,6 +67,25 @@ export default function LoginPage() {
 
   // Demo accounts states
   const [showDemoModal, setShowDemoModal] = useState(false);
+
+  // Real OAuth providers configured on the server (drives the social buttons)
+  const [oauthProviders, setOauthProviders] = useState<string[]>([]);
+  useEffect(() => {
+    apiGet<{ providers: string[] }>("/auth/oauth/providers")
+      .then((res) => setOauthProviders(res.providers))
+      .catch(() => setOauthProviders([]));
+  }, []);
+
+  // Surface errors bounced back from the OAuth callback redirect
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get("error");
+    if (oauthError) {
+      setError(oauthError);
+      window.history.replaceState({}, "", "/login");
+    }
+  }, []);
 
   // SSO configuration states
   const [isSsoConfigured, setIsSsoConfigured] = useState(false);
@@ -732,10 +754,20 @@ export default function LoginPage() {
                 </div>
 
                 <div className="auth-social-grid">
-                  <button
-                    type="button"
+                  <a
                     className="auth-social-btn"
-                    onClick={() => setShowDemoModal(true)}
+                    aria-disabled={!oauthProviders.includes("google")}
+                    style={
+                      !oauthProviders.includes("google")
+                        ? { opacity: 0.5, pointerEvents: "none" }
+                        : undefined
+                    }
+                    href={`${OAUTH_API_BASE}/auth/oauth/google/start${tenantSlug ? `?tenantSlug=${encodeURIComponent(tenantSlug)}` : ""}`}
+                    title={
+                      oauthProviders.includes("google")
+                        ? "Sign in with your Google account"
+                        : "Google sign-in is not configured on this server"
+                    }
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24">
                       <path
@@ -755,12 +787,22 @@ export default function LoginPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Google Demo
-                  </button>
-                  <button
-                    type="button"
+                    Google
+                  </a>
+                  <a
                     className="auth-social-btn"
-                    onClick={() => setShowDemoModal(true)}
+                    aria-disabled={!oauthProviders.includes("microsoft")}
+                    style={
+                      !oauthProviders.includes("microsoft")
+                        ? { opacity: 0.5, pointerEvents: "none" }
+                        : undefined
+                    }
+                    href={`${OAUTH_API_BASE}/auth/oauth/microsoft/start${tenantSlug ? `?tenantSlug=${encodeURIComponent(tenantSlug)}` : ""}`}
+                    title={
+                      oauthProviders.includes("microsoft")
+                        ? "Sign in with your Microsoft account"
+                        : "Microsoft sign-in is not configured on this server"
+                    }
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24">
                       <path
@@ -768,9 +810,27 @@ export default function LoginPage() {
                         fill="#00A4EF"
                       />
                     </svg>
-                    Microsoft Demo
-                  </button>
+                    Microsoft
+                  </a>
                 </div>
+
+                {process.env.NODE_ENV !== "production" && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDemoModal(true)}
+                    style={{
+                      marginTop: 10,
+                      background: "none",
+                      border: "none",
+                      color: "var(--color-text-muted)",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      width: "100%",
+                    }}
+                  >
+                    Developer demo personas…
+                  </button>
+                )}
               </>
             )}
           </div>

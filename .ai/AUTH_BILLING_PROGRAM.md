@@ -36,10 +36,20 @@
       /api/v1/auth, `POST /auth/refresh` with `auth_lookup_refresh_token`
       SECURITY DEFINER lookup, revocation clears the hash, web client does
       deduplicated silent refresh-and-retry on 401, Remember-me checkbox wired.
-- [ ] 1.3 Google OAuth 2.0 (real): authorization-code flow, account linking by
-      verified email, tenant-scoped; env-driven config
-- [ ] 1.4 Microsoft Entra ID OIDC (real): same pattern; both providers plug into
-      the existing `sso.service` JIT provisioning path
+- [x] 1.3/1.4 Real Google OAuth 2.0 + Microsoft Entra ID OIDC (2026-07-18):
+      confidential authorization-code flow in `oauth.service.ts` /
+      `oauth.controller.ts`; env-gated (GOOGLE*OAUTH*_/MICROSOFT*OAUTH*_,
+      MICROSOFT_OAUTH_TENANT, API_PUBLIC_URL); signed 10m `state` JWT
+      (TOKEN_TYPE.OAUTH_STATE); identity anchored on provider subject in new
+      `user_identities` table (+ RLS + `auth_lookup_oauth_identity`);
+      first login matches by verified email (slug disambiguates multi-tenant),
+      never auto-creates tenants; provider-verified email satisfies our own
+      verification; sessions issued through issueSession (refresh rotation);
+      login page shows real provider buttons (disabled until configured) via
+      GET /auth/oauth/providers, demo persona modal now dev-only;
+      /oauth/complete rotates the refresh cookie into the client session.
+      Remaining for full sign-off: live round-trip with real Google/Entra
+      credentials in a deployed environment.
 - [ ] 1.5 Login history entity (distinct from sessions): success/failure, IP,
       UA, geo-hint; surface in profile UI
 - [ ] 1.6 CAPTCHA (Turnstile/hCaptcha, env-gated) after N failed attempts —
