@@ -4,52 +4,39 @@
 
 ## Cycle
 
-- **Cycle #:** 12
+- **Cycle #:** 13
 - **Phase:** F — Foundation
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-h1`); autonomous run, iteration 10/10 (final)
+- **Agent/session:** Antigravity (claim: `foundation-track-a`); cycle 1 of 10 in one go
 
 ## Scope & rationale
 
-**Track H.1 — registry-driven PII erasure declarations** (roadmap § 11c):
-GDPR service exists but erasure coverage is unproven; required control =
-"every model carrying PII declares its treatment; a test fails when a new
-PII model lacks a declaration."
+**Track A (#19) — Migration Reconciliation Execution** (roadmap § 6):
+Execute the prepared mapping ledger to resolve migration drift between schema.prisma and migrations. Rename physical columns instead of destructive DROP/ADD to maintain database and migration trust.
 
-**Duplicate-check:** no PII registry file anywhere (`grep -ril pii` → only
-`PII_ENCRYPTION_KEY` env usage + field encryption util); `gdpr.service.ts`
-implements per-request erasure but no model-coverage control. Detector
-prototype run: **11 models** carry PII-pattern fields (User, Organization,
-Employee, Customer, Vendor, Contact, Lead, POSLoyaltyMember, Applicant,
-CustomerPortalUser, VendorPortalUser).
+**Duplicate-check:** No other agent is currently working on `foundation-track-a`. Dev DB matches migration history but diverges from schema.prisma. Table rows are 0.
 
 ## Ordered work items
 
-1. `scripts/pii-registry.json` — declaration per model: treatment
-   (`erase` | `anonymize` | `retain-legal-hold`), the PII fields, rationale,
-   review status. Initial classifications: portal users/members/applicants/
-   contacts/leads → erase; Customer/Vendor/Organization → anonymize (legal
-   business-document counterparties); Employee → retain-legal-hold →
-   anonymize post-statutory; User → anonymize (FK-referenced author trails).
-2. `scripts/check-pii-registry.mjs` — parses schema.prisma with the PII
-   field heuristic; FAILS if a matching model lacks a registry declaration
-   (or a registry entry references a vanished model). Prove red with a probe
-   model, green after.
-3. Wire into CI beside the schema lint.
-4. Record + ship: CHANGELOG, Ledger 11 → 12, roadmap H.1 status (registry
-   control live; erasure-run audit report remains with H.1's runtime half),
-   board, lock, `main`.
+1. Record approvals in `.ai/TRACK_A_RECONCILIATION_2026-07-18.md` and `CHANGELOG.md` to unlock execution.
+2. Generate `--create-only` migration: `pnpm db:migrate -- --create-only --name track_a_reconciliation` (under packages/database).
+3. Hand-edit the generated migration to use `RENAME COLUMN` for the 125 proven renames, and type cast using `USING` for text->enum if necessary, and handle `legacy_updated_at` rename for `landed_cost_receipt_links.updatedAt`.
+4. Deploy the migration to dev database (`pnpm db:deploy`).
+5. Run `pnpm migration:reconciliation:report` with shadow database url to verify zero unmatched and zero candidates (meaning dev DB and schema.prisma are fully synchronized).
+6. Verify CI validation gates pass.
+7. Record + ship: CHANGELOG, Cycle Ledger 12 -> 13, Collab Board, release lock, push to `main`.
 
 ## Acceptance criteria
 
-- Checker green at HEAD, red on an undeclared PII model (proof run).
-- 11 models declared with explicit treatments + rationale.
-- CI step added; no schema changes.
+- `pnpm migration:reconciliation:report` shows 0 rename candidates and 0 unmatched operations.
+- `pnpm foundation:check` passes.
+- `pnpm architecture:check` passes.
+- Scoped typecheck and tests pass.
 
 ## Gate tier & rollback note
 
-- **FAST** — tooling + registry data.
-- **Rollback:** remove CI line + two files.
+- **MILESTONE** (risky surface — database schema change).
+- **Rollback:** `git restore` the migration directory and run backups if applied (logical schema is tracked in git).
 
 ## Addenda (dated, append-only)
 

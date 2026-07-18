@@ -111,13 +111,12 @@
 > Durable counters for the ADP cycle cadence. Every completed DEV cycle
 > increments the counter **in the same commit as the code**. Every 10th DEV
 > cycle sets `Next run: HARDEN (mandatory)` — the next "Start" then executes a
-> full QA cycle (which does NOT increment the DEV counter), logs it below, and
-> resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
+> harden run. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 12
+- **DEV cycles completed:** 13
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 8 (next checkpoint after cycle 20)
+- **Cycles until mandatory harden:** 7 (next checkpoint after cycle 20)
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -135,6 +134,7 @@
 | — | 2026-07-18 | QA (mandatory) | F | HARDEN checkpoint after cycle 10 | #24 SQL injection (Connect search) fixed+closed; #25 idempotency principal-scoping fixed+closed; 1 red communication test fixed (67/67); raw-SQL sweep clean | see CHANGELOG 2026-07-18 HARDEN entry |
 | 11 | 2026-07-18 | DEV | F | Track H.4 — retention matrix + enforcement | H.4 closed: 6-class matrix (JSON source) + dry-run/apply enforcement script (dev-DB dry-run 6/6 green) + docs matrix with out-of-scope + GDPR interplay | see CHANGELOG 2026-07-18 cycle-11 entry |
 | 12 | 2026-07-18 | DEV | F | Track H.1 — PII registry control | Registry control live: 11 PII models declared, CI checker red/green proven; runtime half (registry-driven gdpr erasure + audit report) queued | see CHANGELOG 2026-07-18 cycle-12 entry |
+| 13 | 2026-07-18 | DEV | F | Track A (#19) — Migration Reconciliation Execution | Reconciled dev DB with schema.prisma; 0 drift/candidates/unmatched; added legacyUpdatedAt to schema.prisma; database tests & typechecks green | see CHANGELOG 2026-07-18 cycle-13 entry |
 
 ## Collab Board — Multi-Agent Sync
 

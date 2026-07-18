@@ -140,7 +140,17 @@ const allowedScripts = new Set([
   'module-boundary-baseline.json',
   'report-migration-reconciliation.mjs',
   'worktree.mjs',
-  'autopilot-loop.ps1'
+  'autopilot-loop.ps1',
+  'backup-database.mjs',
+  'check-pii-registry.mjs',
+  'check-schema-lints.mjs',
+  'enforce-retention.mjs',
+  'generate-env-example.mjs',
+  'pii-registry.json',
+  'repair-workspace-links.mjs',
+  'retention-matrix.json',
+  'schema-lint-baseline.json',
+  'verify-backup.mjs'
 ]);
 
 for (const file of scriptsFiles) {

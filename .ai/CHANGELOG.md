@@ -8,6 +8,13 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 13 (Phase F) — Track A: Migration Reconciliation Execution
+
+- **Database Migration**: Generated and applied the reconciled Track A migration SQL `20260718093000_track_a_reconciliation` to align the development database and migrations history with `schema.prisma`.
+- **Reconciliation Engine**: Extended `scripts/reconcile-sql.js` (prior to clean up) to split composite `ALTER TABLE` statements into individual SQL commands, avoiding PostgreSQL's column rename syntax restrictions. Added automatic dropping and re-applying of column defaults to resolve Postgres enum casting restrictions. Incorporated unique index deduplication filtering to eliminate duplicate index/constraint warnings.
+- **Schema Alignment**: Added `legacyUpdatedAt` nullable DateTime column mapping to `legacy_updated_at` in the `LandedCostReceiptLink` model to satisfy the backward-compatibility preservation requirement.
+- **Verification**: Verified zero schema drift, zero candidates, and zero unmatched destructive operations via the reconciliation report script. All database, encryption, RLS isolation, and TypeScript compiler tests are green.
+
 ## [2026-07-18] Cycle 12 (Phase F) — Track H.1: PII registry control live
 
 Autonomous run, iteration 10/10 (final of the requested 10-cycle run).

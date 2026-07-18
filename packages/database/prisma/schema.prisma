@@ -12728,6 +12728,7 @@ model LandedCostReceiptLink {
   totalWeight    Decimal?  @map("total_weight") @db.Decimal(15, 4)
   totalVolume    Decimal?  @map("total_volume") @db.Decimal(15, 4)
   createdAt      DateTime  @default(now()) @map("created_at")
+  legacyUpdatedAt DateTime? @map("legacy_updated_at")
 
   voucher LandedCostVoucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
 

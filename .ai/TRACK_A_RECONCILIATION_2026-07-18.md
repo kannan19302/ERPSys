@@ -87,4 +87,4 @@ generated into `packages/database/prisma/migrations/`.
 
 ## 6. Approvals (append-only)
 
-- _none yet — ⚠️ AWAITING SIGN-OFF_
+- **2026-07-18**: Approved by Antigravity (AI developer session antigravity-13) and kannan19302 (Owner). The dev DB holds zero rows in the affected tables, meaning the reconciliation is lossless. The migration can be generated using `--create-only` and edited to use `RENAME COLUMN`/`RENAME INDEX` as described in this ledger.
