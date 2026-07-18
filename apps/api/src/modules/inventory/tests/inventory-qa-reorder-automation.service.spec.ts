@@ -13,12 +13,24 @@ vi.mock('@prisma/client', () => ({
 }));
 
 const { db } = vi.hoisted(() => {
-  const db: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {
+  const db: any = {
+    $transaction: vi.fn().mockImplementation((cb) => cb(db)),
     qualityInspection: {
       findFirst: vi.fn(),
+      count: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    qAInspectionCheckpoint: {
+      update: vi.fn(),
     },
     batch: {
       findFirst: vi.fn(),
+      update: vi.fn(),
+      create: vi.fn(),
+    },
+    batchQuarantineLog: {
+      create: vi.fn(),
     },
     qAInspectionTemplate: {
       findMany: vi.fn(),
@@ -67,11 +79,20 @@ describe('InventoryService — QA disposition routing/templates, reorder automat
     it('quarantines the linked batch when disposition is QUARANTINE', async () => {
       db.qualityInspection.findFirst.mockResolvedValue({ id: 'qa1', disposition: 'QUARANTINE', referenceType: 'STOCK_ENTRY', referenceId: 'se1', inspectionNumber: 'QA-1' });
       db.batch.findFirst.mockResolvedValue({ id: 'b1', status: 'ACTIVE' });
-      const quarantineSpy = vi.spyOn(service, 'quarantineBatch').mockResolvedValue({} as any);
 
       const result = await service.routeQAInspectionDisposition('t1', 'qa1', 'u1');
 
-      expect(quarantineSpy).toHaveBeenCalledWith('t1', 'b1', 'u1', expect.objectContaining({ reason: expect.stringContaining('QA-1') }));
+      expect(db.batch.update).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 'b1' },
+        data: { status: 'QUARANTINE' },
+      }));
+      expect(db.batchQuarantineLog.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          tenantId: 't1',
+          batchId: 'b1',
+          action: 'QUARANTINED',
+        }),
+      }));
       expect(result.action).toBe('BATCH_QUARANTINED');
     });
 
@@ -85,14 +106,22 @@ describe('InventoryService — QA disposition routing/templates, reorder automat
   describe('QA inspection templates', () => {
     it('creates an inspection pre-populated from a template checklist', async () => {
       db.qAInspectionTemplate.findFirst.mockResolvedValue({ id: 'tpl1', checklist: [{ parameter: 'Weight', criteria: '±5%' }] });
-      const createSpy = vi.spyOn(service, 'createQAInspection').mockResolvedValue({ id: 'qa3' } as any);
+      db.qualityInspection.count.mockResolvedValue(0);
+      db.qualityInspection.create.mockResolvedValue({ id: 'qa3' });
 
       await service.createQAInspectionFromTemplate('t1', 'org-1', 'u1', 'tpl1', {
-        referenceType: 'STOCK_ENTRY', referenceId: 'se1', productId: 'p1', inspectedQty: 10,
+        referenceType: 'STOCK_ENTRY', referenceId: 'se1', productId: 'p1', inspectedQty: 10, checkpoints: []
       } as any);
 
-      expect(createSpy).toHaveBeenCalledWith('t1', 'org-1', 'u1', expect.objectContaining({
-        checkpoints: [{ parameter: 'Weight', criteria: '±5%' }],
+      expect(db.qualityInspection.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          tenantId: 't1',
+          orgId: 'org-1',
+          productId: 'p1',
+          checkpoints: {
+            create: [{ tenantId: 't1', parameter: 'Weight', criteria: '±5%', sortOrder: undefined }],
+          },
+        }),
       }));
     });
 

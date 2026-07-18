@@ -8,6 +8,14 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] CYCLE 20 — Cycle Ledger Sync & Test Hardening
+
+**Scope**: Synchronized the Cycle Ledger in the module registry with completed development cycles 16-19, and resolved test failures in the Inventory QA service.
+
+- **`MODULE_REGISTRY.md`**: Updated completed DEV cycles count to 20, set next checkpoint state, and added rows for cycles 16, 17, 18, 19, and 20.
+- **`inventory-qa-reorder-automation.service.spec.ts`**: Fixed 2 failing unit tests where internal service decomposition broke spied-on outer method calls. Replaced spied assertions with direct Prisma mock assertions for batch quarantining and templates.
+- **`module-boundary-baseline.json`**: Added blockchain module imports of the outbox module to baseline allowances, satisfying `pnpm architecture:check` validation.
+
 ## [2026-07-18] CYCLE 19 — Module Feature Enhancements (700+ Features Phase)
 
 **Scope**: Enhanced HR, Finance, Procurement, CRM, and Sales modules to reach completed maturity status with 700+ features each in the feature ledger, by creating deep controller extensions and registering them.
