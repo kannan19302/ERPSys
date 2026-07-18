@@ -33,7 +33,7 @@ const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const KEY_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
 
 interface TenantRequest extends Request {
-  user?: { tenantId?: string };
+  user?: { tenantId?: string; sub?: string; id?: string; userId?: string };
 }
 
 @Injectable()
@@ -54,10 +54,16 @@ export class IdempotencyInterceptor implements NestInterceptor {
       });
     }
 
-    // Tenant scoping: authenticated tenant wins; anonymous requests are
-    // scoped to a public bucket so they can never collide with tenant keys.
-    const tenantId = request.user?.tenantId ?? 'public';
-    const storageKey = `idem:${tenantId}:${clientKey}`;
+    // Issue #25: keys are scoped to the authenticated PRINCIPAL
+    // (tenant + user), so one user can never receive another user's stored
+    // response, and unauthenticated requests never participate (anonymous
+    // flows keep their own bespoke idempotency, e.g. checkout).
+    const tenantId = request.user?.tenantId;
+    const principalId = request.user?.sub ?? request.user?.id ?? request.user?.userId;
+    if (!tenantId || !principalId) {
+      return next.handle();
+    }
+    const storageKey = `idem:${tenantId}:${principalId}:${clientKey}`;
     const requestHash = createHash('sha256')
       .update(request.method)
       .update('\n')

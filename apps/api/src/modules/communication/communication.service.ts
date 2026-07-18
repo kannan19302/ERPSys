@@ -1086,27 +1086,38 @@ export class CommunicationService {
       channelIds = [filters.channelId];
     }
     if (channelIds.length === 0) return [];
-    const conditions = [
-      `m.tenant_id = '${tenantId.replace(/'/g, "''")}'`,
-      `m.deleted_at IS NULL`,
-      `m.channel_id IN (${channelIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',')})`,
-      `m.content ILIKE '%${q.replace(/'/g, "''").replace(/%/g, '\\%').replace(/_/g, '\\_')}%'`,
-    ];
-    if (filters.authorId) conditions.push(`m.user_id = '${filters.authorId.replace(/'/g, "''")}'`);
-    if (filters.dateFrom) conditions.push(`m.created_at >= '${filters.dateFrom}'`);
-    if (filters.dateTo) conditions.push(`m.created_at <= '${filters.dateTo}'`);
+    // Fully parameterized (issue #24 — the previous string-built WHERE let
+    // dateFrom/dateTo escape the tenant scoping). Dates are validated, all
+    // values travel as bind parameters via Prisma.sql.
+    const parseDate = (value: string | undefined) => {
+      if (!value) return null;
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) throw new BadRequestException('Invalid date filter');
+      return parsed;
+    };
+    const dateFrom = parseDate(filters.dateFrom);
+    const dateTo = parseDate(filters.dateTo);
+    const pattern = `%${q.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
     const limit = Math.min(filters.limit ?? 50, 100);
-    const sql = `
+    const conditions = [
+      Prisma.sql`m.tenant_id = ${tenantId}`,
+      Prisma.sql`m.deleted_at IS NULL`,
+      Prisma.sql`m.channel_id IN (${Prisma.join(channelIds)})`,
+      Prisma.sql`m.content ILIKE ${pattern}`,
+    ];
+    if (filters.authorId) conditions.push(Prisma.sql`m.user_id = ${filters.authorId}`);
+    if (dateFrom) conditions.push(Prisma.sql`m.created_at >= ${dateFrom}`);
+    if (dateTo) conditions.push(Prisma.sql`m.created_at <= ${dateTo}`);
+    const rows = await prisma.$queryRaw<any[]>(Prisma.sql`
       SELECT m.id, m.channel_id AS "channelId", m.user_id AS "userId", m.content, m.created_at AS "createdAt",
              c.name AS "channelName", c.kind AS "channelKind", u.first_name AS "authorFirstName", u.last_name AS "authorLastName"
       FROM messages m
       JOIN channels c ON c.id = m.channel_id
       JOIN users u ON u.id = m.user_id
-      WHERE ${conditions.join(' AND ')}
+      WHERE ${Prisma.join(conditions, ' AND ')}
       ORDER BY m.created_at DESC
       LIMIT ${limit}
-    `;
-    const rows = await prisma.$queryRawUnsafe<any[]>(sql);
+    `);
     return rows.map((r: any) => {
       const authorName = `${r.authorFirstName} ${r.authorLastName}`.trim();
       const idx = r.content.toLowerCase().indexOf(q.toLowerCase());

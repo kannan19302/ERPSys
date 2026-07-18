@@ -8,6 +8,35 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] HARDEN checkpoint (mandatory, after DEV cycle 10) — 2 security flaws + 1 red test fixed
+
+Autonomous run, iteration 8/10. Full QA-flow cycle per binding #17: scan
+security-first → file GitHub issues BEFORE fixing → fix at root cause →
+verify → close. Counter unchanged (QA cycles don't increment); next run: DEV.
+
+- **[#24 — HIGH] SQL injection in Connect filtered message search.**
+  `communication.service.ts` built its WHERE clause by string interpolation;
+  `filters.dateFrom`/`dateTo` had NO escaping — `dateFrom="2020-01-01' OR
+  1=1 --"` escaped the tenant condition (cross-tenant message read).
+  Root-cause fix: the entire query is now parameterized `Prisma.sql`
+  (`Prisma.join` for conditions/IN-list), dates validated via `new Date()`
+  with 400 on invalid, ILIKE pattern bound as a parameter. Repo-wide sweep of
+  `$queryRawUnsafe`/`$executeRawUnsafe`: the 4 other call sites are
+  parameterized or constant → no further injectable sites. CLOSED.
+- **[#25 — MEDIUM] Idempotency keys not principal-scoped.** Cycle 9's
+  interceptor scoped keys per tenant only: a same-tenant user sending the
+  same key+payload could receive ANOTHER user's stored response, and all
+  anonymous clients shared one global bucket. Fix: keys are now
+  `idem:{tenantId}:{userId}:{key}`; unauthenticated requests skip idempotency
+  entirely. +2 tests (cross-user isolation, anonymous pass-through) → 9
+  idempotency tests green. CLOSED.
+- **Red test fixed:** `communication.service.spec.ts` mock lacked
+  `meetingParticipant` (stranded Connect phase-2 work) — meeting-creation
+  test failed at HEAD. Mock completed; communication suite 67/67 green.
+- Gates: API typecheck (true exit), boundary check, idempotency 9/9,
+  communication 67/67. **Ledger:** QA cycle logged; **Next run: DEV**
+  (counter stays 10; next harden after cycle 20).
+
 ## [2026-07-18] Cycle 10 (Phase F) — Track G.1 closed: API versioning & deprecation policy
 
 Autonomous run, iteration 7/10. **DEV counter reaches 10 → next run is the

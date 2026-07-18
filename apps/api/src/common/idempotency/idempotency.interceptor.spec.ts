@@ -8,6 +8,8 @@ function makeContext(overrides: {
   method?: string;
   key?: string | undefined;
   tenantId?: string;
+  userId?: string;
+  anonymous?: boolean;
   body?: unknown;
   url?: string;
 }) {
@@ -25,7 +27,7 @@ function makeContext(overrides: {
   const request = {
     method: overrides.method ?? 'POST',
     headers: overrides.key === undefined ? {} : { 'idempotency-key': overrides.key },
-    user: { tenantId: overrides.tenantId ?? 'tenant-a' },
+    user: overrides.anonymous ? undefined : { tenantId: overrides.tenantId ?? 'tenant-a', id: overrides.userId ?? 'user-1' },
     body: overrides.body ?? { amount: 100 },
     url: overrides.url ?? '/api/v1/orders',
     originalUrl: overrides.url ?? '/api/v1/orders',
@@ -85,7 +87,7 @@ describe('IdempotencyInterceptor (Track G.3)', () => {
   it('rejects a concurrent duplicate while in flight (409)', async () => {
     const store = new InMemoryIdempotencyStore();
     const interceptor = new IdempotencyInterceptor(store);
-    await store.claim(`idem:tenant-a:${KEY}`, hashOf('POST', '/api/v1/orders', { amount: 100 }), 60);
+    await store.claim(`idem:tenant-a:user-1:${KEY}`, hashOf('POST', '/api/v1/orders', { amount: 100 }), 60);
 
     const dup = makeContext({ key: KEY });
     await expect(
@@ -116,6 +118,25 @@ describe('IdempotencyInterceptor (Track G.3)', () => {
     await firstValueFrom(interceptor.intercept(makeContext({ key: KEY, tenantId: 'tenant-a' }).context, { handle: handler } as never));
     await firstValueFrom(interceptor.intercept(makeContext({ key: KEY, tenantId: 'tenant-b' }).context, { handle: handler } as never));
     expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it('scopes keys per USER within a tenant — no cross-user replay (issue #25)', async () => {
+    const store = new InMemoryIdempotencyStore();
+    const interceptor = new IdempotencyInterceptor(store);
+    const handler = vi.fn(() => of('run'));
+    await firstValueFrom(interceptor.intercept(makeContext({ key: KEY, userId: 'user-1' }).context, { handle: handler } as never));
+    await firstValueFrom(interceptor.intercept(makeContext({ key: KEY, userId: 'user-2' }).context, { handle: handler } as never));
+    expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips idempotency entirely for unauthenticated requests (issue #25)', async () => {
+    const store = new InMemoryIdempotencyStore();
+    const claim = vi.spyOn(store, 'claim');
+    const interceptor = new IdempotencyInterceptor(store);
+    const { context } = makeContext({ key: KEY, anonymous: true });
+    const result = await firstValueFrom(interceptor.intercept(context, { handle: () => of('anon') } as never));
+    expect(result).toBe('anon');
+    expect(claim).not.toHaveBeenCalled();
   });
 
   it('rejects malformed keys', async () => {

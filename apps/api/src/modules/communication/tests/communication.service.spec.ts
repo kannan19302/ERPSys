@@ -13,6 +13,7 @@ vi.mock('@unerp/database', () => {
       channelRead: { findMany: vi.fn(), upsert: vi.fn() },
       messageReaction: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
       connectMeeting: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+      meetingParticipant: { create: vi.fn(), findMany: vi.fn(), upsert: vi.fn(), deleteMany: vi.fn() },
       calendarEvent: { findMany: vi.fn(), create: vi.fn() },
       notification: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), findFirst: vi.fn() },
       emailTemplate: { findMany: vi.fn(), create: vi.fn(), findFirst: vi.fn() },

@@ -116,8 +116,8 @@
 > reset the 10-cycle clock.
 
 - **DEV cycles completed:** 10
-- **Next run:** HARDEN (mandatory)
-- **Cycles until mandatory harden:** 0 — the next "Start" MUST execute a full QA cycle
+- **Next run:** DEV
+- **Cycles until mandatory harden:** 10 (next checkpoint after cycle 20)
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -132,6 +132,7 @@
 | 8 | 2026-07-18 | DEV | F | Track H.3 — backup + restore-verify automation | Landed + drilled: backup/verify scripts, 655-table exact-equality restore proof in 20.3s, runbook with RPO/RTO; PITR sub-item queued for prod topology | see CHANGELOG 2026-07-18 cycle-8 entry |
 | 9 | 2026-07-18 | DEV | F | Track G.3 — platform write idempotency | G.3 closed: global opt-in Idempotency-Key interceptor, Redis NX/EX store, replay/reuse/in-flight semantics, tenant-scoped; 7 tests + typecheck green | see CHANGELOG 2026-07-18 cycle-9 entry |
 | 10 | 2026-07-18 | DEV | F | Track G.1 — API versioning & deprecation policy | G.1 closed: policy doc + registry/middleware emitting RFC 9745/8594 headers; 5 tests green. Counter → 10: HARDEN armed | see CHANGELOG 2026-07-18 cycle-10 entry |
+| — | 2026-07-18 | QA (mandatory) | F | HARDEN checkpoint after cycle 10 | #24 SQL injection (Connect search) fixed+closed; #25 idempotency principal-scoping fixed+closed; 1 red communication test fixed (67/67); raw-SQL sweep clean | see CHANGELOG 2026-07-18 HARDEN entry |
 
 ## Collab Board — Multi-Agent Sync
 
