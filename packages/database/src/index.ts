@@ -5,6 +5,7 @@
 import { PrismaClient } from '@prisma/client';
 import { getTenantSession } from './tenant-context.js';
 import { applyTenantScope, MODELS_WITHOUT_TENANT } from './tenant-scope.js';
+import { applySoftDeleteScope } from './soft-delete.js';
 
 // Prevent multiple Prisma Client instances in development
 const globalForPrisma = globalThis as unknown as {
@@ -38,12 +39,18 @@ export const prisma = basePrisma.$extends({
         args: unknown;
         query: (args: unknown) => Promise<unknown>;
       }) {
+        // G.4: Apply soft-delete scope FIRST — all models with deletedAt get
+        // deletedAt: null injected into their where clause, regardless of
+        // tenant session. This prevents soft-deleted records from appearing
+        // in any normal query or mutation.
+        let scopedArgs = applySoftDeleteScope(model, operation, args);
+
         const session = getTenantSession();
         if (!session || MODELS_WITHOUT_TENANT.has(model)) {
-          return query(args);
+          return query(scopedArgs);
         }
 
-        const scopedArgs = applyTenantScope(model, operation, args, session.tenantId);
+        scopedArgs = applyTenantScope(model, operation, scopedArgs, session.tenantId);
 
         // Track C (#21): database-enforced RLS on ALL tenant-scoped tables.
         // Set app.current_tenant_id transaction-locally so the RLS policy
@@ -94,6 +101,7 @@ export type { Prisma } from '@prisma/client';
 export * from '@prisma/client';
 export { getTenantSession, runWithTenantSession } from './tenant-context.js';
 export { applyTenantScope, MODELS_WITHOUT_TENANT } from './tenant-scope.js';
+export { applySoftDeleteScope, SOFT_DELETE_ENABLED_MODELS } from './soft-delete.js';
 export { encryptField, decryptField, isEncrypted } from './encryption.js';
 export {
   StaleWriteError,

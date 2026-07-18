@@ -1073,6 +1073,16 @@ second-factor stack with real cryptography.
 - All 47 tests pass (31 unit tests + 16 RLS integration tests, 2 appropriately skipped under superuser).
 - Verification: `pnpm typecheck` green, `pnpm migration:discipline` green.
 
+## [2026-07-18] Cycle 15 — Phase F / Track G.4: Deletion policy & soft-delete middleware
+
+**Scope**: Cross-cutting deletion semantics — 44 Prisma models with `deletedAt` columns but no centralized filtering; the rest hard-delete. Policy docs + automated middleware so filters are transparent.
+
+- **Policy document**: `docs/DELETION_POLICY.md` — defines 4 deletion classes (SD soft-delete, HD hard-delete, ER erasure via H.1 PII registry, RT retention-based hard-delete). Per-entity assignment for all 44 models with `deletedAt`.
+- **`packages/database/src/soft-delete.ts`**: Pure middleware function `applySoftDeleteScope` following the same pattern as `applyTenantScope` — injects `deletedAt: null` into the `where` clause of all read operations (`findMany`, `findFirst`, `findUnique`, `count`, `aggregate`, `groupBy`) and mutation operations (`update`, `updateMany`, `delete`, `deleteMany`) for models in `SOFT_DELETE_ENABLED_MODELS`. Preserves caller-supplied `deletedAt` filters when explicitly passed (enables trash/recycle views via `deletedAt: { not: null }` or `deletedAt: undefined`).
+- **Integration**: Wired into the Prisma `$allOperations` extension in `packages/database/src/index.ts` — soft-delete scope runs FIRST (before tenant scope), on EVERY query regardless of tenant session state. Models without `deletedAt` are transparently passed through.
+- **19 unit tests**: Coverage for all operation types, undefined args, explicit filter preservation, create/upsert bypass, and the `SOFT_DELETE_ENABLED_MODELS` set membership. All 66 tests pass (19 new + 47 existing).
+- Verification: `pnpm typecheck` green, `pnpm migration:discipline` green, `pnpm architecture:check` n/a (no API changes).
+
 **Scope**: Full codebase audit of 486 pages across 28 modules for UI framework compliance.
 
 **Audit Findings**:
