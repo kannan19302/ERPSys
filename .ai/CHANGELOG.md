@@ -8,6 +8,26 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 8 (Phase F) — Track H.3: backup + restore-verification automation, drill executed
+
+Autonomous run, iteration 5/10.
+
+- **`scripts/backup-database.mjs`**: containerized `pg_dump -Fc` →
+  timestamped `var/backups/*.dump` + `.sha256`, retention pruning (keep 14),
+  labels, JSON summary.
+- **`scripts/verify-backup.mjs`**: restores into disposable
+  `unerp_restore_verify`, proves pg_restore success + table-count equality +
+  **exact per-table row counts** + `_prisma_migrations` equality against the
+  live source; disposable DB dropped in all paths (try/finally).
+- **Drill executed this cycle**: backup 1,677,654 B in 1.9s
+  (sha256 c8d09cd2…); restore+verify of 655 tables / 333 rows / 128
+  migrations in 20.3s → `verified: true, failures: []`.
+- **`docs/RUNBOOK_BACKUP_RESTORE.md`**: backup/verify/recovery procedure,
+  RPO ≤ 24h & RTO ≤ 30min for the current topology, PITR (WAL archiving)
+  named as the remaining production sub-item, MinIO/Redis scope notes.
+- Roadmap H.3 marked landed+drilled (PITR sub-item outstanding).
+  **Ledger**: 7 → 8; next mandatory harden in 2.
+
 ## [2026-07-18] Cycle 7 (Phase F) — Track G.2: optimistic-locking convention (mechanism complete)
 
 Autonomous run, iteration 4/10.
