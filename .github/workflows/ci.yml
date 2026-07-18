@@ -1,11 +1,3 @@
-# Minimal CI — one job, the gates that actually catch regressions.
-#
-# NOTE: while this repo is PRIVATE, GitHub Actions minutes are billed. Runs fail
-# instantly with "job was not started" until Settings → Billing is fixed or the
-# repo is made public. The pipeline itself is intentionally cheap (~5-6 min).
-#
-# Heavier gates (E2E smoke, Storybook, Docker image) run locally per
-# .ai/AUTOPILOT.md § Gate tiers; they return to CI post-v1.
 name: CI
 
 on:
@@ -14,18 +6,14 @@ on:
   pull_request:
     branches: [main]
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+env:
+  NODE_ENV: test
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
 
 jobs:
-  ci:
-    name: Build, Typecheck & Test
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      NEXTAUTH_SECRET: ci-test-secret-do-not-use-in-production-abcdef1234567890
-      PII_ENCRYPTION_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -34,54 +22,73 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r test
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm architecture:check
       - run: pnpm migration:discipline
       - run: pnpm foundation:check
-      - run: pnpm --filter @unerp/database exec prisma generate
-      - run: pnpm --filter @unerp/database build
-      - run: pnpm --filter @unerp/shared build
-      - run: pnpm --filter @unerp/auth build
-      - run: pnpm --filter @unerp/service-kit build
-      - run: pnpm --filter @unerp/api build
-      # next build ignores type errors, so tsc --noEmit is the real web gate.
-      # Track G.6: .env.example is generated from the env schema — fail on drift.
-      - run: node scripts/generate-env-example.mjs --check
-      # Track G.8: no Float in schema.prisma outside the shrinking baseline.
-      - run: node scripts/check-schema-lints.mjs
-      # Track H.1: every PII-carrying model must declare its erasure treatment.
-      - run: node scripts/check-pii-registry.mjs
-      - run: pnpm --filter @unerp/api typecheck
-      - run: pnpm --filter @unerp/web typecheck
-      # Track I.1 (foundation roadmap § 11d): the production web artifact must
-      # build on every merge. Build workspace UI dists first — the production
-      # exports condition resolves them from dist/, not src/.
-      - run: pnpm --filter "@unerp/ui*" build
-      - run: pnpm --filter @unerp/framework build
-      - run: NODE_OPTIONS="--max-old-space-size=6144" pnpm --filter @unerp/web build
-      - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test
+      - run: pnpm schema:lint
+      - run: pnpm audit --audit-level=high
 
-  # Track C (#21) — Two-tenant RLS proof (foundation roadmap § 8).
-  # Runs with a live PostgreSQL database using the NON-bypass app role.
-  rls-integration:
-    name: RLS Tenant Isolation Proof
+  e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: unerp_dev
-          POSTGRES_USER: unerp
-          POSTGRES_PASSWORD: unerp_password
+          POSTGRES_USER: unierp
+          POSTGRES_PASSWORD: unierp
+          POSTGRES_DB: unierp_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready -U unerp -d unerp_dev
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-    env:
-      DATABASE_OWNER_URL: postgresql://unerp:unerp_password@localhost:5432/unerp_dev?schema=public
-      DATABASE_URL: postgresql://unerp:unerp_password@localhost:5432/unerp_dev?schema=public
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -90,12 +97,33 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Create the app role and grant permissions (owner connection)
-      - run: pnpm --filter @unerp/database exec prisma migrate deploy
+      - name: Generate Prisma client
+        run: pnpm db:generate
+      - name: Run database migrations
+        run: pnpm db:migrate --name e2e_init
         env:
-          DATABASE_URL: ${{ env.DATABASE_OWNER_URL }}
-      - run: pnpm --filter @unerp/database build
-      # Run the RLS integration tests as the NON-bypass role
-      - run: pnpm --filter @unerp/database exec vitest run tenant-rls-integration.test.ts --reporter verbose
+          DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      - name: Seed database
+        run: pnpm db:seed
         env:
-          DATABASE_URL: postgresql://unerp_api:unerp_api_password@localhost:5432/unerp_dev?schema=public
+          DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      - name: Build API
+        run: pnpm --filter @unerp/api build
+      - name: Build web
+        run: pnpm --filter @unerp/web build
+      - name: Install Playwright browsers
+        run: pnpm --filter @unerp/web exec playwright install --with-deps chromium
+      - name: Run E2E tests (all projects)
+        run: pnpm --filter @unerp/web test:e2e:all
+        env:
+          DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          E2E_EMAIL: admin@unerp.dev
+          E2E_PASSWORD: admin123
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7

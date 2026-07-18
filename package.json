@@ -34,7 +34,16 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "publish-packages": "pnpm turbo build && changeset publish",
-    "schema:lint": "node scripts/check-schema-lints.mjs"
+    "schema:lint": "node scripts/check-schema-lints.mjs",
+    "test:load": "k6 run",
+    "test:load:smoke": "k6 run load-tests/scenarios/smoke-test.js",
+    "test:load:login": "k6 run load-tests/scenarios/login.js",
+    "test:load:list": "k6 run load-tests/scenarios/list-paginate.js",
+    "test:load:post": "k6 run load-tests/scenarios/document-post.js",
+    "test:load:stress": "k6 run load-tests/scenarios/stress-test.js",
+    "test:load:tenant": "k6 run load-tests/scenarios/tenant-isolation.js",
+    "test:audit": "pnpm audit --audit-level=high",
+    "test:load:all": "k6 run load-tests/scenarios/smoke-test.js && k6 run load-tests/scenarios/login.js && k6 run load-tests/scenarios/list-paginate.js && k6 run load-tests/scenarios/document-post.js && k6 run load-tests/scenarios/tenant-isolation.js"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

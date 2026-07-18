@@ -18,11 +18,15 @@ interface ErasureRequest {
   createdAt: string;
 }
 
-const ENTITY_TYPES = ['customers', 'vendors', 'contacts', 'leads', 'employees'];
+const ENTITY_TYPES = [
+  'Customer', 'Vendor', 'Contact', 'Lead', 'User',
+  'Organization', 'Employee', 'Applicant', 'POSLoyaltyMember',
+  'CustomerPortalUser', 'VendorPortalUser',
+];
 
 const MOCK_REQUESTS: ErasureRequest[] = [
-  { id: '1', requestedBy: 'admin', subjectEmail: 'john@example.com', subjectName: 'John Doe', status: 'PENDING', entityTypes: ['customers', 'contacts'], erasedAt: null, createdAt: '2026-06-18T10:00:00Z' },
-  { id: '2', requestedBy: 'admin', subjectEmail: 'jane@example.com', subjectName: 'Jane Smith', status: 'COMPLETED', entityTypes: ['leads'], erasedAt: '2026-06-17T15:00:00Z', createdAt: '2026-06-15T09:00:00Z' },
+  { id: '1', requestedBy: 'admin', subjectEmail: 'john@example.com', subjectName: 'John Doe', status: 'PENDING', entityTypes: ['Customer', 'Contact'], erasedAt: null, createdAt: '2026-06-18T10:00:00Z' },
+  { id: '2', requestedBy: 'admin', subjectEmail: 'jane@example.com', subjectName: 'Jane Smith', status: 'COMPLETED', entityTypes: ['Lead'], erasedAt: '2026-06-17T15:00:00Z', createdAt: '2026-06-15T09:00:00Z' },
 ];
 
 const statusColors: Record<string, { bg: string; color: string }> = {

@@ -12,6 +12,8 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:journeys": "playwright test --project=journeys",
+    "test:e2e:all": "playwright test --project=all-e2e",
     "clean": "rimraf .next"
   },
   "dependencies": {

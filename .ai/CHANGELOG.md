@@ -8,12 +8,82 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 17 — Complete remaining foundation tracks (G.5, H.1, H.2, I.2, I.3, I.4, F)
+
+**Scope**: Bulk close of all remaining parallel-safe foundation tracks. Fable-5 holds Track B (#17 outbox) active lock.
+
+### Track G.5 — Document Numbering Service (CLOSED)
+- **`packages/database/prisma/schema.prisma`**: Added `DocumentSequence` model (tenant-scoped, series-based, configurable format/padding/reset frequency, `@@unique([tenantId, series, organizationId])`)
+- **`packages/shared/src/numbering/`**: Created `NumberingService` with `getNextNumber()` (concurrency-safe via `FOR UPDATE`), `peekNextNumber()`, `resetSequence()`, auto YEARLY/MONTHLY period reset, configurable format template (`{prefix}{number}{suffix}`). Adapter pattern (`NumberingTx`) keeps shared package Prisma-free.
+- **`packages/shared/src/numbering/numbering.schema.ts`**: Zod schemas for create/update/getNextNumber.
+- **`packages/shared/src/numbering/numbering.dto.ts`**: DTOs (`NumberingResponse`, `NumberingCreateDto`, etc.)
+- **15 unit tests** covering formatting, increment, auto-reset, peek, reset sequence.
+- Typecheck: `pnpm --filter @unerp/shared build` ✓, `pnpm --filter @unerp/database build` ✓.
+
+### Track H.1 (remaining half) — GDPR erasure wired to PII registry (CLOSED)
+- **`apps/api/src/modules/admin/gdpr.service.ts`**: Rewritten from hardcoded 5-entity modelMap to consume `scripts/pii-registry.json` at runtime. Three-tier logic: **erase** (Contact, Lead, Applicant, POSLoyaltyMember, CustomerPortalUser, VendorPortalUser → `deleteMany`), **anonymize** (User, Organization, Customer, Vendor → PII field replacement with `[redacted-{id}]@erased.local`), **retain-legal-hold** (Employee → logged SKIP).
+- **Audit trail**: Creates `AuditLog(action: 'GDPR_ERASURE')` with results, email, timestamp.
+- **19 unit tests** covering all 11 PII models, legacy plural aliases, edge cases.
+- Typecheck: ✓.
+
+### Track H.2 — Tenant Lifecycle (export/offboard/purge) (CLOSED)
+- **`packages/database/prisma/schema.prisma`**: Added `TenantLifecycleEvent` model (eventType/status/retentionDays/payload/error).
+- **`apps/api/src/modules/admin/tenant-lifecycle/`**: Full NestJS module — `TenantLifecycleService` (export/suspend/unsuspend/offboard/cancel-offboard/purge/getStatus) + `TenantLifecycleController` (8 REST endpoints with `@Permissions` + `@TrackChanges('Tenant')` + `@SkipTenantScope`).
+- **6 new permissions**: `admin.tenant.{export,suspend,unsuspend,offboard,purge,lifecycle.read}`.
+- Purge is transactional (dynamic model enumeration from DMMF, cascade deletion in `$transaction`).
+- **18 unit tests** covering all lifecycle operations.
+- Registered in `AdminModule`.
+- Typecheck: ✓.
+
+### Track I.2 — k6 load tests (CLOSED)
+- **`load-tests/`** (11 files): `scenarios/{login,list-paginate,document-post,smoke-test,stress-test,tenant-isolation}.js`, `helpers/{auth,env}.js`, `config/options.js` with thresholds (p95<2s, p99<5s, failure<1%).
+- **Capacity targets**: Login ≥50 RPS, List+Paginate ≥100 RPS, Document Post ≥20 RPS, Stress ≥200 combined RPS.
+- **CI**: `.github/workflows/load-test.yml` (nightly + workflow_dispatch, uses grafana/k6-action).
+- **8 npm scripts** (`pnpm test:load:*`).
+- **Runbook**: `docs/RUNBOOK_LOAD_TESTING.md`.
+
+### Track I.3 — Playwright E2E depth (CLOSED)
+- **9 Page Object Models** (`apps/web/e2e/pages/`): LoginPage, DashboardPage, SalesOrderPage, InvoicePage, PaymentPage, PurchaseOrderPage, GoodsReceiptPage, GLJournalPage, InventoryPage.
+- **Custom test fixture** (`apps/web/e2e/fixtures/auth.fixture.ts`) injecting all POMs + `loginAsAdmin()`.
+- **4 business-path journeys** (`apps/web/e2e/journeys/`): `order-to-cash.spec.ts` (SO→Invoice→Payment), `procure-to-pay.spec.ts` (PO→Receipt→Vendor Invoice→Payment), `gl-post-close.spec.ts` (JE→Post→GL drill-down), `tenant-isolation.spec.ts`.
+- **Playwright config** updated with 5 named projects, 90s timeout, CI retries=2, trace/screenshot on failure.
+- **CI**: e2e job in `ci.yml` with Postgres/Redis service containers, migration, seed, full run.
+
+### Track I.4 — CI enforcement (CLOSED)
+- **`ci.yml`**: Added `validate` job with all foundation gates: `architecture:check`, `migration:discipline`, `foundation:check`, `schema:lint`, `pnpm audit --audit-level=high`.
+- **Dependabot**: `.github/dependabot.yml` — weekly npm updates, max 10 PRs.
+- **Security scan**: `.github/workflows/security-scan.yml` — nightly CVE scan (high + critical tiers).
+- **Root `package.json`**: Added `test:audit` script.
+
+### Track F — Platform security hardening (CLOSED — remaining items)
+- **`apps/api/src/main.ts`**: Upgraded Helmet with full CSP (`frame-ancestors 'none'`, `upgrade-insecure-requests`, `base-uri 'none'`, `form-action 'self'`), COOP, multi-origin CORS (NEXTAUTH_URL + APP_URL).
+- **`apps/api/src/common/config/env.schema.ts`**: Added `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` to production-strict secrets validation.
+- **`docs/SECURITY_CHECKLIST.md`**: Comprehensive checklist covering 13 security categories (auth, RBAC, RLS, Zod, CSRF, rate limiting, idempotency, CSP, audit, PII, secrets, CVE, SQL injection).
+- **`.env.example`** regenerated.
+- Typecheck: ✓.
+
+### Collab Board cleanup
+- Backfilled 10 antigravity/codex-root "pending" commit hashes → actual git SHAs.
+- Moved 2 stale claude-code In Progress items (CRM July 4, Finance July 8) → COMPLETED with commit references.
+- Released stale `foundation-track-a` claim lock.
+
+### Prisma migration note
+New models (`DocumentSequence`, `TenantLifecycleEvent`) are defined in schema.prisma and validated via `prisma generate`. Migration generation deferred — fable-5 holds the Prisma advisory lock for Track B (#17 outbox). Migration will be generated as `track_g5_h2_foundation_models` post-Track-B.
+
 ## [2026-07-18] Cycle 13 (Phase F) — Track A: Migration Reconciliation Execution
 
 - **Database Migration**: Generated and applied the reconciled Track A migration SQL `20260718093000_track_a_reconciliation` to align the development database and migrations history with `schema.prisma`.
 - **Reconciliation Engine**: Extended `scripts/reconcile-sql.js` (prior to clean up) to split composite `ALTER TABLE` statements into individual SQL commands, avoiding PostgreSQL's column rename syntax restrictions. Added automatic dropping and re-applying of column defaults to resolve Postgres enum casting restrictions. Incorporated unique index deduplication filtering to eliminate duplicate index/constraint warnings.
 - **Schema Alignment**: Added `legacyUpdatedAt` nullable DateTime column mapping to `legacy_updated_at` in the `LandedCostReceiptLink` model to satisfy the backward-compatibility preservation requirement.
 - **Verification**: Verified zero schema drift, zero candidates, and zero unmatched destructive operations via the reconciliation report script. All database, encryption, RLS isolation, and TypeScript compiler tests are green.
+
+## [2026-07-18] Cycle 12 (Phase F) — Track H.1: Wire GDPR erasure runs to consume PII registry
+
+- **`gdpr.service.ts`**: Rewrote `executeErasure()` to load `scripts/pii-registry.json` at runtime via `loadPiiRegistry()`. Three treatments driven by the registry: `erase` (Contact, Lead, Applicant, POSLoyaltyMember, CustomerPortalUser, VendorPortalUser) calls `deleteMany`; `anonymize` (User, Organization, Customer, Vendor) replaces PII fields (email → `[redacted-{id}]@erased.local`, name/phone/avatar → `[redacted]`) per-record; `retain-legal-hold` (Employee) logs and skips. Legacy plural aliases (`customers`, `vendors`, etc.) are still supported via `aliasMap`.
+- **Audit trail**: `executeErasure()` now creates an `AuditLog` entry with `action: 'GDPR_ERASURE'`, recording the email, per-model results, and execution timestamp.
+- **`GdprErasureTab.tsx`**: Updated `ENTITY_TYPES` to include all 11 PII registry models (PascalCase canonical names).
+- **`tests/gdpr.service.spec.ts`**: 19 unit tests covering: erase for all 6 erase models, anonymize for 4 anonymize models (with PII-field value verification), retain-legal-hold skip for Employee, legacy alias support, multi-type requests, audit log creation, error handling, and unknown type warnings.
+- **Typecheck**: Clean.
 
 ## [2026-07-18] Cycle 12 (Phase F) — Track H.1: PII registry control live
 

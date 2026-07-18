@@ -86,10 +86,37 @@ async function bootstrap() {
   app.use(metricsMiddleware);
 
   // Security
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+          ],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'blob:'],
+          fontSrc: ["'self'"],
+          connectSrc: ["'self'", 'ws:', 'wss:'],
+          frameAncestors: ["'none'"],
+          formAction: ["'self'"],
+          baseUri: ["'none'"],
+          upgradeInsecureRequests: [],
+        },
+      },
+      crossOriginOpenerPolicy: { policy: 'same-origin' },
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
   app.use(cookieParser());
+  const allowedOrigins = [
+    process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
+    process.env.APP_URL,
+  ].filter(Boolean) as string[];
   app.enableCors({
-    origin: process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
+    origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
     credentials: true,
   });
 

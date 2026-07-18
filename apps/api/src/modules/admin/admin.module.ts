@@ -38,6 +38,8 @@ import { OrgHierarchyController } from './org-hierarchy.controller';
 import { OrgHierarchyService } from './org-hierarchy.service';
 import { ErrorReportsController } from './error-reports.controller';
 import { ErrorReportsService } from './error-reports.service';
+import { TenantLifecycleController } from './tenant-lifecycle/tenant-lifecycle.controller';
+import { TenantLifecycleService } from './tenant-lifecycle/tenant-lifecycle.service';
 
 @Module({
   controllers: [
@@ -60,6 +62,7 @@ import { ErrorReportsService } from './error-reports.service';
     SubscriptionController,
     OrgHierarchyController,
     ErrorReportsController,
+    TenantLifecycleController,
   ],
   providers: [
     AdminService,
@@ -82,6 +85,7 @@ import { ErrorReportsService } from './error-reports.service';
     SubscriptionService,
     OrgHierarchyService,
     ErrorReportsService,
+    TenantLifecycleService,
   ],
   exports: [
     AdminService,
@@ -102,6 +106,7 @@ import { ErrorReportsService } from './error-reports.service';
     DataQualityService,
     SubscriptionService,
     OrgHierarchyService,
+    TenantLifecycleService,
   ],
 })
 export class AdminModule {}

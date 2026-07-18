@@ -134,6 +134,10 @@ const productionStrictSecrets: Array<keyof Env> = [
   'NEXTAUTH_SECRET',
   'PII_ENCRYPTION_KEY',
   'EXT_SERVICE_JWT_SECRET',
+  'S3_ACCESS_KEY',
+  'S3_SECRET_KEY',
+  'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
 ];
 
 export interface ValidateEnvResult {

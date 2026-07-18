@@ -73,6 +73,12 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   admin('subscription', 'update', 'endpoint', 'Change subscription plan or seats', 'Subscription'),
   admin('alerts', 'read', 'endpoint', 'View alerts and alert thresholds', 'Alerts'),
   admin('alerts', 'update', 'endpoint', 'Mark/dismiss alerts and manage thresholds', 'Alerts'),
+  admin('tenant', 'lifecycle.read', 'endpoint', 'View tenant lifecycle status and history', 'Tenant Lifecycle'),
+  admin('tenant', 'export', 'endpoint', 'Export all tenant data', 'Tenant Lifecycle'),
+  admin('tenant', 'suspend', 'endpoint', 'Suspend tenant', 'Tenant Lifecycle'),
+  admin('tenant', 'unsuspend', 'endpoint', 'Unsuspend tenant', 'Tenant Lifecycle'),
+  admin('tenant', 'offboard', 'endpoint', 'Offboard tenant with retention window', 'Tenant Lifecycle'),
+  admin('tenant', 'purge', 'endpoint', 'Permanently purge tenant data', 'Tenant Lifecycle'),
 
   // Finance
   p('finance', 'invoice', 'read', 'endpoint', 'View invoices'),

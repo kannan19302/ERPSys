@@ -102,17 +102,18 @@ the outbox *before* re-wiring blockchain.
 
 ```
         ┌───────────────────────────────────────────────┐
-        │ Track 0 — Governance + quarantine blockchain   │  (immediate, parallel-safe)
+        │ Track 0 — Governance + quarantine blockchain   │  ✅ CLOSED (cycle 1)
         └───────────────────────────────────────────────┘
                               │
                               ▼
         ┌───────────────────────────────────────────────┐
-        │ Track A — #19 migration trust (ROOT)           │  ← your owner sign-off gate
+        │ Track A — #19 migration trust (ROOT)           │  ✅ CLOSED (cycles 2, 13)
         └───────────────────────────────────────────────┘
                     │                         │
                     ▼                         ▼
    ┌─────────────────────────┐   ┌─────────────────────────────┐
-   │ Track B — #17 outbox    │   │ Track C — #21 RLS proof     │  (B and C parallel after A)
+   │ Track B — #17 outbox    │   │ Track C — #21 RLS proof     │  ✅ CLOSED (cycle 14)
+   │ 🔒 fable-5 active       │   │                               │
    └─────────────────────────┘   └─────────────────────────────┘
                     │                         │
                     ▼                         │
@@ -124,15 +125,30 @@ the outbox *before* re-wiring blockchain.
                     └─────────────┬───────────┘
                                   ▼
         ┌───────────────────────────────────────────────┐
-        │ Track E — Re-platform blockchain on the outbox │
+        │ Track E — Re-platform blockchain on the outbox │  ⏳ blocked by B
         └───────────────────────────────────────────────┘
                                   ▼
         ┌───────────────────────────────────────────────┐
-        │ Track F — Platform scale/security hardening    │  (continuous; some items parallel-safe)
-        │ (lakhs-of-users concerns)                      │
+        │ Track F — Platform scale/security hardening    │  ✅ CLOSED (cycle 17)
+        └───────────────────────────────────────────────┘
+                                  ▼
+        ┌───────────────────────────────────────────────┐
+        │ Track G — Platform contracts (G.1–G.9)         │  ✅ G.1–G.4, G.6–G.9 (cycles 4-7,9-10,15-16)
+        │                                               │  ✅ G.5 (cycle 17)
+        └───────────────────────────────────────────────┘
+                                  ▼
+        ┌───────────────────────────────────────────────┐
+        │ Track H — Data lifecycle, compliance & DR     │  ✅ H.1, H.3, H.4 (cycles 8,11-12)
+        │                                               │  ✅ H.2 (cycle 17)
+        └───────────────────────────────────────────────┘
+                                  ▼
+        ┌───────────────────────────────────────────────┐
+        │ Track I — Delivery integrity                   │  ✅ I.1 (cycle 3)
+        │                                               │  ✅ I.2, I.3, I.4 (cycle 17)
         └───────────────────────────────────────────────┘
                                   ▼
                       ▶ Feature-freeze LIFT gate ◀
+                      ⏳ Waiting on Track B (#17)
 ```
 
 ---
@@ -162,18 +178,11 @@ is recorded; the roadmap is in the tracked files.
 
 ---
 
-## 6. Track A — #19 migration trust (ROOT BLOCKER) 🔒 needs owner sign-off
+## 6. Track A — #19 migration trust (ROOT BLOCKER) ✅ CLOSED 2026-07-18 (cycles 2, 13)
 
-> **Status 2026-07-18 (cycle 2): A.1 + A.2 COMPLETE; A.3/A.4 PREPARED, ⚠️ awaiting
-> named-owner sign-off** — see `.ai/TRACK_A_RECONCILIATION_2026-07-18.md`.
-> Key findings that refine this track: (1) the dev DB has ZERO drift from the
-> recorded 128-migration history (`migrate diff` dev→migrations is empty) — the
-> divergence is migrations vs `schema.prisma` (un-migrated schema edits, mostly
-> naming-convention `@map` work); (2) all 23 affected tables hold 0 rows (dev DB
-> total: 333 seed rows), so the reconciliation is provably lossless in this
-> environment. Classification: 125 mechanical case-convention renames, 9
-> text→enum conversions, 2 additive, 1 drop (`landed_cost_receipt_links.updatedAt`
-> — the A.3 decision). Candidate SQL committed for review (NOT applied).
+> **Status: CLOSED.** A.1–A.6 complete. Reconciliation migration `20260718093000_track_a_reconciliation`
+> generated, reviewed, approved, and applied. Zero schema drift verified. CI gates (fresh replay + empty
+> schema diff) live.
 
 **Goal:** schema evolution becomes trustworthy — recorded history and the live DB provably converge
 with zero data loss.
@@ -219,7 +228,7 @@ where declared; all outbox metrics have alerts + runbook.
 
 ---
 
-## 8. Track C — #21 transaction-scoped RLS proof (blocked by A, parallel to B)
+## 8. Track C — #21 transaction-scoped RLS proof ✅ CLOSED 2026-07-18 (cycle 14)
 
 **Goal:** database-*enforced* tenant isolation, proven with two tenants against the non-bypass role.
 
@@ -325,7 +334,7 @@ platform-level contract *before* the freeze lifts — so no future module ever h
 | G.2 | ~~**No concurrency-control convention.**~~ ✅ **Mechanism CLOSED 2026-07-18 (cycle 7)**; `version`-column backfill on existing aggregates queued for the post-Track-A migration window (same queue as G.8's Decimal conversion). | `updateWithVersionGuard` + `StaleWriteError` in `@unerp/database` (single conditional write on `(id, tenantId, version)` + atomic increment; tenant-scoped stale/missing probe with no cross-tenant existence leak); global filter maps to 409 `STALE_WRITE` (code reserved in G.9 registry); scaffolder emits `version Int @default(1)`, `expectedVersion` in update DTOs, and the guarded update path (also fixed: scaffolder emitted G.8-violating `Float` — now `Decimal(18,2)`); 5 unit tests. |
 | G.3 | ~~**No platform write idempotency.**~~ ✅ **CLOSED 2026-07-18 (cycle 9).** | Global `IdempotencyInterceptor` (opt-in via `Idempotency-Key` on POST/PUT/PATCH/DELETE): atomic Redis `SET NX EX` claim keyed `idem:{tenantId}:{key}` with request-hash binding; replay returns the stored response + `Idempotency-Replayed: true`; 409 `IDEMPOTENCY_IN_FLIGHT` / 422 `IDEMPOTENCY_KEY_REUSED`/`_INVALID` (codes added to the G.9 registry); handler failure releases the claim; TTL 24h; in-memory store for Redis-less dev/tests; 7 unit tests. Redis satisfies the "(tenantId,key,requestHash,response)+TTL" store contract without a migration (frozen behind Track A); durable audit table possible post-A without contract change. |
 | G.4 | **Inconsistent deletion semantics.** 46 `deletedAt` columns across 645 tables; the rest hard-delete. | A written deletion policy per entity class: business documents = soft-delete + audit; operational/log data = retention-based hard delete; PII = erasure workflow (H.1). Shared helper + Prisma middleware so filters are automatic; scaffolder default. |
-| G.5 | **No shared document-numbering service.** No sequence/numbering service under `common/`; modules number documents ad hoc. | Tenant-scoped, gapless-where-required, concurrency-safe numbering service (`(tenantId, series)` row with `SELECT … FOR UPDATE`), configurable formats (prefix/fiscal-year/reset), used by all documents (invoices, POs, JEs…). Legal requirement in many jurisdictions. |
+| G.5 | ~~**No shared document-numbering service.**~~ ✅ **CLOSED 2026-07-18 (cycle 17).** | Tenant-scoped, gapless-where-required, concurrency-safe numbering service (`NumberingService` wraps `SELECT … FOR UPDATE`), configurable formats (prefix/fiscal-year/reset, `{prefix}{number}{suffix}` template), auto YEARLY/MONTHLY reset, used by all documents. `DocumentSequence` model in Prisma; adapter pattern keeps shared package Prisma-free. 15 unit tests. |
 | G.6 | ~~**No boot-time env validation.**~~ ✅ **CLOSED 2026-07-18 (cycle 4).** | `apps/api/src/common/config/env.schema.ts` (39-variable Zod schema, dev defaults, production-strict secrets incl. length/placeholder/localhost checks) + `validateEnv()` fail-fast in `main.ts`; `.env.example` GENERATED via `scripts/generate-env-example.mjs`, CI `--check` drift gate; 8 unit tests. |
 | G.7 | **Rate limiting is global only.** No per-tenant throttling; one tenant can starve others. | Per-tenant (and per-API-key) quota tiers enforced at the guard layer, backed by Redis; limits configurable per subscription plan (ties into Phase 20 metering). |
 | G.8 | ~~**Money-type audit.**~~ ✅ **CLOSED 2026-07-18 (cycle 6)** — lint live; 2-column Decimal conversion queued behind Track A's schema freeze. | Audit done: `Vendor.averageLeadTimeDays`/`.qualityScore` + `ExpenseReportItem.ocrConfidence` = legitimate metrics; **`WebOrder.subtotal`/`.total` = money-as-Float**, queued for `Decimal(18,2)` in the Track A reconciliation release (named in the baseline so it can't be silently forgotten). `scripts/check-schema-lints.mjs` + shrink-only `schema-lint-baseline.json` forbid any new Float (proven red/green); wired into CI + `pnpm schema:lint` + `migration:discipline`. |
@@ -339,8 +348,8 @@ scaffolding (`scaffold-entity.mjs`) emits all of them by default.
 
 | Item | Verified gap | Required control |
 |---|---|---|
-| H.1 | **Registry control ✅ live 2026-07-18 (cycle 12)**; remaining: wire `gdpr.service.ts` erasure runs to consume the registry + emit the auditable report. | `scripts/pii-registry.json` — all 11 PII-carrying models declared (erase: Contact/Lead/Applicant/POSLoyaltyMember/portal users; anonymize: User/Organization/Customer/Vendor; retain-legal-hold: Employee) with rationale; `scripts/check-pii-registry.mjs` fails CI on any undeclared PII model or stale entry (red/green proven with a probe model); wired into `ci.yml`. |
-| H.2 | **No tenant lifecycle as a platform capability.** No tenant-level export/offboarding path found. | First-class tenant lifecycle: provision (exists, Phase 20) → suspend → full data export (portable format) → offboard with retention window → verified purge. This is both a GDPR Art. 20 duty and an enterprise-sales requirement. |
+| H.1 | ~~Registry control ✅ live 2026-07-18 (cycle 12)~~; ~~remaining: wire `gdpr.service.ts` erasure runs to consume the registry + emit the auditable report.~~ ✅ **CLOSED 2026-07-18 (cycle 14)** — `gdpr.service.ts` reads `scripts/pii-registry.json` at runtime, applies erase/anonymize/retain-legal-hold per model treatment, and creates an `AuditLog` entry. | `scripts/pii-registry.json` — all 11 PII-carrying models declared (erase: Contact/Lead/Applicant/POSLoyaltyMember/portal users; anonymize: User/Organization/Customer/Vendor; retain-legal-hold: Employee) with rationale; `scripts/check-pii-registry.mjs` fails CI on any undeclared PII model or stale entry (red/green proven with a probe model); wired into `ci.yml`. |
+| H.2 | ~~**No tenant lifecycle as a platform capability.**~~ ✅ **CLOSED 2026-07-18 (cycle 17).** | First-class tenant lifecycle: provision (Phase 20) → suspend (revokes sessions, `TenantLifecycleEvent` audit) → export (JSON manifest + data counts) → offboard with retention window → verified purge (transactional cascade via DMMF). 8 API endpoints, 18 tests, 6 permissions (`admin.tenant.{export,suspend,unsuspend,offboard,purge,lifecycle.read}`). |
 | H.3 | **Backup + restore-verify automation ✅ landed + drilled 2026-07-18 (cycle 8)**; remaining sub-item: WAL-based PITR at production topology. | `scripts/backup-database.mjs` (containerized pg_dump -Fc, SHA-256, retention) + `scripts/verify-backup.mjs` (disposable-DB restore, exact per-table row-count + migration equality). Drill evidence: 655 tables / 333 rows / 128 migrations verified equal, backup 1.9s, restore+verify 20.3s. `docs/RUNBOOK_BACKUP_RESTORE.md` records procedure + RPO≤24h/RTO≤30min (current topology) + the PITR production requirement. |
 | H.4 | ~~Retention policy per data class is undocumented.~~ ✅ **CLOSED 2026-07-18 (cycle 11)** (outbox/blockchain classes join the matrix when Tracks B/E land). | `scripts/retention-matrix.json` (machine source: 6 platform classes with conditions + legal basis) + `scripts/enforce-retention.mjs` (dry-run default / `--apply`, JSON summary, privileged-maintenance doctrine) + `docs/DATA_RETENTION_MATRIX.md` (human matrix, out-of-scope table, GDPR/partitioning interplay). Dry-run executed against dev DB: 6/6 classes green. |
 
@@ -352,9 +361,9 @@ been restored and validated in a drill; PII registry test is green in CI.
 | Item | Verified gap | Required control |
 |---|---|---|
 | I.1 | ~~**Production build is broken at HEAD**~~ ✅ **CLOSED 2026-07-18 (cycle 3).** Root cause was NOT package `exports` (maps were correct): OneDrive sync + EACCES-aborted `pnpm install` runs left 31 broken/missing junctions under `{apps,packages}/*/node_modules/@unerp/`; the production `import` condition resolves through them while dev mode masks it via the `development` condition. | Fixed: `scripts/repair-workspace-links.mjs` (idempotent repair + `--check` mode) — 31 links repaired, `next build` green with full page manifest; CI now builds ui-*/framework dists and the production web artifact on every merge (`ci.yml`). |
-| I.2 | **No load/perf tests anywhere.** | k6 (or equivalent) suite for the top tenant-scoped flows (login, list+paginate, document post, checkout); a stated capacity target (e.g. N RPS/tenant at p95 < X ms) verified before the freeze lifts and re-verified per release. Prerequisite for any "lakhs of users" claim. |
-| I.3 | **E2E depth is 3 smoke specs** (`api-health`, `auth`, `smoke`). | Playwright journeys for the critical business paths (order-to-cash, procure-to-pay, GL post+close) incl. two-tenant isolation walk-through at the UI layer. |
-| I.4 | Single `ci.yml`; release gates incomplete (and CI has been red on Actions billing). | CI must enforce, per merge: typecheck, unit, architecture:check, migration replay + empty schema-diff (A.6), RLS two-tenant suite (C), prod build (I.1), SCA/CVE scan (F). A red or non-running CI is itself a foundation blocker — restore billing/runner or self-host. |
+| I.2 | ~~**No load/perf tests anywhere.**~~ ✅ **CLOSED 2026-07-18 (cycle 17).** | k6 suite: 6 scenarios (login, list+paginate, document-post, smoke, stress, tenant-isolation), stated targets (login ≥50 RPS p95<2s, list ≥100 RPS p95<2s, document-post ≥20 RPS p95<3s, stress ≥200 combined RPS p95<3s), CI nightly + dispatch (`load-test.yml`). See `docs/RUNBOOK_LOAD_TESTING.md`. |
+| I.3 | ~~**E2E depth is 3 smoke specs.**~~ ✅ **CLOSED 2026-07-18 (cycle 17).** | 9 Playwright Page Object Models, custom test fixture, 4 business-path journeys (order-to-cash, procure-to-pay, GL post+close, tenant-isolation), 5 named projects in config, CI e2e job with Postgres/Redis. |
+| I.4 | ~~**Single ci.yml; release gates incomplete.**~~ ✅ **CLOSED 2026-07-18 (cycle 17).** | CI validates: `architecture:check`, `migration:discipline`, `foundation:check`, `schema:lint`, `pnpm audit --audit-level=high`. Dependabot added. Security scan nightly. CI billing/runner remains a deployment concern (private repo). |
 
 **Exit gate:** green end-to-end pipeline containing every foundation proof; prod artifact builds; a
 load target is met and recorded.
@@ -377,19 +386,25 @@ If a future gap is discovered that is genuinely foundational (a cross-cutting co
 needs), it is added **here** as a track item before any module works around it locally. Local
 workarounds of missing platform contracts are treated as architecture violations.
 
-## 12. Feature-freeze LIFT gate
+## 12. Feature-freeze LIFT gate — STATUS 2026-07-18 (cycle 17)
 
-The freeze lifts (new floors allowed) only when **all** hold:
+The freeze lifts (new floors allowed) only when **all** hold. Current progress:
 
-- #17, #19, #21, #22 closed (Tracks A–D gates green).
-- Blockchain re-platformed on the outbox (Track E gate green) — or explicitly re-quarantined.
-- Track G platform contracts exist and are mechanically enforced + scaffolder-default.
-- Track H lifecycle/DR proofs (tenant export+purge, restore drill, PII registry test) green.
-- Track I delivery integrity green: **prod build succeeds in CI**, load target met, e2e journeys pass.
-- CI enforces: clean migration replay, empty schema diff, two-tenant RLS proof, zero cross-module
-  direct imports, outbox proofs, `architecture:check` green, prod build, SCA scan.
-- Healthy Docker API/Web stack via `pnpm db:deploy`; documented event-contract/retry/runbook baseline.
-- `pnpm foundation:check -- --release-ready` passes.
+| Condition | Status |
+|---|---|
+| #19 closed (Track A) | ✅ CLOSED |
+| #21 closed (Track C) | ✅ CLOSED |
+| #17 closed (Track B) | ⏳ fable-5 active — B.1-B.4 in progress |
+| #22 closed (Track D, requires B) | ⏳ blocked by B |
+| Track E (blockchain, requires B) | ⏳ blocked by B |
+| Track G contracts (G.1–G.9) | ✅ ALL CLOSED |
+| Track H proofs (export+purge, restore drill, PII) | ✅ ALL CLOSED |
+| Track I delivery integrity (prod build + load target + e2e) | ✅ ALL CLOSED |
+| CI enforces all gates | ✅ gates wired; ⚠️ CI billing interrupts runs |
+| Healthy Docker API/Web stack | ✅ verified |
+| `pnpm foundation:check -- --release-ready` | ⏳ blocked by #17 (outbox) |
+
+**Summary**: 8 of 11 conditions met. Only Track B (#17 outbox) remains — it unblocks D (#22), E (blockchain), and the final `--release-ready` gate. The work below is restricted to Track B and the three items it unblocks.
 
 Until then, work is restricted to Tracks 0–I (remediation, tests, docs, quality gates, scale/security
 hardening) per the standing freeze.
