@@ -8,6 +8,35 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 3 (Phase F) — Track I.1 closed: production build fixed + CI build gate
+
+P0 rung (broken build), also roadmap § 11d I.1; Track A remains paused at its
+human sign-off gate, so this was the top pickable foundation item.
+
+- **Root cause identified (not the assumed one):** `next build`'s
+  `Can't resolve '@unerp/ui-components'` from `ui-data-grid`/`ui-layout`/
+  `ui-theme` dist `.mjs` files was NOT a package-`exports`/build-order defect —
+  exports maps and all dist files were correct. OneDrive sync + the repo's
+  chronically EACCES-aborted `pnpm install` runs had left **31 broken or
+  missing junctions** under `{apps,packages}/*/node_modules/@unerp/`
+  (some invisible to `lstat` yet still occupying the directory entry). Dev
+  mode masked it via the `development` exports condition (`src/` +
+  transpilePackages); the production `import` condition resolves real files.
+- **Fix:** new `scripts/repair-workspace-links.mjs` — scans every workspace
+  package's `@unerp/*` links (declared *or* present), recreates broken/missing
+  ones as junctions to the real package dirs, idempotent, `--check` report
+  mode for doctor/CI use, never invokes pnpm. Proof: `--check` exit 1 (31
+  found) → repair (31 repaired) → `--check` exit 0; previously-failing
+  `require.resolve('@unerp/ui-components')` from `ui-data-grid/dist` now
+  resolves; **full `next build` completes green** with the complete page
+  manifest (static + dynamic + middleware).
+- **CI gate (I.1 second half):** `ci.yml` now builds `@unerp/ui*` +
+  `@unerp/framework` dists and the production web artifact
+  (`pnpm --filter @unerp/web build`) on every merge, so the prod artifact
+  cannot silently break again. (Actions billing restoration remains I.4.)
+- Roadmap § 11d I.1 marked ✅ CLOSED with evidence.
+- **Cycle Ledger**: DEV cycles 2 → 3; next mandatory harden in 7.
+
 ## [2026-07-18] Cycle 2 (Phase F) — Track A prep: baselines + reconciliation report; sign-off gate reached
 
 Track A (#19 migration trust) preparation slice — everything up to the

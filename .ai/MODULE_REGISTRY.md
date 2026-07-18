@@ -115,15 +115,16 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 2
+- **DEV cycles completed:** 3
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 8
+- **Cycles until mandatory harden:** 7
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
 |--:|:-----|:-----|:------|:------|:--------------------------------|:-------|
 | 1 | 2026-07-18 | DEV | F | Track 0 — governance + blockchain quarantine; land stranded tree | Track 0 closed (0.1–0.4 + full-dormancy hardening); guard proof red/green; architecture:check + readiness + API/web typechecks green | see CHANGELOG 2026-07-18 cycle-1 entry |
 | 2 | 2026-07-18 | DEV | F | Track A (#19) prep — baselines + reconciliation classification + mapping ledger | A.1/A.2 complete, A.3/A.4 prepared ⚠️ awaiting owner sign-off; zero dev-DB drift vs history; 23 affected tables all empty; candidate SQL committed unapplied | see CHANGELOG 2026-07-18 cycle-2 entry |
+| 3 | 2026-07-18 | DEV | F | Track I.1 — production build broken (P0 rung) | I.1 closed: 31 broken/missing @unerp junctions repaired via new `repair-workspace-links.mjs`; `next build` green (full manifest); CI prod-build gate added | see CHANGELOG 2026-07-18 cycle-3 entry |
 
 ## Collab Board — Multi-Agent Sync
 
@@ -181,6 +182,7 @@ that closed it out. Never rotate mid-cycle; never rotate without all five.
 
 | Agent                             | Session started  | Scope (module/files)                                                                                                                                                                                                                                                                                                                                                                                               | Branch                   | Status         |
 | :-------------------------------- | :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------- | :------------- |
+| claude-code (fable-5)             | 2026-07-18       | **Phase F / Track I.1** — prod build fixed: 31 corrupt workspace junctions repaired (`scripts/repair-workspace-links.mjs`), `next build` green, CI prod-build gate (claim `foundation-track-i1`)                                                                                                                                                                                                                     | main                     | 🟢 COMPLETED   |
 | claude-code (fable-5)             | 2026-07-18       | **Phase F / Track A prep** — #19 baselines + reconciliation report + mapping ledger (claim `foundation-track-a`); ⚠️ ended at the named-owner sign-off gate — see `.ai/TRACK_A_RECONCILIATION_2026-07-18.md` § 6                                                                                                                                                                                                     | main                     | 🟢 COMPLETED   |
 | claude-code (fable-5)             | 2026-07-18       | **Phase F / Track 0** — governance + blockchain quarantine: CI guard in `check-module-boundaries.mjs`, registry marking, landing the stranded working tree on `main` (claim `foundation-track-0`)                                                                                                                                                                                                                    | main                     | 🟢 COMPLETED   |
 | antigravity                       | 2026-07-17       | Fixed global CSS import layers, native modal open-on-mount layout, mobile header responsiveness, and NestJS server compiler crash.                                                                                                                                                                                                                                                                                | main                     | 🟢 COMPLETED   |

@@ -45,4 +45,10 @@ jobs:
       # next build ignores type errors, so tsc --noEmit is the real web gate.
       - run: pnpm --filter @unerp/api typecheck
       - run: pnpm --filter @unerp/web typecheck
+      # Track I.1 (foundation roadmap § 11d): the production web artifact must
+      # build on every merge. Build workspace UI dists first — the production
+      # exports condition resolves them from dist/, not src/.
+      - run: pnpm --filter "@unerp/ui*" build
+      - run: pnpm --filter @unerp/framework build
+      - run: NODE_OPTIONS="--max-old-space-size=6144" pnpm --filter @unerp/web build
       - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test
