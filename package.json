@@ -21,6 +21,7 @@
     "docker:shell": "docker exec -it unerp-dev sh",
     "docker:reset": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d --build",
     "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
     "architecture:check": "pnpm --filter @unerp/api architecture:check",
     "foundation:check": "node scripts/check-foundation-readiness.mjs",
     "test": "turbo run test",
