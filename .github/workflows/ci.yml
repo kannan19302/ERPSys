@@ -58,3 +58,44 @@ jobs:
       - run: pnpm --filter @unerp/framework build
       - run: NODE_OPTIONS="--max-old-space-size=6144" pnpm --filter @unerp/web build
       - run: NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @unerp/api test
+
+  # Track C (#21) — Two-tenant RLS proof (foundation roadmap § 8).
+  # Runs with a live PostgreSQL database using the NON-bypass app role.
+  rls-integration:
+    name: RLS Tenant Isolation Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: unerp_dev
+          POSTGRES_USER: unerp
+          POSTGRES_PASSWORD: unerp_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U unerp -d unerp_dev
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_OWNER_URL: postgresql://unerp:unerp_password@localhost:5432/unerp_dev?schema=public
+      DATABASE_URL: postgresql://unerp:unerp_password@localhost:5432/unerp_dev?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Create the app role and grant permissions (owner connection)
+      - run: pnpm --filter @unerp/database exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ env.DATABASE_OWNER_URL }}
+      - run: pnpm --filter @unerp/database build
+      # Run the RLS integration tests as the NON-bypass role
+      - run: pnpm --filter @unerp/database exec vitest run tenant-rls-integration.test.ts --reporter verbose
+        env:
+          DATABASE_URL: postgresql://unerp_api:unerp_api_password@localhost:5432/unerp_dev?schema=public

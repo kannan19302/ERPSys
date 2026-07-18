@@ -33,7 +33,12 @@ export const envSchema = z.object({
     .string()
     .url()
     .startsWith('postgresql://', 'must be a postgresql:// URL')
-    .describe('PostgreSQL connection string (Prisma)'),
+    .describe('PostgreSQL connection string (app runtime — unerp_api role, NOSUPERUSER NOBYPASSRLS)'),
+  DATABASE_OWNER_URL: z
+    .string()
+    .url()
+    .startsWith('postgresql://', 'must be a postgresql:// URL')
+    .describe('PostgreSQL connection string for migrations (owner/superuser role — not used at runtime)'),
   REDIS_URL: z
     .string()
     .url()
@@ -156,6 +161,9 @@ export function checkEnv(source: Record<string, string | undefined>): ValidateEn
     }
     if (String(source.DATABASE_URL ?? '').includes('localhost')) {
       errors.push('DATABASE_URL: localhost database not allowed in production');
+    }
+    if (String(source.DATABASE_OWNER_URL ?? '').includes('localhost')) {
+      errors.push('DATABASE_OWNER_URL: localhost database not allowed in production');
     }
   }
   return errors.length > 0 ? { env: null, errors } : { env, errors: [] };

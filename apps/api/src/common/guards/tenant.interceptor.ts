@@ -1,7 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, from } from 'rxjs';
-import { runWithTenantSession } from '@unerp/database';
+import { prisma, runWithTenantSession } from '@unerp/database';
 import { SKIP_TENANT_SCOPE_KEY } from '../decorators/skip-tenant-scope.decorator';
 
 @Injectable()
@@ -32,6 +32,12 @@ export class TenantInterceptor implements NestInterceptor {
             userId,
           },
           async () => {
+            // Set session-level tenant context as a fallback for queries that
+            // bypass the Prisma extension (e.g. raw SQL). The Prisma extension
+            // also sets transaction-local set_config per query as defense-in-depth.
+            // session-lifetime: set_config(..., false) scopes to session level
+            // so it persists across transactions within the same connection.
+            await prisma.$executeRaw`SELECT set_config('app.current_tenant_id', ${user.tenantId}, false)`;
             const { lastValueFrom } = await import('rxjs');
             return lastValueFrom(next.handle());
           },

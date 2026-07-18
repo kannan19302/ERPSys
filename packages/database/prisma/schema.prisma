@@ -49,6 +49,9 @@ model Tenant {
   savedViews              SavedView[]
   blockchainTransactions  BlockchainTransaction[]
   blockchainVerifications BlockchainVerification[]
+  outboxEvents            OutboxEvent[]
+  outboxDeliveries        OutboxDelivery[]
+  outboxConsumerReceipts  OutboxConsumerReceipt[]
 
   @@map("tenants")
 }
@@ -15352,4 +15355,71 @@ model BlockchainVerification {
   @@index([tenantId, entityType, entityId])
   @@index([tenantId, result])
   @@map("blockchain_verifications")
+}
+
+// ════════════════════════════════════════════════
+// TRANSACTIONAL OUTBOX
+// ════════════════════════════════════════════════
+
+model OutboxEvent {
+  id            String           @id @default(cuid())
+  tenantId      String           @map("tenant_id")
+  eventName     String           @map("event_name")
+  eventVersion  Int              @map("event_version")
+  aggregateType String           @map("aggregate_type")
+  aggregateId   String           @map("aggregate_id")
+  sequence      Int
+  occurredAt    DateTime         @default(now()) @map("occurred_at")
+  payload       Json
+  correlationId String?          @map("correlation_id")
+  causationId   String?          @map("causation_id")
+  eventKey      String           @map("event_key")
+
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries OutboxDelivery[]
+
+  @@unique([tenantId, eventKey])
+  @@unique([tenantId, aggregateType, aggregateId, sequence])
+  @@index([tenantId])
+  @@index([tenantId, aggregateType, aggregateId])
+  @@map("outbox_events")
+}
+
+model OutboxDelivery {
+  id             String      @id @default(cuid())
+  tenantId       String      @map("tenant_id")
+  outboxEventId  String      @map("outbox_event_id")
+  destination    String
+  status         String      @default("PENDING") // PENDING | LEASED | COMPLETED | DEAD
+  attempts       Int         @default(0)
+  leaseOwner     String?     @map("lease_owner")
+  leaseExpiresAt DateTime?   @map("lease_expires_at")
+  availableAt    DateTime    @default(now()) @map("available_at")
+  lastError      String?     @map("last_error")
+  completedAt    DateTime?   @map("completed_at")
+  failedAt       DateTime?   @map("failed_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  outboxEvent OutboxEvent @relation(fields: [outboxEventId], references: [id], onDelete: Cascade)
+
+  @@unique([outboxEventId, destination])
+  @@index([tenantId])
+  @@index([status, availableAt])
+  @@map("outbox_deliveries")
+}
+
+model OutboxConsumerReceipt {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  consumer      String
+  outboxEventId String    @map("outbox_event_id")
+  processedAt   DateTime  @default(now()) @map("processed_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([consumer, outboxEventId])
+  @@index([tenantId])
+  @@map("outbox_consumer_receipts")
 }

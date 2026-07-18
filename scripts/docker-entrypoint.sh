@@ -64,9 +64,9 @@ echo "==> [2/5] Generating Prisma client..."
 pnpm --filter @unerp/database exec prisma generate
 echo "  [OK] Prisma client generated."
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────
 # Step 3: Build shared packages (needed by API + Web)
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────
 echo "==> [3/5] Building shared workspace packages..."
 pnpm --filter @unerp/database build
 pnpm --filter @unerp/shared build
@@ -76,15 +76,17 @@ pnpm --filter @unerp/ui build 2>/dev/null || true
 pnpm --filter @unerp/framework build 2>/dev/null || true
 echo "  [OK] Shared packages built."
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────
 # Step 4: Apply migration history & seed (idempotent)
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Use DATABASE_OWNER_URL for migrations (superuser role),
+# then the app runtime uses DATABASE_URL (unerp_api role).
+# ─────────────────────────────────────────────────
 echo "==> [4/5] Applying recorded database migrations..."
-pnpm db:deploy
+DATABASE_URL="$DATABASE_OWNER_URL" pnpm db:deploy
 echo "  [OK] Database migrations applied."
 
 echo "==> [5/5] Seeding database..."
-pnpm db:seed
+DATABASE_URL="$DATABASE_OWNER_URL" pnpm db:seed
 echo "  [OK] Database seeded."
 
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

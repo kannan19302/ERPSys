@@ -18,12 +18,6 @@ const basePrisma = new PrismaClient({
       : ['error'],
 });
 
-const RLS_PROTECTED_MODELS = new Set([
-  'User', 'Invoice', 'Payment', 'Employee', 'PayrollRun',
-  'Journal', 'Customer', 'Vendor', 'SalesOrder', 'PurchaseOrder',
-  'AuditLog'
-]);
-
 function getModelPropertyName(modelName: string): string {
   if (!modelName) return '';
   return modelName.charAt(0).toLowerCase() + modelName.slice(1);
@@ -51,39 +45,40 @@ export const prisma = basePrisma.$extends({
 
         const scopedArgs = applyTenantScope(model, operation, args, session.tenantId);
 
-        if (RLS_PROTECTED_MODELS.has(model)) {
-          const execute = async (client: { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> }) => {
-            await client.$executeRaw`SELECT set_config('app.current_tenant_id', ${session.tenantId}, true)`;
-          };
+        // Track C (#21): database-enforced RLS on ALL tenant-scoped tables.
+        // Set app.current_tenant_id transaction-locally so the RLS policy
+        // function current_tenant_id() returns the correct value for this
+        // query's transaction. Uses $executeRaw (parameterized) to avoid
+        // SQL injection in the tenant ID value.
+        const execute = async (client: { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> }) => {
+          await client.$executeRaw`SELECT set_config('app.current_tenant_id', ${session.tenantId}, true)`;
+        };
 
-          const transaction = (
-            (rest as Record<string, unknown>).__internalParams as
-              | { transaction?: { kind: string } }
-              | undefined
-          )?.transaction;
+        const transaction = (
+          (rest as Record<string, unknown>).__internalParams as
+            | { transaction?: { kind: string } }
+            | undefined
+        )?.transaction;
 
-          if (transaction?.kind === 'itx' && typeof (basePrisma as unknown as { _createItxClient: (tx: unknown) => unknown })._createItxClient === 'function') {
-            const itxClient = (basePrisma as unknown as { _createItxClient: (tx: unknown) => { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> } })._createItxClient(transaction);
-            await execute(itxClient);
-            return query(scopedArgs);
-          } else {
-            return basePrisma.$transaction(async (tx) => {
-              await execute(tx);
-              const modelProp = getModelPropertyName(model);
-              const txModel = (tx as unknown as Record<string, Record<string, (args: unknown) => Promise<unknown>>>)[modelProp];
-              if (!txModel) {
-                throw new Error(`Model ${modelProp} not found on transaction client`);
-              }
-              const queryFn = txModel[operation];
-              if (!queryFn) {
-                throw new Error(`Operation ${operation} not found on model ${modelProp}`);
-              }
-              return queryFn(scopedArgs);
-            });
-          }
+        if (transaction?.kind === 'itx' && typeof (basePrisma as unknown as { _createItxClient: (tx: unknown) => unknown })._createItxClient === 'function') {
+          const itxClient = (basePrisma as unknown as { _createItxClient: (tx: unknown) => { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> } })._createItxClient(transaction);
+          await execute(itxClient);
+          return query(scopedArgs);
         }
 
-        return query(scopedArgs);
+        return basePrisma.$transaction(async (tx) => {
+          await execute(tx);
+          const modelProp = getModelPropertyName(model);
+          const txModel = (tx as unknown as Record<string, Record<string, (args: unknown) => Promise<unknown>>>)[modelProp];
+          if (!txModel) {
+            throw new Error(`Model ${modelProp} not found on transaction client`);
+          }
+          const queryFn = txModel[operation];
+          if (!queryFn) {
+            throw new Error(`Operation ${operation} not found on model ${modelProp}`);
+          }
+          return queryFn(scopedArgs);
+        });
       },
     },
   },

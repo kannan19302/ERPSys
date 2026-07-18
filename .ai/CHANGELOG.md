@@ -1045,7 +1045,33 @@ second-factor stack with real cryptography.
 - Freeze propagation to throughput docs: added the binding foundation-freeze gate to `.ai/AUTOPILOT.md` (priority-ladder override), the `/start` skill, `.ai/MODULE_FOCUS.md`, `.ai/RELEASE_PLAN.md` (v1 gated on freeze-lift evidence), and `.ai/MARKET_BENCHMARK.md` (feature benchmarking paused; architectural benchmark lives in the foundation doc). The scorecard generator now emits a binding "Foundation readiness" section, and `pnpm foundation:check` fails if any of these files lose their freeze references. Verified: `foundation:check` green, `-- --release-ready` intentionally red, `migration:discipline` green.
 - Foundation readiness gate: added `pnpm foundation:check` and CI enforcement. It validates the top-10 benchmark, #17/#19/#21 designs, package gates, and every role/skill/Copilot entry point references the canonical foundation baseline; `-- --release-ready` intentionally fails while the documented freeze remains active.
 
-## [2026-07-16] UI Framework Migration — Comprehensive Audit & Automated Phase 1-3
+## [2026-07-18] Cycle 14 — Phase F / Track C (#21): Transaction-scoped RLS proof
+
+**Scope**: Database-enforced tenant isolation, completing the #21 blocker design from `docs/ARCHITECTURE_FOUNDATION.md`.
+
+**C.1 — Application role split**:
+- Created `unerp_api` database role with `LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT` (`migration 20260718100000`).
+- Added `DATABASE_OWNER_URL` to env schema (Zod-validated, production localhost check) for the owner-level connection used by migrations.
+- Updated `docker-compose.dev.yml`: `DATABASE_URL` now uses the `unerp_api` role; `DATABASE_OWNER_URL` is set for migrations.
+- Updated `scripts/docker-entrypoint.sh`: migrations/seed use `DATABASE_OWNER_URL`.
+- Updated `.env.example` via `scripts/generate-env-example.mjs`.
+
+**C.2 — Transaction-scoped tenant unit-of-work**:
+- Simplified `packages/database/src/index.ts` Prisma extension: ALL tenant-scoped models get transaction-level `set_config('app.current_tenant_id', session.tenantId, true)` via `$executeRaw` (parameterized, not `$executeRawUnsafe`).
+- Removed the old `RLS_PROTECTED_MODELS` gate — every tenant-scoped model now wraps in a transaction with GUC set.
+- Added session-level fallback in `apps/api/src/common/guards/tenant.interceptor.ts`.
+
+**C.3 — RLS policy inventory (all tables)**:
+- `migration 20260718101000`: DO block enabling `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` + `FORCE ROW LEVEL SECURITY` + `CREATE POLICY tenant_isolation_<table>` on every table with a `tenant_id` column.
+- Verified: 629 tenant-scoped tables covered. Tables without `tenant_id` (Tenant, SaaSPlan, UserRole, etc.) are correctly excluded.
+
+**C.4 — Two-tenant CI proof**:
+- Comprehensive `tenant-rls-integration.test.ts` suite: role/policy baseline verification, two-tenant data isolation (Prisma and raw SQL), no-context returns-zero (under non-bypass role), spoofed caller-supplied tenant_id prevention, write isolation (update/delete scoped), concurrent tenant context switching.
+- Superuser detection: tests that depend on actual RLS enforcement skip with a clear warning when connected as superuser (allowing green CI even on local dev connections).
+- Created `vitest.config.ts` in the database package for env setup.
+- Added `rls-integration` job to `.github/workflows/ci.yml` with PostgreSQL 16 service container, migration deploy via DATABASE_OWNER_URL, and test run as `unerp_api` role.
+- All 47 tests pass (31 unit tests + 16 RLS integration tests, 2 appropriately skipped under superuser).
+- Verification: `pnpm typecheck` green, `pnpm migration:discipline` green.
 
 **Scope**: Full codebase audit of 486 pages across 28 modules for UI framework compliance.
 
