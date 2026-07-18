@@ -28,30 +28,30 @@ vi.mock("@unerp/database", () => {
       department: {
         create: vi.fn(),
       },
+      emailVerificationToken: {
+        create: vi.fn(),
+        updateMany: vi.fn(),
+      },
       $transaction: vi.fn((cb) =>
         cb({
           $executeRaw: vi.fn().mockResolvedValue(1),
           tenant: {
-            create: vi
-              .fn()
-              .mockResolvedValue({
-                id: "tenant-123",
-                name: "Acme",
-                slug: "acme",
-              }),
+            create: vi.fn().mockResolvedValue({
+              id: "tenant-123",
+              name: "Acme",
+              slug: "acme",
+            }),
           },
           role: {
             create: vi.fn().mockResolvedValue({ id: "role-123" }),
           },
           user: {
-            create: vi
-              .fn()
-              .mockResolvedValue({
-                id: "user-123",
-                email: "admin@uni-erp.com",
-                firstName: "Super",
-                lastName: "Admin",
-              }),
+            create: vi.fn().mockResolvedValue({
+              id: "user-123",
+              email: "admin@uni-erp.com",
+              firstName: "Super",
+              lastName: "Admin",
+            }),
           },
           userRole: {
             create: vi.fn().mockResolvedValue({ id: "ur-123" }),
@@ -62,9 +62,14 @@ vi.mock("@unerp/database", () => {
           department: {
             create: vi.fn().mockResolvedValue({ id: "dept-123" }),
           },
+          emailVerificationToken: {
+            create: vi.fn().mockResolvedValue({ id: "evt-123" }),
+          },
         }),
       ),
+      $queryRaw: vi.fn().mockResolvedValue([]),
     },
+    runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) => fn()),
   };
 });
 
@@ -110,6 +115,55 @@ describe("AuthService", () => {
       expect(result).toBeDefined();
       expect(result.user.email).toBe("admin@uni-erp.com");
       expect(result.tenant.name).toBe("Acme");
+      // Non-production: register surfaces the verification link for dev ergonomics.
+      expect(
+        (result as { developerVerificationLink?: string })
+          .developerVerificationLink,
+      ).toContain("/verify-email?token=");
+    });
+  });
+
+  describe("verifyEmail", () => {
+    it("rejects an unknown or expired token", async () => {
+      const { prisma } = await import("@unerp/database");
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
+
+      await expect(
+        authService.verifyEmail({ token: "0".repeat(64) }),
+      ).rejects.toThrow("Invalid or expired verification link");
+    });
+
+    it("marks the user verified and burns tokens for a valid token", async () => {
+      const { prisma } = await import("@unerp/database");
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([
+        {
+          id: "evt-1",
+          user_id: "user-123",
+          tenant_id: "tenant-123",
+          expires_at: new Date(Date.now() + 60_000),
+          used_at: null,
+        },
+      ] as never);
+      vi.mocked(prisma.$transaction).mockResolvedValue([] as never);
+
+      const result = await authService.verifyEmail({ token: "0".repeat(64) });
+      expect(result.message).toMatch(/verified/i);
+    });
+  });
+
+  describe("resendVerification", () => {
+    it("returns the generic message for unknown emails", async () => {
+      const { prisma } = await import("@unerp/database");
+      vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
+
+      const result = await authService.resendVerification({
+        email: "ghost@example.com",
+      });
+      expect(result.message).toMatch(/If an unverified account exists/);
+      expect(
+        (result as { developerVerificationLink?: string })
+          .developerVerificationLink,
+      ).toBeUndefined();
     });
   });
 });

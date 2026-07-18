@@ -4,7 +4,10 @@ import {
   UnauthorizedException,
   NotFoundException,
   Logger,
+  Optional,
 } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
 import { randomBytes, createHash } from "node:crypto";
 import * as webPush from "web-push";
 import { prisma, runWithTenantSession } from "@unerp/database";
@@ -22,6 +25,8 @@ import {
   LoginInput,
   ForgotPasswordInput,
   ResetPasswordInput,
+  VerifyEmailInput,
+  ResendVerificationInput,
 } from "@unerp/shared";
 import {
   generateTotpSecret,
@@ -60,6 +65,8 @@ const hashChallengeToken = (token: string) =>
   createHash("sha256").update(token).digest("hex");
 /** How long a password-reset token is valid. */
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+/** How long an email-verification token is valid. */
+const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 /** Session lifetime; matches the JWT's default 1-day expiry. */
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -105,8 +112,39 @@ function parseUserAgent(ua?: string | null): {
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
+  constructor(
+    @Optional()
+    @InjectQueue("email")
+    private readonly emailQueue?: Queue,
+  ) {}
+
   private get isProduction() {
     return process.env.NODE_ENV === "production";
+  }
+
+  private get appUrl() {
+    return process.env.APP_URL || "http://localhost:3000";
+  }
+
+  /**
+   * Enqueues a transactional auth email. Delivery is best-effort: auth flows
+   * must never fail because the email queue is unavailable (the developer
+   * link / resend path covers recovery).
+   */
+  private async dispatchAuthEmail(payload: {
+    to: string;
+    tenantId: string;
+    subject: string;
+    body: string;
+  }) {
+    try {
+      await this.emailQueue?.add("send", payload);
+      this.logger.log(`[email] "${payload.subject}" queued for ${payload.to}`);
+    } catch (err) {
+      this.logger.warn(
+        `[email] queue unavailable, "${payload.subject}" for ${payload.to} not sent: ${err instanceof Error ? err.message : err}`,
+      );
+    }
   }
 
   /**
@@ -133,7 +171,7 @@ export class AuthService {
     const hashedPassword = await hashPassword(dto.password);
 
     // Run creation in a transaction
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // 1. Create Tenant
       const tenant = await tx.tenant.create({
         data: {
@@ -236,6 +274,19 @@ export class AuthService {
         });
       }
 
+      // 7. Mint the email verification token inside the same transaction (the
+      // RLS GUC set above covers this insert too).
+      const { plain: verificationToken, hash: verificationHash } =
+        createResetToken();
+      await tx.emailVerificationToken.create({
+        data: {
+          userId: user.id,
+          tenantId: tenant.id,
+          tokenHash: verificationHash,
+          expiresAt: new Date(Date.now() + VERIFY_TOKEN_TTL_MS),
+        },
+      });
+
       return {
         user: {
           id: user.id,
@@ -248,8 +299,119 @@ export class AuthService {
           name: tenant.name,
           slug: tenant.slug,
         },
+        verificationToken,
       };
     });
+
+    const verificationLink = `${this.appUrl}/verify-email?token=${result.verificationToken}`;
+    await this.dispatchAuthEmail({
+      to: result.user.email,
+      tenantId: result.tenant.id,
+      subject: "Verify your UniERP email address",
+      body: `Welcome to UniERP! Verify your email address to secure your new workspace: ${verificationLink}`,
+    });
+
+    const { verificationToken: _token, ...publicResult } = result;
+    if (this.isProduction) {
+      return publicResult;
+    }
+    // Local-dev ergonomics only — mirrors forgotPassword's developer link.
+    return { ...publicResult, developerVerificationLink: verificationLink };
+  }
+
+  /**
+   * Marks the user's email verified using a single-use token, then burns it.
+   * Unauthenticated: resolves tenant context through the narrow
+   * SECURITY DEFINER token lookup (Track C / #21).
+   */
+  async verifyEmail(dto: VerifyEmailInput) {
+    const tokenHash = hashResetToken(dto.token);
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        user_id: string;
+        tenant_id: string;
+        expires_at: Date;
+        used_at: Date | null;
+      }>
+    >`SELECT id, user_id, tenant_id, expires_at, used_at FROM auth_lookup_verification_token(${tokenHash})`;
+
+    const record = rows[0];
+    if (!record || record.used_at || record.expires_at < new Date()) {
+      throw new BadRequestException(
+        "Invalid or expired verification link. Request a new one.",
+      );
+    }
+
+    await runWithTenantSession(
+      { tenantId: record.tenant_id, userId: record.user_id },
+      () =>
+        prisma.$transaction([
+          prisma.user.update({
+            where: { id: record.user_id },
+            data: { emailVerifiedAt: new Date() },
+          }),
+          prisma.emailVerificationToken.updateMany({
+            where: { userId: record.user_id, usedAt: null },
+            data: { usedAt: new Date() },
+          }),
+        ]),
+    );
+
+    return { message: "Email verified successfully." };
+  }
+
+  /**
+   * Re-issues a verification token. Responds identically whether or not the
+   * email exists (or is already verified) to avoid account enumeration.
+   */
+  async resendVerification(dto: ResendVerificationInput) {
+    const genericMessage =
+      "If an unverified account exists for that email, a new verification link has been sent.";
+
+    const users = await prisma.$queryRaw<
+      Array<{ id: string; tenant_id: string }>
+    >`SELECT id, tenant_id FROM auth_lookup_user_tenants(${dto.email.toLowerCase()})`;
+    const match = users[0];
+    if (!match) return { message: genericMessage };
+
+    const link = await runWithTenantSession(
+      { tenantId: match.tenant_id, userId: match.id },
+      async () => {
+        const user = await prisma.user.findFirst({ where: { id: match.id } });
+        if (!user || user.emailVerifiedAt) return null;
+
+        const { plain, hash } = createResetToken();
+        await prisma.$transaction([
+          prisma.emailVerificationToken.updateMany({
+            where: { userId: user.id, usedAt: null },
+            data: { usedAt: new Date() },
+          }),
+          prisma.emailVerificationToken.create({
+            data: {
+              userId: user.id,
+              tenantId: user.tenantId,
+              tokenHash: hash,
+              expiresAt: new Date(Date.now() + VERIFY_TOKEN_TTL_MS),
+            },
+          }),
+        ]);
+        return `${this.appUrl}/verify-email?token=${plain}`;
+      },
+    );
+
+    if (link) {
+      await this.dispatchAuthEmail({
+        to: dto.email.toLowerCase(),
+        tenantId: match.tenant_id,
+        subject: "Verify your UniERP email address",
+        body: `Verify your email address: ${link}`,
+      });
+      if (!this.isProduction) {
+        return { message: genericMessage, developerVerificationLink: link };
+      }
+    }
+    return { message: genericMessage };
   }
 
   /**
@@ -666,37 +828,47 @@ export class AuthService {
     const genericMessage =
       "If an account exists for that email, a password reset link has been sent.";
 
-    const user = await prisma.user.findFirst({
-      where: { email: dto.email.toLowerCase() },
-    });
+    // Unauthenticated flow: resolve the user through the SECURITY DEFINER
+    // lookup — a plain cross-tenant query returns zero rows under RLS
+    // (Track C / #21).
+    const users = await prisma.$queryRaw<
+      Array<{ id: string; tenant_id: string }>
+    >`SELECT id, tenant_id FROM auth_lookup_user_tenants(${dto.email.toLowerCase()})`;
+    const match = users[0];
 
-    if (!user) {
+    if (!match) {
       return { message: genericMessage };
     }
 
     // Invalidate any outstanding tokens for this user, then mint a new one.
     const { plain, hash } = createResetToken();
-    await prisma.$transaction([
-      prisma.passwordResetToken.updateMany({
-        where: { userId: user.id, usedAt: null },
-        data: { usedAt: new Date() },
-      }),
-      prisma.passwordResetToken.create({
-        data: {
-          userId: user.id,
-          tenantId: user.tenantId,
-          tokenHash: hash,
-          expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
-        },
-      }),
-    ]);
-
-    const appUrl = process.env.APP_URL || "http://localhost:3000";
-    const resetLink = `${appUrl}/reset-password?token=${plain}`;
-
-    this.logger.log(
-      `[email] Password reset requested for ${user.email}. Link dispatched.`,
+    await runWithTenantSession(
+      { tenantId: match.tenant_id, userId: match.id },
+      () =>
+        prisma.$transaction([
+          prisma.passwordResetToken.updateMany({
+            where: { userId: match.id, usedAt: null },
+            data: { usedAt: new Date() },
+          }),
+          prisma.passwordResetToken.create({
+            data: {
+              userId: match.id,
+              tenantId: match.tenant_id,
+              tokenHash: hash,
+              expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+            },
+          }),
+        ]),
     );
+
+    const resetLink = `${this.appUrl}/reset-password?token=${plain}`;
+
+    await this.dispatchAuthEmail({
+      to: dto.email.toLowerCase(),
+      tenantId: match.tenant_id,
+      subject: "Reset your UniERP password",
+      body: `A password reset was requested for your account. Reset it here: ${resetLink}\nIf you didn't request this, you can ignore this email.`,
+    });
 
     // Never return the token in production; expose it only for local dev ergonomics.
     if (this.isProduction) {
@@ -711,37 +883,45 @@ export class AuthService {
   async resetPassword(dto: ResetPasswordInput) {
     const tokenHash = hashResetToken(dto.token);
 
-    const record = await prisma.passwordResetToken.findUnique({
-      where: { tokenHash },
-      include: { user: true },
-    });
+    // Unauthenticated flow: resolve tenant context via the SECURITY DEFINER
+    // token lookup — RLS blocks a direct cross-tenant read (Track C / #21).
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        user_id: string;
+        tenant_id: string;
+        expires_at: Date;
+        used_at: Date | null;
+      }>
+    >`SELECT id, user_id, tenant_id, expires_at, used_at FROM auth_lookup_reset_token(${tokenHash})`;
+    const record = rows[0];
 
-    if (!record || record.usedAt || record.expiresAt < new Date()) {
+    if (!record || record.used_at || record.expires_at < new Date()) {
       throw new BadRequestException("Invalid or expired password reset token.");
     }
 
     const hashedPassword = await hashPassword(dto.password);
 
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: record.userId },
-        data: {
-          passwordHash: hashedPassword,
-          passwordChangedAt: new Date(),
-          failedLoginAttempts: 0,
-          lockedUntil: null,
-        },
-      }),
-      prisma.passwordResetToken.update({
-        where: { id: record.id },
-        data: { usedAt: new Date() },
-      }),
-      // Burn any other outstanding reset tokens for this user.
-      prisma.passwordResetToken.updateMany({
-        where: { userId: record.userId, usedAt: null },
-        data: { usedAt: new Date() },
-      }),
-    ]);
+    await runWithTenantSession(
+      { tenantId: record.tenant_id, userId: record.user_id },
+      () =>
+        prisma.$transaction([
+          prisma.user.update({
+            where: { id: record.user_id },
+            data: {
+              passwordHash: hashedPassword,
+              passwordChangedAt: new Date(),
+              failedLoginAttempts: 0,
+              lockedUntil: null,
+            },
+          }),
+          // Burn this and any other outstanding reset tokens for this user.
+          prisma.passwordResetToken.updateMany({
+            where: { userId: record.user_id, usedAt: null },
+            data: { usedAt: new Date() },
+          }),
+        ]),
+    );
 
     return { message: "Password reset successfully. You can now log in." };
   }

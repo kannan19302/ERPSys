@@ -37,6 +37,10 @@ import {
   ResetPasswordInput,
   mfaLoginSchema,
   MfaLoginInput,
+  verifyEmailSchema,
+  VerifyEmailInput,
+  resendVerificationSchema,
+  ResendVerificationInput,
 } from "@unerp/shared";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
@@ -199,6 +203,27 @@ export class AuthController {
     @Body(new ZodValidationPipe(forgotPasswordSchema)) dto: ForgotPasswordInput,
   ) {
     return this.authService.forgotPassword(dto);
+  }
+
+  @ApiOperation({ summary: "Verify email address" })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post("verify-email")
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(
+    @Body(new ZodValidationPipe(verifyEmailSchema)) dto: VerifyEmailInput,
+  ) {
+    return this.authService.verifyEmail(dto);
+  }
+
+  @ApiOperation({ summary: "Resend email verification link" })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Post("resend-verification")
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(
+    @Body(new ZodValidationPipe(resendVerificationSchema))
+    dto: ResendVerificationInput,
+  ) {
+    return this.authService.resendVerification(dto);
   }
 
   @ApiOperation({ summary: "Reset password" })

@@ -21,8 +21,15 @@
 
 ## Phase 1 — Authentication completion (auth module, 40/100 MVM)
 
-- [ ] 1.1 Email verification: `EmailVerificationToken` model, send-on-register,
-      verify endpoint + UI page, resend, block sensitive actions until verified
+- [x] 1.1 Email verification (2026-07-18): `EmailVerificationToken` model +
+      `users.email_verified_at`, token minted in the register transaction,
+      email queued via BullMQ `email` queue, `POST /auth/verify-email` +
+      `POST /auth/resend-verification` (throttled, enumeration-safe),
+      `/verify-email` page with resend form. Also repaired the RLS-broken
+      forgot/reset-password flows via `auth_lookup_reset_token` /
+      `auth_lookup_verification_token` SECURITY DEFINER lookups.
+      Deferred: blocking sensitive actions until verified — lands with the
+      trial/read-only write-guard middleware in 2.3.
 - [ ] 1.2 Refresh tokens + JWT rotation: short-lived access token, rotating
       refresh token (httpOnly cookie), revocation on logout/device removal;
       "Remember me" = extended refresh TTL

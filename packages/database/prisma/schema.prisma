@@ -90,6 +90,8 @@ model User {
   deletedAt    DateTime? @map("deleted_at")
   preferences  Json      @default("{}")
 
+  emailVerifiedAt DateTime? @map("email_verified_at")
+
   mfaEnabled       Boolean @default(false) @map("mfa_enabled")
   mfaSecret        String? @map("mfa_secret")
   mfaPending       Boolean @default(false) @map("mfa_pending")
@@ -106,6 +108,7 @@ model User {
   passkeys           Passkey[]
   savedViews         SavedView[]
   passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -146,6 +149,22 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String    @map("tenant_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
 }
 
 model Passkey {
