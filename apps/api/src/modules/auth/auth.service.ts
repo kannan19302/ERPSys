@@ -144,6 +144,12 @@ export class AuthService {
         },
       });
 
+      // Registration is unauthenticated, so no tenant session exists yet and
+      // the RLS session GUC is never set by the client extension. Set it
+      // transaction-locally so the inserts below pass the RLS policies on
+      // roles/users/organizations/departments (#21 Track C).
+      await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenant.id}, true)`;
+
       // 2. Create default roles for the tenant
       const defaultRolesConfig = {
         SUPER_ADMIN: {
