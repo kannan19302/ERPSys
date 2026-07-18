@@ -115,9 +115,9 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 8
+- **DEV cycles completed:** 9
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 2
+- **Cycles until mandatory harden:** 1
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -130,6 +130,7 @@
 | 6 | 2026-07-18 | DEV | F | Track G.8 — money-type audit + Float lint | G.8 closed: 3 metric Floats OK, 2 WebOrder money-Floats queued for Decimal behind Track A; shrink-only lint red/green proven, in CI + migration:discipline | see CHANGELOG 2026-07-18 cycle-6 entry |
 | 7 | 2026-07-18 | DEV | F | Track G.2 — optimistic-locking convention | Mechanism closed: updateWithVersionGuard + STALE_WRITE 409 + scaffolder defaults (incl. Float→Decimal template fix); version backfill queued post-A; 5 tests green | see CHANGELOG 2026-07-18 cycle-7 entry |
 | 8 | 2026-07-18 | DEV | F | Track H.3 — backup + restore-verify automation | Landed + drilled: backup/verify scripts, 655-table exact-equality restore proof in 20.3s, runbook with RPO/RTO; PITR sub-item queued for prod topology | see CHANGELOG 2026-07-18 cycle-8 entry |
+| 9 | 2026-07-18 | DEV | F | Track G.3 — platform write idempotency | G.3 closed: global opt-in Idempotency-Key interceptor, Redis NX/EX store, replay/reuse/in-flight semantics, tenant-scoped; 7 tests + typecheck green | see CHANGELOG 2026-07-18 cycle-9 entry |
 
 ## Collab Board — Multi-Agent Sync
 

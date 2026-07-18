@@ -69,6 +69,8 @@ import { PickWavesModule } from './modules/inventory/pick-waves.module';
 import { AsnModule } from './modules/inventory/asn.module';
 import { ShipmentTrackingModule } from './modules/inventory/shipment-tracking.module';
 import { SavedViewsModule } from './modules/saved-views/saved-views.module';
+import { IdempotencyInterceptor } from './common/idempotency/idempotency.interceptor';
+import { InMemoryIdempotencyStore, RedisIdempotencyStore } from './common/idempotency/idempotency.store';
 // QUARANTINED (Track 0.2, 2026-07-18): modules/blockchain is provisional and must
 // not be registered until Track E re-platforms it on the transactional outbox
 // (.ai/FOUNDATION_HARDENING_ROADMAP.md § 10). It is excluded from the build in
@@ -231,6 +233,18 @@ import { SavedViewsModule } from './modules/saved-views/saved-views.module';
     { provide: APP_INTERCEPTOR, useClass: TenantInterceptor },
     // Always-on compliance audit log for every mutating request.
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+    // Track G.3: opt-in exactly-once writes via the Idempotency-Key header.
+    // Runs after TenantInterceptor so request.user.tenantId is available.
+    {
+      provide: IdempotencyInterceptor,
+      useFactory: () =>
+        new IdempotencyInterceptor(
+          process.env.REDIS_URL
+            ? new RedisIdempotencyStore(process.env.REDIS_URL)
+            : new InMemoryIdempotencyStore(),
+        ),
+    },
+    { provide: APP_INTERCEPTOR, useExisting: IdempotencyInterceptor },
     // Enforces the ThrottlerModule buckets configured above on every route.
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],

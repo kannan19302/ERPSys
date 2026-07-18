@@ -8,6 +8,31 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 9 (Phase F) — Track G.3 closed: platform Idempotency-Key interceptor
+
+Autonomous run, iteration 6/10.
+
+- **`common/idempotency/`**: `IdempotencyStore` contract with
+  `RedisIdempotencyStore` (atomic `SET NX EX` claim on
+  `idem:{tenantId}:{key}`, ioredis via validated `REDIS_URL`; ioredis now an
+  explicit apps/api dependency, lockfile-only pin) + `InMemoryIdempotencyStore`
+  (tests/Redis-less dev). `IdempotencyInterceptor` registered globally after
+  the tenant interceptor: opt-in per request via `Idempotency-Key`
+  (8–128 `[A-Za-z0-9_-]`), request-hash = sha256(method+url+body).
+- **Semantics**: first request executes and stores `{statusCode, body}` (TTL
+  24h); same key+payload replays with `Idempotency-Replayed: true` and the
+  original status; different payload → 422 `IDEMPOTENCY_KEY_REUSED`;
+  concurrent duplicate → 409 `IDEMPOTENCY_IN_FLIGHT`; handler error releases
+  the claim (retry allowed); keys tenant-scoped (anonymous → `public` bucket).
+  Codes added to the shared G.9 `ERROR_CODES` registry.
+- **Design decision recorded**: Redis satisfies the roadmap's
+  "(tenantId,key,requestHash,response) with TTL" store without a schema
+  migration (Track A freeze); a durable audit table can follow post-A without
+  changing the contract.
+- Gates: 7 interceptor tests, shared rebuild, API typecheck (true exit code),
+  boundary check — all green. Roadmap G.3 ✅. **Ledger**: 8 → 9; next
+  mandatory harden in 1.
+
 ## [2026-07-18] Cycle 8 (Phase F) — Track H.3: backup + restore-verification automation, drill executed
 
 Autonomous run, iteration 5/10.
