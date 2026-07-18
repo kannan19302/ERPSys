@@ -1,6 +1,5 @@
-/* Compact — reduced density: tighter spacing/typography/layout scale. */
-[data-theme='compact'] {
-  color-scheme: light;
+/* Compact density — orthogonal to color theme; applies on top of light/dark/etc via [data-density]. */
+[data-density="compact"] {
   --text-xs: 0.6875rem;
   --text-sm: 0.8125rem;
   --text-base: 0.875rem;

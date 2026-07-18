@@ -1,38 +1,76 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { useRouter } from "next/navigation";
 import {
-  ChevronDown, Search, Sun, Moon, Monitor, Palette, Check, LogOut, User as UserIcon, Settings, Menu, Building2
-} from 'lucide-react';
-import { useTheme, type ThemeSetting } from '@unerp/ui';
-import { AppSwitcher } from './AppSwitcher';
-import { NotificationCenter } from './NotificationCenter';
-import styles from './AppHeader.module.css';
+  ChevronDown,
+  Search,
+  Sun,
+  Moon,
+  Monitor,
+  Palette,
+  Check,
+  LogOut,
+  User as UserIcon,
+  Settings,
+  Menu,
+  Building2,
+  LayoutGrid,
+} from "lucide-react";
+import { useTheme, type ThemeSetting, type DensityName } from "@unerp/ui";
+import { AppSwitcher } from "./AppSwitcher";
+import { NotificationCenter } from "./NotificationCenter";
+import styles from "./AppHeader.module.css";
 
 /** Human labels + one-line explanations for every design-system theme. */
 const THEME_INFO: Record<string, { label: string; hint: string }> = {
-  system: { label: 'System', hint: 'Follow your operating system light/dark preference' },
-  light: { label: 'Light', hint: 'Default bright theme' },
-  dark: { label: 'Dark', hint: 'Low-light theme for dim environments' },
-  enterprise: { label: 'Enterprise', hint: 'Conservative corporate look with denser chrome' },
-  modern: { label: 'Modern', hint: 'Soft contemporary neutrals' },
-  minimal: { label: 'Minimal', hint: 'Stripped-back, whitespace-first look' },
-  classic: { label: 'Classic', hint: 'Traditional ERP styling' },
-  compact: { label: 'Compact', hint: 'Tighter spacing to fit more data on screen' },
-  'high-contrast': { label: 'High contrast', hint: 'Maximum-contrast accessibility theme' },
+  system: {
+    label: "System",
+    hint: "Follow your operating system light/dark preference",
+  },
+  light: { label: "Light", hint: "Default bright theme" },
+  dark: { label: "Dark", hint: "Low-light theme for dim environments" },
+  enterprise: {
+    label: "Enterprise",
+    hint: "Conservative corporate look with denser chrome",
+  },
+  modern: { label: "Modern", hint: "Soft contemporary neutrals" },
+  minimal: { label: "Minimal", hint: "Stripped-back, whitespace-first look" },
+  classic: { label: "Classic", hint: "Traditional ERP styling" },
+  "high-contrast": {
+    label: "High contrast",
+    hint: "Maximum-contrast accessibility theme",
+  },
 };
 
-export interface TenantOption { id?: string; name: string; slug: string }
+/** Human labels for density — applies on top of whichever color theme is active. */
+const DENSITY_INFO: Record<DensityName, { label: string; hint: string }> = {
+  comfortable: { label: "Comfortable", hint: "Default spacing and text size" },
+  compact: {
+    label: "Compact",
+    hint: "Tighter spacing to fit more data on screen",
+  },
+};
+
+export interface TenantOption {
+  id?: string;
+  name: string;
+  slug: string;
+}
 
 interface AppHeaderProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   currentTenant: TenantOption;
   tenants: TenantOption[];
   handleTenantSwitch: (t: TenantOption) => void;
-  user: { firstName: string; lastName: string; email: string; avatar?: string } | null;
+  user: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar?: string;
+  } | null;
   handleLogout: () => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
@@ -49,7 +87,9 @@ interface AppHeaderProps {
   isAppsLanding: boolean;
   switcherItems: any[];
   expandedFolders: Record<string, boolean>;
-  setExpandedFolders: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setExpandedFolders: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
   appsDropdownRef: React.RefObject<HTMLDivElement | null>;
   tenantDropdownRef: React.RefObject<HTMLDivElement | null>;
   userDropdownRef: React.RefObject<HTMLDivElement | null>;
@@ -58,19 +98,28 @@ interface AppHeaderProps {
 }
 
 function ThemeMenu({ iconBtnStyle }: { iconBtnStyle: string }) {
-  const { setting, resolvedTheme, setTheme, themes } = useTheme();
+  const {
+    setting,
+    resolvedTheme,
+    setTheme,
+    themes,
+    density,
+    setDensity,
+    densities,
+  } = useTheme();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
-    document.addEventListener('mousedown', onMouseDown);
-    return () => document.removeEventListener('mousedown', onMouseDown);
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
   }, []);
 
-  const options: ThemeSetting[] = ['system', ...themes];
+  const options: ThemeSetting[] = ["system", ...themes];
 
   return (
     <div className="relative" ref={ref}>
@@ -80,27 +129,79 @@ function ThemeMenu({ iconBtnStyle }: { iconBtnStyle: string }) {
         aria-label="Choose color theme"
         title="Theme — switch between the design-system color themes"
       >
-        {setting === 'system' ? <Monitor size={16} /> : resolvedTheme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+        {setting === "system" ? (
+          <Monitor size={16} />
+        ) : resolvedTheme === "dark" ? (
+          <Moon size={16} />
+        ) : (
+          <Sun size={16} />
+        )}
       </button>
       {open && (
-        <div className="ui-dropdown ui-dropdown-right" style={{ minWidth: 230 }}>
-          <p className="ui-dropdown-header" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div
+          className="ui-dropdown ui-dropdown-right"
+          style={{ minWidth: 230 }}
+        >
+          <p
+            className="ui-dropdown-header"
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
+          >
             <Palette size={12} /> Theme
           </p>
           {options.map((t) => {
-            const info = THEME_INFO[t] ?? { label: t, hint: '' };
+            const info = THEME_INFO[t] ?? { label: t, hint: "" };
             const active = setting === t;
             return (
               <button
                 key={t}
-                onClick={() => { setTheme(t); }}
-                className={`ui-dropdown-item ${active ? 'active' : ''}`}
+                onClick={() => {
+                  setTheme(t);
+                }}
+                className={`ui-dropdown-item ${active ? "active" : ""}`}
                 title={info.hint}
               >
-                <span style={{ width: 14, display: 'inline-flex', flexShrink: 0 }}>
+                <span
+                  style={{ width: 14, display: "inline-flex", flexShrink: 0 }}
+                >
                   {active && <Check size={13} />}
                 </span>
-                <span className="ui-flex-col" style={{ alignItems: 'flex-start' }}>
+                <span
+                  className="ui-flex-col"
+                  style={{ alignItems: "flex-start" }}
+                >
+                  <span>{info.label}</span>
+                  <span className="ui-text-micro">{info.hint}</span>
+                </span>
+              </button>
+            );
+          })}
+          <p
+            className="ui-dropdown-header"
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <LayoutGrid size={12} /> Density
+          </p>
+          {densities.map((d) => {
+            const info = DENSITY_INFO[d];
+            const active = density === d;
+            return (
+              <button
+                key={d}
+                onClick={() => {
+                  setDensity(d);
+                }}
+                className={`ui-dropdown-item ${active ? "active" : ""}`}
+                title={info.hint}
+              >
+                <span
+                  style={{ width: 14, display: "inline-flex", flexShrink: 0 }}
+                >
+                  {active && <Check size={13} />}
+                </span>
+                <span
+                  className="ui-flex-col"
+                  style={{ alignItems: "flex-start" }}
+                >
                   <span>{info.label}</span>
                   <span className="ui-text-micro">{info.hint}</span>
                 </span>
@@ -142,17 +243,17 @@ export function AppHeader({
   tenantDropdownRef,
   userDropdownRef,
   searchDropdownRef,
-  GLOBAL_SEARCH_ITEMS
+  GLOBAL_SEARCH_ITEMS,
 }: AppHeaderProps) {
   const router = useRouter();
 
-  const headerClass = `${styles.header} ${theme === 'light' ? styles.headerLight : styles.headerDark}`;
-  const btnStyle = `${styles.actionBtn} ${theme === 'light' ? styles.actionBtnLight : styles.actionBtnDark}`;
-  const iconBtnStyle = `${styles.iconBtn} ${theme === 'light' ? styles.iconBtnLight : styles.iconBtnDark}`;
-  const userBtnStyle = `${styles.userBtn} ${theme === 'light' ? styles.userBtnLight : styles.userBtnDark}`;
-  const searchInputStyle = `${styles.searchInput} ${theme === 'light' ? styles.searchInputLight : styles.searchInputDark}`;
-  const searchKbdStyle = `${styles.searchKbd} ${theme === 'light' ? styles.searchKbdLight : styles.searchKbdDark}`;
-  const statusDotStyle = `${styles.statusDot} ${theme === 'light' ? styles.statusDotLight : styles.statusDotDark}`;
+  const headerClass = `${styles.header} ${theme === "light" ? styles.headerLight : styles.headerDark}`;
+  const btnStyle = `${styles.actionBtn} ${theme === "light" ? styles.actionBtnLight : styles.actionBtnDark}`;
+  const iconBtnStyle = `${styles.iconBtn} ${theme === "light" ? styles.iconBtnLight : styles.iconBtnDark}`;
+  const userBtnStyle = `${styles.userBtn} ${theme === "light" ? styles.userBtnLight : styles.userBtnDark}`;
+  const searchInputStyle = `${styles.searchInput} ${theme === "light" ? styles.searchInputLight : styles.searchInputDark}`;
+  const searchKbdStyle = `${styles.searchKbd} ${theme === "light" ? styles.searchKbdLight : styles.searchKbdDark}`;
+  const statusDotStyle = `${styles.statusDot} ${theme === "light" ? styles.statusDotLight : styles.statusDotDark}`;
 
   return (
     <header className={headerClass}>
@@ -186,8 +287,8 @@ export function AppHeader({
               className={btnStyle}
               title={
                 tenants.length > 1
-                  ? 'Organization — switch between the organizations your account belongs to'
-                  : 'Organization — the tenant you are currently signed in to'
+                  ? "Organization — switch between the organizations your account belongs to"
+                  : "Organization — the tenant you are currently signed in to"
               }
             >
               <Building2 size={13} style={{ flexShrink: 0, opacity: 0.7 }} />
@@ -195,7 +296,7 @@ export function AppHeader({
               {tenants.length > 1 && (
                 <ChevronDown
                   size={13}
-                  className={`${styles.chevronIcon} ${tenantDropdownOpen ? styles.chevronRotated : ''}`}
+                  className={`${styles.chevronIcon} ${tenantDropdownOpen ? styles.chevronRotated : ""}`}
                 />
               )}
             </button>
@@ -208,8 +309,12 @@ export function AppHeader({
                     <button
                       key={t.slug}
                       onClick={() => handleTenantSwitch(t)}
-                      className={`ui-dropdown-item ${isTenantActive ? 'active' : ''}`}
-                      title={isTenantActive ? 'Currently active organization' : `Sign in to ${t.name} with this account`}
+                      className={`ui-dropdown-item ${isTenantActive ? "active" : ""}`}
+                      title={
+                        isTenantActive
+                          ? "Currently active organization"
+                          : `Sign in to ${t.name} with this account`
+                      }
                     >
                       {t.name}
                     </button>
@@ -241,32 +346,54 @@ export function AppHeader({
                   if (searchQuery.length > 0) setSearchOpen(true);
                 }}
               />
-              <kbd className={searchKbdStyle}>
-                ⌘K
-              </kbd>
+              <kbd className={searchKbdStyle}>⌘K</kbd>
             </div>
 
             {/* Dynamic Search Dropdown Results */}
             {searchOpen && searchQuery.length > 0 && (
               <div className="ui-dropdown ui-dropdown-right ui-dropdown-search">
                 <p className="ui-dropdown-header">Search Results</p>
-                {GLOBAL_SEARCH_ITEMS.filter(item =>
-                  item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                ).slice(0, 10).map((result) => (
-                  <button
-                    key={result.name}
-                    onClick={() => { router.push(result.href); setSearchOpen(false); setSearchQuery(''); }}
-                    className="ui-dropdown-item"
+                {GLOBAL_SEARCH_ITEMS.filter((item) =>
+                  item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                )
+                  .slice(0, 10)
+                  .map((result) => (
+                    <button
+                      key={result.name}
+                      onClick={() => {
+                        router.push(result.href);
+                        setSearchOpen(false);
+                        setSearchQuery("");
+                      }}
+                      className="ui-dropdown-item"
+                    >
+                      <result.icon
+                        size={14}
+                        style={{
+                          color:
+                            result.type === "App"
+                              ? "var(--color-primary)"
+                              : "var(--color-text-secondary)",
+                          opacity: 0.8,
+                        }}
+                      />
+                      <div className="ui-flex-col">
+                        <span className="font-medium">{result.name}</span>
+                        <span className="ui-text-micro">{result.type}</span>
+                      </div>
+                    </button>
+                  ))}
+                {GLOBAL_SEARCH_ITEMS.filter((item) =>
+                  item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                ).length === 0 && (
+                  <div
+                    style={{
+                      padding: "var(--space-3) var(--space-2)",
+                      textAlign: "center",
+                      color: "var(--color-text-secondary)",
+                      fontSize: "var(--text-sm)",
+                    }}
                   >
-                    <result.icon size={14} style={{ color: result.type === 'App' ? 'var(--color-primary)' : 'var(--color-text-secondary)', opacity: 0.8 }} />
-                    <div className="ui-flex-col">
-                      <span className="font-medium">{result.name}</span>
-                      <span className="ui-text-micro">{result.type}</span>
-                    </div>
-                  </button>
-                ))}
-                {GLOBAL_SEARCH_ITEMS.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                  <div style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
                     No results found for "{searchQuery}"
                   </div>
                 )}
@@ -293,14 +420,14 @@ export function AppHeader({
           >
             <div className="relative">
               <div className={styles.userAvatar}>
-                {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
+                {user ? `${user.firstName[0]}${user.lastName[0]}` : "SU"}
               </div>
               {/* Status Indicator Dot */}
               <span className={statusDotStyle} />
             </div>
             <ChevronDown
               size={12}
-              className={`${styles.chevronIcon} ${userDropdownOpen ? styles.chevronRotated : ''}`}
+              className={`${styles.chevronIcon} ${userDropdownOpen ? styles.chevronRotated : ""}`}
             />
           </button>
 
@@ -308,20 +435,26 @@ export function AppHeader({
             <div className="ui-dropdown ui-dropdown-right ui-dropdown-user">
               <div className={styles.userProfileSummary}>
                 <p className={styles.userProfileName}>
-                  {user ? `${user.firstName} ${user.lastName}` : 'Super Admin'}
+                  {user ? `${user.firstName} ${user.lastName}` : "Super Admin"}
                 </p>
                 <p className={styles.userProfileEmail}>
-                  {user ? user.email : 'admin@uni-erp.com'}
+                  {user ? user.email : "admin@uni-erp.com"}
                 </p>
               </div>
               <button
-                onClick={() => { router.push('/profile'); setUserDropdownOpen(false); }}
+                onClick={() => {
+                  router.push("/profile");
+                  setUserDropdownOpen(false);
+                }}
                 className="ui-dropdown-item"
               >
                 <UserIcon size={14} className="ui-text-muted" /> Profile
               </button>
               <button
-                onClick={() => { router.push('/settings'); setUserDropdownOpen(false); }}
+                onClick={() => {
+                  router.push("/settings");
+                  setUserDropdownOpen(false);
+                }}
                 className="ui-dropdown-item"
               >
                 <Settings size={14} className="ui-text-muted" /> Settings

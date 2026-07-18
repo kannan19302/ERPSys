@@ -8,6 +8,13 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] CYCLE 21 — ViewSwitcher & AppHeader Layout Fixes
+
+**Scope**: Resolved button text squishing and wrapping issues on the shared `ViewSwitcher` design system component and the global `AppHeader` action buttons.
+
+- **`packages/ui-layout/src/view-switcher.tsx`**: Added `flexShrink: 0` and `whiteSpace: 'nowrap'` inline styling properties to each button in the ViewSwitcher component to prevent them from shrinking or wrapping text when space is limited.
+- **`apps/web/src/components/shell/AppHeader.module.css`**: Updated the `.actionBtn` CSS rule with `flex-shrink: 0;` and `white-space: nowrap;` to stabilize the global "Switch App" and Tenant Selector layout.
+
 ## [2026-07-18] HARDEN-2 — Cycle 20 Mandatory QA Hardening (SSRF Protection)
 
 **Scope**: Implemented Server-Side Request Forgery (SSRF) protection on the `getLinkPreview` endpoint in the communication module.
@@ -41,6 +48,7 @@
 **Major milestone: All 11 foundation gate conditions met. Feature freeze LIFTED.** The foundation is declared v1.0 SEALED per FOUNDATION_HARDENING_ROADMAP.md §12b.
 
 ### Track B (#17) — Transactional outbox (built from fable-5's partial schema work)
+
 - **`packages/shared/src/outbox/outbox.service.ts`**: `OutboxService.writeEvent(tx, params)` — writes `OutboxEvent` + `OutboxDelivery` rows inside an existing Prisma transaction. Auto-generates `eventKey` and per-aggregate `sequence`. Unique `(tenantId, eventKey)` for idempotent producer retries.
 - **`apps/api/src/modules/outbox/outbox-dispatcher.service.ts`**: Polls every 2s using `FOR UPDATE SKIP LOCKED`, claims up to 100 PENDING deliveries with 30s lease, enqueues to BullMQ.
 - **`apps/api/src/modules/outbox/outbox-processor.service.ts`**: BullMQ worker — loads immutable event → verifies tenant/destination → writes `OutboxConsumerReceipt` + handler effect transactionally → marks delivery COMPLETED. Bounded exponential backoff + jitter; DEAD after 10 attempts.
@@ -58,24 +66,29 @@
 **Scope**: Replaced the synchronous `SalesService.createConfirmedOnlineOrder()` call in the e-commerce checkout flow with a `StorefrontCheckoutState` row + `ecommerce.checkout.completed` outbox event written inside a single Prisma transaction. The Sales consumer handler picks up the event and creates the SalesOrder + StorefrontOrderPayment asynchronously.
 
 ### D.1 — Outbox-based checkout flow
+
 - **`packages/database/prisma/schema.prisma`**: Added `StorefrontCheckoutState` model (`CHECKOUT_INITIATED`, `ORDER_CREATING`, `ORDER_COMPLETED`, `ORDER_FAILED` statuses, optional `salesOrderId`/`errorMessage`, indexed on `tenantId+cartId` and `tenantId+status`).
 - **`apps/api/src/modules/ecommerce/ecommerce-checkout.service.ts`**: Removed `SalesService` import/injection. Refactored `checkout()` to write `StorefrontCheckoutState` + call `OutboxService.writeEvent()` inside `prisma.$transaction`. Cart is marked CONVERTED synchronously; order creation happens in the outbox handler. Added `getCheckoutState()` / `getCheckoutStateBySession()` for status polling. Also refactored `completePaymentFromIntent()` (Stripe webhook path) to use the same async outbox pattern.
 - **`apps/api/src/modules/ecommerce/ecommerce-public.controller.ts`**: Added `GET store/:tenantSlug/checkout/:sessionToken/status` endpoint for frontend polling. Passes `storefrontSlug` to checkout/webhook methods.
 - **`apps/api/src/modules/ecommerce/ecommerce.module.ts`**: Removed `SalesModule` import; added `OutboxModule` import in its place.
 
 ### D.2 — Sales outbox consumer handler
+
 - **`apps/api/src/modules/sales/sales-outbox.handler.ts`**: New handler for destination `sales.createOrder`. Receives `ecommerce.checkout.completed` payload, calls `SalesService.createConfirmedOnlineOrder()`, records `StorefrontOrderPayment`, updates `StorefrontCheckoutState` to `ORDER_COMPLETED` (or `ORDER_FAILED` on error).
 - **`apps/api/src/modules/sales/sales.module.ts`**: Registers the outbox destination (`ecommerce.checkout.completed` → `sales.createOrder`) and the handler via `OutboxHandlerRegistry` in `OnModuleInit`. Imports `OutboxModule`.
 
 ### D.3 — Outbox infrastructure provider
+
 - **`apps/api/src/modules/outbox/outbox.module.ts`**: Added `OutboxService` as a NestJS singleton provider (exported for cross-module injection).
 
 ### D.4 — Architecture quality gates
+
 - **`apps/api/.dependency-cruiser.cjs`**: Added `^src/modules/outbox/` exemption to `no-cross-module-deep-imports` rule (shared infrastructure).
 - **`scripts/module-boundary-baseline.json`**: Removed 2 resolved `ecommerce → sales` entries; replaced with `sales → outbox` and `ecommerce → outbox` tracked legacy entries.
 - `pnpm typecheck` ✓, `pnpm architecture:check` ✓ — baseline drops from 2 → 0 direct imports between ecommerce and sales.
 
 ### Migration
+
 - `20260718065259_track_d_storefront_checkout_state` — creates `storefront_checkout_states` table (applied; no drift).
 
 ## [2026-07-18] Track E — Re-platform blockchain module on the transactional outbox
@@ -83,6 +96,7 @@
 **Scope**: Eliminated the blockchain dual-write island. The module is no longer quarantined — it is now an event-driven outbox consumer. All 5 sub-tracks closed.
 
 ### E.1 — Delete in-service dual-write
+
 - Removed all dual-write methods from the 4 existing services:
   - `document-blockchain.service.ts`: removed `anchorDocument()`
   - `finance-ledger-blockchain.service.ts`: removed `anchorJournalEntry()`, `attestPeriodClose()`
@@ -91,27 +105,33 @@
 - Verification/query methods kept: `verifyDocument()`, `getDocumentBlockchainRecord()`, `verifyJournalEntry()`, `getJournalBlockchainRecord()`, `getProvenance()`, `issueRecall()`, `executeThreeWayMatch()`, `getPurchaseOrderHistory()`
 
 ### E.2 — Blockchain-anchor outbox handler
+
 - **`apps/api/src/modules/blockchain/blockchain-outbox.handler.ts`**: Processes `blockchain-anchor` destination deliveries. Receives outbox events, delegates to BlockchainAnchorService.
 - **`apps/api/src/modules/blockchain/services/blockchain-anchor.service.ts`**: Idempotent outbox-aware service with `anchorEvent()` (computes hash → submits to Fabric → writes/updates BlockchainTransaction) and `submitToFabric()` (routes to the correct chaincode contract). Idempotent: skips if CONFIRMED record already exists; marks FAILED + throws on error (triggers outbox retry/DLQ).
 - Handler registered in `blockchain.module.ts` `onModuleInit()` via `OutboxHandlerRegistry.register('blockchain-anchor', ...)`.
 
 ### E.3 — Replace fire-and-forget Fabric listener with durable checkpoint
+
 - **`blockchain-sync.service.ts`**: Added `readCheckpoint()` / `updateCheckpoint()` methods that persist the last-processed block number per (channel, chaincode) in the new `BlockchainSyncCheckpoint` table. On restart, the listener resumes from `checkpoint + 1` instead of genesis. Checkpoint updated after every event.
 - **`packages/database/prisma/schema.prisma`**: Added `BlockchainSyncCheckpoint` model with `@@unique([channelName, chaincodeName])`.
 - **Migration `20260718110000_add_blockchain_sync_checkpoint`**: Creates the `blockchain_sync_checkpoints` table.
 
 ### E.4 — RLS policies on blockchain tables
+
 - **Already covered** by the existing dynamic RLS migration `20260718101000_rls_all_tables`, which applies `tenant_isolation` policies to ALL tables with a `tenant_id` column — including `blockchain_transactions` and `blockchain_verifications`. Both models already have `@@index([tenantId])`. No additional migration needed.
 
 ### E.5 — Wire first real caller behind the flag
+
 - The `blockchain-anchor` destination is registered and ready. The caller (finance GL journal posting via `finance.journal.posted` event) can be wired when the finance module outbox event is added — the handler infrastructure is complete.
 
 ### Module re-registration
+
 - **`apps/api/src/app.module.ts`**: Removed quarantine comment, added `BlockchainModule` to imports.
 - **`apps/api/tsconfig.json`**: Removed `src/modules/blockchain/**` from exclude list.
 - **`scripts/check-module-boundaries.mjs`**: Removed the Track 0.2 blockchain quarantine section (replaced with comment documenting Track E completion).
 
 ### Verification
+
 - `pnpm --filter @unerp/blockchain build` → clean
 - `pnpm --filter @unerp/api typecheck` → 0 blockchain errors (2 pre-existing sales/ecommerce errors unchanged)
 - `node scripts/check-module-boundaries.mjs` → passes (6 tracked legacy violations)
@@ -122,6 +142,7 @@
 **Scope**: Bulk close of all remaining parallel-safe foundation tracks. Fable-5 holds Track B (#17 outbox) active lock.
 
 ### Track G.5 — Document Numbering Service (CLOSED)
+
 - **`packages/database/prisma/schema.prisma`**: Added `DocumentSequence` model (tenant-scoped, series-based, configurable format/padding/reset frequency, `@@unique([tenantId, series, organizationId])`)
 - **`packages/shared/src/numbering/`**: Created `NumberingService` with `getNextNumber()` (concurrency-safe via `FOR UPDATE`), `peekNextNumber()`, `resetSequence()`, auto YEARLY/MONTHLY period reset, configurable format template (`{prefix}{number}{suffix}`). Adapter pattern (`NumberingTx`) keeps shared package Prisma-free.
 - **`packages/shared/src/numbering/numbering.schema.ts`**: Zod schemas for create/update/getNextNumber.
@@ -130,12 +151,14 @@
 - Typecheck: `pnpm --filter @unerp/shared build` ✓, `pnpm --filter @unerp/database build` ✓.
 
 ### Track H.1 (remaining half) — GDPR erasure wired to PII registry (CLOSED)
+
 - **`apps/api/src/modules/admin/gdpr.service.ts`**: Rewritten from hardcoded 5-entity modelMap to consume `scripts/pii-registry.json` at runtime. Three-tier logic: **erase** (Contact, Lead, Applicant, POSLoyaltyMember, CustomerPortalUser, VendorPortalUser → `deleteMany`), **anonymize** (User, Organization, Customer, Vendor → PII field replacement with `[redacted-{id}]@erased.local`), **retain-legal-hold** (Employee → logged SKIP).
 - **Audit trail**: Creates `AuditLog(action: 'GDPR_ERASURE')` with results, email, timestamp.
 - **19 unit tests** covering all 11 PII models, legacy plural aliases, edge cases.
 - Typecheck: ✓.
 
 ### Track H.2 — Tenant Lifecycle (export/offboard/purge) (CLOSED)
+
 - **`packages/database/prisma/schema.prisma`**: Added `TenantLifecycleEvent` model (eventType/status/retentionDays/payload/error).
 - **`apps/api/src/modules/admin/tenant-lifecycle/`**: Full NestJS module — `TenantLifecycleService` (export/suspend/unsuspend/offboard/cancel-offboard/purge/getStatus) + `TenantLifecycleController` (8 REST endpoints with `@Permissions` + `@TrackChanges('Tenant')` + `@SkipTenantScope`).
 - **6 new permissions**: `admin.tenant.{export,suspend,unsuspend,offboard,purge,lifecycle.read}`.
@@ -145,6 +168,7 @@
 - Typecheck: ✓.
 
 ### Track I.2 — k6 load tests (CLOSED)
+
 - **`load-tests/`** (11 files): `scenarios/{login,list-paginate,document-post,smoke-test,stress-test,tenant-isolation}.js`, `helpers/{auth,env}.js`, `config/options.js` with thresholds (p95<2s, p99<5s, failure<1%).
 - **Capacity targets**: Login ≥50 RPS, List+Paginate ≥100 RPS, Document Post ≥20 RPS, Stress ≥200 combined RPS.
 - **CI**: `.github/workflows/load-test.yml` (nightly + workflow_dispatch, uses grafana/k6-action).
@@ -152,6 +176,7 @@
 - **Runbook**: `docs/RUNBOOK_LOAD_TESTING.md`.
 
 ### Track I.3 — Playwright E2E depth (CLOSED)
+
 - **9 Page Object Models** (`apps/web/e2e/pages/`): LoginPage, DashboardPage, SalesOrderPage, InvoicePage, PaymentPage, PurchaseOrderPage, GoodsReceiptPage, GLJournalPage, InventoryPage.
 - **Custom test fixture** (`apps/web/e2e/fixtures/auth.fixture.ts`) injecting all POMs + `loginAsAdmin()`.
 - **4 business-path journeys** (`apps/web/e2e/journeys/`): `order-to-cash.spec.ts` (SO→Invoice→Payment), `procure-to-pay.spec.ts` (PO→Receipt→Vendor Invoice→Payment), `gl-post-close.spec.ts` (JE→Post→GL drill-down), `tenant-isolation.spec.ts`.
@@ -159,12 +184,14 @@
 - **CI**: e2e job in `ci.yml` with Postgres/Redis service containers, migration, seed, full run.
 
 ### Track I.4 — CI enforcement (CLOSED)
+
 - **`ci.yml`**: Added `validate` job with all foundation gates: `architecture:check`, `migration:discipline`, `foundation:check`, `schema:lint`, `pnpm audit --audit-level=high`.
 - **Dependabot**: `.github/dependabot.yml` — weekly npm updates, max 10 PRs.
 - **Security scan**: `.github/workflows/security-scan.yml` — nightly CVE scan (high + critical tiers).
 - **Root `package.json`**: Added `test:audit` script.
 
 ### Track F — Platform security hardening (CLOSED — remaining items)
+
 - **`apps/api/src/main.ts`**: Upgraded Helmet with full CSP (`frame-ancestors 'none'`, `upgrade-insecure-requests`, `base-uri 'none'`, `form-action 'self'`), COOP, multi-origin CORS (NEXTAUTH_URL + APP_URL).
 - **`apps/api/src/common/config/env.schema.ts`**: Added `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` to production-strict secrets validation.
 - **`docs/SECURITY_CHECKLIST.md`**: Comprehensive checklist covering 13 security categories (auth, RBAC, RLS, Zod, CSRF, rate limiting, idempotency, CSP, audit, PII, secrets, CVE, SQL injection).
@@ -172,11 +199,13 @@
 - Typecheck: ✓.
 
 ### Collab Board cleanup
+
 - Backfilled 10 antigravity/codex-root "pending" commit hashes → actual git SHAs.
 - Moved 2 stale claude-code In Progress items (CRM July 4, Finance July 8) → COMPLETED with commit references.
 - Released stale `foundation-track-a` claim lock.
 
 ### Prisma migration note
+
 New models (`DocumentSequence`, `TenantLifecycleEvent`) are defined in schema.prisma and validated via `prisma generate`. Migration generation deferred — fable-5 holds the Prisma advisory lock for Track B (#17 outbox). Migration will be generated as `track_g5_h2_foundation_models` post-Track-B.
 
 ## [2026-07-18] Cycle 13 (Phase F) — Track A: Migration Reconciliation Execution
@@ -242,7 +271,7 @@ verify → close. Counter unchanged (QA cycles don't increment); next run: DEV.
 - **[#24 — HIGH] SQL injection in Connect filtered message search.**
   `communication.service.ts` built its WHERE clause by string interpolation;
   `filters.dateFrom`/`dateTo` had NO escaping — `dateFrom="2020-01-01' OR
-  1=1 --"` escaped the tenant condition (cross-tenant message read).
+1=1 --"` escaped the tenant condition (cross-tenant message read).
   Root-cause fix: the entire query is now parameterized `Prisma.sql`
   (`Prisma.join` for conditions/IN-list), dates validated via `new Date()`
   with 400 on invalid, ILIKE pattern bound as a parameter. Repo-wide sweep of
@@ -435,7 +464,7 @@ human sign-off gate, so this was the top pickable foundation item.
   mode masked it via the `development` exports condition (`src/` +
   transpilePackages); the production `import` condition resolves real files.
 - **Fix:** new `scripts/repair-workspace-links.mjs` — scans every workspace
-  package's `@unerp/*` links (declared *or* present), recreates broken/missing
+  package's `@unerp/*` links (declared _or_ present), recreates broken/missing
   ones as junctions to the real package dirs, idempotent, `--check` report
   mode for doctor/CI use, never invokes pnpm. Proof: `--check` exit 1 (31
   found) → repair (31 repaired) → `--check` exit 0; previously-failing
@@ -543,7 +572,7 @@ folded into DEV as a batch type). Changes across `.ai/AUTOPILOT.md`,
   headings; AUTOPILOT references the roadmap + Program Ladder; start skill
   references the roadmap; MODULE_REGISTRY has § Cycle Ledger). Verified green.
 
-## [2026-07-18] Part II — ERP *Platform* Doctrine added to the foundation roadmap
+## [2026-07-18] Part II — ERP _Platform_ Doctrine added to the foundation roadmap
 
 Senior-architect, decades-horizon pass per user directive: UniERP must be an ERP **platform**
 (contracts outlive implementations) not an ERP **application** (rewritten when the stack ages).
@@ -578,7 +607,7 @@ tracks unchanged:
 
 ## [2026-07-18] Foundation gap audit → roadmap completed & seal clause (Tracks G–I)
 
-Deep repo audit of every platform surface to make the foundation roadmap *complete*, per user
+Deep repo audit of every platform surface to make the foundation roadmap _complete_, per user
 directive: after this roadmap is executed the foundation is final — development only, no
 re-architecture. Verified-by-grep gaps added to `.ai/FOUNDATION_HARDENING_ROADMAP.md`:
 
@@ -591,7 +620,7 @@ re-architecture. Verified-by-grep gaps added to `.ai/FOUNDATION_HARDENING_ROADMA
 - **Track H — data lifecycle & DR**: registry-driven PII erasure proof, tenant export/offboard/
   purge lifecycle, automated backup + restore-verification + PITR drills (none in repo), retention
   matrix.
-- **Track I — delivery integrity**: prod build broken at HEAD (ui-* dist resolution) must become a
+- **Track I — delivery integrity**: prod build broken at HEAD (ui-\* dist resolution) must become a
   CI gate; load/perf tests (none exist) with a stated capacity target; deep e2e journeys (currently
   3 smoke specs); complete CI release-gate set.
 - **§11e completeness review**: every audited surface is now either verified-present or covered by
@@ -630,6 +659,7 @@ more on top, and hold the new blockchain layer to the same standard.
 Implemented a hybrid database architecture integrating PostgreSQL for core transactional ERP modules and Hyperledger Fabric as the immutable trust layer.
 
 ### Blockchain Package (`packages/blockchain`)
+
 - **Fabric Connection Gateway**: Created a connection pool manager using `@hyperledger/fabric-gateway` SDK supporting gRPC channel multiplexing and peer connection checkouts.
 - **Auto-Sync Block Listener**: Created a background listener module listening to block events and dispatching local Postgres database synchronizations.
 - **Smart Contracts (Chaincodes)**: Wrote 4 typescript contracts under `packages/blockchain/chaincode/`:
@@ -640,6 +670,7 @@ Implemented a hybrid database architecture integrating PostgreSQL for core trans
 - **Shared Types**: Declared and exported DTO structures and enums.
 
 ### API backend (`apps/api`)
+
 - **Blockchain Module**: Created NestJS controllers, providers, and services mapping REST API routes to on-chain evaluations.
 - **Database Migration**: Added `BlockchainTransaction` and `BlockchainVerification` tables, enums, and indexes. Generated and deployed a manual Postgres schema evolution migration `20260717180000_add_blockchain_models` to resolve environment TTY limitations.
 - **Permissions Matrix**: Registered REST endpoint actions in the central security permissions registry.
@@ -650,6 +681,7 @@ User-requested platform-wide UX upgrades, implemented at the framework/shell
 level so every module inherits them:
 
 ### Framework (`@unerp/framework`)
+
 - **ListView view modes**: table / kanban / chart switcher (reuses `ViewSwitcher`,
   `KanbanBoard` from the design system). Auto-enabled when a resource has a
   status field or an explicit `list.kanban/chart.groupBy`. Kanban drag persists
@@ -662,10 +694,12 @@ level so every module inherits them:
   tooltips. `ApiClient` gained a `put()` method.
 
 ### Design system (`@unerp/ui-components`)
+
 - New `InfoHint` primitive — the platform-wide "(i) what does this do?"
   affordance. `TabItem.description` renders as a tab tooltip.
 
 ### Shell (apps/web)
+
 - **Multi-theme switcher** in the header: all 8 ui-tokens themes + system,
   driven by the root `ThemeProvider` (the old local light/dark state is gone).
 - **Realtime notification center**: bell placeholder replaced with a real panel
@@ -681,6 +715,7 @@ level so every module inherits them:
   `description` tooltips; collapsed sidebar icons show their name on hover.
 
 ### API (apps/api)
+
 - **`GET /search/global?q=`** (new `SearchModule`): tenant-scoped, RBAC-filtered
   cross-entity search (customers, leads, products, employees, invoices, sales
   orders, purchase orders, projects — each gated by that entity's `.read`
@@ -690,6 +725,7 @@ level so every module inherits them:
   cookie replaced).
 
 ### Verification
+
 - Typecheck clean: framework, api, web. `architecture:check` green.
 - Framework 15/15 and auth 5/5 unit tests pass. (Pre-existing, unrelated
   modal.test failure from in-flight uncommitted modal.tsx changes was flagged
@@ -700,6 +736,7 @@ level so every module inherits them:
 Follow-up to the pass-one hardening below.
 
 ### Revocable server-side sessions
+
 - Every issued session now creates a `UserSession` row (id sealed into the JWT
   as `sid`, with IP / user-agent / expiry). The previously-unused table is now
   the source of truth for the "Active Sessions" admin view.
@@ -710,18 +747,21 @@ Follow-up to the pass-one hardening below.
   is dead even if replayed (previously logout only cleared the cookie).
 
 ### MFA secrets encrypted at rest
+
 - TOTP secrets are stored AES-256-GCM encrypted (`encryptSecret`/`decryptSecret`
   in `auth-crypto.ts`), keyed from `MFA_ENCRYPTION_KEY` (falls back to
   `NEXTAUTH_SECRET`). Legacy plaintext values are read transparently, so no data
   migration is needed. No schema change — reuses the existing `mfa_secret` column.
 
 ### Verification
+
 - 4 new crypto unit tests (encrypt round-trip, random IV, legacy passthrough,
   tamper rejection). 2 new live-DB integration tests (guard accepts→rejects a
   token across a revoke; enrollment persists a `v1:`-prefixed ciphertext, not
   plaintext). Full auth/admin/common suite: 287 passing.
 
 ### Still open
+
 - **Real WebAuthn passkeys** — blocked in this environment: `@simplewebauthn`
   cannot be installed (OneDrive file-lock `EACCES` during pnpm install), and a
   passkey ceremony needs a real authenticator to verify. Pass-one already
@@ -733,6 +773,7 @@ Closed five unauthenticated account-takeover paths and replaced the mock
 second-factor stack with real cryptography.
 
 ### Removed bypasses
+
 - **Hardcoded super-admin passkey** (`cred_mock_superadmin`) and the entire
   signature-less passkey login — the `/auth/passkey/*` endpoints and their
   service methods are gone (real WebAuthn deferred to a follow-up).
@@ -744,11 +785,13 @@ second-factor stack with real cryptography.
   in the response (dev-only link gated to non-production).
 
 ### Database (`20260717010000_auth_hardening`)
+
 - `User`: `failedLoginAttempts`, `lockedUntil`, `passwordChangedAt`,
   `mfaPending`, `mfaRecoveryCodes` (jsonb).
 - New `PasswordResetToken` model — hashed (SHA-256), single-use, expiring.
 
 ### Backend
+
 - New `@unerp/auth` primitives: `TOKEN_TYPE`, `signSessionToken`,
   `signTypedToken`, `verifyTypedToken`; bcrypt cost raised 10 → 12.
 - `JwtAuthGuard` now accepts only `typ: session` tokens, so reset/challenge
@@ -763,17 +806,20 @@ second-factor stack with real cryptography.
   and reset; new `mfaLoginSchema`.
 
 ### UI
+
 - Login page: removed the fake passkey button and the "enter 123456" MFA hint;
   MFA step uses the challenge token and accepts recovery codes.
 - New self-service TOTP enrollment card (QR + verify + one-time recovery codes +
   disable) under Settings → Security Policies → MFA.
 
 ### Verification
+
 - 6 token-purpose unit tests (`@unerp/auth`), 5 crypto-helper tests, and 4
   live-Postgres integration tests (lockout, single-use reset, MFA handshake) —
   all green. Full auth/admin/common suite: 283 passing. Web + API typecheck clean.
 
 ### Follow-ups (pass two)
+
 - Real WebAuthn passkeys via `@simplewebauthn/server`.
 - Revocable server-side sessions (the `UserSession` table is still unused; JWT
   logout remains valid until expiry).
@@ -782,12 +828,14 @@ second-factor stack with real cryptography.
 ## [2026-07-17] Connect Extension — 10 New Features (Polls, Slash Commands, Reminders, Scheduled Messages, Custom Emoji, Translation, Meeting Recap, Templates, Ephemeral, Voice)
 
 ### Database
+
 - New Prisma models: `ConnectPoll`, `ConnectPollOption`, `ConnectPollVote`, `CustomEmoji`, `Reminder`, `ChannelTemplate`, `MeetingSummary`
 - Added `scheduledAt`, `expiresAt`, `viewOnce`, `pollId` columns to `Message` model
 - Added `polls` relation to `Channel`, `summaries` to `ConnectMeeting`
 - Migration: `20260717000000_connect_extensions_phase2`
 
 ### Backend (CommunicationService + Controller)
+
 - **Polls**: Create poll with options, vote (one per user), close poll, broadcast via WebSocket
 - **Slash Commands**: `/remind`, `/poll`, `/meet`, `/dnd`, `/status`, `/msg`, `/code`, `/help` — extensible command framework
 - **Reminders**: Create, list, delete, snooze (5 min) — scheduled notification engine
@@ -801,6 +849,7 @@ second-factor stack with real cryptography.
 - 25+ new controller routes, 6 new permission entries in registry
 
 ### Frontend
+
 - **Poll Creator**: Modal with add/remove options (2-10), live results with percentage bars, vote button
 - **Slash Popup**: Auto-shows on "/" in composer, 8 commands with descriptions
 - **Reminders Panel**: List, snooze, delete; quick reminder creator from channel header
@@ -815,26 +864,32 @@ second-factor stack with real cryptography.
 - Integration buttons in top bar, channel header, meeting toolbar
 
 ### Permissions (6 new)
+
 - `communication.poll.manage`, `communication.emoji.manage`, `communication.translation.read`, `communication.reminder.manage`, `communication.template.manage`, `communication.voice.upload`
 
 ## [2026-07-17] UI Layout, Modals, Responsive Header and Backend Compilation Fixes
 
 ### Global CSS Imports
+
 - Fixed CSS layer issues in `packages/ui/src/styles/globals.css` by importing layer files directly, correcting broken button borders, dropdown menus, and input styles throughout the application.
 
 ### Modals & Dialogs
+
 - Fixed `packages/ui-components/src/modal.module.css` to hide native dialog elements when they are closed by adding the `.dialog:not([open])` selector, preventing forms like "Create Financial Period" from showing on mount.
 - Added `min-height: 0` to `.dialog` and `.body` class selectors in `modal.module.css` to allow flexbox shrinking and inner scrollbars when modal contents exceed the viewport height.
 
 ### Header & Responsiveness
+
 - Implemented media queries in `apps/web/src/components/shell/AppHeader.module.css` to hide the global search input on screens `< 768px` and compress AppSwitcher/Tenant buttons by hiding text spans on screens `< 640px`, eliminating horizontal overflow and scrollbars.
 
 ### Backend Compilation
+
 - Resolved NestJS compilation failure in the `communication` module by fixing 9 TypeScript warnings and unused variable declarations in `communication.service.ts`, `communication-admin.service.ts`, and `communication.controller.ts`.
 
 ## [2026-07-17] Connect Module — Teams-grade features + Modal/Popup UX fixes
 
 ### Teams-grade Deepening (Backend)
+
 - **Message threading**: `getThreadMessages` endpoint fetches parent + all replies for a dedicated right-panel thread view
 - **Message forwarding**: `forwardMessage` endpoint copies content + attachments to target channel with audit trail (`MessageForward` model)
 - **Channel tabs**: `ChannelTab` model + CRUD endpoints for pinned links/documents/ERP entities on channel header
@@ -852,6 +907,7 @@ second-factor stack with real cryptography.
 - **12 new Prisma models**: `ChannelTab`, `MessageEdit`, `MessageForward`, `ChannelModeration`, `MeetingParticipant`, `MeetingChatMessage`, `MeetingRecording`, `ConnectBot`, `UserStatusSchedule`, `ChannelAnalytics`; enhanced `UserPresence` with new presence types and `clearAt`; enhanced `Channel` relation fields
 
 ### Frontend
+
 - **Channel tabs UI**: `ChannelTabs` component renders pinned tabs below channel header
 - **Fixed composer emoji toggle**: button now properly toggles open/close instead of always opening
 - **Presence dropdown click-outside**: added invisible backdrop overlay to close the dropdown when clicking elsewhere
@@ -1229,6 +1285,7 @@ second-factor stack with real cryptography.
 **Scope**: Database-enforced tenant isolation, completing the #21 blocker design from `docs/ARCHITECTURE_FOUNDATION.md`.
 
 **C.1 — Application role split**:
+
 - Created `unerp_api` database role with `LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT` (`migration 20260718100000`).
 - Added `DATABASE_OWNER_URL` to env schema (Zod-validated, production localhost check) for the owner-level connection used by migrations.
 - Updated `docker-compose.dev.yml`: `DATABASE_URL` now uses the `unerp_api` role; `DATABASE_OWNER_URL` is set for migrations.
@@ -1236,15 +1293,18 @@ second-factor stack with real cryptography.
 - Updated `.env.example` via `scripts/generate-env-example.mjs`.
 
 **C.2 — Transaction-scoped tenant unit-of-work**:
+
 - Simplified `packages/database/src/index.ts` Prisma extension: ALL tenant-scoped models get transaction-level `set_config('app.current_tenant_id', session.tenantId, true)` via `$executeRaw` (parameterized, not `$executeRawUnsafe`).
 - Removed the old `RLS_PROTECTED_MODELS` gate — every tenant-scoped model now wraps in a transaction with GUC set.
 - Added session-level fallback in `apps/api/src/common/guards/tenant.interceptor.ts`.
 
 **C.3 — RLS policy inventory (all tables)**:
+
 - `migration 20260718101000`: DO block enabling `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` + `FORCE ROW LEVEL SECURITY` + `CREATE POLICY tenant_isolation_<table>` on every table with a `tenant_id` column.
 - Verified: 629 tenant-scoped tables covered. Tables without `tenant_id` (Tenant, SaaSPlan, UserRole, etc.) are correctly excluded.
 
 **C.4 — Two-tenant CI proof**:
+
 - Comprehensive `tenant-rls-integration.test.ts` suite: role/policy baseline verification, two-tenant data isolation (Prisma and raw SQL), no-context returns-zero (under non-bypass role), spoofed caller-supplied tenant_id prevention, write isolation (update/delete scoped), concurrent tenant context switching.
 - Superuser detection: tests that depend on actual RLS enforcement skip with a clear warning when connected as superuser (allowing green CI even on local dev connections).
 - Created `vitest.config.ts` in the database package for env setup.

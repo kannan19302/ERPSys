@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   createContext,
@@ -9,11 +9,16 @@ import {
   useState,
   type FC,
   type ReactNode,
-} from 'react';
-import { THEMES, type ThemeName } from '@unerp/ui-tokens';
+} from "react";
+import {
+  THEMES,
+  DENSITIES,
+  type ThemeName,
+  type DensityName,
+} from "@unerp/ui-tokens";
 
 /** 'system' resolves to light or dark from the OS preference. */
-export type ThemeSetting = ThemeName | 'system';
+export type ThemeSetting = ThemeName | "system";
 
 export interface BrandingTokens {
   /** CSS custom properties, e.g. { '--color-primary': '#0055aa' }. */
@@ -30,46 +35,70 @@ interface ThemeContextValue {
   applyBranding: (tokens: BrandingTokens) => void;
   clearBranding: () => void;
   themes: readonly ThemeName[];
+  /** Layout density (spacing/typography scale), orthogonal to color theme. */
+  density: DensityName;
+  setDensity: (density: DensityName) => void;
+  densities: readonly DensityName[];
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = 'unerp.theme';
-const BRANDING_KEY = 'unerp.branding';
+const STORAGE_KEY = "unerp.theme";
+const BRANDING_KEY = "unerp.branding";
+const DENSITY_KEY = "unerp.density";
 
 function systemTheme(): ThemeName {
-  if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    return "dark";
   }
-  return 'light';
+  return "light";
 }
 
 function isThemeSetting(value: string | null): value is ThemeSetting {
-  return value === 'system' || (THEMES as readonly string[]).includes(value ?? '');
+  return (
+    value === "system" || (THEMES as readonly string[]).includes(value ?? "")
+  );
+}
+
+function isDensity(value: string | null): value is DensityName {
+  return (DENSITIES as readonly string[]).includes(value ?? "");
 }
 
 export interface ThemeProviderProps {
   children: ReactNode;
-  /** Initial setting when nothing is persisted. Defaults to 'system'. */
+  /** Initial setting when nothing is persisted. Defaults to 'light'. */
   defaultSetting?: ThemeSetting;
+  /** Initial density when nothing is persisted. Defaults to 'comfortable'. */
+  defaultDensity?: DensityName;
 }
 
-export const ThemeProvider: FC<ThemeProviderProps> = ({ children, defaultSetting = 'system' }) => {
+export const ThemeProvider: FC<ThemeProviderProps> = ({
+  children,
+  defaultSetting = "light",
+  defaultDensity = "comfortable",
+}) => {
   const [setting, setSetting] = useState<ThemeSetting>(defaultSetting);
   const [resolvedTheme, setResolvedTheme] = useState<ThemeName>(
-    defaultSetting === 'system' ? 'light' : defaultSetting,
+    defaultSetting === "system" ? "light" : defaultSetting,
   );
+  const [density, setDensityState] = useState<DensityName>(defaultDensity);
 
   // Hydrate persisted setting + branding on mount.
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (isThemeSetting(stored)) setSetting(stored);
+    const storedDensity = window.localStorage.getItem(DENSITY_KEY);
+    if (isDensity(storedDensity)) setDensityState(storedDensity);
     const branding = window.localStorage.getItem(BRANDING_KEY);
     if (branding) {
       try {
         const tokens = JSON.parse(branding) as BrandingTokens;
         for (const [key, value] of Object.entries(tokens)) {
-          if (key.startsWith('--')) document.documentElement.style.setProperty(key, value);
+          if (key.startsWith("--"))
+            document.documentElement.style.setProperty(key, value);
         }
       } catch {
         window.localStorage.removeItem(BRANDING_KEY);
@@ -80,25 +109,36 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({ children, defaultSetting
   // Apply the resolved theme and track OS preference while on 'system'.
   useEffect(() => {
     const apply = () => {
-      const next = setting === 'system' ? systemTheme() : setting;
+      const next = setting === "system" ? systemTheme() : setting;
       setResolvedTheme(next);
-      document.documentElement.setAttribute('data-theme', next);
+      document.documentElement.setAttribute("data-theme", next);
     };
     apply();
-    if (setting !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
+    if (setting !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
   }, [setting]);
+
+  // Apply density to <html data-density> whenever it changes.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-density", density);
+  }, [density]);
 
   const setTheme = useCallback((next: ThemeSetting) => {
     setSetting(next);
     window.localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
+  const setDensity = useCallback((next: DensityName) => {
+    setDensityState(next);
+    window.localStorage.setItem(DENSITY_KEY, next);
+  }, []);
+
   const applyBranding = useCallback((tokens: BrandingTokens) => {
     for (const [key, value] of Object.entries(tokens)) {
-      if (key.startsWith('--')) document.documentElement.style.setProperty(key, value);
+      if (key.startsWith("--"))
+        document.documentElement.style.setProperty(key, value);
     }
     window.localStorage.setItem(BRANDING_KEY, JSON.stringify(tokens));
   }, []);
@@ -119,15 +159,35 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({ children, defaultSetting
   }, []);
 
   const value = useMemo(
-    () => ({ setting, resolvedTheme, setTheme, applyBranding, clearBranding, themes: THEMES }),
-    [setting, resolvedTheme, setTheme, applyBranding, clearBranding],
+    () => ({
+      setting,
+      resolvedTheme,
+      setTheme,
+      applyBranding,
+      clearBranding,
+      themes: THEMES,
+      density,
+      setDensity,
+      densities: DENSITIES,
+    }),
+    [
+      setting,
+      resolvedTheme,
+      setTheme,
+      applyBranding,
+      clearBranding,
+      density,
+      setDensity,
+    ],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 export function useTheme(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used within a <ThemeProvider>');
+  if (!ctx) throw new Error("useTheme must be used within a <ThemeProvider>");
   return ctx;
 }

@@ -1,0 +1,54 @@
+name: Bug Report
+description: Report a defect in UniERP
+title: "fix: <short summary>"
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Security vulnerabilities should go through
+        [Security Advisories](../../security/advisories/new) instead of a public issue.
+  - type: input
+    id: module
+    attributes:
+      label: Module / package
+      description: e.g. finance, apps/web, packages/ui-data-grid
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and, if applicable, what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / screenshots
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: Commit SHA or version
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low — cosmetic / minor inconvenience
+        - Medium — feature partially broken
+        - High — feature unusable / data at risk
+        - Critical — outage, data loss, or security-adjacent
+    validations:
+      required: true

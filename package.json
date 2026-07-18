@@ -1,6 +1,14 @@
 {
   "name": "unerp",
   "private": true,
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kannan19302/ERPSys.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kannan19302/ERPSys/issues"
+  },
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "turbo run build",
@@ -47,6 +55,8 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
     "@next/eslint-plugin-next": "^15.1.0",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",

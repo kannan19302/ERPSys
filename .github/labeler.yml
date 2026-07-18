@@ -1,0 +1,33 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ["**/*.md", "docs/**"]
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          ["package.json", "pnpm-lock.yaml", "**/package.json"]
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: [".github/workflows/**"]
+
+architecture:
+  - changed-files:
+      - any-glob-to-any-file:
+          [".ai/**", "docs/ARCHITECTURE_FOUNDATION.md", "AGENTS.md"]
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: ["apps/web/**"]
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file: ["apps/api/**"]
+
+database:
+  - changed-files:
+      - any-glob-to-any-file: ["packages/database/**"]
+
+ui:
+  - changed-files:
+      - any-glob-to-any-file: ["packages/ui*/**"]
