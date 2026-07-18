@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#0f172a"/>
+  <circle cx="480" cy="230" r="56" fill="#1e293b"/>
+  <polygon points="464,204 464,256 512,230" fill="#6366f1"/>
+  <text x="480" y="330" font-family="sans-serif" font-size="22" fill="#64748b" text-anchor="middle">
+    Demo placeholder — replace docs/assets/demo.gif with a real screen capture
+  </text>
+</svg>

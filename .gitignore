@@ -20,7 +20,10 @@ apps/api/src/**/*.js.map
 !.env.example
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo

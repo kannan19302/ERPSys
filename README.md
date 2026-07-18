@@ -111,14 +111,15 @@ Full detail: [Wiki § Architecture](../../wiki/Architecture) and
 
 |                                 Dashboard                                 |                                   Module Detail                                   |
 | :-----------------------------------------------------------------------: | :-------------------------------------------------------------------------------: |
-| ![Dashboard screenshot placeholder](docs/assets/screenshot-dashboard.png) | ![Module detail screenshot placeholder](docs/assets/screenshot-module-detail.png) |
+| ![Dashboard screenshot placeholder](docs/assets/screenshot-dashboard.svg) | ![Module detail screenshot placeholder](docs/assets/screenshot-module-detail.svg) |
 
 ## Demo
 
 > _Placeholder — record a short screen capture of a core workflow (e.g. create a sales order →
-> generate invoice → record payment) and drop the GIF/MP4 at `docs/assets/demo.gif`._
+> generate invoice → record payment) and replace `docs/assets/demo.svg` with a real
+> `docs/assets/demo.gif`._
 
-![Demo placeholder](docs/assets/demo.gif)
+![Demo placeholder](docs/assets/demo.svg)
 
 ## Modules
 

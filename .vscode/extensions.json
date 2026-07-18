@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "editorconfig.editorconfig",
+    "bradlc.vscode-tailwindcss",
+    "orta.vscode-jest",
+    "ms-playwright.playwright"
+  ]
+}
