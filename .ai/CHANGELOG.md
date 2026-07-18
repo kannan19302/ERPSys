@@ -8,6 +8,26 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 4 (Phase F) — Track G.6 closed: boot-time env validation + generated .env.example
+
+Autonomous 10-cycle run, cycle 1/10. Track A still at its sign-off gate →
+next sign-off-independent, migration-free G item.
+
+- **`apps/api/src/common/config/env.schema.ts`**: 39-variable Zod schema (the
+  full grepped inventory across api/database/auth + web-proxy vars), typed
+  coercions (ports, boolean flags), dev defaults, `.describe()` metadata on
+  every key. Production-strict: secrets ≥32 chars, placeholder values
+  (`change-me` etc.) rejected, localhost DATABASE_URL rejected.
+  `checkEnv()` pure core + `validateEnv()` fail-fast wired into `main.ts`
+  after `loadEnv()` — the API refuses to start with one aggregated report.
+- **`scripts/generate-env-example.mjs`**: `.env.example` is now GENERATED
+  from the schema (grouped, commented, REQUIRED/default/optional annotated);
+  `--check` drift mode proven green → red (deliberate edit) → green; wired
+  into CI before the typechecks.
+- 8 unit tests (defaults, coercion, aggregation, prod strictness, flag
+  parsing) green; API typecheck green.
+- Roadmap G.6 ✅. **Cycle Ledger**: 3 → 4; next mandatory harden in 6.
+
 ## [2026-07-18] Cycle 3 (Phase F) — Track I.1 closed: production build fixed + CI build gate
 
 P0 rung (broken build), also roadmap § 11d I.1; Track A remains paused at its

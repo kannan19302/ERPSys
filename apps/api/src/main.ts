@@ -33,6 +33,13 @@ function loadEnv() {
 
 loadEnv();
 
+// Track G.6: refuse to boot on invalid/missing environment (fail-fast, one
+// aggregated report). Must run after loadEnv() and before any module import
+// that reads process.env at load time.
+import { validateEnv } from './common/config/env.schema';
+
+validateEnv();
+
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';

@@ -43,6 +43,8 @@ jobs:
       - run: pnpm --filter @unerp/service-kit build
       - run: pnpm --filter @unerp/api build
       # next build ignores type errors, so tsc --noEmit is the real web gate.
+      # Track G.6: .env.example is generated from the env schema — fail on drift.
+      - run: node scripts/generate-env-example.mjs --check
       - run: pnpm --filter @unerp/api typecheck
       - run: pnpm --filter @unerp/web typecheck
       # Track I.1 (foundation roadmap § 11d): the production web artifact must

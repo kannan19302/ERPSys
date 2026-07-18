@@ -115,9 +115,9 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 3
+- **DEV cycles completed:** 4
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 7
+- **Cycles until mandatory harden:** 6
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -125,6 +125,7 @@
 | 1 | 2026-07-18 | DEV | F | Track 0 — governance + blockchain quarantine; land stranded tree | Track 0 closed (0.1–0.4 + full-dormancy hardening); guard proof red/green; architecture:check + readiness + API/web typechecks green | see CHANGELOG 2026-07-18 cycle-1 entry |
 | 2 | 2026-07-18 | DEV | F | Track A (#19) prep — baselines + reconciliation classification + mapping ledger | A.1/A.2 complete, A.3/A.4 prepared ⚠️ awaiting owner sign-off; zero dev-DB drift vs history; 23 affected tables all empty; candidate SQL committed unapplied | see CHANGELOG 2026-07-18 cycle-2 entry |
 | 3 | 2026-07-18 | DEV | F | Track I.1 — production build broken (P0 rung) | I.1 closed: 31 broken/missing @unerp junctions repaired via new `repair-workspace-links.mjs`; `next build` green (full manifest); CI prod-build gate added | see CHANGELOG 2026-07-18 cycle-3 entry |
+| 4 | 2026-07-18 | DEV | F | Track G.6 — boot-time env validation | G.6 closed: 39-var Zod schema + fail-fast validateEnv in main.ts; generated .env.example + CI drift gate; 8 tests + typecheck green | see CHANGELOG 2026-07-18 cycle-4 entry |
 
 ## Collab Board — Multi-Agent Sync
 
