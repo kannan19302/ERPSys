@@ -1,25 +1,51 @@
-'use client';
-import styles from './page.module.css';
-import '../../landing.css';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Spinner } from '@unerp/ui';
-import { Shield, Lock, Mail, ChevronRight, AlertCircle, Building, Eye, EyeOff, Sparkles } from 'lucide-react';
-import { apiPost, apiGet, ApiRequestError } from '../../../src/lib/api';
+"use client";
+import styles from "./page.module.css";
+import "../../landing.css";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@unerp/ui";
+import {
+  Shield,
+  Lock,
+  Mail,
+  ChevronRight,
+  AlertCircle,
+  Building,
+  Eye,
+  EyeOff,
+  Sparkles,
+  Smartphone,
+  Check,
+  X,
+  KeyRound,
+} from "lucide-react";
+import { apiPost, apiGet, ApiRequestError } from "../../../src/lib/api";
 
 const FEATURES = [
-  { title: 'Unified Operations', desc: 'Finance, HR, CRM, Inventory — all in one platform.' },
-  { title: 'Real-Time Analytics', desc: 'BI dashboards with drill-down into live source records.' },
-  { title: 'Industry Modules', desc: 'Healthcare, Education, Real Estate, Field Service & more.' },
-  { title: 'Zero-Code Builder', desc: 'Visual form builder, workflow engine & approval chains.' },
+  {
+    title: "Unified Operations",
+    desc: "Finance, HR, CRM, Inventory — all in one platform.",
+  },
+  {
+    title: "Real-Time Analytics",
+    desc: "BI dashboards with drill-down into live source records.",
+  },
+  {
+    title: "Industry Modules",
+    desc: "Healthcare, Education, Real Estate, Field Service & more.",
+  },
+  {
+    title: "Zero-Code Builder",
+    desc: "Visual form builder, workflow engine & approval chains.",
+  },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [tenantSlug, setTenantSlug] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [tenantSlug, setTenantSlug] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,30 +58,43 @@ export default function LoginPage() {
   // Recovery Password states
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [recoverySuccess, setRecoverySuccess] = useState<string | null>(null);
-  const [developerResetLink, setDeveloperResetLink] = useState<string | null>(null);
+  const [developerResetLink, setDeveloperResetLink] = useState<string | null>(
+    null,
+  );
 
   // Demo accounts states
   const [showDemoModal, setShowDemoModal] = useState(false);
 
   // SSO configuration states
   const [isSsoConfigured, setIsSsoConfigured] = useState(false);
-  const [ssoUrls, setSsoUrls] = useState<{ saml: string | null; oidc: string | null }>({ saml: null, oidc: null });
+  const [ssoUrls, setSsoUrls] = useState<{
+    saml: string | null;
+    oidc: string | null;
+  }>({ saml: null, oidc: null });
 
   // MFA validation states
   const [mfaRequired, setMfaRequired] = useState(false);
-  const [mfaChallengeToken, setMfaChallengeToken] = useState('');
-  const [mfaCode, setMfaCode] = useState('');
+  const [mfaChallengeToken, setMfaChallengeToken] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  // Push-approval: default to "check your phone" when the backend actually sent one;
+  // manual code entry is always reachable via "Enter code manually" so it never blocks sign-in.
+  const [pushSent, setPushSent] = useState(false);
+  const [pushStatus, setPushStatus] = useState<
+    "pending" | "denied" | "expired" | "timeout"
+  >("pending");
+  const [showManualCode, setShowManualCode] = useState(false);
 
   // Autoload token sync
   useEffect(() => {
     setMounted(true);
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (token) {
-      apiGet('/auth/me')
-        .then(() => router.push('/apps'))
+      apiGet("/auth/me")
+        .then(() => router.push("/apps"))
         .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setChecking(false);
         });
     } else {
@@ -66,7 +105,7 @@ export default function LoginPage() {
   // Auto-rotate sidebar features
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveFeature(prev => (prev + 1) % FEATURES.length);
+      setActiveFeature((prev) => (prev + 1) % FEATURES.length);
     }, 5000);
     return () => clearInterval(timer);
   }, []);
@@ -79,13 +118,18 @@ export default function LoginPage() {
     }
 
     const delayDebounceFn = setTimeout(() => {
-      apiGet<{ configured: boolean; samlEntryPoint: string | null; oidcAuthorizationUrl: string | null }>(
-        `/auth/sso/config/${tenantSlug}`
-      )
-        .then(res => {
+      apiGet<{
+        configured: boolean;
+        samlEntryPoint: string | null;
+        oidcAuthorizationUrl: string | null;
+      }>(`/auth/sso/config/${tenantSlug}`)
+        .then((res) => {
           if (res.configured) {
             setIsSsoConfigured(true);
-            setSsoUrls({ saml: res.samlEntryPoint, oidc: res.oidcAuthorizationUrl });
+            setSsoUrls({
+              saml: res.samlEntryPoint,
+              oidc: res.oidcAuthorizationUrl,
+            });
           } else {
             setIsSsoConfigured(false);
           }
@@ -99,7 +143,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || (!password && !isSsoConfigured)) {
-      setError('Please fill in your email address');
+      setError("Please fill in your email address");
       return;
     }
 
@@ -108,7 +152,10 @@ export default function LoginPage() {
 
     try {
       if (forgotPasswordMode) {
-        const response = await apiPost<{ message: string; developerResetLink?: string }>('/auth/forgot-password', {
+        const response = await apiPost<{
+          message: string;
+          developerResetLink?: string;
+        }>("/auth/forgot-password", {
           email,
         });
         setRecoverySuccess(response.message);
@@ -117,15 +164,27 @@ export default function LoginPage() {
         }
       } else if (isSsoConfigured) {
         // Mock SSO integration callback logic
-        const result = await apiPost<{ token: string; user: Record<string, unknown> }>(
-          `/auth/sso/oidc/callback/${tenantSlug}`,
-          { email, firstName: 'SSO', lastName: 'User', code: 'mock-code', redirectUri: window.location.origin }
-        );
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('user', JSON.stringify(result.user));
-        router.push('/apps');
+        const result = await apiPost<{
+          token: string;
+          user: Record<string, unknown>;
+        }>(`/auth/sso/oidc/callback/${tenantSlug}`, {
+          email,
+          firstName: "SSO",
+          lastName: "User",
+          code: "mock-code",
+          redirectUri: window.location.origin,
+        });
+        localStorage.setItem("token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
+        router.push("/apps");
       } else {
-        const data = await apiPost<{ token: string; user: Record<string, unknown>; mfaRequired?: boolean; challengeToken?: string }>('/auth/login', {
+        const data = await apiPost<{
+          token: string;
+          user: Record<string, unknown>;
+          mfaRequired?: boolean;
+          challengeToken?: string;
+          pushSent?: boolean;
+        }>("/auth/login", {
           email,
           password,
           tenantSlug: tenantSlug || undefined,
@@ -133,26 +192,31 @@ export default function LoginPage() {
 
         if (data.mfaRequired) {
           setMfaRequired(true);
-          setMfaChallengeToken(data.challengeToken || '');
+          setMfaChallengeToken(data.challengeToken || "");
+          setPushSent(Boolean(data.pushSent));
+          setPushStatus("pending");
+          setShowManualCode(!data.pushSent);
           setLoading(false);
           return;
         }
 
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-        router.push('/apps');
+        router.push("/apps");
       }
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) {
         setError(err.message);
         // Highlight organization slug field if user needs it
-        if (err.message.includes('Multiple accounts')) {
-          const orgInput = document.getElementById('org-slug-input');
+        if (err.message.includes("Multiple accounts")) {
+          const orgInput = document.getElementById("org-slug-input");
           if (orgInput) orgInput.focus();
         }
       } else {
-        setError('Connection to authentication service failed. Please check if the NestJS server is running.');
+        setError(
+          "Connection to authentication service failed. Please check if the NestJS server is running.",
+        );
       }
     } finally {
       setLoading(false);
@@ -162,7 +226,7 @@ export default function LoginPage() {
   const handleMfaVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mfaCode) {
-      setError('Please enter the 6-digit MFA code');
+      setError("Please enter the 6-digit MFA code");
       return;
     }
 
@@ -170,37 +234,101 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const data = await apiPost<{ token: string; user: Record<string, unknown> }>('/auth/mfa/verify-login', {
+      const data = await apiPost<{
+        token: string;
+        user: Record<string, unknown>;
+      }>("/auth/mfa/verify-login", {
         challengeToken: mfaChallengeToken,
         code: mfaCode,
       });
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      router.push('/apps');
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      router.push("/apps");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid MFA verification code');
+      setError(
+        err instanceof Error ? err.message : "Invalid MFA verification code",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDemoLogin = async (role: 'SUPER_ADMIN' | 'HR_MANAGER' | 'FINANCE_MANAGER' | 'VIEWER') => {
+  // Poll while "Check your phone" is showing; the backend finalizes the
+  // session (and sets the auth cookie) the moment the push gets approved.
+  useEffect(() => {
+    if (!mfaRequired || !pushSent || showManualCode) return;
+    let cancelled = false;
+    let elapsedMs = 0;
+    const intervalMs = 2000;
+    const timeoutMs = 90000;
+
+    const poll = async () => {
+      try {
+        const result = await apiPost<{
+          status: string;
+          token?: string;
+          user?: Record<string, unknown>;
+        }>("/auth/mfa/push/status", { challengeToken: mfaChallengeToken });
+        if (cancelled) return;
+
+        if (result.status === "approved" && result.token) {
+          localStorage.setItem("token", result.token);
+          localStorage.setItem("user", JSON.stringify(result.user));
+          router.push("/apps");
+          return;
+        }
+        if (result.status === "denied") {
+          setPushStatus("denied");
+          setShowManualCode(true);
+          return;
+        }
+        if (result.status === "expired") {
+          setPushStatus("expired");
+          setShowManualCode(true);
+          return;
+        }
+
+        elapsedMs += intervalMs;
+        if (elapsedMs >= timeoutMs) {
+          setPushStatus("timeout");
+          setShowManualCode(true);
+          return;
+        }
+        setTimeout(poll, intervalMs);
+      } catch {
+        if (!cancelled) setTimeout(poll, intervalMs);
+      }
+    };
+
+    const initial = setTimeout(poll, intervalMs);
+    return () => {
+      cancelled = true;
+      clearTimeout(initial);
+    };
+  }, [mfaRequired, pushSent, showManualCode, mfaChallengeToken, router]);
+
+  const handleDemoLogin = async (
+    role: "SUPER_ADMIN" | "HR_MANAGER" | "FINANCE_MANAGER" | "VIEWER",
+  ) => {
     setLoading(true);
     setError(null);
     setShowDemoModal(false);
 
     try {
-      const data = await apiPost<{ token: string; user: Record<string, unknown> }>('/auth/login-demo', {
+      const data = await apiPost<{
+        token: string;
+        user: Record<string, unknown>;
+      }>("/auth/login-demo", {
         role,
       });
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      router.push('/apps');
+      router.push("/apps");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Demo login failed');
+      setError(err instanceof Error ? err.message : "Demo login failed");
       setLoading(false);
     }
   };
@@ -217,8 +345,8 @@ export default function LoginPage() {
     <div className="auth-container">
       {/* Left Panel — Branding & Feature Carousel */}
       <div className="auth-sidebar auth-sidebar-purple">
-        <div className={`auth-sidebar-shape ${styles.s2}`}  />
-        <div className={`auth-sidebar-shape ${styles.s3}`}  />
+        <div className={`auth-sidebar-shape ${styles.s2}`} />
+        <div className={`auth-sidebar-shape ${styles.s3}`} />
 
         <div className="auth-sidebar-content">
           <div className="auth-logo-area">
@@ -231,16 +359,21 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1>Run your entire<br />business from one place.</h1>
+          <h1>
+            Run your entire
+            <br />
+            business from one place.
+          </h1>
           <p>
-            A modular, multi-tenant workspace built for Finance, HR, CRM, Inventory, Manufacturing, and visual app building.
+            A modular, multi-tenant workspace built for Finance, HR, CRM,
+            Inventory, Manufacturing, and visual app building.
           </p>
 
           <div className="auth-sidebar-features">
             {FEATURES.map((feat, i) => (
               <div
                 key={i}
-                className={`auth-sidebar-feature${i === activeFeature ? ' active' : ''}`}
+                className={`auth-sidebar-feature${i === activeFeature ? " active" : ""}`}
                 onClick={() => setActiveFeature(i)}
               >
                 <h4>{feat.title}</h4>
@@ -263,8 +396,22 @@ export default function LoginPage() {
           </div>
 
           <div className="auth-form-header">
-            <h1>{mfaRequired ? 'Security Verification' : forgotPasswordMode ? 'Recover Password' : 'Welcome back'}</h1>
-            <p className={styles.s9}>{mfaRequired ? 'Enter the authenticator code associated with your admin profile.' : forgotPasswordMode ? 'Enter your email address to reset access.' : 'Sign in to access your business operations.'}</p>
+            <h1>
+              {mfaRequired
+                ? "Security Verification"
+                : forgotPasswordMode
+                  ? "Recover Password"
+                  : "Welcome back"}
+            </h1>
+            <p className={styles.s9}>
+              {mfaRequired
+                ? pushSent && !showManualCode
+                  ? "We sent an approval request to your phone."
+                  : "Enter the authenticator code associated with your admin profile."
+                : forgotPasswordMode
+                  ? "Enter your email address to reset access."
+                  : "Sign in to access your business operations."}
+            </p>
           </div>
 
           <div className="auth-card">
@@ -277,41 +424,122 @@ export default function LoginPage() {
 
             {/* MFA INTERCEPT FORM */}
             {mfaRequired ? (
-              <form onSubmit={handleMfaVerify} className={styles.s11}>
-                <div className="auth-field-group">
-                  <label className="auth-label">Authenticator code or recovery code</label>
-                  <div className="auth-input-wrapper">
-                    <Lock size={16} className="auth-input-icon" />
-                    <input
-                      type="text"
-                      required
-                      maxLength={20}
-                      className={`auth-input ${styles.s13}`}
-                      placeholder="123456"
-                      value={mfaCode}
-                      onChange={(e) => setMfaCode(e.target.value)}
-                      autoComplete="one-time-code"
-                      autoFocus
-                    />
+              pushSent && !showManualCode ? (
+                <div className={styles.s11}>
+                  <div className={styles.pushPanel}>
+                    <div className={styles.pushIconRing}>
+                      <Smartphone size={28} />
+                    </div>
+                    <p className={styles.pushTitle}>Check your phone</p>
+                    <p className={styles.pushSubtitle}>
+                      Tap <strong>Approve</strong> on the notification we sent
+                      to your registered device.
+                    </p>
+                    <div className={styles.pushSpinnerRow}>
+                      <Spinner size="sm" />
+                      <span>Waiting for approval…</span>
+                    </div>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowManualCode(true)}
+                    className={styles.useCodeBtn}
+                  >
+                    <KeyRound size={14} /> Didn&apos;t get it? Enter code
+                    manually
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMfaRequired(false);
+                      setPushSent(false);
+                      setMfaCode("");
+                      setError(null);
+                    }}
+                    className={styles.s14}
+                  >
+                    Cancel & Back
+                  </button>
                 </div>
+              ) : (
+                <form onSubmit={handleMfaVerify} className={styles.s11}>
+                  {pushSent &&
+                    (pushStatus === "denied" ||
+                      pushStatus === "expired" ||
+                      pushStatus === "timeout") && (
+                      <div className={styles.pushFallbackNotice}>
+                        {pushStatus === "denied" && (
+                          <>
+                            <X size={14} /> Approval was denied on your device.
+                          </>
+                        )}
+                        {pushStatus === "expired" && (
+                          <>
+                            <AlertCircle size={14} /> The approval request
+                            expired.
+                          </>
+                        )}
+                        {pushStatus === "timeout" && (
+                          <>
+                            <AlertCircle size={14} /> No response from your
+                            device yet.
+                          </>
+                        )}
+                        <span> Enter your code below instead.</span>
+                      </div>
+                    )}
+                  <div className="auth-field-group">
+                    <label className="auth-label">
+                      Authenticator code or recovery code
+                    </label>
+                    <div className="auth-input-wrapper">
+                      <Lock size={16} className="auth-input-icon" />
+                      <input
+                        type="text"
+                        required
+                        maxLength={20}
+                        className={`auth-input ${styles.s13}`}
+                        placeholder="123456"
+                        value={mfaCode}
+                        onChange={(e) => setMfaCode(e.target.value)}
+                        autoComplete="one-time-code"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
 
-                <button type="submit" className="landing-btn-primary auth-btn-submit" disabled={loading}>
-                  {loading ? <><Spinner size="sm" /> Verifying...</> : <>Verify & Access <ChevronRight size={16} /></>}
-                </button>
+                  <button
+                    type="submit"
+                    className="landing-btn-primary auth-btn-submit"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner size="sm" /> Verifying...
+                      </>
+                    ) : (
+                      <>
+                        Verify & Access <ChevronRight size={16} />
+                      </>
+                    )}
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMfaRequired(false);
-                    setMfaCode('');
-                    setError(null);
-                  }}
-                  className={styles.s14}
-                >
-                  Cancel & Back
-                </button>
-              </form>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMfaRequired(false);
+                      setMfaCode("");
+                      setPushSent(false);
+                      setError(null);
+                    }}
+                    className={styles.s14}
+                  >
+                    Cancel & Back
+                  </button>
+                </form>
+              )
             ) : (
               /* REGULAR LOGIN FORM */
               <form onSubmit={handleSubmit} className={styles.s11}>
@@ -323,7 +551,9 @@ export default function LoginPage() {
                     </div>
                     {developerResetLink && (
                       <div className={styles.s17}>
-                        <span className={styles.s18}>[Dev Mode Recovery Link]</span>
+                        <span className={styles.s18}>
+                          [Dev Mode Recovery Link]
+                        </span>
                         <Link href={developerResetLink} className={styles.s44}>
                           Reset Password Directly
                         </Link>
@@ -369,10 +599,9 @@ export default function LoginPage() {
                     <div className="auth-input-wrapper">
                       <Lock size={16} className="auth-input-icon" />
                       <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         required
                         className={`auth-input ${styles.s21}`}
-                        
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -382,9 +611,12 @@ export default function LoginPage() {
                         type="button"
                         className={`password-toggle-btn ${styles.s22}`}
                         onClick={() => setShowPassword(!showPassword)}
-                        
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -393,7 +625,12 @@ export default function LoginPage() {
                 {/* Organization Slug (Optional) — hidden in forgot password mode */}
                 {!forgotPasswordMode && (
                   <div className="auth-field-group">
-                    <label className="auth-label">Organization Slug {isSsoConfigured && <span className={styles.s23}>(SSO Enabled)</span>}</label>
+                    <label className="auth-label">
+                      Organization Slug{" "}
+                      {isSsoConfigured && (
+                        <span className={styles.s23}>(SSO Enabled)</span>
+                      )}
+                    </label>
                     <div className="auth-input-wrapper">
                       <Building size={16} className="auth-input-icon" />
                       <input
@@ -403,13 +640,17 @@ export default function LoginPage() {
                         placeholder="acme"
                         value={tenantSlug}
                         onChange={(e) => setTenantSlug(e.target.value)}
-                        style={{ borderColor: isSsoConfigured ? 'var(--color-success)' : undefined }}
+                        style={{
+                          borderColor: isSsoConfigured
+                            ? "var(--color-success)"
+                            : undefined,
+                        }}
                       />
                     </div>
                     <p className={styles.s24}>
-                      {isSsoConfigured 
-                        ? 'This organization uses Single Sign-On. You will be authenticated via OIDC/SAML.' 
-                        : 'Required if your email address is registered under multiple organizations.'}
+                      {isSsoConfigured
+                        ? "This organization uses Single Sign-On. You will be authenticated via OIDC/SAML."
+                        : "Required if your email address is registered under multiple organizations."}
                     </p>
                   </div>
                 )}
@@ -435,16 +676,32 @@ export default function LoginPage() {
                   type="submit"
                   className="landing-btn-primary auth-btn-submit"
                   disabled={loading}
-                  style={{ background: isSsoConfigured ? 'var(--color-success)' : undefined, borderColor: isSsoConfigured ? 'var(--color-success)' : undefined }}
+                  style={{
+                    background: isSsoConfigured
+                      ? "var(--color-success)"
+                      : undefined,
+                    borderColor: isSsoConfigured
+                      ? "var(--color-success)"
+                      : undefined,
+                  }}
                 >
                   {loading ? (
-                    <><Spinner size="sm" /> Processing...</>
+                    <>
+                      <Spinner size="sm" /> Processing...
+                    </>
                   ) : forgotPasswordMode ? (
-                    <>Send Recovery Link <ChevronRight size={16} /></>
+                    <>
+                      Send Recovery Link <ChevronRight size={16} />
+                    </>
                   ) : isSsoConfigured ? (
-                    <>Sign In with SSO <Sparkles size={14} className={styles.s42} /></>
+                    <>
+                      Sign In with SSO{" "}
+                      <Sparkles size={14} className={styles.s42} />
+                    </>
                   ) : (
-                    <>Sign In <ChevronRight size={16} /></>
+                    <>
+                      Sign In <ChevronRight size={16} />
+                    </>
                   )}
                 </button>
 
@@ -474,12 +731,42 @@ export default function LoginPage() {
                 </div>
 
                 <div className="auth-social-grid">
-                  <button type="button" className="auth-social-btn" onClick={() => setShowDemoModal(true)}>
-                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                  <button
+                    type="button"
+                    className="auth-social-btn"
+                    onClick={() => setShowDemoModal(true)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24">
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
+                      />
+                    </svg>
                     Google Demo
                   </button>
-                  <button type="button" className="auth-social-btn" onClick={() => setShowDemoModal(true)}>
-                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M11.4 24H0V12.6L4.8 7.8h6.6v16.2zM24 24H12.6V7.8H24V24zM11.4 6.6H4.8L0 1.8V0h11.4v6.6zM24 6.6H12.6V0H24v6.6z" fill="#00A4EF"/></svg>
+                  <button
+                    type="button"
+                    className="auth-social-btn"
+                    onClick={() => setShowDemoModal(true)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24">
+                      <path
+                        d="M11.4 24H0V12.6L4.8 7.8h6.6v16.2zM24 24H12.6V7.8H24V24zM11.4 6.6H4.8L0 1.8V0h11.4v6.6zM24 6.6H12.6V0H24v6.6z"
+                        fill="#00A4EF"
+                      />
+                    </svg>
                     Microsoft Demo
                   </button>
                 </div>
@@ -488,7 +775,7 @@ export default function LoginPage() {
           </div>
 
           <p className={styles.s29}>
-            Don&apos;t have an account?{' '}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className={styles.s45}>
               Register Organization
             </Link>
@@ -503,23 +790,43 @@ export default function LoginPage() {
             <div>
               <h2 className={styles.s32}>Login as Developer Demo User</h2>
               <p className={styles.s33}>
-                Select a pre-seeded organizational persona to log in and inspect pre-configured module access keys JIT.
+                Select a pre-seeded organizational persona to log in and inspect
+                pre-configured module access keys JIT.
               </p>
             </div>
 
             <div className={styles.s34}>
               {[
-                { key: 'SUPER_ADMIN', name: 'Super Admin', email: 'admin@unerp.dev', desc: 'Full administration permission keys (*).' },
-                { key: 'HR_MANAGER', name: 'HR Manager', email: 'hr-demo@unerp.dev', desc: 'Access to employee profiles and departments.' },
-                { key: 'FINANCE_MANAGER', name: 'Finance Manager', email: 'finance-demo@unerp.dev', desc: 'Access to general ledger, bills, and payments.' },
-                { key: 'VIEWER', name: 'Standard Viewer', email: 'viewer-demo@unerp.dev', desc: 'Read-only access to core directories.' }
-              ].map(role => (
+                {
+                  key: "SUPER_ADMIN",
+                  name: "Super Admin",
+                  email: "admin@unerp.dev",
+                  desc: "Full administration permission keys (*).",
+                },
+                {
+                  key: "HR_MANAGER",
+                  name: "HR Manager",
+                  email: "hr-demo@unerp.dev",
+                  desc: "Access to employee profiles and departments.",
+                },
+                {
+                  key: "FINANCE_MANAGER",
+                  name: "Finance Manager",
+                  email: "finance-demo@unerp.dev",
+                  desc: "Access to general ledger, bills, and payments.",
+                },
+                {
+                  key: "VIEWER",
+                  name: "Standard Viewer",
+                  email: "viewer-demo@unerp.dev",
+                  desc: "Read-only access to core directories.",
+                },
+              ].map((role) => (
                 <button
                   key={role.key}
                   type="button"
                   onClick={() => handleDemoLogin(role.key as any)}
                   className={`demo-persona-select-btn ${styles.s35}`}
-                  
                 >
                   <div className={styles.s36}>
                     <span className={styles.s37}>{role.name}</span>

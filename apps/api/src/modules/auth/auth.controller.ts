@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Param,
   Body,
   UseGuards,
   UseInterceptors,
@@ -315,5 +316,125 @@ export class AuthController {
     );
     res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
     return result;
+  }
+
+  @ApiOperation({
+    summary: "Register this device for MFA push-approval prompts",
+  })
+  @Permissions("auth.update")
+  @Post("push/subscribe")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  @HttpCode(HttpStatus.OK)
+  async subscribeToPush(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(
+      z.object({
+        subscription: z.object({
+          endpoint: z.string().url(),
+          keys: z.object({ p256dh: z.string(), auth: z.string() }),
+        }),
+        label: z.string().max(100).optional(),
+      }),
+    )
+    body: {
+      subscription: {
+        endpoint: string;
+        keys: { p256dh: string; auth: string };
+      };
+      label?: string;
+    },
+  ) {
+    return this.authService.subscribeToPush(
+      req.user.userId,
+      req.user.tenantId,
+      body.subscription,
+      body.label,
+    );
+  }
+
+  @ApiOperation({
+    summary: "Stop sending push-approval prompts to this device",
+  })
+  @Permissions("auth.update")
+  @Post("push/unsubscribe")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  @HttpCode(HttpStatus.OK)
+  async unsubscribeFromPush(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ endpoint: z.string().url() }))
+    body: { endpoint: string },
+  ) {
+    return this.authService.unsubscribeFromPush(
+      req.user.userId,
+      req.user.tenantId,
+      body.endpoint,
+    );
+  }
+
+  @ApiOperation({ summary: "List devices registered for MFA push-approval" })
+  @Permissions("auth.read")
+  @Get("push/devices")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  async listPushDevices(@Req() req: AuthenticatedRequest) {
+    return this.authService.listPushSubscriptions(
+      req.user.userId,
+      req.user.tenantId,
+    );
+  }
+
+  @ApiOperation({ summary: "Remove a registered push-approval device" })
+  @Permissions("auth.update")
+  @Post("push/devices/:id/remove")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  @HttpCode(HttpStatus.OK)
+  async removePushDevice(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.authService.removePushDeviceById(
+      req.user.userId,
+      req.user.tenantId,
+      id,
+    );
+  }
+
+  @ApiOperation({ summary: "Poll a pending login's push-approval status" })
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
+  @Post("mfa/push/status")
+  @HttpCode(HttpStatus.OK)
+  async mfaPushStatus(
+    @ZodBody(z.object({ challengeToken: z.string() }))
+    body: { challengeToken: string },
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.getMfaPushStatus(
+      body.challengeToken,
+      sessionContext(req),
+    );
+    if (result.status === "approved" && "token" in result) {
+      res.cookie(AUTH_COOKIE, result.token, COOKIE_OPTIONS);
+    }
+    return result;
+  }
+
+  @ApiOperation({
+    summary: "Approve or deny a push-approval login request from this device",
+  })
+  @Permissions("auth.update")
+  @Post("mfa/push/respond")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  @HttpCode(HttpStatus.OK)
+  async respondToMfaPush(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.object({ challengeToken: z.string(), approve: z.boolean() }))
+    body: { challengeToken: string; approve: boolean },
+  ) {
+    return this.authService.respondToMfaPushChallenge(
+      req.user.userId,
+      req.user.tenantId,
+      body.challengeToken,
+      body.approve,
+    );
   }
 }

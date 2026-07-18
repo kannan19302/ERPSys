@@ -11,8 +11,9 @@ import {
   LogOut,
   Loader2,
   LayoutGrid,
-  Circle,
   X,
+  Bell,
+  Trash2,
 } from "lucide-react";
 import { useTheme } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
@@ -52,6 +53,23 @@ const PRESENCE_LABELS: Record<PresenceStatus, string> = {
   IN_MEETING: "In a meeting",
   FOCUSING: "Focusing",
 };
+
+const PRESENCE_COLORS: Record<PresenceStatus, string> = {
+  ACTIVE: "#10b981",
+  IN_MEETING: "#10b981",
+  FOCUSING: "#10b981",
+  AWAY: "#f59e0b",
+  BRB: "#f59e0b",
+  DND: "#ef4444",
+  OOO: "#94a3b8",
+  INACTIVE: "#94a3b8",
+};
+
+interface PushDevice {
+  id: string;
+  label: string | null;
+  createdAt: string;
+}
 
 interface SessionRow {
   id: string;
@@ -115,6 +133,13 @@ export default function ProfilePage() {
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [revoking, setRevoking] = useState(false);
 
+  const [pushDevices, setPushDevices] = useState<PushDevice[]>([]);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushSubscribing, setPushSubscribing] = useState(false);
+  const [thisDeviceEndpoint, setThisDeviceEndpoint] = useState<string | null>(
+    null,
+  );
+
   const fetchPresence = async (userId: string) => {
     try {
       const all = await client.get<
@@ -143,6 +168,119 @@ export default function ProfilePage() {
       setSessions([]);
     } finally {
       setSessionsLoading(false);
+    }
+  };
+
+  const fetchPushDevices = async () => {
+    try {
+      const rows = await client.get<PushDevice[]>("/auth/push/devices");
+      setPushDevices(rows);
+    } catch {
+      setPushDevices([]);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window)
+    ) {
+      return;
+    }
+    setPushSupported(true);
+    navigator.serviceWorker
+      .getRegistration("/mfa-push-sw.js")
+      .then((reg) => reg?.pushManager.getSubscription())
+      .then((sub) => setThisDeviceEndpoint(sub?.endpoint ?? null))
+      .catch(() => {});
+  }, []);
+
+  const urlBase64ToUint8Array = (base64: string) => {
+    const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+    const raw = window.atob(
+      (base64 + padding).replace(/-/g, "+").replace(/_/g, "/"),
+    );
+    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+  };
+
+  const enablePushOnThisDevice = async () => {
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!vapidKey) {
+      setMessage({
+        type: "error",
+        text: "Push approval isn't configured on this server.",
+      });
+      return;
+    }
+    setPushSubscribing(true);
+    setMessage(null);
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        setMessage({
+          type: "error",
+          text: "Notification permission was denied.",
+        });
+        return;
+      }
+      const registration =
+        await navigator.serviceWorker.register("/mfa-push-sw.js");
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+      const raw = subscription.toJSON() as {
+        endpoint?: string;
+        keys?: { p256dh?: string; auth?: string };
+      };
+      if (!raw.endpoint || !raw.keys?.p256dh || !raw.keys?.auth) {
+        throw new Error("Browser did not return a usable subscription.");
+      }
+      const ua = navigator.userAgent;
+      const label = /chrome/i.test(ua)
+        ? "Chrome"
+        : /firefox/i.test(ua)
+          ? "Firefox"
+          : /safari/i.test(ua)
+            ? "Safari"
+            : "This browser";
+      await client.post("/auth/push/subscribe", {
+        subscription: {
+          endpoint: raw.endpoint,
+          keys: { p256dh: raw.keys.p256dh, auth: raw.keys.auth },
+        },
+        label,
+      });
+      setThisDeviceEndpoint(raw.endpoint);
+      setMessage({
+        type: "success",
+        text: "Push approval enabled on this device.",
+      });
+      fetchPushDevices();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setMessage({ type: "error", text: msg });
+    } finally {
+      setPushSubscribing(false);
+    }
+  };
+
+  const removePushDevice = async (deviceId: string) => {
+    try {
+      await client.post(`/auth/push/devices/${deviceId}/remove`);
+      // If we just removed this browser's own subscription, also clear it
+      // locally so the "Enable push approval" button reappears correctly.
+      const registration =
+        await navigator.serviceWorker.getRegistration("/mfa-push-sw.js");
+      const sub = await registration?.pushManager.getSubscription();
+      if (sub && sub.endpoint === thisDeviceEndpoint) {
+        await sub.unsubscribe();
+        setThisDeviceEndpoint(null);
+      }
+      await fetchPushDevices();
+    } catch {
+      setMessage({ type: "error", text: "Could not remove that device." });
     }
   };
 
@@ -275,6 +413,7 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchProfile();
     fetchSessions();
+    fetchPushDevices();
   }, [client]);
 
   const handleInfoSubmit = async (updatedFields?: Partial<typeof formData>) => {
@@ -442,10 +581,17 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="ui-form-group">
-                <label className="ui-hstack-2">
-                  <Circle size={14} /> Status
-                </label>
+              <div className={styles.statusPanel}>
+                <div className={styles.statusPanelHeader}>
+                  <span
+                    className={styles.statusDotPreview}
+                    style={{ background: PRESENCE_COLORS[presence] }}
+                  />
+                  Status
+                  {savingPresence && (
+                    <Loader2 size={12} className="animate-spin text-warning" />
+                  )}
+                </div>
                 <div className="ui-grid-2">
                   <select
                     className="ui-input"
@@ -479,7 +625,7 @@ export default function ProfilePage() {
                     <option value="NOBODY">Appear offline</option>
                   </select>
                 </div>
-                <span className="ui-text-xs-muted mt-1">
+                <span className="ui-text-xs-muted mt-2 block">
                   Manually set your status and choose who in the organization
                   can see it.
                 </span>
@@ -697,13 +843,7 @@ export default function ProfilePage() {
                 </div>
 
                 {mfaStep === "enrolling" && mfaQrCode && (
-                  <div
-                    className="ui-stack-2 border-border p-3"
-                    style={{
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                    }}
-                  >
+                  <div className={`ui-stack-2 ${styles.subPanel}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={mfaQrCode}
@@ -748,13 +888,7 @@ export default function ProfilePage() {
                 )}
 
                 {mfaStep === "disabling" && (
-                  <div
-                    className="ui-stack-2 border-border p-3"
-                    style={{
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                    }}
-                  >
+                  <div className={`ui-stack-2 ${styles.subPanel}`}>
                     <p className="ui-text-xs-muted">
                       Enter a current 6-digit code to disable 2FA.
                     </p>
@@ -787,13 +921,7 @@ export default function ProfilePage() {
                 )}
 
                 {mfaRecoveryCodes && (
-                  <div
-                    className="ui-stack-2 border-border p-3"
-                    style={{
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                    }}
-                  >
+                  <div className={`ui-stack-2 ${styles.subPanel}`}>
                     <p className="ui-text-xs-muted">
                       Save these one-time recovery codes — each can be used once
                       if you lose access to your authenticator.
@@ -813,6 +941,74 @@ export default function ProfilePage() {
                       Done
                     </button>
                   </div>
+                )}
+
+                {user?.mfaEnabled && (
+                  <>
+                    <hr className="border-border my-2" />
+                    <div className={styles.sectionHeader}>
+                      <div>
+                        <h4 className={styles.s9}>
+                          <Bell size={16} /> Push Approval
+                        </h4>
+                        <p className="ui-text-xs-muted mt-1">
+                          Skip typing a code — approve sign-ins with a tap on a
+                          registered device instead. Manual code entry always
+                          stays available as a fallback.
+                        </p>
+                      </div>
+                      {pushSupported && !thisDeviceEndpoint && (
+                        <button
+                          className={styles.s8}
+                          disabled={pushSubscribing}
+                          onClick={enablePushOnThisDevice}
+                        >
+                          {pushSubscribing
+                            ? "Enabling..."
+                            : "Enable on this device"}
+                        </button>
+                      )}
+                    </div>
+
+                    {!pushSupported && (
+                      <p className="ui-text-xs-muted">
+                        This browser doesn't support push notifications — code
+                        entry will always be used here.
+                      </p>
+                    )}
+
+                    {thisDeviceEndpoint && (
+                      <p className={styles.deviceRowMeta}>
+                        <Check size={12} className="text-success" /> Push
+                        approval is enabled on this device.
+                      </p>
+                    )}
+
+                    {pushDevices.length > 0 && (
+                      <div className="ui-stack-2">
+                        {pushDevices.map((d) => (
+                          <div key={d.id} className={styles.deviceRow}>
+                            <div className={styles.deviceRowInfo}>
+                              <span className={styles.deviceRowLabel}>
+                                {d.label || "Unnamed device"}
+                              </span>
+                              <span className={styles.deviceRowMeta}>
+                                Registered{" "}
+                                {new Date(d.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <button
+                              className={styles.removeDeviceBtn}
+                              title="Remove device"
+                              onClick={() => removePushDevice(d.id)}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

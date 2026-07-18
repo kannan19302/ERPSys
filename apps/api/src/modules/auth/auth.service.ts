@@ -5,7 +5,8 @@ import {
   NotFoundException,
   Logger,
 } from "@nestjs/common";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
+import * as webPush from "web-push";
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { UserRole, Role } from "@prisma/client";
 import {
@@ -40,6 +41,23 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000;
 /** How long the between-steps MFA challenge token is valid. */
 const MFA_CHALLENGE_TTL = "5m";
+/** How long a push-approval request stays pending before the login page falls back to a manual code. */
+const MFA_PUSH_TTL_MS = 2 * 60 * 1000;
+
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webPush.setVapidDetails(
+    process.env.VAPID_SUBJECT || "mailto:admin@unerp.dev",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY,
+  );
+}
+/** Push-approval is a no-op (silently skipped, code entry still works) until VAPID keys are configured. */
+const PUSH_CONFIGURED = Boolean(
+  process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
+);
+/** Ties a stored challenge row to its JWT without persisting the bearer token itself. */
+const hashChallengeToken = (token: string) =>
+  createHash("sha256").update(token).digest("hex");
 /** How long a password-reset token is valid. */
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 /** Session lifetime; matches the JWT's default 1-day expiry. */
@@ -439,9 +457,17 @@ export class AuthService {
         { userId: user.id, tenantId: user.tenantId },
         MFA_CHALLENGE_TTL,
       );
+      // Best-effort — a user with no registered device (or push not configured)
+      // just falls back to typing the 6-digit code, which always still works.
+      const pushSent = await this.sendMfaPushChallenge(
+        challengeToken,
+        user.id,
+        user.tenantId,
+      ).catch(() => false);
       return {
         mfaRequired: true,
         challengeToken,
+        pushSent,
         message: "MFA authentication required.",
       } as const;
     }
@@ -1010,5 +1036,233 @@ export class AuthService {
       data: { avatar: dataUri },
     });
     return { avatar: updated.avatar };
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     MFA push-approval (Web Push) — an "Approve on your phone"
+     alternative to typing a 6-digit code every login. The code
+     entry path always keeps working; push is a convenience.
+     ───────────────────────────────────────────────────────── */
+
+  /** Registers a device (browser/PWA) to receive push-approval prompts. */
+  async subscribeToPush(
+    userId: string,
+    tenantId: string,
+    sub: { endpoint: string; keys: { p256dh: string; auth: string } },
+    label?: string,
+  ) {
+    return runWithTenantSession({ tenantId, userId }, () =>
+      prisma.pushSubscription.upsert({
+        where: { endpoint: sub.endpoint },
+        create: {
+          tenantId,
+          userId,
+          endpoint: sub.endpoint,
+          p256dh: sub.keys.p256dh,
+          auth: sub.keys.auth,
+          label: label ?? null,
+        },
+        update: {
+          p256dh: sub.keys.p256dh,
+          auth: sub.keys.auth,
+          label: label ?? null,
+        },
+      }),
+    );
+  }
+
+  async unsubscribeFromPush(
+    userId: string,
+    tenantId: string,
+    endpoint: string,
+  ) {
+    await runWithTenantSession({ tenantId, userId }, () =>
+      prisma.pushSubscription.deleteMany({
+        where: { userId, tenantId, endpoint },
+      }),
+    );
+    return { message: "Device removed." };
+  }
+
+  /** Removes any of the user's registered push devices by id (profile "Devices" list). */
+  async removePushDeviceById(userId: string, tenantId: string, id: string) {
+    await runWithTenantSession({ tenantId, userId }, () =>
+      prisma.pushSubscription.deleteMany({ where: { userId, tenantId, id } }),
+    );
+    return { message: "Device removed." };
+  }
+
+  async listPushSubscriptions(userId: string, tenantId: string) {
+    return runWithTenantSession({ tenantId, userId }, () =>
+      prisma.pushSubscription.findMany({
+        where: { userId, tenantId },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, label: true, createdAt: true },
+      }),
+    );
+  }
+
+  /**
+   * Fires an "Approve this sign-in?" push to every device the user has
+   * registered. Returns whether anything was actually sent — the login
+   * page uses this to decide whether to lead with "check your phone" or
+   * go straight to the manual-code form.
+   */
+  private async sendMfaPushChallenge(
+    challengeToken: string,
+    userId: string,
+    tenantId: string,
+  ): Promise<boolean> {
+    if (!PUSH_CONFIGURED) return false;
+
+    return runWithTenantSession({ tenantId, userId }, async () => {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId, tenantId },
+      });
+      if (subscriptions.length === 0) return false;
+
+      await prisma.mfaPushChallenge.create({
+        data: {
+          tenantId,
+          userId,
+          token: hashChallengeToken(challengeToken),
+          status: "PENDING",
+          expiresAt: new Date(Date.now() + MFA_PUSH_TTL_MS),
+        },
+      });
+
+      const payload = JSON.stringify({
+        type: "mfa-approval",
+        title: "Approve sign-in?",
+        body: "Someone is signing in to your UniERP account. Tap to approve or deny.",
+        challengeToken,
+      });
+
+      const results = await Promise.allSettled(
+        subscriptions.map((s) =>
+          webPush.sendNotification(
+            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+            payload,
+          ),
+        ),
+      );
+
+      // A 404/410 means the browser unregistered that endpoint — stop targeting it.
+      await Promise.all(
+        results.map((r, i) => {
+          if (r.status !== "rejected") return Promise.resolve();
+          const statusCode = (r.reason as { statusCode?: number })?.statusCode;
+          if (statusCode !== 404 && statusCode !== 410) {
+            this.logger.warn(`MFA push delivery failed: ${r.reason}`);
+            return Promise.resolve();
+          }
+          const sub = subscriptions[i];
+          if (!sub) return Promise.resolve();
+          return prisma.pushSubscription
+            .delete({ where: { id: sub.id } })
+            .catch(() => undefined);
+        }),
+      );
+
+      return true;
+    });
+  }
+
+  /**
+   * Polled by the login page while "Check your phone" is showing. Once
+   * approved, finalizes the login exactly like a correct 6-digit code would.
+   */
+  async getMfaPushStatus(challengeToken: string, context?: SessionContext) {
+    const payload = verifyTypedToken<{ userId: string; tenantId: string }>(
+      challengeToken,
+      TOKEN_TYPE.MFA_CHALLENGE,
+    );
+    if (!payload?.userId) {
+      throw new UnauthorizedException(
+        "MFA session expired. Please sign in again.",
+      );
+    }
+
+    return runWithTenantSession(
+      { tenantId: payload.tenantId, userId: payload.userId },
+      async () => {
+        const challenge = await prisma.mfaPushChallenge.findUnique({
+          where: { token: hashChallengeToken(challengeToken) },
+        });
+        if (!challenge) return { status: "not_sent" as const };
+
+        if (
+          challenge.status === "PENDING" &&
+          challenge.expiresAt < new Date()
+        ) {
+          await prisma.mfaPushChallenge.update({
+            where: { id: challenge.id },
+            data: { status: "EXPIRED" },
+          });
+          return { status: "expired" as const };
+        }
+
+        if (challenge.status === "DENIED") return { status: "denied" as const };
+        if (challenge.status === "EXPIRED")
+          return { status: "expired" as const };
+        if (challenge.status !== "APPROVED")
+          return { status: "pending" as const };
+
+        const user = await prisma.user.findUnique({
+          where: { id: payload.userId },
+          include: { tenant: true },
+        });
+        if (!user) throw new UnauthorizedException("Account no longer exists.");
+
+        const session = await this.issueSession(user, context);
+        return { status: "approved" as const, ...session };
+      },
+    );
+  }
+
+  /**
+   * Called from the device that *received* the push (already has its own
+   * valid session) to approve or deny somebody else's pending login.
+   */
+  async respondToMfaPushChallenge(
+    approvingUserId: string,
+    approvingTenantId: string,
+    challengeToken: string,
+    approve: boolean,
+  ) {
+    const payload = verifyTypedToken<{ userId: string; tenantId: string }>(
+      challengeToken,
+      TOKEN_TYPE.MFA_CHALLENGE,
+    );
+    if (
+      !payload?.userId ||
+      payload.userId !== approvingUserId ||
+      payload.tenantId !== approvingTenantId
+    ) {
+      throw new UnauthorizedException(
+        "This approval request does not belong to you.",
+      );
+    }
+
+    return runWithTenantSession(
+      { tenantId: approvingTenantId, userId: approvingUserId },
+      async () => {
+        const challenge = await prisma.mfaPushChallenge.findUnique({
+          where: { token: hashChallengeToken(challengeToken) },
+        });
+        if (
+          !challenge ||
+          challenge.status !== "PENDING" ||
+          challenge.expiresAt < new Date()
+        ) {
+          throw new BadRequestException("This approval request has expired.");
+        }
+        await prisma.mfaPushChallenge.update({
+          where: { id: challenge.id },
+          data: { status: approve ? "APPROVED" : "DENIED" },
+        });
+        return { message: approve ? "Sign-in approved." : "Sign-in denied." };
+      },
+    );
   }
 }

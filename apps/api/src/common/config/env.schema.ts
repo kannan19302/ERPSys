@@ -87,6 +87,22 @@ export const envSchema = z.object({
     .describe(
       "Extension-gateway service JWT secret (out-of-process industry apps)",
     ),
+  VAPID_PUBLIC_KEY: z
+    .string()
+    .optional()
+    .describe(
+      "Web Push VAPID public key — generate: node -e \"console.log(require('web-push').generateVAPIDKeys())\"",
+    ),
+  VAPID_PRIVATE_KEY: z
+    .string()
+    .optional()
+    .describe(
+      "Web Push VAPID private key; MFA push-approval is disabled when unset",
+    ),
+  VAPID_SUBJECT: z
+    .string()
+    .default("mailto:admin@unerp.dev")
+    .describe("Contact URI (mailto: or https:) sent with VAPID push requests"),
 
   // ── File storage (S3 / MinIO) ──────────────────────────────────────────
   S3_ENDPOINT: z

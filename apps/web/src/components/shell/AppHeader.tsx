@@ -185,6 +185,7 @@ function ThemeMenu({ iconBtnStyle }: { iconBtnStyle: string }) {
           </p>
           {densities.map((d) => {
             const info = DENSITY_INFO[d];
+            if (!info) return null;
             const active = density === d;
             return (
               <button
