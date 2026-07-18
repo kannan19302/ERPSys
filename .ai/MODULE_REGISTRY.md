@@ -120,7 +120,7 @@
 
 - **DEV cycles completed:** 20
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 0 (next checkpoint after cycle 20 is a mandatory harden)
+- **Cycles until mandatory harden:** 10 (next checkpoint after cycle 30)
 - **Current program phase:** M — Module strengthening (Foundation SEALED v1.0 on 2026-07-18)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -146,6 +146,7 @@
 | 18 | 2026-07-18 | DEV | F | Foundation SEALED | All 11 foundation roadmap conditions met. Built transactional outbox + processor (Track B); async storefront checkout via outbox (Track D). | see CHANGELOG 2026-07-18 cycle-18 entry |
 | 19 | 2026-07-18 | DEV | M | Module Feature Enhancements (700+) | Built 5 deep controller extensions for advanced-finance, advanced-hr, crm, sales, and procurement to exceed 700 features. | see CHANGELOG 2026-07-18 cycle-19 entry |
 | 20 | 2026-07-18 | DEV | M | Cycle Ledger Sync & Test Hardening | Synchronized missing cycles in ledger; fixed two decomposed inventory QA service tests. | see CHANGELOG 2026-07-18 cycle-20 entry |
+| — | 2026-07-18 | QA (mandatory) | M | HARDEN checkpoint after cycle 20 | SSRF protection implemented for link-preview endpoint; added tests + utility; typecheck + tests passing. | see CHANGELOG 2026-07-18 HARDEN-2 entry |
 
 ## Collab Board — Multi-Agent Sync
 
@@ -216,6 +217,7 @@ that closed it out. Never rotate mid-cycle; never rotate without all five.
 | claude-code (this session)        | 2026-07-18       | **Phase F / Track G.7** — Per-tenant rate limiting: `TenantThrottlerGuard`, `RedisThrottlerStorage`, plan-based tiers, 10 tests                                                                                                                                                                                                                                                                                               | main                     | 🟢 COMPLETED   |
 | claude-code (this session)        | 2026-07-18       | **Phase F / Track E** — Re-platform blockchain module on the transactional outbox. See CHANGELOG 2026-07-18 track-e entry.                                                                                                                                                                                                                                                                                                   | main                     | 🟢 COMPLETED   |
 | antigravity (this session)        | 2026-07-18       | **Cycle 20** — Cycle Ledger Sync & Test Hardening: synchronized ledger, resolved 2 failing inventory QA tests.                                                                                                                                                                                                                                                                                                               | main                     | 🟢 COMPLETED   |
+| antigravity (this session)        | 2026-07-18       | **Cycle 21 (QA flow)** — SSRF protection on link-preview: added safety validation utility and tests, verified security parameters.                                                                                                                                                                                                                                                                                            | main                     | 🟢 COMPLETED   |
 
 ### 2. Up Next (unclaimed work, pick from the top)
 

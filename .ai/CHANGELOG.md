@@ -8,6 +8,15 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] HARDEN-2 — Cycle 20 Mandatory QA Hardening (SSRF Protection)
+
+**Scope**: Implemented Server-Side Request Forgery (SSRF) protection on the `getLinkPreview` endpoint in the communication module.
+
+- **`communication-ssrf.util.ts`**: Created utility function `isSafeUrl` that parses URLs, resolves hosts to IP addresses via DNS, and validates that they belong to the public Internet space, blocking private/loopback/multicast address spaces.
+- **`communication.service.ts`**: Integrated `isSafeUrl` validation in `getLinkPreview` to prevent server-side request forgery.
+- **`communication-ssrf.spec.ts`**: Added comprehensive unit tests asserting correct classification of safe and unsafe hostnames/IPs.
+- **`MODULE_REGISTRY.md`**: Updated the Cycle Ledger for the mandatory QA hardening cycle and set next checkpoint to 10 cycles.
+
 ## [2026-07-18] CYCLE 20 — Cycle Ledger Sync & Test Hardening
 
 **Scope**: Synchronized the Cycle Ledger in the module registry with completed development cycles 16-19, and resolved test failures in the Inventory QA service.

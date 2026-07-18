@@ -3,6 +3,7 @@ import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
 import { DocumentStorageClient } from '../../common/integrations/document-storage-client';
 import { RealtimeClient } from '../../common/integrations/realtime-client';
+import { isSafeUrl } from './communication-ssrf.util';
 
 export type Presence = 'ACTIVE' | 'AWAY' | 'BRB' | 'DND' | 'OOO' | 'INACTIVE' | 'IN_MEETING' | 'FOCUSING';
 export type ChannelMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -947,6 +948,10 @@ export class CommunicationService {
 
     if (this.previewCache.has(cleanUrl)) {
       return this.previewCache.get(cleanUrl);
+    }
+
+    if (!(await isSafeUrl(cleanUrl))) {
+      throw new BadRequestException('Access to the requested URL is restricted.');
     }
 
     try {
