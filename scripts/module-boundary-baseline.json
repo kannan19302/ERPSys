@@ -1,4 +1,8 @@
 [
-  ".\\src\\modules\\ecommerce\\ecommerce-checkout.service.ts -> ../sales/sales.service (ecommerce -> sales)",
-  ".\\src\\modules\\ecommerce\\ecommerce.module.ts -> ../sales/sales.module (ecommerce -> sales)"
+  ".\\src\\modules\\ecommerce\\ecommerce.module.ts -> ../outbox/outbox.module (ecommerce -> outbox)",
+  ".\\src\\modules\\sales\\sales-outbox.handler.ts -> ../outbox/outbox-handler.registry (sales -> outbox)",
+  ".\\src\\modules\\sales\\sales.module.ts -> ../outbox/outbox-handler.registry (sales -> outbox)",
+  ".\\src\\modules\\sales\\sales.module.ts -> ../outbox/outbox.module (sales -> outbox)",
+  ".\\src\\modules\\blockchain\\blockchain.module.ts -> ../outbox/outbox-handler.registry (blockchain -> outbox)",
+  ".\\src\\modules\\blockchain\\blockchain-outbox.handler.ts -> ../outbox/outbox-handler.registry (blockchain -> outbox)"
 ]

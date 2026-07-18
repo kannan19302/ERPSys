@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { SalesModule } from '../sales/sales.module';
+import { OutboxModule } from '../outbox/outbox.module';
 import { EcommerceAdminController } from './ecommerce-admin.controller';
 import { EcommerceAdminService } from './ecommerce-admin.service';
 import { EcommercePublicController } from './ecommerce-public.controller';
@@ -11,9 +11,14 @@ import { StripePaymentGatewayService } from './payments/stripe-payment-gateway.s
 /**
  * E-Commerce Storefront module (module #33). See
  * .ai/ECOMMERCE_MODULE_REQUIREMENTS.md and .ai/DATA_MODEL.md Section 3.4.
+ *
+ * Track D (#22): The synchronous SalesService import has been removed.  The
+ * checkout flow now writes a `StorefrontCheckoutState` row and an outbox
+ * event (`ecommerce.checkout.completed`) inside a single transaction.  The
+ * Sales consumer handler processes the event asynchronously.
  */
 @Module({
-  imports: [SalesModule],
+  imports: [OutboxModule],
   controllers: [EcommerceAdminController, EcommercePublicController],
   providers: [
     EcommerceAdminService,

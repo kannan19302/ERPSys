@@ -58,11 +58,11 @@ model Tenant {
 }
 
 model TenantLifecycleEvent {
-  id            String   @id @default(uuid()) @db.Uuid
-  tenantId      String   @db.Uuid
+  id            String   @id @default(cuid())
+  tenantId      String
   eventType     String   // EXPORT, SUSPEND, UNSUSPEND, OFFBOARD, CANCEL_OFFBOARD, PURGE
   status        String   // PENDING, COMPLETED, FAILED
-  initiatedBy   String?  @db.Uuid // User ID or "system"
+  initiatedBy   String?  // User ID or "system"
   retentionDays Int?     @default(90)
   payload       Json?    @db.JsonB
   errorMessage  String?  @db.Text
@@ -9630,6 +9630,29 @@ model StorefrontOrderPayment {
   @@map("storefront_order_payments")
 }
 
+// ════════════════════════════════════════════════
+// STOREFRONT CHECKOUT STATE (Track D.1 — async outbox-based checkout)
+// Tracks the lifecycle of an async checkout so the frontend can poll for
+// order completion after the ecommerce.checkout.completed outbox event is
+// processed by the Sales consumer handler.
+// ════════════════════════════════════════════════
+
+model StorefrontCheckoutState {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  storefrontSlug String   @map("storefront_slug")
+  cartId         String   @map("cart_id")
+  status         String   @default("CHECKOUT_INITIATED") // CHECKOUT_INITIATED, ORDER_CREATING, ORDER_COMPLETED, ORDER_FAILED
+  salesOrderId   String?  @map("sales_order_id")
+  errorMessage   String?  @map("error_message")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, cartId])
+  @@index([tenantId, status])
+  @@map("storefront_checkout_states")
+}
+
 // ==========================================
 // FIXED ASSETS MODULE
 // ==========================================
@@ -15374,6 +15397,24 @@ model BlockchainVerification {
   @@index([tenantId, entityType, entityId])
   @@index([tenantId, result])
   @@map("blockchain_verifications")
+}
+
+/// Durable checkpoint for blockchain event listener — persists the last-processed
+/// block number per (channel, chaincode) so the listener resumes from the correct
+/// position on restart instead of replaying from genesis.
+model BlockchainSyncCheckpoint {
+  id              String   @id @default(cuid())
+  /// Fabric channel name
+  channelName     String   @map("channel_name")
+  /// Fabric chaincode name
+  chaincodeName   String   @map("chaincode_name")
+  /// Last processed block number (stored as string for bigint safety)
+  lastBlockNumber String   @map("last_block_number")
+  /// When this checkpoint was last updated
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([channelName, chaincodeName])
+  @@map("blockchain_sync_checkpoints")
 }
 
 // ════════════════════════════════════════════════

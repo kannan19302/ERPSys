@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, Req, Headers, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, Req, Headers, BadRequestException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PublicTenantResolverGuard, StorefrontRequest } from './guards/public-tenant-resolver.guard';
@@ -124,22 +124,51 @@ export class EcommercePublicController {
   @Post('checkout')
   @ApiOperation({
     summary:
-      '[PUBLIC][MOCK PAYMENT] Check out a cart: creates a real SalesOrder (salesChannel=ONLINE) via the Sales module, ' +
-      'processes payment through MockPaymentGatewayService, and records a StorefrontOrderPayment ledger row.',
+      '[PUBLIC][MOCK PAYMENT] Check out a cart: writes a StorefrontCheckoutState and an ' +
+      'ecommerce.checkout.completed outbox event. The Sales module consumer handler ' +
+      'creates the SalesOrder asynchronously. Poll GET checkout/:sessionToken/status for completion.',
   })
   async checkout(@Req() req: Request & StorefrontRequest, @ZodBody(checkoutSchema) dto: CheckoutDto) {
-    return this.checkoutService.checkout(req.storefrontConfig!.tenantId, dto);
+    return this.checkoutService.checkout(
+      req.storefrontConfig!.tenantId,
+      req.storefrontConfig!.storeSlug,
+      dto,
+    );
+  }
+
+  @Get('checkout/:sessionToken/status')
+  @ApiOperation({
+    summary:
+      '[PUBLIC] Poll the async checkout status. Returns the StorefrontCheckoutState ' +
+      'so the frontend can display ORDER_COMPLETED / ORDER_FAILED and redirect accordingly.',
+  })
+  async getCheckoutStatus(
+    @Req() req: Request & StorefrontRequest,
+    @Param('sessionToken') sessionToken: string,
+  ) {
+    const state = await this.checkoutService.getCheckoutStateBySession(
+      req.storefrontConfig!.tenantId,
+      sessionToken,
+    );
+    if (!state) {
+      throw new NotFoundException('Checkout state not found');
+    }
+    return state;
   }
 
   @Post('webhooks/stripe')
   @ApiOperation({ summary: '[PUBLIC] Stripe Webhook receiver for order payment completions' })
   async stripeWebhook(
-    @Req() req: Request & { rawBody?: Buffer },
+    @Req() req: Request & StorefrontRequest & { rawBody?: Buffer },
     @Headers('stripe-signature') signature: string,
   ) {
     if (!req.rawBody) {
       throw new BadRequestException('Missing raw request body buffer.');
     }
-    return this.checkoutService.handleStripeWebhook(req.rawBody, signature || '');
+    return this.checkoutService.handleStripeWebhook(
+      req.rawBody,
+      signature || '',
+      req.storefrontConfig!.storeSlug,
+    );
   }
 }

@@ -71,12 +71,10 @@ import { PickWavesModule } from './modules/inventory/pick-waves.module';
 import { AsnModule } from './modules/inventory/asn.module';
 import { ShipmentTrackingModule } from './modules/inventory/shipment-tracking.module';
 import { SavedViewsModule } from './modules/saved-views/saved-views.module';
+import { BlockchainModule } from './modules/blockchain/blockchain.module';
+import { OutboxModule } from './modules/outbox/outbox.module';
 import { IdempotencyInterceptor } from './common/idempotency/idempotency.interceptor';
 import { InMemoryIdempotencyStore, RedisIdempotencyStore } from './common/idempotency/idempotency.store';
-// QUARANTINED (Track 0.2, 2026-07-18): modules/blockchain is provisional and must
-// not be registered until Track E re-platforms it on the transactional outbox
-// (.ai/FOUNDATION_HARDENING_ROADMAP.md § 10). It is excluded from the build in
-// tsconfig.json and guarded by scripts/check-module-boundaries.mjs.
 
 @Module({
   imports: [
@@ -224,7 +222,11 @@ import { InMemoryIdempotencyStore, RedisIdempotencyStore } from './common/idempo
     // Module #35 — Fixed Asset Management
     FixedAssetsModule,
 
-    // Blockchain layer: NOT registered — quarantined until Track E (see import note above).
+    // Track B (#17) — Transactional Outbox (reliable cross-module event delivery)
+    OutboxModule,
+
+    // Track E — Blockchain anchored via transactional outbox
+    BlockchainModule,
   ],
   controllers: [HealthController, MetricsController],
   providers: [

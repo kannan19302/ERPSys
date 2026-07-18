@@ -1,33 +1,69 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
-import { SalesService, CreateOnlineOrderInput } from '../sales/sales.service';
+import { OutboxService, type OutboxTxClient } from '@unerp/shared';
 import { PaymentGatewayAdapter } from './payments/payment-gateway.interface';
 import { CheckoutDto } from './dto/ecommerce.dto';
 import { AppLogger } from '../../common/services/logger.service';
 
-/** Sentinel `createdBy`/`User` id for guest storefront checkouts — there is no
- * internal UniERP user to attribute the order to. See the comment on
- * `SalesService.createConfirmedOnlineOrder` in sales.service.ts. */
+/** Sentinel `createdBy`/`User` id for guest storefront checkouts. */
 const STOREFRONT_GUEST_CREATED_BY = 'storefront-guest';
 
 /**
+ * Payload shape written to the outbox for the `ecommerce.checkout.completed`
+ * event.  Consumed by `SalesOutboxHandler` in the Sales module.
+ */
+interface CheckoutOutboxPayload {
+  storefrontSlug: string;
+  cartId: string;
+  onlineOrderInput: {
+    customerId: string;
+    orderNumber: string;
+    salesChannel: 'ONLINE';
+    paymentStatus: 'PAID';
+    paymentMethod?: string;
+    notes: string | null;
+    shippingAddress: { street: string; city: string; state: string; zip: string; country: string };
+    lineItems: Array<{
+      productId: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      taxRate: number;
+    }>;
+  };
+  createdBy: string;
+  organizationId: string;
+  paymentInfo: {
+    provider: string;
+    providerIntentId: string;
+    amount: number;
+    currency: string;
+    rawResponse: Record<string, unknown>;
+  };
+}
+
+/**
  * Checkout/payment orchestration for the storefront's public
- * `POST store/:tenantSlug/checkout` route. See
- * .ai/ECOMMERCE_MODULE_REQUIREMENTS.md Flow C.
+ * `POST store/:tenantSlug/checkout` route.  Instead of calling the Sales
+ * module synchronously, this service writes a `StorefrontCheckoutState` row
+ * and an `ecommerce.checkout.completed` outbox event inside a single
+ * transaction — the Sales consumer handler creates the real order
+ * asynchronously.
  */
 @Injectable()
 export class EcommerceCheckoutService {
   private readonly logger = new AppLogger();
 
   constructor(
-    private readonly salesService: SalesService,
+    private readonly outboxService: OutboxService,
     @Inject('PAYMENT_GATEWAY') private readonly paymentGateway: PaymentGatewayAdapter,
   ) {
     this.logger.setContext('EcommerceCheckoutService');
   }
 
-  async checkout(tenantId: string, dto: CheckoutDto) {
+  async checkout(tenantId: string, storefrontSlug: string, dto: CheckoutDto) {
     const cart = await prisma.cart.findFirst({
       where: { tenantId, sessionToken: dto.sessionToken },
       include: { items: { include: { productListing: { include: { product: true } } } } },
@@ -69,23 +105,19 @@ export class EcommerceCheckoutService {
     const confirmed = await this.paymentGateway.confirmIntent(intent.id, dto.simulateDecline ?? false);
 
     if (confirmed.status !== 'succeeded') {
-      // No SalesOrder is created on decline (Flow C's decline path,
-      // .ai/ECOMMERCE_MODULE_REQUIREMENTS.md Section 5). There is no
-      // SalesOrder yet to attach a StorefrontOrderPayment to, so the failed
-      // attempt is logged rather than persisted as an orphaned payment row —
-      // StorefrontOrderPayment.salesOrderId is a required FK.
       this.logger.warn(`[MOCK PAYMENT GATEWAY] checkout declined tenantId=${tenantId} cartId=${cart.id}`);
       throw new BadRequestException('Payment was declined. Please try again.');
     }
 
-    // 3. Payment succeeded — now create the real SalesOrder via the Sales
-    // module's own service (never a direct prisma.salesOrder.create here).
-    const onlineOrderInput: CreateOnlineOrderInput = {
+    // 3. Payment succeeded — write checkout state + outbox event inside a
+    // single transaction.  The Sales consumer handler will pick up the event
+    // and create the SalesOrder + StorefrontOrderPayment asynchronously.
+    const onlineOrderInput = {
       customerId: customer.id,
       orderNumber,
-      salesChannel: 'ONLINE',
-      paymentStatus: 'PAID',
-      notes: dto.notes,
+      salesChannel: 'ONLINE' as const,
+      paymentStatus: 'PAID' as const,
+      notes: dto.notes || null,
       shippingAddress: dto.shippingAddress,
       lineItems: cart.items.map((item) => ({
         productId: item.productListing.productId,
@@ -96,41 +128,58 @@ export class EcommerceCheckoutService {
       })),
     };
 
-    const salesOrder = await this.salesService.createConfirmedOnlineOrder(
-      tenantId,
-      org.id,
-      onlineOrderInput,
-      STOREFRONT_GUEST_CREATED_BY,
-    );
+    const provider = this.paymentGateway.constructor.name === 'StripePaymentGatewayService' ? 'stripe' : 'mock_gateway';
 
-    // 4. Record the StorefrontOrderPayment ledger row.
-    await prisma.storefrontOrderPayment.create({
-      data: {
+    const checkoutState = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const state = await tx.storefrontCheckoutState.create({
+        data: {
+          tenantId,
+          storefrontSlug,
+          cartId: cart.id,
+          status: 'ORDER_CREATING',
+        },
+      });
+
+      const payload: CheckoutOutboxPayload = {
+        storefrontSlug,
+        cartId: cart.id,
+        onlineOrderInput,
+        createdBy: STOREFRONT_GUEST_CREATED_BY,
+        organizationId: org.id,
+        paymentInfo: {
+          provider,
+          providerIntentId: intent.id,
+          amount: subtotal,
+          currency: cart.currency,
+          rawResponse: confirmed as unknown as Record<string, unknown>,
+        },
+      };
+
+      await this.outboxService.writeEvent(tx as unknown as OutboxTxClient, {
         tenantId,
-        salesOrderId: salesOrder.id,
-        provider: this.paymentGateway.constructor.name === 'StripePaymentGatewayService' ? 'stripe' : 'mock_gateway',
-        providerIntentId: intent.id,
-        status: 'SUCCEEDED',
-        amount: subtotal,
-        currency: cart.currency,
-        rawResponse: confirmed as unknown as object,
-      },
+        eventName: 'ecommerce.checkout.completed',
+        eventVersion: 1,
+        aggregateType: 'storefront_checkout',
+        aggregateId: state.id,
+        payload: payload as unknown as Record<string, unknown>,
+        correlationId: cart.id,
+      });
+
+      await tx.cart.update({ where: { id: cart.id }, data: { status: 'CONVERTED' } });
+
+      return state;
     });
 
-    // 5. Mark the cart CONVERTED so it can't be checked out again.
-    await prisma.cart.update({ where: { id: cart.id }, data: { status: 'CONVERTED' } });
-
-    // NOTE: `sales.order.confirmed` is emitted by
-    // `SalesService.createConfirmedOnlineOrder` itself (step 3) — this method
-    // deliberately does not re-emit it, to avoid Finance/automation listeners
-    // double-processing the same order.
+    // NOTE: The outbox event `ecommerce.checkout.completed` will be picked up
+    // by the dispatcher/processor, which delegates to `SalesOutboxHandler`.
+    // That handler calls `SalesService.createConfirmedOnlineOrder`, records
+    // the `StorefrontOrderPayment`, and updates this checkout state to
+    // ORDER_COMPLETED (or ORDER_FAILED on error).
 
     return {
-      orderId: salesOrder.id,
-      orderNumber: salesOrder.orderNumber,
-      status: salesOrder.status,
-      totalAmount: Number(salesOrder.totalAmount),
-      currency: cart.currency,
+      checkoutStateId: checkoutState.id,
+      status: checkoutState.status,
+      statusUrl: `/store/${storefrontSlug}/checkout/${cart.sessionToken}/status`,
     };
   }
 
@@ -154,7 +203,34 @@ export class EcommerceCheckoutService {
     });
   }
 
-  async handleStripeWebhook(rawBody: Buffer, signature: string): Promise<any> {
+  async getCheckoutStateBySession(tenantId: string, sessionToken: string): Promise<{
+    status: string;
+    salesOrderId: string | null;
+    errorMessage: string | null;
+  } | null> {
+    const cart = await prisma.cart.findFirst({ where: { tenantId, sessionToken } });
+    if (!cart) return null;
+    return this.getCheckoutState(tenantId, cart.id);
+  }
+
+  async getCheckoutState(tenantId: string, cartId: string): Promise<{
+    status: string;
+    salesOrderId: string | null;
+    errorMessage: string | null;
+  } | null> {
+    const state = await prisma.storefrontCheckoutState.findFirst({
+      where: { tenantId, cartId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!state) return null;
+    return {
+      status: state.status,
+      salesOrderId: state.salesOrderId,
+      errorMessage: state.errorMessage,
+    };
+  }
+
+  async handleStripeWebhook(rawBody: Buffer, signature: string, storefrontSlug: string): Promise<any> {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
     if (!webhookSecret) {
       this.logger.warn('Stripe webhook signature verification skipped: STRIPE_WEBHOOK_SECRET is not configured.');
@@ -171,7 +247,7 @@ export class EcommerceCheckoutService {
 
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object;
-      return this.completePaymentFromIntent(paymentIntent);
+      return this.completePaymentFromIntent(paymentIntent, storefrontSlug);
     }
 
     return { received: true };
@@ -202,7 +278,7 @@ export class EcommerceCheckoutService {
     }
   }
 
-  private async completePaymentFromIntent(paymentIntent: any) {
+  private async completePaymentFromIntent(paymentIntent: any, storefrontSlug: string) {
     const intentId = paymentIntent.id;
 
     // Check for existing payment to prevent duplicate processing (idempotency)
@@ -219,6 +295,15 @@ export class EcommerceCheckoutService {
     if (!cartId) {
       this.logger.warn(`Stripe PaymentIntent ${intentId} has no cartId in metadata. Skipping order creation.`);
       return { success: true, skipped: true };
+    }
+
+    // Check for existing checkout state to prevent duplicate outbox writes
+    const existingState = await prisma.storefrontCheckoutState.findFirst({
+      where: { cartId, tenantId: metadata.tenantId },
+    });
+    if (existingState) {
+      this.logger.log(`Cart ${cartId} already has a checkout state. Skipping.`);
+      return { success: true, duplicate: true };
     }
 
     const cart = await prisma.cart.findFirst({
@@ -264,11 +349,11 @@ export class EcommerceCheckoutService {
     const subtotal = cart.items.reduce((sum, item) => sum + Number(item.unitPriceSnapshot) * item.quantity, 0);
     const orderNumber = `ONL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const onlineOrderInput: CreateOnlineOrderInput = {
+    const onlineOrderInput = {
       customerId: customer.id,
       orderNumber,
-      salesChannel: 'ONLINE',
-      paymentStatus: 'PAID',
+      salesChannel: 'ONLINE' as const,
+      paymentStatus: 'PAID' as const,
       notes,
       shippingAddress: checkoutDto.shippingAddress,
       lineItems: cart.items.map((item) => ({
@@ -280,34 +365,52 @@ export class EcommerceCheckoutService {
       })),
     };
 
-    const salesOrder = await this.salesService.createConfirmedOnlineOrder(
-      tenantId,
-      org.id,
-      onlineOrderInput,
-      STOREFRONT_GUEST_CREATED_BY,
-    );
+    const checkoutState = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const state = await tx.storefrontCheckoutState.create({
+        data: {
+          tenantId,
+          storefrontSlug,
+          cartId: cart.id,
+          status: 'ORDER_CREATING',
+        },
+      });
 
-    await prisma.storefrontOrderPayment.create({
-      data: {
+      const payload: CheckoutOutboxPayload = {
+        storefrontSlug,
+        cartId: cart.id,
+        onlineOrderInput,
+        createdBy: STOREFRONT_GUEST_CREATED_BY,
+        organizationId: org.id,
+        paymentInfo: {
+          provider: 'stripe',
+          providerIntentId: intentId,
+          amount: subtotal,
+          currency: cart.currency,
+          rawResponse: paymentIntent,
+        },
+      };
+
+      await this.outboxService.writeEvent(tx as unknown as OutboxTxClient, {
         tenantId,
-        salesOrderId: salesOrder.id,
-        provider: 'stripe',
-        providerIntentId: intentId,
-        status: 'SUCCEEDED',
-        amount: subtotal,
-        currency: cart.currency,
-        rawResponse: paymentIntent,
-      },
+        eventName: 'ecommerce.checkout.completed',
+        eventVersion: 1,
+        aggregateType: 'storefront_checkout',
+        aggregateId: state.id,
+        payload: payload as unknown as Record<string, unknown>,
+        correlationId: cart.id,
+      });
+
+      await tx.cart.update({ where: { id: cart.id }, data: { status: 'CONVERTED' } });
+
+      return state;
     });
 
-    await prisma.cart.update({ where: { id: cart.id }, data: { status: 'CONVERTED' } });
-
-    this.logger.log(`Asynchronously converted cart ${cartId} to order ${salesOrder.id} via webhook.`);
+    this.logger.log(`Webhook converted cart ${cartId} to outbox event (checkout state ${checkoutState.id})`);
 
     return {
       success: true,
-      orderId: salesOrder.id,
-      orderNumber: salesOrder.orderNumber,
+      checkoutStateId: checkoutState.id,
+      status: checkoutState.status,
     };
   }
 }

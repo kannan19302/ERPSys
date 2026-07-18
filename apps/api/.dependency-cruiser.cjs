@@ -14,11 +14,11 @@ module.exports = {
       comment: 'Direct deep imports between different NestJS modules are forbidden. Use common interfaces or event boundaries.',
       from: {
         path: '^src/modules/([^/]+)',
-        pathNot: '(^src/modules/ecommerce/|\\.spec\\.ts$|/tests/)'
+        pathNot: '(^src/modules/ecommerce/|^src/modules/outbox/|\\.spec\\.ts$|/tests/)'
       },
       to: {
         path: '^src/modules/([^/]+)',
-        pathNot: '^src/modules/$1'
+        pathNot: '(^src/modules/$1|^src/modules/outbox/)'
       }
     },
   ],

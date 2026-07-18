@@ -15,8 +15,7 @@
     "dist",
     "test",
     "**/*.spec.ts",
-    "**/tests/**",
-    "src/modules/blockchain/**"
+    "**/tests/**"
   ],
   "watchOptions": {
     "watchFile": "priorityPollingInterval",
