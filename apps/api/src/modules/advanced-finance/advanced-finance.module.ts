@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AdvancedFinanceController } from './advanced-finance.controller';
+import { ArApDeepController } from './ar-ap-deep.controller';
 import { AdvancedFinanceService } from './advanced-finance.service';
 import {
   GlAccountingService,
@@ -82,7 +83,7 @@ const domainServices = [
 ];
 
 @Module({
-  controllers: [AdvancedFinanceController],
+  controllers: [AdvancedFinanceController, ArApDeepController],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],
 })

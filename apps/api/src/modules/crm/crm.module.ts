@@ -118,6 +118,8 @@ const CRM_SERVICES = [
   CrmDealRoomService,
 ];
 
+import { CrmDeepController } from './crm-deep.controller';
+
 @Module({
   controllers: [
     CrmController,
@@ -146,6 +148,7 @@ const CRM_SERVICES = [
     CrmCoachingController,
     CrmDealRoomController,
     CrmDealRoomPublicController,
+    CrmDeepController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

@@ -52,16 +52,16 @@ export class OutboxDispatcherService implements OnModuleInit, OnModuleDestroy {
       `
       UPDATE outbox_deliveries
       SET status = 'LEASED',
-          "leaseOwner" = $1,
-          "leaseExpiresAt" = $2,
+          lease_owner = $1,
+          lease_expires_at = $2,
           attempts = attempts + 1,
-          "updatedAt" = NOW()
+          updated_at = NOW()
       WHERE id IN (
         SELECT id
         FROM outbox_deliveries
         WHERE status = 'PENDING'
-          AND "availableAt" <= NOW()
-        ORDER BY "availableAt" ASC
+          AND available_at <= NOW()
+        ORDER BY available_at ASC
         LIMIT $3
         FOR UPDATE SKIP LOCKED
       )

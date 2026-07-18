@@ -1,5 +1,6 @@
 import { Module, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { BlockchainEventListener } from '@unerp/blockchain';
+import { OutboxModule } from '../outbox/outbox.module';
 import { OutboxHandlerRegistry } from '../outbox/outbox-handler.registry';
 import { FabricGatewayProvider } from './providers/fabric-gateway.provider';
 import { DocumentBlockchainService } from './services/document-blockchain.service';
@@ -12,6 +13,7 @@ import { BlockchainOutboxHandler } from './blockchain-outbox.handler';
 import { BlockchainController } from './blockchain.controller';
 
 @Module({
+  imports: [OutboxModule],
   controllers: [BlockchainController],
   providers: [
     FabricGatewayProvider,

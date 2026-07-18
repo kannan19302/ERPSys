@@ -199,7 +199,8 @@ console.log('======================================================\n');
 if (registryContent) {
   // Let's find if "## System Progress Dashboard" exists.
   const startMarker = '## System Progress Dashboard';
-  const endMarker = '## Collab Board'; // We target the next major section
+  const cycleLedgerMarker = '## Cycle Ledger';
+  const endMarker = registryContent.includes(cycleLedgerMarker) ? cycleLedgerMarker : '## Collab Board'; // We target the next major section
 
   const startIndex = registryContent.indexOf(startMarker);
   const endIndex = registryContent.indexOf(endMarker);

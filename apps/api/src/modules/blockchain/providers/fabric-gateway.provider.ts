@@ -14,24 +14,30 @@ import { Contract, Network } from '@hyperledger/fabric-gateway';
 @Injectable()
 export class FabricGatewayProvider {
   private readonly logger = new Logger(FabricGatewayProvider.name);
-  private readonly connectionService: FabricConnectionService;
+  private readonly connectionService: FabricConnectionService | null;
   private readonly isEnabled = process.env['BLOCKCHAIN_ENABLED'] === 'true';
 
   constructor() {
-    const config = this.buildConfig();
-    this.connectionService = new FabricConnectionService(config);
+    if (this.isEnabled) {
+      const config = this.buildConfig();
+      this.connectionService = new FabricConnectionService(config);
+    } else {
+      this.connectionService = null;
+    }
   }
 
   async connect(): Promise<void> {
+    if (!this.isEnabled || !this.connectionService) return;
     await this.connectionService.connect();
   }
 
   async disconnect(): Promise<void> {
+    if (!this.isEnabled || !this.connectionService) return;
     await this.connectionService.disconnect();
   }
 
   isConnected(): boolean {
-    if (!this.isEnabled) return false;
+    if (!this.isEnabled || !this.connectionService) return false;
     return this.connectionService.isConnected();
   }
 
@@ -40,7 +46,7 @@ export class FabricGatewayProvider {
    * Returns null if blockchain is disabled or Fabric is unavailable.
    */
   getNetwork(channelName: string): Network | null {
-    if (!this.isEnabled || !this.isConnected()) return null;
+    if (!this.isEnabled || !this.connectionService || !this.isConnected()) return null;
     try {
       return this.connectionService.getNetwork(channelName);
     } catch (err) {
@@ -54,7 +60,7 @@ export class FabricGatewayProvider {
    * Returns null if blockchain is disabled or Fabric is unavailable.
    */
   getContract(chaincodeName: string): Contract | null {
-    if (!this.isEnabled || !this.isConnected()) return null;
+    if (!this.isEnabled || !this.connectionService || !this.isConnected()) return null;
     try {
       const channelName = CHAINCODE_CHANNEL_MAP[chaincodeName as keyof typeof CHAINCODE_CHANNEL_MAP];
       if (!channelName) {

@@ -10,10 +10,11 @@ import { SalesOutboxHandler } from './sales-outbox.handler';
 import { OutboxHandlerRegistry } from '../outbox/outbox-handler.registry';
 import { OutboxService } from '@unerp/shared';
 import { OutboxModule } from '../outbox/outbox.module';
+import { SalesDeepController } from './sales-deep.controller';
 
 @Module({
   imports: [OutboxModule],
-  controllers: [SalesController, PricingController, SalesExpansionController],
+  controllers: [SalesController, PricingController, SalesExpansionController, SalesDeepController],
   providers: [SalesService, PricingService, SalesCpqService, SalesFulfillmentService, SalesOutboxHandler],
   exports: [SalesService, PricingService, SalesCpqService, SalesFulfillmentService],
 })
