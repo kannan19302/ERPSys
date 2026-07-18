@@ -2274,6 +2274,7 @@ model UserPresence {
   tenantId    String    @map("tenant_id")
   userId      String    @map("user_id")
   presence    String    @default("ACTIVE") // ACTIVE, AWAY, BRB, DND, OOO, INACTIVE, IN_MEETING, FOCUSING
+  visibility  String    @default("EVERYONE") @map("visibility") // EVERYONE, ORG_ONLY, NOBODY (appear offline to others)
   statusText  String?   @map("status_text")
   statusEmoji String?   @map("status_emoji")
   clearAt     DateTime? @map("clear_at")  // auto-clear status after this time

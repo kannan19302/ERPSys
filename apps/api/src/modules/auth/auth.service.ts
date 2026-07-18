@@ -1,7 +1,13 @@
-import { Injectable, BadRequestException, UnauthorizedException, NotFoundException, Logger } from '@nestjs/common';
-import { randomBytes } from 'node:crypto';
-import { prisma, runWithTenantSession } from '@unerp/database';
-import { UserRole, Role } from '@prisma/client';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  NotFoundException,
+  Logger,
+} from "@nestjs/common";
+import { randomBytes } from "node:crypto";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { UserRole, Role } from "@prisma/client";
 import {
   hashPassword,
   comparePassword,
@@ -9,8 +15,13 @@ import {
   signTypedToken,
   verifyTypedToken,
   TOKEN_TYPE,
-} from '@unerp/auth';
-import { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from '@unerp/shared';
+} from "@unerp/auth";
+import {
+  RegisterInput,
+  LoginInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from "@unerp/shared";
 import {
   generateTotpSecret,
   buildTotpEnrollment,
@@ -21,14 +32,14 @@ import {
   hashResetToken,
   encryptSecret,
   decryptSecret,
-} from './auth-crypto';
+} from "./auth-crypto";
 
 /** Failed logins allowed before the account is temporarily locked. */
 const MAX_FAILED_ATTEMPTS = 5;
 /** How long an account stays locked after too many failed logins. */
 const LOCK_DURATION_MS = 15 * 60 * 1000;
 /** How long the between-steps MFA challenge token is valid. */
-const MFA_CHALLENGE_TTL = '5m';
+const MFA_CHALLENGE_TTL = "5m";
 /** How long a password-reset token is valid. */
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 /** Session lifetime; matches the JWT's default 1-day expiry. */
@@ -41,12 +52,43 @@ export interface SessionContext {
   device?: string | null;
 }
 
+/** Reduces a raw User-Agent string to a short "OS • Browser" label for the sessions UI. */
+function parseUserAgent(ua?: string | null): {
+  device: string | null;
+  browser: string | null;
+} {
+  if (!ua) return { device: null, browser: null };
+  const device = /windows/i.test(ua)
+    ? "Windows"
+    : /mac os/i.test(ua)
+      ? "macOS"
+      : /android/i.test(ua)
+        ? "Android"
+        : /iphone|ipad/i.test(ua)
+          ? "iOS"
+          : /linux/i.test(ua)
+            ? "Linux"
+            : null;
+  const browser = /edg\//i.test(ua)
+    ? "Edge"
+    : /chrome\//i.test(ua)
+      ? "Chrome"
+      : /firefox\//i.test(ua)
+        ? "Firefox"
+        : /safari\//i.test(ua)
+          ? "Safari"
+          : /curl\//i.test(ua)
+            ? "curl"
+            : null;
+  return { device, browser };
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   private get isProduction() {
-    return process.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === "production";
   }
 
   /**
@@ -56,15 +98,17 @@ export class AuthService {
     const slug = dto.organizationName
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
     // Check if slug already exists
     const existingTenant = await prisma.tenant.findUnique({
       where: { slug },
     });
     if (existingTenant) {
-      throw new BadRequestException('An organization with a similar name already exists. Choose a different name.');
+      throw new BadRequestException(
+        "An organization with a similar name already exists. Choose a different name.",
+      );
     }
 
     // Hash the administrator's password
@@ -77,32 +121,32 @@ export class AuthService {
         data: {
           name: dto.organizationName,
           slug,
-          plan: 'free',
-          status: 'ACTIVE',
+          plan: "free",
+          status: "ACTIVE",
         },
       });
 
       // 2. Create default roles for the tenant
       const defaultRolesConfig = {
         SUPER_ADMIN: {
-          name: 'Super Admin',
-          description: 'Full access to all features',
-          permissions: ['*'],
+          name: "Super Admin",
+          description: "Full access to all features",
+          permissions: ["*"],
         },
         ADMIN: {
-          name: 'Admin',
-          description: 'Administrative access with user management',
-          permissions: ['admin.*', 'finance.*', 'hr.*', 'crm.*', 'inventory.*'],
+          name: "Admin",
+          description: "Administrative access with user management",
+          permissions: ["admin.*", "finance.*", "hr.*", "crm.*", "inventory.*"],
         },
         VIEWER: {
-          name: 'Viewer',
-          description: 'Read-only access to all modules',
+          name: "Viewer",
+          description: "Read-only access to all modules",
           permissions: [
-            'finance.invoice.read',
-            'finance.report.read',
-            'hr.employee.read',
-            'crm.contact.read',
-            'inventory.product.read',
+            "finance.invoice.read",
+            "finance.report.read",
+            "hr.employee.read",
+            "crm.contact.read",
+            "inventory.product.read",
           ],
         },
       };
@@ -130,12 +174,12 @@ export class AuthService {
           passwordChangedAt: new Date(),
           firstName: dto.firstName,
           lastName: dto.lastName,
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
       });
 
       // 4. Assign SUPER_ADMIN role to user
-      const superAdminRoleId = rolesMap['SUPER_ADMIN'];
+      const superAdminRoleId = rolesMap["SUPER_ADMIN"];
       if (superAdminRoleId) {
         await tx.userRole.create({
           data: {
@@ -150,13 +194,13 @@ export class AuthService {
         data: {
           tenantId: tenant.id,
           name: dto.organizationName,
-          currency: 'USD',
-          timezone: 'UTC',
+          currency: "USD",
+          timezone: "UTC",
         },
       });
 
       // 6. Create Default Departments
-      const depts = ['Finance', 'Human Resources', 'Sales', 'Operations'];
+      const depts = ["Finance", "Human Resources", "Sales", "Operations"];
       for (const deptName of depts) {
         await tx.department.create({
           data: {
@@ -212,68 +256,89 @@ export class AuthService {
    * `sid`, so JwtAuthGuard can reject the token the moment the session is revoked.
    */
   private async issueSession(
-    user: { id: string; tenantId: string; email: string; firstName: string; lastName: string; avatar?: string | null; tenant: { id: string; name: string; slug: string } },
+    user: {
+      id: string;
+      tenantId: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      avatar?: string | null;
+      tenant: { id: string; name: string; slug: string };
+    },
     context?: SessionContext,
   ) {
-    return runWithTenantSession({ tenantId: user.tenantId, userId: user.id }, async () => {
-      const { roles, permissions } = await this.resolveRolesAndPermissions(user.id);
+    return runWithTenantSession(
+      { tenantId: user.tenantId, userId: user.id },
+      async () => {
+        const { roles, permissions } = await this.resolveRolesAndPermissions(
+          user.id,
+        );
 
-      // Create the session first so its id can be sealed into the token.
-      const sid = randomBytes(18).toString('hex');
-      const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-      await prisma.userSession.create({
-        data: {
-          id: sid,
-          tenantId: user.tenantId,
+        // Create the session first so its id can be sealed into the token.
+        const sid = randomBytes(18).toString("hex");
+        const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+        const parsedUa = parseUserAgent(context?.userAgent);
+        await prisma.userSession.create({
+          data: {
+            id: sid,
+            tenantId: user.tenantId,
+            userId: user.id,
+            token: sid,
+            ipAddress: context?.ipAddress ?? null,
+            browser: parsedUa.browser,
+            device: context?.device ?? parsedUa.device,
+            expiresAt,
+          },
+        });
+
+        const token = signSessionToken({
+          sid,
           userId: user.id,
-          token: sid,
-          ipAddress: context?.ipAddress ?? null,
-          browser: context?.userAgent ?? null,
-          device: context?.device ?? null,
-          expiresAt,
-        },
-      });
-
-      const token = signSessionToken({
-        sid,
-        userId: user.id,
-        tenantId: user.tenantId,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        roles,
-      });
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
-      });
-
-      return {
-        token,
-        user: {
-          id: user.id,
+          tenantId: user.tenantId,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          avatar: user.avatar,
           roles,
-          permissions,
-        },
-        tenant: {
-          id: user.tenant.id,
-          name: user.tenant.name,
-          slug: user.tenant.slug,
-        },
-      };
-    });
+        });
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastLoginAt: new Date(),
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          },
+        });
+
+        return {
+          token,
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar,
+            roles,
+            permissions,
+          },
+          tenant: {
+            id: user.tenant.id,
+            name: user.tenant.name,
+            slug: user.tenant.slug,
+          },
+        };
+      },
+    );
   }
 
   /**
    * Authenticates a user and issues a JWT token (or an MFA challenge).
    */
-  async login(dto: LoginInput & { tenantSlug?: string }, context?: SessionContext) {
-    let tenantId = '';
+  async login(
+    dto: LoginInput & { tenantSlug?: string },
+    context?: SessionContext,
+  ) {
+    let tenantId = "";
 
     if (dto.tenantSlug) {
       const tenant = await prisma.tenant.findUnique({
@@ -281,7 +346,7 @@ export class AuthService {
       });
       if (!tenant) {
         // Do not distinguish "tenant missing" from "bad credentials".
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException("Invalid credentials");
       }
       tenantId = tenant.id;
     } else {
@@ -289,15 +354,19 @@ export class AuthService {
       // tenant context exists, so a plain cross-tenant query would be blocked
       // by RLS under the unerp_api runtime role — use the narrow
       // SECURITY DEFINER lookup function instead (Track C / #21).
-      const users = await prisma.$queryRaw<Array<{ id: string; tenant_id: string }>>`
+      const users = await prisma.$queryRaw<
+        Array<{ id: string; tenant_id: string }>
+      >`
         SELECT id, tenant_id FROM auth_lookup_user_tenants(${dto.email.toLowerCase()})
       `;
 
       if (users.length === 0) {
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException("Invalid credentials");
       }
       if (users.length > 1) {
-        throw new BadRequestException('Multiple organizations use this email. Please provide your Organization Slug.');
+        throw new BadRequestException(
+          "Multiple organizations use this email. Please provide your Organization Slug.",
+        );
       }
 
       const targetUser = users[0];
@@ -308,7 +377,7 @@ export class AuthService {
 
     // Find user within the specified tenant scope. Run inside a tenant
     // session so the RLS-enforcing unerp_api role can see the row.
-    const user = await runWithTenantSession({ tenantId, userId: '' }, () =>
+    const user = await runWithTenantSession({ tenantId, userId: "" }, () =>
       prisma.user.findFirst({
         where: {
           tenantId,
@@ -321,24 +390,35 @@ export class AuthService {
     );
 
     if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     // Reject locked accounts before touching the password.
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       const mins = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
-      throw new UnauthorizedException(`Account locked due to failed login attempts. Try again in ${mins} minute(s).`);
+      throw new UnauthorizedException(
+        `Account locked due to failed login attempts. Try again in ${mins} minute(s).`,
+      );
     }
 
     // Validate password
-    const isPasswordValid = await comparePassword(dto.password, user.passwordHash);
+    const isPasswordValid = await comparePassword(
+      dto.password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
-      await this.registerFailedAttempt(user.id, user.tenantId, user.failedLoginAttempts);
-      throw new UnauthorizedException('Invalid credentials');
+      await this.registerFailedAttempt(
+        user.id,
+        user.tenantId,
+        user.failedLoginAttempts,
+      );
+      throw new UnauthorizedException("Invalid credentials");
     }
 
-    if (user.status !== 'ACTIVE') {
-      throw new UnauthorizedException(`Account is ${user.status.toLowerCase()}`);
+    if (user.status !== "ACTIVE") {
+      throw new UnauthorizedException(
+        `Account is ${user.status.toLowerCase()}`,
+      );
     }
 
     // Password is correct — clear any accumulated failure count.
@@ -362,7 +442,7 @@ export class AuthService {
       return {
         mfaRequired: true,
         challengeToken,
-        message: 'MFA authentication required.',
+        message: "MFA authentication required.",
       } as const;
     }
 
@@ -372,7 +452,11 @@ export class AuthService {
   /**
    * Increments the failed-login counter and locks the account past the threshold.
    */
-  private async registerFailedAttempt(userId: string, tenantId: string, current: number) {
+  private async registerFailedAttempt(
+    userId: string,
+    tenantId: string,
+    current: number,
+  ) {
     const attempts = current + 1;
     const shouldLock = attempts >= MAX_FAILED_ATTEMPTS;
     await runWithTenantSession({ tenantId, userId }, () =>
@@ -380,7 +464,9 @@ export class AuthService {
         where: { id: userId },
         data: {
           failedLoginAttempts: shouldLock ? 0 : attempts,
-          lockedUntil: shouldLock ? new Date(Date.now() + LOCK_DURATION_MS) : undefined,
+          lockedUntil: shouldLock
+            ? new Date(Date.now() + LOCK_DURATION_MS)
+            : undefined,
         },
       }),
     );
@@ -396,10 +482,12 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException('User profile not found');
+      throw new NotFoundException("User profile not found");
     }
 
-    const { roles, permissions } = await this.resolveRolesAndPermissions(user.id);
+    const { roles, permissions } = await this.resolveRolesAndPermissions(
+      user.id,
+    );
 
     return {
       id: user.id,
@@ -422,23 +510,34 @@ export class AuthService {
   /**
    * Updates profile data of the currently authenticated user.
    */
-  async updateProfile(userId: string, dto: import('@unerp/shared').UpdateProfileInput) {
+  async updateProfile(
+    userId: string,
+    dto: import("@unerp/shared").UpdateProfileInput,
+  ) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     const updateData: Record<string, unknown> = {};
 
     if (dto.newPassword) {
       // Changing a password requires proving knowledge of the current one.
-      if (!user.passwordHash) throw new BadRequestException('Account does not have a password.');
-      if (!dto.currentPassword) throw new BadRequestException('Current password is required to set a new one.');
-      const isPasswordValid = await comparePassword(dto.currentPassword, user.passwordHash);
-      if (!isPasswordValid) throw new UnauthorizedException('Invalid current password');
+      if (!user.passwordHash)
+        throw new BadRequestException("Account does not have a password.");
+      if (!dto.currentPassword)
+        throw new BadRequestException(
+          "Current password is required to set a new one.",
+        );
+      const isPasswordValid = await comparePassword(
+        dto.currentPassword,
+        user.passwordHash,
+      );
+      if (!isPasswordValid)
+        throw new UnauthorizedException("Invalid current password");
       updateData.passwordHash = await hashPassword(dto.newPassword);
       updateData.passwordChangedAt = new Date();
     }
@@ -474,14 +573,20 @@ export class AuthService {
       where: { id: userId },
       select: { email: true, tenantId: true },
     });
-    if (!me) throw new NotFoundException('User not found');
+    if (!me) throw new NotFoundException("User not found");
 
     const memberships = await prisma.user.findMany({
-      where: { email: me.email, status: 'ACTIVE' },
-      select: { tenantId: true, tenant: { select: { id: true, name: true, slug: true } } },
-      orderBy: { tenant: { name: 'asc' } },
+      where: { email: me.email, status: "ACTIVE" },
+      select: {
+        tenantId: true,
+        tenant: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { tenant: { name: "asc" } },
     });
-    return memberships.map((m) => ({ ...m.tenant, current: m.tenantId === me.tenantId }));
+    return memberships.map((m) => ({
+      ...m.tenant,
+      current: m.tenantId === me.tenantId,
+    }));
   }
 
   /**
@@ -491,23 +596,30 @@ export class AuthService {
    * resolves the tenant. The old session is revoked before the new one is cut,
    * so exactly one tenant scope is live per switch.
    */
-  async switchTenant(userId: string, currentSid: string | undefined, tenantSlug: string, context?: SessionContext) {
+  async switchTenant(
+    userId: string,
+    currentSid: string | undefined,
+    tenantSlug: string,
+    context?: SessionContext,
+  ) {
     const me = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true },
     });
-    if (!me) throw new UnauthorizedException('Invalid session');
+    if (!me) throw new UnauthorizedException("Invalid session");
 
     const target = await prisma.user.findFirst({
       where: {
         email: me.email,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         tenant: { slug: tenantSlug },
       },
       include: { tenant: true },
     });
     if (!target) {
-      throw new UnauthorizedException('No active membership in that organization');
+      throw new UnauthorizedException(
+        "No active membership in that organization",
+      );
     }
 
     if (currentSid) await this.revokeSessionById(currentSid);
@@ -519,7 +631,8 @@ export class AuthService {
    * way whether or not the email exists, to avoid account enumeration.
    */
   async forgotPassword(dto: ForgotPasswordInput) {
-    const genericMessage = 'If an account exists for that email, a password reset link has been sent.';
+    const genericMessage =
+      "If an account exists for that email, a password reset link has been sent.";
 
     const user = await prisma.user.findFirst({
       where: { email: dto.email.toLowerCase() },
@@ -546,10 +659,12 @@ export class AuthService {
       }),
     ]);
 
-    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.APP_URL || "http://localhost:3000";
     const resetLink = `${appUrl}/reset-password?token=${plain}`;
 
-    this.logger.log(`[email] Password reset requested for ${user.email}. Link dispatched.`);
+    this.logger.log(
+      `[email] Password reset requested for ${user.email}. Link dispatched.`,
+    );
 
     // Never return the token in production; expose it only for local dev ergonomics.
     if (this.isProduction) {
@@ -570,7 +685,7 @@ export class AuthService {
     });
 
     if (!record || record.usedAt || record.expiresAt < new Date()) {
-      throw new BadRequestException('Invalid or expired password reset token.');
+      throw new BadRequestException("Invalid or expired password reset token.");
     }
 
     const hashedPassword = await hashPassword(dto.password);
@@ -578,7 +693,12 @@ export class AuthService {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: record.userId },
-        data: { passwordHash: hashedPassword, passwordChangedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
+        data: {
+          passwordHash: hashedPassword,
+          passwordChangedAt: new Date(),
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
       }),
       prisma.passwordResetToken.update({
         where: { id: record.id },
@@ -591,35 +711,57 @@ export class AuthService {
       }),
     ]);
 
-    return { message: 'Password reset successfully. You can now log in.' };
+    return { message: "Password reset successfully. You can now log in." };
   }
 
   /**
    * Automatically provisions and logs in a demo user with the specified role.
    * The controller restricts this to non-production environments.
    */
-  async loginDemo(roleKey: 'SUPER_ADMIN' | 'HR_MANAGER' | 'FINANCE_MANAGER' | 'VIEWER') {
+  async loginDemo(
+    roleKey: "SUPER_ADMIN" | "HR_MANAGER" | "FINANCE_MANAGER" | "VIEWER",
+  ) {
     // 1. Get default tenant
     let tenant = await prisma.tenant.findFirst({
-      where: { slug: 'system' },
+      where: { slug: "system" },
     });
     if (!tenant) {
       tenant = await prisma.tenant.create({
         data: {
-          name: 'System Tenant',
-          slug: 'system',
-          plan: 'enterprise',
-          status: 'ACTIVE',
+          name: "System Tenant",
+          slug: "system",
+          plan: "enterprise",
+          status: "ACTIVE",
         },
       });
     }
 
     // Map role key to email and profile info
     const roleMapping = {
-      SUPER_ADMIN: { email: 'admin@unerp.dev', firstName: 'System', lastName: 'Administrator', roleName: 'Super Admin' },
-      HR_MANAGER: { email: 'hr-demo@unerp.dev', firstName: 'Sarah', lastName: 'HR', roleName: 'HR Manager' },
-      FINANCE_MANAGER: { email: 'finance-demo@unerp.dev', firstName: 'John', lastName: 'Finance', roleName: 'Finance Manager' },
-      VIEWER: { email: 'viewer-demo@unerp.dev', firstName: 'Guest', lastName: 'Viewer', roleName: 'Viewer' },
+      SUPER_ADMIN: {
+        email: "admin@unerp.dev",
+        firstName: "System",
+        lastName: "Administrator",
+        roleName: "Super Admin",
+      },
+      HR_MANAGER: {
+        email: "hr-demo@unerp.dev",
+        firstName: "Sarah",
+        lastName: "HR",
+        roleName: "HR Manager",
+      },
+      FINANCE_MANAGER: {
+        email: "finance-demo@unerp.dev",
+        firstName: "John",
+        lastName: "Finance",
+        roleName: "Finance Manager",
+      },
+      VIEWER: {
+        email: "viewer-demo@unerp.dev",
+        firstName: "Guest",
+        lastName: "Viewer",
+        roleName: "Viewer",
+      },
     };
 
     const target = roleMapping[roleKey] || roleMapping.VIEWER;
@@ -631,7 +773,7 @@ export class AuthService {
     });
 
     if (!user) {
-      const mockPasswordHash = await hashPassword('DemoUser!2345');
+      const mockPasswordHash = await hashPassword("DemoUser!2345");
       user = await prisma.user.create({
         data: {
           tenantId: tenant.id,
@@ -640,7 +782,7 @@ export class AuthService {
           passwordChangedAt: new Date(),
           firstName: target.firstName,
           lastName: target.lastName,
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
         include: { tenant: true },
       });
@@ -653,14 +795,21 @@ export class AuthService {
 
     if (!role) {
       const defaultRolesConfig: Record<string, string[]> = {
-        'Super Admin': ['*'],
-        Admin: ['admin.*', 'finance.*', 'hr.*', 'crm.*', 'inventory.*'],
-        'Finance Manager': ['finance.*', 'sales.sales-order.read'],
-        'HR Manager': ['hr.*'],
-        Viewer: ['finance.invoice.read', 'finance.report.read', 'hr.employee.read', 'crm.contact.read', 'inventory.product.read'],
+        "Super Admin": ["*"],
+        Admin: ["admin.*", "finance.*", "hr.*", "crm.*", "inventory.*"],
+        "Finance Manager": ["finance.*", "sales.sales-order.read"],
+        "HR Manager": ["hr.*"],
+        Viewer: [
+          "finance.invoice.read",
+          "finance.report.read",
+          "hr.employee.read",
+          "crm.contact.read",
+          "inventory.product.read",
+        ],
       };
 
-      const permissions = defaultRolesConfig[target.roleName] || defaultRolesConfig.Viewer;
+      const permissions =
+        defaultRolesConfig[target.roleName] || defaultRolesConfig.Viewer;
 
       role = await prisma.role.create({
         data: {
@@ -697,7 +846,7 @@ export class AuthService {
   async generateMfaSecret(userId: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new BadRequestException('User not found.');
+      throw new BadRequestException("User not found.");
     }
 
     const secret = generateTotpSecret();
@@ -707,7 +856,10 @@ export class AuthService {
       data: { mfaSecret: encryptSecret(secret), mfaPending: true },
     });
 
-    const { otpauthUrl, qrDataUrl } = await buildTotpEnrollment(user.email, secret);
+    const { otpauthUrl, qrDataUrl } = await buildTotpEnrollment(
+      user.email,
+      secret,
+    );
 
     return { secret, otpauthUrl, qrCodeUrl: qrDataUrl };
   }
@@ -719,19 +871,26 @@ export class AuthService {
   async verifyMfaAndEnable(userId: string, code: string, enable: boolean) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.mfaSecret) {
-      throw new BadRequestException('MFA has not been configured for this user.');
+      throw new BadRequestException(
+        "MFA has not been configured for this user.",
+      );
     }
 
     if (!verifyTotp(code, decryptSecret(user.mfaSecret))) {
-      throw new BadRequestException('Invalid verification code.');
+      throw new BadRequestException("Invalid verification code.");
     }
 
     if (!enable) {
       await prisma.user.update({
         where: { id: userId },
-        data: { mfaEnabled: false, mfaPending: false, mfaSecret: null, mfaRecoveryCodes: [] },
+        data: {
+          mfaEnabled: false,
+          mfaPending: false,
+          mfaSecret: null,
+          mfaRecoveryCodes: [],
+        },
       });
-      return { message: 'MFA disabled successfully.' };
+      return { message: "MFA disabled successfully." };
     }
 
     const { plain, hashes } = await generateRecoveryCodes();
@@ -741,7 +900,7 @@ export class AuthService {
     });
 
     return {
-      message: 'MFA enabled successfully.',
+      message: "MFA enabled successfully.",
       recoveryCodes: plain,
     };
   }
@@ -750,10 +909,19 @@ export class AuthService {
    * Completes an MFA login: validates the challenge token from step one, then
    * the TOTP code (or a single-use recovery code), and issues a session.
    */
-  async verifyMfaLogin(challengeToken: string, code: string, context?: SessionContext) {
-    const payload = verifyTypedToken<{ userId: string }>(challengeToken, TOKEN_TYPE.MFA_CHALLENGE);
+  async verifyMfaLogin(
+    challengeToken: string,
+    code: string,
+    context?: SessionContext,
+  ) {
+    const payload = verifyTypedToken<{ userId: string }>(
+      challengeToken,
+      TOKEN_TYPE.MFA_CHALLENGE,
+    );
     if (!payload?.userId) {
-      throw new UnauthorizedException('MFA session expired. Please sign in again.');
+      throw new UnauthorizedException(
+        "MFA session expired. Please sign in again.",
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -762,17 +930,19 @@ export class AuthService {
     });
 
     if (!user || !user.mfaEnabled || !user.mfaSecret) {
-      throw new BadRequestException('MFA is not configured for this user.');
+      throw new BadRequestException("MFA is not configured for this user.");
     }
 
     const totpOk = verifyTotp(code, decryptSecret(user.mfaSecret));
 
     if (!totpOk) {
       // Fall back to single-use recovery codes.
-      const storedCodes = Array.isArray(user.mfaRecoveryCodes) ? (user.mfaRecoveryCodes as string[]) : [];
+      const storedCodes = Array.isArray(user.mfaRecoveryCodes)
+        ? (user.mfaRecoveryCodes as string[])
+        : [];
       const matchIndex = await matchRecoveryCode(code, storedCodes);
       if (matchIndex === -1) {
-        throw new UnauthorizedException('Invalid verification code.');
+        throw new UnauthorizedException("Invalid verification code.");
       }
       // Consume the used recovery code.
       const remaining = storedCodes.filter((_, i) => i !== matchIndex);
@@ -795,5 +965,50 @@ export class AuthService {
       where: { id: sid, isActive: true },
       data: { isActive: false },
     });
+  }
+
+  /** Active sessions for the "Active Sessions" profile UI, most-recent first. */
+  async listSessions(userId: string, tenantId: string, currentSid?: string) {
+    const sessions = await prisma.userSession.findMany({
+      where: { userId, tenantId, isActive: true },
+      orderBy: { lastActivityAt: "desc" },
+    });
+    return sessions.map((s) => ({
+      id: s.id,
+      device: s.device,
+      browser: s.browser,
+      ipAddress: s.ipAddress,
+      location: s.location,
+      startedAt: s.startedAt,
+      lastActivityAt: s.lastActivityAt,
+      isCurrent: s.id === currentSid,
+    }));
+  }
+
+  /** Revokes every session for this user except the one making the request. */
+  async revokeOtherSessions(
+    userId: string,
+    tenantId: string,
+    currentSid?: string,
+  ) {
+    const result = await prisma.userSession.updateMany({
+      where: {
+        userId,
+        tenantId,
+        isActive: true,
+        ...(currentSid ? { id: { not: currentSid } } : {}),
+      },
+      data: { isActive: false },
+    });
+    return { revoked: result.count };
+  }
+
+  /** Stores a small avatar image as a data URI on the user record. */
+  async updateAvatar(userId: string, dataUri: string) {
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { avatar: dataUri },
+    });
+    return { avatar: updated.avatar };
   }
 }

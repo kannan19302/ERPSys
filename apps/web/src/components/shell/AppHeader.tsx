@@ -72,6 +72,8 @@ interface AppHeaderProps {
     avatar?: string;
   } | null;
   handleLogout: () => void;
+  /** CSS color for the presence dot on the avatar; defaults to online-green. */
+  presenceColor?: string;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   searchOpen: boolean;
@@ -233,6 +235,7 @@ export function AppHeader({
   setTenantDropdownOpen,
   userDropdownOpen,
   setUserDropdownOpen,
+  presenceColor,
   cmdPaletteOpen,
   setCmdPaletteOpen,
   isAppsLanding,
@@ -422,8 +425,13 @@ export function AppHeader({
               <div className={styles.userAvatar}>
                 {user ? `${user.firstName[0]}${user.lastName[0]}` : "SU"}
               </div>
-              {/* Status Indicator Dot */}
-              <span className={statusDotStyle} />
+              {/* Status Indicator Dot — reflects the user's real presence */}
+              <span
+                className={statusDotStyle}
+                style={
+                  presenceColor ? { background: presenceColor } : undefined
+                }
+              />
             </div>
             <ChevronDown
               size={12}
