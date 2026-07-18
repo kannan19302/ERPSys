@@ -4,57 +4,52 @@
 
 ## Cycle
 
-- **Cycle #:** 11
+- **Cycle #:** 12
 - **Phase:** F — Foundation
 - **Date:** 2026-07-18
-- **Agent/session:** fable-5 (claim: `foundation-track-h4`); autonomous run, iteration 9/10
+- **Agent/session:** fable-5 (claim: `foundation-track-h1`); autonomous run, iteration 10/10 (final)
 
 ## Scope & rationale
 
-**Track H.4 — retention policy per data class** (roadmap § 11c): no retention
-matrix; no automated enforcement.
+**Track H.1 — registry-driven PII erasure declarations** (roadmap § 11c):
+GDPR service exists but erasure coverage is unproven; required control =
+"every model carrying PII declares its treatment; a test fails when a new
+PII model lacks a declaration."
 
-**Duplicate-check:** `gdpr.service.ts` has tenant-configurable
-`retentionDays` records (a per-tenant policy CRUD) but no *platform* matrix,
-no enforcement job, and no coverage of the operational/log classes
-(AuditLog, ChangeHistory, Notification, WebhookDeliveryLog, UserSession,
-BackgroundJob — verified present in schema). No @nestjs/schedule; BullMQ
-exists but a standalone script is the leanest schedulable unit (cron/CI/Task
-Scheduler) and needs no API surface.
+**Duplicate-check:** no PII registry file anywhere (`grep -ril pii` → only
+`PII_ENCRYPTION_KEY` env usage + field encryption util); `gdpr.service.ts`
+implements per-request erasure but no model-coverage control. Detector
+prototype run: **11 models** carry PII-pattern fields (User, Organization,
+Employee, Customer, Vendor, Contact, Lead, POSLoyaltyMember, Applicant,
+CustomerPortalUser, VendorPortalUser).
 
 ## Ordered work items
 
-1. `scripts/retention-matrix.json` — the matrix (single source): data class →
-   Prisma model, timestamp column, retention days, mode (hard-delete),
-   condition notes (e.g. only `read` notifications; only terminal
-   BackgroundJob states; only expired/revoked sessions), legal-basis note.
-   Business documents are explicitly OUT (soft-delete + audit per G.4;
-   erasure via H.1).
-2. `scripts/enforce-retention.mjs` — loads the matrix, `--dry-run` (default:
-   reports counts, deletes nothing) and `--apply`; per-class `deleteMany`
-   with cutoff + class-specific conditions; JSON summary; audited via
-   console + exit codes. Uses the generated @prisma/client directly
-   (privileged maintenance path per roadmap C.3 doctrine, documented).
-3. `docs/DATA_RETENTION_MATRIX.md` — human matrix + how enforcement runs +
-   interplay with the tenant-level GDPR retention records + F-track
-   partitioning note.
-4. Verify: `--dry-run` against the dev DB (read-only counts); vitest not
-   needed for a script exercised end-to-end — proof = dry-run output.
-5. Record + ship: CHANGELOG, Ledger 10 → 11, roadmap H.4 status, board,
-   lock, `main`.
+1. `scripts/pii-registry.json` — declaration per model: treatment
+   (`erase` | `anonymize` | `retain-legal-hold`), the PII fields, rationale,
+   review status. Initial classifications: portal users/members/applicants/
+   contacts/leads → erase; Customer/Vendor/Organization → anonymize (legal
+   business-document counterparties); Employee → retain-legal-hold →
+   anonymize post-statutory; User → anonymize (FK-referenced author trails).
+2. `scripts/check-pii-registry.mjs` — parses schema.prisma with the PII
+   field heuristic; FAILS if a matching model lacks a registry declaration
+   (or a registry entry references a vanished model). Prove red with a probe
+   model, green after.
+3. Wire into CI beside the schema lint.
+4. Record + ship: CHANGELOG, Ledger 11 → 12, roadmap H.1 status (registry
+   control live; erasure-run audit report remains with H.1's runtime half),
+   board, lock, `main`.
 
 ## Acceptance criteria
 
-- Matrix covers the 6 platform classes with explicit conditions; dry-run
-  executes against dev DB and reports per-class candidates; `--apply`
-  deletes only matrix-matched rows (not run against dev data this cycle —
-  dev DB is seed-only; dry-run is the proof).
-- No schema changes.
+- Checker green at HEAD, red on an undeclared PII model (proof run).
+- 11 models declared with explicit treatments + rationale.
+- CI step added; no schema changes.
 
 ## Gate tier & rollback note
 
-- **FAST** — additive script + docs; default dry-run.
-- **Rollback:** delete script + doc.
+- **FAST** — tooling + registry data.
+- **Rollback:** remove CI line + two files.
 
 ## Addenda (dated, append-only)
 

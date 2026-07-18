@@ -47,6 +47,8 @@ jobs:
       - run: node scripts/generate-env-example.mjs --check
       # Track G.8: no Float in schema.prisma outside the shrinking baseline.
       - run: node scripts/check-schema-lints.mjs
+      # Track H.1: every PII-carrying model must declare its erasure treatment.
+      - run: node scripts/check-pii-registry.mjs
       - run: pnpm --filter @unerp/api typecheck
       - run: pnpm --filter @unerp/web typecheck
       # Track I.1 (foundation roadmap § 11d): the production web artifact must

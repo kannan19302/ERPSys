@@ -115,9 +115,9 @@
 > resets `Next run: DEV`. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 11
+- **DEV cycles completed:** 12
 - **Next run:** DEV
-- **Cycles until mandatory harden:** 9 (next checkpoint after cycle 20)
+- **Cycles until mandatory harden:** 8 (next checkpoint after cycle 20)
 - **Current program phase:** F — Foundation (see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate)
 
 | # | Date | Flow | Phase | Scope | Outcome (items/features, gates) | Commit |
@@ -134,6 +134,7 @@
 | 10 | 2026-07-18 | DEV | F | Track G.1 — API versioning & deprecation policy | G.1 closed: policy doc + registry/middleware emitting RFC 9745/8594 headers; 5 tests green. Counter → 10: HARDEN armed | see CHANGELOG 2026-07-18 cycle-10 entry |
 | — | 2026-07-18 | QA (mandatory) | F | HARDEN checkpoint after cycle 10 | #24 SQL injection (Connect search) fixed+closed; #25 idempotency principal-scoping fixed+closed; 1 red communication test fixed (67/67); raw-SQL sweep clean | see CHANGELOG 2026-07-18 HARDEN entry |
 | 11 | 2026-07-18 | DEV | F | Track H.4 — retention matrix + enforcement | H.4 closed: 6-class matrix (JSON source) + dry-run/apply enforcement script (dev-DB dry-run 6/6 green) + docs matrix with out-of-scope + GDPR interplay | see CHANGELOG 2026-07-18 cycle-11 entry |
+| 12 | 2026-07-18 | DEV | F | Track H.1 — PII registry control | Registry control live: 11 PII models declared, CI checker red/green proven; runtime half (registry-driven gdpr erasure + audit report) queued | see CHANGELOG 2026-07-18 cycle-12 entry |
 
 ## Collab Board — Multi-Agent Sync
 

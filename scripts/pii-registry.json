@@ -1,0 +1,50 @@
+{
+  "comment": "Track H.1 PII registry — every Prisma model carrying personal data MUST declare its erasure treatment here (checked by scripts/check-pii-registry.mjs in CI). Treatments: 'erase' = hard-delete the row on a GDPR Art.17 request; 'anonymize' = blank/scramble PII fields but keep the row (referenced by legal business documents or audit trails); 'retain-legal-hold' = statutory retention overrides erasure until the hold period lapses, then anonymize. Erasure runs must produce an auditable report (gdpr.service.ts — runtime half of H.1).",
+  "models": {
+    "User": {
+      "treatment": "anonymize",
+      "rationale": "Referenced as author/actor across audit and business trails; scramble identity fields, keep the id.",
+      "reviewed": "2026-07-18 initial classification (cycle 12) — pending human compliance review"
+    },
+    "Organization": {
+      "treatment": "anonymize",
+      "rationale": "Tenant organization contact data; anonymize contact fields on offboarding (H.2 lifecycle owns full purge)."
+    },
+    "Employee": {
+      "treatment": "retain-legal-hold",
+      "rationale": "Labor/tax law mandates multi-year retention of employment records; anonymize after the statutory period."
+    },
+    "Customer": {
+      "treatment": "anonymize",
+      "rationale": "Counterparty on legally retained documents (invoices, orders); PII fields anonymized, document rows kept."
+    },
+    "Vendor": {
+      "treatment": "anonymize",
+      "rationale": "Counterparty on legally retained procurement/AP documents."
+    },
+    "Contact": {
+      "treatment": "erase",
+      "rationale": "CRM person record with no statutory retention of its own."
+    },
+    "Lead": {
+      "treatment": "erase",
+      "rationale": "Prospect data; no legal basis to retain after erasure request."
+    },
+    "POSLoyaltyMember": {
+      "treatment": "erase",
+      "rationale": "Loyalty membership PII; erase on request, points ledger anonymized via member-id unlink."
+    },
+    "Applicant": {
+      "treatment": "erase",
+      "rationale": "Recruitment data; short-lived by design (also subject to jurisdictional application-data limits)."
+    },
+    "CustomerPortalUser": {
+      "treatment": "erase",
+      "rationale": "Portal login identity; erase with the customer-side request."
+    },
+    "VendorPortalUser": {
+      "treatment": "erase",
+      "rationale": "Portal login identity; erase with the vendor-side request."
+    }
+  }
+}

@@ -8,6 +8,26 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] Cycle 12 (Phase F) — Track H.1: PII registry control live
+
+Autonomous run, iteration 10/10 (final of the requested 10-cycle run).
+
+- **`scripts/pii-registry.json`**: all 11 PII-carrying models (detected by
+  field heuristic across 655 models) declared with treatment + rationale —
+  erase: Contact, Lead, Applicant, POSLoyaltyMember, CustomerPortalUser,
+  VendorPortalUser; anonymize: User (author trails), Organization,
+  Customer/Vendor (legal counterparties); retain-legal-hold: Employee
+  (labor/tax statutes). Initial classifications flagged for human compliance
+  review.
+- **`scripts/check-pii-registry.mjs`**: CI control — fails on any
+  PII-pattern model without a declaration, invalid treatment, or stale
+  registry entry. Proof: green (11/11) → red on a `PiiProbe { email }`
+  model → green after revert. Wired into `ci.yml`.
+- Remaining H.1 half (recorded in roadmap row): make `gdpr.service.ts`
+  erasure runs consume the registry and emit the auditable report.
+- Roadmap H.1 registry-control ✅. **Ledger**: 11 → 12; next mandatory
+  harden after cycle 20.
+
 ## [2026-07-18] Cycle 11 (Phase F) — Track H.4 closed: retention matrix + enforcement
 
 Autonomous run, iteration 9/10.
