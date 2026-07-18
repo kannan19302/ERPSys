@@ -28,7 +28,7 @@
     "@unerp/ui-theme": "workspace:*",
     "@unerp/ui-tokens": "workspace:*",
     "@unerp/ui-utils": "workspace:*",
-    "lucide-react": "^0.460.0"
+    "lucide-react": "^1.25.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

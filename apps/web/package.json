@@ -28,7 +28,7 @@
     "@unerp/shared": "workspace:*",
     "@unerp/ui": "workspace:*",
     "@xyflow/react": "^12.11.0",
-    "lucide-react": "^0.460.0",
+    "lucide-react": "^1.25.0",
     "next": "^15.1.0",
     "papaparse": "^5.5.4",
     "react": "^19.0.0",
