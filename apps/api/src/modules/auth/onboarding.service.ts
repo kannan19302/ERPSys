@@ -84,15 +84,26 @@ function toResponse(
   });
 }
 
+/** Steps whose completion is genuinely a one-shot "user showed up" signal
+ * with no better DB proxy — persisted in tenant.settings.onboardingChecklist.
+ * All other keys are derived live from real backend state (see
+ * getOnboardingState) and must NOT be stored/mutated via this path. */
+const MANUALLY_COMPLETABLE_KEYS: readonly OnboardingChecklistKey[] = [
+  "dashboard",
+];
+
 @Injectable()
 export class OnboardingService {
   /**
    * Returns the onboarding checklist state for a tenant, personalized by the
    * tenant's `industry` (checklist step order + priority app slugs).
-   * If it doesn't exist, initializes it.
+   *
+   * Five of the six steps are derived live from real backend state (not
+   * trusted client clicks); only `dashboard` remains a persisted flag.
    */
   async getOnboardingState(
     tenantId: string,
+    userId: string,
   ): Promise<OnboardingChecklistResponse> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
@@ -104,49 +115,69 @@ export class OnboardingService {
 
     const settings = (tenant.settings as Record<string, any>) || {};
     const industry = settings.industry as string | null | undefined;
+    const dashboardDone = Boolean(
+      (settings.onboardingChecklist as OnboardingChecklistState | undefined)
+        ?.dashboard,
+    );
 
-    if (settings.onboardingChecklist) {
-      return toResponse(
-        settings.onboardingChecklist as OnboardingChecklistState,
-        industry,
-      );
-    }
+    const [user, inviteCount, marketplaceAppCount, subscription] =
+      await Promise.all([
+        prisma.user.findFirst({
+          where: { id: userId, tenantId },
+          select: { avatar: true },
+        }),
+        prisma.user.count({
+          where: {
+            tenantId,
+            id: { not: userId },
+            status: { in: ["INVITED", "ACTIVE"] },
+          },
+        }),
+        prisma.installedApp.count({
+          where: { tenantId, source: "MARKETPLACE" },
+        }),
+        prisma.tenantSubscription.findUnique({
+          where: { tenantId },
+          include: { plan: true },
+        }),
+      ]);
 
-    // Initialize defaults
-    const defaultChecklist: OnboardingChecklistState = {
-      profile: false,
-      logo: false,
-      invite: false,
-      app: false,
-      plan: false,
-      dashboard: false,
+    const logoUrl = settings.logoUrl;
+    const planName = subscription?.plan?.name?.toLowerCase();
+
+    const checklist: OnboardingChecklistState = {
+      profile: Boolean(user?.avatar),
+      logo: typeof logoUrl === "string" && logoUrl.trim().length > 0,
+      invite: inviteCount > 0,
+      app: marketplaceAppCount > 0,
+      plan: Boolean(
+        subscription && planName && planName !== "free" && planName !== "trial",
+      ),
+      dashboard: dashboardDone,
     };
 
-    const updatedSettings = {
-      ...settings,
-      onboardingChecklist: defaultChecklist,
-    };
-
-    await prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        settings: updatedSettings as any,
-      },
-    });
-
-    return toResponse(defaultChecklist, industry);
+    return toResponse(checklist, industry);
   }
 
   /**
-   * Completes a specific step in the onboarding checklist.
+   * Completes a specific step in the onboarding checklist. Only `dashboard`
+   * remains manually completable — the other five keys are derived live from
+   * real backend state in getOnboardingState and can no longer be faked by a
+   * client click.
    */
   async completeStep(
     tenantId: string,
+    userId: string,
     key: string,
   ): Promise<OnboardingChecklistResponse> {
     if (!ONBOARDING_CHECKLIST_KEYS.includes(key as any)) {
       throw new BadRequestException(`Invalid onboarding checklist key: ${key}`);
     }
+    if (!MANUALLY_COMPLETABLE_KEYS.includes(key as OnboardingChecklistKey)) {
+      throw new BadRequestException(
+        `Onboarding checklist key "${key}" is derived from live backend state and cannot be manually completed.`,
+      );
+    }
 
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
@@ -157,39 +188,26 @@ export class OnboardingService {
     }
 
     const settings = (tenant.settings as Record<string, any>) || {};
-    const industry = settings.industry as string | null | undefined;
-    const checklist =
-      (settings.onboardingChecklist as OnboardingChecklistState) || {
-        profile: false,
-        logo: false,
-        invite: false,
-        app: false,
-        plan: false,
-        dashboard: false,
+    const existing =
+      (settings.onboardingChecklist as OnboardingChecklistState) || {};
+
+    if (existing[key as OnboardingChecklistKey] !== true) {
+      const updatedSettings = {
+        ...settings,
+        onboardingChecklist: {
+          ...existing,
+          [key]: true,
+        },
       };
 
-    // Only update if not already completed
-    if (checklist[key as OnboardingChecklistKey] === true) {
-      return toResponse(checklist, industry);
+      await prisma.tenant.update({
+        where: { id: tenantId },
+        data: {
+          settings: updatedSettings as any,
+        },
+      });
     }
 
-    const updatedChecklist = {
-      ...checklist,
-      [key]: true,
-    };
-
-    const updatedSettings = {
-      ...settings,
-      onboardingChecklist: updatedChecklist,
-    };
-
-    await prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        settings: updatedSettings as any,
-      },
-    });
-
-    return toResponse(updatedChecklist, industry);
+    return this.getOnboardingState(tenantId, userId);
   }
 }

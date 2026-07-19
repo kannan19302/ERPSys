@@ -10,6 +10,7 @@ import {
   Circle,
   Rocket,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { useApiClient } from "@unerp/framework";
 
@@ -133,15 +134,54 @@ export function OnboardingChecklist({
   const [demoLoaded, setDemoLoaded] = useState(false);
   const [seedingDemo, setSeedingDemo] = useState(false);
   const [seedError, setSeedError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [justCompleted, setJustCompleted] = useState<
+    Set<OnboardingChecklistKey>
+  >(new Set());
+  const [justFinishedAll, setJustFinishedAll] = useState(false);
+  const prevChecklistRef = React.useRef<OnboardingChecklistResponse | null>(
+    null,
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  const applyChecklist = React.useCallback(
+    (res: OnboardingChecklistResponse) => {
+      const prev = prevChecklistRef.current;
+      if (prev) {
+        const newlyDone = ONBOARDING_CHECKLIST_KEYS.filter(
+          (k) => !prev[k] && res[k],
+        );
+        if (newlyDone.length > 0) {
+          setJustCompleted(new Set(newlyDone));
+          window.setTimeout(() => setJustCompleted(new Set()), 1400);
+        }
+        const prevProgress = ONBOARDING_CHECKLIST_KEYS.filter(
+          (k) => prev[k],
+        ).length;
+        const nextProgress = ONBOARDING_CHECKLIST_KEYS.filter(
+          (k) => res[k],
+        ).length;
+        if (
+          prevProgress < ONBOARDING_CHECKLIST_KEYS.length &&
+          nextProgress === ONBOARDING_CHECKLIST_KEYS.length
+        ) {
+          setJustFinishedAll(true);
+          window.setTimeout(() => setJustFinishedAll(false), 3200);
+        }
+      }
+      prevChecklistRef.current = res;
+      setChecklist(res);
+    },
+    [],
+  );
+
+  const fetchState = React.useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!opts?.silent) setSyncing(true);
       try {
         const res =
           await client.get<OnboardingChecklistResponse>("/auth/onboarding");
-        if (cancelled || !res) return;
-        setChecklist(res);
+        if (!res) return;
+        applyChecklist(res);
         if (autoCompleteDashboard && !res.dashboard) {
           const updated = await client
             .put<OnboardingChecklistResponse>(
@@ -149,14 +189,21 @@ export function OnboardingChecklist({
               {},
             )
             .catch(() => null);
-          if (!cancelled && updated) setChecklist(updated);
+          if (updated) applyChecklist(updated);
         }
       } catch {
-        // Keep defaults — the widget simply won't render progress.
+        // Keep previous state — the widget simply won't render fresh progress.
       } finally {
-        if (!cancelled) setLoaded(true);
+        setLoaded(true);
+        setSyncing(false);
       }
-    })();
+    },
+    [client, autoCompleteDashboard, applyChecklist],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchState();
     if (variant === "full") {
       client
         .get<any>("/auth/me")
@@ -169,7 +216,24 @@ export function OnboardingChecklist({
     return () => {
       cancelled = true;
     };
-  }, [client, variant, autoCompleteDashboard]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, variant]);
+
+  // Steps are server-derived (uploaded a logo in another tab, an admin
+  // accepted an invite, etc.) — re-sync silently whenever the user returns
+  // to this tab so the checkmarks flip live without a manual refresh.
+  useEffect(() => {
+    const onFocusOrVisible = () => {
+      if (document.visibilityState === "hidden") return;
+      fetchState({ silent: true });
+    };
+    window.addEventListener("focus", onFocusOrVisible);
+    document.addEventListener("visibilitychange", onFocusOrVisible);
+    return () => {
+      window.removeEventListener("focus", onFocusOrVisible);
+      document.removeEventListener("visibilitychange", onFocusOrVisible);
+    };
+  }, [fetchState]);
 
   const orderedKeys = useMemo(() => {
     const order = checklist.checklistOrder?.length
@@ -187,14 +251,17 @@ export function OnboardingChecklist({
     [checklist],
   );
 
+  // Only "dashboard" is manually completable (see onboarding.service.ts) —
+  // the other five keys are derived from real backend state and refresh via
+  // fetchState, never via a fake client-side "click to complete".
   const markItem = async (key: OnboardingChecklistKey) => {
-    if (checklist[key]) return;
+    if (key !== "dashboard" || checklist[key]) return;
     try {
       const res = await client.put<OnboardingChecklistResponse>(
         `/auth/onboarding/complete/${key}`,
         {},
       );
-      if (res) setChecklist(res);
+      if (res) applyChecklist(res);
     } catch {
       // Non-fatal — the checklist is a UX nudge, not a blocking action.
     }
@@ -247,6 +314,11 @@ export function OnboardingChecklist({
             <span className={`${styles.badge} ${styles.badgePulse}`}>
               {progress} / {total} completed
             </span>
+            {syncing && (
+              <span className={styles.syncIndicator} title="Syncing status…">
+                <Loader2 size={13} />
+              </span>
+            )}
           </div>
           <button type="button" className={styles.collapseBtn}>
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -271,14 +343,29 @@ export function OnboardingChecklist({
                     key={key}
                     href={item.href}
                     onClick={() => markItem(key)}
-                    className={`${styles.item} ${done ? styles.itemCompleted : styles.itemActive}`}
+                    className={`${styles.item} ${done ? styles.itemCompleted : styles.itemActive} ${justCompleted.has(key) ? styles.itemJustCompleted : ""}`}
                   >
-                    {done ? <CircleCheck size={16} /> : <Circle size={16} />}
+                    {done ? (
+                      <CircleCheck
+                        size={16}
+                        className={
+                          justCompleted.has(key) ? styles.checkPop : undefined
+                        }
+                      />
+                    ) : (
+                      <Circle size={16} />
+                    )}
                     <span>{item.label}</span>
                   </Link>
                 );
               })}
             </div>
+            {justFinishedAll && (
+              <div className={`${styles.celebrateBanner} ui-animate-in`}>
+                <Sparkles size={14} /> All set — your workspace is fully
+                configured!
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -298,6 +385,11 @@ export function OnboardingChecklist({
         <span className={styles.progressText}>
           {progress} / {total} completed
         </span>
+        {syncing && (
+          <span className={styles.syncIndicator} title="Syncing status…">
+            <Loader2 size={13} />
+          </span>
+        )}
       </div>
 
       {!demoLoaded && (
@@ -341,10 +433,19 @@ export function OnboardingChecklist({
               key={key}
               href={item.href}
               onClick={() => handleItemClick(item)}
-              className={`${styles.fullItem} ${done ? styles.fullItemDone : ""}`}
+              className={`${styles.fullItem} ${done ? styles.fullItemDone : ""} ${justCompleted.has(key) ? styles.itemJustCompleted : ""}`}
             >
               <span className={styles.fullItemIcon}>
-                {done ? <CircleCheck size={20} /> : <Circle size={20} />}
+                {done ? (
+                  <CircleCheck
+                    size={20}
+                    className={
+                      justCompleted.has(key) ? styles.checkPop : undefined
+                    }
+                  />
+                ) : (
+                  <Circle size={20} />
+                )}
               </span>
               <div>
                 <span className={styles.fullItemLabel}>{item.label}</span>
@@ -354,6 +455,11 @@ export function OnboardingChecklist({
           );
         })}
       </div>
+      {justFinishedAll && (
+        <div className={`${styles.celebrateBanner} ui-animate-in`}>
+          <Sparkles size={14} /> All set — your workspace is fully configured!
+        </div>
+      )}
     </div>
   );
 }

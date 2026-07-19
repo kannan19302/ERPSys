@@ -41,7 +41,6 @@ import {
   decryptSecret,
 } from "./auth-crypto";
 import { ProvisioningService } from "./provisioning.service";
-import { OnboardingService } from "./onboarding.service";
 
 /** Failed logins allowed before the account is temporarily locked. */
 const MAX_FAILED_ATTEMPTS = 5;
@@ -151,8 +150,6 @@ export class AuthService {
     private readonly provisioningService?: ProvisioningService,
     @Optional()
     private readonly eventEmitter?: EventEmitter2,
-    @Optional()
-    private readonly onboardingService?: OnboardingService,
   ) {}
 
   private get isProduction() {
@@ -1144,11 +1141,9 @@ export class AuthService {
       data: updateData,
     });
 
-    if (this.onboardingService && user.tenantId) {
-      await this.onboardingService
-        .completeStep(user.tenantId, "profile")
-        .catch(() => {});
-    }
+    // Note: the "profile" onboarding step is now derived live from
+    // `User.avatar` (see onboarding.service.ts) rather than manually marked
+    // here, so no completeStep call is needed on profile update.
 
     return {
       id: updatedUser.id,

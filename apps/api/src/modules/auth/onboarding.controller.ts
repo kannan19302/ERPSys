@@ -27,13 +27,20 @@ export class OnboardingController {
   @ApiOperation({ summary: "Get onboarding checklist status" })
   @Get()
   async getOnboardingState(@Req() req: any) {
-    return this.onboardingService.getOnboardingState(req.user.tenantId);
+    return this.onboardingService.getOnboardingState(
+      req.user.tenantId,
+      req.user.userId,
+    );
   }
 
   @ApiOperation({ summary: "Mark an onboarding step as completed" })
   @Put("complete/:key")
   async completeStep(@Req() req: any, @Param("key") key: string) {
-    return this.onboardingService.completeStep(req.user.tenantId, key);
+    return this.onboardingService.completeStep(
+      req.user.tenantId,
+      req.user.userId,
+      key,
+    );
   }
 
   @ApiOperation({ summary: "Seed demo sandbox data for evaluation" })
