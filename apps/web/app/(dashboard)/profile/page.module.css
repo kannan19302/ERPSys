@@ -129,6 +129,16 @@
   margin: 0 0 var(--space-1);
 }
 
+.pushNudge {
+  background: var(--color-primary-subtle, rgba(99, 102, 241, 0.08));
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 /* ── Push-approval devices list ────────────────────────────── */
 .deviceRow {
   align-items: center;

@@ -150,7 +150,8 @@ const allowedScripts = new Set([
   'repair-workspace-links.mjs',
   'retention-matrix.json',
   'schema-lint-baseline.json',
-  'verify-backup.mjs'
+  'verify-backup.mjs',
+  'check-rls-verify.mjs'
 ]);
 
 for (const file of scriptsFiles) {
@@ -161,13 +162,14 @@ for (const file of scriptsFiles) {
 }
 
 // Check root for stray files (e.g., test.js, tmp.ts, etc.)
-const allowedRootDirs = new Set(['.git', 'node_modules', 'var', 'dist', '.next', '.turbo', 'apps', 'packages', 'scripts', 'docs']);
+const allowedRootDirs = new Set(['.git', 'node_modules', 'var', 'dist', '.next', '.turbo', 'apps', 'packages', 'scripts', 'docs', 'load-tests']);
 const allowedRootFiles = new Set([
   'AGENTS.md', 'package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml',
   'tsconfig.json', 'turbo.json', 'README.md', 'docker-compose.yml', 'docker-compose.dev.yml', 'Dockerfile',
   '.gitignore', '.prettierrc', '.eslintrc', 'nest-cli.json', '.gitattributes',
   '.dependency-cruiser.cjs', '.ai', 'CLAUDE.md', 'eslint.config.mjs', 'eslint.config.js',
-  '.env', '.env.example', '.eslintcache', 'cycle-report.json'
+  '.env', '.env.example', '.eslintcache', 'cycle-report.json', 'CODE_OF_CONDUCT.md',
+  'commitlint.config.cjs', 'CONTRIBUTING.md', 'LICENSE', 'SECURITY.md'
 ]);
 
 for (const file of rootFiles) {

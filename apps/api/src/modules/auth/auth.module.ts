@@ -5,10 +5,11 @@ import { OAuthController } from "./oauth.controller";
 import { OAuthService } from "./oauth.service";
 import { SsoController } from "./sso.controller";
 import { SsoService } from "./sso.service";
+import { ProvisioningService } from "./provisioning.service";
 
 @Module({
   controllers: [AuthController, OAuthController, SsoController],
-  providers: [AuthService, OAuthService, SsoService],
-  exports: [AuthService, OAuthService, SsoService],
+  providers: [AuthService, OAuthService, SsoService, ProvisioningService],
+  exports: [AuthService, OAuthService, SsoService, ProvisioningService],
 })
 export class AuthModule {}

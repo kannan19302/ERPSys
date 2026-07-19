@@ -82,6 +82,17 @@ interface SessionRow {
   isCurrent: boolean;
 }
 
+interface LoginHistoryRow {
+  id: string;
+  status: "SUCCESS" | "FAILED";
+  ipAddress: string | null;
+  device: string | null;
+  browser: string | null;
+  location: string | null;
+  failureReason: string | null;
+  createdAt: string;
+}
+
 export default function ProfilePage() {
   const client = useApiClient();
   const { setTheme, density, setDensity, densities } = useTheme();
@@ -171,6 +182,21 @@ export default function ProfilePage() {
     }
   };
 
+  const [loginHistory, setLoginHistory] = useState<LoginHistoryRow[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  const fetchLoginHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const rows = await client.get<LoginHistoryRow[]>("/auth/login-history");
+      setLoginHistory(rows);
+    } catch {
+      setLoginHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const fetchPushDevices = async () => {
     try {
       const rows = await client.get<PushDevice[]>("/auth/push/devices");
@@ -238,13 +264,30 @@ export default function ProfilePage() {
         throw new Error("Browser did not return a usable subscription.");
       }
       const ua = navigator.userAgent;
-      const label = /chrome/i.test(ua)
-        ? "Chrome"
-        : /firefox/i.test(ua)
-          ? "Firefox"
-          : /safari/i.test(ua)
-            ? "Safari"
-            : "This browser";
+      const os = /windows/i.test(ua)
+        ? "Windows"
+        : /android/i.test(ua)
+          ? "Android"
+          : /iphone|ipad|ipod/i.test(ua)
+            ? "iOS"
+            : /mac os/i.test(ua)
+              ? "macOS"
+              : /linux/i.test(ua)
+                ? "Linux"
+                : null;
+      const browser = /edg\//i.test(ua)
+        ? "Edge"
+        : /chrome/i.test(ua)
+          ? "Chrome"
+          : /firefox/i.test(ua)
+            ? "Firefox"
+            : /safari/i.test(ua)
+              ? "Safari"
+              : "browser";
+      // Include the OS so "Chrome" on a phone and "Chrome" on a laptop show
+      // up as distinguishable devices in the list below — the exact device
+      // confusion this feature exists to prevent.
+      const label = os ? `${os} • ${browser}` : browser;
       await client.post("/auth/push/subscribe", {
         subscription: {
           endpoint: raw.endpoint,
@@ -414,6 +457,7 @@ export default function ProfilePage() {
     fetchProfile();
     fetchSessions();
     fetchPushDevices();
+    fetchLoginHistory();
   }, [client]);
 
   const handleInfoSubmit = async (updatedFields?: Partial<typeof formData>) => {
@@ -844,6 +888,13 @@ export default function ProfilePage() {
 
                 {mfaStep === "enrolling" && mfaQrCode && (
                   <div className={`ui-stack-2 ${styles.subPanel}`}>
+                    <p className="ui-text-xs-muted">
+                      <strong>Step 1 of 2.</strong> Scan this with an
+                      authenticator app on your phone (Google Authenticator,
+                      Authy, 1Password, etc). This is separate from the "Push
+                      Approval" device below — an authenticator app only
+                      generates codes, it can't receive push notifications.
+                    </p>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={mfaQrCode}
@@ -857,6 +908,9 @@ export default function ProfilePage() {
                         <code>{mfaSecret}</code>
                       </p>
                     )}
+                    <p className="ui-text-xs-muted">
+                      Then enter the 6-digit code it shows you:
+                    </p>
                     <div className="ui-hstack-2">
                       <input
                         className="ui-input"
@@ -931,6 +985,27 @@ export default function ProfilePage() {
                         <code key={c}>{c}</code>
                       ))}
                     </div>
+                    {pushSupported && !thisDeviceEndpoint && (
+                      <div className={styles.pushNudge}>
+                        <p className="ui-text-xs-muted">
+                          <strong>Step 2 of 2 (optional).</strong> Your
+                          authenticator app is set up. Want to approve sign-ins
+                          with a tap instead of typing a code? Enable
+                          push-approval on <strong>this browser</strong> too —
+                          it's registered per-device, so do this on your phone
+                          as well if that's where you'd rather approve from.
+                        </p>
+                        <button
+                          className="ui-btn ui-btn-secondary"
+                          disabled={pushSubscribing}
+                          onClick={enablePushOnThisDevice}
+                        >
+                          {pushSubscribing
+                            ? "Enabling..."
+                            : "Enable push-approval on this device"}
+                        </button>
+                      </div>
+                    )}
                     <button
                       className="ui-btn ui-btn-secondary"
                       onClick={() => {
@@ -1082,6 +1157,80 @@ export default function ProfilePage() {
                             "—"
                           )}
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Login History */}
+            <div className="ui-card">
+              <div className="ui-hstack-2">
+                <Globe size={18} className="ui-text-primary" />
+                Recent Login History
+              </div>
+              <div className="ui-card-body p-0">
+                <table className={styles.s11}>
+                  <thead className="border-b">
+                    <tr>
+                      <th className={styles.s12}>Date & Time</th>
+                      <th className={styles.s12}>Status</th>
+                      <th className={styles.s12}>IP Address</th>
+                      <th className={styles.s12}>Device / Browser</th>
+                      <th className={styles.s12}>Location</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historyLoading && (
+                      <tr>
+                        <td className={styles.s13} colSpan={5}>
+                          Loading login history...
+                        </td>
+                      </tr>
+                    )}
+                    {!historyLoading && loginHistory.length === 0 && (
+                      <tr>
+                        <td className={styles.s13} colSpan={5}>
+                          No login history found.
+                        </td>
+                      </tr>
+                    )}
+                    {loginHistory.map((h) => (
+                      <tr key={h.id} className="border-b">
+                        <td className={styles.s13}>
+                          {new Date(h.createdAt).toLocaleString()}
+                        </td>
+                        <td className={styles.s13}>
+                          <span
+                            className={
+                              h.status === "SUCCESS"
+                                ? "ui-badge ui-badge-success"
+                                : "ui-badge ui-badge-danger"
+                            }
+                            style={{
+                              backgroundColor:
+                                h.status === "SUCCESS"
+                                  ? "rgba(16, 185, 129, 0.1)"
+                                  : "rgba(239, 68, 68, 0.1)",
+                              color:
+                                h.status === "SUCCESS" ? "#10b981" : "#ef4444",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                              fontSize: "11px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {h.status}
+                            {h.failureReason ? ` (${h.failureReason})` : ""}
+                          </span>
+                        </td>
+                        <td className={styles.s14}>{h.ipAddress || "—"}</td>
+                        <td className={styles.s13}>
+                          {[h.device, h.browser].filter(Boolean).join(" • ") ||
+                            "—"}
+                        </td>
+                        <td className={styles.s13}>{h.location || "—"}</td>
                       </tr>
                     ))}
                   </tbody>

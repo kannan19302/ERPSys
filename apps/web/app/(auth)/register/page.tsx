@@ -1,21 +1,56 @@
-'use client';
-import styles from './page.module.css';
-import '../../landing.css';
-import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Spinner } from '@unerp/ui';
-import { Building, Lock, Mail, ChevronRight, ChevronLeft, AlertCircle, User, Eye, EyeOff, Sparkles, CheckCircle2, Globe, Coins, ShieldAlert } from 'lucide-react';
-import { apiPost, ApiRequestError } from '../../../src/lib/api';
+"use client";
+import styles from "./page.module.css";
+import "../../landing.css";
+import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@unerp/ui";
+import {
+  Building,
+  Lock,
+  Mail,
+  ChevronRight,
+  ChevronLeft,
+  AlertCircle,
+  User,
+  Eye,
+  EyeOff,
+  Sparkles,
+  CheckCircle2,
+  Globe,
+  Coins,
+  ShieldAlert,
+} from "lucide-react";
+import { apiGet, apiPost, ApiRequestError } from "../../../src/lib/api";
 
 const VALUE_PROPS = [
-  { icon: '🏢', title: 'Multi-Tenant Isolation', desc: 'Every organization gets its own secure, isolated database space.' },
-  { icon: '🔐', title: 'Enterprise Security', desc: 'Role-based access, field-level permissions, and change histories.' },
-  { icon: '📊', title: 'Real-Time Analytics', desc: 'Live KPI charts, customized reports, and csv/xlsx exports.' },
-  { icon: '🔧', title: 'Zero-Code Builder', desc: 'Build forms, workflow timelines, and pages dynamically.' },
+  {
+    icon: "🏢",
+    title: "Multi-Tenant Isolation",
+    desc: "Every organization gets its own secure, isolated database space.",
+  },
+  {
+    icon: "🔐",
+    title: "Enterprise Security",
+    desc: "Role-based access, field-level permissions, and change histories.",
+  },
+  {
+    icon: "📊",
+    title: "Real-Time Analytics",
+    desc: "Live KPI charts, customized reports, and csv/xlsx exports.",
+  },
+  {
+    icon: "🔧",
+    title: "Zero-Code Builder",
+    desc: "Build forms, workflow timelines, and pages dynamically.",
+  },
 ];
 
-function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+function getPasswordStrength(password: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   let score = 0;
   if (password.length >= 8) score++;
   if (password.length >= 12) score++;
@@ -23,57 +58,96 @@ function getPasswordStrength(password: string): { score: number; label: string; 
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
 
-  if (score <= 1) return { score, label: 'Weak', color: 'var(--color-danger)' };
-  if (score <= 2) return { score, label: 'Fair', color: 'var(--color-warning)' };
-  if (score <= 3) return { score, label: 'Good', color: '#f59e0b' };
-  if (score <= 4) return { score, label: 'Strong', color: 'var(--color-success)' };
-  return { score, label: 'Excellent', color: '#22c55e' };
+  if (score <= 1) return { score, label: "Weak", color: "var(--color-danger)" };
+  if (score <= 2)
+    return { score, label: "Fair", color: "var(--color-warning)" };
+  if (score <= 3) return { score, label: "Good", color: "#f59e0b" };
+  if (score <= 4)
+    return { score, label: "Strong", color: "var(--color-success)" };
+  return { score, label: "Excellent", color: "#22c55e" };
 }
 
 interface SeedingStep {
   id: number;
   label: string;
-  status: 'waiting' | 'loading' | 'done';
+  status: "waiting" | "loading" | "done";
 }
 
 export default function RegisterPage() {
   const router = useRouter();
-  
+
   // Wizard Step State
   const [step, setStep] = useState(1);
 
   // Step 1: Organization Data
-  const [organizationName, setOrganizationName] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [currency, setCurrency] = useState('USD');
-  const [timezone, setTimezone] = useState('UTC');
+  const [organizationName, setOrganizationName] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [timezone, setTimezone] = useState("UTC");
+  const [businessType, setBusinessType] = useState("");
+  const [country, setCountry] = useState("US");
+  const [language, setLanguage] = useState("en");
+  const [estimatedUsers, setEstimatedUsers] = useState(1);
+  const [logoUrl, setLogoUrl] = useState("");
 
   // Step 2: Administrator Profile Data
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Step 3: Console Logs Seeding Simulation
   const [seedingLogs, setSeedingLogs] = useState<SeedingStep[]>([
-    { id: 1, label: 'Generating secure organization slug...', status: 'waiting' },
-    { id: 2, label: 'Creating isolated tenant partition...', status: 'waiting' },
-    { id: 3, label: 'Bootstrapping system roles (Super Admin, Admin, Viewer)...', status: 'waiting' },
-    { id: 4, label: 'Creating administrative credentials...', status: 'waiting' },
-    { id: 5, label: 'Seeding department structures (Finance, HR, Sales, Ops)...', status: 'waiting' },
-    { id: 6, label: 'Provisioning primary warehouse WH-MAIN...', status: 'waiting' },
-    { id: 7, label: 'Finalizing setup & launching workspace...', status: 'waiting' },
+    {
+      id: 1,
+      label: "Generating secure organization slug...",
+      status: "waiting",
+    },
+    {
+      id: 2,
+      label: "Creating isolated tenant partition...",
+      status: "waiting",
+    },
+    {
+      id: 3,
+      label: "Bootstrapping system roles (Super Admin, Admin, Viewer)...",
+      status: "waiting",
+    },
+    {
+      id: 4,
+      label: "Creating administrative credentials...",
+      status: "waiting",
+    },
+    {
+      id: 5,
+      label: "Seeding department structures (Finance, HR, Sales, Ops)...",
+      status: "waiting",
+    },
+    {
+      id: 6,
+      label: "Provisioning primary warehouse WH-MAIN...",
+      status: "waiting",
+    },
+    {
+      id: 7,
+      label: "Finalizing setup & launching workspace...",
+      status: "waiting",
+    },
   ]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
-  const passwordsMatch = confirmPassword.length === 0 || password === confirmPassword;
+  const passwordStrength = useMemo(
+    () => getPasswordStrength(password),
+    [password],
+  );
+  const passwordsMatch =
+    confirmPassword.length === 0 || password === confirmPassword;
 
   // Setup progress based on wizard step
   const progressPct = useMemo(() => {
@@ -86,7 +160,7 @@ export default function RegisterPage() {
     e.preventDefault();
     if (step === 1) {
       if (!organizationName) {
-        setError('Organization name is required');
+        setError("Organization name is required");
         return;
       }
       setError(null);
@@ -103,18 +177,25 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !organizationName) {
-      setError('Please fill in all required fields');
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !organizationName
+    ) {
+      setError("Please fill in all required fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (!agreedToTerms) {
-      setError('Please agree to the Terms of Service');
+      setError("Please agree to the Terms of Service");
       return;
     }
 
@@ -123,93 +204,202 @@ export default function RegisterPage() {
 
     // Customize logs based on chosen industry profile
     const customLogs = [
-      { id: 1, label: 'Generating secure organization slug...', status: 'waiting' },
-      { id: 2, label: 'Creating isolated tenant partition...', status: 'waiting' },
-      { id: 3, label: 'Bootstrapping system roles (Super Admin, Admin, Viewer)...', status: 'waiting' },
-      { id: 4, label: 'Creating administrative credentials...', status: 'waiting' },
-      { id: 5, label: 'Seeding department structures (Finance, HR, Sales, Ops)...', status: 'waiting' },
-      { id: 6, label: 'Provisioning primary warehouse WH-MAIN...', status: 'waiting' },
-      { id: 7, label: 'Finalizing setup & launching workspace...', status: 'waiting' },
+      {
+        id: 1,
+        label: "Generating secure organization slug...",
+        status: "waiting",
+      },
+      {
+        id: 2,
+        label: "Creating isolated tenant partition...",
+        status: "waiting",
+      },
+      {
+        id: 3,
+        label: "Bootstrapping system roles (Super Admin, Admin, Viewer)...",
+        status: "waiting",
+      },
+      {
+        id: 4,
+        label: "Creating administrative credentials...",
+        status: "waiting",
+      },
+      {
+        id: 5,
+        label: "Seeding department structures (Finance, HR, Sales, Ops)...",
+        status: "waiting",
+      },
+      {
+        id: 6,
+        label: "Provisioning primary warehouse WH-MAIN...",
+        status: "waiting",
+      },
+      {
+        id: 7,
+        label: "Finalizing setup & launching workspace...",
+        status: "waiting",
+      },
     ];
 
-    if (industry === 'healthcare') {
-      customLogs[4] = { id: 5, label: 'Seeding clinic directory and practitioner roster...', status: 'waiting' };
-      customLogs[5] = { id: 6, label: 'Provisioning Patient EHR tables and EHR encryption keys...', status: 'waiting' };
-    } else if (industry === 'education') {
-      customLogs[4] = { id: 5, label: 'Seeding academic course registry and faculty lists...', status: 'waiting' };
-      customLogs[5] = { id: 6, label: 'Provisioning Student Information Directory and fee catalogs...', status: 'waiting' };
-    } else if (industry === 'real-estate') {
-      customLogs[4] = { id: 5, label: 'Seeding property portfolios and leasing agent rosters...', status: 'waiting' };
-      customLogs[5] = { id: 6, label: 'Provisioning Property Units registry and Rent ledger schemas...', status: 'waiting' };
-    } else if (industry === 'manufacturing') {
-      customLogs[4] = { id: 5, label: 'Seeding manufacturing operations and workstation centers...', status: 'waiting' };
-      customLogs[5] = { id: 6, label: 'Provisioning BOM tables and scheduling cost rollups...', status: 'waiting' };
-    } else if (industry === 'services') {
-      customLogs[4] = { id: 5, label: 'Seeding client billing profiles and engineer teams...', status: 'waiting' };
-      customLogs[5] = { id: 6, label: 'Provisioning project milestone boards and timesheet logs...', status: 'waiting' };
+    if (industry === "healthcare") {
+      customLogs[4] = {
+        id: 5,
+        label: "Seeding clinic directory and practitioner roster...",
+        status: "waiting",
+      };
+      customLogs[5] = {
+        id: 6,
+        label: "Provisioning Patient EHR tables and EHR encryption keys...",
+        status: "waiting",
+      };
+    } else if (industry === "education") {
+      customLogs[4] = {
+        id: 5,
+        label: "Seeding academic course registry and faculty lists...",
+        status: "waiting",
+      };
+      customLogs[5] = {
+        id: 6,
+        label: "Provisioning Student Information Directory and fee catalogs...",
+        status: "waiting",
+      };
+    } else if (industry === "real-estate") {
+      customLogs[4] = {
+        id: 5,
+        label: "Seeding property portfolios and leasing agent rosters...",
+        status: "waiting",
+      };
+      customLogs[5] = {
+        id: 6,
+        label:
+          "Provisioning Property Units registry and Rent ledger schemas...",
+        status: "waiting",
+      };
+    } else if (industry === "manufacturing") {
+      customLogs[4] = {
+        id: 5,
+        label: "Seeding manufacturing operations and workstation centers...",
+        status: "waiting",
+      };
+      customLogs[5] = {
+        id: 6,
+        label: "Provisioning BOM tables and scheduling cost rollups...",
+        status: "waiting",
+      };
+    } else if (industry === "services") {
+      customLogs[4] = {
+        id: 5,
+        label: "Seeding client billing profiles and engineer teams...",
+        status: "waiting",
+      };
+      customLogs[5] = {
+        id: 6,
+        label: "Provisioning project milestone boards and timesheet logs...",
+        status: "waiting",
+      };
     }
 
-    setSeedingLogs(customLogs as any);
+    // Real UUID only — the API validates tenantId as a UUID (registerSchema).
+    // Ancient browsers without crypto.randomUUID just skip client-generated
+    // ids: the server mints its own and the progress poll below is a no-op.
+    const tempTenantId =
+      typeof window !== "undefined" && window.crypto?.randomUUID
+        ? window.crypto.randomUUID()
+        : undefined;
+
     setStep(3);
+    setSeedingLogs(customLogs as any);
 
-    // Start logs animation sequence
-    let currentLogIndex = 0;
-    const updateLogInterval = setInterval(() => {
-      setSeedingLogs(prev => prev.map((log, idx) => {
-        if (idx === currentLogIndex) return { ...log, status: 'loading' };
-        if (idx < currentLogIndex) return { ...log, status: 'done' };
-        return log;
-      }));
-      
-      if (currentLogIndex > 0) {
-        setSeedingLogs(prev => prev.map((log, idx) => {
-          if (idx === currentLogIndex - 1) return { ...log, status: 'done' };
-          return log;
-        }));
-      }
+    // Start real-time provisioning progress polling
+    const pollInterval: ReturnType<typeof setInterval> | undefined =
+      tempTenantId
+        ? setInterval(async () => {
+            try {
+              const statusData = await apiGet<{
+                progress: number;
+                currentStep: string;
+                status: string;
+                error?: string;
+              }>(`/auth/provisioning/${tempTenantId}/status`);
 
-      currentLogIndex++;
-      if (currentLogIndex >= customLogs.length) {
-        clearInterval(updateLogInterval);
-      }
-    }, 600);
+              setSeedingLogs((prev) =>
+                prev.map((log, idx) => {
+                  let expectedPct = 15;
+                  if (idx === 1) expectedPct = 30;
+                  if (idx === 2) expectedPct = 50;
+                  if (idx === 3) expectedPct = 65;
+                  if (idx === 4) expectedPct = 80;
+                  if (idx === 5) expectedPct = 90;
+                  if (idx === 6) expectedPct = 95;
+
+                  if (statusData.progress >= expectedPct) {
+                    return { ...log, status: "done" };
+                  }
+                  if (statusData.progress >= expectedPct - 15) {
+                    return { ...log, status: "loading" };
+                  }
+                  return log;
+                }),
+              );
+            } catch (pollErr) {
+              // Ignore polling errors silently
+            }
+          }, 300)
+        : undefined;
 
     try {
       // 1. Post to API to register tenant and admin user
-      const registerRes = await apiPost<{ user: { email: string }; tenant: { slug: string } }>('/auth/register', {
+      const registerRes = await apiPost<{
+        user: { email: string };
+        tenant: { slug: string };
+      }>("/auth/register", {
         email,
         password,
         confirmPassword,
         firstName,
         lastName,
         organizationName,
+        businessType: businessType || undefined,
+        country: country || undefined,
+        language: language || undefined,
+        estimatedUsers: parseInt(String(estimatedUsers), 10) || 1,
+        logoUrl: logoUrl || undefined,
+        industry: industry || undefined,
+        currency: currency || undefined,
+        timezone: timezone || undefined,
+        tenantId: tempTenantId,
       });
 
-      // 2. Wait for logs interval to complete (gives user that satisfying seeding console animation)
-      await new Promise(resolve => setTimeout(resolve, 4500));
+      // 2. Stop polling and complete all logs
+      clearInterval(pollInterval);
+      setSeedingLogs((prev) => prev.map((log) => ({ ...log, status: "done" })));
 
-      // 3. Complete final log
-      setSeedingLogs(prev => prev.map(log => ({ ...log, status: 'done' })));
-
-      // 4. Perform silent background login
-      const loginRes = await apiPost<{ token: string; user: Record<string, unknown> }>('/auth/login', {
+      // 3. Perform silent background login
+      const loginRes = await apiPost<{
+        token: string;
+        user: Record<string, unknown>;
+      }>("/auth/login", {
         email,
         password,
         tenantSlug: registerRes.tenant.slug,
       });
 
-      localStorage.setItem('token', loginRes.token);
-      localStorage.setItem('user', JSON.stringify(loginRes.user));
+      localStorage.setItem("token", loginRes.token);
+      localStorage.setItem("user", JSON.stringify(loginRes.user));
 
-      // 5. Navigate to Apps Workspace
-      router.push('/apps');
+      // 4. Navigate to Apps Workspace
+      router.push("/apps");
     } catch (err: unknown) {
-      clearInterval(updateLogInterval);
+      clearInterval(pollInterval);
       setStep(2); // Kick back to details
       if (err instanceof ApiRequestError) {
         setError(err.message);
       } else {
-        setError(err instanceof Error ? err.message : 'Organization registration failed.');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Organization registration failed.",
+        );
       }
       setLoading(false);
     }
@@ -219,8 +409,8 @@ export default function RegisterPage() {
     <div className="auth-container">
       {/* Left Panel — Value Propositions */}
       <div className="auth-sidebar auth-sidebar-green">
-        <div className={`auth-sidebar-shape ${styles.s1}`}  />
-        <div className={`auth-sidebar-shape ${styles.s2}`}  />
+        <div className={`auth-sidebar-shape ${styles.s1}`} />
+        <div className={`auth-sidebar-shape ${styles.s2}`} />
 
         <div className="auth-sidebar-content">
           <div className="auth-logo-area">
@@ -233,14 +423,19 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <h1>Start running your<br />business in minutes.</h1>
+          <h1>
+            Start running your
+            <br />
+            business in minutes.
+          </h1>
           <p>
-            Create a secure multi-tenant sandbox and initialize your workspace modules instantly.
+            Create a secure multi-tenant sandbox and initialize your workspace
+            modules instantly.
           </p>
 
           <div className="auth-sidebar-features">
             {VALUE_PROPS.map((prop, i) => (
-              <div key={i} className={`auth-sidebar-feature ${styles.s5}`} >
+              <div key={i} className={`auth-sidebar-feature ${styles.s5}`}>
                 <h4 className={styles.s6}>
                   <span>{prop.icon}</span> {prop.title}
                 </h4>
@@ -264,19 +459,34 @@ export default function RegisterPage() {
 
           <div className="auth-form-header">
             <h1>Register Organization</h1>
-            <p className={styles.s10}>Setup your isolated corporate workspace and system parameters.</p>
+            <p className={styles.s10}>
+              Setup your isolated corporate workspace and system parameters.
+            </p>
           </div>
 
           {/* Setup Progress */}
           <div className="auth-progress-container">
             <div className={styles.s11}>
-              <span>Step {step} of 3 — {step === 1 ? 'Organization Profile' : step === 2 ? 'Security Credentials' : 'Provisioning'}</span>
+              <span>
+                Step {step} of 3 —{" "}
+                {step === 1
+                  ? "Organization Profile"
+                  : step === 2
+                    ? "Security Credentials"
+                    : "Provisioning"}
+              </span>
               <span className={styles.s12}>{progressPct}%</span>
             </div>
             <div className="auth-progress-bar">
               <div
                 className={`auth-progress-fill ${styles.s13}`}
-                style={{ width: `${progressPct}%`, background: progressPct === 100 ? 'var(--color-success)' : 'var(--color-primary)' }}
+                style={{
+                  width: `${progressPct}%`,
+                  background:
+                    progressPct === 100
+                      ? "var(--color-success)"
+                      : "var(--color-primary)",
+                }}
               />
             </div>
           </div>
@@ -293,7 +503,9 @@ export default function RegisterPage() {
             {step === 1 && (
               <form onSubmit={handleNextStep} className={styles.s15}>
                 <div className="auth-field-group">
-                  <label className="auth-label">Organization / Company Name *</label>
+                  <label className="auth-label">
+                    Organization / Company Name *
+                  </label>
                   <div className="auth-input-wrapper">
                     <Building size={16} className="auth-input-icon" />
                     <input
@@ -308,12 +520,13 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="auth-field-group">
-                  <label className="auth-label">Industry Profile (Optional)</label>
+                  <label className="auth-label">
+                    Industry Profile (Optional)
+                  </label>
                   <select
                     className={`auth-select ${styles.s16}`}
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
-                    
                   >
                     <option value="">— Select Industry —</option>
                     <option value="technology">Technology & SaaS</option>
@@ -328,7 +541,7 @@ export default function RegisterPage() {
                   </select>
                 </div>
 
-                <div className={`ui-grid-2 ${styles.s17}`} >
+                <div className={`ui-grid-2 ${styles.s17}`}>
                   <div className="auth-field-group">
                     <label className="auth-label">Primary Currency</label>
                     <div className="auth-input-wrapper">
@@ -366,7 +579,100 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                <button type="submit" className="landing-btn-primary auth-btn-submit">
+                <div
+                  className={`ui-grid-2 ${styles.s17}`}
+                  style={{ marginTop: "1rem" }}
+                >
+                  <div className="auth-field-group">
+                    <label className="auth-label">Business Type</label>
+                    <select
+                      value={businessType}
+                      onChange={(e) => setBusinessType(e.target.value)}
+                      className={`auth-select ${styles.s18}`}
+                    >
+                      <option value="">— Select Type —</option>
+                      <option value="corporation">Corporation</option>
+                      <option value="llc">LLC</option>
+                      <option value="partnership">Partnership</option>
+                      <option value="sole_proprietorship">
+                        Sole Proprietorship
+                      </option>
+                      <option value="nonprofit">Non-Profit</option>
+                    </select>
+                  </div>
+
+                  <div className="auth-field-group">
+                    <label className="auth-label">Estimated Users</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="auth-input"
+                      value={estimatedUsers}
+                      onChange={(e) =>
+                        setEstimatedUsers(
+                          Math.max(1, parseInt(e.target.value) || 1),
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className={`ui-grid-2 ${styles.s17}`}
+                  style={{ marginTop: "1rem" }}
+                >
+                  <div className="auth-field-group">
+                    <label className="auth-label">Country</label>
+                    <select
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className={`auth-select ${styles.s18}`}
+                    >
+                      <option value="US">United States</option>
+                      <option value="CA">Canada</option>
+                      <option value="GB">United Kingdom</option>
+                      <option value="DE">Germany</option>
+                      <option value="IN">India</option>
+                      <option value="AU">Australia</option>
+                    </select>
+                  </div>
+
+                  <div className="auth-field-group">
+                    <label className="auth-label">Primary Language</label>
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className={`auth-select ${styles.s18}`}
+                    >
+                      <option value="en">English</option>
+                      <option value="es">Español</option>
+                      <option value="fr">Français</option>
+                      <option value="de">Deutsch</option>
+                      <option value="hi">हिन्दी</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div
+                  className="auth-field-group"
+                  style={{ marginTop: "1rem", marginBottom: "1rem" }}
+                >
+                  <label className="auth-label">
+                    Organization Logo URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    className="auth-input"
+                    placeholder="https://example.com/logo.png"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="landing-btn-primary auth-btn-submit"
+                >
                   Next: Admin Credentials <ChevronRight size={16} />
                 </button>
               </form>
@@ -428,10 +734,9 @@ export default function RegisterPage() {
                   <div className="auth-input-wrapper">
                     <Lock size={16} className="auth-input-icon" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       required
                       className={`auth-input ${styles.s20}`}
-                      
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -450,16 +755,27 @@ export default function RegisterPage() {
                   {password && (
                     <div className={styles.s22}>
                       <div className={styles.s23}>
-                        {[1, 2, 3, 4, 5].map(level => (
+                        {[1, 2, 3, 4, 5].map((level) => (
                           <div
                             key={level}
-                            style={{ background: passwordStrength.score >= level ? passwordStrength.color : 'var(--color-bg-sunken)' }} className={styles.s24}
+                            style={{
+                              background:
+                                passwordStrength.score >= level
+                                  ? passwordStrength.color
+                                  : "var(--color-bg-sunken)",
+                            }}
+                            className={styles.s24}
                           />
                         ))}
                       </div>
-                      <span style={{ color: passwordStrength.color }} className={styles.s25}>
+                      <span
+                        style={{ color: passwordStrength.color }}
+                        className={styles.s25}
+                      >
                         {passwordStrength.label}
-                        {password.length > 0 && password.length < 8 && ' — min 8 characters'}
+                        {password.length > 0 &&
+                          password.length < 8 &&
+                          " — min 8 characters"}
                       </span>
                     </div>
                   )}
@@ -470,10 +786,14 @@ export default function RegisterPage() {
                   <div className="auth-input-wrapper">
                     <Lock size={16} className="auth-input-icon" />
                     <input
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       required
                       className={`auth-input ${styles.s20}`}
-                      style={{ borderColor: !passwordsMatch ? 'var(--color-danger)' : undefined }}
+                      style={{
+                        borderColor: !passwordsMatch
+                          ? "var(--color-danger)"
+                          : undefined,
+                      }}
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -481,16 +801,20 @@ export default function RegisterPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className={styles.s21}
                     >
-                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showConfirmPassword ? (
+                        <EyeOff size={16} />
+                      ) : (
+                        <Eye size={16} />
+                      )}
                     </button>
                   </div>
                   {!passwordsMatch && (
-                    <p className={styles.s26}>
-                      Passwords do not match
-                    </p>
+                    <p className={styles.s26}>Passwords do not match</p>
                   )}
                 </div>
 
@@ -504,7 +828,24 @@ export default function RegisterPage() {
                     className={styles.s28}
                   />
                   <label htmlFor="agree-terms" className={styles.s29}>
-                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className={styles.s30}>Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className={styles.s30}>Privacy Policy</a>
+                    I agree to the{" "}
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.s30}
+                    >
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.s30}
+                    >
+                      Privacy Policy
+                    </a>
                   </label>
                 </div>
 
@@ -513,17 +854,21 @@ export default function RegisterPage() {
                     type="button"
                     onClick={handlePrevStep}
                     className={`auth-btn-back ${styles.s32}`}
-                    
                   >
                     <ChevronLeft size={16} /> Back
                   </button>
                   <button
                     type="submit"
                     className={`landing-btn-primary auth-btn-submit ${styles.s33}`}
-                    disabled={loading || !agreedToTerms || !passwordsMatch || password.length < 8}
-                    
+                    disabled={
+                      loading ||
+                      !agreedToTerms ||
+                      !passwordsMatch ||
+                      password.length < 8
+                    }
                   >
-                    Create Workspace <Sparkles size={14} className={styles.s44} />
+                    Create Workspace{" "}
+                    <Sparkles size={14} className={styles.s44} />
                   </button>
                 </div>
               </form>
@@ -535,19 +880,35 @@ export default function RegisterPage() {
                 <div className={styles.s35}>
                   <Spinner size="md" />
                   <div>
-                    <h3 className={styles.s36}>Provisioning isolated workspace partition...</h3>
-                    <p className={styles.s37}>Seeding database structures and bootstrapping admin credentials.</p>
+                    <h3 className={styles.s36}>
+                      Provisioning isolated workspace partition...
+                    </h3>
+                    <p className={styles.s37}>
+                      Seeding database structures and bootstrapping admin
+                      credentials.
+                    </p>
                   </div>
                 </div>
 
                 {/* Simulated Seeding Log Console */}
                 <div className={styles.s38}>
-                  {seedingLogs.map(log => (
-                    <div key={log.id} style={{ color: log.status === 'done' ? '#4ade80' : log.status === 'loading' ? 'var(--color-primary)' : '#4b5563' }} className={styles.s39}>
-                      {log.status === 'done' ? (
+                  {seedingLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      style={{
+                        color:
+                          log.status === "done"
+                            ? "#4ade80"
+                            : log.status === "loading"
+                              ? "var(--color-primary)"
+                              : "#4b5563",
+                      }}
+                      className={styles.s39}
+                    >
+                      {log.status === "done" ? (
                         <CheckCircle2 size={13} className={styles.s45} />
-                      ) : log.status === 'loading' ? (
-                        <span className={`console-spinner ${styles.s40}`}  />
+                      ) : log.status === "loading" ? (
+                        <span className={`console-spinner ${styles.s40}`} />
                       ) : (
                         <div className={styles.s41} />
                       )}
@@ -560,7 +921,7 @@ export default function RegisterPage() {
           </div>
 
           <p className={styles.s42}>
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link href="/login" className={styles.s46}>
               Sign in here
             </Link>

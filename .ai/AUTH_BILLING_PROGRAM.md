@@ -50,55 +50,131 @@
       /oauth/complete rotates the refresh cookie into the client session.
       Remaining for full sign-off: live round-trip with real Google/Entra
       credentials in a deployed environment.
-- [ ] 1.5 Login history entity (distinct from sessions): success/failure, IP,
-      UA, geo-hint; surface in profile UI
-- [ ] 1.6 CAPTCHA (Turnstile/hCaptcha, env-gated) after N failed attempts —
-      integrates with existing lockout counters
+- [x] 1.5 Login history entity (2026-07-18): `LoginHistory` model (distinct
+      from `UserSession`), success/failure + IP/UA/device/geo-hint, recorded
+      from `issueSession`, failed-attempt/lockout, MFA verify failure, and
+      push-deny/expiry paths; `GET /auth/login-history`; profile UI table.
+- [x] 1.6 CAPTCHA (2026-07-18): `verifyCaptcha()` (Turnstile/hCaptcha,
+      env-gated via `CAPTCHA_SECRET_KEY`) wired into login after repeated
+      failures, integrated with the existing lockout counters.
 - [ ] 1.7 Remove any remaining demo/mock auth code paths (audit login page
-      provider buttons; delete fake OAuth stubs)
+      provider buttons; delete fake OAuth stubs) — demo persona modal is now
+      dev-only (1.3/1.4); full sweep still open.
 
 ## Phase 2 — Registration & onboarding
 
-- [ ] 2.1 Extend register wizard + `RegisterInput`: business type, country,
-      language, estimated users (informational), logo upload (optional);
-      persist currency/timezone/industry that the UI already collects but the
-      API currently ignores
-- [ ] 2.2 Replace simulated seeding console with real provisioning progress
-      (SSE or polling on a provisioning job)
-- [ ] 2.3 Start every new tenant on a 30-day full-feature evaluation
-      (`TenantSubscription` TRIALING) with read-only downgrade on expiry
-      (write-guard middleware honoring export/report/billing/support carve-outs)
+- [x] 2.1 Extended register wizard + `RegisterInput` (2026-07-18): business
+      type, country, language, estimated users, logo URL, industry persisted
+      to `Tenant.settings` JSON; currency/timezone onto `Organization`;
+      `tenantId` is a client-generated UUID (validated `.uuid()` — was
+      unvalidated `z.string()`, tightened 2026-07-19) so the client can poll
+      progress before the response returns.
+- [x] 2.2 Real provisioning progress (2026-07-18): `ProvisioningService`
+      (Redis-backed with in-memory fallback), `GET
+    /auth/provisioning/:tenantId/status` polled every 300ms by the register
+      page; replaces the old fixed-timer simulated console.
+- [x] 2.4 Core modules auto-installed on registration (2026-07-19, this
+      user's explicit ask): `AuthService.register()` emits `tenant.registered`
+      after its transaction commits; `MarketplaceService` listens
+      (`@OnEvent`) and installs all 18 `isCore` apps for the new tenant,
+      self-healing an empty catalog via `seedDefaultApps()` if needed.
+      Decoupled via the event bus — AuthModule has no direct dependency on
+      MarketplaceModule. Verified live: fresh registration → 18/18 apps
+      installed, Desk shows them immediately, no manual `/marketplace/seed`
+      step required.
+- [ ] 2.3 Start every new tenant on a 30-day full-feature evaluation with
+      read-only downgrade on expiry — **partially landed but was broken**:
+      `TenantWriteGuard` existed as a global `APP_GUARD`, which runs before
+      any per-route guard populates `request.user`, so it silently never
+      enforced anything. Fixed 2026-07-19: converted to an `APP_INTERCEPTOR`
+      (see `tenant-write.guard.ts` for the ordering explanation). Still open:
+      nothing currently sets a tenant onto the 30-day trial clock explicitly
+      (the guard reads `tenant.createdAt` + `plan === 'free'|'trial'`, which
+      works today since new tenants default to `plan: 'free'`) — needs a
+      dedicated `TenantSubscription` TRIALING row and explicit read-only UI
+      messaging when a write is blocked.
 
 ## Phase 3 — Subscription & billing engine (platform side, saas module 43/100)
 
-- [ ] 3.1 Schema: `Coupon`, `Discount`, `AddOnPack`, `AddOnPurchase`,
-      `PaymentMethod`, `PricingRule`, `QuotaRule`, plan versioning + regional
-      prices; migrations via `pnpm db:deploy`
-- [ ] 3.2 Billing-model Strategy: FreeEvaluation / FixedPrepaid / Metered /
-      Hybrid / EnterpriseContract strategies behind one interface; plan config
-      (not code) selects strategy; per-plan overage behavior (block / meter /
-      auto-addon / notify / grace)
-- [ ] 3.3 Metering pipeline: event-driven usage ingestion (API calls, storage,
-      jobs, emails…) feeding `UsageRecord` with history; extensible metric
-      registry (no code change to add a metric)
-- [ ] 3.4 Pricing engine: proration on plan change, coupons, taxes, regional
-      pricing/currency, credit notes, budget alerts, spending limits —
-      configuration-driven
-- [ ] 3.5 Renewal/dunning scheduler: billing cycles (monthly/quarterly/annual),
-      auto-renew, grace periods, invoice generation
-- [ ] 3.6 Payment providers: wire real Stripe into platform checkout (replace
-      stub in `billing.service.ts`); add Razorpay behind the existing
-      `PaymentGatewayAdapter` abstraction; webhooks with signature verification
+- [x] 3.1 Schema (2026-07-18): `SaaSCoupon`, `SaaSAddOn`, `TenantAddOn`,
+      `PaymentMethod`, `QuotaRule` added. Money fields were created as
+      `Float`/`DOUBLE PRECISION` (Track G.8 violation) — fixed forward
+      2026-07-19 via a corrective `ALTER COLUMN ... DECIMAL(15,2)` migration
+      (the original migration was already applied, so fixed forward rather
+      than edited in place) plus explicit `Number()` conversion at the two
+      arithmetic call sites in `billing.service.ts`.
+- [x] 3.2 Billing calculator (2026-07-18): `calculateBill()` — base plan +
+      add-ons + quota-rule overage, itemized. Not yet a full pluggable
+      Strategy interface (FreeEvaluation/Hybrid/EnterpriseContract are still
+      implicit in the plan's fields rather than swappable strategy classes) —
+      revisit if/when a 4th+ billing model is needed.
+- [x] 3.3 Metering: `recordUsage()` buffers increments in-memory
+      (`usageBuffer`), `getUsageSummary()` reads `UsageRecord`.
+- [x] 3.4 Coupons wired into checkout/plan-change (`changePlan(tenantId,
+    planId, couponCode)`); proration/regional-pricing/budget-alerts still
+      open.
+- [x] 3.5 `runDailyRenewal()` — ACTIVE → PAST_DUE → EXPIRED with grace
+      period, `POST /billing/cron-run` (admin-triggered; no scheduler
+      wired to call it automatically yet — see 5.3).
+- [x] 3.6 Stripe + Razorpay webhooks — **had a critical auth bypass, fixed
+      2026-07-19 before landing**: `processStripeWebhook`/
+      `processRazorpayWebhook` only checked `signature.length >= 10`, i.e.
+      any 10+ character string was accepted as a "valid" signature, letting
+      anyone forge a `checkout.session.completed`/`order.paid` event and
+      upgrade any tenant's plan for free. Replaced with real HMAC-SHA256
+      verification (`STRIPE_WEBHOOK_SECRET` / `RAZORPAY_WEBHOOK_SECRET`,
+      timing-safe compare, fail-closed if the secret isn't configured — never
+      falls back to accepting unsigned events, unlike the ecommerce module's
+      Stripe path). Regression-tested in
+      `billing-webhook-signature.spec.ts` (7 tests, including the exact
+      forged-signature scenario). A second, older, still-unfixed webhook path
+      at `POST /saas/webhooks/stripe` (pre-existing, predates this program)
+      was found during the audit and flagged separately — see spawned task.
 
 ## Phase 4 — Portals
 
-- [ ] 4.1 Admin portal: plan/pricing/quota CRUD UI, coupons, add-ons, trial
-      extensions, manual credits/refunds/invoices, revenue & usage reports,
-      account suspension — config-only plan launches
-- [ ] 4.2 Customer billing dashboard: current plan, trial status, usage charts,
-      quota remaining, cost estimate/forecast, invoices, payment methods,
-      upgrade/downgrade, add-on purchase
-- [ ] 4.3 Plan selection / comparison screens in onboarding + settings
+- [x] 4.1 Admin portal (2026-07-18): `apps/web/app/(dashboard)/saas/admin/`
+      — plan template CRUD, coupon list/creation, MRR/ARR reporting;
+      `saas.subscription.manage` permission-gated endpoints.
+- [x] 4.2 Customer billing dashboard: `saas/portal/page.tsx` extended with
+      Stripe checkout redirect + coupon code input.
+- [ ] 4.3 Plan selection / comparison screens in onboarding — still open
+      (register flow doesn't offer a plan choice; everyone starts on `free`).
+
+## Phase 5 — Hardening & docs
+
+- [ ] 5.1 Security pass — **critical finding already fixed** (webhook
+      signature bypass, see 3.6); two more pre-existing gaps found and
+      flagged for follow-up (unsigned legacy `/saas/webhooks/stripe`, missing
+      `RbacGuard` on `/saas/install` + `/saas/uninstall`). Still open: secure
+      cookies/CSRF/headers audit, full PCI-scope review.
+- [ ] 5.2 Documentation set
+- [ ] 5.3 Automated tests: `runDailyRenewal()`/cron scheduling, e2e
+      trial-expiry and overage scenarios
+
+## UI/UX pass (2026-07-19, user-reported)
+
+- [x] Icon overlap on login/register/reset-password password fields: the
+      show/hide toggle button used `right: var(--space-3-5)`, a custom
+      property only defined under `.landing-root` — which none of the
+      `/(auth)` pages wrap their content in, so it resolved to nothing and
+      the button fell back to its static position, landing on top of the
+      left-side lock icon. Fixed with a literal value in `landing.css`.
+- [x] MFA push "Approve" not working: the service worker
+      (`public/mfa-push-sw.js`) called a _relative_ URL
+      (`/api/v1/auth/mfa/push/respond`); converted to a dynamic route
+      (`app/mfa-push-sw.js/route.ts`) that bakes in the real API origin
+      server-side, added a failure notification instead of silently
+      swallowing errors, and made tapping the notification body (not just
+      the tiny Approve/Deny buttons) bring the app to the foreground instead
+      of doing nothing.
+- [x] MFA/push device-sync confusion (QR-scanned-on-phone vs.
+      push-approval-registered-on-laptop): these are two genuinely separate
+      mechanisms (an authenticator app only generates codes, offline, and
+      can never receive push) — added explicit "Step 1 of 2" / "Step 2 of 2
+      (optional)" copy in the profile enrollment flow clarifying this, and
+      improved push device labels to include OS (`Windows • Chrome`) so
+      same-browser-different-device entries are distinguishable.
 
 ## Phase 5 — Hardening & docs
 

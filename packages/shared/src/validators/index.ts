@@ -106,6 +106,7 @@ export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   rememberMe: z.boolean().optional(),
+  captchaToken: z.string().optional(),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
@@ -156,6 +157,15 @@ export const registerSchema = z
       .string()
       .min(1, "Organization name is required")
       .max(200),
+    businessType: z.string().optional(),
+    country: z.string().optional(),
+    language: z.string().optional(),
+    estimatedUsers: z.number().optional(),
+    logoUrl: z.string().optional(),
+    industry: z.string().optional(),
+    currency: z.string().optional(),
+    timezone: z.string().optional(),
+    tenantId: z.string().uuid().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

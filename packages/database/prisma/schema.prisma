@@ -39,6 +39,7 @@ model Tenant {
   accessPackages       AccessPackage[]
   ssoConfigs           SsoConfig[]
   userSessions         UserSession[]
+  loginHistories       LoginHistory[]
   userGroups           UserGroup[]
   ipRestrictions       IpRestriction[]
   fixedAssets          FixedAsset[]
@@ -53,6 +54,8 @@ model Tenant {
   outboxDeliveries        OutboxDelivery[]
   outboxConsumerReceipts  OutboxConsumerReceipt[]
   lifecycleEvents         TenantLifecycleEvent[]
+  tenantAddOns            TenantAddOn[]
+  paymentMethods          PaymentMethod[]
 
   @@map("tenants")
 }
@@ -110,6 +113,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   identities              UserIdentity[]
+  loginHistories          LoginHistory[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -5111,6 +5115,7 @@ model SaaSPlan {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   subscriptions TenantSubscription[]
+  quotaRules    QuotaRule[]
 
   @@map("saas_plans")
 }
@@ -5142,6 +5147,83 @@ model UsageRecord {
   @@unique([tenantId, metric])
   @@index([tenantId])
   @@map("usage_records")
+}
+
+model SaaSCoupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  discountType   String    @map("discount_type") // PERCENTAGE, FLAT_AMOUNT
+  discountValue  Decimal   @map("discount_value") @db.Decimal(15, 2)
+  expiresAt      DateTime? @map("expires_at")
+  maxRedemptions Int?      @map("max_redemptions")
+  timesRedeemed  Int       @default(0) @map("times_redeemed")
+  status         String    @default("ACTIVE") // ACTIVE, EXPIRED, DISABLED
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("saas_coupons")
+}
+
+model SaaSAddOn {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  price         Decimal        @db.Decimal(15, 2)
+  billingPeriod String         @map("billing_period") // MONTHLY, YEARLY
+  description   String?
+  status        String         @default("ACTIVE")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  tenantAddOns  TenantAddOn[]
+  quotaRules    QuotaRule[]
+
+  @@map("saas_addons")
+}
+
+model TenantAddOn {
+  id        String    @id @default(cuid())
+  tenantId  String    @map("tenant_id")
+  addonId   String    @map("addon_id")
+  quantity  Int       @default(1)
+  status    String    @default("ACTIVE")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  addon  SaaSAddOn @relation(fields: [addonId], references: [id])
+
+  @@unique([tenantId, addonId])
+  @@map("tenant_addons")
+}
+
+model PaymentMethod {
+  id                      String   @id @default(cuid())
+  tenantId                String   @map("tenant_id")
+  provider                String   // STRIPE, RAZORPAY
+  providerPaymentMethodId String   @map("provider_payment_method_id")
+  cardBrand               String?  @map("card_brand")
+  cardLast4               String?  @map("card_last_4")
+  isDefault               Boolean  @default(false) @map("is_default")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("payment_methods")
+}
+
+model QuotaRule {
+  id               String   @id @default(cuid())
+  planId           String?  @map("plan_id")
+  addonId          String?  @map("addon_id")
+  metric           String   // STORAGE_MB, API_CALLS_COUNT, USERS_COUNT, etc.
+  limitValue       Int      @map("limit_value")
+  pricePerUnit     Decimal  @default(0) @map("price_per_unit") @db.Decimal(15, 2)
+  billingThreshold Int      @default(0) @map("billing_threshold")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  plan  SaaSPlan?  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  addon SaaSAddOn? @relation(fields: [addonId], references: [id], onDelete: Cascade)
+
+  @@map("quota_rules")
 }
 
 model InstalledApp {
@@ -8556,6 +8638,26 @@ model UserSession {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_sessions")
+}
+
+model LoginHistory {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  userId        String   @map("user_id")
+  status        String   // SUCCESS, FAILED
+  ipAddress     String?  @map("ip_address")
+  device        String?
+  browser       String?
+  location      String?
+  failureReason String?  @map("failure_reason")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("login_histories")
 }
 
 model UserGroup {

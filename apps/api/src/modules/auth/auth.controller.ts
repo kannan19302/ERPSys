@@ -24,6 +24,7 @@ import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
+import { ProvisioningService } from "./provisioning.service";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import {
@@ -118,7 +119,16 @@ function sessionContext(req: Request) {
 @ApiBearerAuth()
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly provisioningService: ProvisioningService,
+  ) {}
+
+  @ApiOperation({ summary: "Get database provisioning progress for a tenant" })
+  @Get("provisioning/:tenantId/status")
+  async getProvisioningStatus(@Param("tenantId") tenantId: string) {
+    return this.provisioningService.getProgress(tenantId);
+  }
 
   @ApiOperation({ summary: "Register" })
   @Permissions("auth.create")
@@ -323,6 +333,17 @@ export class AuthController {
       req.user.userId,
       req.user.tenantId,
       req.user.sid,
+    );
+  }
+
+  @ApiOperation({ summary: "List login history for this account" })
+  @Permissions("auth.read")
+  @Get("login-history")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  async listLoginHistory(@Req() req: AuthenticatedRequest) {
+    return this.authService.listLoginHistory(
+      req.user.userId,
+      req.user.tenantId,
     );
   }
 

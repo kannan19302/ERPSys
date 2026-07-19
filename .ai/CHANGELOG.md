@@ -8,6 +8,46 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-18] CYCLE 24 — Workspace Dependency Link & Compilation Fixes
+
+**Scope**: Resolved Next.js compile-time module resolution failures and TypeScript type errors across the onboarding and administration pages.
+
+- **`apps/web/package.json`**: Added `@unerp/ui-*` sub-packages directly to dependencies to guarantee workspace symlinking by pnpm.
+- **`apps/web/app/(auth)/register/page.tsx`**: Removed a redundant closing curly brace that broke `handleSubmit`, and imported `apiGet` to support the seeding progress polling.
+- **`apps/web/app/(dashboard)/saas/admin/page.tsx`**: Changed the style shorthand `pb` to standard CSS `paddingBottom` and mapped the `emptyDescription` DataTable prop to `emptyMessage` to align with strict package type interfaces.
+
+## [2026-07-18] CYCLE 23 — Auth & Billing Program (Phases 3.2 - 5)
+
+**Scope**: Completed the remaining phases of the Auth/Billing Roadmap (Phases 3.2 to 5) to implement strategy-based plan billing, usage metering pipelines, webhook adapters, cron renewals, discount coupons checkout, and admin dashboard controls.
+
+- **`packages/database/prisma/schema.prisma`**: Applied migration `20260718160813_add_billing_and_coupon_models` to configure models `SaaSCoupon`, `SaaSAddOn`, `TenantAddOn`, `PaymentMethod`, and `QuotaRule`.
+- **`apps/api/src/modules/saas/billing.service.ts`**:
+  - Implemented strategy pattern billing calculator supporting Prepaid, Metered, and Hybrid billing.
+  - Implemented background, non-blocking, and buffered usage record persistence.
+  - Implemented daily CRON renewal runner supporting grace periods (`ACTIVE` -> `PAST_DUE` -> `EXPIRED` status transitions).
+  - Implemented Stripe and Razorpay webhook payload processes.
+- **`apps/api/src/modules/saas/billing-webhook.controller.ts`**: Created unauthenticated controller for Stripe and Razorpay webhooks to parse raw request bodies for cryptographic signature verification.
+- **`apps/api/src/modules/saas/billing.controller.ts`**: Refactored to parameterize coupons in checkouts and support manual admin billing CRON trigger.
+- **`apps/api/src/modules/saas/saas.service.ts` / `saas.controller.ts`**: Added Admin-scoped endpoints for SaaS plan template creation and discount coupon management with `saas.subscription.manage` permission gates.
+- **`apps/web/app/(dashboard)/saas/portal/page.tsx`**: Integrated Stripe checkout session redirection and promo/coupon code confirmation input.
+- **`apps/web/app/(dashboard)/saas/admin/page.tsx`**: Created SaaS admin dashboard for plan template CRUD, discount coupon lists/creation, and platform recurring revenue reporting.
+- **`apps/api/src/common/guards/tenant-write.guard.ts`**: Corrected relation mapping of subscriptions to subscription singular in Tenant model.
+- **`apps/api/src/main.ts`**: Updated raw body parser middleware to match `/billing-webhooks/stripe`.
+
+## [2026-07-18] CYCLE 22 — Login History Entity & Profile UI
+
+**Scope**: Implemented Login History (Phase 1.5 of the Auth/Billing Roadmap) to record all successful and failed sign-in attempts (including MFA failures and lockouts) and display recent history in the user profile settings page.
+
+- **`packages/database/prisma/schema.prisma`**: Defined the `LoginHistory` model with mandatory `tenantId` and `userId` fields to enforce RLS and tenant isolation, and added relations to the `User` and `Tenant` models. Created and ran database migration `20260718154634_add_login_history`.
+- **`apps/api/src/modules/auth/auth.service.ts`**:
+  - Implemented `recordFailedLogin()` helper and `listLoginHistory()` query.
+  - Added simple geo-hinting resolver `getGeoHint()`.
+  - Updated `issueSession()` to record a successful `SUCCESS` login history entry.
+  - Updated `registerFailedAttempt()`, `verifyMfaLogin()`, and `getMfaPushStatus()` to record `FAILED` login history entries for bad credentials, account lockouts, MFA verification failures, and denied/expired push requests.
+- **`apps/api/src/modules/auth/auth.controller.ts`**: Exposed the `GET /auth/login-history` endpoint (`listLoginHistory`).
+- **`apps/web/app/(dashboard)/profile/page.tsx`**: Added a new "Recent Login History" table card below the Active Sessions card to display login attempts (date, status badge, IP address, device/browser, and geo-hint).
+- **`apps/api/src/modules/auth/tests/auth.integration.itest.ts`**: Added integration tests verifying login history recording for SUCCESS and FAILED events and ensured data is cleaned up properly.
+
 ## [2026-07-18] CYCLE 21 — ViewSwitcher & AppHeader Layout Fixes
 
 **Scope**: Resolved button text squishing and wrapping issues on the shared `ViewSwitcher` design system component and the global `AppHeader` action buttons.

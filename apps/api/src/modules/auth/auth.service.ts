@@ -8,7 +8,8 @@ import {
 } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { randomBytes, createHash } from "node:crypto";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { randomBytes, createHash, randomUUID } from "node:crypto";
 import * as webPush from "web-push";
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { UserRole, Role } from "@prisma/client";
@@ -39,6 +40,7 @@ import {
   encryptSecret,
   decryptSecret,
 } from "./auth-crypto";
+import { ProvisioningService } from "./provisioning.service";
 
 /** Failed logins allowed before the account is temporarily locked. */
 const MAX_FAILED_ATTEMPTS = 5;
@@ -117,6 +119,21 @@ function parseUserAgent(ua?: string | null): {
   return { device, browser };
 }
 
+/** Simple geo-hint resolver based on IP address. */
+function getGeoHint(ip?: string | null): string | null {
+  if (!ip) return null;
+  if (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip.startsWith("192.168.") ||
+    ip.startsWith("10.") ||
+    ip.startsWith("::ffff:127.0.0.1")
+  ) {
+    return "Local Network";
+  }
+  return "United States (GeoIP Stub)";
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -125,6 +142,10 @@ export class AuthService {
     @Optional()
     @InjectQueue("email")
     private readonly emailQueue?: Queue,
+    @Optional()
+    private readonly provisioningService?: ProvisioningService,
+    @Optional()
+    private readonly eventEmitter?: EventEmitter2,
   ) {}
 
   private get isProduction() {
@@ -176,156 +197,225 @@ export class AuthService {
       );
     }
 
-    // Hash the administrator's password
-    const hashedPassword = await hashPassword(dto.password);
+    const tenantId = dto.tenantId || randomUUID();
+    const updateProgress = async (
+      pct: number,
+      step: string,
+      status: "pending" | "success" | "failed" = "pending",
+      err?: string,
+    ) => {
+      if (this.provisioningService) {
+        await this.provisioningService.setProgress(
+          tenantId,
+          pct,
+          step,
+          status,
+          err,
+        );
+      }
+    };
 
-    // Run creation in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Create Tenant
-      const tenant = await tx.tenant.create({
-        data: {
-          name: dto.organizationName,
-          slug,
-          plan: "free",
-          status: "ACTIVE",
-        },
-      });
+    try {
+      await updateProgress(10, "Initializing setup...");
 
-      // Registration is unauthenticated, so no tenant session exists yet and
-      // the RLS session GUC is never set by the client extension. Set it
-      // transaction-locally so the inserts below pass the RLS policies on
-      // roles/users/organizations/departments (#21 Track C).
-      await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenant.id}, true)`;
+      // Hash the administrator's password
+      const hashedPassword = await hashPassword(dto.password);
 
-      // 2. Create default roles for the tenant
-      const defaultRolesConfig = {
-        SUPER_ADMIN: {
-          name: "Super Admin",
-          description: "Full access to all features",
-          permissions: ["*"],
-        },
-        ADMIN: {
-          name: "Admin",
-          description: "Administrative access with user management",
-          permissions: ["admin.*", "finance.*", "hr.*", "crm.*", "inventory.*"],
-        },
-        VIEWER: {
-          name: "Viewer",
-          description: "Read-only access to all modules",
-          permissions: [
-            "finance.invoice.read",
-            "finance.report.read",
-            "hr.employee.read",
-            "crm.contact.read",
-            "inventory.product.read",
-          ],
-        },
-      };
-
-      const rolesMap: Record<string, string> = {};
-      for (const [key, role] of Object.entries(defaultRolesConfig)) {
-        const dbRole = await tx.role.create({
+      // Run creation in a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        await updateProgress(15, "Creating secure organization partition...");
+        // 1. Create Tenant
+        const tenant = await tx.tenant.create({
           data: {
-            tenantId: tenant.id,
-            name: role.name,
-            description: role.description,
-            isSystem: true,
-            permissions: JSON.stringify(role.permissions),
+            id: tenantId,
+            name: dto.organizationName,
+            slug,
+            plan: "free",
+            status: "ACTIVE",
+            settings: {
+              businessType: dto.businessType || null,
+              country: dto.country || null,
+              language: dto.language || null,
+              estimatedUsers: dto.estimatedUsers || null,
+              logoUrl: dto.logoUrl || null,
+              industry: dto.industry || null,
+            },
           },
         });
-        rolesMap[key] = dbRole.id;
-      }
 
-      // 3. Create User
-      const user = await tx.user.create({
-        data: {
-          tenantId: tenant.id,
-          email: dto.email.toLowerCase(),
-          passwordHash: hashedPassword,
-          passwordChangedAt: new Date(),
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          status: "ACTIVE",
-        },
-      });
+        // Registration is unauthenticated, so no tenant session exists yet and
+        // the RLS session GUC is never set by the client extension. Set it
+        // transaction-locally so the inserts below pass the RLS policies on
+        // roles/users/organizations/departments (#21 Track C).
+        await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenant.id}, true)`;
 
-      // 4. Assign SUPER_ADMIN role to user
-      const superAdminRoleId = rolesMap["SUPER_ADMIN"];
-      if (superAdminRoleId) {
-        await tx.userRole.create({
+        await updateProgress(30, "Bootstrapping default roles...");
+        // 2. Create default roles for the tenant
+        const defaultRolesConfig = {
+          SUPER_ADMIN: {
+            name: "Super Admin",
+            description: "Full access to all features",
+            permissions: ["*"],
+          },
+          ADMIN: {
+            name: "Admin",
+            description: "Administrative access with user management",
+            permissions: [
+              "admin.*",
+              "finance.*",
+              "hr.*",
+              "crm.*",
+              "inventory.*",
+            ],
+          },
+          VIEWER: {
+            name: "Viewer",
+            description: "Read-only access to all modules",
+            permissions: [
+              "finance.invoice.read",
+              "finance.report.read",
+              "hr.employee.read",
+              "crm.contact.read",
+              "inventory.product.read",
+            ],
+          },
+        };
+
+        const rolesMap: Record<string, string> = {};
+        for (const [key, role] of Object.entries(defaultRolesConfig)) {
+          const dbRole = await tx.role.create({
+            data: {
+              tenantId: tenant.id,
+              name: role.name,
+              description: role.description,
+              isSystem: true,
+              permissions: JSON.stringify(role.permissions),
+            },
+          });
+          rolesMap[key] = dbRole.id;
+        }
+
+        await updateProgress(50, "Creating administrator profile...");
+        // 3. Create User
+        const user = await tx.user.create({
+          data: {
+            tenantId: tenant.id,
+            email: dto.email.toLowerCase(),
+            passwordHash: hashedPassword,
+            passwordChangedAt: new Date(),
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            status: "ACTIVE",
+          },
+        });
+
+        await updateProgress(65, "Assigning administrative privileges...");
+        // 4. Assign SUPER_ADMIN role to user
+        const superAdminRoleId = rolesMap["SUPER_ADMIN"];
+        if (superAdminRoleId) {
+          await tx.userRole.create({
+            data: {
+              userId: user.id,
+              roleId: superAdminRoleId,
+            },
+          });
+        }
+
+        await updateProgress(
+          80,
+          "Setting up primary organization structure...",
+        );
+        // 5. Create Organization
+        const org = await tx.organization.create({
+          data: {
+            tenantId: tenant.id,
+            name: dto.organizationName,
+            currency: dto.currency || "USD",
+            timezone: dto.timezone || "UTC",
+          },
+        });
+
+        await updateProgress(90, "Seeding default departments...");
+        // 6. Create Default Departments
+        const depts = ["Finance", "Human Resources", "Sales", "Operations"];
+        for (const deptName of depts) {
+          await tx.department.create({
+            data: {
+              tenantId: tenant.id,
+              orgId: org.id,
+              name: deptName,
+              code: deptName.toUpperCase(),
+            },
+          });
+        }
+
+        await updateProgress(
+          95,
+          "Generating secure email verification token...",
+        );
+        // 7. Mint the email verification token inside the same transaction (the
+        // RLS GUC set above covers this insert too).
+        const { plain: verificationToken, hash: verificationHash } =
+          createResetToken();
+        await tx.emailVerificationToken.create({
           data: {
             userId: user.id,
-            roleId: superAdminRoleId,
-          },
-        });
-      }
-
-      // 5. Create Organization
-      const org = await tx.organization.create({
-        data: {
-          tenantId: tenant.id,
-          name: dto.organizationName,
-          currency: "USD",
-          timezone: "UTC",
-        },
-      });
-
-      // 6. Create Default Departments
-      const depts = ["Finance", "Human Resources", "Sales", "Operations"];
-      for (const deptName of depts) {
-        await tx.department.create({
-          data: {
             tenantId: tenant.id,
-            orgId: org.id,
-            name: deptName,
-            code: deptName.toUpperCase(),
+            tokenHash: verificationHash,
+            expiresAt: new Date(Date.now() + VERIFY_TOKEN_TTL_MS),
           },
         });
-      }
 
-      // 7. Mint the email verification token inside the same transaction (the
-      // RLS GUC set above covers this insert too).
-      const { plain: verificationToken, hash: verificationHash } =
-        createResetToken();
-      await tx.emailVerificationToken.create({
-        data: {
-          userId: user.id,
-          tenantId: tenant.id,
-          tokenHash: verificationHash,
-          expiresAt: new Date(Date.now() + VERIFY_TOKEN_TTL_MS),
-        },
+        return {
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          },
+          tenant: {
+            id: tenant.id,
+            name: tenant.name,
+            slug: tenant.slug,
+          },
+          verificationToken,
+        };
       });
 
-      return {
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-        tenant: {
-          id: tenant.id,
-          name: tenant.name,
-          slug: tenant.slug,
-        },
-        verificationToken,
-      };
-    });
+      const verificationLink = `${this.appUrl}/verify-email?token=${result.verificationToken}`;
+      await this.dispatchAuthEmail({
+        to: result.user.email,
+        tenantId: result.tenant.id,
+        subject: "Verify your UniERP email address",
+        body: `Welcome to UniERP! Verify your email address to secure your new workspace: ${verificationLink}`,
+      });
 
-    const verificationLink = `${this.appUrl}/verify-email?token=${result.verificationToken}`;
-    await this.dispatchAuthEmail({
-      to: result.user.email,
-      tenantId: result.tenant.id,
-      subject: "Verify your UniERP email address",
-      body: `Welcome to UniERP! Verify your email address to secure your new workspace: ${verificationLink}`,
-    });
+      // Every new tenant starts with the core in-house modules installed
+      // (AUTH_BILLING_PROGRAM Phase 2). Fired as an event — not a direct call
+      // into MarketplaceService — so AuthModule never depends on
+      // MarketplaceModule; handled asynchronously, so a slow or failed
+      // install can never block or fail the registration response itself.
+      this.eventEmitter?.emit("tenant.registered", {
+        tenantId: result.tenant.id,
+        userId: result.user.id,
+      });
 
-    const { verificationToken: _token, ...publicResult } = result;
-    if (this.isProduction) {
-      return publicResult;
+      await updateProgress(
+        100,
+        "Setup complete! Redirecting to workspace...",
+        "success",
+      );
+
+      const { verificationToken: _token, ...publicResult } = result;
+      if (this.isProduction) {
+        return publicResult;
+      }
+      // Local-dev ergonomics only — mirrors forgotPassword's developer link.
+      return { ...publicResult, developerVerificationLink: verificationLink };
+    } catch (err: any) {
+      await updateProgress(0, "Setup failed", "failed", err.message);
+      throw err;
     }
-    // Local-dev ergonomics only — mirrors forgotPassword's developer link.
-    return { ...publicResult, developerVerificationLink: verificationLink };
   }
 
   /**
@@ -494,6 +584,19 @@ export class AuthService {
             refreshTokenHash: hashResetToken(refreshToken),
             refreshExpiresAt,
             rememberMe,
+          },
+        });
+
+        // Record successful login history
+        await prisma.loginHistory.create({
+          data: {
+            tenantId: user.tenantId,
+            userId: user.id,
+            status: "SUCCESS",
+            ipAddress: context?.ipAddress ?? null,
+            browser: parsedUa.browser,
+            device: context?.device ?? parsedUa.device,
+            location: context?.ipAddress ? getGeoHint(context.ipAddress) : null,
           },
         });
 
@@ -708,9 +811,37 @@ export class AuthService {
     // Reject locked accounts before touching the password.
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       const mins = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+      await this.recordFailedLogin(
+        user.id,
+        user.tenantId,
+        "ACCOUNT_LOCKED",
+        context,
+      );
       throw new UnauthorizedException(
         `Account locked due to failed login attempts. Try again in ${mins} minute(s).`,
       );
+    }
+
+    // Check CAPTCHA if configured and failed threshold met
+    const captchaSecret = process.env.CAPTCHA_SECRET_KEY;
+    const captchaThreshold = parseInt(process.env.CAPTCHA_THRESHOLD || "3", 10);
+    if (captchaSecret && user.failedLoginAttempts >= captchaThreshold) {
+      if (!dto.captchaToken) {
+        throw new BadRequestException({
+          captchaRequired: true,
+          provider: process.env.CAPTCHA_PROVIDER || "hcaptcha",
+          siteKey:
+            process.env.CAPTCHA_SITE_KEY ||
+            "10000000-ffff-ffff-ffff-000000000001",
+          message: "CAPTCHA verification is required.",
+        });
+      }
+      const isCaptchaValid = await this.verifyCaptcha(dto.captchaToken);
+      if (!isCaptchaValid) {
+        throw new BadRequestException(
+          "Invalid CAPTCHA token. Please try again.",
+        );
+      }
     }
 
     // Validate password
@@ -723,11 +854,18 @@ export class AuthService {
         user.id,
         user.tenantId,
         user.failedLoginAttempts,
+        context,
       );
       throw new UnauthorizedException("Invalid credentials");
     }
 
     if (user.status !== "ACTIVE") {
+      await this.recordFailedLogin(
+        user.id,
+        user.tenantId,
+        `ACCOUNT_STATUS_${user.status}`,
+        context,
+      );
       throw new UnauthorizedException(
         `Account is ${user.status.toLowerCase()}`,
       );
@@ -776,6 +914,7 @@ export class AuthService {
     userId: string,
     tenantId: string,
     current: number,
+    context?: SessionContext,
   ) {
     const attempts = current + 1;
     const shouldLock = attempts >= MAX_FAILED_ATTEMPTS;
@@ -788,6 +927,85 @@ export class AuthService {
             ? new Date(Date.now() + LOCK_DURATION_MS)
             : undefined,
         },
+      }),
+    );
+    await this.recordFailedLogin(
+      userId,
+      tenantId,
+      shouldLock ? "ACCOUNT_LOCKED" : "INVALID_CREDENTIALS",
+      context,
+    );
+  }
+
+  /**
+   * Helper to write a failed login history record.
+   */
+  private async recordFailedLogin(
+    userId: string,
+    tenantId: string,
+    reason: string,
+    context?: SessionContext,
+  ) {
+    const parsedUa = parseUserAgent(context?.userAgent);
+    await runWithTenantSession({ tenantId, userId }, () =>
+      prisma.loginHistory.create({
+        data: {
+          tenantId,
+          userId,
+          status: "FAILED",
+          ipAddress: context?.ipAddress ?? null,
+          browser: parsedUa.browser,
+          device: context?.device ?? parsedUa.device,
+          location: context?.ipAddress ? getGeoHint(context.ipAddress) : null,
+          failureReason: reason,
+        },
+      }),
+    ).catch((err) => {
+      this.logger.warn(
+        `Failed to record login failure: ${err instanceof Error ? err.message : err}`,
+      );
+    });
+  }
+
+  /**
+   * Verifies hCaptcha or Turnstile CAPTCHA token.
+   */
+  private async verifyCaptcha(token: string): Promise<boolean> {
+    const secret = process.env.CAPTCHA_SECRET_KEY;
+    if (!secret) return true;
+
+    const provider = process.env.CAPTCHA_PROVIDER || "hcaptcha";
+    const url =
+      provider === "turnstile"
+        ? "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+        : "https://hcaptcha.com/siteverify";
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret,
+          response: token,
+        }),
+      });
+      const data = (await response.json()) as { success: boolean };
+      return data.success;
+    } catch (err) {
+      this.logger.error("CAPTCHA verification failed to connect", err);
+      return false;
+    }
+  }
+
+  /**
+   * Returns recent login history records for a user.
+   */
+  async listLoginHistory(userId: string, tenantId: string) {
+    return runWithTenantSession({ tenantId, userId }, () =>
+      prisma.loginHistory.findMany({
+        where: { userId, tenantId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
       }),
     );
   }
@@ -1280,6 +1498,12 @@ export class AuthService {
         : [];
       const matchIndex = await matchRecoveryCode(code, storedCodes);
       if (matchIndex === -1) {
+        await this.recordFailedLogin(
+          user.id,
+          user.tenantId,
+          "MFA_VERIFICATION_FAILED",
+          context,
+        );
         throw new UnauthorizedException("Invalid verification code.");
       }
       // Consume the used recovery code.
@@ -1515,9 +1739,24 @@ export class AuthService {
           return { status: "expired" as const };
         }
 
-        if (challenge.status === "DENIED") return { status: "denied" as const };
-        if (challenge.status === "EXPIRED")
+        if (challenge.status === "DENIED") {
+          await this.recordFailedLogin(
+            payload.userId,
+            payload.tenantId,
+            "MFA_PUSH_DENIED",
+            context,
+          );
+          return { status: "denied" as const };
+        }
+        if (challenge.status === "EXPIRED") {
+          await this.recordFailedLogin(
+            payload.userId,
+            payload.tenantId,
+            "MFA_PUSH_EXPIRED",
+            context,
+          );
           return { status: "expired" as const };
+        }
         if (challenge.status !== "APPROVED")
           return { status: "pending" as const };
 
