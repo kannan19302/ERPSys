@@ -182,6 +182,24 @@ export class AuthService {
   }
 
   /**
+   * Used by the registration wizard's real-time email check. A brand-new
+   * signup always gets its own tenant (User is unique per [tenantId, email],
+   * not globally) so this isn't a hard registration constraint — it's a
+   * friendly nudge: if the email already has an account in ANY tenant, tell
+   * the user so they can log in instead of accidentally spinning up a
+   * duplicate organization.
+   */
+  async checkEmailAvailability(email: string): Promise<{ available: boolean }> {
+    // Runs before any tenant context exists — a plain cross-tenant query
+    // would be blocked by RLS under the unerp_api runtime role, so reuse the
+    // same narrow SECURITY DEFINER lookup function login() uses (Track C / #21).
+    const users = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM auth_lookup_user_tenants(${email.toLowerCase().trim()})
+    `;
+    return { available: users.length === 0 };
+  }
+
+  /**
    * Registers a new tenant along with its organization, default roles, and super admin user.
    */
   async register(dto: RegisterInput) {

@@ -4,6 +4,7 @@ import {
   Get,
   Patch,
   Param,
+  Query,
   Body,
   UseGuards,
   UseInterceptors,
@@ -128,6 +129,19 @@ export class AuthController {
   @Get("provisioning/:tenantId/status")
   async getProvisioningStatus(@Param("tenantId") tenantId: string) {
     return this.provisioningService.getProgress(tenantId);
+  }
+
+  @ApiOperation({
+    summary: "Real-time email-availability check for the register wizard",
+  })
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Get("check-email")
+  async checkEmail(@Query("email") email: string) {
+    const parsed = z.string().email().safeParse(email);
+    if (!parsed.success) {
+      return { available: null };
+    }
+    return this.authService.checkEmailAvailability(parsed.data);
   }
 
   @ApiOperation({ summary: "Register" })
