@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import { ProfileDirectorySection } from "./ProfileDirectorySection";
 
 interface ProfileUser {
   id: string;
@@ -99,6 +100,17 @@ export default function ProfilePage() {
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingSecurity, setSavingSecurity] = useState(false);
+
+  // Viewing someone else's profile via /profile?userId=<id> (from the
+  // directory or the header hover card's "Full profile" button). Read
+  // directly from the URL rather than useSearchParams to avoid requiring a
+  // Suspense boundary here, matching the pattern already used on the login
+  // page for OAuth error query params.
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setViewingUserId(new URLSearchParams(window.location.search).get("userId"));
+  }, []);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -533,9 +545,13 @@ export default function ProfilePage() {
         className={`max-w-7xl mx-auto md:p-8 animate-fade-in-up ${styles.s2}`}
       >
         <div className="ui-stack-2">
-          <h1 className={styles.s3}>User Profile</h1>
+          <h1 className={styles.s3}>
+            {viewingUserId ? "Colleague Profile" : "User Profile"}
+          </h1>
           <p className="ui-text-sm-muted">
-            Manage your personal information, security, and preferences.
+            {viewingUserId
+              ? "Status, org chart, and contact details."
+              : "Manage your personal information, security, and preferences."}
           </p>
         </div>
 
@@ -547,698 +563,713 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="ui-grid-2">
-          {/* Personal Info */}
-          <div className="ui-card h-fit">
-            <div className="ui-flex-between">
-              <div className="ui-hstack-2">
-                <User size={18} className="ui-text-primary" />
-                <span>Personal Information</span>
-              </div>
-              <div className={styles.s4}>
-                {saveStatus === "saving" && (
-                  <span className={styles.s5}>
-                    <Loader2 size={12} className="animate-spin text-warning" />
-                    Saving...
-                  </span>
-                )}
-                {saveStatus === "saved" && (
-                  <span className="ui-flex ui-items-center ui-gap-1">
-                    <Check size={14} className="text-success" />
-                    Saved
-                  </span>
-                )}
-                {saveStatus === "error" && (
-                  <span className="ui-flex ui-items-center ui-gap-1">
-                    Error
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="ui-stack-4">
-              <div className={styles.s6}>
-                <div
-                  className={styles.s7}
-                  style={
-                    user?.avatar
-                      ? { padding: 0, overflow: "hidden" }
-                      : undefined
-                  }
-                >
-                  {user?.avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={user.avatar}
-                      alt="Profile avatar"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        borderRadius: "inherit",
-                      }}
-                    />
-                  ) : (
-                    <>
-                      {user?.firstName?.[0]}
-                      {user?.lastName?.[0]}
-                    </>
+        <ProfileDirectorySection targetUserId={viewingUserId ?? undefined} />
+
+        {!viewingUserId && (
+          <div className="ui-grid-2">
+            {/* Personal Info */}
+            <div className="ui-card h-fit">
+              <div className="ui-flex-between">
+                <div className="ui-hstack-2">
+                  <User size={18} className="ui-text-primary" />
+                  <span>Personal Information</span>
+                </div>
+                <div className={styles.s4}>
+                  {saveStatus === "saving" && (
+                    <span className={styles.s5}>
+                      <Loader2
+                        size={12}
+                        className="animate-spin text-warning"
+                      />
+                      Saving...
+                    </span>
+                  )}
+                  {saveStatus === "saved" && (
+                    <span className="ui-flex ui-items-center ui-gap-1">
+                      <Check size={14} className="text-success" />
+                      Saved
+                    </span>
+                  )}
+                  {saveStatus === "error" && (
+                    <span className="ui-flex ui-items-center ui-gap-1">
+                      Error
+                    </span>
                   )}
                 </div>
-                <div className="ui-flex-col">
-                  <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif"
-                    className="hidden"
-                    onChange={handleAvatarSelected}
-                  />
-                  <button
-                    className={styles.s8}
-                    disabled={uploadingAvatar}
-                    onClick={() => avatarInputRef.current?.click()}
-                  >
-                    {uploadingAvatar ? "Uploading..." : "Upload Photo"}
-                  </button>
-                  <span className="ui-text-xs-muted mt-1">
-                    JPG, GIF or PNG. Max size of 800K
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.statusPanel}>
-                <div className={styles.statusPanelHeader}>
-                  <span
-                    className={styles.statusDotPreview}
-                    style={{ background: PRESENCE_COLORS[presence] }}
-                  />
-                  Status
-                  {savingPresence && (
-                    <Loader2 size={12} className="animate-spin text-warning" />
-                  )}
-                </div>
-                <div className="ui-grid-2">
-                  <select
-                    className="ui-input"
-                    value={presence}
-                    disabled={savingPresence}
-                    onChange={(e) =>
-                      handlePresenceChange({
-                        presence: e.target.value as PresenceStatus,
-                      })
-                    }
-                  >
-                    {(Object.keys(PRESENCE_LABELS) as PresenceStatus[]).map(
-                      (p) => (
-                        <option key={p} value={p}>
-                          {PRESENCE_LABELS[p]}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                  <select
-                    className="ui-input"
-                    value={visibility}
-                    disabled={savingPresence}
-                    onChange={(e) =>
-                      handlePresenceChange({
-                        visibility: e.target.value as PresenceVisibility,
-                      })
-                    }
-                  >
-                    <option value="EVERYONE">Visible to org</option>
-                    <option value="NOBODY">Appear offline</option>
-                  </select>
-                </div>
-                <span className="ui-text-xs-muted mt-2 block">
-                  Manually set your status and choose who in the organization
-                  can see it.
-                </span>
-              </div>
-
-              <div className="ui-grid-2">
-                <div className="ui-form-group">
-                  <label className="ui-label">First Name</label>
-                  <input
-                    className="ui-input"
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, firstName: e.target.value })
-                    }
-                    onBlur={() => handleInfoSubmit()}
-                  />
-                </div>
-                <div className="ui-form-group">
-                  <label className="ui-label">Last Name</label>
-                  <input
-                    className="ui-input"
-                    value={formData.lastName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, lastName: e.target.value })
-                    }
-                    onBlur={() => handleInfoSubmit()}
-                  />
-                </div>
-              </div>
-
-              <div className="ui-form-group">
-                <label className="ui-label">Email Address</label>
-                <input
-                  className="ui-input bg-muted"
-                  defaultValue={user?.email || ""}
-                  readOnly
-                />
-                <p className="ui-text-xs-muted mt-1">
-                  Contact your admin to change your email address.
-                </p>
-              </div>
-
-              <div className="ui-form-group">
-                <label className="ui-label">Job Title / Role</label>
-                <input
-                  className="ui-input bg-muted"
-                  defaultValue={user?.roles?.join(", ") || "Employee"}
-                  readOnly
-                />
-              </div>
-
-              <hr className="border-border my-2" />
-
-              <div className="ui-form-group">
-                <label className="ui-hstack-2">
-                  <Globe size={14} /> Language
-                </label>
-                <select
-                  className="ui-input"
-                  value={formData.language}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData((prev) => ({ ...prev, language: val }));
-                    handleInfoSubmit({ language: val });
-                  }}
-                >
-                  <option>English (US)</option>
-                  <option>Spanish (ES)</option>
-                  <option>French (FR)</option>
-                </select>
-              </div>
-              <div className="ui-form-group">
-                <label className="ui-hstack-2">
-                  <Monitor size={14} /> Theme
-                </label>
-                <select
-                  className="ui-input"
-                  value={formData.theme}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData((prev) => ({ ...prev, theme: val }));
-                    handleInfoSubmit({ theme: val });
-
-                    // Apply via ThemeProvider — 'system' follows prefers-color-scheme
-                    setTheme(
-                      val === "Dark Mode"
-                        ? "dark"
-                        : val === "Light Mode"
-                          ? "light"
-                          : "system",
-                    );
-                  }}
-                >
-                  <option>System Default</option>
-                  <option>Light Mode</option>
-                  <option>Dark Mode</option>
-                </select>
-              </div>
-              <div className="ui-form-group">
-                <label className="ui-hstack-2">
-                  <LayoutGrid size={14} /> Density
-                </label>
-                <select
-                  className="ui-input"
-                  value={density}
-                  onChange={(e) => setDensity(e.target.value as typeof density)}
-                >
-                  {densities.map((d) => (
-                    <option key={d} value={d}>
-                      {d === "compact"
-                        ? "Compact (tighter fit)"
-                        : "Comfortable (default)"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Security & Authentication */}
-          <div className="ui-stack-4">
-            <div className="ui-card">
-              <div className="ui-hstack-2">
-                <Shield size={18} className="ui-text-primary" />
-                Security & Authentication
               </div>
               <div className="ui-stack-4">
-                <div className="ui-form-group">
-                  <label className="ui-label">Current Password</label>
-                  <input
-                    type="password"
-                    className="ui-input"
-                    placeholder="••••••••"
-                    value={securityData.currentPassword}
-                    onChange={(e) =>
-                      setSecurityData({
-                        ...securityData,
-                        currentPassword: e.target.value,
-                      })
+                <div className={styles.s6}>
+                  <div
+                    className={styles.s7}
+                    style={
+                      user?.avatar
+                        ? { padding: 0, overflow: "hidden" }
+                        : undefined
                     }
-                  />
+                  >
+                    {user?.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={user.avatar}
+                        alt="Profile avatar"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "inherit",
+                        }}
+                      />
+                    ) : (
+                      <>
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
+                      </>
+                    )}
+                  </div>
+                  <div className="ui-flex-col">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif"
+                      className="hidden"
+                      onChange={handleAvatarSelected}
+                    />
+                    <button
+                      className={styles.s8}
+                      disabled={uploadingAvatar}
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      {uploadingAvatar ? "Uploading..." : "Upload Photo"}
+                    </button>
+                    <span className="ui-text-xs-muted mt-1">
+                      JPG, GIF or PNG. Max size of 800K
+                    </span>
+                  </div>
                 </div>
+
+                <div className={styles.statusPanel}>
+                  <div className={styles.statusPanelHeader}>
+                    <span
+                      className={styles.statusDotPreview}
+                      style={{ background: PRESENCE_COLORS[presence] }}
+                    />
+                    Status
+                    {savingPresence && (
+                      <Loader2
+                        size={12}
+                        className="animate-spin text-warning"
+                      />
+                    )}
+                  </div>
+                  <div className="ui-grid-2">
+                    <select
+                      className="ui-input"
+                      value={presence}
+                      disabled={savingPresence}
+                      onChange={(e) =>
+                        handlePresenceChange({
+                          presence: e.target.value as PresenceStatus,
+                        })
+                      }
+                    >
+                      {(Object.keys(PRESENCE_LABELS) as PresenceStatus[]).map(
+                        (p) => (
+                          <option key={p} value={p}>
+                            {PRESENCE_LABELS[p]}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                    <select
+                      className="ui-input"
+                      value={visibility}
+                      disabled={savingPresence}
+                      onChange={(e) =>
+                        handlePresenceChange({
+                          visibility: e.target.value as PresenceVisibility,
+                        })
+                      }
+                    >
+                      <option value="EVERYONE">Visible to org</option>
+                      <option value="NOBODY">Appear offline</option>
+                    </select>
+                  </div>
+                  <span className="ui-text-xs-muted mt-2 block">
+                    Manually set your status and choose who in the organization
+                    can see it.
+                  </span>
+                </div>
+
                 <div className="ui-grid-2">
                   <div className="ui-form-group">
-                    <label className="ui-label">New Password</label>
+                    <label className="ui-label">First Name</label>
                     <input
-                      type="password"
                       className="ui-input"
-                      placeholder="••••••••"
-                      value={securityData.newPassword}
+                      value={formData.firstName}
                       onChange={(e) =>
-                        setSecurityData({
-                          ...securityData,
-                          newPassword: e.target.value,
-                        })
+                        setFormData({ ...formData, firstName: e.target.value })
                       }
+                      onBlur={() => handleInfoSubmit()}
                     />
                   </div>
                   <div className="ui-form-group">
-                    <label className="ui-label">Confirm Password</label>
+                    <label className="ui-label">Last Name</label>
                     <input
-                      type="password"
                       className="ui-input"
-                      placeholder="••••••••"
-                      value={securityData.confirmPassword}
+                      value={formData.lastName}
                       onChange={(e) =>
-                        setSecurityData({
-                          ...securityData,
-                          confirmPassword: e.target.value,
-                        })
+                        setFormData({ ...formData, lastName: e.target.value })
                       }
+                      onBlur={() => handleInfoSubmit()}
                     />
                   </div>
                 </div>
-                <div>
-                  <button
-                    className="ui-btn ui-btn-secondary"
-                    onClick={handleSecuritySubmit}
-                    disabled={savingSecurity || !securityData.newPassword}
-                  >
-                    {savingSecurity ? "Updating..." : "Update Password"}
-                  </button>
+
+                <div className="ui-form-group">
+                  <label className="ui-label">Email Address</label>
+                  <input
+                    className="ui-input bg-muted"
+                    defaultValue={user?.email || ""}
+                    readOnly
+                  />
+                  <p className="ui-text-xs-muted mt-1">
+                    Contact your admin to change your email address.
+                  </p>
+                </div>
+
+                <div className="ui-form-group">
+                  <label className="ui-label">Job Title / Role</label>
+                  <input
+                    className="ui-input bg-muted"
+                    defaultValue={user?.roles?.join(", ") || "Employee"}
+                    readOnly
+                  />
                 </div>
 
                 <hr className="border-border my-2" />
 
-                <div className="ui-flex-between">
-                  <div>
-                    <h4 className={styles.s9}>
-                      <Smartphone size={16} /> Two-Factor Authentication
-                    </h4>
-                    <p className="ui-text-xs-muted mt-1">
-                      {user?.mfaEnabled
-                        ? "2FA is enabled on your account."
-                        : "Add an extra layer of security to your account."}
-                    </p>
-                  </div>
-                  {user?.mfaEnabled ? (
-                    <button
-                      className={styles.s8}
-                      disabled={mfaBusy}
-                      onClick={() => setMfaStep("disabling")}
-                    >
-                      Disable 2FA
-                    </button>
-                  ) : (
-                    <button
-                      className={styles.s8}
-                      disabled={mfaBusy}
-                      onClick={startMfaEnrollment}
-                    >
-                      {mfaBusy ? "Starting..." : "Enable 2FA"}
-                    </button>
-                  )}
+                <div className="ui-form-group">
+                  <label className="ui-hstack-2">
+                    <Globe size={14} /> Language
+                  </label>
+                  <select
+                    className="ui-input"
+                    value={formData.language}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({ ...prev, language: val }));
+                      handleInfoSubmit({ language: val });
+                    }}
+                  >
+                    <option>English (US)</option>
+                    <option>Spanish (ES)</option>
+                    <option>French (FR)</option>
+                  </select>
                 </div>
+                <div className="ui-form-group">
+                  <label className="ui-hstack-2">
+                    <Monitor size={14} /> Theme
+                  </label>
+                  <select
+                    className="ui-input"
+                    value={formData.theme}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({ ...prev, theme: val }));
+                      handleInfoSubmit({ theme: val });
 
-                {mfaStep === "enrolling" && mfaQrCode && (
-                  <div className={`ui-stack-2 ${styles.subPanel}`}>
-                    <p className="ui-text-xs-muted">
-                      <strong>Step 1 of 2.</strong> Scan this with an
-                      authenticator app on your phone (Google Authenticator,
-                      Authy, 1Password, etc). This is separate from the "Push
-                      Approval" device below — an authenticator app only
-                      generates codes, it can't receive push notifications.
-                    </p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={mfaQrCode}
-                      alt="MFA QR code"
-                      width={140}
-                      height={140}
+                      // Apply via ThemeProvider — 'system' follows prefers-color-scheme
+                      setTheme(
+                        val === "Dark Mode"
+                          ? "dark"
+                          : val === "Light Mode"
+                            ? "light"
+                            : "system",
+                      );
+                    }}
+                  >
+                    <option>System Default</option>
+                    <option>Light Mode</option>
+                    <option>Dark Mode</option>
+                  </select>
+                </div>
+                <div className="ui-form-group">
+                  <label className="ui-hstack-2">
+                    <LayoutGrid size={14} /> Density
+                  </label>
+                  <select
+                    className="ui-input"
+                    value={density}
+                    onChange={(e) =>
+                      setDensity(e.target.value as typeof density)
+                    }
+                  >
+                    {densities.map((d) => (
+                      <option key={d} value={d}>
+                        {d === "compact"
+                          ? "Compact (tighter fit)"
+                          : "Comfortable (default)"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Security & Authentication */}
+            <div className="ui-stack-4">
+              <div className="ui-card">
+                <div className="ui-hstack-2">
+                  <Shield size={18} className="ui-text-primary" />
+                  Security & Authentication
+                </div>
+                <div className="ui-stack-4">
+                  <div className="ui-form-group">
+                    <label className="ui-label">Current Password</label>
+                    <input
+                      type="password"
+                      className="ui-input"
+                      placeholder="••••••••"
+                      value={securityData.currentPassword}
+                      onChange={(e) =>
+                        setSecurityData({
+                          ...securityData,
+                          currentPassword: e.target.value,
+                        })
+                      }
                     />
-                    {mfaSecret && (
-                      <p className="ui-text-xs-muted">
-                        Can't scan? Enter this key manually:{" "}
-                        <code>{mfaSecret}</code>
-                      </p>
-                    )}
-                    <p className="ui-text-xs-muted">
-                      Then enter the 6-digit code it shows you:
-                    </p>
-                    <div className="ui-hstack-2">
+                  </div>
+                  <div className="ui-grid-2">
+                    <div className="ui-form-group">
+                      <label className="ui-label">New Password</label>
                       <input
+                        type="password"
                         className="ui-input"
-                        placeholder="6-digit code"
-                        value={mfaCode}
-                        maxLength={6}
-                        onChange={(e) => setMfaCode(e.target.value)}
+                        placeholder="••••••••"
+                        value={securityData.newPassword}
+                        onChange={(e) =>
+                          setSecurityData({
+                            ...securityData,
+                            newPassword: e.target.value,
+                          })
+                        }
                       />
-                      <button
-                        className="ui-btn ui-btn-secondary"
-                        disabled={mfaBusy || mfaCode.length !== 6}
-                        onClick={() => confirmMfa(true)}
-                      >
-                        Verify & Enable
-                      </button>
-                      <button
-                        className="ui-btn"
-                        onClick={() => {
-                          setMfaStep("idle");
-                          setMfaQrCode(null);
-                          setMfaSecret(null);
-                          setMfaCode("");
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
+                    </div>
+                    <div className="ui-form-group">
+                      <label className="ui-label">Confirm Password</label>
+                      <input
+                        type="password"
+                        className="ui-input"
+                        placeholder="••••••••"
+                        value={securityData.confirmPassword}
+                        onChange={(e) =>
+                          setSecurityData({
+                            ...securityData,
+                            confirmPassword: e.target.value,
+                          })
+                        }
+                      />
                     </div>
                   </div>
-                )}
-
-                {mfaStep === "disabling" && (
-                  <div className={`ui-stack-2 ${styles.subPanel}`}>
-                    <p className="ui-text-xs-muted">
-                      Enter a current 6-digit code to disable 2FA.
-                    </p>
-                    <div className="ui-hstack-2">
-                      <input
-                        className="ui-input"
-                        placeholder="6-digit code"
-                        value={mfaCode}
-                        maxLength={6}
-                        onChange={(e) => setMfaCode(e.target.value)}
-                      />
-                      <button
-                        className="ui-btn ui-btn-secondary"
-                        disabled={mfaBusy || mfaCode.length !== 6}
-                        onClick={() => confirmMfa(false)}
-                      >
-                        Confirm Disable
-                      </button>
-                      <button
-                        className="ui-btn"
-                        onClick={() => {
-                          setMfaStep("idle");
-                          setMfaCode("");
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {mfaRecoveryCodes && (
-                  <div className={`ui-stack-2 ${styles.subPanel}`}>
-                    <p className="ui-text-xs-muted">
-                      Save these one-time recovery codes — each can be used once
-                      if you lose access to your authenticator.
-                    </p>
-                    <div className="ui-grid-2">
-                      {mfaRecoveryCodes.map((c) => (
-                        <code key={c}>{c}</code>
-                      ))}
-                    </div>
-                    {pushSupported && !thisDeviceEndpoint && (
-                      <div className={styles.pushNudge}>
-                        <p className="ui-text-xs-muted">
-                          <strong>Step 2 of 2 (optional).</strong> Your
-                          authenticator app is set up. Want to approve sign-ins
-                          with a tap instead of typing a code? Enable
-                          push-approval on <strong>this browser</strong> too —
-                          it's registered per-device, so do this on your phone
-                          as well if that's where you'd rather approve from.
-                        </p>
-                        <button
-                          className="ui-btn ui-btn-secondary"
-                          disabled={pushSubscribing}
-                          onClick={enablePushOnThisDevice}
-                        >
-                          {pushSubscribing
-                            ? "Enabling..."
-                            : "Enable push-approval on this device"}
-                        </button>
-                      </div>
-                    )}
+                  <div>
                     <button
                       className="ui-btn ui-btn-secondary"
-                      onClick={() => {
-                        setMfaRecoveryCodes(null);
-                        setMfaStep("idle");
-                      }}
+                      onClick={handleSecuritySubmit}
+                      disabled={savingSecurity || !securityData.newPassword}
                     >
-                      Done
+                      {savingSecurity ? "Updating..." : "Update Password"}
                     </button>
                   </div>
-                )}
 
-                {user?.mfaEnabled && (
-                  <>
-                    <hr className="border-border my-2" />
-                    <div className={styles.sectionHeader}>
-                      <div>
-                        <h4 className={styles.s9}>
-                          <Bell size={16} /> Push Approval
-                        </h4>
-                        <p className="ui-text-xs-muted mt-1">
-                          Skip typing a code — approve sign-ins with a tap on a
-                          registered device instead. Manual code entry always
-                          stays available as a fallback.
-                        </p>
-                      </div>
-                      {pushSupported && !thisDeviceEndpoint && (
-                        <button
-                          className={styles.s8}
-                          disabled={pushSubscribing}
-                          onClick={enablePushOnThisDevice}
-                        >
-                          {pushSubscribing
-                            ? "Enabling..."
-                            : "Enable on this device"}
-                        </button>
-                      )}
+                  <hr className="border-border my-2" />
+
+                  <div className="ui-flex-between">
+                    <div>
+                      <h4 className={styles.s9}>
+                        <Smartphone size={16} /> Two-Factor Authentication
+                      </h4>
+                      <p className="ui-text-xs-muted mt-1">
+                        {user?.mfaEnabled
+                          ? "2FA is enabled on your account."
+                          : "Add an extra layer of security to your account."}
+                      </p>
                     </div>
+                    {user?.mfaEnabled ? (
+                      <button
+                        className={styles.s8}
+                        disabled={mfaBusy}
+                        onClick={() => setMfaStep("disabling")}
+                      >
+                        Disable 2FA
+                      </button>
+                    ) : (
+                      <button
+                        className={styles.s8}
+                        disabled={mfaBusy}
+                        onClick={startMfaEnrollment}
+                      >
+                        {mfaBusy ? "Starting..." : "Enable 2FA"}
+                      </button>
+                    )}
+                  </div>
 
-                    {!pushSupported && (
+                  {mfaStep === "enrolling" && mfaQrCode && (
+                    <div className={`ui-stack-2 ${styles.subPanel}`}>
                       <p className="ui-text-xs-muted">
-                        This browser doesn't support push notifications — code
-                        entry will always be used here.
+                        <strong>Step 1 of 2.</strong> Scan this with an
+                        authenticator app on your phone (Google Authenticator,
+                        Authy, 1Password, etc). This is separate from the "Push
+                        Approval" device below — an authenticator app only
+                        generates codes, it can't receive push notifications.
                       </p>
-                    )}
-
-                    {thisDeviceEndpoint && (
-                      <p className={styles.deviceRowMeta}>
-                        <Check size={12} className="text-success" /> Push
-                        approval is enabled on this device.
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={mfaQrCode}
+                        alt="MFA QR code"
+                        width={140}
+                        height={140}
+                      />
+                      {mfaSecret && (
+                        <p className="ui-text-xs-muted">
+                          Can't scan? Enter this key manually:{" "}
+                          <code>{mfaSecret}</code>
+                        </p>
+                      )}
+                      <p className="ui-text-xs-muted">
+                        Then enter the 6-digit code it shows you:
                       </p>
-                    )}
+                      <div className="ui-hstack-2">
+                        <input
+                          className="ui-input"
+                          placeholder="6-digit code"
+                          value={mfaCode}
+                          maxLength={6}
+                          onChange={(e) => setMfaCode(e.target.value)}
+                        />
+                        <button
+                          className="ui-btn ui-btn-secondary"
+                          disabled={mfaBusy || mfaCode.length !== 6}
+                          onClick={() => confirmMfa(true)}
+                        >
+                          Verify & Enable
+                        </button>
+                        <button
+                          className="ui-btn"
+                          onClick={() => {
+                            setMfaStep("idle");
+                            setMfaQrCode(null);
+                            setMfaSecret(null);
+                            setMfaCode("");
+                          }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-                    {pushDevices.length > 0 && (
-                      <div className="ui-stack-2">
-                        {pushDevices.map((d) => (
-                          <div key={d.id} className={styles.deviceRow}>
-                            <div className={styles.deviceRowInfo}>
-                              <span className={styles.deviceRowLabel}>
-                                {d.label || "Unnamed device"}
-                              </span>
-                              <span className={styles.deviceRowMeta}>
-                                Registered{" "}
-                                {new Date(d.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <button
-                              className={styles.removeDeviceBtn}
-                              title="Remove device"
-                              onClick={() => removePushDevice(d.id)}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                  {mfaStep === "disabling" && (
+                    <div className={`ui-stack-2 ${styles.subPanel}`}>
+                      <p className="ui-text-xs-muted">
+                        Enter a current 6-digit code to disable 2FA.
+                      </p>
+                      <div className="ui-hstack-2">
+                        <input
+                          className="ui-input"
+                          placeholder="6-digit code"
+                          value={mfaCode}
+                          maxLength={6}
+                          onChange={(e) => setMfaCode(e.target.value)}
+                        />
+                        <button
+                          className="ui-btn ui-btn-secondary"
+                          disabled={mfaBusy || mfaCode.length !== 6}
+                          onClick={() => confirmMfa(false)}
+                        >
+                          Confirm Disable
+                        </button>
+                        <button
+                          className="ui-btn"
+                          onClick={() => {
+                            setMfaStep("idle");
+                            setMfaCode("");
+                          }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {mfaRecoveryCodes && (
+                    <div className={`ui-stack-2 ${styles.subPanel}`}>
+                      <p className="ui-text-xs-muted">
+                        Save these one-time recovery codes — each can be used
+                        once if you lose access to your authenticator.
+                      </p>
+                      <div className="ui-grid-2">
+                        {mfaRecoveryCodes.map((c) => (
+                          <code key={c}>{c}</code>
                         ))}
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Active Sessions */}
-            <div className="ui-card">
-              <div className="ui-flex-between">
-                <div className="ui-hstack-2">
-                  <Monitor size={18} className="ui-text-primary" />
-                  Active Sessions
-                </div>
-                <button
-                  className={styles.s10}
-                  disabled={
-                    revoking ||
-                    sessions.filter((s) => !s.isCurrent).length === 0
-                  }
-                  onClick={handleRevokeOthers}
-                >
-                  <LogOut size={14} />{" "}
-                  {revoking ? "Revoking..." : "Revoke all others"}
-                </button>
-              </div>
-              <div className="ui-card-body p-0">
-                <table className={styles.s11}>
-                  <thead className="border-b">
-                    <tr>
-                      <th className={styles.s12}>Device</th>
-                      <th className={styles.s12}>IP Address</th>
-                      <th className={styles.s12}>Last Active</th>
-                      <th className={styles.s12}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sessionsLoading && (
-                      <tr>
-                        <td className={styles.s13} colSpan={4}>
-                          Loading sessions...
-                        </td>
-                      </tr>
-                    )}
-                    {!sessionsLoading && sessions.length === 0 && (
-                      <tr>
-                        <td className={styles.s13} colSpan={4}>
-                          No active sessions found.
-                        </td>
-                      </tr>
-                    )}
-                    {sessions.map((s) => (
-                      <tr key={s.id} className="border-b">
-                        <td className={styles.s13}>
-                          <div className="ui-hstack-2">
-                            <Monitor size={16} className="ui-text-muted" />
-                            <span>
-                              {[s.device, s.browser]
-                                .filter(Boolean)
-                                .join(" • ") || "Unknown device"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className={styles.s14}>{s.ipAddress || "—"}</td>
-                        <td className={styles.s13}>
-                          {new Date(s.lastActivityAt).toLocaleString()}
-                        </td>
-                        <td className={styles.s13}>
-                          {s.isCurrent ? (
-                            <span className={styles.s15}>
-                              <Check size={12} /> Current
-                            </span>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Login History */}
-            <div className="ui-card">
-              <div className="ui-hstack-2">
-                <Globe size={18} className="ui-text-primary" />
-                Recent Login History
-              </div>
-              <div className="ui-card-body p-0">
-                <table className={styles.s11}>
-                  <thead className="border-b">
-                    <tr>
-                      <th className={styles.s12}>Date & Time</th>
-                      <th className={styles.s12}>Status</th>
-                      <th className={styles.s12}>IP Address</th>
-                      <th className={styles.s12}>Device / Browser</th>
-                      <th className={styles.s12}>Location</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historyLoading && (
-                      <tr>
-                        <td className={styles.s13} colSpan={5}>
-                          Loading login history...
-                        </td>
-                      </tr>
-                    )}
-                    {!historyLoading && loginHistory.length === 0 && (
-                      <tr>
-                        <td className={styles.s13} colSpan={5}>
-                          No login history found.
-                        </td>
-                      </tr>
-                    )}
-                    {loginHistory.map((h) => (
-                      <tr key={h.id} className="border-b">
-                        <td className={styles.s13}>
-                          {new Date(h.createdAt).toLocaleString()}
-                        </td>
-                        <td className={styles.s13}>
-                          <span
-                            className={
-                              h.status === "SUCCESS"
-                                ? "ui-badge ui-badge-success"
-                                : "ui-badge ui-badge-danger"
-                            }
-                            style={{
-                              backgroundColor:
-                                h.status === "SUCCESS"
-                                  ? "rgba(16, 185, 129, 0.1)"
-                                  : "rgba(239, 68, 68, 0.1)",
-                              color:
-                                h.status === "SUCCESS" ? "#10b981" : "#ef4444",
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              fontSize: "11px",
-                              fontWeight: "bold",
-                            }}
+                      {pushSupported && !thisDeviceEndpoint && (
+                        <div className={styles.pushNudge}>
+                          <p className="ui-text-xs-muted">
+                            <strong>Step 2 of 2 (optional).</strong> Your
+                            authenticator app is set up. Want to approve
+                            sign-ins with a tap instead of typing a code? Enable
+                            push-approval on <strong>this browser</strong> too —
+                            it's registered per-device, so do this on your phone
+                            as well if that's where you'd rather approve from.
+                          </p>
+                          <button
+                            className="ui-btn ui-btn-secondary"
+                            disabled={pushSubscribing}
+                            onClick={enablePushOnThisDevice}
                           >
-                            {h.status}
-                            {h.failureReason ? ` (${h.failureReason})` : ""}
-                          </span>
-                        </td>
-                        <td className={styles.s14}>{h.ipAddress || "—"}</td>
-                        <td className={styles.s13}>
-                          {[h.device, h.browser].filter(Boolean).join(" • ") ||
-                            "—"}
-                        </td>
-                        <td className={styles.s13}>{h.location || "—"}</td>
+                            {pushSubscribing
+                              ? "Enabling..."
+                              : "Enable push-approval on this device"}
+                          </button>
+                        </div>
+                      )}
+                      <button
+                        className="ui-btn ui-btn-secondary"
+                        onClick={() => {
+                          setMfaRecoveryCodes(null);
+                          setMfaStep("idle");
+                        }}
+                      >
+                        Done
+                      </button>
+                    </div>
+                  )}
+
+                  {user?.mfaEnabled && (
+                    <>
+                      <hr className="border-border my-2" />
+                      <div className={styles.sectionHeader}>
+                        <div>
+                          <h4 className={styles.s9}>
+                            <Bell size={16} /> Push Approval
+                          </h4>
+                          <p className="ui-text-xs-muted mt-1">
+                            Skip typing a code — approve sign-ins with a tap on
+                            a registered device instead. Manual code entry
+                            always stays available as a fallback.
+                          </p>
+                        </div>
+                        {pushSupported && !thisDeviceEndpoint && (
+                          <button
+                            className={styles.s8}
+                            disabled={pushSubscribing}
+                            onClick={enablePushOnThisDevice}
+                          >
+                            {pushSubscribing
+                              ? "Enabling..."
+                              : "Enable on this device"}
+                          </button>
+                        )}
+                      </div>
+
+                      {!pushSupported && (
+                        <p className="ui-text-xs-muted">
+                          This browser doesn't support push notifications — code
+                          entry will always be used here.
+                        </p>
+                      )}
+
+                      {thisDeviceEndpoint && (
+                        <p className={styles.deviceRowMeta}>
+                          <Check size={12} className="text-success" /> Push
+                          approval is enabled on this device.
+                        </p>
+                      )}
+
+                      {pushDevices.length > 0 && (
+                        <div className="ui-stack-2">
+                          {pushDevices.map((d) => (
+                            <div key={d.id} className={styles.deviceRow}>
+                              <div className={styles.deviceRowInfo}>
+                                <span className={styles.deviceRowLabel}>
+                                  {d.label || "Unnamed device"}
+                                </span>
+                                <span className={styles.deviceRowMeta}>
+                                  Registered{" "}
+                                  {new Date(d.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <button
+                                className={styles.removeDeviceBtn}
+                                title="Remove device"
+                                onClick={() => removePushDevice(d.id)}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Active Sessions */}
+              <div className="ui-card">
+                <div className="ui-flex-between">
+                  <div className="ui-hstack-2">
+                    <Monitor size={18} className="ui-text-primary" />
+                    Active Sessions
+                  </div>
+                  <button
+                    className={styles.s10}
+                    disabled={
+                      revoking ||
+                      sessions.filter((s) => !s.isCurrent).length === 0
+                    }
+                    onClick={handleRevokeOthers}
+                  >
+                    <LogOut size={14} />{" "}
+                    {revoking ? "Revoking..." : "Revoke all others"}
+                  </button>
+                </div>
+                <div className="ui-card-body p-0">
+                  <table className={styles.s11}>
+                    <thead className="border-b">
+                      <tr>
+                        <th className={styles.s12}>Device</th>
+                        <th className={styles.s12}>IP Address</th>
+                        <th className={styles.s12}>Last Active</th>
+                        <th className={styles.s12}>Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {sessionsLoading && (
+                        <tr>
+                          <td className={styles.s13} colSpan={4}>
+                            Loading sessions...
+                          </td>
+                        </tr>
+                      )}
+                      {!sessionsLoading && sessions.length === 0 && (
+                        <tr>
+                          <td className={styles.s13} colSpan={4}>
+                            No active sessions found.
+                          </td>
+                        </tr>
+                      )}
+                      {sessions.map((s) => (
+                        <tr key={s.id} className="border-b">
+                          <td className={styles.s13}>
+                            <div className="ui-hstack-2">
+                              <Monitor size={16} className="ui-text-muted" />
+                              <span>
+                                {[s.device, s.browser]
+                                  .filter(Boolean)
+                                  .join(" • ") || "Unknown device"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className={styles.s14}>{s.ipAddress || "—"}</td>
+                          <td className={styles.s13}>
+                            {new Date(s.lastActivityAt).toLocaleString()}
+                          </td>
+                          <td className={styles.s13}>
+                            {s.isCurrent ? (
+                              <span className={styles.s15}>
+                                <Check size={12} /> Current
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Login History */}
+              <div className="ui-card">
+                <div className="ui-hstack-2">
+                  <Globe size={18} className="ui-text-primary" />
+                  Recent Login History
+                </div>
+                <div className="ui-card-body p-0">
+                  <table className={styles.s11}>
+                    <thead className="border-b">
+                      <tr>
+                        <th className={styles.s12}>Date & Time</th>
+                        <th className={styles.s12}>Status</th>
+                        <th className={styles.s12}>IP Address</th>
+                        <th className={styles.s12}>Device / Browser</th>
+                        <th className={styles.s12}>Location</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historyLoading && (
+                        <tr>
+                          <td className={styles.s13} colSpan={5}>
+                            Loading login history...
+                          </td>
+                        </tr>
+                      )}
+                      {!historyLoading && loginHistory.length === 0 && (
+                        <tr>
+                          <td className={styles.s13} colSpan={5}>
+                            No login history found.
+                          </td>
+                        </tr>
+                      )}
+                      {loginHistory.map((h) => (
+                        <tr key={h.id} className="border-b">
+                          <td className={styles.s13}>
+                            {new Date(h.createdAt).toLocaleString()}
+                          </td>
+                          <td className={styles.s13}>
+                            <span
+                              className={
+                                h.status === "SUCCESS"
+                                  ? "ui-badge ui-badge-success"
+                                  : "ui-badge ui-badge-danger"
+                              }
+                              style={{
+                                backgroundColor:
+                                  h.status === "SUCCESS"
+                                    ? "rgba(16, 185, 129, 0.1)"
+                                    : "rgba(239, 68, 68, 0.1)",
+                                color:
+                                  h.status === "SUCCESS"
+                                    ? "#10b981"
+                                    : "#ef4444",
+                                padding: "2px 8px",
+                                borderRadius: "4px",
+                                fontSize: "11px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {h.status}
+                              {h.failureReason ? ` (${h.failureReason})` : ""}
+                            </span>
+                          </td>
+                          <td className={styles.s14}>{h.ipAddress || "—"}</td>
+                          <td className={styles.s13}>
+                            {[h.device, h.browser]
+                              .filter(Boolean)
+                              .join(" • ") || "—"}
+                          </td>
+                          <td className={styles.s13}>{h.location || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </RouteGuard>
   );

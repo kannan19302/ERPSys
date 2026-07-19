@@ -56,6 +56,7 @@ model Tenant {
   lifecycleEvents         TenantLifecycleEvent[]
   tenantAddOns            TenantAddOn[]
   paymentMethods          PaymentMethod[]
+  userProfiles            UserProfile[]
 
   @@map("tenants")
 }
@@ -114,11 +115,52 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   identities              UserIdentity[]
   loginHistories          LoginHistory[]
+  profile                 UserProfile?
+  directReports           UserProfile[] @relation("UserProfileManager")
 
   @@unique([tenantId, email])
   @@index([tenantId])
   @@index([email])
   @@map("users")
+}
+
+/**
+ * Directory/org-chart extension of User (Teams-style profile card + full
+ * profile page). Kept separate from User (auth identity) and Employee (HR/
+ * payroll record, whose `userId` link is not populated in practice) so this
+ * works for every tenant regardless of whether the HR module is in use.
+ */
+model UserProfile {
+  id           String  @id @default(cuid())
+  tenantId     String  @map("tenant_id")
+  userId       String  @unique @map("user_id")
+  employeeId   String  @map("employee_id") // system-generated, 6 digits, unique per tenant
+
+  pronouns              String?
+  jobTitle               String?  @map("job_title")
+  departmentId            String?  @map("department_id")
+  managerId               String?  @map("manager_id") // -> User.id (reports-to)
+  timezone                String?
+  workingHoursStart       String?  @map("working_hours_start") // "09:00"
+  workingHoursEnd         String?  @map("working_hours_end") // "18:00"
+  workingDays             Json     @default("[\"MON\",\"TUE\",\"WED\",\"THU\",\"FRI\"]") @map("working_days")
+  workingLocation          String?  @map("working_location")
+  overview                 String?  @db.Text
+  pronunciationAudioUrl    String?  @db.Text @map("pronunciation_audio_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager    User?       @relation("UserProfileManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, employeeId])
+  @@index([tenantId])
+  @@index([managerId])
+  @@index([departmentId])
+  @@map("user_profiles")
 }
 
 model SavedView {
@@ -313,6 +355,7 @@ model Department {
   journalEntries       JournalEntry[]
   positions            Position[]
   purchaseRequisitions PurchaseRequisition[]
+  userProfiles         UserProfile[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])

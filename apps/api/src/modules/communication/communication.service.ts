@@ -242,12 +242,18 @@ export class CommunicationService {
     const dmList = conversations.map((c) => {
       let name = c.name;
       if (c.kind === "DM") {
-        const otherId = c.members
-          .map((m) => m.userId)
-          .find((id) => id !== userId);
-        name = otherId
-          ? (nameById.get(otherId) ?? "Direct message")
-          : "Direct message";
+        if (c.topic === "SELF_NOTES") {
+          // Single-member DM (the caller's own "Notes to Self" space) — there
+          // is no "other" member to name it after.
+          name = "Notes to Self";
+        } else {
+          const otherId = c.members
+            .map((m) => m.userId)
+            .find((id) => id !== userId);
+          name = otherId
+            ? (nameById.get(otherId) ?? "Direct message")
+            : "Direct message";
+        }
       }
       const prefs = memberPrefs.get(c.id);
       return {
@@ -467,6 +473,45 @@ export class CommunicationService {
       id: channel.id,
       kind: "DM" as const,
       name: this.displayName(other),
+      memberIds: channel.members.map((m) => m.userId),
+    };
+  }
+
+  /**
+   * Find-or-create the user's private "Notes to Self" space — a single-member
+   * DM-kind channel for personal notes/files/messages, reachable from the
+   * profile hover card. Deliberately a distinct method (not a special case
+   * inside getOrCreateDM) so the `userId === otherUserId` guard there stays a
+   * real invariant for genuine two-party DMs.
+   */
+  async getOrCreateSelfNotes(tenantId: string, orgId: string, userId: string) {
+    const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
+    const key = `dm:self:${userId}`;
+
+    let channel = await prisma.channel.findFirst({
+      where: { tenantId, name: key, kind: "DM" },
+      include: { members: true },
+    });
+    if (!channel) {
+      channel = await prisma.channel.create({
+        data: {
+          tenantId,
+          orgId: resolvedOrgId,
+          name: key,
+          kind: "DM",
+          type: "PRIVATE",
+          topic: "SELF_NOTES",
+          createdBy: userId,
+          members: { create: [{ tenantId, userId }] },
+        },
+        include: { members: true },
+      });
+    }
+    return {
+      id: channel.id,
+      kind: "DM" as const,
+      isSelf: true as const,
+      name: "Notes to Self",
       memberIds: channel.members.map((m) => m.userId),
     };
   }

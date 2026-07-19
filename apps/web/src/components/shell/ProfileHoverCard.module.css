@@ -1,0 +1,342 @@
+.trigger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.trigger:hover {
+  background: var(--color-bg-sunken);
+}
+
+.avatarWrap {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.avatarInitials {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-light),
+    rgba(167, 139, 250, 0.2)
+  );
+  border: 1px solid var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xs);
+}
+
+.avatarImg {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.statusDot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: #10b981;
+  border: 2px solid var(--color-bg-elevated);
+}
+
+/* ── Popover card ───────────────────────────────────────────── */
+
+.card {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 336px;
+  max-width: calc(100vw - 24px);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, 0.18));
+  padding: var(--space-4);
+  z-index: 200;
+  animation: cardIn 0.12s ease-out;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loadingState {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.closeBtn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  display: flex;
+}
+
+.closeBtn:hover {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-secondary);
+}
+
+.hero {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.heroAvatarWrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.heroAvatarInitials {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+}
+
+.heroAvatarImg {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.heroStatusDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: #10b981;
+  border: 3px solid var(--color-bg-elevated);
+}
+
+.heroInfo {
+  min-width: 0;
+  flex: 1;
+  padding-top: 2px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5, 6px);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-md, 15px);
+  color: var(--color-text);
+}
+
+.pronouns {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--weight-regular);
+}
+
+.pronounceBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-primary);
+  padding: 2px;
+  display: flex;
+  border-radius: var(--radius-md);
+}
+
+.pronounceBtn:hover {
+  background: var(--color-bg-sunken);
+}
+
+.pronouncePlaying {
+  animation: pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.roleRow {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dot {
+  opacity: 0.5;
+}
+
+.presenceRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5, 6px);
+  margin-top: var(--space-1-5, 6px);
+  flex-wrap: wrap;
+  font-size: var(--text-xs);
+}
+
+.presenceLabel {
+  font-weight: var(--weight-semibold);
+}
+
+.statusText {
+  color: var(--color-text-tertiary);
+}
+
+.overview {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.section {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.rowIcon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.rowLink {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.rowLink:hover {
+  text-decoration: underline;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1-5, 6px);
+  padding: 7px 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-sunken);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.actionBtn:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footerBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 7px 8px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-align: left;
+}
+
+.footerBtn:hover {
+  background: var(--color-bg-sunken);
+  color: var(--color-text);
+}
+
+.footerBtnDanger {
+  color: var(--color-danger);
+}
+
+.footerBtnDanger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger);
+}

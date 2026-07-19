@@ -20,6 +20,7 @@ import {
 import { useTheme, type ThemeSetting, type DensityName } from "@unerp/ui";
 import { AppSwitcher } from "./AppSwitcher";
 import { NotificationCenter } from "./NotificationCenter";
+import { ProfileHoverCard } from "./ProfileHoverCard";
 import styles from "./AppHeader.module.css";
 
 /** Human labels + one-line explanations for every design-system theme. */
@@ -66,6 +67,7 @@ interface AppHeaderProps {
   tenants: TenantOption[];
   handleTenantSwitch: (t: TenantOption) => void;
   user: {
+    id?: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -415,68 +417,17 @@ export function AppHeader({
         {/* Separator */}
         <div className={styles.divider} />
 
-        {/* User Dropdown */}
-        <div className="relative" ref={userDropdownRef}>
-          <button
-            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-            className={userBtnStyle}
-            aria-label="Open user profile menu"
-          >
-            <div className="relative">
-              <div className={styles.userAvatar}>
-                {user ? `${user.firstName[0]}${user.lastName[0]}` : "SU"}
-              </div>
-              {/* Status Indicator Dot — reflects the user's real presence */}
-              <span
-                className={statusDotStyle}
-                style={
-                  presenceColor ? { background: presenceColor } : undefined
-                }
-              />
-            </div>
-            <ChevronDown
-              size={12}
-              className={`${styles.chevronIcon} ${userDropdownOpen ? styles.chevronRotated : ""}`}
-            />
-          </button>
-
-          {userDropdownOpen && (
-            <div className="ui-dropdown ui-dropdown-right ui-dropdown-user">
-              <div className={styles.userProfileSummary}>
-                <p className={styles.userProfileName}>
-                  {user ? `${user.firstName} ${user.lastName}` : "Super Admin"}
-                </p>
-                <p className={styles.userProfileEmail}>
-                  {user ? user.email : "admin@uni-erp.com"}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  router.push("/profile");
-                  setUserDropdownOpen(false);
-                }}
-                className="ui-dropdown-item"
-              >
-                <UserIcon size={14} className="ui-text-muted" /> Profile
-              </button>
-              <button
-                onClick={() => {
-                  router.push("/settings");
-                  setUserDropdownOpen(false);
-                }}
-                className="ui-dropdown-item"
-              >
-                <Settings size={14} className="ui-text-muted" /> Settings
-              </button>
-              <div className="ui-dropdown-divider" />
-              <button
-                onClick={handleLogout}
-                className="ui-dropdown-item ui-dropdown-item-danger"
-              >
-                <LogOut size={14} /> Sign out
-              </button>
-            </div>
-          )}
+        {/* User Profile — Teams-style hover/click card (status, org, contact,
+            reporting line, quick actions) replaces the old plain dropdown. */}
+        <div ref={userDropdownRef}>
+          <ProfileHoverCard
+            viewerId={user?.id}
+            fallbackInitials={
+              user ? `${user.firstName[0]}${user.lastName[0]}` : "SU"
+            }
+            fallbackAvatarUrl={user?.avatar}
+            onSignOut={handleLogout}
+          />
         </div>
       </div>
     </header>

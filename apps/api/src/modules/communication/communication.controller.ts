@@ -133,6 +133,19 @@ export class CommunicationController {
     );
   }
 
+  @ApiOperation({
+    summary: "Get or create the caller's private Notes to Self space",
+  })
+  @Post("channels/self-notes")
+  @Permissions("communication.channel.create")
+  async createSelfNotes(@Req() req: AuthenticatedRequest) {
+    return this.communicationService.getOrCreateSelfNotes(
+      req.user.tenantId,
+      req.user.orgId || "org-system-default",
+      req.user.userId,
+    );
+  }
+
   @ApiOperation({ summary: "Create group" })
   @Post("channels/group")
   @Permissions("communication.channel.create")

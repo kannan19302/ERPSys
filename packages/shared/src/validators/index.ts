@@ -293,6 +293,41 @@ export const updateProfileSchema = z.object({
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
+// ── People / directory profile schemas (Teams-style profile card) ──
+
+export const updatePeopleProfileSchema = z.object({
+  pronouns: z.string().max(40).optional(),
+  jobTitle: z.string().max(120).optional(),
+  departmentId: z.string().optional(),
+  managerId: z.string().optional(),
+  timezone: z.string().max(80).optional(),
+  workingHoursStart: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use HH:MM (24h)")
+    .optional(),
+  workingHoursEnd: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use HH:MM (24h)")
+    .optional(),
+  workingDays: z
+    .array(z.enum(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]))
+    .optional(),
+  workingLocation: z.string().max(160).optional(),
+  overview: z.string().max(2000).optional(),
+});
+export type UpdatePeopleProfileInput = z.infer<
+  typeof updatePeopleProfileSchema
+>;
+
+export const uploadPronunciationSchema = z.object({
+  audioDataUrl: z
+    .string()
+    .startsWith("data:audio/", "Expected an audio data URL"),
+});
+export type UploadPronunciationInput = z.infer<
+  typeof uploadPronunciationSchema
+>;
+
 // ── Role Schemas ──
 
 export const createRoleSchema = z.object({

@@ -46,6 +46,7 @@ import { QueueModule } from "./common/queues/queue.module";
 import { AiModule } from "./modules/ai/ai.module";
 import { EcommerceModule } from "./modules/ecommerce/ecommerce.module";
 import { MarketplaceModule } from "./modules/marketplace/marketplace.module";
+import { PeopleModule } from "./modules/people/people.module";
 import { FixedAssetsModule } from "./modules/fixed-assets/fixed-assets.module";
 import { InventoryLogisticsModule } from "./modules/inventory/inventory-logistics.module";
 import { QualityComplianceModule } from "./modules/inventory/quality-compliance.module";
@@ -225,6 +226,7 @@ import {
 
     // Marketplace catalog, vendor publishing, and extension lifecycle
     MarketplaceModule,
+    PeopleModule,
 
     // Module #35 — Fixed Asset Management
     FixedAssetsModule,
