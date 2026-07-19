@@ -18,11 +18,13 @@ export interface ApiError {
 
 export class ApiRequestError extends Error {
   statusCode: number;
+  body?: any;
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, body?: any) {
     super(message);
     this.statusCode = statusCode;
     this.name = "ApiRequestError";
+    this.body = body;
   }
 }
 
@@ -122,13 +124,18 @@ export async function api<T = unknown>(
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
+    let errorBody: any = undefined;
     try {
-      const body = await res.json();
-      if (body.message) message = body.message;
+      errorBody = await res.json();
+      if (errorBody && errorBody.message) {
+        message = Array.isArray(errorBody.message)
+          ? errorBody.message[0]
+          : errorBody.message;
+      }
     } catch {
       // response wasn't JSON
     }
-    throw new ApiRequestError(message, res.status);
+    throw new ApiRequestError(message, res.status, errorBody);
   }
 
   if (res.status === 204) return undefined as T;

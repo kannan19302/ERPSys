@@ -68,6 +68,42 @@ export default function LoginPage() {
   // Demo accounts states
   const [showDemoModal, setShowDemoModal] = useState(false);
 
+  // CAPTCHA states
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaProvider, setCaptchaProvider] = useState<
+    "hcaptcha" | "turnstile"
+  >("hcaptcha");
+  const [captchaSiteKey, setCaptchaSiteKey] = useState("");
+
+  useEffect(() => {
+    if (!captchaRequired || !captchaSiteKey) return;
+
+    // Define global callback
+    (window as any).onCaptchaSuccess = (token: string) => {
+      setCaptchaToken(token);
+    };
+
+    const scriptId = "captcha-script-loader";
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src =
+        captchaProvider === "turnstile"
+          ? "https://challenges.cloudflare.com/turnstile/v0/api.js"
+          : "https://js.hcaptcha.com/1/api.js";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      // Keep script loaded or cleanup callback
+      delete (window as any).onCaptchaSuccess;
+    };
+  }, [captchaRequired, captchaProvider, captchaSiteKey]);
+
   // Real OAuth providers configured on the server (drives the social buttons)
   const [oauthProviders, setOauthProviders] = useState<string[]>([]);
   useEffect(() => {
@@ -169,6 +205,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (captchaRequired && !captchaToken) {
+      setError("Please complete the CAPTCHA verification.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -211,6 +252,7 @@ export default function LoginPage() {
           password,
           tenantSlug: tenantSlug || undefined,
           rememberMe,
+          captchaToken: captchaToken || undefined,
         });
 
         if (data.mfaRequired) {
@@ -231,6 +273,12 @@ export default function LoginPage() {
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) {
         setError(err.message);
+        if (err.body?.captchaRequired) {
+          setCaptchaRequired(true);
+          setCaptchaProvider(err.body.provider);
+          setCaptchaSiteKey(err.body.siteKey);
+          setCaptchaToken(""); // reset token on request
+        }
         // Highlight organization slug field if user needs it
         if (err.message.includes("Multiple accounts")) {
           const orgInput = document.getElementById("org-slug-input");
@@ -694,6 +742,31 @@ export default function LoginPage() {
                   </div>
                 )}
 
+                {/* CAPTCHA widget */}
+                {captchaRequired && captchaSiteKey && (
+                  <div
+                    style={{
+                      marginBottom: "1rem",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {captchaProvider === "turnstile" ? (
+                      <div
+                        className="cf-turnstile"
+                        data-sitekey={captchaSiteKey}
+                        data-callback="onCaptchaSuccess"
+                      />
+                    ) : (
+                      <div
+                        className="h-captcha"
+                        data-sitekey={captchaSiteKey}
+                        data-callback="onCaptchaSuccess"
+                      />
+                    )}
+                  </div>
+                )}
+
                 {/* Submit Buttons */}
                 <button
                   type="submit"
@@ -845,7 +918,7 @@ export default function LoginPage() {
       </div>
 
       {/* Demo Persona Modal */}
-      {showDemoModal && (
+      {showDemoModal && process.env.NODE_ENV !== "production" && (
         <div className={styles.s30}>
           <div className={styles.s31}>
             <div>
