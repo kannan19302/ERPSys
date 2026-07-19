@@ -57,6 +57,7 @@ export interface TenantOption {
   id?: string;
   name: string;
   slug: string;
+  logoUrl?: string | null;
 }
 
 interface AppHeaderProps {
@@ -297,7 +298,22 @@ export function AppHeader({
                   : "Organization — the tenant you are currently signed in to"
               }
             >
-              <Building2 size={13} style={{ flexShrink: 0, opacity: 0.7 }} />
+              {currentTenant.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={currentTenant.logoUrl}
+                  alt=""
+                  style={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 3,
+                    objectFit: "contain",
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <Building2 size={13} style={{ flexShrink: 0, opacity: 0.7 }} />
+              )}
               <span>{currentTenant.name}</span>
               {tenants.length > 1 && (
                 <ChevronDown

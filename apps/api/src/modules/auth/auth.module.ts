@@ -6,10 +6,32 @@ import { OAuthService } from "./oauth.service";
 import { SsoController } from "./sso.controller";
 import { SsoService } from "./sso.service";
 import { ProvisioningService } from "./provisioning.service";
+import { OnboardingController } from "./onboarding.controller";
+import { OnboardingService } from "./onboarding.service";
+import { DemoDataService } from "./demo-data.service";
 
 @Module({
-  controllers: [AuthController, OAuthController, SsoController],
-  providers: [AuthService, OAuthService, SsoService, ProvisioningService],
-  exports: [AuthService, OAuthService, SsoService, ProvisioningService],
+  controllers: [
+    AuthController,
+    OAuthController,
+    SsoController,
+    OnboardingController,
+  ],
+  providers: [
+    AuthService,
+    OAuthService,
+    SsoService,
+    ProvisioningService,
+    OnboardingService,
+    DemoDataService,
+  ],
+  exports: [
+    AuthService,
+    OAuthService,
+    SsoService,
+    ProvisioningService,
+    OnboardingService,
+    DemoDataService,
+  ],
 })
 export class AuthModule {}

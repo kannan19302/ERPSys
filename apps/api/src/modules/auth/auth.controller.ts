@@ -313,14 +313,40 @@ export class AuthController {
   @Post("login-demo")
   @HttpCode(HttpStatus.OK)
   async loginDemo(
-    @Body()
-    body: { role: "SUPER_ADMIN" | "HR_MANAGER" | "FINANCE_MANAGER" | "VIEWER" },
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (process.env.NODE_ENV === "production") {
       throw new NotFoundException();
     }
-    const result = await this.authService.loginDemo(body.role);
+    // Defense in depth: even outside production this is a shared dev
+    // database seed shortcut, not a real account — never reachable from
+    // anything but the machine running the dev server.
+    const hostHeader = req.headers["x-forwarded-host"];
+    let hostWithPort = "";
+    if (typeof hostHeader === "string") {
+      hostWithPort = hostHeader;
+    } else if (
+      Array.isArray(hostHeader) &&
+      hostHeader.length > 0 &&
+      typeof hostHeader[0] === "string"
+    ) {
+      hostWithPort = hostHeader[0];
+    } else if (typeof req.hostname === "string") {
+      hostWithPort = req.hostname;
+    }
+    const host = (hostWithPort.split(":")[0] as string).toLowerCase();
+    const isLocal =
+      ["localhost", "127.0.0.1", "::1", "api", "web"].includes(host) ||
+      host.startsWith("172.") ||
+      host.startsWith("192.168.") ||
+      host.startsWith("10.");
+    if (!isLocal) {
+      throw new NotFoundException();
+    }
+    // Only Super Admin is offered today — HR/Finance/Viewer demo personas
+    // were removed.
+    const result = await this.authService.loginDemo();
     return sealSessionCookies(result as SessionResult, res);
   }
 

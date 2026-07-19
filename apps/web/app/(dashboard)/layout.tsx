@@ -36,6 +36,8 @@ import {
   Cpu,
   FileText,
   LayoutGrid,
+  Clock,
+  X,
 } from "lucide-react";
 
 import {
@@ -99,6 +101,80 @@ export default function DashboardLayout({
 }) {
   const client = useApiClient();
   const pathname = usePathname() || "";
+  useEffect(() => {
+    const updateFavicon = (path: string) => {
+      const root = path.split("/")[1] || "";
+      let color = "#6366f1";
+      let svgInner = "";
+
+      switch (root) {
+        case "finance":
+          color = "#10b981";
+          svgInner = `<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+          break;
+        case "hr":
+          color = "#f59e0b";
+          svgInner = `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="${color}" stroke-width="2" fill="none"/><circle cx="9" cy="7" r="4" stroke="${color}" stroke-width="2" fill="none"/><path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="${color}" stroke-width="2" fill="none"/><circle cx="19" cy="4" r="3" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "crm":
+          color = "#3b82f6";
+          svgInner = `<circle cx="12" cy="12" r="10" stroke="${color}" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="6" stroke="${color}" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="${color}"/>`;
+          break;
+        case "inventory":
+          color = "#d97706";
+          svgInner = `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="${color}" stroke-width="2" fill="none"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "procurement":
+          color = "#0d9488";
+          svgInner = `<circle cx="8" cy="21" r="1" fill="${color}"/><circle cx="19" cy="21" r="1" fill="${color}"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "sales":
+          color = "#ef4444";
+          svgInner = `<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="${color}" stroke-width="2" fill="none"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="${color}" stroke-width="2" fill="none"/><path d="M9 14h6M9 18h6" stroke="${color}" stroke-width="2"/>`;
+          break;
+        case "supply-chain":
+          color = "#8b5cf6";
+          svgInner = `<rect x="1" y="3" width="15" height="13" fill="none" stroke="${color}" stroke-width="2"/><polygon points="16 8 20 8 23 11 23 16 16 16" fill="none" stroke="${color}" stroke-width="2"/><circle cx="5.5" cy="18.5" r="2.5" fill="${color}"/><circle cx="18.5" cy="18.5" r="2.5" fill="${color}"/>`;
+          break;
+        case "projects":
+          color = "#ec4899";
+          svgInner = `<rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke="${color}" stroke-width="2" fill="none"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "manufacturing":
+          color = "#4b5563";
+          svgInner = `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94L14.7 6.3z" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "connect":
+          color = "#10b981";
+          svgInner = `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "pos":
+          color = "#7c3aed";
+          svgInner = `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="${color}" stroke-width="2" fill="none"/><polyline points="9 22 9 12 15 12 15 22" stroke="${color}" stroke-width="2" fill="none"/>`;
+          break;
+        case "builder":
+          color = "#db2777";
+          svgInner = `<rect x="4" y="4" width="14" height="14" rx="2" ry="2" stroke="${color}" stroke-width="2" fill="none"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
+          break;
+        default:
+          color = "#6366f1";
+          svgInner = `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="${color}" stroke-width="2" fill="none"/><polyline points="9 22 9 12 15 12 15 22" stroke="${color}" stroke-width="2" fill="none"/>`;
+      }
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">${svgInner}</svg>`;
+      const faviconUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = faviconUrl;
+    };
+
+    updateFavicon(pathname);
+  }, [pathname]);
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   // Theme now lives in the root ThemeProvider (all design-system themes).
@@ -227,7 +303,21 @@ export default function DashboardLayout({
     id?: string;
     name: string;
     slug: string;
+    logoUrl?: string | null;
   }>({ name: "…", slug: "" });
+  const [subscription, setSubscription] = useState<any>(null);
+  const [showTrialBanner, setShowTrialBanner] = useState(true);
+
+  const trialDaysLeft = useMemo(() => {
+    if (!subscription?.trialEndsAt) return 0;
+    return Math.max(
+      0,
+      Math.ceil(
+        (new Date(subscription.trialEndsAt).getTime() - Date.now()) /
+          (1000 * 60 * 60 * 24),
+      ),
+    );
+  }, [subscription]);
   // Real memberships from the API — every tenant this account can sign in to.
   const [tenants, setTenants] = useState<
     Array<{ id: string; name: string; slug: string }>
@@ -294,6 +384,13 @@ export default function DashboardLayout({
         setUser(profile);
         if (profile.tenant) setCurrentTenant(profile.tenant);
         setIsLoading(false);
+
+        client
+          .get<any>("/saas/subscription")
+          .then((sub) => {
+            if (mounted) setSubscription(sub);
+          })
+          .catch(() => {});
 
         client
           .get<
@@ -564,6 +661,31 @@ export default function DashboardLayout({
                   currentModule={pathname.split("/")[1]}
                   onRemoved={() => setDemoDataLoaded(false)}
                 />
+              )}
+              {subscription?.status === "TRIAL" && showTrialBanner && (
+                <div className={`${styles.trialBanner} ui-animate-in`}>
+                  <div className={styles.trialInfo}>
+                    <Clock size={16} className={styles.trialIcon} />
+                    <span>
+                      Your <strong>Free Trial</strong> is active. You have{" "}
+                      <strong>{trialDaysLeft} days left</strong>.
+                    </span>
+                  </div>
+                  <div className={styles.trialActions}>
+                    <Link
+                      href="/saas/portal"
+                      className={styles.trialUpgradeLink}
+                    >
+                      Upgrade Plan
+                    </Link>
+                    <button
+                      onClick={() => setShowTrialBanner(false)}
+                      className={styles.trialDismissBtn}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
               )}
               {children}
             </div>

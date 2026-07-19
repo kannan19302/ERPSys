@@ -73,19 +73,31 @@ export class TenantWriteGuard implements NestInterceptor {
       );
     }
 
-    const trialDurationMs = 30 * 24 * 60 * 60 * 1000;
-    const isTrialExpired =
-      Date.now() - (tenant.createdAt ?? new Date()).getTime() > trialDurationMs;
+    const subscription = tenant.subscription;
 
-    if ((tenant.plan === "free" || tenant.plan === "trial") && isTrialExpired) {
-      throw new ForbiddenException({
-        expired: true,
-        message:
-          "Your 30-day free trial has expired. Please upgrade your plan in the Billing center to resume write operations.",
-      });
+    // Tenants registered before AUTH_BILLING_PROGRAM Phase 2.3 have no
+    // TenantSubscription row at all — fall back to the tenant.createdAt
+    // heuristic only for those. Any tenant with an explicit subscription
+    // row (every tenant registered since) is governed entirely by that
+    // row's own endDate check below, which is authoritative.
+    if (!subscription) {
+      const trialDurationMs = 30 * 24 * 60 * 60 * 1000;
+      const isTrialExpired =
+        Date.now() - (tenant.createdAt ?? new Date()).getTime() >
+        trialDurationMs;
+
+      if (
+        (tenant.plan === "free" || tenant.plan === "trial") &&
+        isTrialExpired
+      ) {
+        throw new ForbiddenException({
+          expired: true,
+          message:
+            "Your 30-day free trial has expired. Please upgrade your plan in the Billing center to resume write operations.",
+        });
+      }
     }
 
-    const subscription = tenant.subscription;
     if (subscription) {
       const isSubscriptionExpired =
         subscription.status === "EXPIRED" ||
@@ -93,11 +105,11 @@ export class TenantWriteGuard implements NestInterceptor {
         (subscription.endDate && subscription.endDate < new Date());
 
       if (isSubscriptionExpired) {
-        throw new ForbiddenException({
-          expired: true,
-          message:
-            "Your subscription has expired or is unpaid. Please update your payment details or renew your plan to resume write operations.",
-        });
+        const message =
+          subscription.status === "TRIAL"
+            ? "Your 30-day free trial has ended. Please choose a plan in the Billing center to resume write operations."
+            : "Your subscription has expired or is unpaid. Please update your payment details or renew your plan to resume write operations.";
+        throw new ForbiddenException({ expired: true, message });
       }
     }
   }

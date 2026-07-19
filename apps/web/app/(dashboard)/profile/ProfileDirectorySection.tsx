@@ -21,6 +21,10 @@ import {
   Search,
   MessageSquare,
   StickyNote,
+  Camera,
+  Globe,
+  Monitor,
+  LayoutGrid,
 } from "lucide-react";
 import styles from "./ProfileDirectorySection.module.css";
 
@@ -335,10 +339,25 @@ function EditableField({
 export interface ProfileDirectorySectionProps {
   /** If set, view another user's card/org-chart read-only; otherwise the signed-in user's own, editable. */
   targetUserId?: string;
+  theme?: string;
+  setTheme?: (t: string) => void;
+  density?: string;
+  setDensity?: (d: string) => void;
+  language?: string;
+  onSavePreferences?: (updated: {
+    language?: string;
+    theme?: string;
+  }) => Promise<void>;
 }
 
 export function ProfileDirectorySection({
   targetUserId,
+  theme,
+  setTheme,
+  density,
+  setDensity,
+  language,
+  onSavePreferences,
 }: ProfileDirectorySectionProps) {
   const client = useApiClient();
   const router = useRouter();
@@ -363,6 +382,78 @@ export function ProfileDirectorySection({
   const [recError, setRecError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+
+  // Avatar upload
+  const avatarFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  // Presence & status
+  const [presence, setPresence] = useState<string>("ACTIVE");
+  const [visibility, setVisibility] = useState<string>("EVERYONE");
+  const [savingPresence, setSavingPresence] = useState(false);
+
+  const fetchPresence = useCallback(
+    async (uid: string) => {
+      try {
+        const data = await client.get<any>(`/communication/presence/${uid}`);
+        setPresence(data.presence);
+        setVisibility(data.visibility);
+      } catch {}
+    },
+    [client],
+  );
+
+  const handlePresenceChange = async (
+    next: Partial<{ presence: string; visibility: string }>,
+  ) => {
+    const nextPresence = next.presence ?? presence;
+    const nextVisibility = next.visibility ?? visibility;
+    setPresence(nextPresence);
+    setVisibility(nextVisibility);
+    setSavingPresence(true);
+    try {
+      await client.put("/communication/presence", {
+        presence: nextPresence,
+        visibility: nextVisibility,
+      });
+      loadCard();
+    } catch {
+      alert("Could not update your status.");
+    } finally {
+      setSavingPresence(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 800 * 1024) {
+      alert("Image exceeds the 800KB size limit.");
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const result = await client.request<{ avatar: string }>(
+        "/auth/me/avatar",
+        { method: "POST", body },
+      );
+      const localUserStr = localStorage.getItem("user");
+      if (localUserStr) {
+        const localUser = JSON.parse(localUserStr);
+        localUser.avatar = result.avatar;
+        localStorage.setItem("user", JSON.stringify(localUser));
+      }
+      window.dispatchEvent(new Event("user-profile-updated"));
+      loadCard();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -417,6 +508,12 @@ export function ProfileDirectorySection({
   useEffect(() => {
     loadCard();
   }, [loadCard]);
+
+  useEffect(() => {
+    if (card) {
+      fetchPresence(card.userId);
+    }
+  }, [card, fetchPresence]);
 
   useEffect(() => {
     setChartCenterId(targetUserId);
@@ -554,13 +651,37 @@ export function ProfileDirectorySection({
       <div className={styles.hero}>
         <div className={styles.heroTop}>
           <div className={styles.heroAvatarBlock}>
-            <div className={styles.heroAvatarLarge}>
+            <div
+              className={`${styles.heroAvatarLarge} ${isSelf ? "cursor-pointer hover:opacity-90 relative group" : ""}`}
+              style={{ width: 90, height: 90, borderRadius: "50%" }}
+              onClick={() =>
+                isSelf && !uploadingAvatar && avatarFileRef.current?.click()
+              }
+            >
               <Avatar
                 name={`${card.firstName} ${card.lastName}`}
                 url={card.avatar}
                 size={84}
               />
+              {isSelf && (
+                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingAvatar ? (
+                    <Loader2 size={20} className="animate-spin text-white" />
+                  ) : (
+                    <Camera size={20} className="text-white" />
+                  )}
+                </div>
+              )}
             </div>
+            {isSelf && (
+              <input
+                ref={avatarFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+            )}
           </div>
           <div className={styles.heroDetails}>
             <div className={styles.heroNameRow}>
@@ -690,6 +811,33 @@ export function ProfileDirectorySection({
 
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>Contact &amp; Organization</h3>
+          {isSelf ? (
+            <>
+              <EditableField
+                label="First Name"
+                value={card.firstName}
+                onSave={async (v) => {
+                  await client.patch("/auth/me", { firstName: v });
+                  loadCard();
+                }}
+              />
+              <EditableField
+                label="Last Name"
+                value={card.lastName}
+                onSave={async (v) => {
+                  await client.patch("/auth/me", { lastName: v });
+                  loadCard();
+                }}
+              />
+            </>
+          ) : (
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Name</label>
+              <div className={styles.fieldReadonly}>
+                {card.firstName} {card.lastName}
+              </div>
+            </div>
+          )}
           <div className={styles.field}>
             <label className={styles.fieldLabel}>
               <Mail size={12} /> Email
@@ -947,6 +1095,109 @@ export function ProfileDirectorySection({
             </div>
           )}
         </div>
+
+        {isSelf && (
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Preferences &amp; Status</h3>
+
+            {/* Presence Status */}
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Status Presence</label>
+              <div className="flex gap-2">
+                <select
+                  className={styles.fieldSelect}
+                  value={presence}
+                  disabled={savingPresence}
+                  onChange={(e) =>
+                    handlePresenceChange({ presence: e.target.value })
+                  }
+                >
+                  {Object.keys(PRESENCE_LABELS).map((p) => (
+                    <option key={p} value={p}>
+                      {PRESENCE_LABELS[p]}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className={styles.fieldSelect}
+                  value={visibility}
+                  disabled={savingPresence}
+                  onChange={(e) =>
+                    handlePresenceChange({ visibility: e.target.value })
+                  }
+                >
+                  <option value="EVERYONE">Visible to org</option>
+                  <option value="NOBODY">Appear offline</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Language */}
+            {language && onSavePreferences && (
+              <div className={styles.field}>
+                <label className={styles.fieldLabel}>
+                  <Globe size={12} /> Language
+                </label>
+                <select
+                  className={styles.fieldSelect}
+                  value={language}
+                  onChange={(e) =>
+                    onSavePreferences({ language: e.target.value })
+                  }
+                >
+                  <option>English (US)</option>
+                  <option>Spanish (ES)</option>
+                  <option>French (FR)</option>
+                </select>
+              </div>
+            )}
+
+            {/* Theme */}
+            {theme && setTheme && onSavePreferences && (
+              <div className={styles.field}>
+                <label className={styles.fieldLabel}>
+                  <Monitor size={12} /> Theme
+                </label>
+                <select
+                  className={styles.fieldSelect}
+                  value={theme}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    onSavePreferences({ theme: val });
+                    setTheme(
+                      val === "Dark Mode"
+                        ? "dark"
+                        : val === "Light Mode"
+                          ? "light"
+                          : "system",
+                    );
+                  }}
+                >
+                  <option>System Default</option>
+                  <option>Light Mode</option>
+                  <option>Dark Mode</option>
+                </select>
+              </div>
+            )}
+
+            {/* Density */}
+            {density && setDensity && (
+              <div className={styles.field}>
+                <label className={styles.fieldLabel}>
+                  <LayoutGrid size={12} /> Density
+                </label>
+                <select
+                  className={styles.fieldSelect}
+                  value={density}
+                  onChange={(e) => setDensity(e.target.value as any)}
+                >
+                  <option value="comfortable">Comfortable (default)</option>
+                  <option value="compact">Compact (tighter fit)</option>
+                </select>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Org chart ── */}

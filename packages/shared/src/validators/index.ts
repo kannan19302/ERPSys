@@ -166,6 +166,13 @@ export const registerSchema = z
     currency: z.string().optional(),
     timezone: z.string().optional(),
     tenantId: z.string().uuid().optional(),
+    // Enforced server-side, not just a disabled submit button — a bare API
+    // call must be rejected too, not only the UI form.
+    termsAccepted: z.literal(true, {
+      errorMap: () => ({
+        message: "You must agree to the Terms of Service and Privacy Policy",
+      }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -860,6 +867,7 @@ export const updateAdminSettingsSchema = z.object({
   currency: z.string().optional(),
   timezone: z.string().optional(),
   address: z.any().optional(),
+  logoUrl: z.string().optional(),
 });
 export type UpdateAdminSettingsInput = z.infer<
   typeof updateAdminSettingsSchema
@@ -2931,3 +2939,36 @@ export const vendorBulkStatusSchema = z.object({
   ids: z.array(z.string()),
   status: z.string(),
 });
+
+// ── Onboarding checklist (auth/onboarding) ──
+
+export const onboardingChecklistKeySchema = z.enum([
+  "profile",
+  "logo",
+  "invite",
+  "app",
+  "plan",
+  "dashboard",
+]);
+
+/**
+ * Response shape for GET /auth/onboarding and PUT /auth/onboarding/complete/:key.
+ * `checklistOrder` and `priorityAppSlugs` are additive fields derived from the
+ * tenant's `industry` (Track: onboarding personalization) — older consumers
+ * that only read the boolean checklist keys are unaffected.
+ */
+export const onboardingChecklistResponseSchema = z
+  .object({
+    profile: z.boolean(),
+    logo: z.boolean(),
+    invite: z.boolean(),
+    app: z.boolean(),
+    plan: z.boolean(),
+    dashboard: z.boolean(),
+    checklistOrder: z.array(onboardingChecklistKeySchema),
+    priorityAppSlugs: z.array(z.string()),
+  })
+  .passthrough();
+export type OnboardingChecklistResponse = z.infer<
+  typeof onboardingChecklistResponseSchema
+>;

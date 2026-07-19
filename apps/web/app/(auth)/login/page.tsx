@@ -76,6 +76,30 @@ export default function LoginPage() {
   >("hcaptcha");
   const [captchaSiteKey, setCaptchaSiteKey] = useState("");
 
+  // Auto-resolve organization slug from email domain
+  useEffect(() => {
+    if (email && email.includes("@")) {
+      const domain = email.split("@")[1];
+      if (domain && domain.includes(".")) {
+        const potentialSlug = domain.split(".")[0];
+        const publicProviders = [
+          "gmail",
+          "yahoo",
+          "hotmail",
+          "outlook",
+          "icloud",
+        ];
+        if (
+          potentialSlug &&
+          !publicProviders.includes(potentialSlug.toLowerCase()) &&
+          !tenantSlug
+        ) {
+          setTenantSlug(potentialSlug.toLowerCase());
+        }
+      }
+    }
+  }, [email, tenantSlug]);
+
   useEffect(() => {
     if (!captchaRequired || !captchaSiteKey) return;
 
@@ -379,9 +403,10 @@ export default function LoginPage() {
     };
   }, [mfaRequired, pushSent, showManualCode, mfaChallengeToken, router]);
 
-  const handleDemoLogin = async (
-    role: "SUPER_ADMIN" | "HR_MANAGER" | "FINANCE_MANAGER" | "VIEWER",
-  ) => {
+  // The demo shortcut only ever creates a Super Admin on a shared dev
+  // tenant — never a role picker. The API independently re-checks the host
+  // header, but hiding the button itself is the first line of defense.
+  const handleDemoLogin = async () => {
     setLoading(true);
     setError(null);
     setShowDemoModal(false);
@@ -390,9 +415,7 @@ export default function LoginPage() {
       const data = await apiPost<{
         token: string;
         user: Record<string, unknown>;
-      }>("/auth/login-demo", {
-        role,
-      });
+      }>("/auth/login-demo");
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -403,6 +426,19 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Belt-and-suspenders: only render the demo entry point when this page is
+  // actually being served from the local dev machine, regardless of what
+  // NODE_ENV the bundle was built with.
+  const [isLocalhost, setIsLocalhost] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setIsLocalhost(
+      ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname),
+    );
+  }, []);
+  const showDemoEntryPoint =
+    process.env.NODE_ENV !== "production" && isLocalhost;
 
   if (!mounted || checking) {
     return (
@@ -887,7 +923,7 @@ export default function LoginPage() {
                   </a>
                 </div>
 
-                {process.env.NODE_ENV !== "production" && (
+                {showDemoEntryPoint && (
                   <button
                     type="button"
                     onClick={() => setShowDemoModal(true)}
@@ -901,7 +937,7 @@ export default function LoginPage() {
                       width: "100%",
                     }}
                   >
-                    Developer demo personas…
+                    Developer demo login…
                   </button>
                 )}
               </>
@@ -917,58 +953,32 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Demo Persona Modal */}
-      {showDemoModal && process.env.NODE_ENV !== "production" && (
+      {/* Demo Login Modal — Super Admin only */}
+      {showDemoModal && showDemoEntryPoint && (
         <div className={styles.s30}>
           <div className={styles.s31}>
             <div>
               <h2 className={styles.s32}>Login as Developer Demo User</h2>
               <p className={styles.s33}>
-                Select a pre-seeded organizational persona to log in and inspect
-                pre-configured module access keys JIT.
+                Signs you into a shared local Super Admin account for
+                development. Local machine only — this never runs in production.
               </p>
             </div>
 
             <div className={styles.s34}>
-              {[
-                {
-                  key: "SUPER_ADMIN",
-                  name: "Super Admin",
-                  email: "admin@unerp.dev",
-                  desc: "Full administration permission keys (*).",
-                },
-                {
-                  key: "HR_MANAGER",
-                  name: "HR Manager",
-                  email: "hr-demo@unerp.dev",
-                  desc: "Access to employee profiles and departments.",
-                },
-                {
-                  key: "FINANCE_MANAGER",
-                  name: "Finance Manager",
-                  email: "finance-demo@unerp.dev",
-                  desc: "Access to general ledger, bills, and payments.",
-                },
-                {
-                  key: "VIEWER",
-                  name: "Standard Viewer",
-                  email: "viewer-demo@unerp.dev",
-                  desc: "Read-only access to core directories.",
-                },
-              ].map((role) => (
-                <button
-                  key={role.key}
-                  type="button"
-                  onClick={() => handleDemoLogin(role.key as any)}
-                  className={`demo-persona-select-btn ${styles.s35}`}
-                >
-                  <div className={styles.s36}>
-                    <span className={styles.s37}>{role.name}</span>
-                    <span className={styles.s38}>{role.email}</span>
-                  </div>
-                  <span className={styles.s39}>{role.desc}</span>
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={() => handleDemoLogin()}
+                className={`demo-persona-select-btn ${styles.s35}`}
+              >
+                <div className={styles.s36}>
+                  <span className={styles.s37}>Super Admin</span>
+                  <span className={styles.s38}>admin@unerp.dev</span>
+                </div>
+                <span className={styles.s39}>
+                  Full administration permission keys (*).
+                </span>
+              </button>
             </div>
 
             <button

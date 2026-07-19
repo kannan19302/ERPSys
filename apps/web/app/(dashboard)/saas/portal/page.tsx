@@ -1,6 +1,8 @@
 "use client";
 import styles from "./page.module.css";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, PageHeader, DashboardKPICard, DashboardChart } from "@unerp/ui";
 import {
   Users,
@@ -13,8 +15,19 @@ import {
   Clock,
   AlertTriangle,
   RefreshCw,
+  Sparkles,
+  UserPlus,
+  Settings,
+  Package,
+  LayoutDashboard,
+  ImageIcon,
+  CreditCard,
+  Building,
+  LayoutGrid,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import { InviteTeamSection } from "./InviteTeamSection";
+import { OnboardingChecklist } from "../../../../src/components/OnboardingChecklist";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -224,16 +237,29 @@ const USAGE_META: Record<
 
 export default function SaasPortalPage() {
   const client = useApiClient();
+  const router = useRouter();
+  // Read directly from the URL (no useSearchParams / Suspense boundary
+  // needed) — set by the register page's post-signup redirect here.
+  const [isOnboarding, setIsOnboarding] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setIsOnboarding(
+      new URLSearchParams(window.location.search).get("onboarding") === "1",
+    );
+  }, []);
   const [plans, setPlans] = useState<Plan[]>(MOCK_PLANS);
   const [subscription, setSubscription] = useState<Subscription | null>(
     MOCK_SUBSCRIPTION,
   );
   const [usage, setUsage] = useState<UsageRecord[]>(MOCK_USAGE);
   const [loading, setLoading] = useState(true);
-  const [showComparison, setShowComparison] = useState(false);
+  const [showComparison, setShowComparison] = useState(true);
   const [upgradeTarget, setUpgradeTarget] = useState<Plan | null>(null);
   const [upgrading, setUpgrading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">(
+    "month",
+  );
 
   /* Fetch real data on mount */
   const loadData = useCallback(async () => {
@@ -388,6 +414,51 @@ export default function SaasPortalPage() {
           ]}
         />
 
+        {isOnboarding && (
+          <Card padding="lg">
+            <div className={styles.onboardingHeader}>
+              <div className="ui-hstack-3">
+                <div className={styles.onboardingIcon}>
+                  <Sparkles size={22} />
+                </div>
+                <div>
+                  <h3 className={styles.onboardingTitle}>
+                    Welcome! Your 30-day free trial has started.
+                  </h3>
+                  <p className="ui-text-xs-muted">
+                    Complete these steps to get the most out of UniERP. Every
+                    feature is unlocked during your trial.
+                  </p>
+                </div>
+              </div>
+              <button
+                className="ui-btn ui-btn-secondary"
+                onClick={() => router.push("/apps")}
+              >
+                Go to Dashboard <ArrowRight size={14} />
+              </button>
+            </div>
+
+            <OnboardingChecklist variant="full" onDemoDataSeeded={loadData} />
+
+            {isOnboarding && (
+              <div className="mt-6 pt-6 border-t border-border flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-2">
+                <p className="text-sm text-muted-foreground mb-4">
+                  All set? Start using your ERP system now.
+                </p>
+                <Link
+                  href="/apps"
+                  className="ui-btn ui-btn-primary w-full md:w-auto shadow-md"
+                >
+                  <LayoutGrid size={16} className="mr-2" />
+                  Go to Apps Dashboard
+                  <ArrowRight size={16} className="ml-2" />
+                </Link>
+              </div>
+            )}
+          </Card>
+        )}
+
         {/* Trial Banner */}
         {subscription.status === "TRIAL" && (
           <div className={styles.s4}>
@@ -518,15 +589,28 @@ export default function SaasPortalPage() {
           />
         </div>
 
+        {/* Invite Team Section */}
+        <div id="invite-section">
+          <InviteTeamSection maxSeats={currentPlan?.maxUsers || 5} />
+        </div>
+
         {/* Plans */}
-        <div className={styles.s19}>
+        <div id="plans-section" className={styles.s19}>
           <h3 className={styles.s16}>Available Plans</h3>
-          <button
-            onClick={() => setShowComparison(!showComparison)}
-            className={styles.s20}
-          >
-            {showComparison ? "Hide" : "Show"} Feature Comparison
-          </button>
+          <div className={styles.billingToggle}>
+            <button
+              className={`${styles.billingToggleBtn} ${billingInterval === "month" ? styles.billingToggleBtnActive : ""}`}
+              onClick={() => setBillingInterval("month")}
+            >
+              Monthly
+            </button>
+            <button
+              className={`${styles.billingToggleBtn} ${billingInterval === "year" ? styles.billingToggleBtnActive : ""}`}
+              onClick={() => setBillingInterval("year")}
+            >
+              Annual <span className={styles.discountBadge}>Save 20%</span>
+            </button>
+          </div>
         </div>
 
         <div className={styles.s21}>
@@ -544,8 +628,22 @@ export default function SaasPortalPage() {
               {plan.isCurrent && <div className={styles.s23}>Current</div>}
               <h4 className={styles.s24}>{plan.name}</h4>
               <div className={styles.s25}>
-                <span className="text-2xl">{formatPrice(plan.price)}</span>
-                <span className="ui-text-xs-muted">/{plan.interval}</span>
+                <span className="text-2xl">
+                  {formatPrice(
+                    billingInterval === "year"
+                      ? Math.round(plan.price * 12 * 0.8)
+                      : plan.price,
+                  )}
+                </span>
+                <span className="ui-text-xs-muted">
+                  /{billingInterval === "year" ? "year" : plan.interval}
+                </span>
+                {billingInterval === "year" && plan.price > 0 && (
+                  <span className={styles.annualNote}>
+                    (${plan.price * 12}/yr → save $
+                    {Math.round(plan.price * 12 * 0.2)})
+                  </span>
+                )}
               </div>
 
               <ul className={styles.s26}>
@@ -648,61 +746,79 @@ export default function SaasPortalPage() {
           </div>
         )}
 
-        {/* Feature Comparison matrix */}
-        {showComparison && (
-          <div className={styles.s35}>
-            <table className={styles.s36}>
-              <thead>
-                <tr className={styles.s37}>
-                  <th className={styles.s38}>Features</th>
-                  <th className={styles.s38}>Starter</th>
-                  <th className={styles.s38}>Growth</th>
-                  <th className={styles.s38}>Enterprise</th>
+        {/* Feature Comparison matrix — always visible */}
+        <div className={styles.s35}>
+          <h3 className={styles.s16} style={{ marginBottom: "var(--space-3)" }}>
+            Feature Comparison
+          </h3>
+          <table className={styles.s36}>
+            <thead>
+              <tr className={styles.s37}>
+                <th className={styles.s38}>Features</th>
+                <th className={styles.s38}>Starter</th>
+                <th className={styles.s38}>Growth</th>
+                <th className={styles.s38}>Enterprise</th>
+              </tr>
+            </thead>
+            <tbody>
+              {FEATURE_MATRIX.map((row, idx) => (
+                <tr key={idx} className="border-b">
+                  <td className={styles.s39}>{row.feature}</td>
+                  <td className={styles.s40}>
+                    {typeof row.starter === "boolean" ? (
+                      row.starter ? (
+                        <CheckCircle size={16} className="ui-text-success" />
+                      ) : (
+                        "-"
+                      )
+                    ) : (
+                      row.starter
+                    )}
+                  </td>
+                  <td className={styles.s40}>
+                    {typeof row.growth === "boolean" ? (
+                      row.growth ? (
+                        <CheckCircle size={16} className="ui-text-success" />
+                      ) : (
+                        "-"
+                      )
+                    ) : (
+                      row.growth
+                    )}
+                  </td>
+                  <td className={styles.s40}>
+                    {typeof row.enterprise === "boolean" ? (
+                      row.enterprise ? (
+                        <CheckCircle size={16} className="ui-text-success" />
+                      ) : (
+                        "-"
+                      )
+                    ) : (
+                      row.enterprise
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {FEATURE_MATRIX.map((row, idx) => (
-                  <tr key={idx} className="border-b">
-                    <td className={styles.s39}>{row.feature}</td>
-                    <td className={styles.s40}>
-                      {typeof row.starter === "boolean" ? (
-                        row.starter ? (
-                          <CheckCircle size={16} className="ui-text-success" />
-                        ) : (
-                          "-"
-                        )
-                      ) : (
-                        row.starter
-                      )}
-                    </td>
-                    <td className={styles.s40}>
-                      {typeof row.growth === "boolean" ? (
-                        row.growth ? (
-                          <CheckCircle size={16} className="ui-text-success" />
-                        ) : (
-                          "-"
-                        )
-                      ) : (
-                        row.growth
-                      )}
-                    </td>
-                    <td className={styles.s40}>
-                      {typeof row.enterprise === "boolean" ? (
-                        row.enterprise ? (
-                          <CheckCircle size={16} className="ui-text-success" />
-                        ) : (
-                          "-"
-                        )
-                      ) : (
-                        row.enterprise
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Go to Dashboard CTA */}
+        <Card>
+          <div className={styles.dashboardCta}>
+            <div>
+              <h3 className="ui-heading-sm">Ready to get started?</h3>
+              <p className="ui-text-xs-muted">
+                Your workspace is fully set up. Jump into your apps and start
+                working.
+              </p>
+            </div>
+            <Link href="/apps" className={styles.dashboardCtaBtn}>
+              <LayoutDashboard size={16} />
+              Go to Dashboard
+            </Link>
           </div>
-        )}
+        </Card>
       </div>
     </RouteGuard>
   );

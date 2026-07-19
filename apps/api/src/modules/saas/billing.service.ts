@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import * as crypto from "node:crypto";
 import { prisma } from "@unerp/database";
+import Stripe from "stripe";
 
 export interface BillingCalculation {
   baseCost: number;
@@ -19,6 +20,15 @@ export interface BillingCalculation {
 export class BillingService {
   private readonly logger = new Logger(BillingService.name);
   private readonly usageBuffer = new Map<string, number>();
+  private readonly stripe: Stripe | null = null;
+
+  constructor() {
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (stripeKey) {
+      // Initialize Stripe with the standard API version
+      this.stripe = new Stripe(stripeKey, { apiVersion: "2024-04-10" as any });
+    }
+  }
 
   async createCheckoutSession(
     tenantId: string,
@@ -26,14 +36,49 @@ export class BillingService {
     successUrl: string,
     couponCode?: string,
   ) {
-    const plan = await prisma.saaSPlan.findUnique({ where: { id: planId } });
+    const plan = await prisma.saaSPlan.findUnique({
+      where: { id: planId },
+    });
     if (!plan) throw new NotFoundException("Plan not found");
+
+    const joiner = successUrl.includes("?") ? "&" : "?";
+
+    if (this.stripe && plan.stripePriceId) {
+      try {
+        const session = await this.stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          mode: "subscription",
+          client_reference_id: tenantId,
+          line_items: [
+            {
+              price: plan.stripePriceId,
+              quantity: 1,
+            },
+          ],
+          success_url: `${successUrl}${joiner}session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${successUrl.replace("success=true", "cancel=true")}`,
+          metadata: {
+            planId,
+            couponCode: couponCode || "",
+          },
+        });
+
+        return {
+          url: session.url,
+          sessionId: session.id,
+          metadata: { planId, couponCode: couponCode || "" },
+        };
+      } catch (err: any) {
+        this.logger.error(`Stripe checkout failed: ${err.message}`);
+        // Fallback to simulation if Stripe fails (e.g. invalid price ID)
+      }
+    }
 
     // Generate Stripe checkout session URL simulation
     const sessionId = `cs_${Date.now()}_${tenantId.slice(0, 8)}`;
     const metadata = { planId, couponCode: couponCode || "" };
     return {
-      url: `${successUrl}?session_id=${sessionId}`,
+      url: `${successUrl}${joiner}session_id=${sessionId}`,
       sessionId,
       metadata,
     };

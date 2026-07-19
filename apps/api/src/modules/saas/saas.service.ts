@@ -7,19 +7,65 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasService {
-  async getPlans() {
-    return prisma.saaSPlan.findMany({
-      orderBy: { maxUsers: "asc" },
-    });
+  /**
+   * Shapes raw SaaSPlan rows into what the portal UI expects. SaaSPlan has
+   * no price/currency/interval/maxApiCalls columns today — real per-plan
+   * pricing (and the proration/regional-pricing engine that would consume
+   * it) is tracked as still-open in AUTH_BILLING_PROGRAM.md, not modeled
+   * yet — so these are safe placeholder defaults, not billed amounts.
+   */
+  async getPlans(tenantId?: string) {
+    const [plans, currentSub] = await Promise.all([
+      prisma.saaSPlan.findMany({ orderBy: { maxUsers: "asc" } }),
+      tenantId
+        ? prisma.tenantSubscription.findFirst({ where: { tenantId } })
+        : Promise.resolve(null),
+    ]);
+
+    return plans.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      price: 0,
+      currency: "USD",
+      interval: "month",
+      maxUsers: plan.maxUsers,
+      maxStorageMb: plan.maxStorage,
+      maxApiCalls: 10000,
+      features: Array.isArray(plan.features) ? plan.features : [],
+      isCurrent: currentSub?.planId === plan.id,
+      recommended: false,
+    }));
   }
 
+  /**
+   * Shapes the raw TenantSubscription+SaaSPlan rows into what the SaaS
+   * portal UI actually expects (planName/currentPeriodStart/
+   * currentPeriodEnd/trialEndsAt) — the two had drifted apart because no
+   * tenant ever had a real subscription row until registration started
+   * creating one (see AuthService.register), so this path was never
+   * exercised with real data before.
+   */
   async getSubscription(tenantId: string) {
     const sub = await prisma.tenantSubscription.findFirst({
       where: { tenantId },
       include: { plan: true },
     });
     if (!sub) throw new NotFoundException("No active subscription found");
-    return sub;
+    return {
+      id: sub.id,
+      planId: sub.planId,
+      planName: sub.plan.name,
+      status: sub.status,
+      currentPeriodStart: sub.startDate,
+      currentPeriodEnd: sub.endDate,
+      trialEndsAt: sub.status === "TRIAL" ? sub.endDate : null,
+      // SaaSPlan doesn't track price/currency/interval today — the portal
+      // renders these for paid plans fetched via getPlans() instead; a
+      // trial's own price is always 0.
+      price: 0,
+      currency: "USD",
+      interval: "month",
+    };
   }
 
   async getUsageRecords(tenantId: string) {

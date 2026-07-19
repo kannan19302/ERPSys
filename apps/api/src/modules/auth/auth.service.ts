@@ -41,6 +41,7 @@ import {
   decryptSecret,
 } from "./auth-crypto";
 import { ProvisioningService } from "./provisioning.service";
+import { OnboardingService } from "./onboarding.service";
 
 /** Failed logins allowed before the account is temporarily locked. */
 const MAX_FAILED_ATTEMPTS = 5;
@@ -69,6 +70,10 @@ const hashChallengeToken = (token: string) =>
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 /** How long an email-verification token is valid. */
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+/** Stable catalog key for the shared "Free Trial" SaaSPlan every new tenant's TenantSubscription links to. */
+const FREE_TRIAL_PLAN_KEY = "free-trial";
+/** Full-feature evaluation window (AUTH_BILLING_PROGRAM Phase 2.3). */
+const TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 /**
  * Access-token lifetime. Short-lived by design (Phase 1.2): the rotating
  * refresh token silently renews it, and revoking the session kills both.
@@ -146,6 +151,8 @@ export class AuthService {
     private readonly provisioningService?: ProvisioningService,
     @Optional()
     private readonly eventEmitter?: EventEmitter2,
+    @Optional()
+    private readonly onboardingService?: OnboardingService,
   ) {}
 
   private get isProduction() {
@@ -239,6 +246,17 @@ export class AuthService {
               estimatedUsers: dto.estimatedUsers || null,
               logoUrl: dto.logoUrl || null,
               industry: dto.industry || null,
+              // Compliance record of consent — dto.termsAccepted is already
+              // required true by registerSchema; this is when, not whether.
+              termsAcceptedAt: new Date().toISOString(),
+              onboardingChecklist: {
+                profile: false,
+                logo: dto.logoUrl ? true : false,
+                invite: false,
+                app: false,
+                plan: false,
+                dashboard: false,
+              },
             },
           },
         });
@@ -363,6 +381,35 @@ export class AuthService {
             tenantId: tenant.id,
             tokenHash: verificationHash,
             expiresAt: new Date(Date.now() + VERIFY_TOKEN_TTL_MS),
+          },
+        });
+
+        // 8. Start the 30-day full-feature evaluation as an explicit,
+        // queryable subscription row (AUTH_BILLING_PROGRAM Phase 2.3) —
+        // rather than only inferring "still trialing" from tenant.createdAt,
+        // which is what TenantWriteGuard falls back to for tenants that
+        // predate this. FREE_TRIAL_PLAN_KEY is a stable catalog row shared
+        // by every tenant's trial, not tenant-scoped.
+        const freePlan = await tx.saaSPlan.upsert({
+          where: { stripePriceId: FREE_TRIAL_PLAN_KEY },
+          update: {},
+          create: {
+            name: "Free Trial",
+            stripePriceId: FREE_TRIAL_PLAN_KEY,
+            maxUsers: 5,
+            maxStorage: 1024,
+            features: [],
+          },
+        });
+        const trialStart = new Date();
+        const trialEnd = new Date(trialStart.getTime() + TRIAL_DURATION_MS);
+        await tx.tenantSubscription.create({
+          data: {
+            tenantId: tenant.id,
+            planId: freePlan.id,
+            status: "TRIAL",
+            startDate: trialStart,
+            endDate: trialEnd,
           },
         });
 
@@ -1041,6 +1088,10 @@ export class AuthService {
         id: user.tenant.id,
         name: user.tenant.name,
         slug: user.tenant.slug,
+        demoDataLoaded: user.tenant.demoDataLoaded,
+        logoUrl:
+          (user.tenant.settings as Record<string, unknown> | null)?.logoUrl ??
+          null,
       },
     };
   }
@@ -1092,6 +1143,12 @@ export class AuthService {
       where: { id: userId },
       data: updateData,
     });
+
+    if (this.onboardingService && user.tenantId) {
+      await this.onboardingService
+        .completeStep(user.tenantId, "profile")
+        .catch(() => {});
+    }
 
     return {
       id: updatedUser.id,
@@ -1274,123 +1331,85 @@ export class AuthService {
    * Automatically provisions and logs in a demo user with the specified role.
    * The controller restricts this to non-production environments.
    */
-  async loginDemo(
-    roleKey: "SUPER_ADMIN" | "HR_MANAGER" | "FINANCE_MANAGER" | "VIEWER",
-  ) {
-    // 1. Get default tenant
-    let tenant = await prisma.tenant.findFirst({
-      where: { slug: "system" },
-    });
-    if (!tenant) {
-      tenant = await prisma.tenant.create({
-        data: {
-          name: "System Tenant",
-          slug: "system",
-          plan: "enterprise",
-          status: "ACTIVE",
-        },
-      });
-    }
-
-    // Map role key to email and profile info
-    const roleMapping = {
-      SUPER_ADMIN: {
-        email: "admin@unerp.dev",
-        firstName: "System",
-        lastName: "Administrator",
-        roleName: "Super Admin",
-      },
-      HR_MANAGER: {
-        email: "hr-demo@unerp.dev",
-        firstName: "Sarah",
-        lastName: "HR",
-        roleName: "HR Manager",
-      },
-      FINANCE_MANAGER: {
-        email: "finance-demo@unerp.dev",
-        firstName: "John",
-        lastName: "Finance",
-        roleName: "Finance Manager",
-      },
-      VIEWER: {
-        email: "viewer-demo@unerp.dev",
-        firstName: "Guest",
-        lastName: "Viewer",
-        roleName: "Viewer",
-      },
+  /**
+   * Dev-only shortcut: seeds (or reuses) a single Super Admin account on a
+   * shared "system" tenant. HR/Finance/Viewer demo personas were removed —
+   * this exists purely to get into a working workspace during local
+   * development, not to demonstrate role-based access.
+   */
+  async loginDemo() {
+    const target = {
+      email: "admin@unerp.dev",
+      firstName: "System",
+      lastName: "Administrator",
+      roleName: "Super Admin",
     };
 
-    const target = roleMapping[roleKey] || roleMapping.VIEWER;
+    // 1. Get-or-create the shared dev tenant + everything inside it inside a
+    // single transaction with the RLS GUC set, matching register()'s
+    // pattern — this whole path runs unauthenticated, so no tenant session
+    // exists yet and the inserts would otherwise fail Track C RLS (#21).
+    const user = await prisma.$transaction(async (tx) => {
+      let tenant = await tx.tenant.findFirst({ where: { slug: "system" } });
+      if (!tenant) {
+        tenant = await tx.tenant.create({
+          data: {
+            name: "System Tenant",
+            slug: "system",
+            plan: "enterprise",
+            status: "ACTIVE",
+          },
+        });
+      }
+      await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenant.id}, true)`;
 
-    // 2. Find or create user
-    let user = await prisma.user.findFirst({
-      where: { tenantId: tenant.id, email: target.email },
-      include: { tenant: true },
-    });
-
-    if (!user) {
-      const mockPasswordHash = await hashPassword("DemoUser!2345");
-      user = await prisma.user.create({
-        data: {
-          tenantId: tenant.id,
-          email: target.email,
-          passwordHash: mockPasswordHash,
-          passwordChangedAt: new Date(),
-          firstName: target.firstName,
-          lastName: target.lastName,
-          status: "ACTIVE",
-        },
+      let demoUser = await tx.user.findFirst({
+        where: { tenantId: tenant.id, email: target.email },
         include: { tenant: true },
       });
-    }
 
-    // 3. Find or create the role
-    let role = await prisma.role.findFirst({
-      where: { tenantId: tenant.id, name: target.roleName },
-    });
+      if (!demoUser) {
+        const mockPasswordHash = await hashPassword("DemoUser!2345");
+        demoUser = await tx.user.create({
+          data: {
+            tenantId: tenant.id,
+            email: target.email,
+            passwordHash: mockPasswordHash,
+            passwordChangedAt: new Date(),
+            firstName: target.firstName,
+            lastName: target.lastName,
+            status: "ACTIVE",
+          },
+          include: { tenant: true },
+        });
+      }
 
-    if (!role) {
-      const defaultRolesConfig: Record<string, string[]> = {
-        "Super Admin": ["*"],
-        Admin: ["admin.*", "finance.*", "hr.*", "crm.*", "inventory.*"],
-        "Finance Manager": ["finance.*", "sales.sales-order.read"],
-        "HR Manager": ["hr.*"],
-        Viewer: [
-          "finance.invoice.read",
-          "finance.report.read",
-          "hr.employee.read",
-          "crm.contact.read",
-          "inventory.product.read",
-        ],
-      };
-
-      const permissions =
-        defaultRolesConfig[target.roleName] || defaultRolesConfig.Viewer;
-
-      role = await prisma.role.create({
-        data: {
-          tenantId: tenant.id,
-          name: target.roleName,
-          description: `Seeded ${target.roleName} role`,
-          isSystem: true,
-          permissions: JSON.stringify(permissions),
-        },
+      let role = await tx.role.findFirst({
+        where: { tenantId: tenant.id, name: target.roleName },
       });
-    }
+      if (!role) {
+        role = await tx.role.create({
+          data: {
+            tenantId: tenant.id,
+            name: target.roleName,
+            description: `Seeded ${target.roleName} role`,
+            isSystem: true,
+            permissions: JSON.stringify(["*"]),
+          },
+        });
+      }
 
-    // 4. Ensure UserRole assignment
-    const userRole = await prisma.userRole.findFirst({
-      where: { userId: user.id, roleId: role.id },
-    });
-
-    if (!userRole) {
-      await prisma.userRole.create({
-        data: {
-          userId: user.id,
-          roleId: role.id,
-        },
+      const userRole = await tx.userRole.findFirst({
+        where: { userId: demoUser.id, roleId: role.id },
       });
-    }
+      if (!userRole) {
+        await tx.userRole.create({
+          data: { userId: demoUser.id, roleId: role.id },
+        });
+      }
+
+      return demoUser;
+    });
 
     return this.issueSession(user);
   }

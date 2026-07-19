@@ -1,22 +1,26 @@
-'use client';
+"use client";
 
-import { FrameworkProvider } from '@unerp/framework';
-import type { ReactNode } from 'react';
-import { registeredModules } from '@/modules';
+import { FrameworkProvider } from "@unerp/framework";
+import type { ReactNode } from "react";
+import { registeredModules } from "@/modules";
 
 function readCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1] ?? '') : null;
+  return match ? decodeURIComponent(match[1] ?? "") : null;
 }
 
 function getTenantId(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   try {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem("user");
     if (user) {
-      const parsed = JSON.parse(user) as { tenantId?: string };
+      const parsed = JSON.parse(user) as {
+        tenantId?: string;
+        tenant?: { id: string };
+      };
       if (parsed.tenantId) return parsed.tenantId;
+      if (parsed.tenant?.id) return parsed.tenant.id;
     }
   } catch {
     // corrupt localStorage — treat as no tenant
@@ -28,9 +32,10 @@ export function AppFrameworkProvider({ children }: { children: ReactNode }) {
   return (
     <FrameworkProvider
       api={{
-        baseUrl: process.env.NEXT_PUBLIC_API_URL || '/api/v1',
-        getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('token')),
-        getCsrfToken: () => readCookie('csrf_token'),
+        baseUrl: process.env.NEXT_PUBLIC_API_URL || "/api/v1",
+        getToken: () =>
+          typeof window === "undefined" ? null : localStorage.getItem("token"),
+        getCsrfToken: () => readCookie("csrf_token"),
         getTenantId,
       }}
       modules={registeredModules}

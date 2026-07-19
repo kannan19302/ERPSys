@@ -65,6 +65,15 @@ vi.mock("@unerp/database", () => {
           emailVerificationToken: {
             create: vi.fn().mockResolvedValue({ id: "evt-123" }),
           },
+          saaSPlan: {
+            upsert: vi.fn().mockResolvedValue({
+              id: "plan-free-trial",
+              name: "Free Trial",
+            }),
+          },
+          tenantSubscription: {
+            create: vi.fn().mockResolvedValue({ id: "sub-123" }),
+          },
         }),
       ),
       $queryRaw: vi.fn().mockResolvedValue([]),

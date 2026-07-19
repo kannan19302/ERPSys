@@ -8,6 +8,40 @@
 > Design System) were summarized into .ai/MODULE_REGISTRY.md, which remains the
 > authoritative per-module state. History resumes below, newest first.
 
+## [2026-07-19] CYCLE 27 — UI/UX Design System Upgrades & Onboarding Refinements
+
+**Scope**: Redesigned the onboarding registration wizard password checklist and strength meter into a responsive grid. Refactored the apps Desk onboarding checklist widget and the trial warning layout banner to use design system module classes.
+
+- **`apps/web/app/(auth)/register/page.module.css`**: Redesigned the password checklist panel into a clean two-column grid. Added responsive width transitions for the password strength segment lines.
+- **`apps/web/app/(dashboard)/apps/page.tsx`**: Cleaned up inline HTML styles on the collapsible onboarding widget, replacing them with unified design system module classes.
+- **`apps/web/app/(dashboard)/apps/page.module.css`**: Added CSS rules for the onboarding widget, hover transitions, and pulsing amber warning animations.
+- **`apps/web/app/(dashboard)/layout.tsx`**: Updated the top gold trial banner structure to reference dedicated CSS module class styling.
+- **`apps/web/app/(dashboard)/layout.module.css`**: Added layout classes for the trial countdown alert, upgrade links, and hover scale transitions on action buttons.
+
+## [2026-07-19] CYCLE 26 — Onboarding State Persistence & Trial Countdown
+
+**Scope**: Implemented backend database-backed onboarding progress checklist configuration, custom sandbox data seeding, gold trial countdown layout integration, and a collapsible onboarding Desk widget.
+
+- **`apps/api/src/modules/auth/onboarding.service.ts`**: Implemented JSON read/write persistence on the `Tenant.settings` object to track default checklist completion steps.
+- **`apps/api/src/modules/auth/onboarding.controller.ts`**: Created endpoints for onboarding state lookup and specific checklist step completions.
+- **`apps/api/src/modules/auth/demo-data.service.ts`**: Created realistic data mock seeders spanning Customers, Vendors, and Products tailored to five tenant industries, with PostgreSQL RLS transaction scoping.
+- **`apps/api/src/modules/auth/auth.service.ts`**: Integrated automated completion hooks for onboarding checklist steps during profile updates.
+- **`apps/api/src/modules/admin/admin.service.ts`**: Integrated automated branding logo step completion hooks.
+- **`apps/web/app/(dashboard)/saas/portal/page.tsx`**: Updated SaaS portal checklist to query database-backed states. Added visual Sandbox seeding actions.
+- **`apps/web/app/(dashboard)/layout.tsx`**: Integrated gold-hued dismissible trial alert countdown warning when user has active TRIAL plan status.
+- **`apps/web/app/(dashboard)/apps/page.tsx`**: Built collapsible, interactive Desk onboarding checklist widget with auto-explorer completion on mount.
+- **`apps/api/src/modules/auth/tests/onboarding.service.spec.ts`**: Added 7 unit tests covering Onboarding and DemoData Services.
+
+## [2026-07-19] CYCLE 25 — Profile Split Panel & Phase 8 Refinements
+
+**Scope**: Combined Personal Info and Directory tabs on the Profile page into a split layout, implemented path-dynamic module browser favicons, fixed a nested tenant resolution bug, and refined organization logo aspect ratios.
+
+- **`apps/web/app/(dashboard)/profile/page.tsx`**: Combined Personal Info and Directory tabs into a master-detail split layout. Added left sidebar directory search listing active members with online presence dots, and right-panel switching between colleague cards and tabbed personal settings. Typed-asserted hook prop handlers to resolve compatibility.
+- **`apps/web/app/(dashboard)/profile/page.module.css`**: Created grid split-pane column layouts, sidebar navigators, hover status styles, and presence indicators.
+- **`apps/web/app/(dashboard)/layout.tsx`**: Implemented `useEffect` hook in the main dashboard shell mapping active pathnames to unique browser favicons encoded as colored, premium SVG data URIs (Finance, HR, CRM, Inventory, Procurement, Sales, Supply Chain, Projects, Manufacturing, POS, Connect, and App Studio).
+- **`apps/web/src/lib/framework-provider.tsx`**: Fixed a core SDK bug in `getTenantId` where the backend-returned nested tenant object (`tenant.id` in `user`) was ignored, causing `getTenantId()` to always return `null` and break query/API scoping. Added a safe fallback search.
+- **`apps/web/app/(auth)/register/page.module.css`**: Redesigned the drag-drop organization logo upload preview from a tiny `64px` square to a landscape card (`192x96px`) with a checkerboard transparency background pattern.
+
 ## [2026-07-18] CYCLE 24 — Workspace Dependency Link & Compilation Fixes
 
 **Scope**: Resolved Next.js compile-time module resolution failures and TypeScript type errors across the onboarding and administration pages.

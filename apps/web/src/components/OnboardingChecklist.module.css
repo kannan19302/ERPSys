@@ -1,0 +1,237 @@
+/* Shared onboarding checklist widget — dedup of the former apps/page.tsx and
+   saas/portal/page.tsx local implementations. See apps/web/src/components/OnboardingChecklist.tsx */
+
+.widget {
+  background: var(--color-bg-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-xl, 12px);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow:
+    0 4px 12px -2px rgba(0, 0, 0, 0.03),
+    0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease-in-out;
+}
+.widget:hover {
+  box-shadow:
+    0 8px 24px -4px rgba(0, 0, 0, 0.05),
+    0 2px 6px 0 rgba(0, 0, 0, 0.02);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+.badge {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--color-warning-text, #b45309);
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background-color 0.2s ease;
+}
+.badgePulse {
+  animation: onboardingBadgeGlow 2s infinite ease-in-out;
+}
+@keyframes onboardingBadgeGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.05);
+  }
+}
+.collapseBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--color-text-secondary, #64748b);
+}
+.progressBg {
+  height: 6px;
+  background: var(--color-border-light, #f1f5f9);
+  border-radius: var(--radius-full, 3px);
+  width: 100%;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-warning, #f59e0b), #fbbf24);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.progressText {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #64748b);
+  white-space: nowrap;
+}
+.fullProgressRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  margin-bottom: var(--space-5, 1.25rem);
+}
+.fullProgressRow .progressBg {
+  flex: 1;
+  margin-top: 0;
+}
+
+/* Compact (apps hub) grid — icon + label only */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.itemActive {
+  background: var(--color-bg-subtle, #f8fafc);
+  color: var(--color-text-secondary, #64748b);
+}
+.itemActive:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg-hover);
+  transform: translateY(-1px);
+}
+.itemCompleted {
+  background: rgba(16, 185, 129, 0.03);
+  color: var(--color-success, #10b981);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.itemCompleted:hover {
+  background: rgba(16, 185, 129, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Full (saas portal) grid — icon + label + hint, two-line items */
+.fullGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3, 0.75rem);
+  margin-top: 1rem;
+}
+.fullItem {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text-secondary, #64748b);
+}
+.fullItem:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg-hover);
+  transform: translateY(-1px);
+}
+.fullItemDone {
+  background: rgba(16, 185, 129, 0.03);
+  color: var(--color-success, #10b981);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.fullItemDone:hover {
+  background: rgba(16, 185, 129, 0.06);
+}
+.fullItemIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.fullItemLabel {
+  display: block;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-text);
+}
+.fullItemHint {
+  display: block;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-tertiary, #94a3b8);
+  margin-top: 2px;
+}
+
+/* Demo data callout */
+.demoBox {
+  margin-bottom: var(--space-5, 1.25rem);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  background: rgba(14, 165, 233, 0.05);
+  padding: var(--space-4, 1rem);
+  border-radius: var(--radius-md, 8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+  flex-wrap: wrap;
+}
+.demoBoxLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+}
+.demoBoxIcon {
+  padding: var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 6px);
+  background: rgba(14, 165, 233, 0.15);
+  color: #0ea5e9;
+  display: flex;
+  align-items: center;
+}
+.demoBoxTitle {
+  font-weight: 600;
+  font-size: var(--text-sm, 0.875rem);
+}
+.demoBoxDesc {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-secondary, #64748b);
+  margin-top: 2px;
+}
+.demoBoxBtn {
+  white-space: nowrap;
+}
+.demoError {
+  color: var(--color-danger, #ef4444);
+  font-size: var(--text-xs, 0.75rem);
+  margin-top: calc(-1 * var(--space-3, 0.75rem));
+  margin-bottom: var(--space-5, 1.25rem);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

@@ -26,8 +26,9 @@ export class SaasController {
   @ApiOperation({ summary: "Get plans" })
   @Permissions("saas.read")
   @Get("plans")
-  async getPlans() {
-    return this.saasService.getPlans();
+  async getPlans(@Req() req: Request) {
+    const tenantId = (req as Partial<AuthenticatedRequest>).user?.tenantId;
+    return this.saasService.getPlans(tenantId);
   }
 
   @ApiOperation({ summary: "Get subscription" })

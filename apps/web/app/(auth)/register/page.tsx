@@ -1,7 +1,13 @@
 "use client";
 import styles from "./page.module.css";
 import "../../landing.css";
-import React, { useState, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@unerp/ui";
@@ -19,9 +25,26 @@ import {
   CheckCircle2,
   Globe,
   Coins,
-  ShieldAlert,
+  Upload,
+  ImageIcon,
+  X,
+  Check,
+  Rocket,
+  ArrowRight,
 } from "lucide-react";
 import { apiGet, apiPost, ApiRequestError } from "../../../src/lib/api";
+import {
+  COUNTRIES,
+  CURRENCIES,
+  LANGUAGES,
+  BUSINESS_TYPES,
+  INDUSTRIES,
+  getTimezones,
+  getDefaultCurrency,
+  getDetectedTimezone,
+  getCountryFromTimezone,
+} from "../../../src/lib/lookups";
+import { resizeImageFile } from "../../../src/lib/imageResize";
 
 const VALUE_PROPS = [
   {
@@ -45,6 +68,18 @@ const VALUE_PROPS = [
     desc: "Build forms, workflow timelines, and pages dynamically.",
   },
 ];
+
+const STEP_LABELS = ["Organization", "Admin Account", "Provisioning"];
+
+/** Password requirement checklist items */
+function getPasswordChecks(password: string) {
+  return [
+    { label: "At least 8 characters", met: password.length >= 8 },
+    { label: "One uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "One number", met: /[0-9]/.test(password) },
+    { label: "One special character", met: /[^A-Za-z0-9]/.test(password) },
+  ];
+}
 
 function getPasswordStrength(password: string): {
   score: number;
@@ -73,22 +108,82 @@ interface SeedingStep {
   status: "waiting" | "loading" | "done";
 }
 
+/** Id of the (optional) "Seeding sample data" provisioning log step — kept
+ * separate from the bulk "mark all logs done" pass so it can reflect the
+ * real POST /auth/onboarding/seed-demo outcome instead of a fake delay. */
+const DEMO_DATA_LOG_ID = 8;
+
 export default function RegisterPage() {
   const router = useRouter();
 
   // Wizard Step State
   const [step, setStep] = useState(1);
+  const [provisioningComplete, setProvisioningComplete] = useState(false);
+
+  // Auto-detect timezone & country on mount
+  const detectedTz = useMemo(() => getDetectedTimezone(), []);
+  const detectedCountry = useMemo(
+    () => getCountryFromTimezone(detectedTz),
+    [detectedTz],
+  );
+  const detectedCurrency = useMemo(
+    () => getDefaultCurrency(detectedCountry),
+    [detectedCountry],
+  );
 
   // Step 1: Organization Data
   const [organizationName, setOrganizationName] = useState("");
   const [industry, setIndustry] = useState("");
-  const [currency, setCurrency] = useState("USD");
-  const [timezone, setTimezone] = useState("UTC");
+  const [currency, setCurrency] = useState(detectedCurrency);
+  const [timezone, setTimezone] = useState(detectedTz);
+  const timezones = useMemo(() => getTimezones(), []);
   const [businessType, setBusinessType] = useState("");
-  const [country, setCountry] = useState("US");
+  const [country, setCountry] = useState(detectedCountry);
   const [language, setLanguage] = useState("en");
   const [estimatedUsers, setEstimatedUsers] = useState(1);
+  const [loadSampleData, setLoadSampleData] = useState(true);
   const [logoUrl, setLogoUrl] = useState("");
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
+  const [logoDragging, setLogoDragging] = useState(false);
+
+  // Country → Currency auto-mapping
+  const handleCountryChange = useCallback((newCountry: string) => {
+    setCountry(newCountry);
+    const defaultCurr = getDefaultCurrency(newCountry);
+    setCurrency(defaultCurr);
+  }, []);
+
+  const handleLogoFileSelected = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setLogoError("Choose an image file (PNG, JPG, GIF, SVG, WebP).");
+      return;
+    }
+    setLogoError(null);
+    try {
+      const resized = await resizeImageFile(file);
+      setLogoUrl(resized);
+    } catch (err) {
+      setLogoError(
+        err instanceof Error ? err.message : "Could not process that image.",
+      );
+    }
+  };
+
+  const handleLogoInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (file) handleLogoFileSelected(file);
+  };
+
+  const handleLogoDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setLogoDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleLogoFileSelected(file);
+  };
 
   // Step 2: Administrator Profile Data
   const [firstName, setFirstName] = useState("");
@@ -99,6 +194,36 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // Real-time email validation
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailAvailable(null);
+      return;
+    }
+    if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+    emailCheckTimer.current = setTimeout(async () => {
+      setEmailChecking(true);
+      try {
+        const res = await apiGet<{ available: boolean }>(
+          `/auth/check-email?email=${encodeURIComponent(email)}`,
+        );
+        setEmailAvailable(res.available);
+      } catch {
+        // Endpoint may not exist yet — don't block registration
+        setEmailAvailable(null);
+      } finally {
+        setEmailChecking(false);
+      }
+    }, 600);
+    return () => {
+      if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+    };
+  }, [email]);
 
   // Step 3: Console Logs Seeding Simulation
   const [seedingLogs, setSeedingLogs] = useState<SeedingStep[]>([
@@ -142,19 +267,21 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Stash login data from the registration response so we can navigate
+  // to the SaaS portal after the user clicks the success-state CTA
+  // (instead of auto-redirecting).
+  const pendingLoginRef = useRef<{
+    token: string;
+    user: Record<string, unknown>;
+  } | null>(null);
+
   const passwordStrength = useMemo(
     () => getPasswordStrength(password),
     [password],
   );
+  const passwordChecks = useMemo(() => getPasswordChecks(password), [password]);
   const passwordsMatch =
     confirmPassword.length === 0 || password === confirmPassword;
-
-  // Setup progress based on wizard step
-  const progressPct = useMemo(() => {
-    if (step === 1) return 33;
-    if (step === 2) return 66;
-    return 100;
-  }, [step]);
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,6 +300,17 @@ export default function RegisterPage() {
       setError(null);
       setStep(1);
     }
+  };
+
+  const handleGoToWorkspace = () => {
+    if (pendingLoginRef.current) {
+      localStorage.setItem("token", pendingLoginRef.current.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(pendingLoginRef.current.user),
+      );
+    }
+    router.push("/saas/portal?onboarding=1");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,7 +341,7 @@ export default function RegisterPage() {
     setError(null);
 
     // Customize logs based on chosen industry profile
-    const customLogs = [
+    const customLogs: SeedingStep[] = [
       {
         id: 1,
         label: "Generating secure organization slug...",
@@ -299,16 +437,23 @@ export default function RegisterPage() {
       };
     }
 
+    if (loadSampleData) {
+      customLogs.push({
+        id: DEMO_DATA_LOG_ID,
+        label: "Seeding sample data to explore the app...",
+        status: "waiting",
+      });
+    }
+
     // Real UUID only — the API validates tenantId as a UUID (registerSchema).
-    // Ancient browsers without crypto.randomUUID just skip client-generated
-    // ids: the server mints its own and the progress poll below is a no-op.
     const tempTenantId =
       typeof window !== "undefined" && window.crypto?.randomUUID
         ? window.crypto.randomUUID()
         : undefined;
 
     setStep(3);
-    setSeedingLogs(customLogs as any);
+    setProvisioningComplete(false);
+    setSeedingLogs(customLogs);
 
     // Start real-time provisioning progress polling
     const pollInterval: ReturnType<typeof setInterval> | undefined =
@@ -341,7 +486,7 @@ export default function RegisterPage() {
                   return log;
                 }),
               );
-            } catch (pollErr) {
+            } catch {
               // Ignore polling errors silently
             }
           }, 300)
@@ -368,13 +513,21 @@ export default function RegisterPage() {
         currency: currency || undefined,
         timezone: timezone || undefined,
         tenantId: tempTenantId,
+        termsAccepted: agreedToTerms || undefined,
       });
 
-      // 2. Stop polling and complete all logs
+      // 2. Stop polling and complete all logs (the demo-data log, if present,
+      // reflects the real seed call below instead of this bulk pass).
       clearInterval(pollInterval);
-      setSeedingLogs((prev) => prev.map((log) => ({ ...log, status: "done" })));
+      setSeedingLogs((prev) =>
+        prev.map((log) =>
+          log.id === DEMO_DATA_LOG_ID ? log : { ...log, status: "done" },
+        ),
+      );
 
-      // 3. Perform silent background login
+      // 3. Perform silent background login and stash credentials — needed
+      // now (not just at the success-screen CTA) so the seed-demo call
+      // below is authenticated.
       const loginRes = await apiPost<{
         token: string;
         user: Record<string, unknown>;
@@ -384,11 +537,45 @@ export default function RegisterPage() {
         tenantSlug: registerRes.tenant.slug,
       });
 
+      pendingLoginRef.current = loginRes;
       localStorage.setItem("token", loginRes.token);
       localStorage.setItem("user", JSON.stringify(loginRes.user));
 
-      // 4. Navigate to Apps Workspace
-      router.push("/apps");
+      // 3b. Seed sample data if requested — reflects the real outcome of
+      // POST /auth/onboarding/seed-demo, not a simulated delay.
+      if (loadSampleData) {
+        setSeedingLogs((prev) =>
+          prev.map((log) =>
+            log.id === DEMO_DATA_LOG_ID ? { ...log, status: "loading" } : log,
+          ),
+        );
+        try {
+          await apiPost("/auth/onboarding/seed-demo", {});
+          setSeedingLogs((prev) =>
+            prev.map((log) =>
+              log.id === DEMO_DATA_LOG_ID ? { ...log, status: "done" } : log,
+            ),
+          );
+        } catch {
+          // Non-fatal — sample data can still be loaded later from the SaaS portal.
+          setSeedingLogs((prev) =>
+            prev.map((log) =>
+              log.id === DEMO_DATA_LOG_ID
+                ? {
+                    ...log,
+                    status: "done",
+                    label:
+                      "Sample data seeding failed — retry later from the SaaS portal",
+                  }
+                : log,
+            ),
+          );
+        }
+      }
+
+      // 4. Show success state instead of auto-redirecting
+      setProvisioningComplete(true);
+      setLoading(false);
     } catch (err: unknown) {
       clearInterval(pollInterval);
       setStep(2); // Kick back to details
@@ -415,11 +602,11 @@ export default function RegisterPage() {
         <div className="auth-sidebar-content">
           <div className="auth-logo-area">
             <div className="auth-logo-icon">
-              <Building size={22} className={styles.s43} />
+              <Building size={22} className={styles.sidebarIcon} />
             </div>
             <div>
-              <h2 className={styles.s3}>UniERP</h2>
-              <p className={styles.s4}>New Organization</p>
+              <h2 className={styles.sidebarTitle}>UniERP</h2>
+              <p className={styles.sidebarSubtitle}>New Organization</p>
             </div>
           </div>
 
@@ -435,8 +622,11 @@ export default function RegisterPage() {
 
           <div className="auth-sidebar-features">
             {VALUE_PROPS.map((prop, i) => (
-              <div key={i} className={`auth-sidebar-feature ${styles.s5}`}>
-                <h4 className={styles.s6}>
+              <div
+                key={i}
+                className={`auth-sidebar-feature ${styles.featureItem}`}
+              >
+                <h4 className={styles.featureTitle}>
                   <span>{prop.icon}</span> {prop.title}
                 </h4>
                 <p>{prop.desc}</p>
@@ -450,50 +640,63 @@ export default function RegisterPage() {
       <div className="auth-main-panel">
         <div className="auth-form-wrapper">
           {/* Centered Logo Branding Area */}
-          <div className={styles.s7}>
-            <div className={styles.s8}>
+          <div className={styles.brandArea}>
+            <div className={styles.brandIcon}>
               <Building size={24} />
             </div>
-            <span className={styles.s9}>UniERP</span>
+            <span className={styles.brandName}>UniERP</span>
           </div>
 
           <div className="auth-form-header">
             <h1>Register Organization</h1>
-            <p className={styles.s10}>
+            <p className={styles.headerSubtext}>
               Setup your isolated corporate workspace and system parameters.
             </p>
           </div>
 
-          {/* Setup Progress */}
-          <div className="auth-progress-container">
-            <div className={styles.s11}>
-              <span>
-                Step {step} of 3 —{" "}
-                {step === 1
-                  ? "Organization Profile"
-                  : step === 2
-                    ? "Security Credentials"
-                    : "Provisioning"}
-              </span>
-              <span className={styles.s12}>{progressPct}%</span>
-            </div>
-            <div className="auth-progress-bar">
-              <div
-                className={`auth-progress-fill ${styles.s13}`}
-                style={{
-                  width: `${progressPct}%`,
-                  background:
-                    progressPct === 100
-                      ? "var(--color-success)"
-                      : "var(--color-primary)",
-                }}
-              />
-            </div>
+          {/* Free Trial Badge */}
+          <div className={styles.trialBadge}>
+            <Sparkles size={14} />
+            <span>30-day free trial · No credit card required</span>
+          </div>
+
+          {/* Step Indicator — Connected Circles */}
+          <div className={styles.stepIndicator}>
+            {STEP_LABELS.map((label, idx) => {
+              const stepNum = idx + 1;
+              const isActive = step === stepNum;
+              const isComplete = step > stepNum;
+              return (
+                <React.Fragment key={idx}>
+                  {idx > 0 && (
+                    <div
+                      className={`${styles.stepLine} ${isComplete ? styles.stepLineComplete : ""}`}
+                    />
+                  )}
+                  <div className={styles.stepItem}>
+                    <div
+                      className={`${styles.stepCircle} ${isActive ? styles.stepCircleActive : ""} ${isComplete ? styles.stepCircleComplete : ""}`}
+                    >
+                      {isComplete ? (
+                        <Check size={14} />
+                      ) : (
+                        <span>{stepNum}</span>
+                      )}
+                    </div>
+                    <span
+                      className={`${styles.stepLabel} ${isActive ? styles.stepLabelActive : ""}`}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                </React.Fragment>
+              );
+            })}
           </div>
 
           <div className="auth-card">
             {error && (
-              <div className={styles.s14}>
+              <div className={styles.errorBanner}>
                 <AlertCircle size={16} />
                 <span>{error}</span>
               </div>
@@ -501,7 +704,7 @@ export default function RegisterPage() {
 
             {/* STEP 1: ORGANIZATION PARAMETERS */}
             {step === 1 && (
-              <form onSubmit={handleNextStep} className={styles.s15}>
+              <form onSubmit={handleNextStep} className={styles.formStack}>
                 <div className="auth-field-group">
                   <label className="auth-label">
                     Organization / Company Name *
@@ -524,24 +727,51 @@ export default function RegisterPage() {
                     Industry Profile (Optional)
                   </label>
                   <select
-                    className={`auth-select ${styles.s16}`}
+                    className={`auth-select ${styles.selectField}`}
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
                   >
                     <option value="">— Select Industry —</option>
-                    <option value="technology">Technology & SaaS</option>
-                    <option value="manufacturing">Manufacturing</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="education">Education</option>
-                    <option value="real-estate">Real Estate</option>
-                    <option value="retail">Retail & E-Commerce</option>
-                    <option value="services">Professional Services</option>
-                    <option value="finance">Financial Services</option>
-                    <option value="other">Other</option>
+                    {INDUSTRIES.map((i) => (
+                      <option key={i.value} value={i.value}>
+                        {i.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                <div className={`ui-grid-2 ${styles.s17}`}>
+                <div className={styles.termsRow}>
+                  <input
+                    type="checkbox"
+                    id="load-sample-data"
+                    checked={loadSampleData}
+                    onChange={(e) => setLoadSampleData(e.target.checked)}
+                    className={styles.termsCheckbox}
+                  />
+                  <label
+                    htmlFor="load-sample-data"
+                    className={styles.termsLabel}
+                  >
+                    Load sample data to explore the app
+                  </label>
+                </div>
+
+                <div className={`ui-grid-2 ${styles.gridGap}`}>
+                  <div className="auth-field-group">
+                    <label className="auth-label">Country</label>
+                    <select
+                      value={country}
+                      onChange={(e) => handleCountryChange(e.target.value)}
+                      className={`auth-select ${styles.selectWithIcon}`}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="auth-field-group">
                     <label className="auth-label">Primary Currency</label>
                     <div className="auth-input-wrapper">
@@ -549,17 +779,19 @@ export default function RegisterPage() {
                       <select
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
-                        className={styles.s18}
+                        className={styles.selectWithIcon}
                       >
-                        <option value="USD">USD ($)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="GBP">GBP (£)</option>
-                        <option value="INR">INR (₹)</option>
-                        <option value="CAD">CAD ($)</option>
+                        {CURRENCIES.map((c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.code} ({c.symbol}) — {c.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
+                </div>
 
+                <div className={`ui-grid-2 ${styles.gridGap}`}>
                   <div className="auth-field-group">
                     <label className="auth-label">Workspace Timezone</label>
                     <div className="auth-input-wrapper">
@@ -567,37 +799,47 @@ export default function RegisterPage() {
                       <select
                         value={timezone}
                         onChange={(e) => setTimezone(e.target.value)}
-                        className={styles.s18}
+                        className={styles.selectWithIcon}
                       >
-                        <option value="UTC">UTC (GMT+0)</option>
-                        <option value="EST">EST (GMT-5)</option>
-                        <option value="PST">PST (GMT-8)</option>
-                        <option value="IST">IST (GMT+5:30)</option>
-                        <option value="GMT">GMT (GMT+0)</option>
+                        {timezones.map((tz) => (
+                          <option key={tz} value={tz}>
+                            {tz.replace(/_/g, " ")}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
+
+                  <div className="auth-field-group">
+                    <label className="auth-label">Primary Language</label>
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className={`auth-select ${styles.selectWithIcon}`}
+                    >
+                      {LANGUAGES.map((l) => (
+                        <option key={l.code} value={l.code}>
+                          {l.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div
-                  className={`ui-grid-2 ${styles.s17}`}
-                  style={{ marginTop: "1rem" }}
-                >
+                <div className={`ui-grid-2 ${styles.gridGap}`}>
                   <div className="auth-field-group">
                     <label className="auth-label">Business Type</label>
                     <select
                       value={businessType}
                       onChange={(e) => setBusinessType(e.target.value)}
-                      className={`auth-select ${styles.s18}`}
+                      className={`auth-select ${styles.selectWithIcon}`}
                     >
                       <option value="">— Select Type —</option>
-                      <option value="corporation">Corporation</option>
-                      <option value="llc">LLC</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="sole_proprietorship">
-                        Sole Proprietorship
-                      </option>
-                      <option value="nonprofit">Non-Profit</option>
+                      {BUSINESS_TYPES.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -617,56 +859,80 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                <div
-                  className={`ui-grid-2 ${styles.s17}`}
-                  style={{ marginTop: "1rem" }}
-                >
-                  <div className="auth-field-group">
-                    <label className="auth-label">Country</label>
-                    <select
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className={`auth-select ${styles.s18}`}
-                    >
-                      <option value="US">United States</option>
-                      <option value="CA">Canada</option>
-                      <option value="GB">United Kingdom</option>
-                      <option value="DE">Germany</option>
-                      <option value="IN">India</option>
-                      <option value="AU">Australia</option>
-                    </select>
-                  </div>
-
-                  <div className="auth-field-group">
-                    <label className="auth-label">Primary Language</label>
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className={`auth-select ${styles.s18}`}
-                    >
-                      <option value="en">English</option>
-                      <option value="es">Español</option>
-                      <option value="fr">Français</option>
-                      <option value="de">Deutsch</option>
-                      <option value="hi">हिन्दी</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div
-                  className="auth-field-group"
-                  style={{ marginTop: "1rem", marginBottom: "1rem" }}
-                >
+                {/* Logo Upload — Drag & Drop Zone */}
+                <div className="auth-field-group">
                   <label className="auth-label">
-                    Organization Logo URL (Optional)
+                    Organization Logo (Optional)
                   </label>
+                  {logoUrl ? (
+                    <div className={styles.logoPreviewContainer}>
+                      <div className={styles.logoPreview}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={logoUrl}
+                          alt="Logo preview"
+                          className={styles.logoPreviewImg}
+                        />
+                        <button
+                          type="button"
+                          className={styles.logoRemoveBtn}
+                          onClick={() => setLogoUrl("")}
+                          title="Remove logo"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <div className={styles.logoPreviewInfo}>
+                        <span className={styles.logoPreviewLabel}>
+                          Logo uploaded
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.logoChangeBtn}
+                          onClick={() => logoFileInputRef.current?.click()}
+                        >
+                          Change
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={`${styles.logoDropZone} ${logoDragging ? styles.logoDropZoneActive : ""}`}
+                      onClick={() => logoFileInputRef.current?.click()}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setLogoDragging(true);
+                      }}
+                      onDragLeave={() => setLogoDragging(false)}
+                      onDrop={handleLogoDrop}
+                    >
+                      <div className={styles.logoDropIcon}>
+                        {logoDragging ? (
+                          <ImageIcon size={24} />
+                        ) : (
+                          <Upload size={24} />
+                        )}
+                      </div>
+                      <span className={styles.logoDropText}>
+                        {logoDragging
+                          ? "Drop your logo here"
+                          : "Click or drag & drop your logo"}
+                      </span>
+                      <span className={styles.logoDropHint}>
+                        PNG, JPG, SVG · Any size — resized automatically
+                      </span>
+                    </div>
+                  )}
                   <input
-                    type="url"
-                    className="auth-input"
-                    placeholder="https://example.com/logo.png"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
+                    ref={logoFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleLogoInputChange}
                   />
+                  {logoError && (
+                    <p className={styles.logoErrorText}>{logoError}</p>
+                  )}
                 </div>
 
                 <button
@@ -680,8 +946,8 @@ export default function RegisterPage() {
 
             {/* STEP 2: ADMINISTRATOR PROFILE SETUP */}
             {step === 2 && (
-              <form onSubmit={handleSubmit} className={styles.s15}>
-                <div className={styles.s19}>
+              <form onSubmit={handleSubmit} className={styles.formStack}>
+                <div className={styles.nameGrid}>
                   <div className="auth-field-group">
                     <label className="auth-label">First Name *</label>
                     <div className="auth-input-wrapper">
@@ -720,13 +986,39 @@ export default function RegisterPage() {
                     <input
                       type="email"
                       required
-                      className="auth-input"
+                      className={`auth-input ${styles.inputWithTrailing}`}
                       placeholder="admin@company.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoComplete="email"
                     />
+                    {emailChecking && (
+                      <span className={styles.inputTrailingIcon}>
+                        <Spinner size="sm" />
+                      </span>
+                    )}
+                    {!emailChecking && emailAvailable === true && (
+                      <span
+                        className={styles.inputTrailingIcon}
+                        style={{ color: "var(--color-success)" }}
+                      >
+                        <CheckCircle2 size={16} />
+                      </span>
+                    )}
+                    {!emailChecking && emailAvailable === false && (
+                      <span
+                        className={styles.inputTrailingIcon}
+                        style={{ color: "var(--color-danger)" }}
+                      >
+                        <AlertCircle size={16} />
+                      </span>
+                    )}
                   </div>
+                  {emailAvailable === false && (
+                    <p className={styles.fieldError}>
+                      This email is already registered
+                    </p>
+                  )}
                 </div>
 
                 <div className="auth-field-group">
@@ -736,7 +1028,7 @@ export default function RegisterPage() {
                     <input
                       type={showPassword ? "text" : "password"}
                       required
-                      className={`auth-input ${styles.s20}`}
+                      className={`auth-input ${styles.inputWithTrailing}`}
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -745,38 +1037,50 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className={styles.s21}
+                      className={styles.passwordToggle}
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
 
-                  {/* Password strength visual meter */}
+                  {/* Password Requirements Checklist */}
                   {password && (
-                    <div className={styles.s22}>
-                      <div className={styles.s23}>
-                        {[1, 2, 3, 4, 5].map((level) => (
-                          <div
-                            key={level}
-                            style={{
-                              background:
-                                passwordStrength.score >= level
-                                  ? passwordStrength.color
-                                  : "var(--color-bg-sunken)",
-                            }}
-                            className={styles.s24}
-                          />
-                        ))}
+                    <div className={styles.pwdChecklist}>
+                      {passwordChecks.map((check, i) => (
+                        <div
+                          key={i}
+                          className={`${styles.pwdCheckItem} ${check.met ? styles.pwdCheckMet : ""}`}
+                        >
+                          {check.met ? (
+                            <CheckCircle2 size={12} />
+                          ) : (
+                            <div className={styles.pwdCheckDot} />
+                          )}
+                          <span>{check.label}</span>
+                        </div>
+                      ))}
+                      <div className={styles.pwdStrengthRow}>
+                        <div className={styles.pwdStrengthBar}>
+                          {[1, 2, 3, 4, 5].map((level) => (
+                            <div
+                              key={level}
+                              style={{
+                                background:
+                                  passwordStrength.score >= level
+                                    ? passwordStrength.color
+                                    : "var(--color-bg-sunken)",
+                              }}
+                              className={styles.pwdStrengthSegment}
+                            />
+                          ))}
+                        </div>
+                        <span
+                          style={{ color: passwordStrength.color }}
+                          className={styles.pwdStrengthLabel}
+                        >
+                          {passwordStrength.label}
+                        </span>
                       </div>
-                      <span
-                        style={{ color: passwordStrength.color }}
-                        className={styles.s25}
-                      >
-                        {passwordStrength.label}
-                        {password.length > 0 &&
-                          password.length < 8 &&
-                          " — min 8 characters"}
-                      </span>
                     </div>
                   )}
                 </div>
@@ -788,7 +1092,7 @@ export default function RegisterPage() {
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       required
-                      className={`auth-input ${styles.s20}`}
+                      className={`auth-input ${styles.inputWithTrailing}`}
                       style={{
                         borderColor: !passwordsMatch
                           ? "var(--color-danger)"
@@ -804,7 +1108,7 @@ export default function RegisterPage() {
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
-                      className={styles.s21}
+                      className={styles.passwordToggle}
                     >
                       {showConfirmPassword ? (
                         <EyeOff size={16} />
@@ -814,26 +1118,26 @@ export default function RegisterPage() {
                     </button>
                   </div>
                   {!passwordsMatch && (
-                    <p className={styles.s26}>Passwords do not match</p>
+                    <p className={styles.fieldError}>Passwords do not match</p>
                   )}
                 </div>
 
                 {/* Terms checkbox */}
-                <div className={styles.s27}>
+                <div className={styles.termsRow}>
                   <input
                     type="checkbox"
                     id="agree-terms"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className={styles.s28}
+                    className={styles.termsCheckbox}
                   />
-                  <label htmlFor="agree-terms" className={styles.s29}>
+                  <label htmlFor="agree-terms" className={styles.termsLabel}>
                     I agree to the{" "}
                     <a
                       href="/terms"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.s30}
+                      className={styles.termsLink}
                     >
                       Terms of Service
                     </a>{" "}
@@ -842,24 +1146,24 @@ export default function RegisterPage() {
                       href="/privacy"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.s30}
+                      className={styles.termsLink}
                     >
                       Privacy Policy
                     </a>
                   </label>
                 </div>
 
-                <div className={styles.s31}>
+                <div className={styles.buttonRow}>
                   <button
                     type="button"
                     onClick={handlePrevStep}
-                    className={`auth-btn-back ${styles.s32}`}
+                    className={`auth-btn-back ${styles.backBtn}`}
                   >
                     <ChevronLeft size={16} /> Back
                   </button>
                   <button
                     type="submit"
-                    className={`landing-btn-primary auth-btn-submit ${styles.s33}`}
+                    className={`landing-btn-primary auth-btn-submit ${styles.submitBtn}`}
                     disabled={
                       loading ||
                       !agreedToTerms ||
@@ -868,30 +1172,30 @@ export default function RegisterPage() {
                     }
                   >
                     Create Workspace{" "}
-                    <Sparkles size={14} className={styles.s44} />
+                    <Sparkles size={14} className={styles.sparkleIcon} />
                   </button>
                 </div>
               </form>
             )}
 
             {/* STEP 3: PROVISIONING / CONSOLE FEEDBACK */}
-            {step === 3 && (
-              <div className={styles.s34}>
-                <div className={styles.s35}>
+            {step === 3 && !provisioningComplete && (
+              <div className={styles.provisioningContainer}>
+                <div className={styles.provisioningHeader}>
                   <Spinner size="md" />
                   <div>
-                    <h3 className={styles.s36}>
+                    <h3 className={styles.provisioningTitle}>
                       Provisioning isolated workspace partition...
                     </h3>
-                    <p className={styles.s37}>
+                    <p className={styles.provisioningDesc}>
                       Seeding database structures and bootstrapping admin
                       credentials.
                     </p>
                   </div>
                 </div>
 
-                {/* Simulated Seeding Log Console */}
-                <div className={styles.s38}>
+                {/* Seeding Log Console */}
+                <div className={styles.seedingConsole}>
                   {seedingLogs.map((log) => (
                     <div
                       key={log.id}
@@ -903,14 +1207,19 @@ export default function RegisterPage() {
                               ? "var(--color-primary)"
                               : "#4b5563",
                       }}
-                      className={styles.s39}
+                      className={styles.seedingLogRow}
                     >
                       {log.status === "done" ? (
-                        <CheckCircle2 size={13} className={styles.s45} />
+                        <CheckCircle2
+                          size={13}
+                          className={styles.seedingCheckIcon}
+                        />
                       ) : log.status === "loading" ? (
-                        <span className={`console-spinner ${styles.s40}`} />
+                        <span
+                          className={`console-spinner ${styles.consoleSpinner}`}
+                        />
                       ) : (
-                        <div className={styles.s41} />
+                        <div className={styles.seedingDot} />
                       )}
                       <span>{log.label}</span>
                     </div>
@@ -918,11 +1227,54 @@ export default function RegisterPage() {
                 </div>
               </div>
             )}
+
+            {/* STEP 3: SUCCESS STATE */}
+            {step === 3 && provisioningComplete && (
+              <div className={styles.successContainer}>
+                <div className={styles.successIconRing}>
+                  <CheckCircle2 size={48} />
+                </div>
+                <h2 className={styles.successTitle}>
+                  Your workspace is ready!
+                </h2>
+                <p className={styles.successDesc}>
+                  <strong>{organizationName}</strong> has been provisioned with
+                  all modules. Your 30-day free trial starts now.
+                </p>
+                <div className={styles.successActions}>
+                  <button
+                    onClick={handleGoToWorkspace}
+                    className={`landing-btn-primary auth-btn-submit ${styles.successPrimaryBtn}`}
+                  >
+                    <Rocket size={16} />
+                    Choose a Plan & Set Up
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (pendingLoginRef.current) {
+                        localStorage.setItem(
+                          "token",
+                          pendingLoginRef.current.token,
+                        );
+                        localStorage.setItem(
+                          "user",
+                          JSON.stringify(pendingLoginRef.current.user),
+                        );
+                      }
+                      router.push("/apps");
+                    }}
+                    className={styles.successSecondaryBtn}
+                  >
+                    Explore First <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          <p className={styles.s42}>
+          <p className={styles.footerLink}>
             Already have an account?{" "}
-            <Link href="/login" className={styles.s46}>
+            <Link href="/login" className={styles.footerLinkAnchor}>
               Sign in here
             </Link>
           </p>
@@ -941,6 +1293,16 @@ export default function RegisterPage() {
         }
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes bounceIn {
+          0% { opacity: 0; transform: scale(0.3); }
+          50% { transform: scale(1.05); }
+          70% { transform: scale(0.9); }
+          100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
