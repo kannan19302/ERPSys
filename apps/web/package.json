@@ -40,7 +40,7 @@
     "@unerp/ui-icons": "workspace:*",
     "@unerp/ui-form-engine": "workspace:*",
     "@unerp/ui-workflow": "workspace:*",
-    "@xyflow/react": "^12.11.0",
+    "@xyflow/react": "^12.11.2",
     "lucide-react": "^0.460.0",
     "next": "^15.1.0",
     "papaparse": "^5.5.4",
