@@ -1,12 +1,12 @@
-import { Controller, Get, Post, UseGuards, Req } from '@nestjs/common';
-import { z } from 'zod';
-import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RbacGuard } from '../../common/guards/rbac.guard';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { SaasService } from './saas.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, UseGuards, Req } from "@nestjs/common";
+import { z } from "zod";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { SaasService } from "./saas.service";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -17,63 +17,93 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-@ApiTags('saas')
+@ApiTags("saas")
 @ApiBearerAuth()
-@Controller('saas')
+@Controller("saas")
 export class SaasController {
   constructor(private readonly saasService: SaasService) {}
 
-  @ApiOperation({ summary: 'Get plans' })
-  @Permissions('saas.read')
-  @Get('plans')
+  @ApiOperation({ summary: "Get plans" })
+  @Permissions("saas.read")
+  @Get("plans")
   async getPlans() {
     return this.saasService.getPlans();
   }
 
-  @ApiOperation({ summary: 'Get subscription' })
-  @Get('subscription')
+  @ApiOperation({ summary: "Get subscription" })
+  @Get("subscription")
   @UseGuards(JwtAuthGuard, RbacGuard)
-  @Permissions('finance.invoice.read') // Mapping to base billing permissions
+  @Permissions("finance.invoice.read") // Mapping to base billing permissions
   async getSubscription(@Req() req: AuthenticatedRequest) {
     return this.saasService.getSubscription(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Get usage' })
-  @Get('usage')
+  @ApiOperation({ summary: "Get usage" })
+  @Get("usage")
   @UseGuards(JwtAuthGuard, RbacGuard)
-  @Permissions('finance.invoice.read')
+  @Permissions("finance.invoice.read")
   async getUsage(@Req() req: AuthenticatedRequest) {
     return this.saasService.getUsageRecords(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Stripe webhook' })
-  @Permissions('saas.create')
-  @Post('webhooks/stripe')
+  @ApiOperation({ summary: "Stripe webhook" })
+  @Permissions("saas.create")
+  @Post("webhooks/stripe")
   async stripeWebhook(@ZodBody(z.any()) event: unknown) {
     return this.saasService.handleStripeWebhook(event as never);
   }
 
-  @ApiOperation({ summary: 'Get installed apps' })
-  @Permissions('saas.read')
-  @Get('installed-apps')
+  @ApiOperation({ summary: "Get installed apps" })
+  @Permissions("saas.read")
+  @Get("installed-apps")
   @UseGuards(JwtAuthGuard)
   async getInstalledApps(@Req() req: AuthenticatedRequest) {
     return this.saasService.getInstalledApps(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Install app' })
-  @Permissions('saas.create')
-  @Post('install')
+  @ApiOperation({ summary: "Install app" })
+  @Permissions("saas.create")
+  @Post("install")
   @UseGuards(JwtAuthGuard)
-  async installApp(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { appId: string }) {
+  async installApp(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.any()) body: { appId: string },
+  ) {
     return this.saasService.installApp(req.user.tenantId, body.appId);
   }
 
-  @ApiOperation({ summary: 'Uninstall app' })
-  @Permissions('saas.create')
-  @Post('uninstall')
+  @ApiOperation({ summary: "Uninstall app" })
+  @Permissions("saas.create")
+  @Post("uninstall")
   @UseGuards(JwtAuthGuard)
-  async uninstallApp(@Req() req: AuthenticatedRequest, @ZodBody(z.any()) body: { appId: string }) {
+  async uninstallApp(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(z.any()) body: { appId: string },
+  ) {
     return this.saasService.uninstallApp(req.user.tenantId, body.appId);
+  }
+
+  @ApiOperation({ summary: "Create plan" })
+  @Permissions("saas.subscription.manage")
+  @Post("plans")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  async createPlan(@ZodBody(z.any()) body: any) {
+    return this.saasService.createPlan(body);
+  }
+
+  @ApiOperation({ summary: "Get coupons" })
+  @Permissions("saas.read")
+  @Get("coupons")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  async getCoupons() {
+    return this.saasService.getCoupons();
+  }
+
+  @ApiOperation({ summary: "Create coupon" })
+  @Permissions("saas.subscription.manage")
+  @Post("coupons")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  async createCoupon(@ZodBody(z.any()) body: any) {
+    return this.saasService.createCoupon(body);
   }
 }

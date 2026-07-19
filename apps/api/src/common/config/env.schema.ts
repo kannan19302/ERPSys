@@ -157,6 +157,10 @@ export const envSchema = z.object({
     .string()
     .optional()
     .describe("Stripe webhook signing secret"),
+  RAZORPAY_WEBHOOK_SECRET: z
+    .string()
+    .optional()
+    .describe("Razorpay webhook signing secret (platform billing webhooks)"),
 
   // ── Observability ──────────────────────────────────────────────────────
   LOG_LEVEL: z

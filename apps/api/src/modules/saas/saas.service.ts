@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasService {
   async getPlans() {
     return prisma.saaSPlan.findMany({
-      orderBy: { maxUsers: 'asc' },
+      orderBy: { maxUsers: "asc" },
     });
   }
 
@@ -14,18 +18,23 @@ export class SaasService {
       where: { tenantId },
       include: { plan: true },
     });
-    if (!sub) throw new NotFoundException('No active subscription found');
+    if (!sub) throw new NotFoundException("No active subscription found");
     return sub;
   }
 
   async getUsageRecords(tenantId: string) {
     return prisma.usageRecord.findMany({
       where: { tenantId },
-      orderBy: { metric: 'asc' },
+      orderBy: { metric: "asc" },
     });
   }
 
-  async updateUsage(tenantId: string, metric: string, value: number, limit: number) {
+  async updateUsage(
+    tenantId: string,
+    metric: string,
+    value: number,
+    limit: number,
+  ) {
     const existing = await prisma.usageRecord.findUnique({
       where: { tenantId_metric: { tenantId, metric } },
     });
@@ -47,21 +56,29 @@ export class SaasService {
     });
   }
 
-  async handleStripeWebhook(event: { type: string; data: { object: unknown } }) {
-    if (event.type === 'checkout.session.completed') {
+  async handleStripeWebhook(event: {
+    type: string;
+    data: { object: unknown };
+  }) {
+    if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const tenantId = (session as Record<string, unknown>).client_reference_id as string;
-      const stripePriceId = ((session as Record<string, unknown>).metadata as Record<string, unknown>)?.stripePriceId as string;
+      const tenantId = (session as Record<string, unknown>)
+        .client_reference_id as string;
+      const stripePriceId = (
+        (session as Record<string, unknown>).metadata as Record<string, unknown>
+      )?.stripePriceId as string;
 
       if (!tenantId || !stripePriceId) {
-        throw new BadRequestException('Missing tenantId or stripePriceId metadata');
+        throw new BadRequestException(
+          "Missing tenantId or stripePriceId metadata",
+        );
       }
 
       const plan = await prisma.saaSPlan.findUnique({
         where: { stripePriceId },
       });
 
-      if (!plan) throw new NotFoundException('Matching SaaS plan not found');
+      if (!plan) throw new NotFoundException("Matching SaaS plan not found");
 
       // Create or update subscription
       const existingSub = await prisma.tenantSubscription.findFirst({
@@ -73,7 +90,7 @@ export class SaasService {
           where: { id: existingSub.id },
           data: {
             planId: plan.id,
-            status: 'ACTIVE',
+            status: "ACTIVE",
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           },
         });
@@ -82,7 +99,7 @@ export class SaasService {
           data: {
             tenantId,
             planId: plan.id,
-            status: 'ACTIVE',
+            status: "ACTIVE",
             startDate: new Date(),
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           },
@@ -90,11 +107,14 @@ export class SaasService {
       }
 
       // Also reset usage records
-      await this.updateUsage(tenantId, 'USERS_COUNT', 1, plan.maxUsers);
-      await this.updateUsage(tenantId, 'STORAGE_MB', 0, plan.maxStorage);
-      await this.updateUsage(tenantId, 'API_CALLS_COUNT', 0, 10000);
+      await this.updateUsage(tenantId, "USERS_COUNT", 1, plan.maxUsers);
+      await this.updateUsage(tenantId, "STORAGE_MB", 0, plan.maxStorage);
+      await this.updateUsage(tenantId, "API_CALLS_COUNT", 0, 10000);
 
-      return { success: true, message: 'Subscription successfully upgraded via webhook' };
+      return {
+        success: true,
+        message: "Subscription successfully upgraded via webhook",
+      };
     }
 
     return { received: true };
@@ -129,6 +149,44 @@ export class SaasService {
   async uninstallApp(tenantId: string, appId: string) {
     return prisma.installedApp.deleteMany({
       where: { tenantId, appId },
+    });
+  }
+
+  async createPlan(dto: {
+    name: string;
+    maxUsers: number;
+    maxStorage: number;
+    stripePriceId: string;
+    features: string[];
+  }) {
+    return prisma.saaSPlan.create({
+      data: {
+        name: dto.name,
+        maxUsers: dto.maxUsers,
+        maxStorage: dto.maxStorage,
+        stripePriceId: dto.stripePriceId,
+        features: dto.features,
+      },
+    });
+  }
+
+  async getCoupons() {
+    return prisma.saaSCoupon.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async createCoupon(dto: {
+    code: string;
+    discountType: string;
+    discountValue: number;
+  }) {
+    return prisma.saaSCoupon.create({
+      data: {
+        code: dto.code,
+        discountType: dto.discountType,
+        discountValue: dto.discountValue,
+      },
     });
   }
 }
