@@ -1,0 +1,130 @@
+import { registerModule } from '@unerp/shared/module-registry';
+
+registerModule({
+  slug: 'crm',
+  title: 'CRM & Sales',
+  icon: 'BarChart3',
+  routeSegment: 'crm',
+  dashboardRoute: '/crm',
+  settingsRoute: undefined,
+  nav: [
+    { label: 'Dashboard', href: '/crm', icon: 'Home' },
+    {
+      label: 'Account Management',
+      isHeader: true,
+      items: [
+        { label: 'Customers', href: '/crm/customers', icon: 'Users' },
+        { label: 'Vendors', href: '/crm/vendors', icon: 'Building' },
+        { label: 'Contacts', href: '/crm/contacts', icon: 'Users' },
+        { label: 'Contracts', href: '/crm/contracts', icon: 'FileText' },
+        { label: 'Customer Portal', href: '/crm/customer-portal', icon: 'Users' },
+      ],
+    },
+    {
+      label: 'Sales Pipeline',
+      isHeader: true,
+      items: [
+        { label: 'Leads', href: '/crm/leads', icon: 'TrendingUp' },
+        { label: 'Opportunities', href: '/crm/opportunities', icon: 'BarChart3' },
+        { label: 'Products', href: '/crm/products', icon: 'Package' },
+        { label: 'Price Books', href: '/crm/price-books', icon: 'BookOpen' },
+        { label: 'Quotations', href: '/crm/quotations', icon: 'FileText' },
+        { label: 'E-Signatures', href: '/crm/quotations/signatures', icon: 'FileText' },
+        { label: 'Sales Orders', href: '/crm/sales-orders', icon: 'ClipboardList' },
+        { label: 'Pipeline Risk Alerts', href: '/crm/forecasting/pipeline-risk', icon: 'TrendingUp' },
+        { label: 'Revenue Intelligence', href: '/crm/forecasting/revenue-intelligence', icon: 'TrendingUp' },
+        { label: 'Conversation Intelligence', href: '/crm/conversation-intelligence', icon: 'Phone' },
+        { label: 'Conversion Analytics', href: '/crm/forecasting/conversion-analytics', icon: 'BarChart3' },
+        { label: 'AI Drafting', href: '/crm/ai-drafting', icon: 'FileText' },
+        { label: 'Sales Coaching', href: '/crm/coaching', icon: 'Phone' },
+        { label: 'Deal Rooms', href: '/crm/deal-rooms', icon: 'FileText' },
+      ],
+    },
+    {
+      label: 'Marketing & Outreach',
+      isHeader: true,
+      items: [
+        { label: 'Marketing & Outreach Hub', href: '/crm/marketing-outreach', icon: 'Target' },
+      ],
+    },
+    {
+      label: 'Automation & Workflows',
+      isHeader: true,
+      items: [
+        { label: 'Workflow Rules', href: '/crm/workflows', icon: 'Zap' },
+        { label: 'Approvals', href: '/crm/approvals', icon: 'CheckSquare' },
+        { label: 'Activities', href: '/crm/activities', icon: 'Activity' },
+        { label: 'Documents', href: '/crm/documents', icon: 'FolderOpen' },
+      ],
+    },
+    {
+      label: 'Customer Service',
+      isHeader: true,
+      items: [
+        { label: 'Cases & SLA', href: '/crm/cases', icon: 'HelpCircle' },
+        { label: 'SLA Dashboard', href: '/crm/cases/sla', icon: 'Clock' },
+      ],
+    },
+    {
+      label: 'Sales Enablement',
+      isHeader: true,
+      items: [
+        { label: 'Sales Enablement Hub', href: '/crm/sales-enablement', icon: 'BookOpen' },
+        { label: 'Segments', href: '/crm/segments', icon: 'Target' },
+      ],
+    },
+    {
+      label: 'Teams & Territories',
+      isHeader: true,
+      items: [
+        { label: 'Territories', href: '/crm/territories', icon: 'MapPin' },
+        { label: 'Assignment Rules', href: '/crm/territories/assignment-rules', icon: 'MapPin' },
+        { label: 'Commissions', href: '/crm/commissions', icon: 'DollarSign' },
+        { label: 'Commission Plans', href: '/crm/commission-plans', icon: 'DollarSign' },
+        { label: 'Sales Cadences', href: '/crm/sequences/cadences', icon: 'BookOpen' },
+        { label: 'Gamification & Leaderboards', href: '/crm/gamification', icon: 'TrendingUp' },
+      ],
+    },
+    {
+      label: 'Analytics & Reports',
+      isHeader: true,
+      items: [
+        { label: 'Forecasting', href: '/crm/forecasting', icon: 'TrendingUp' },
+        { label: 'Account Plans', href: '/crm/account-plans', icon: 'Shield' },
+        { label: 'Account Hierarchy', href: '/crm/account-hierarchy', icon: 'Building2' },
+        { label: 'Reports', href: '/crm/reports', icon: 'PieChart' },
+        { label: 'Dashboards', href: '/crm/dashboards', icon: 'Layers' },
+        { label: 'Advanced', href: '/crm/advanced', icon: 'Settings' },
+      ],
+    },
+    {
+      label: 'CRM Intelligence & AI',
+      isHeader: true,
+      items: [
+        { label: 'Intelligence Hub', href: '/crm/intelligence', icon: 'Brain' },
+        { label: 'Predictive Lead Scoring', href: '/crm/intelligence/lead-scoring', icon: 'Target' },
+        { label: 'Customer Health & Churn', href: '/crm/intelligence/health', icon: 'ShieldAlert' },
+        { label: 'Deal Velocity', href: '/crm/intelligence/deal-velocity', icon: 'Clock' },
+        { label: 'Attribution & Journey', href: '/crm/intelligence/journey', icon: 'Workflow' },
+        { label: 'Sentiment & Health', href: '/crm/intelligence/sentiment', icon: 'Smile' },
+        { label: 'CLV Analytics', href: '/crm/intelligence/clv', icon: 'DollarSign' },
+        { label: 'Partner Management', href: '/crm/intelligence/partners', icon: 'Users' },
+        { label: 'Campaign Analytics', href: '/crm/intelligence/campaigns', icon: 'Target' },
+      ],
+    },
+    {
+      label: 'Settings',
+      isHeader: true,
+      items: [
+        { label: 'Custom Fields', href: '/crm/settings/custom-fields', icon: 'Database' },
+        { label: 'Record Types', href: '/crm/settings/record-types', icon: 'Layers' },
+        { label: 'Approval Processes', href: '/crm/settings/approvals', icon: 'ShieldCheck' },
+        { label: 'Lead Scoring', href: '/crm/settings/lead-scoring', icon: 'Zap' },
+        { label: 'Duplicate Rules', href: '/crm/settings/duplicate-rules', icon: 'Users' },
+        { label: 'Pipelines', href: '/crm/settings/pipelines', icon: 'GitBranch' },
+        { label: 'SLA Policies', href: '/crm/settings/sla-policies', icon: 'Clock' },
+        { label: 'Email Integration', href: '/crm/settings/email-integration', icon: 'Mail' },
+      ],
+    },
+  ],
+});

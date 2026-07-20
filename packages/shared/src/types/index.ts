@@ -244,6 +244,15 @@ export interface PermissionDefinition {
    * module stays `undefined` and renders with the existing flat module grouping.
    */
   category?: string;
+  /**
+   * When true, this permission grants cross-tenant/platform-operator
+   * capability and must never be assignable to a tenant-created custom role
+   * or access package, regardless of who requests it. Enforced in
+   * `admin.service.ts` create/updateAccessPackage. Keep this on every
+   * "(super admin)"/platform-operator-only permission (e.g. `saas.analytics.read`,
+   * `platform.overview.read`).
+   */
+  platformOnly?: boolean;
 }
 
 export type FieldAccessLevel = 'hidden' | 'readonly' | 'editable';
@@ -462,5 +471,333 @@ export interface AssetMaintenanceLog {
   performedBy: string;
   nextMaintenanceDate: string | null;
   createdAt: string;
+}
+
+// ── CRM DTO Input Types ──
+
+export interface CreateCrmCommentInput {
+  body: string;
+  parentId?: string;
+}
+
+export interface CreateCrmNoteInput {
+  title?: string;
+  body: string;
+}
+
+export interface UpdateCrmNoteInput {
+  title?: string;
+  body?: string;
+}
+
+export interface CreateContactTagInput {
+  name: string;
+  color?: string;
+}
+
+export interface MergeContactsInput {
+  primaryContactId: string;
+  secondaryContactId: string;
+}
+
+export interface CreateCrmDocumentInput {
+  name: string;
+  type: string;
+  fileUrl: string;
+  fileSize?: number;
+  mimeType?: string;
+  entityType?: string;
+  entityId?: string;
+}
+
+export interface CreateCustomFieldInput {
+  entity: string;
+  fieldName: string;
+  label: string;
+  fieldType: string;
+  options?: unknown;
+  isRequired?: boolean;
+  sortOrder?: number;
+  defaultValue?: string;
+  createdBy?: string;
+}
+
+export interface UpdateCustomFieldInput {
+  label?: string;
+  fieldType?: string;
+  options?: unknown;
+  isRequired?: boolean;
+  sortOrder?: number;
+  defaultValue?: string;
+}
+
+export interface CreateRecordTypeInput {
+  entity: string;
+  name: string;
+  description?: string;
+  isDefault?: boolean;
+  fieldLayout?: unknown;
+}
+
+export interface UpdateRecordTypeInput {
+  name?: string;
+  description?: string;
+  isDefault?: boolean;
+  fieldLayout?: unknown;
+}
+
+export interface CreateApprovalProcessInput {
+  name: string;
+  entity: string;
+  triggerConditions?: unknown;
+  steps?: unknown;
+}
+
+export interface UpdateApprovalProcessInput {
+  name?: string;
+  entity?: string;
+  triggerConditions?: unknown;
+  steps?: unknown;
+  isActive?: boolean;
+}
+
+export interface CreateQuotationTemplateInput {
+  name: string;
+  description?: string;
+  headerHtml?: string;
+  footerHtml?: string;
+  termsTemplate?: string;
+  colorScheme?: Record<string, unknown>;
+  isDefault?: boolean;
+}
+
+export interface UpdateQuotationTemplateInput {
+  name?: string;
+  description?: string;
+  headerHtml?: string;
+  footerHtml?: string;
+  termsTemplate?: string;
+  logoUrl?: string;
+  colorScheme?: Record<string, unknown>;
+  isDefault?: boolean;
+}
+
+export interface CreateCrmDashboardInput {
+  name: string;
+  description?: string;
+  isShared?: boolean;
+}
+
+export interface UpdateCrmDashboardInput {
+  name?: string;
+  description?: string;
+  isShared?: boolean;
+}
+
+export interface CreateDashboardWidgetInput {
+  widgetType: string;
+  title: string;
+  dataSource: string;
+  config?: unknown;
+  refreshInterval?: number;
+}
+
+export interface UpdateDashboardWidgetInput {
+  title?: string;
+  widgetType?: string;
+  dataSource?: string;
+  config?: unknown;
+  refreshInterval?: number;
+}
+
+export interface CreateOpportunityLineItemInput {
+  productId?: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  discount?: number;
+  sortOrder?: number;
+}
+
+export interface UpdateOpportunityLineItemInput {
+  productId?: string;
+  description?: string;
+  quantity?: number;
+  unitPrice?: number;
+  discount?: number;
+  sortOrder?: number;
+}
+
+export interface CreatePriceBookInput {
+  name: string;
+  description?: string;
+  currency?: string;
+  isDefault?: boolean;
+  validFrom?: string;
+  validTo?: string;
+}
+
+export interface UpdatePriceBookInput {
+  name?: string;
+  description?: string;
+  currency?: string;
+  isDefault?: boolean;
+  validFrom?: string;
+  validTo?: string;
+}
+
+export interface CreatePriceBookEntryInput {
+  productId: string;
+  listPrice: number;
+  minQuantity?: number;
+}
+
+export interface CreatePlaybookInput {
+  name: string;
+  description?: string;
+  pipelineId?: string;
+}
+
+export interface UpdatePlaybookInput {
+  name?: string;
+  description?: string;
+  pipelineId?: string;
+}
+
+export interface CreateBattlecardInput {
+  playbookId?: string;
+  competitor: string;
+  strengths?: unknown;
+  weaknesses?: unknown;
+  objections?: unknown;
+  winStrategy?: string;
+  loseReasons?: unknown;
+}
+
+export interface UpdateBattlecardInput {
+  competitor?: string;
+  strengths?: unknown;
+  weaknesses?: unknown;
+  objections?: unknown;
+  winStrategy?: string;
+  loseReasons?: unknown;
+  playbookId?: string;
+}
+
+export interface CreateCrmWorkflowRuleInput {
+  name: string;
+  entity: string;
+  trigger: string;
+  conditions?: unknown;
+  actions?: unknown;
+  isActive?: boolean;
+}
+
+export interface UpdateCrmWorkflowRuleInput {
+  name?: string;
+  entity?: string;
+  trigger?: string;
+  conditions?: unknown;
+  actions?: unknown;
+  isActive?: boolean;
+}
+
+export interface CreateEmailSequenceInput {
+  name: string;
+  description?: string;
+  steps: Array<{
+    templateId: string;
+    delayDays?: number;
+    sortOrder?: number;
+  }>;
+}
+
+export interface EnrollSequenceInput {
+  contactId?: string;
+  leadId?: string;
+}
+
+export interface CreateWebToLeadFormInput {
+  name: string;
+  fields?: unknown;
+  settings?: unknown;
+}
+
+export interface UpdateWebToLeadFormInput {
+  name?: string;
+  fields?: unknown;
+  settings?: unknown;
+}
+
+export interface SubmitWebFormInput {
+  data: Record<string, string>;
+}
+
+export interface CreateSavedReportInput {
+  name: string;
+  type: string;
+  filters?: unknown;
+  columns?: unknown;
+  chartType?: string;
+  isShared?: boolean;
+  schedule?: unknown;
+}
+
+export interface CreateSalesTargetInput {
+  userId?: string;
+  period: string;
+  targetType?: string;
+  target: number;
+}
+
+export interface UpdateSalesTargetInput {
+  target?: number;
+  period?: string;
+  targetType?: string;
+  userId?: string;
+}
+
+export interface CreateSalesTerritoryInput {
+  name: string;
+  description?: string;
+  criteria?: unknown;
+  parentId?: string;
+  managerId?: string;
+}
+
+export interface UpdateSalesTerritoryInput {
+  name?: string;
+  description?: string;
+  criteria?: unknown;
+  parentId?: string;
+  managerId?: string;
+}
+
+export interface AddTeamMemberInput {
+  userId: string;
+  role?: string;
+}
+
+export interface CreateCommissionRuleInput {
+  name: string;
+  type?: string;
+  rate: number;
+  tiers?: unknown;
+  appliesToAll?: boolean;
+  productIds?: unknown;
+}
+
+export interface UpdateCommissionRuleInput {
+  name?: string;
+  type?: string;
+  rate?: number;
+  tiers?: unknown;
+  appliesToAll?: boolean;
+  productIds?: unknown;
+}
+
+export interface CalculateCommissionsInput {
+  periodStart: string;
+  periodEnd: string;
 }
 

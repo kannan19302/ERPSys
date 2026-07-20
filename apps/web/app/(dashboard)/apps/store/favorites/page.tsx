@@ -2,7 +2,7 @@
 import styles from './page.module.css';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, Badge } from '@unerp/ui';
+import { Card, Badge, Button } from '@unerp/ui';
 import { ArrowLeft, Heart, Download, Star, Shield, Loader2, Trash2 } from 'lucide-react';
 import { RouteGuard, useApiClient } from '@unerp/framework';
 
@@ -66,23 +66,27 @@ export default function FavoritesPage() {
   }, [toast]);
 
   if (loading) {
-    return <div className={styles.s1}><Loader2 size={32} className={styles.s14} /></div>;
+    return <div className={styles.loadingContainer}><Loader2 size={32} className="animate-spin ui-text-primary" /></div>;
   }
 
   return (
     <RouteGuard permission="apps.store.favorites.read">
-    <div className="ui-stack-6 ui-animate-in">
-      {toast && <div style={{ background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }} className={styles.s2}>{toast.message}</div>}
+    <div className="ui-stack-5 ui-animate-in">
+      {toast && (
+        <div className={`ui-alert ${toast.type === 'success' ? 'ui-alert-success' : 'ui-alert-danger'}`}>
+          {toast.message}
+        </div>
+      )}
 
       <div className="ui-hstack-3">
-        <Link href="/apps/store" className={styles.s17}>
+        <Link href="/apps/store" className="ui-text-muted">
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className={styles.s3}>
-            <Heart className={styles.s15} /> My Favorites
+          <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
+            <Heart className="ui-text-danger" size={22} /> My Favorites
           </h1>
-          <p className={styles.s4}>
+          <p className="ui-text-sm-muted">
             {favorites.length} saved app{favorites.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -90,25 +94,25 @@ export default function FavoritesPage() {
 
       {favorites.length === 0 ? (
         <div className="ui-empty-state">
-          <Heart size={48} className={styles.s16} />
-          <p className={styles.s5}>No favorites yet</p>
-          <p className="text-sm">
+          <Heart size={48} className="ui-empty-state-icon" />
+          <h3 className="ui-empty-state-title">No favorites yet</h3>
+          <p className="ui-empty-state-text">
             Browse the <Link href="/apps/store" className="ui-text-primary">App Store</Link> and heart apps you want to save for later.
           </p>
         </div>
       ) : (
-        <div className={styles.s6}>
+        <div className="ui-grid-auto-lg">
           {favorites.map(({ app }) => {
             const isInstalled = installedSlugs.has(app.slug);
             const isBusy = installingSlug === app.slug;
             return (
-              <Card key={app.slug} padding="lg" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', border: '1px solid var(--color-border)', position: 'relative' }}>
-                <button onClick={() => removeFavorite(app.slug)} className={styles.s7} title="Remove from favorites">
+              <Card key={app.slug} padding="lg" hover className={styles.appCard}>
+                <Button variant="danger" size="sm" className={styles.removeBtn} onClick={() => removeFavorite(app.slug)} title="Remove from favorites">
                   <Trash2 size={14} />
-                </button>
-                <Link href={`/apps/store/${app.slug}`} className={styles.s18}>
+                </Button>
+                <Link href={`/apps/store/${app.slug}`} className={styles.cardLink}>
                   <div className="ui-hstack-3">
-                    <div className={styles.s8}>{app.icon || '📦'}</div>
+                    <div className={styles.iconBox}>{app.icon || '📦'}</div>
                     <div>
                       <div className="ui-flex ui-items-center ui-gap-1">
                         <span className="ui-heading-sm">{app.name}</span>
@@ -117,13 +121,15 @@ export default function FavoritesPage() {
                       <div className="ui-text-caption ui-text-tertiary">{app.publisher} · v{app.version}</div>
                     </div>
                   </div>
-                  <p className={styles.s9}>{app.description}</p>
+                  <p className={styles.description}>{app.description}</p>
                   <div className="ui-hstack-2">
-                    <div className={styles.s10}>
-                      {[1,2,3,4,5].map(s => <Star key={s} size={10} style={{ color: s <= Math.floor(Number(app.rating)) ? '#f59e0b' : 'var(--color-border)' }} fill={s <= Math.floor(Number(app.rating)) ? '#f59e0b' : 'none'} />)}
+                    <div className={styles.starRow}>
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} size={10} className={s <= Math.floor(Number(app.rating)) ? 'ui-text-warning' : 'ui-text-muted'} fill={s <= Math.floor(Number(app.rating)) ? 'var(--color-warning)' : 'none'} />
+                      ))}
                     </div>
                     <span className="ui-text-caption">{Number(app.rating).toFixed(1)}</span>
-                    <span className={styles.s11}>
+                    <span className={styles.priceBadge}>
                       <Badge variant={app.pricing === 'FREE' ? 'success' : 'warning'}>
                         {app.pricing === 'FREE' ? 'Free' : `$${app.price}/mo`}
                       </Badge>
@@ -132,11 +138,11 @@ export default function FavoritesPage() {
                 </Link>
                 <div>
                   {isInstalled ? (
-                    <div className={styles.s12}>Installed</div>
+                    <div className={`ui-text-success text-xs font-semibold text-center ${styles.installedLabel}`}>Installed</div>
                   ) : (
-                    <button onClick={() => handleInstall(app.slug)} disabled={isBusy} style={{ cursor: isBusy ? 'wait' : 'pointer' }} className={styles.s13}>
-                      <Download size={13} /> {isBusy ? 'Installing...' : 'Install'}
-                    </button>
+                    <Button variant="primary" size="sm" leftIcon={<Download size={13} />} onClick={() => handleInstall(app.slug)} disabled={isBusy} className="w-full">
+                      {isBusy ? 'Installing...' : 'Install'}
+                    </Button>
                   )}
                 </div>
               </Card>
@@ -144,8 +150,6 @@ export default function FavoritesPage() {
           })}
         </div>
       )}
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </div>
     </RouteGuard>
   );

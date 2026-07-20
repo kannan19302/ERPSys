@@ -3,7 +3,7 @@ import styles from './page.module.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Card, Badge } from '@unerp/ui';
+import { Card, Badge, Button } from '@unerp/ui';
 import {
   ArrowLeft, Download, Star, Heart, Shield, Clock, ExternalLink,
   FileText, MessageSquare, History, Loader2, ThumbsUp, ChevronLeft,
@@ -205,9 +205,9 @@ export default function AppDetailPage() {
   const renderStars = (rating: number, size = 14) => {
     const r = Number(rating) || 0;
     return (
-      <div className={styles.s1}>
+      <div className="ui-hstack-1">
         {[1, 2, 3, 4, 5].map(s => (
-          <Star key={s} size={size} style={{ color: s <= Math.floor(r) ? 'var(--color-primary)' : 'var(--color-border)' }} fill={s <= Math.floor(r) ? 'var(--color-primary)' : 'none'} />
+          <Star key={s} size={size} className={s <= Math.floor(r) ? 'ui-text-warning' : 'ui-text-tertiary'} fill={s <= Math.floor(r) ? 'var(--color-warning)' : 'none'} />
         ))}
       </div>
     );
@@ -215,8 +215,8 @@ export default function AppDetailPage() {
 
   if (loading) {
     return (
-      <div className={styles.s2}>
-        <Loader2 size={32} className={styles.s3} />
+      <div className="ui-flex-center" style={{ height: 400 }}>
+        <Loader2 size={32} className="animate-spin ui-text-primary" />
       </div>
     );
   }
@@ -232,77 +232,96 @@ export default function AppDetailPage() {
 
   const screenshots = (app.screenshots || []) as { url: string; caption: string }[];
 
+  const ratingDistItems = [5, 4, 3, 2, 1].map(star => {
+    const dist = (app.ratingDistribution || []).find(d => d.rating === star);
+    const count = dist?.count || 0;
+    const pct = app.reviewCount > 0 ? (count / app.reviewCount) * 100 : 0;
+    return (
+      <div key={star} className="ui-hstack-2 mb-1">
+        <span className="ui-text-xs-muted text-right" style={{ width: 16 }}>{star}</span>
+        <Star size={10} className="ui-text-warning" fill='var(--color-warning)' />
+        <div className="ui-progress">
+          <div className="ui-progress-bar ui-progress-bar-warning" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="ui-text-xs-tertiary text-right" style={{ width: 28 }}>{count}</span>
+      </div>
+    );
+  });
+
   return (
     <RouteGuard permission="apps.store.detail.read">
-    <div className={styles.s4}>
+    <div className="ui-animate-in ui-stack-6 mx-auto" style={{ maxWidth: 1100, width: '100%' }}>
       {toast && (
-        <div style={{ background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }} className={styles.s5}>
+        <div className="fixed top-6 right-6 z-1000 px-5 py-3 rounded-md shadow-lg text-sm font-semibold" style={{ background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)', color: 'var(--color-bg-elevated)' }}>
           {toast.message}
         </div>
       )}
 
       {/* Lightbox */}
       {lightboxIndex !== null && screenshots.length > 0 && (
-        <div className={styles.s6} onClick={() => setLightboxIndex(null)}>
-          <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }} className={styles.s7}>
+        <div className="ui-modal-overlay" onClick={() => setLightboxIndex(null)}>
+          <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }} className="absolute top-5 right-5 flex-center w-10 h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-bg-elevated)', border: 'none', cursor: 'pointer' }}>
             <X size={20} />
           </button>
           {lightboxIndex > 0 && (
-            <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }} className={styles.s8}>
+            <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }} className="absolute left-5 flex-center w-10 h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-bg-elevated)', border: 'none', cursor: 'pointer' }}>
               <ChevronLeft size={20} />
             </button>
           )}
           {lightboxIndex < screenshots.length - 1 && (
-            <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }} className={styles.s9}>
+            <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }} className="absolute right-5 flex-center w-10 h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-bg-elevated)', border: 'none', cursor: 'pointer' }}>
               <ChevronRight size={20} />
             </button>
           )}
-          <div onClick={e => e.stopPropagation()} className={styles.s10}>
-            <div className={styles.s11}>
-              <div className={styles.s12}>🖼️</div>
-              <p className={styles.s13}>{screenshots[lightboxIndex]?.caption}</p>
-              <p className={styles.s14}>{screenshots[lightboxIndex]?.url}</p>
+          <div onClick={e => e.stopPropagation()} className="flex-center" style={{ maxHeight: '80vh', maxWidth: '80vw', textAlign: 'center' }}>
+            <div className="ui-stack-3 flex-center p-6 rounded-xl" style={{ background: 'var(--color-bg-elevated)', minHeight: 250, minWidth: 400 }}>
+              {screenshots[lightboxIndex]?.url ? (
+                <img src={screenshots[lightboxIndex].url} alt={screenshots[lightboxIndex]?.caption || ''} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '8px' }} />
+              ) : (
+                <div style={{ fontSize: 48, marginBottom: 'var(--space-2)' }}>🖼️</div>
+              )}
+              <p className="ui-text-sm-muted m-0">{screenshots[lightboxIndex]?.caption}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Breadcrumb */}
-      <div className={styles.s15}>
-        <Link href="/apps/store" className={styles.s16}>
+      <div className="ui-breadcrumb">
+        <Link href="/apps/store" className="ui-breadcrumb-link ui-hstack-2">
           <ArrowLeft size={14} /> App Store
         </Link>
-        <span>/</span>
-        <span className={styles.s17}>{app.name}</span>
+        <span className="ui-breadcrumb-separator">/</span>
+        <span className="ui-breadcrumb-active">{app.name}</span>
       </div>
 
-      {/* App Header */}
-      <div className={styles.s18}>
-        <div className={styles.s19}>
-          <div className={styles.s20}>
-            <div className={styles.s21}>
+      {/* App Header + Sidebar */}
+      <div className="ui-detail-layout">
+        <div>
+          <div className="ui-hstack-4">
+            <div className="ui-flex-center flex-shrink-0 w-[72px] h-[72px] text-[36px] rounded-xl border" style={{ background: 'var(--color-bg-sunken)' }}>
               {app.icon || '📦'}
             </div>
             <div className="flex-1">
-              <div className={styles.s22}>
-                <h1 className={styles.s23}>{app.name}</h1>
+              <div className="ui-hstack-2 mb-1">
+                <h1 className="m-0">{app.name}</h1>
                 {app.verified && <Shield size={18} className="ui-text-success" />}
                 {app.featured && <Badge variant="warning">Featured</Badge>}
               </div>
-              <div className={styles.s24}>
-                by <span className={styles.s25}>{app.publisher}</span> · v{app.version}
+              <div className="ui-text-sm-muted mb-2">
+                by <span className="ui-text-primary">{app.publisher}</span> · v{app.version}
               </div>
-              <div className={styles.s26}>
+              <div className="ui-hstack-3 ui-flex-wrap">
                 <div className="ui-flex ui-items-center ui-gap-1">
                   {renderStars(app.rating, 16)}
-                  <span className={styles.s27}>
+                  <span className="text-sm font-semibold ml-1">
                     {Number(app.rating).toFixed(1)}
                   </span>
                   <span className="ui-text-sm-muted">
                     ({app.reviewCount} reviews)
                   </span>
                 </div>
-                <span className={styles.s28}>
+                <span className="ui-hstack-1 ui-text-sm-muted">
                   <Download size={14} /> {app.installs.toLocaleString()} installs
                 </span>
                 <Badge variant="default">{app.category}</Badge>
@@ -310,74 +329,74 @@ export default function AppDetailPage() {
             </div>
           </div>
 
-          <p className={styles.s29}>
+          <p className="ui-text-sm-muted mt-4" style={{ lineHeight: 1.6 }}>
             {app.description}
           </p>
         </div>
 
         {/* Sidebar */}
-        <div className={styles.s30}>
-          <Card padding="lg" className={styles.s31}>
-            <div style={{ color: app.pricing === 'FREE' ? 'var(--color-success)' : 'var(--color-text)' }} className={styles.s32}>
+        <div className="ui-stack-3">
+          <Card padding="lg">
+            <div className="text-xl font-bold text-center mb-3" style={{ color: app.pricing === 'FREE' ? 'var(--color-success)' : 'var(--color-text)' }}>
               {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
             </div>
 
-            <div className={styles.s33}>
+            <div className="ui-hstack-2 mb-3">
               {app.metadata?.isSystem ? (
-                <button disabled className={styles.s34}>
+                <Button variant="outline" disabled className="flex-1">
                   System App
-                </button>
+                </Button>
               ) : isInstalled ? (
-                <button onClick={handleUninstall} disabled={installing} style={{ cursor: installing ? 'wait' : 'pointer' }} className={styles.s35}>
+                <Button variant="danger" onClick={handleUninstall} isLoading={installing} className="flex-1">
                   {installing ? 'Uninstalling...' : 'Uninstall'}
-                </button>
+                </Button>
               ) : (
-                <button onClick={handleInstall} disabled={installing} style={{ cursor: installing ? 'wait' : 'pointer' }} className={styles.s36}>
+                <Button variant="primary" onClick={handleInstall} isLoading={installing} className="flex-1">
                   {installing ? 'Installing...' : 'Install App'}
-                </button>
+                </Button>
               )}
               {!app.metadata?.isSystem && (
-                <button onClick={toggleFavorite} style={{ color: isFavorite ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} className={styles.s37}>
-                  <Heart size={18} fill={isFavorite ? 'var(--color-primary)' : 'none'} />
-                </button>
+                <Button variant="ghost" onClick={toggleFavorite} className="px-[10px] py-[10px]">
+                  <Heart size={18} fill={isFavorite ? 'var(--color-primary)' : 'none'} className={isFavorite ? 'ui-text-primary' : 'ui-text-muted'} />
+                </Button>
               )}
             </div>
 
             {app.metadata?.isSystem && (
-              <div className={styles.s38}>
-                <Shield size={14} className={styles.s39} />
+              <div className="ui-alert ui-alert-info mb-3">
+                <Shield size={14} className="ui-text-primary flex-shrink-0" style={{ marginTop: 1 }} />
                 <div>
                   This is a core system application. It is pre-installed and cannot be uninstalled.
                 </div>
               </div>
             )}
 
-            <div className={styles.s40}>
+            <div className="ui-stack-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
               <div className="ui-flex-between">
-                <span>Version</span><span className={styles.s25}>{app.version}</span>
+                <span>Version</span><span className="ui-text-primary">{app.version}</span>
               </div>
               <div className="ui-flex-between">
-                <span>Category</span><span className={styles.s25}>{app.category}</span>
+                <span>Category</span><span className="ui-text-primary">{app.category}</span>
               </div>
               <div className="ui-flex-between">
-                <span>Publisher</span><span className={styles.s25}>{app.publisher}</span>
+                <span>Publisher</span><span className="ui-text-primary">{app.publisher}</span>
               </div>
               <div className="ui-flex-between">
                 <span>Last Updated</span>
-                <span className={styles.s25}>
+                <span className="ui-text-primary">
                   {new Date(app.updatedAt).toLocaleDateString()}
                 </span>
               </div>
               <div className="ui-flex-between">
-                <span>Installs</span><span className={styles.s25}>{app.installs.toLocaleString()}</span>
+                <span>Installs</span><span className="ui-text-primary">{app.installs.toLocaleString()}</span>
               </div>
             </div>
           </Card>
 
           {(app.tags as string[])?.length > 0 && (
-            <div className={styles.s41}>
+            <div className="ui-chip-group">
               {(app.tags as string[]).map((tag: string) => (
-                <span key={tag} className={styles.s42}>
+                <span key={tag} className="ui-chip">
                   {tag}
                 </span>
               ))}
@@ -389,14 +408,16 @@ export default function AppDetailPage() {
       {/* Screenshots */}
       {screenshots.length > 0 && (
         <div>
-          <h3 className={styles.s43}>Screenshots</h3>
-          <div className={styles.s44}>
+          <h3 className="ui-heading-base mb-3">Screenshots</h3>
+          <div className="ui-hstack-3 overflow-x-auto pb-2">
             {screenshots.map((ss, i) => (
-              <div key={i} onClick={() => setLightboxIndex(i)} className={`${styles.s45} ${styles.screenshotCard}`}>
-                <div className={styles.s46}>
-                  🖼️
+              <div key={i} onClick={() => setLightboxIndex(i)} className={`${styles.screenshotCard}`}>
+                <div className="ui-flex-center" style={{ background: 'var(--color-bg-sunken)', height: 140, fontSize: 32 }}>
+                  {ss.url ? (
+                    <img src={ss.url} alt={ss.caption} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                  ) : '🖼️'}
                 </div>
-                <div className={styles.s47}>
+                <div className="p-2" style={{ color: 'var(--color-text-secondary)', fontSize: 11 }}>
                   {ss.caption}
                 </div>
               </div>
@@ -406,7 +427,7 @@ export default function AppDetailPage() {
       )}
 
       {/* Tabs */}
-      <div className={styles.s48}>
+      <div className="ui-tabs">
         {([
           { key: 'overview' as const, label: 'Overview', icon: <FileText size={14} /> },
           { key: 'reviews' as const, label: `Reviews (${app.reviewCount})`, icon: <MessageSquare size={14} /> },
@@ -414,7 +435,7 @@ export default function AppDetailPage() {
           { key: 'support' as const, label: 'Support', icon: <ExternalLink size={14} /> },
         ]).map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            style={{ borderBottom: activeTab === tab.key ? '2px solid var(--color-primary)' : '2px solid transparent', color: activeTab === tab.key ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} className={styles.s49}>
+            className={`ui-tab ${activeTab === tab.key ? 'ui-tab-active' : ''}`}>
             {tab.icon} {tab.label}
           </button>
         ))}
@@ -422,11 +443,11 @@ export default function AppDetailPage() {
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
-        <div className={styles.s50}>
+        <div className="ui-stack-5">
           {app.longDescription && (
             <div>
-              <h3 className={styles.s43}>About</h3>
-              <div className={styles.s51}>
+              <h3 className="ui-heading-base mb-3">About</h3>
+              <div className="ui-text-sm-muted" style={{ lineHeight: 1.7, whiteSpace: 'pre-line' }}>
                 {app.longDescription}
               </div>
             </div>
@@ -434,11 +455,11 @@ export default function AppDetailPage() {
 
           {(app.features as string[])?.length > 0 && (
             <div>
-              <h3 className={styles.s43}>Features</h3>
-              <div className={styles.s52}>
+              <h3 className="ui-heading-base mb-3">Features</h3>
+              <div className="ui-grid-auto">
                 {(app.features as string[]).map((f: string) => (
-                  <div key={f} className={styles.s53}>
-                    <div className={styles.s54} />
+                  <div key={f} className="ui-hstack-2 ui-card-flat p-2 px-3 text-sm">
+                    <div className="flex-shrink-0 w-[6px] h-[6px] rounded-full" style={{ background: 'var(--color-primary)' }} />
                     {f}
                   </div>
                 ))}
@@ -448,7 +469,7 @@ export default function AppDetailPage() {
 
           {(app.requiresApps as string[])?.length > 0 && (
             <div>
-              <h3 className={styles.s55}>Requirements</h3>
+              <h3 className="ui-heading-sm mb-2">Requirements</h3>
               <p className="ui-text-sm-muted">
                 This app requires: {(app.requiresApps as string[]).join(', ')}
               </p>
@@ -458,191 +479,177 @@ export default function AppDetailPage() {
       )}
 
       {activeTab === 'reviews' && (
-        <div className={styles.s50}>
+        <div className="ui-stack-5">
           {/* Rating Summary */}
-          <Card padding="lg" className={styles.s31}>
-            <div className={styles.s56}>
-              <div className={styles.s57}>
-                <div className={styles.s58}>{Number(app.rating).toFixed(1)}</div>
-                <div className={styles.s59}>{renderStars(app.rating, 18)}</div>
+          <Card padding="lg">
+            <div className="ui-hstack-6 ui-flex-wrap">
+              <div className="text-center">
+                <div className="text-3xl font-bold" style={{ lineHeight: 1 }}>{Number(app.rating).toFixed(1)}</div>
+                <div className="mt-1 mb-1">{renderStars(app.rating, 18)}</div>
                 <div className="ui-text-xs-muted">{app.reviewCount} reviews</div>
               </div>
-              <div className={styles.s60}>
-                {[5, 4, 3, 2, 1].map(star => {
-                  const dist = (app.ratingDistribution || []).find(d => d.rating === star);
-                  const count = dist?.count || 0;
-                  const pct = app.reviewCount > 0 ? (count / app.reviewCount) * 100 : 0;
-                  return (
-                    <div key={star} className={styles.s22}>
-                      <span className={styles.s61}>{star}</span>
-                      <Star size={10} className={styles.s62} fill='var(--color-primary)' />
-                      <div className={styles.s63}>
-                        <div style={{ width: `${pct}%` }} className={styles.s64} />
-                      </div>
-                      <span className={styles.s65}>{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <button onClick={() => setShowReviewForm(!showReviewForm)} className={styles.s66}>
-                Write a Review
-              </button>
-            </div>
-          </Card>
-
-          {/* Review Form */}
-          {showReviewForm && (
-            <Card padding="lg" className={styles.s67}>
-              <h4 className={styles.s68}>Write Your Review</h4>
-              <div className={styles.s69}>
-                <label className={styles.s70}>Rating</label>
-                <div className={styles.s71}>
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <button key={s} onClick={() => setReviewRating(s)} className={styles.s72}>
-                      <Star size={24} style={{ color: s <= reviewRating ? 'var(--color-primary)' : 'var(--color-border)' }} fill={s <= reviewRating ? 'var(--color-primary)' : 'none'} />
-                    </button>
-                  ))}
+              <div className="ui-flex-1" style={{ minWidth: 200 }}>
+                {ratingDistItems}
                 </div>
-              </div>
-              <div className={styles.s69}>
-                <label className={styles.s70}>Title (optional)</label>
-                <input value={reviewTitle} onChange={e => setReviewTitle(e.target.value)} placeholder="Summary of your review"
-                  className={styles.s73} />
-              </div>
-              <div className={styles.s69}>
-                <label className={styles.s70}>Review</label>
-                <textarea value={reviewBody} onChange={e => setReviewBody(e.target.value)} placeholder="Share your experience..."
-                  rows={4} className={styles.s74} />
-              </div>
-              <div className="ui-flex ui-gap-2">
-                <button onClick={submitReview} disabled={submittingReview} style={{ cursor: submittingReview ? 'wait' : 'pointer' }} className={styles.s75}>
-                  {submittingReview ? 'Submitting...' : 'Submit Review'}
-                </button>
-                <button onClick={() => setShowReviewForm(false)} className={styles.s76}>
-                  Cancel
-                </button>
+                <Button variant="primary" size="sm" onClick={() => setShowReviewForm(!showReviewForm)}>
+                  Write a Review
+                </Button>
               </div>
             </Card>
-          )}
 
-          {/* Review List */}
-          {allReviews.length === 0 ? (
-            <div className={styles.s77}>
-              <MessageSquare size={32} className={styles.s78} />
-              <p className="text-sm">No reviews yet. Be the first to review this app!</p>
-            </div>
-          ) : (
-            <div className="ui-stack-3">
-              {allReviews.map(review => (
-                <Card key={review.id} padding="md" className={styles.s31}>
-                  <div className={styles.s79}>
-                    <div>
-                      <div className="ui-hstack-2">
-                        <span className="ui-heading-sm">{review.userName}</span>
-                        {review.verifiedPurchase && <span className={styles.s80}><Badge variant="success">Verified</Badge></span>}
+            {/* Review Form */}
+            {showReviewForm && (
+              <Card padding="lg" style={{ borderColor: 'var(--color-primary)' }}>
+                <h4 className="ui-heading-sm mb-3">Write Your Review</h4>
+                <div className="ui-form-group">
+                  <label className="ui-label">Rating</label>
+                  <div className="ui-hstack-1">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <button key={s} onClick={() => setReviewRating(s)} className="bg-none border-none cursor-pointer p-[2px]">
+                        <Star size={24} className={s <= reviewRating ? 'ui-text-warning' : 'ui-text-tertiary'} fill={s <= reviewRating ? 'var(--color-warning)' : 'none'} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="ui-form-group">
+                  <label className="ui-label">Title (optional)</label>
+                  <input value={reviewTitle} onChange={e => setReviewTitle(e.target.value)} placeholder="Summary of your review"
+                    className="ui-input" />
+                </div>
+                <div className="ui-form-group">
+                  <label className="ui-label">Review</label>
+                  <textarea value={reviewBody} onChange={e => setReviewBody(e.target.value)} placeholder="Share your experience..."
+                    rows={4} className="ui-textarea" />
+                </div>
+                <div className="ui-flex ui-gap-2">
+                  <Button variant="primary" onClick={submitReview} isLoading={submittingReview}>
+                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowReviewForm(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {/* Review List */}
+            {allReviews.length === 0 ? (
+              <div className="ui-empty-state">
+                <MessageSquare size={32} className="ui-empty-state-icon" />
+                <p className="ui-empty-state-text">No reviews yet. Be the first to review this app!</p>
+              </div>
+            ) : (
+              <div className="ui-stack-3">
+                {allReviews.map(review => (
+                  <Card key={review.id} padding="md">
+                    <div className="ui-flex-between mb-2">
+                      <div>
+                        <div className="ui-hstack-2">
+                          <span className="ui-heading-sm">{review.userName}</span>
+                          {review.verifiedPurchase && <span style={{ fontSize: 9 }}><Badge variant="success">Verified</Badge></span>}
+                        </div>
+                        {renderStars(review.rating, 12)}
                       </div>
-                      {renderStars(review.rating, 12)}
+                      <div className="ui-hstack-2">
+                        <span className="ui-text-xs-tertiary ui-hstack-1">
+                          <Clock size={10} /> {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
-                    <div className="ui-hstack-2">
-                      <span className={styles.s81}>
-                        <Clock size={10} /> {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  {review.title && <h4 className={styles.s82}>{review.title}</h4>}
-                  {review.body && <p className={styles.s83}>{review.body}</p>}
-                  <button onClick={() => markHelpful(review.id)} className={styles.s84}>
-                    <ThumbsUp size={10} /> Helpful ({review.helpfulCount})
-                  </button>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'changelog' && (
-        <div>
-          {allChangelogs.length === 0 ? (
-            <div className={styles.s77}>
-              <History size={32} className={styles.s78} />
-              <p className="text-sm">No changelog available yet.</p>
-            </div>
-          ) : (
-            <div className={styles.s85}>
-              <div className={styles.s86} />
-              {allChangelogs.map((cl, i) => (
-                <div key={cl.id} className={styles.s87}>
-                  <div style={{ background: i === 0 ? 'var(--color-primary)' : 'var(--color-border)' }} className={styles.s88} />
-                  <div className={styles.s89}>
-                    <Badge variant={i === 0 ? 'info' : 'default'}>v{cl.version}</Badge>
-                    <span className={styles.s90}>
-                      {new Date(cl.publishedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className={styles.s51}>
-                    {cl.changes}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'support' && (
-        <Card padding="lg" className={styles.s31}>
-          <div className={styles.s91}>
-            {app.documentationUrl && (
-              <a href={app.documentationUrl} target="_blank" rel="noopener noreferrer" className={styles.s92}>
-                <FileText size={20} className="ui-text-primary" />
-                <div>
-                  <div className="ui-heading-sm">Documentation</div>
-                  <div className={styles.s93}>Read the docs</div>
-                </div>
-              </a>
-            )}
-            {app.supportUrl && (
-              <a href={app.supportUrl} target="_blank" rel="noopener noreferrer" className={styles.s92}>
-                <MessageSquare size={20} className="ui-text-success" />
-                <div>
-                  <div className="ui-heading-sm">Support</div>
-                  <div className={styles.s93}>Get help</div>
-                </div>
-              </a>
-            )}
-            {app.privacyPolicyUrl && (
-              <a href={app.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className={styles.s92}>
-                <Shield size={20} className="ui-text-muted" />
-                <div>
-                  <div className="ui-heading-sm">Privacy Policy</div>
-                  <div className={styles.s93}>Data handling</div>
-                </div>
-              </a>
-            )}
-            {!app.documentationUrl && !app.supportUrl && !app.privacyPolicyUrl && (
-              <div className={styles.s94}>
-                <p className="text-sm">No support links provided for this app. Contact the publisher ({app.publisher}) for assistance.</p>
+                    {review.title && <h4 className="ui-heading-sm mb-1">{review.title}</h4>}
+                    {review.body && <p className="ui-text-sm-muted mb-2" style={{ lineHeight: 1.5 }}>{review.body}</p>}
+                    <button onClick={() => markHelpful(review.id)} className="ui-hstack-1 rounded-full border px-[10px] py-[2px] text-11px" style={{ background: 'none', color: 'var(--color-text-secondary)', borderColor: 'var(--color-border)', cursor: 'pointer' }}>
+                      <ThumbsUp size={10} /> Helpful ({review.helpfulCount})
+                    </button>
+                  </Card>
+                ))}
               </div>
             )}
           </div>
-        </Card>
-      )}
+        )}
+
+        {activeTab === 'changelog' && (
+          <div>
+            {allChangelogs.length === 0 ? (
+              <div className="ui-empty-state">
+                <History size={32} className="ui-empty-state-icon" />
+                <p className="ui-empty-state-text">No changelog available yet.</p>
+              </div>
+            ) : (
+              <div className="pl-6 relative">
+                <div className="absolute left-[9px] top-0 bottom-0 w-[2px]" style={{ background: 'var(--color-border)' }} />
+                {allChangelogs.map((cl, i) => (
+                  <div key={cl.id} className="mb-5 relative">
+                    <div className="absolute w-3 h-3 rounded-full border-2" style={{ left: -19, top: 4, background: i === 0 ? 'var(--color-primary)' : 'var(--color-border)', borderColor: 'var(--color-bg)' }} />
+                    <div className="ui-hstack-2 mb-2">
+                      <Badge variant={i === 0 ? 'info' : 'default'}>v{cl.version}</Badge>
+                      <span className="ui-text-xs-tertiary">
+                        {new Date(cl.publishedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="ui-text-sm-muted" style={{ lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                      {cl.changes}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'support' && (
+          <Card padding="lg">
+            <div className="ui-grid-auto">
+              {app.documentationUrl && (
+                <a href={app.documentationUrl} target="_blank" rel="noopener noreferrer" className="ui-card-clickable ui-hstack-3 p-4 rounded-lg border text-decoration-none" style={{ color: 'var(--color-text)' }}>
+                  <FileText size={20} className="ui-text-primary" />
+                  <div>
+                    <div className="ui-heading-sm">Documentation</div>
+                    <div className="ui-text-xs-muted">Read the docs</div>
+                  </div>
+                </a>
+              )}
+              {app.supportUrl && (
+                <a href={app.supportUrl} target="_blank" rel="noopener noreferrer" className="ui-card-clickable ui-hstack-3 p-4 rounded-lg border text-decoration-none" style={{ color: 'var(--color-text)' }}>
+                  <MessageSquare size={20} className="ui-text-success" />
+                  <div>
+                    <div className="ui-heading-sm">Support</div>
+                    <div className="ui-text-xs-muted">Get help</div>
+                  </div>
+                </a>
+              )}
+              {app.privacyPolicyUrl && (
+                <a href={app.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="ui-card-clickable ui-hstack-3 p-4 rounded-lg border text-decoration-none" style={{ color: 'var(--color-text)' }}>
+                  <Shield size={20} className="ui-text-muted" />
+                  <div>
+                    <div className="ui-heading-sm">Privacy Policy</div>
+                    <div className="ui-text-xs-muted">Data handling</div>
+                  </div>
+                </a>
+              )}
+              {!app.documentationUrl && !app.supportUrl && !app.privacyPolicyUrl && (
+                <div className="ui-empty-state" style={{ gridColumn: '1 / -1' }}>
+                  <p className="ui-empty-state-text">No support links provided for this app. Contact the publisher ({app.publisher}) for assistance.</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
       {/* Related Apps */}
       {(app.relatedApps || []).length > 0 && (
         <div>
-          <h3 className={styles.s43}>Related Apps</h3>
-          <div className={styles.s95}>
+          <h3 className="ui-heading-base mb-3">Related Apps</h3>
+          <div className="ui-grid-auto">
             {(app.relatedApps || []).map((rel: any) => (
-              <Link key={rel.slug} href={`/apps/store/${rel.slug}`} className={styles.s96}>
-                <Card padding="md" className={`${styles.s97} ${styles.relatedCard}`}>
-                  <div className={styles.s98}>
+              <Link key={rel.slug} href={`/apps/store/${rel.slug}`} className="text-decoration-none" style={{ color: 'inherit' }}>
+                <Card padding="md" className={`${styles.relatedCard} ui-card-clickable ui-hstack-3`}>
+                  <div className="ui-flex-center flex-shrink-0 w-10 h-10 rounded-md text-[20px]" style={{ background: 'var(--color-bg-sunken)' }}>
                     {rel.icon || '📦'}
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div className="ui-heading-sm">{rel.name}</div>
-                    <div className={styles.s99}>
+                    <div className="ui-hstack-1 ui-text-xs-muted">
                       {renderStars(rel.rating, 10)}
                       <span>{Number(rel.rating).toFixed(1)}</span>
                     </div>
@@ -653,11 +660,6 @@ export default function AppDetailPage() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
     </RouteGuard>
   );

@@ -6,7 +6,7 @@ import {
   UpdateFixedAssetInput,
   TransferFixedAssetInput,
   LogFixedAssetMaintenanceInput,
-} from '@unerp/shared';
+} from './fixed-assets.dtos';
 import { Prisma } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FixedAssetCreatedEvent } from './events/fixed-asset-created.event';

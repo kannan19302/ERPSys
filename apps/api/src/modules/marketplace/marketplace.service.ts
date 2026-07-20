@@ -13,33 +13,20 @@ import { AppProvisioningService } from "./app-provisioning.service";
 import { VendorService } from "./vendor.service";
 import { validateManifest } from "./manifest";
 import { isUninstallable } from "../../common/module-tiers";
+import { KERNEL_SLUGS } from "../../common/app-slug-map";
 import { ExtensionGatewayClient } from "../../common/integrations/extension-gateway-client";
 import { satisfiesMinCoreVersion, compareSemver } from "@unerp/service-kit";
 
 /** Core platform version for bundle minCoreVersion checks (#7). */
 const CORE_VERSION = process.env.CORE_VERSION || "2.0.0";
 
-/** Core in-house modules every newly registered tenant starts with installed. */
-const DEFAULT_CORE_APP_SLUGS = [
-  "dashboard",
-  "finance",
-  "hr",
-  "crm",
-  "inventory",
-  "procurement",
-  "sales",
-  "supply-chain",
-  "projects",
-  "manufacturing",
-  "analytics",
-  "drive",
-  "communication",
-  "pos",
-  "api-keys",
-  "saas",
-  "admin",
-  "builder",
-];
+/** Every catalog app slug that should be seeded (kernel + all gated core modules). */
+const ALL_SEED_SLUGS = Array.from(KERNEL_SLUGS).concat([
+  "finance", "hr", "crm", "inventory", "procurement", "sales",
+  "supply-chain", "projects", "manufacturing", "analytics",
+  "drive", "communication", "pos", "builder",
+  "ecommerce", "ai",
+]);
 
 @Injectable()
 export class MarketplaceService {
@@ -54,43 +41,29 @@ export class MarketplaceService {
   ) {}
 
   /**
-   * A freshly registered tenant starts with every core in-house module
-   * installed (AUTH_BILLING_PROGRAM Phase 2). Fired by AuthService.register()
-   * after its transaction commits — decoupled via the event bus rather than a
-   * direct cross-module call so AuthModule never has to depend on
-   * MarketplaceModule. Best-effort: a catalog hiccup must never retroactively
-   * break a registration that has already succeeded.
+   * Tenant registered handler — no longer auto-installs any apps.
+   * Per the kernel-module migration (Phase 5), new tenants start with
+   * only the kernel apps (App Store + SaaS Portal) visible. The catalog
+   * self-heals if empty, but no apps are pre-installed. Industry
+   * recommendations are surfaced as suggestions in the onboarding
+   * banner/checklist instead.
    */
   @OnEvent("tenant.registered")
   async handleTenantRegistered(payload: { tenantId: string; userId: string }) {
     try {
-      // Self-heals an empty catalog (e.g. a fresh install where the admin
-      // never ran POST /marketplace/seed) instead of silently installing
-      // nothing.
-      const existingCore = await prisma.marketplaceApp.count({
-        where: { slug: { in: DEFAULT_CORE_APP_SLUGS }, isCore: true },
+      // Self-heals an empty catalog instead of silently installing nothing.
+      // Counts ALL seed slugs (not just isCore) so non-core gated modules
+      // are included — otherwise the count is always 0 and seedDefaultApps()
+      // runs on every registration.
+      const existingCount = await prisma.marketplaceApp.count({
+        where: { slug: { in: ALL_SEED_SLUGS } },
       });
-      if (existingCore < DEFAULT_CORE_APP_SLUGS.length) {
+      if (existingCount < ALL_SEED_SLUGS.length) {
         await this.seedDefaultApps();
       }
-
-      await runWithTenantSession(
-        { tenantId: payload.tenantId, userId: payload.userId },
-        async () => {
-          for (const slug of DEFAULT_CORE_APP_SLUGS) {
-            try {
-              await this.installApp(payload.tenantId, slug, payload.userId);
-            } catch (err) {
-              this.logger.warn(
-                `Core app "${slug}" auto-install failed for tenant ${payload.tenantId}: ${err instanceof Error ? err.message : err}`,
-              );
-            }
-          }
-        },
-      );
     } catch (err) {
       this.logger.error(
-        `Core app auto-install failed for tenant ${payload.tenantId}: ${err instanceof Error ? err.message : err}`,
+        `Catalog self-heal failed for tenant ${payload.tenantId}: ${err instanceof Error ? err.message : err}`,
       );
     }
   }
@@ -474,9 +447,9 @@ export class MarketplaceService {
     const app = await prisma.marketplaceApp.findUnique({
       where: { slug: appSlug },
     });
-    // Kernel apps (Dashboard, Admin, Studio, API Platform, SaaS, …) are locked so the
-    // user always retains an admin surface to re-install everything else. Gated business
-    // modules and bundle-backed industry apps may be uninstalled.
+    // Kernel apps (only `saas-portal` and `app-store`) are locked so the user always
+    // retains an admin surface to re-install everything else. Gated business modules
+    // (Finance, HR, Studio/Builder, …) and bundle-backed industry apps may be uninstalled.
     if (app && !isUninstallable(app)) {
       throw new ForbiddenException(
         "This is a core platform module and cannot be uninstalled",
@@ -1178,8 +1151,8 @@ export class MarketplaceService {
         ],
         tags: ["finance", "accounting", "ledger", "invoice", "payments"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "hr",
@@ -1204,8 +1177,8 @@ export class MarketplaceService {
         ],
         tags: ["hr", "employees", "leaves", "attendance", "people"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "crm",
@@ -1230,8 +1203,8 @@ export class MarketplaceService {
         ],
         tags: ["crm", "sales", "leads", "pipeline", "customers"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "inventory",
@@ -1256,8 +1229,8 @@ export class MarketplaceService {
         ],
         tags: ["inventory", "stock", "warehouse", "products", "sku"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "procurement",
@@ -1282,8 +1255,8 @@ export class MarketplaceService {
         ],
         tags: ["procurement", "purchase", "vendors", "po", "goods-receipt"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "sales",
@@ -1308,8 +1281,8 @@ export class MarketplaceService {
         ],
         tags: ["sales", "orders", "quotations", "billing", "delivery"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "supply-chain",
@@ -1340,8 +1313,8 @@ export class MarketplaceService {
           "forecasting",
         ],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "projects",
@@ -1366,8 +1339,8 @@ export class MarketplaceService {
         ],
         tags: ["projects", "tasks", "gantt", "timesheets", "budgeting"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "manufacturing",
@@ -1392,8 +1365,8 @@ export class MarketplaceService {
         ],
         tags: ["manufacturing", "mrp", "bom", "production", "workstations"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "analytics",
@@ -1418,8 +1391,8 @@ export class MarketplaceService {
         ],
         tags: ["analytics", "reporting", "bi", "dashboards", "charts"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "drive",
@@ -1444,8 +1417,8 @@ export class MarketplaceService {
         ],
         tags: ["drive", "storage", "files", "documents", "sharing"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "communication",
@@ -1470,8 +1443,8 @@ export class MarketplaceService {
         ],
         tags: ["connect", "chat", "messaging", "calendar", "collaboration"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "pos",
@@ -1496,8 +1469,8 @@ export class MarketplaceService {
         ],
         tags: ["pos", "retail", "terminal", "checkout", "billing"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
       },
       {
         slug: "api-keys",
@@ -1577,6 +1550,10 @@ export class MarketplaceService {
         isCore: true,
       },
       {
+        // Studio/Builder is a normal gated business module, not kernel — it is
+        // uninstallable (isCore:false, no metadata.isSystem) like Finance/HR. It
+        // still installs via the core code-resident path (installApp() treats any
+        // catalog row with no bundleId as code-resident regardless of isCore).
         slug: "builder",
         name: "Studio",
         description:
@@ -1599,8 +1576,53 @@ export class MarketplaceService {
         ],
         tags: ["builder", "no-code", "studio", "pages", "forms"],
         screenshots: [],
-        metadata: { isSystem: true },
-        isCore: true,
+        metadata: {},
+        isCore: false,
+      },
+      {
+        slug: "ecommerce",
+        name: "E-Commerce Storefront",
+        description: "Online storefront with product listings, categories, and order management.",
+        category: "Sales",
+        publisher: "UniERP",
+        version: "1.0.0",
+        pricing: "FREE",
+        rating: 5.0,
+        installs: 5000,
+        verified: true,
+        featured: false,
+        features: [
+          "Product listings & categories",
+          "Storefront settings",
+          "Online channel order management",
+        ],
+        tags: ["ecommerce", "storefront", "online", "products"],
+        screenshots: [],
+        metadata: {},
+        isCore: false,
+      },
+      {
+        slug: "ai",
+        name: "AI Copilot",
+        description: "AI-powered assistant for natural language queries, invoice scanning, and workflow generation.",
+        category: "AI & Automation",
+        publisher: "UniERP",
+        version: "1.0.0",
+        pricing: "FREE",
+        rating: 5.0,
+        installs: 5000,
+        verified: true,
+        featured: false,
+        features: [
+          "Ask Data (NL Query)",
+          "Invoice Scanner",
+          "Email Drafter",
+          "Form & Workflow Generator",
+        ],
+        tags: ["ai", "copilot", "nlp", "automation"],
+        screenshots: [],
+        metadata: {},
+        isCore: false,
       },
     ];
 
@@ -1653,10 +1675,9 @@ export class MarketplaceService {
       "drive",
       "communication",
       "pos",
-      "api-keys",
-      "saas",
-      "admin",
       "builder",
+      "ecommerce",
+      "ai",
     ];
     const dbSystemApps = await prisma.marketplaceApp.findMany({
       where: { slug: { in: systemSlugs } },

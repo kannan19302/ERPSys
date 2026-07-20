@@ -2,6 +2,7 @@
 import styles from './page.module.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { Badge, Button, Modal } from '@unerp/ui';
 import { ArrowLeft, Code2, Plus, Upload, CheckCircle2, XCircle, Clock, Package, Send, Loader2, Shield } from 'lucide-react';
 import { RouteGuard, useApiClient } from '@unerp/framework';
 
@@ -17,7 +18,7 @@ const SAMPLE_MANIFEST = `{
   "version": "1.0.0",
   "runtime": "declarative",
   "description": "What my app does",
-  "icon": "🧩",
+  "icon": "\ud83e\udde9",
   "pricing": "FREE",
   "tags": ["custom"],
   "schemas": [
@@ -32,6 +33,13 @@ const SAMPLE_MANIFEST = `{
     { "slug": "new-ticket", "title": "New Ticket", "type": "form", "schema": "ticket" }
   ]
 }`;
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className={styles.fieldGroup}><label className="ui-label">{label}</label>{children}</div>;
+}
+
+const statusBadgeVariant = (s: string) =>
+  s === 'PUBLISHED' ? 'success' : s === 'IN_REVIEW' ? 'warning' : s === 'REJECTED' ? 'danger' : 'default';
 
 export default function DeveloperPortalPage() {
   const client = useApiClient();
@@ -61,7 +69,7 @@ export default function DeveloperPortalPage() {
         client.get<PendingBundle[]>('/developer/review/pending'),
       ]);
       setVendor(me); setApps(myApps || []); setPending(pend || []);
-    } catch { /* noop */ } finally { setLoading(false); }
+    } catch {} finally { setLoading(false); }
   }, [client]);
 
   useEffect(() => { load(); }, [load]);
@@ -109,59 +117,72 @@ export default function DeveloperPortalPage() {
     } catch { showToast(`Failed to ${action}`, 'error'); } finally { setBusy(false); }
   };
 
-  const statusColor = (s: string) => s === 'PUBLISHED' ? 'var(--color-success)' : s === 'IN_REVIEW' ? '#f59e0b' : s === 'REJECTED' ? 'var(--color-danger)' : 'var(--color-text-tertiary)';
-
-  if (loading) return <div className={styles.s1}><Loader2 size={32} className={styles.s39} /></div>;
+  if (loading) return <div className={styles.loadingContainer}><Loader2 size={32} className="animate-spin ui-text-primary" /></div>;
 
   return (
     <RouteGuard permission="apps.developer.read">
-    <div className={styles.s2}>
-      {toast && <div style={{ background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }} className={styles.s3}>{toast.msg}</div>}
+    <div className="ui-stack-5">
+      {toast && (
+        <div className={`ui-alert ${styles.toast} ${toast.type === 'success' ? 'ui-alert-success' : 'ui-alert-danger'}`}>
+          {toast.msg}
+        </div>
+      )}
 
-      <div className={styles.s4}>
+      <div className="ui-hstack-3">
         <Link href="/apps/store" className="ui-text-muted"><ArrowLeft size={18} /></Link>
-        <h1 className={styles.s5}>
+        <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
           <Code2 className="ui-text-primary" /> Developer Portal
         </h1>
       </div>
-      {vendor && <p className={styles.s6}>Publishing as <strong>{vendor.name}</strong> {vendor.verified && <Shield size={12} className={styles.s40} />} · vendor slug <code>{vendor.slug}</code></p>}
+      {vendor && <p className="ui-text-sm-muted">Publishing as <strong>{vendor.name}</strong> {vendor.verified && <Shield size={12} className="ui-text-success" />} · vendor slug <code>{vendor.slug}</code></p>}
 
-      <div className={styles.s7}>
+      <div className="ui-tabs">
         {(['apps', 'review'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ borderBottom: tab === t ? '2px solid var(--color-primary)' : '2px solid transparent', color: tab === t ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} className={styles.s8}>
+          <button key={t} onClick={() => setTab(t)} className={`ui-tab ${tab === t ? 'ui-tab-active' : ''}`}>
             {t === 'apps' ? 'My Apps' : `Review Queue${pending.length ? ` (${pending.length})` : ''}`}
           </button>
         ))}
       </div>
 
+      <div className="ui-tab-content">
       {tab === 'apps' && (
-        <div className={styles.s9}>
+        <div className="ui-stack-4">
           <div className="ui-flex-end">
-            <button onClick={() => setShowCreate(true)} className={styles.s10}><Plus size={16} /> New App</button>
+            <Button variant="primary" leftIcon={<Plus size={16} />} onClick={() => setShowCreate(true)}>New App</Button>
           </div>
 
-          {apps.length === 0 && <div className={styles.s11}><Package size={40} className={styles.s41} /><p>No apps yet. Create one and publish a version.</p></div>}
+          {apps.length === 0 && (
+            <div className={styles.emptyState}>
+              <Package size={40} className="ui-empty-state-icon" />
+              <p>No apps yet. Create one and publish a version.</p>
+            </div>
+          )}
 
           {apps.map(app => (
-            <div key={app.id} className={styles.s12}>
-              <div className={styles.s13}>
+            <div key={app.id} className={styles.appCard}>
+              <div className={styles.appHeader}>
                 <div>
-                  <div className={styles.s14}>{app.name} <span style={{ color: statusColor(app.status) }} className={styles.s15}>{app.status}</span></div>
-                  <div className={styles.s16}>{app.category} · /{app.slug}</div>
+                  <div className={styles.appName}>
+                    {app.name} <Badge variant={statusBadgeVariant(app.status)}>{app.status}</Badge>
+                  </div>
+                  <div className={styles.appMeta}>{app.category} · /{app.slug}</div>
                 </div>
-                <button onClick={() => { setBundleFor(app); setManifestText(SAMPLE_MANIFEST.replace('"My App"', JSON.stringify(app.name))); }} className={styles.s17}><Upload size={14} /> New Version</button>
+                <Button variant="outline" size="sm" leftIcon={<Upload size={14} />} onClick={() => { setBundleFor(app); setManifestText(SAMPLE_MANIFEST.replace('"My App"', JSON.stringify(app.name))); }}>
+                  New Version
+                </Button>
               </div>
-              <div className={styles.s18}>
+              <div className={styles.bundleList}>
                 {app.bundles.map(b => (
-                  <div key={b.id} className={styles.s19}>
-                    <span className="font-semibold">v{b.version}</span>
-                    <span style={{ color: statusColor(b.status) }} className={styles.s20}>{b.status}</span>
-                    {b.reviewNotes && <span className={styles.s21}>— {b.reviewNotes}</span>}
-                    <span className="flex-1" />
-                    {(b.status === 'DRAFT' || b.status === 'REJECTED') && <button onClick={() => submitBundle(b.id)} disabled={busy} className={styles.s22}><Send size={12} /> Submit</button>}
+                  <div key={b.id} className={styles.bundleRow}>
+                    <span className="ui-font-semibold">v{b.version}</span>
+                    <Badge variant={statusBadgeVariant(b.status)}>{b.status}</Badge>
+                    {b.reviewNotes && <span className={styles.reviewNotes}>— {b.reviewNotes}</span>}
+                    {(b.status === 'DRAFT' || b.status === 'REJECTED') && (
+                      <Button variant="primary" size="sm" leftIcon={<Send size={12} />} onClick={() => submitBundle(b.id)} disabled={busy} className="ml-auto">Submit</Button>
+                    )}
                   </div>
                 ))}
-                {app.bundles.length === 0 && <span className={styles.s16}>No versions yet.</span>}
+                {app.bundles.length === 0 && <span className={styles.appMeta}>No versions yet.</span>}
               </div>
             </div>
           ))}
@@ -169,75 +190,66 @@ export default function DeveloperPortalPage() {
       )}
 
       {tab === 'review' && (
-        <div className={styles.s23}>
-          {pending.length === 0 && <div className={styles.s11}><Clock size={40} className={styles.s41} /><p>No bundles awaiting review.</p></div>}
+        <div className="ui-stack-3">
+          {pending.length === 0 && (
+            <div className={styles.emptyState}>
+              <Clock size={40} className="ui-empty-state-icon" />
+              <p>No bundles awaiting review.</p>
+            </div>
+          )}
           {pending.map(b => (
-            <div key={b.id} className={styles.s24}>
+            <div key={b.id} className={styles.reviewCard}>
               <div>
-                <div className={styles.s14}>{b.package.name} <span className={styles.s25}>v{b.version}</span></div>
-                <div className={styles.s16}>by {b.package.vendor.name} · /{b.package.slug}</div>
-                {b.changelog && <div className={styles.s26}>{b.changelog}</div>}
+                <div className={styles.appName}>
+                  {b.package.name} <span className="ui-text-tertiary font-normal">v{b.version}</span>
+                </div>
+                <div className={styles.appMeta}>by {b.package.vendor.name} · /{b.package.slug}</div>
+                {b.changelog && <div className={styles.reviewChangelog}>{b.changelog}</div>}
               </div>
-              <div className={styles.s27}>
-                <button onClick={() => review(b.id, 'approve')} disabled={busy} className={styles.s28}><CheckCircle2 size={16} /> Approve & Publish</button>
-                <button onClick={() => review(b.id, 'reject')} disabled={busy} className={styles.s29}><XCircle size={16} /> Reject</button>
+              <div className={styles.reviewActions}>
+                <Button variant="primary" size="sm" leftIcon={<CheckCircle2 size={16} />} onClick={() => review(b.id, 'approve')} disabled={busy}>Approve & Publish</Button>
+                <Button variant="danger" size="sm" leftIcon={<XCircle size={16} />} onClick={() => review(b.id, 'reject')} disabled={busy}>Reject</Button>
               </div>
             </div>
           ))}
         </div>
       )}
+      </div>
 
       {/* Create App modal */}
       {showCreate && (
-        <Modal title="New App" onClose={() => setShowCreate(false)}>
-          <Field label="Name"><input value={newApp.name} onChange={e => setNewApp(s => ({ ...s, name: e.target.value }))} style={inputStyle} placeholder="e.g. Telehealth Visits" /></Field>
+        <Modal open={true} onClose={() => setShowCreate(false)} title="New App" footer={<>
+            <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="primary" onClick={createApp} disabled={busy}>{busy ? 'Creating…' : 'Create'}</Button>
+        </>}>
+          <Field label="Name">
+            <input value={newApp.name} onChange={e => setNewApp(s => ({ ...s, name: e.target.value }))} className="ui-input" placeholder="e.g. Telehealth Visits" />
+          </Field>
           <Field label="Category">
-            <select value={newApp.category} onChange={e => setNewApp(s => ({ ...s, category: e.target.value }))} style={inputStyle}>
+            <select value={newApp.category} onChange={e => setNewApp(s => ({ ...s, category: e.target.value }))} className="ui-select">
               {CATEGORIES.map(c => <option key={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Short description"><textarea value={newApp.description} onChange={e => setNewApp(s => ({ ...s, description: e.target.value }))} style={{ ...inputStyle }} className={styles.s30} /></Field>
-          <div className={styles.s31}>
-            <button onClick={() => setShowCreate(false)} style={btnGhost}>Cancel</button>
-            <button onClick={createApp} disabled={busy} style={btnPrimary}>{busy ? 'Creating…' : 'Create'}</button>
-          </div>
+          <Field label="Short description">
+            <textarea value={newApp.description} onChange={e => setNewApp(s => ({ ...s, description: e.target.value }))} className="ui-textarea" />
+          </Field>
         </Modal>
       )}
 
       {/* Create Bundle modal */}
       {bundleFor && (
-        <Modal title={`New Version — ${bundleFor.name}`} onClose={() => setBundleFor(null)} wide>
-          <p className={styles.s32}>Define the app manifest (schemas + pages). The <code>slug</code> and <code>vendor</code> are pinned to your app automatically.</p>
-          <textarea value={manifestText} onChange={e => setManifestText(e.target.value)} spellCheck={false} style={{ ...inputStyle }} className={styles.s33} />
-          <Field label="Changelog (optional)"><input value={changelog} onChange={e => setChangelog(e.target.value)} style={inputStyle} placeholder="What changed in this version" /></Field>
-          <div className={styles.s31}>
-            <button onClick={() => setBundleFor(null)} style={btnGhost}>Cancel</button>
-            <button onClick={createBundle} disabled={busy} style={btnPrimary}>{busy ? 'Saving…' : 'Create Draft Version'}</button>
-          </div>
+        <Modal open={true} onClose={() => setBundleFor(null)} title={`New Version — ${bundleFor.name}`} size="lg" footer={<>
+            <Button variant="secondary" onClick={() => setBundleFor(null)}>Cancel</Button>
+            <Button variant="primary" onClick={createBundle} disabled={busy}>{busy ? 'Saving…' : 'Create Draft Version'}</Button>
+        </>}>
+          <p className="ui-text-sm-muted">Define the app manifest (schemas + pages). The <code>slug</code> and <code>vendor</code> are pinned to your app automatically.</p>
+          <textarea value={manifestText} onChange={e => setManifestText(e.target.value)} spellCheck={false} className={styles.manifestEditor} />
+          <Field label="Changelog (optional)">
+            <input value={changelog} onChange={e => setChangelog(e.target.value)} className="ui-input" placeholder="What changed in this version" />
+          </Field>
         </Modal>
       )}
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
     </RouteGuard>
-  );
-}
-
-const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 14, outline: 'none' };
-const btnPrimary: React.CSSProperties = { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--color-primary)', color: '#fff', fontWeight: 600, cursor: 'pointer' };
-const btnGhost: React.CSSProperties = { padding: '8px 16px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)', cursor: 'pointer' };
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className={styles.s34}><label className={styles.s35}>{label}</label>{children}</div>;
-}
-
-function Modal({ title, children, onClose, wide }: { title: string; children: React.ReactNode; onClose: () => void; wide?: boolean }) {
-  return (
-    <div onClick={onClose} className={styles.s36}>
-      <div onClick={e => e.stopPropagation()} style={{ maxWidth: wide ? 680 : 440 }} className={styles.s37}>
-        <h3 className={styles.s38}>{title}</h3>
-        {children}
-      </div>
-    </div>
   );
 }

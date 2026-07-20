@@ -22,6 +22,27 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+const createDelegationSchema = z.object({
+  delegatorId: z.string().cuid(),
+  delegateId: z.string().cuid(),
+  type: z.string().min(1).max(100),
+  workflowId: z.string().cuid().optional(),
+  reason: z.string().max(1000).optional(),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime().optional(),
+});
+
+// Only client-updatable fields — tenantId/delegatorId/delegateId are never
+// accepted from the request body (mass-assignment / cross-tenant guard).
+const updateDelegationSchema = z.object({
+  type: z.string().min(1).max(100).optional(),
+  workflowId: z.string().cuid().optional(),
+  reason: z.string().max(1000).optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  status: z.enum(['ACTIVE', 'REVOKED', 'EXPIRED']).optional(),
+});
+
 @ApiTags('admin')
 @ApiBearerAuth()
 @Controller('admin/delegations')
@@ -42,17 +63,9 @@ export class DelegationController {
   @Permissions('admin.delegations.create')
   async create(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.any()) body: {
-      delegatorId: string;
-      delegateId: string;
-      type: string;
-      workflowId?: string;
-      reason?: string;
-      startDate: string;
-      endDate?: string;
-    },
+    @ZodBody(createDelegationSchema) body: z.infer<typeof createDelegationSchema>,
   ) {
-    return this.delegationService.create(req.user.tenantId, body);
+    return this.delegationService.create(req.user.tenantId, req.user.userId, req.user.roles, body);
   }
 
   @ApiOperation({ summary: 'Update' })
@@ -61,7 +74,7 @@ export class DelegationController {
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @ZodBody(z.any()) body: Record<string, any>,
+    @ZodBody(updateDelegationSchema) body: z.infer<typeof updateDelegationSchema>,
   ) {
     return this.delegationService.update(req.user.tenantId, id, body);
   }

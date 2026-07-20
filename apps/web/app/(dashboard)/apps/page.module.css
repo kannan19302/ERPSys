@@ -1,12 +1,5 @@
-.s1 {
-  align-items: center;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  width: 88px;
-}
-.s2 {
+/* ── Folder Tile ── */
+.folderTile {
   border-radius: 18px;
   display: grid;
   gap: 4px;
@@ -15,24 +8,22 @@
   padding: 10px;
   transition: all 0.15s ease;
   width: 72px;
+  background: color-mix(in srgb, var(--tile-color) 9%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--tile-color) 19%, transparent);
 }
-.s3 {
-  align-items: center;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
+.folderTile:hover {
+  background: color-mix(in srgb, var(--tile-color) 16%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--tile-color) 19%, transparent);
+  transform: scale(1.05);
 }
-.s4 {
-  border-radius: 5px;
-}
-.s5 {
+.folderTileBadge {
   align-items: center;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  color: white;
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-inverse);
   display: flex;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   height: 20px;
   justify-content: center;
   min-width: 20px;
@@ -41,9 +32,41 @@
   right: -6px;
   top: -6px;
 }
-.s6 {
+.folderTilePreviewIcon {
+  align-items: center;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── App Tile ── */
+.appTile {
+  align-items: center;
+  border-radius: 18px;
+  display: flex;
+  height: 72px;
+  justify-content: center;
+  transition: all 0.15s ease;
+  width: 72px;
+  background: color-mix(in srgb, var(--tile-color) 10%, transparent);
+}
+.appTile:hover {
+  background: color-mix(in srgb, var(--tile-color) 16%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--tile-color) 19%, transparent);
+  transform: scale(1.05);
+}
+.appTileLink {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── Tile Label ── */
+.tileLabel {
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2px;
+  -webkit-line-clamp: 2;
   color: var(--color-text);
   display: -webkit-box;
   font-size: 12px;
@@ -53,184 +76,29 @@
   text-align: center;
   text-overflow: ellipsis;
 }
-.s7 {
-  text-decoration: none;
-}
-.s8 {
+
+/* ── Modal ── */
+.modalOverlay {
   align-items: center;
-  border-radius: 18px;
-  display: flex;
-  height: 72px;
-  justify-content: center;
-  transition: all 0.15s ease;
-  width: 72px;
-}
-.s9 {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  min-height: 80vh;
-  position: relative;
-}
-.s10 {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  padding-top: var(--space-8);
-}
-.s11 {
-  box-shadow: var(--shadow-xl);
-  max-width: 100%;
-  position: relative;
-  width: 940px;
-}
-.s12 {
-  align-items: center;
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-5) var(--space-6);
-}
-.s13 {
-  color: var(--color-text);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
-  margin: 0;
-}
-.s14 {
-  align-items: center;
-  background: none;
-  border: none;
-  color: var(--color-primary);
-  cursor: pointer;
-  display: flex;
-  font-size: var(--text-sm);
-  gap: 4px;
-  margin-top: 2px;
-  padding: 0;
-}
-.s15 {
-  position: relative;
-  width: 240px;
-}
-.s16 {
-  color: var(--color-text-tertiary);
-  left: 10px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.s17 {
-  font-size: 13px;
-  padding-left: 34px;
-}
-.s18 {
-  background: none;
-  border: none;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  padding: 0;
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.s19 {
-  min-height: 400px;
-  padding: var(--space-6);
-}
-.s20 {
-  color: var(--color-text-tertiary);
-  padding: var(--space-10);
-  text-align: center;
-}
-.s21 {
-  display: block;
-  margin: 0 auto var(--space-3);
-  opacity: 0.3;
-}
-.s22 {
-  font-size: var(--text-sm);
-  margin: 0;
-}
-.s23 {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-5);
-}
-.s24 {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  width: 88px;
-}
-.s25 {
-  color: var(--color-text-tertiary);
-  font-size: 9px;
-  text-align: center;
-}
-.s26 {
-  align-items: center;
-  background: var(--color-bg);
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-6);
-}
-.s27 {
-  align-items: center;
-  color: var(--color-primary);
-  display: flex;
-  font-size: var(--text-xs);
-  gap: 4px;
-  text-decoration: none;
-}
-.s28 {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-size: var(--text-xs);
-}
-.s29 {
-  align-items: center;
-  animation: fadeIn 0.15s ease;
   backdrop-filter: blur(4px);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-bg-overlay);
   display: flex;
   inset: 0;
   justify-content: center;
   position: fixed;
-  z-index: 50;
+  z-index: var(--z-overlay);
 }
-.s30 {
-  animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+.modalCard {
   background: var(--color-bg-elevated);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-xl);
   max-height: 80vh;
   max-width: 92vw;
   overflow: hidden;
   width: 640px;
 }
-.s31 {
-  border-radius: 12px;
-  display: grid;
-  gap: 3px;
-  grid-template-columns: 1fr 1fr;
-  height: 40px;
-  padding: 8px;
-  width: 40px;
-}
-.s32 {
-  align-items: center;
-  border-radius: 3px;
-  display: flex;
-  justify-content: center;
-}
-.s33 {
+.modalCloseBtn {
   align-items: center;
   background: var(--color-bg-sunken);
   border-radius: var(--radius-full);
@@ -242,131 +110,57 @@
   justify-content: center;
   width: 32px;
 }
-.s34 {
+.modalHeaderIconGrid {
+  border-radius: 12px;
+  display: grid;
+  gap: 3px;
+  grid-template-columns: 1fr 1fr;
+  height: 40px;
+  padding: 8px;
+  width: 40px;
+}
+.modalIconCell {
+  align-items: center;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+}
+.modalBody {
   max-height: 60vh;
   overflow-y: auto;
   padding: var(--space-6);
 }
-.folderTile {
-  background: color-mix(in srgb, var(--tile-color) 9%, transparent);
-  border: 1.5px solid color-mix(in srgb, var(--tile-color) 19%, transparent);
-}
-.folderTile:hover {
-  background: color-mix(in srgb, var(--tile-color) 16%, transparent);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--tile-color) 19%, transparent);
-  transform: scale(1.05);
-}
-.appTile {
-  background: color-mix(in srgb, var(--tile-color) 10%, transparent);
-}
-.appTile:hover {
-  background: color-mix(in srgb, var(--tile-color) 16%, transparent);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--tile-color) 19%, transparent);
-  transform: scale(1.05);
+
+/* ── Search ── */
+.searchClearBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-/* Onboarding Checklist Widget */
-.onboardingWidget {
-  background: var(--color-bg-surface, #ffffff);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-xl, 12px);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow:
-    0 4px 12px -2px rgba(0, 0, 0, 0.03),
-    0 1px 3px 0 rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease-in-out;
+/* ── Footer ── */
+.pageFooter {
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
 }
-.onboardingWidget:hover {
-  box-shadow:
-    0 8px 24px -4px rgba(0, 0, 0, 0.05),
-    0 2px 6px 0 rgba(0, 0, 0, 0.02);
-}
-.onboardingHeader {
-  display: flex;
-  justify-content: space-between;
+.footerActionLink {
   align-items: center;
-  cursor: pointer;
-  user-select: none;
-}
-.onboardingTitleArea {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.onboardingTitle {
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--color-text);
-}
-.onboardingBadge {
-  background: rgba(245, 158, 11, 0.08);
-  color: var(--color-warning-text, #b45309);
-  padding: 0.15rem 0.6rem;
-  border-radius: var(--radius-full, 9999px);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: background-color 0.2s ease;
-}
-.onboardingBadgePulse {
-  animation: badgeGlow 2s infinite ease-in-out;
-}
-@keyframes badgeGlow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.05);
-  }
-}
-.onboardingProgressBg {
-  height: 6px;
-  background: var(--color-border-light, #f1f5f9);
-  border-radius: var(--radius-full, 3px);
-  width: 100%;
-  overflow: hidden;
-  margin-top: 1rem;
-}
-.onboardingProgressBar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-warning, #f59e0b), #fbbf24);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.onboardingGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-.onboardingItem {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.75rem 0.875rem;
-  border-radius: var(--radius-md, 8px);
-  font-size: 0.75rem;
-  font-weight: 500;
+  color: var(--color-primary);
+  display: inline-flex;
+  font-size: var(--text-xs);
+  gap: 4px;
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid var(--color-border-light, #f1f5f9);
 }
-.onboardingItemActive {
-  background: var(--color-bg-subtle, #f8fafc);
-  color: var(--color-text-secondary, #64748b);
-}
-.onboardingItemActive:hover {
-  border-color: var(--color-border);
-  background: var(--color-bg-hover);
-  transform: translateY(-1px);
-}
-.onboardingItemCompleted {
-  background: rgba(16, 185, 129, 0.03);
-  color: var(--color-success, #10b981);
-  border-color: rgba(16, 185, 129, 0.15);
-}
-.onboardingItemCompleted:hover {
-  background: rgba(16, 185, 129, 0.06);
-  transform: translateY(-1px);
+.footerActionBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--text-xs);
 }

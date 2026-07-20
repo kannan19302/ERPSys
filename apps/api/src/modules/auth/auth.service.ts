@@ -452,11 +452,9 @@ export class AuthService {
         body: `Welcome to UniERP! Verify your email address to secure your new workspace: ${verificationLink}`,
       });
 
-      // Every new tenant starts with the core in-house modules installed
-      // (AUTH_BILLING_PROGRAM Phase 2). Fired as an event — not a direct call
-      // into MarketplaceService — so AuthModule never depends on
-      // MarketplaceModule; handled asynchronously, so a slow or failed
-      // install can never block or fail the registration response itself.
+      // Phase 5: new tenants start with zero auto-installed apps (only kernel
+      // apps App Store + SaaS Portal are visible by default). The event fires
+      // asynchronously so a catalog hiccup never blocks registration itself.
       this.eventEmitter?.emit("tenant.registered", {
         tenantId: result.tenant.id,
         userId: result.user.id,
@@ -1596,6 +1594,106 @@ export class AuthService {
       data: { isActive: false },
     });
     return { revoked: result.count };
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     Email OTP — real-time verification during registration
+     ───────────────────────────────────────────────────────── */
+
+  /** In-memory OTP store. In production, use Redis with a TTL. */
+  private readonly otpStore = new Map<string, { code: string; expiresAt: number; attempts: number }>();
+
+  private generateOtp(): string {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  async sendOtp(email: string): Promise<{ message: string; cooldownSeconds: number }> {
+    const normalized = email.toLowerCase().trim();
+    const existing = this.otpStore.get(normalized);
+
+    // Rate-limit: 60s cooldown per email
+    if (existing) {
+      const elapsed = Date.now() - (existing.expiresAt - 5 * 60 * 1000);
+      if (elapsed < 60000 && existing.attempts > 0) {
+        const remaining = Math.ceil((60000 - elapsed) / 1000);
+        return { message: `Please wait ${remaining}s before requesting a new code.`, cooldownSeconds: remaining };
+      }
+    }
+
+    const code = this.generateOtp();
+    this.otpStore.set(normalized, {
+      code,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      attempts: 0,
+    });
+
+    await this.dispatchAuthEmail({
+      to: normalized,
+      tenantId: '',
+      subject: 'Your UniERP verification code',
+      body: `Your verification code is: ${code}\n\nThis code expires in 5 minutes.\n\nIf you did not request this, please ignore this email.`,
+    });
+
+    this.logger.log(`[OTP] Code ${code} sent to ${normalized}`);
+    return { message: 'Verification code sent to your email.', cooldownSeconds: 60 };
+  }
+
+  async verifyOtp(email: string, code: string): Promise<{ verified: boolean; message: string }> {
+    const normalized = email.toLowerCase().trim();
+    const record = this.otpStore.get(normalized);
+
+    if (!record) {
+      return { verified: false, message: 'No verification code found. Request a new one.' };
+    }
+
+    if (Date.now() > record.expiresAt) {
+      this.otpStore.delete(normalized);
+      return { verified: false, message: 'Verification code has expired. Request a new one.' };
+    }
+
+    record.attempts += 1;
+    if (record.attempts > 5) {
+      this.otpStore.delete(normalized);
+      return { verified: false, message: 'Too many failed attempts. Request a new code.' };
+    }
+
+    if (record.code !== code.trim()) {
+      return { verified: false, message: 'Invalid verification code. Please try again.' };
+    }
+
+    this.otpStore.delete(normalized);
+    return { verified: true, message: 'Email verified successfully.' };
+  }
+
+  async getOnboardingStatus(tenantId: string, userId: string): Promise<{ completed: boolean; steps: string[] }> {
+    try {
+      const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+      if (!tenant) return { completed: false, steps: [] };
+      const settings = (tenant.settings as Record<string, any>) || {};
+      const checklist = (settings.onboardingChecklist as Record<string, boolean>) || {};
+
+      const user = await prisma.user.findFirst({ where: { id: userId, tenantId }, select: { avatar: true } });
+      const logoUrl = settings.logoUrl;
+      const inviteCount = await prisma.user.count({ where: { tenantId, id: { not: userId }, status: { in: ['INVITED', 'ACTIVE'] } } });
+      const marketplaceAppCount = await prisma.installedApp.count({ where: { tenantId, source: 'MARKETPLACE' } });
+      const subscription = await prisma.tenantSubscription.findUnique({ where: { tenantId }, include: { plan: true } });
+
+      const profileDone = Boolean(user?.avatar);
+      const logoDone = typeof logoUrl === 'string' && logoUrl.trim().length > 0;
+      const inviteDone = inviteCount > 0;
+      const appDone = marketplaceAppCount > 0;
+      const planName = subscription?.plan?.name?.toLowerCase();
+      const planDone = Boolean(subscription && planName && planName !== 'free' && planName !== 'trial');
+      const dashboardDone = Boolean(checklist.dashboard);
+
+      const mandatoryKeys = ['profile', 'logo', 'app'] as const;
+      const steps: Record<string, boolean> = { profile: profileDone, logo: logoDone, invite: inviteDone, app: appDone, plan: planDone, dashboard: dashboardDone };
+      const incomplete = mandatoryKeys.filter((k) => !steps[k]);
+
+      return { completed: incomplete.length === 0, steps: incomplete };
+    } catch {
+      return { completed: false, steps: [] };
+    }
   }
 
   /** Stores a small avatar image as a data URI on the user record. */

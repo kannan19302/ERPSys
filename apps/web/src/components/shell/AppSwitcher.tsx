@@ -51,7 +51,7 @@ export function AppSwitcher({
             if (item.type === 'folder') {
               const isExpanded = !!expandedFolders[item.id];
               return (
-                <React.Fragment key={item.id}>
+                <React.Fragment key={`folder-${item.id}`}>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -81,7 +81,7 @@ export function AppSwitcher({
                         const isSubActive = pathname.startsWith(app.href);
                         return (
                           <button
-                            key={app.name}
+                            key={`folder-${item.id}-app-${app.id}`}
                             onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
                             className={`ui-dropdown-item-nested ${isSubActive ? 'active' : ''}`}
                           >
@@ -99,7 +99,7 @@ export function AppSwitcher({
               const isPathActive = pathname.startsWith(app.href);
               return (
                 <button
-                  key={app.name}
+                  key={`app-${app.id}`}
                   onClick={() => { router.push(app.href); setAppsDropdownOpen(false); }}
                   className={`ui-dropdown-item ${isPathActive ? 'active' : ''}`}
                 >

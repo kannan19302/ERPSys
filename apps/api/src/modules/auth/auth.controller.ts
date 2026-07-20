@@ -43,6 +43,10 @@ import {
   VerifyEmailInput,
   resendVerificationSchema,
   ResendVerificationInput,
+  sendOtpSchema,
+  verifyOtpSchema,
+  SendOtpInput,
+  VerifyOtpInput,
 } from "@unerp/shared";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
@@ -581,6 +585,34 @@ export class AuthController {
       req.user.tenantId,
       body.challengeToken,
       body.approve,
+    );
+  }
+
+  @ApiOperation({ summary: "Send email OTP verification code" })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Post("send-otp")
+  @HttpCode(HttpStatus.OK)
+  async sendOtp(@Body(new ZodValidationPipe(sendOtpSchema)) dto: SendOtpInput) {
+    return this.authService.sendOtp(dto.email);
+  }
+
+  @ApiOperation({ summary: "Verify email OTP code" })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post("verify-otp")
+  @HttpCode(HttpStatus.OK)
+  async verifyOtp(@Body(new ZodValidationPipe(verifyOtpSchema)) dto: VerifyOtpInput) {
+    return this.authService.verifyOtp(dto.email, dto.code);
+  }
+
+  @ApiOperation({ summary: "Get onboarding status (for mandatory redirect)" })
+  @Permissions("auth.read")
+  @Get("onboarding/status")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  @HttpCode(HttpStatus.OK)
+  async getOnboardingStatus(@Req() req: AuthenticatedRequest) {
+    return this.authService.getOnboardingStatus(
+      req.user.tenantId,
+      req.user.userId,
     );
   }
 }

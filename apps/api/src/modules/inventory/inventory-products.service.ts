@@ -242,7 +242,7 @@ export class InventoryProductsService {
         tenantId,
         orgId: resolvedOrgId,
         name: dto.name,
-        slug: dto.slug,
+        slug: dto.slug!,
         description: dto.description,
         parentId: dto.parentId,
         imageUrl: dto.imageUrl,

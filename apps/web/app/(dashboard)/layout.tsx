@@ -422,7 +422,11 @@ export default function DashboardLayout({
         if (!mounted) return;
         setInstalledApps(installedList);
         const activeSegment = pathname.split("/")[1];
-        const segmentToSlug: Record<string, string> = {
+        // Segment -> slug map is sourced from the API (single source of truth in
+        // apps/api/src/common/app-slug-map.ts) instead of being hardcoded here.
+        // Fall back to a static copy if the fetch hasn't resolved yet / fails, so
+        // route gating behavior is unaffected on first paint.
+        let segmentToSlug: Record<string, string> = {
           education: "education",
           "real-estate": "real-estate",
           "field-service": "field-service",
@@ -441,7 +445,26 @@ export default function DashboardLayout({
           connect: "communication",
           communication: "communication",
           pos: "pos",
+          builder: "builder",
+          ecommerce: "ecommerce",
+          ai: "ai",
         };
+        try {
+          const slugMap = await client.get<{
+            gatedModules?: { slug: string; segments: string[] }[];
+            industryAppSlugs?: string[];
+          }>("/admin/marketplace/slug-map");
+          if (mounted && slugMap) {
+            const fetched: Record<string, string> = {};
+            for (const slug of slugMap.industryAppSlugs || [])
+              fetched[slug] = slug;
+            for (const m of slugMap.gatedModules || [])
+              for (const seg of m.segments) fetched[seg] = m.slug;
+            if (Object.keys(fetched).length) segmentToSlug = fetched;
+          }
+        } catch {
+          // keep the static fallback above
+        }
         const guardedSlug = activeSegment
           ? segmentToSlug[activeSegment]
           : undefined;

@@ -16,7 +16,7 @@ import {
   updateFixedAssetSchema,
   transferFixedAssetSchema,
   logFixedAssetMaintenanceSchema,
-} from '@unerp/shared';
+} from './fixed-assets.dtos';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { z } from 'zod';
 

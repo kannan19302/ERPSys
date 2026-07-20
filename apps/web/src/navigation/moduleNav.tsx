@@ -1,22 +1,59 @@
 import React from 'react';
 import {
   Activity, Award, BarChart3, Bell, BookOpen, Box, Brain, Briefcase, Building, Building2,
-  Calendar, CalendarDays, CheckSquare, ClipboardCheck, ClipboardList, Clock, Cloud,
-  Code2, Coffee, Cpu, CreditCard, Database, DollarSign, Download, ExternalLink, Eye,
+  Calendar, CalendarDays, CheckSquare, ClipboardCheck, ClipboardList, Clock,
+  Code2, Coffee, Cpu, CreditCard, Database, DollarSign, ExternalLink, Eye,
   FileCode2, FileSliders, FileText, FolderOpen, GitFork, Globe, GraduationCap, Hammer,
   HardDrive, HelpCircle, History, Home, Image, Inbox, Key, Layers, LayoutDashboard,
   LayoutGrid, Mail, MapPin, MessageSquare, Monitor, Package, Percent, PieChart, Play,
   Plug, QrCode, Receipt, RefreshCw, Scale, Send, Server, Settings, Shield, ShieldAlert,
   ShieldCheck, ShoppingCart, Smartphone, Smile, Star, Store, Target, Trash2, TrendingUp, Truck,
-  Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse, Webhook,
+  Upload, User as UserIcon, UserMinus, UserPlus, Users, Video, Wallet, Warehouse,
   Workflow, Wrench, Zap, Link, GitBranch, Calculator, AlertTriangle, Phone, RotateCcw,
 } from 'lucide-react';
 import type { SidebarItem } from './types';
+import { getModuleDescriptor } from '@unerp/shared/module-registry';
+import type { NavItem as DescriptorNavItem } from '@unerp/shared/module-registry';
+import { resolveIcon } from './iconMap';
+import './descriptors';
+
+/** Reads the same `localStorage` shape the legacy `/settings` branch checks,
+ * so descriptor `visibility` predicates get an equivalent context. */
+function readNavContext(): { role: string; isSuperAdmin: boolean; installedSlugs: string[] } {
+  const userJson = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  let role = '';
+  let isSuperAdmin = false;
+  if (userJson) {
+    try {
+      const u = JSON.parse(userJson);
+      role = u.role || '';
+      isSuperAdmin = u.role === 'SUPER_ADMIN' || u.email === 'admin@uni-erp.com';
+    } catch { /* ignore malformed cached user */ }
+  }
+  return { role, isSuperAdmin, installedSlugs: [] };
+}
+
+/** Converts a framework-agnostic descriptor `NavItem` (string icon name) into
+ * the `SidebarItem` shape the sidebar renderer expects (icon component). */
+function toSidebarItems(items: DescriptorNavItem[]): SidebarItem[] {
+  return items.map((item) => ({
+    name: item.label,
+    href: item.href,
+    icon: item.icon ? resolveIcon(item.icon) : undefined,
+    isHeader: item.isHeader,
+    items: item.items ? toSidebarItems(item.items) : undefined,
+  }));
+}
 
 /**
  * Returns the sidebar navigation for the module owning the given pathname.
  * Lifted verbatim from the former monolithic dashboard layout so behaviour is
  * unchanged. The return type is `ModuleNav`.
+ *
+ * Resolution order: the data-driven `AppModuleDescriptor` registry
+ * (`@unerp/shared/module-registry`) is tried first; any module not yet
+ * migrated off the legacy branch chain below falls back to its hardcoded
+ * branch exactly as before.
  */
 export const getAppSpecificNavigation = (pathname: string): { title: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; items: SidebarItem[] } => {
   let effectivePathname = pathname;
@@ -24,6 +61,23 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
     const parts = pathname.split('/');
     if (parts[2]) {
       effectivePathname = '/' + parts[2];
+    }
+  }
+
+  const routeSegment = effectivePathname.split('/').filter(Boolean)[0];
+  if (routeSegment) {
+    const descriptor = getModuleDescriptor(routeSegment);
+    if (descriptor) {
+      const ctx = readNavContext();
+      const isVisible = !descriptor.visibility || descriptor.visibility(ctx);
+      if (isVisible) {
+        const navItems = typeof descriptor.nav === 'function' ? descriptor.nav(ctx) : descriptor.nav;
+        return {
+          title: descriptor.title,
+          icon: resolveIcon(descriptor.icon),
+          items: toSidebarItems(navItems),
+        };
+      }
     }
   }
 
@@ -775,85 +829,85 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
     }
 
     const items: SidebarItem[] = [
-      { name: 'Dashboard', href: '/settings', icon: Home },
+      { name: 'Dashboard', href: '/saas/portal', icon: Home },
       {
         name: 'Identity & Access',
         isHeader: true,
         items: [
-          { name: 'Identity & Access Hub', href: '/settings/identity-access', icon: Users },
-          { name: 'Permissions Matrix', href: '/settings/access-control/matrix', icon: LayoutGrid },
-          { name: 'Login impersonation', href: '/settings/impersonate', icon: UserIcon },
-          { name: 'Delegations & OOO', href: '/settings/delegations', icon: Users },
+          { name: 'Identity & Access Hub', href: '/saas/security', icon: Users },
+          { name: 'Permissions Matrix', href: '/saas/security?tab=permissions', icon: LayoutGrid },
+          { name: 'Login impersonation', href: '/saas/security?tab=impersonate', icon: UserIcon },
+          { name: 'Delegations & OOO', href: '/saas/security?tab=delegations', icon: Users },
         ]
       },
       {
         name: 'Security & Compliance',
         isHeader: true,
         items: [
-          { name: 'Security Policies Hub', href: '/settings/security-policies', icon: ShieldAlert },
-          { name: 'Compliance & Governance Hub', href: '/settings/compliance-governance', icon: ShieldCheck },
+          { name: 'Security Policies Hub', href: '/saas/security', icon: ShieldAlert },
+          { name: 'Compliance & Governance Hub', href: '/saas/compliance', icon: ShieldCheck },
         ]
       },
       {
         name: 'Automation & Workflows',
         isHeader: true,
         items: [
-          { name: 'Approval Operations Hub', href: '/settings/approval-operations', icon: CheckSquare },
-          { name: 'Workflow Builder Hub', href: '/settings/workflow-builder', icon: GitFork },
-          { name: 'Automation Rules', href: '/settings/automation-rules', icon: Zap },
+          { name: 'Approval Operations Hub', href: '/workflows', icon: CheckSquare },
+          { name: 'Workflow Builder Hub', href: '/builder/erp/workflows', icon: GitFork },
+          { name: 'Automation Rules', href: '/saas/admin?tab=automation', icon: Zap },
         ]
       },
       {
         name: 'Branding & Communication',
         isHeader: true,
         items: [
-          { name: 'Branding & Communication Hub', href: '/settings/branding-communication', icon: Image },
+          { name: 'Branding & Communication Hub', href: '/saas/settings?tab=branding', icon: Image },
         ]
       },
       {
         name: 'System Operations',
         isHeader: true,
         items: [
-          { name: 'System Operations Hub', href: '/settings/system-operations', icon: Activity },
-          { name: 'Backup & Restore', href: '/settings/backups', icon: Database },
-          { name: 'DB Schema Manager', href: '/settings/db-schema', icon: Database },
-          { name: 'Bulk Operations', href: '/settings/bulk-operations', icon: Layers },
+          { name: 'System Operations Hub', href: '/saas/admin', icon: Activity },
+          { name: 'Backup & Restore', href: '/saas/admin?tab=backups', icon: Database },
+          { name: 'DB Schema Manager', href: '/saas/admin?tab=db', icon: Database },
+          { name: 'Bulk Operations', href: '/saas/admin?tab=bulk', icon: Layers },
         ]
       },
       {
         name: 'Platform Configuration',
         isHeader: true,
         items: [
-          { name: 'General & Branding Hub', href: '/settings/general-branding', icon: Settings },
-          { name: 'Integrations Settings', href: '/settings/integrations', icon: Plug },
-          { name: 'Module Manager', href: '/settings/modules', icon: Settings },
-          { name: 'Custom Domains', href: '/settings/domains', icon: Globe },
-          { name: 'Environment Manager', href: '/settings/environments', icon: Server },
-          { name: 'System Updates', href: '/settings/updates', icon: Cpu },
-          { name: 'Marketplace', href: '/settings/marketplace', icon: Box },
-          { name: 'Subscription & Billing', href: '/settings/subscription', icon: CreditCard },
-          { name: 'Organization Hierarchy', href: '/settings/org-hierarchy', icon: Building },
+          { name: 'General & Branding Hub', href: '/saas/settings?tab=branding', icon: Settings },
+          { name: 'Integrations Settings', href: '/saas/settings?tab=integrations', icon: Plug },
+          { name: 'Module Manager', href: '/apps/store', icon: Settings },
+          { name: 'Custom Domains', href: '/saas/settings?tab=domains', icon: Globe },
+          { name: 'Environment Manager', href: '/saas/admin?tab=environments', icon: Server },
+          { name: 'System Updates', href: '/saas/admin?tab=updates', icon: Cpu },
+          { name: 'Marketplace', href: '/apps/store', icon: Box },
+          { name: 'Subscription & Billing', href: '/saas/billing', icon: CreditCard },
+          { name: 'Organization Hierarchy', href: '/saas/team/org-hierarchy', icon: Building },
         ]
       },
       {
         name: 'Data & Integration',
         isHeader: true,
         items: [
-          { name: 'API Platform Hub', href: '/settings/api-platform', icon: Key },
-          { name: 'Import / Export Hub', href: '/settings/import-export', icon: Upload },
-          { name: 'i18n Localization', href: '/settings/localization', icon: Globe },
-          { name: 'DevOps & Telemetry', href: '/settings/devops', icon: Server },
-          { name: 'Data Quality', href: '/settings/data-quality', icon: ShieldCheck },
+          { name: 'API Platform Hub', href: '/saas/api-keys', icon: Key },
+          { name: 'Import / Export Hub', href: '/saas/exports', icon: Upload },
+          { name: 'i18n Localization', href: '/saas/settings?tab=localization', icon: Globe },
+          { name: 'DevOps & Telemetry', href: '/saas/admin?tab=devops', icon: Server },
+          { name: 'Data Quality', href: '/saas/admin?tab=data-quality', icon: ShieldCheck },
         ]
       },
       {
         name: 'Reports',
         isHeader: true,
         items: [
-          { name: 'Scheduled Reports', href: '/settings/scheduled-reports', icon: FileText },
-          { name: 'Activity Feed', href: '/settings/activity-feed', icon: Activity },
-          { name: 'Notification Prefs', href: '/settings/notifications', icon: Bell },
-          { name: 'Tenant Usage Analytics', href: '/settings/tenant-analytics', icon: BarChart3 },
+          { name: 'Scheduled Reports', href: '/saas/admin?tab=reports', icon: FileText },
+          { name: 'Activity Feed', href: '/saas/admin?tab=activity', icon: Activity },
+          { name: 'Notification Prefs', href: '/saas/settings?tab=notifications', icon: Bell },
+          { name: 'Tenant Usage Analytics', href: '/saas/admin?tab=analytics', icon: BarChart3 },
         ]
       }
     ];
@@ -889,15 +943,9 @@ export const getAppSpecificNavigation = (pathname: string): { title: string; ico
       ]
     };
   }
-  if (pathname.startsWith('/saas')) {
-    return {
-      title: 'SaaS Portal',
-      icon: Cloud,
-      items: [
-        { name: 'Subscription Plans', href: '/saas/portal', icon: Cloud }
-      ]
-    };
-  }
+  // `/saas` is migrated to the AppModuleDescriptor registry — see
+  // apps/web/src/navigation/descriptors/saasPortal.ts. No legacy branch here;
+  // the registry lookup above handles it.
   if (pathname.startsWith('/builder')) {
     return {
       title: 'Studio',

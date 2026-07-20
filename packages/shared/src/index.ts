@@ -9,3 +9,5 @@ export * from './permissions/registry.js';
 export * from './contracts/index.js';
 export * from './numbering/index.js';
 export * from './outbox/index.js';
+export * from './module-registry/index.js';
+export * from './inventory/index.js';

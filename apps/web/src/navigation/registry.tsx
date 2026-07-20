@@ -43,6 +43,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   'field-service': 'Field Service',
   saas: 'SaaS',
   security: 'Security',
+  'org-hierarchy': 'Org Hierarchy',
+  delegations: 'Delegations',
   'security-policies': 'Security Policies',
   'compliance-governance': 'Compliance & Governance',
   'approval-operations': 'Approval Operations',
@@ -329,6 +331,7 @@ export const formatSegment = (segment: string): string => {
 /**
  * Every top-level application known to the shell. `installed: false` apps are
  * industry modules that only appear in the switcher once installed for a tenant.
+ * IDs must match the canonical app slug taxonomy (app-slug-map.ts / KERNEL_SLUGS).
  */
 export const allApplications: AppDefinition[] = [
   { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: Home, installed: true },
@@ -350,8 +353,7 @@ export const allApplications: AppDefinition[] = [
   { id: 'education', name: 'Education Module', href: '/education', icon: GraduationCap, installed: false },
   { id: 'real-estate', name: 'Real Estate Module', href: '/real-estate', icon: Building2, installed: false },
   { id: 'field-service', name: 'Field Service Module', href: '/field-service', icon: Wrench, installed: false },
-  { id: 'api-keys', name: 'API Platform', href: '/settings/api-keys', icon: Key, installed: true },
-  { id: 'saas', name: 'SaaS Portal', href: '/saas/portal', icon: Cloud, installed: true },
+  { id: 'saas-portal', name: 'SaaS Portal', href: '/saas/portal', icon: Cloud, installed: true },
   { id: 'app-store', name: 'App Store', href: '/apps/store', icon: ShoppingBag, installed: true },
   { id: 'builder', name: 'Studio', href: '/builder', icon: Cpu, installed: true },
 ];
@@ -361,12 +363,16 @@ export const switcherFolders: SwitcherFolder[] = [
     id: 'developer',
     name: 'Developer',
     color: '#334155',
-    appIds: ['api-keys', 'app-store', 'builder', 'saas'],
+    appIds: ['app-store', 'builder'],
   },
 ];
 
 /**
  * Kernel apps are always present (never uninstallable); every other app shows
- * only when it's installed for the tenant.
+ * only when it's installed for the tenant. Mirrors KERNEL_SLUGS in
+ * apps/api/src/common/module-tiers.ts — only `saas-portal` and `app-store` are
+ * permanently available so users always have an admin surface to re-install
+ * everything else. This is the single frontend source of truth; the API's
+ * module-tiers.ts is the backend source. Both must stay in sync.
  */
-export const KERNEL_APP_IDS = new Set(['dashboard', 'api-keys', 'saas', 'app-store', 'builder', 'ai']);
+export const KERNEL_APP_IDS = new Set(['saas-portal', 'app-store']);

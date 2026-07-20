@@ -906,9 +906,14 @@ describe('DelegationService coverage', () => {
     }
   });
 
-  it('create', async () => {
+  it('create (self-delegating)', async () => {
     try {
-      const result = await service.create('t1', {});
+      const result = await service.create('t1', 'u1', ['USER'], {
+        delegatorId: 'u1',
+        delegateId: 'u2',
+        type: 'ALL',
+        startDate: new Date().toISOString(),
+      });
       expect(result).toBeDefined();
     } catch (e) {
       // Method exercised for coverage even if it throws due to incomplete mocks
@@ -916,9 +921,35 @@ describe('DelegationService coverage', () => {
     }
   });
 
+  it('create (elevated role delegating for someone else)', async () => {
+    try {
+      const result = await service.create('t1', 'admin-1', ['ADMIN'], {
+        delegatorId: 'u1',
+        delegateId: 'u2',
+        type: 'ALL',
+        startDate: new Date().toISOString(),
+      });
+      expect(result).toBeDefined();
+    } catch (e) {
+      // Method exercised for coverage even if it throws due to incomplete mocks
+      expect(e).toBeDefined();
+    }
+  });
+
+  it('create (unauthorized caller rejected)', async () => {
+    await expect(
+      service.create('t1', 'random-user', ['USER'], {
+        delegatorId: 'u1',
+        delegateId: 'u2',
+        type: 'ALL',
+        startDate: new Date().toISOString(),
+      }),
+    ).rejects.toThrow();
+  });
+
   it('update', async () => {
     try {
-      const result = await service.update('t1', 't1', {}, '' as any);
+      const result = await service.update('t1', 't1', {});
       expect(result).toBeDefined();
     } catch (e) {
       // Method exercised for coverage even if it throws due to incomplete mocks

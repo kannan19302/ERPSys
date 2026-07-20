@@ -2146,12 +2146,12 @@ export class InventoryService {
         warehouseId: dto.warehouseId,
         dockDoor: dto.dockDoor,
         type: dto.type,
-        carrierName: dto.carrierName,
-        referenceType: dto.referenceType,
-        referenceId: dto.referenceId,
+        carrierName: dto.carrierName ?? '',
+        referenceType: dto.referenceType ?? null,
+        referenceId: dto.referenceId ?? null,
         scheduledAt,
         durationMinutes: dto.durationMinutes,
-        notes: dto.notes,
+        notes: dto.notes ?? null,
         status: 'SCHEDULED',
       },
     });
@@ -2172,7 +2172,14 @@ export class InventoryService {
 
     return prisma.dockAppointment.update({
       where: { id },
-      data: { ...dto, scheduledAt, durationMinutes, dockDoor, warehouseId },
+      data: {
+        scheduledAt, durationMinutes, dockDoor, warehouseId,
+        ...(dto.type !== undefined ? { type: dto.type } : {}),
+        ...(dto.carrierName !== undefined ? { carrierName: dto.carrierName ?? '' } : {}),
+        ...(dto.referenceType !== undefined ? { referenceType: dto.referenceType } : {}),
+        ...(dto.referenceId !== undefined ? { referenceId: dto.referenceId } : {}),
+        ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+      },
     });
   }
 
@@ -2616,7 +2623,7 @@ export class InventoryService {
       tenantId,
       productId: c.productId,
       quantity: new Prisma.Decimal(c.quantity),
-      sortOrder: c.sortOrder,
+      sortOrder: c.sortOrder ?? 0,
     }));
 
     return prisma.productKit.create({
@@ -2627,7 +2634,7 @@ export class InventoryService {
         name: dto.name,
         description: dto.description,
         sellPrice: new Prisma.Decimal(dto.sellPrice),
-        discount: new Prisma.Decimal(dto.discount),
+        discount: new Prisma.Decimal(dto.discount ?? 0),
         isActive: dto.isActive,
         components: {
           create: comps,

@@ -6,6 +6,7 @@ import { AuditInterceptor } from "./common/interceptors/audit.interceptor";
 import { TenantInterceptor } from "./common/guards/tenant.interceptor";
 import { TenantThrottlerGuard } from "./common/guards/tenant-throttler.guard";
 import { TenantWriteGuard } from "./common/guards/tenant-write.guard";
+import { AppInstalledGuard } from "./common/guards/app-installed.guard";
 import {
   RedisThrottlerStorage,
   InMemoryThrottlerStorage,
@@ -14,7 +15,22 @@ import { HealthController } from "./health.controller";
 import { MetricsController } from "./metrics.controller";
 import { AuthModule } from "./modules/auth/auth.module";
 import { SearchModule } from "./modules/search/search.module";
+// ═══════════════════════════════════════════════════════════════════════════
+// DEPRECATED — Phase 4/6 of the settings→SaaS-Portal migration is complete.
+// All frontend routes for administration/settings have been migrated to
+// `/saas/portal/*`, `/ai/settings`, and per-app `/apps/*/settings` pages.
+// SaasModule/AdminModule are kept only because some backend API consumers
+// (legacy installs, direct API key callers) may still reference old
+// `/api/v1/saas/*` or `/api/v1/admin/*` endpoints. Will be removed in a
+// future cleanup pass once all API callers are migrated to SaaS Portal
+// endpoints. New development: use `SaasPortalModule` instead.
+// ═══════════════════════════════════════════════════════════════════════════
 import { AdminModule } from "./modules/admin/admin.module";
+// ═══════════════════════════════════════════════════════════════════════════
+// DEPRECATED — same as AdminModule above. Frontend fully migrated to
+// SaasPortalModule. Kept for legacy API backward compatibility only.
+// ═══════════════════════════════════════════════════════════════════════════
+import { SaasModule } from "./modules/saas/saas.module";
 import { FinanceModule } from "./modules/finance/finance.module";
 import { HrModule } from "./modules/hr/hr.module";
 import { CrmModule } from "./modules/crm/crm.module";
@@ -39,7 +55,7 @@ import { ExtGatewayModule } from "./modules/ext-gateway/ext-gateway.module";
 import { LocalizationModule } from "./modules/localization/localization.module";
 import { PwaModule } from "./modules/pwa/pwa.module";
 import { DevopsModule } from "./modules/devops/devops.module";
-import { SaasModule } from "./modules/saas/saas.module";
+import { SaasPortalModule } from "./modules/saas-portal/saas-portal.module";
 import { BuilderModule } from "./modules/builder/builder.module";
 import { CommonModule } from "./common/common.module";
 import { QueueModule } from "./common/queues/queue.module";
@@ -214,6 +230,7 @@ import {
 
     // Phase 20 — SaaS Platform & Billing
     SaasModule,
+    SaasPortalModule,
 
     // Builder Studio
     BuilderModule,
@@ -263,6 +280,10 @@ import {
     // authenticated requests, falls back to IP for unauthenticated. Limits vary
     // by subscription plan (free/starter/business/enterprise).
     { provide: APP_GUARD, useClass: TenantThrottlerGuard },
+    // Phase 1 (install-on-demand): blocks access to installed-app-gated API routes
+    // when the tenant hasn't installed the corresponding app. Runs after the guard
+    // chain has populated request.user. Kernel routes always pass.
+    { provide: APP_INTERCEPTOR, useClass: AppInstalledGuard },
     // Trial/subscription write-lock. Must be an APP_INTERCEPTOR, not an
     // APP_GUARD: all guards (global + per-route) run before any interceptor,
     // so a guard here would run before JwtAuthGuard populates request.user

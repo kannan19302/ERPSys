@@ -29,6 +29,10 @@
     "./logger": {
       "types": "./dist/logger/index.d.ts",
       "default": "./dist/logger/index.js"
+    },
+    "./module-registry": {
+      "types": "./dist/module-registry/index.d.ts",
+      "default": "./dist/module-registry/index.js"
     }
   },
   "scripts": {

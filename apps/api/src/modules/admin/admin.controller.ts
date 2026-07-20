@@ -26,11 +26,13 @@ import {
   updateUserSchema,
   CreateUserInput,
   UpdateUserInput,
+} from "@unerp/shared";
+import {
   createAccessPackageSchema,
   updateAccessPackageSchema,
   CreateAccessPackageInput,
   UpdateAccessPackageInput,
-} from "@unerp/shared";
+} from "./admin.schemas";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {

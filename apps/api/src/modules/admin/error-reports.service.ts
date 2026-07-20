@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { prisma, runWithTenantSession } from '@unerp/database';
-import { ErrorReportInput } from '@unerp/shared';
+import { ErrorReportInput } from './error-reports.schemas';
 
 @Injectable()
 export class ErrorReportsService {

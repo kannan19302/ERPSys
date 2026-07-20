@@ -9,9 +9,12 @@ import { User, UserRole, Role } from "@prisma/client";
 import {
   CreateUserInput,
   UpdateUserInput,
+  PERMISSION_REGISTRY,
+} from "@unerp/shared";
+import {
   CreateAccessPackageInput,
   UpdateAccessPackageInput,
-} from "@unerp/shared";
+} from "./admin.schemas";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
 
@@ -507,6 +510,26 @@ export class AdminService {
 
   // ── Access Packages ──
 
+  /**
+   * Tenant-created access packages/custom roles must never grant a
+   * platform-operator-only permission (e.g. `saas.analytics.read`,
+   * `platform.overview.read` — see PermissionDefinition.platformOnly).
+   * Reject the whole request rather than silently stripping, so callers get
+   * an explicit error instead of a confusing partial grant.
+   */
+  private assertNoPlatformOnlyPermissions(permissions: string[] | undefined) {
+    if (!permissions || permissions.length === 0) return;
+    const platformOnlyCodes = new Set(
+      PERMISSION_REGISTRY.filter((p) => p.platformOnly).map((p) => p.code),
+    );
+    const rejected = permissions.filter((code) => platformOnlyCodes.has(code));
+    if (rejected.length > 0) {
+      throw new BadRequestException(
+        `Permission(s) not assignable to tenant access packages: ${rejected.join(", ")}`,
+      );
+    }
+  }
+
   async getAccessPackages(tenantId: string) {
     return prisma.accessPackage.findMany({
       where: { tenantId },
@@ -516,6 +539,7 @@ export class AdminService {
   }
 
   async createAccessPackage(tenantId: string, dto: CreateAccessPackageInput) {
+    this.assertNoPlatformOnlyPermissions(dto.permissions);
     return prisma.accessPackage.create({
       data: {
         tenantId,
@@ -537,6 +561,7 @@ export class AdminService {
       where: { id, tenantId },
     });
     if (!pkg) throw new NotFoundException("Access package not found");
+    this.assertNoPlatformOnlyPermissions(dto.permissions);
 
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name;

@@ -280,7 +280,7 @@ export class CrmMarketingService {
         columns: dto.columns as Prisma.InputJsonValue,
         chartType: dto.chartType || null,
         isShared: dto.isShared || false,
-        schedule: dto.schedule || null,
+        schedule: (dto.schedule as string | null) ?? null,
         createdBy,
       },
     });

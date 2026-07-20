@@ -33,22 +33,26 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
   const searchParams = useSearchParams();
   const enhancedItems = useResolvedNav(appNav, pathname);
 
-  const renderItem = (item: SidebarItem, isSub = false) => {
+  const renderItem = (item: SidebarItem, isSub = false, index = 0) => {
+    // `name` alone isn't unique across modules (e.g. two different sections
+    // both titled "Overview"/"Settings") — key off `href` when present, and
+    // fall back to a position-qualified key for header groups, which have none.
+    const itemKey = item.href ?? `header-${item.name}-${index}`;
     if (item.isHeader) {
       if (collapsed) {
         return (
-          <React.Fragment key={item.name}>
+          <React.Fragment key={itemKey}>
             <div className={styles.subHeaderDivider} />
-            {item.items?.map(sub => renderItem(sub, true))}
+            {item.items?.map((sub, subIdx) => renderItem(sub, true, subIdx))}
           </React.Fragment>
         );
       }
       return (
-        <div key={item.name} className={styles.subHeader}>
+        <div key={itemKey} className={styles.subHeader}>
           <div className={styles.subHeaderTitle}>
             {item.name}
           </div>
-          {item.items?.map(sub => renderItem(sub, true))}
+          {item.items?.map((sub, subIdx) => renderItem(sub, true, subIdx))}
         </div>
       );
     }
@@ -86,7 +90,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
 
     return (
       <Link
-        key={item.name}
+        key={itemKey}
         href={href}
         // The "(i) what does this do?" affordance: explicit description when the
         // nav registry provides one; the item name when collapsed to icon-only.
@@ -113,7 +117,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
 
   return (
     <>
-      {enhancedItems.map(item => renderItem(item))}
+      {enhancedItems.map((item, idx) => renderItem(item, false, idx))}
     </>
   );
 }

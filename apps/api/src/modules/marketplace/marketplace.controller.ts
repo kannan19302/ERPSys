@@ -8,6 +8,7 @@ import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
 import { MarketplaceService } from './marketplace.service';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { KERNEL_SLUGS, INSTALLABLE_SLUGS, CORE_INSTALLABLE_SLUGS, KNOWN_INDUSTRY_APP_SLUGS, GATED_MODULES } from '../../common/app-slug-map';
 
 interface AuthenticatedRequest extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[]; name?: string };
@@ -20,6 +21,29 @@ interface AuthenticatedRequest extends Request {
 @UseInterceptors(TenantInterceptor)
 export class MarketplaceController {
   constructor(private readonly marketplaceService: MarketplaceService) {}
+
+  // ─── Slug map (single source of truth for kernel/installable app slugs) ───
+
+  /**
+   * Static, tenant-independent config — no permission bar beyond being an
+   * authenticated tenant user, since every dashboard page (nav gating, route
+   * guard) needs it, not just platform admins. Intentionally omits
+   * @Permissions() so RbacGuard's "no required permissions" fallthrough
+   * applies; JwtAuthGuard still enforces authentication.
+   */
+  @ApiOperation({ summary: 'Get kernel/installable app slug map' })
+  @Get('slug-map')
+  getSlugMap() {
+    return {
+      kernelSlugs: Array.from(KERNEL_SLUGS),
+      installableSlugs: [...INSTALLABLE_SLUGS],
+      coreInstallableSlugs: [...CORE_INSTALLABLE_SLUGS],
+      industryAppSlugs: [...KNOWN_INDUSTRY_APP_SLUGS],
+      // Segment -> slug mapping for gated core modules whose URL segment(s) differ from
+      // their canonical slug (e.g. Connect served under /connect maps to slug "communication").
+      gatedModules: GATED_MODULES,
+    };
+  }
 
   // ─── App Browsing ───
 

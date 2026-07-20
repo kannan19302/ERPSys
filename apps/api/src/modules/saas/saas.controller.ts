@@ -6,6 +6,7 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { SaasService } from "./saas.service";
+import { StorageMeteringService } from "./storage-metering.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {
@@ -21,7 +22,10 @@ interface AuthenticatedRequest extends Request {
 @ApiBearerAuth()
 @Controller("saas")
 export class SaasController {
-  constructor(private readonly saasService: SaasService) {}
+  constructor(
+    private readonly saasService: SaasService,
+    private readonly storageMetering: StorageMeteringService,
+  ) {}
 
   @ApiOperation({ summary: "Get plans" })
   @Permissions("saas.read")
@@ -106,5 +110,23 @@ export class SaasController {
   @UseGuards(JwtAuthGuard, RbacGuard)
   async createCoupon(@ZodBody(z.any()) body: any) {
     return this.saasService.createCoupon(body);
+  }
+
+  // ─── Storage Metering ───
+
+  @ApiOperation({ summary: "Get per-app storage usage" })
+  @Permissions("saas.read")
+  @Get("storage-usage")
+  @UseGuards(JwtAuthGuard)
+  async getStorageUsage(@Req() req: AuthenticatedRequest) {
+    return this.storageMetering.getTenantUsage(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: "Recompute storage usage now" })
+  @Permissions("saas.create")
+  @Post("storage-usage/recompute")
+  @UseGuards(JwtAuthGuard)
+  async recomputeStorage(@Req() req: AuthenticatedRequest) {
+    return this.storageMetering.recomputeTenant(req.user.tenantId);
   }
 }

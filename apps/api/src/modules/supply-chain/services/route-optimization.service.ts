@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-interface Stop {
+export interface Stop {
   id: string;
   name: string;
   lat: number;
@@ -8,7 +8,7 @@ interface Stop {
   priority?: number;
 }
 
-interface RouteResult {
+export interface RouteResult {
   orderedStops: Stop[];
   totalDistance: number;
   estimatedDuration: number;
@@ -65,7 +65,7 @@ export class RouteOptimizationService {
     };
   }
 
-  private haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
     const R = 6371; // km
     const dLat = this.toRad(lat2 - lat1);
     const dLng = this.toRad(lng2 - lng1);

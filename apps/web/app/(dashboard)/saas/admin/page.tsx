@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, PageHeader, DataTable } from "@unerp/ui";
 import {
   DollarSign,
@@ -33,6 +33,15 @@ export default function SaasAdminDashboard() {
   const client = useApiClient();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [overview, setOverview] = useState<{
+    activeTenants: number;
+    totalSubscriptions: number;
+    newTenantsThisMonth: number;
+    totalRevenue: number;
+    mrr: number;
+    arr: number;
+    growth: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Form states for Plan Creation
@@ -53,12 +62,24 @@ export default function SaasAdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [plansRes, couponsRes] = await Promise.all([
+      const [plansRes, couponsRes, overviewRes] = await Promise.all([
         client.get<Plan[]>("/saas/plans").catch(() => []),
         client.get<Coupon[]>("/saas/coupons").catch(() => []),
+        client.get<any>("/saas/admin/overview").catch(() => null),
       ]);
       setPlans(plansRes || []);
       setCoupons(couponsRes || []);
+      if (overviewRes) {
+        setOverview({
+          activeTenants: overviewRes.activeTenants ?? 0,
+          totalSubscriptions: overviewRes.totalSubscriptions ?? 0,
+          newTenantsThisMonth: overviewRes.newTenantsThisMonth ?? 0,
+          totalRevenue: overviewRes.totalRevenue ?? 0,
+          mrr: overviewRes.mrr ?? 0,
+          arr: overviewRes.arr ?? 0,
+          growth: overviewRes.growth ?? 0,
+        });
+      }
     } catch (err) {
       console.error("Failed to load admin billing data", err);
     } finally {
@@ -103,20 +124,12 @@ export default function SaasAdminDashboard() {
     }
   };
 
-  // Mock SaaS Metrics
-  const metrics = useMemo(() => {
-    const activeCount = 142; // Simulated
-    const mrr = activeCount * 49.0;
-    const arr = mrr * 12;
-    const churn = 2.4;
-
-    return {
-      activeSubscriptions: activeCount,
-      mrr,
-      arr,
-      churn,
-    };
-  }, []);
+  const metrics = {
+    activeSubscriptions: overview?.activeTenants ?? 0,
+    mrr: overview?.mrr ?? 0,
+    arr: overview?.arr ?? 0,
+    churn: 0,
+  };
 
   return (
     <RouteGuard permission="saas.subscription.manage">
@@ -240,7 +253,7 @@ export default function SaasAdminDashboard() {
                     color: "var(--color-success)",
                   }}
                 >
-                  +14% this month
+                  {overview ? `+${overview.growth}% this month` : "—"}
                 </span>
               </Card>
 
@@ -289,7 +302,7 @@ export default function SaasAdminDashboard() {
                     color: "var(--color-success)",
                   }}
                 >
-                  +8.2% vs last month
+                  Real-time data
                 </span>
               </Card>
 
@@ -338,7 +351,7 @@ export default function SaasAdminDashboard() {
                     color: "var(--color-text-muted)",
                   }}
                 >
-                  Based on current active user count
+                  Based on active subscription data
                 </span>
               </Card>
 
@@ -381,7 +394,7 @@ export default function SaasAdminDashboard() {
                     color: "var(--color-success)",
                   }}
                 >
-                  -0.5% decrease (good)
+                  Pending calculation
                 </span>
               </Card>
             </div>

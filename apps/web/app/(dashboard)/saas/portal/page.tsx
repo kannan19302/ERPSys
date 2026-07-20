@@ -24,6 +24,16 @@ import {
   CreditCard,
   Building,
   LayoutGrid,
+  FileText,
+  Key,
+  Shield,
+  Headphones,
+  Globe,
+  Webhook,
+  Download,
+  BarChart3,
+  ShoppingBag,
+  ChevronRight,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { InviteTeamSection } from "./InviteTeamSection";
@@ -130,85 +140,34 @@ const FEATURE_MATRIX = [
 /*  API helpers                                                        */
 /* ------------------------------------------------------------------ */
 
-/* ------------------------------------------------------------------ */
-/*  Mock fallbacks                                                     */
-/* ------------------------------------------------------------------ */
+const mapPlan = (p: any, currentPlanId?: string): Plan => ({
+  id: p.id,
+  name: p.name,
+  price: p.price || 0,
+  currency: p.currency || "USD",
+  interval: p.interval || "month",
+  maxUsers: p.maxUsers || 0,
+  maxStorageMb: p.maxStorage || 0,
+  maxApiCalls: p.maxApiCalls || 0,
+  features: Array.isArray(p.features) ? p.features.map((f: any) => typeof f === "string" ? f : f.featureName || f.name || "") : [],
+  isCurrent: p.id === currentPlanId,
+  recommended: false,
+});
 
-const MOCK_PLANS: Plan[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: 29,
-    currency: "USD",
-    interval: "month",
-    maxUsers: 5,
-    maxStorageMb: 1024,
-    maxApiCalls: 5000,
-    features: ["Core Modules", "Email Support", "5 API Keys", "Basic Reports"],
-    isCurrent: false,
-    recommended: false,
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    price: 99,
-    currency: "USD",
-    interval: "month",
-    maxUsers: 50,
-    maxStorageMb: 10240,
-    maxApiCalls: 100000,
-    features: [
-      "All Modules",
-      "Priority Support",
-      "Unlimited API Keys",
-      "Advanced Reporting",
-      "Workflow Engine",
-      "Custom Integrations",
-    ],
-    isCurrent: true,
-    recommended: true,
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: 299,
-    currency: "USD",
-    interval: "month",
-    maxUsers: 500,
-    maxStorageMb: 102400,
-    maxApiCalls: 1000000,
-    features: [
-      "Everything in Growth",
-      "Dedicated Support",
-      "SLA 99.9%",
-      "Custom Branding",
-      "SSO/SAML",
-      "Audit Compliance",
-      "Multi-Region",
-    ],
-    isCurrent: false,
-    recommended: false,
-  },
-];
-
-const MOCK_SUBSCRIPTION: Subscription = {
-  id: "sub-mock",
-  planId: "growth",
-  planName: "Growth",
-  status: "ACTIVE",
-  currentPeriodStart: new Date().toISOString(),
-  currentPeriodEnd: new Date(Date.now() + 30 * 86400000).toISOString(),
-  trialEndsAt: null,
-  price: 99,
-  currency: "USD",
-  interval: "month",
+const mapUsageFromSummary = (summary: any): UsageRecord[] => {
+  if (!summary) return [];
+  const records: UsageRecord[] = [];
+  if (summary.users) {
+    records.push({ metric: "USERS_COUNT", currentValue: summary.users.current || 0, limitValue: summary.users.limit || 1 });
+  }
+  if (summary.storage) {
+    records.push({ metric: "STORAGE_MB", currentValue: summary.storage.current || 0, limitValue: summary.storage.limit || 1 });
+  }
+  if (summary.apiCalls) {
+    records.push({ metric: "API_CALLS_COUNT", currentValue: summary.apiCalls.current || 0, limitValue: summary.apiCalls.limit || 1 });
+  }
+  return records;
 };
-
-const MOCK_USAGE: UsageRecord[] = [
-  { metric: "USERS_COUNT", currentValue: 12, limitValue: 50 },
-  { metric: "STORAGE_MB", currentValue: 2048, limitValue: 10240 },
-  { metric: "API_CALLS_COUNT", currentValue: 45000, limitValue: 100000 },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -238,8 +197,6 @@ const USAGE_META: Record<
 export default function SaasPortalPage() {
   const client = useApiClient();
   const router = useRouter();
-  // Read directly from the URL (no useSearchParams / Suspense boundary
-  // needed) — set by the register page's post-signup redirect here.
   const [isOnboarding, setIsOnboarding] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -247,12 +204,19 @@ export default function SaasPortalPage() {
       new URLSearchParams(window.location.search).get("onboarding") === "1",
     );
   }, []);
-  const [plans, setPlans] = useState<Plan[]>(MOCK_PLANS);
-  const [subscription, setSubscription] = useState<Subscription | null>(
-    MOCK_SUBSCRIPTION,
-  );
-  const [usage, setUsage] = useState<UsageRecord[]>(MOCK_USAGE);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [usage, setUsage] = useState<UsageRecord[]>([]);
+  const [appUsage, setAppUsage] = useState<
+    Array<{ appSlug: string; rowCount: number; estimatedMb: number }>
+  >([]);
+  // Read-only status count for the "Installed Apps" card below — actual
+  // install/uninstall/enable-disable management lives in the App Store
+  // (/apps/store), not here (Phase 4 of the settings-to-SaaS-Portal migration).
+  const [installedAppCount, setInstalledAppCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [showComparison, setShowComparison] = useState(true);
   const [upgradeTarget, setUpgradeTarget] = useState<Plan | null>(null);
   const [upgrading, setUpgrading] = useState(false);
@@ -264,39 +228,64 @@ export default function SaasPortalPage() {
   /* Fetch real data on mount */
   const loadData = useCallback(async () => {
     setLoading(true);
+    setError(false);
     try {
-      const [plansRes, subRes, usageRes] = await Promise.all([
-        client.get<Plan[]>("/saas/plans").catch(() => null),
-        client.get<Subscription>("/saas/subscription").catch(() => null),
-        client.get<UsageRecord[]>("/saas/usage").catch(() => null),
+      const [plansRes, subRes, usageRes, storageRes, installedRes] = await Promise.all([
+        client.get<any[]>("/saas/plans").catch(() => null),
+        client.get<any>("/saas/subscription").catch(() => null),
+        client.get<any>("/saas/usage/current").catch(() => null),
+        client
+          .get<
+            Array<{ appSlug: string; rowCount: number; estimatedBytes: string }>
+          >("/saas/storage-usage")
+          .catch(() => null),
+        client.get<string[]>("/saas/installed-apps").catch(() => null),
       ]);
 
-      if (plansRes && plansRes.length > 0) {
-        const mapped = plansRes.map((p: any) => ({
-          ...p,
-          isCurrent: subRes ? p.id === subRes.planId : false,
-          recommended: subRes ? p.id === subRes.planId : false,
-        }));
-        setPlans(mapped);
-      } else {
-        setPlans(MOCK_PLANS);
+      if (installedRes) {
+        setInstalledAppCount(installedRes.length);
+      }
+
+      if (storageRes && storageRes.length > 0) {
+        setAppUsage(
+          storageRes.map((a: any) => ({
+            appSlug: a.appSlug,
+            rowCount: a.rowCount,
+            estimatedMb: Math.round(
+              Number(a.estimatedBytes) / (1024 * 1024),
+            ),
+          })),
+        );
       }
 
       if (subRes) {
-        setSubscription(subRes);
-      } else {
-        setSubscription(MOCK_SUBSCRIPTION);
+        const mappedSub: Subscription = {
+          id: subRes.id,
+          planId: subRes.planId || subRes.plan?.id || "",
+          planName: subRes.planName || subRes.plan?.name || "Unknown",
+          status: subRes.status || "ACTIVE",
+          currentPeriodStart: subRes.currentPeriodStart || new Date().toISOString(),
+          currentPeriodEnd: subRes.currentPeriodEnd || new Date(Date.now() + 30 * 86400000).toISOString(),
+          trialEndsAt: subRes.trialEndsAt || null,
+          price: subRes.price || subRes.plan?.price || 0,
+          currency: subRes.currency || "USD",
+          interval: subRes.interval || "month",
+        };
+        setSubscription(mappedSub);
+
+        if (plansRes && plansRes.length > 0) {
+          setPlans(plansRes.map((p: any) => mapPlan(p, mappedSub.planId)));
+        }
+      } else if (plansRes && plansRes.length > 0) {
+        setPlans(plansRes.map((p: any) => mapPlan(p)));
       }
 
-      if (usageRes && usageRes.length > 0) {
-        setUsage(usageRes);
-      } else {
-        setUsage(MOCK_USAGE);
+      if (usageRes) {
+        setUsage(mapUsageFromSummary(usageRes));
       }
+      setLastUpdated(new Date());
     } catch {
-      setPlans(MOCK_PLANS);
-      setSubscription(MOCK_SUBSCRIPTION);
-      setUsage(MOCK_USAGE);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -306,12 +295,19 @@ export default function SaasPortalPage() {
     loadData();
   }, [loadData]);
 
+  /* Auto-refresh every 60s */
+  useEffect(() => {
+    if (upgradeTarget) return;
+    const interval = setInterval(loadData, 60000);
+    return () => clearInterval(interval);
+  }, [loadData, upgradeTarget]);
+
   /* Helpers */
   const formatStorage = (mb: number) =>
     mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb} MB`;
   const formatPrice = (p: number) => `$${p}`;
 
-  const currentPlan = plans.find((p) => p.isCurrent) || plans[1];
+  const currentPlan = plans.find((p) => p.isCurrent) || plans[0] || null;
 
   const handleUpgrade = async () => {
     if (!upgradeTarget) return;
@@ -377,6 +373,17 @@ export default function SaasPortalPage() {
     });
   }, [usage]);
 
+  const statusBadge = (status: string) => {
+    const map: Record<string, { label: string; cls: string }> = {
+      ACTIVE: { label: "Active", cls: "ui-badge-success" },
+      TRIAL: { label: "Trial", cls: "ui-badge-warning" },
+      PAST_DUE: { label: "Past Due", cls: "ui-badge-danger" },
+      CANCELLED: { label: "Cancelled", cls: "ui-badge-neutral" },
+    };
+    const s = map[status] || { label: status, cls: "ui-badge-neutral" };
+    return <span className={`ui-badge ${s.cls}`}>{s.label}</span>;
+  };
+
   if (!subscription) {
     return (
       <div className="ui-stack-6">
@@ -388,16 +395,29 @@ export default function SaasPortalPage() {
             { label: "Portal" },
           ]}
         />
-        <Card className={styles.s1}>
-          {loading ? (
-            <span className={styles.s2}>
-              <RefreshCw size={16} className={styles.s3} /> Loading subscription
-              data…
-            </span>
-          ) : (
-            "Could not load your subscription. Please refresh to try again."
-          )}
-        </Card>
+        {loading ? (
+          <Card padding="lg">
+            <div className="ui-stack-4">
+              <div className="ui-skeleton" style={{ height: 24, width: "60%", borderRadius: "var(--radius-md)" }} />
+              <div className="ui-skeleton" style={{ height: 16, width: "40%", borderRadius: "var(--radius-md)" }} />
+              <div className="ui-grid-3" style={{ marginTop: "var(--space-4)" }}>
+                <div className="ui-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
+                <div className="ui-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
+                <div className="ui-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card padding="lg" className={styles.s1}>
+            <div className="ui-stack-4" style={{ alignItems: "center", padding: "var(--space-8) 0" }}>
+              <AlertTriangle size={32} className="ui-text-warning" />
+              <p>Could not load subscription data.</p>
+              <button className="ui-btn ui-btn-primary" onClick={loadData}>
+                <RefreshCw size={14} /> Retry
+              </button>
+            </div>
+          </Card>
+        )}
       </div>
     );
   }
@@ -413,6 +433,54 @@ export default function SaasPortalPage() {
             { label: "Portal" },
           ]}
         />
+
+        {/* Portal Navigation */}
+        <div className={styles.portalNav}>
+          <Link href="/saas/billing" className={styles.portalNavCard}>
+            <CreditCard size={20} />
+            <span>Billing</span>
+          </Link>
+          <Link href="/saas/usage" className={styles.portalNavCard}>
+            <BarChart3 size={20} />
+            <span>Usage</span>
+          </Link>
+          <Link href="/saas/team" className={styles.portalNavCard}>
+            <Users size={20} />
+            <span>Team</span>
+          </Link>
+          <Link href="/saas/api-keys" className={styles.portalNavCard}>
+            <Key size={20} />
+            <span>API Keys</span>
+          </Link>
+          <Link href="/saas/audit-log" className={styles.portalNavCard}>
+            <Shield size={20} />
+            <span>Audit Log</span>
+          </Link>
+          <Link href="/saas/support" className={styles.portalNavCard}>
+            <Headphones size={20} />
+            <span>Support</span>
+          </Link>
+          <Link href="/saas/settings" className={styles.portalNavCard}>
+            <Settings size={20} />
+            <span>Settings</span>
+          </Link>
+          <Link href="/saas/webhooks" className={styles.portalNavCard}>
+            <Webhook size={20} />
+            <span>Webhooks</span>
+          </Link>
+          <Link href="/saas/exports" className={styles.portalNavCard}>
+            <Download size={20} />
+            <span>Exports</span>
+          </Link>
+          <Link href="/saas/addons" className={styles.portalNavCard}>
+            <Package size={20} />
+            <span>Add-ons</span>
+          </Link>
+          <Link href="/saas/admin" className={styles.portalNavCard}>
+            <Building size={20} />
+            <span>Admin</span>
+          </Link>
+        </div>
 
         {isOnboarding && (
           <Card padding="lg">
@@ -441,7 +509,19 @@ export default function SaasPortalPage() {
 
             <OnboardingChecklist variant="full" onDemoDataSeeded={loadData} />
 
-            {isOnboarding && (
+        {/* Last Updated */}
+        {lastUpdated && (
+          <div className="ui-flex-end">
+            <span className="ui-text-xs-muted">
+              Last updated: {lastUpdated.toLocaleTimeString()}{" "}
+              <button onClick={loadData} className="ui-btn-icon" title="Refresh now" style={{ verticalAlign: "middle" }}>
+                <RefreshCw size={12} />
+              </button>
+            </span>
+          </div>
+        )}
+
+        {isOnboarding && (
               <div className="mt-6 pt-6 border-t border-border flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-2">
                 <p className="text-sm text-muted-foreground mb-4">
                   All set? Start using your ERP system now.
@@ -499,19 +579,22 @@ export default function SaasPortalPage() {
               <div className={styles.s9}>
                 <Crown size={18} />
                 <span className={styles.s10}>Current Plan</span>
+                {statusBadge(subscription.status)}
                 {subscription.status === "TRIAL" && (
-                  <span className={styles.s11}>TRIAL</span>
+                  <span className={styles.s11}>{trialDaysLeft}d left</span>
                 )}
               </div>
               <h2 className={styles.s12}>{subscription.planName} Plan</h2>
               <p className={styles.s13}>
                 {formatPrice(subscription.price)}/{subscription.interval} ·
-                Renews on{" "}
-                {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                {subscription.status === "TRIAL" && subscription.trialEndsAt
+                  ? ` Trial ends ${new Date(subscription.trialEndsAt).toLocaleDateString()}`
+                  : ` Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+                }
               </p>
             </div>
             <div className="ui-flex ui-gap-2">
-              <button className={styles.s14}>Manage Billing</button>
+              <Link href="/saas/billing" className={styles.s14}>Manage Billing</Link>
               <button
                 onClick={() =>
                   setUpgradeTarget(
@@ -528,6 +611,72 @@ export default function SaasPortalPage() {
             </div>
           </div>
         </div>
+
+        {/* Quick Actions */}
+        <div className={styles.quickActions}>
+          <Link href="/saas/billing" className={styles.quickActionCard}>
+            <CreditCard size={18} />
+            <div>
+              <span className={styles.quickActionLabel}>Billing & Invoices</span>
+              <span className={styles.quickActionDesc}>View payment history</span>
+            </div>
+          </Link>
+          <Link href="/saas/team" className={styles.quickActionCard}>
+            <UserPlus size={18} />
+            <div>
+              <span className={styles.quickActionLabel}>Invite Team</span>
+              <span className={styles.quickActionDesc}>Add team members</span>
+            </div>
+          </Link>
+          <Link href="/saas/support" className={styles.quickActionCard}>
+            <Headphones size={18} />
+            <div>
+              <span className={styles.quickActionLabel}>Get Support</span>
+              <span className={styles.quickActionDesc}>Open a ticket</span>
+            </div>
+          </Link>
+          <Link href="/saas/api-keys" className={styles.quickActionCard}>
+            <Key size={18} />
+            <div>
+              <span className={styles.quickActionLabel}>API Keys</span>
+              <span className={styles.quickActionDesc}>Manage integrations</span>
+            </div>
+          </Link>
+          <Link href="/saas/settings" className={styles.quickActionCard}>
+            <Settings size={18} />
+            <div>
+              <span className={styles.quickActionLabel}>Settings</span>
+              <span className={styles.quickActionDesc}>Branding & domains</span>
+            </div>
+          </Link>
+          <Link href="/saas/webhooks" className={styles.quickActionCard}>
+            <Webhook size={18} />
+            <div>
+              <span className={styles.quickActionLabel}>Webhooks</span>
+              <span className={styles.quickActionDesc}>Event notifications</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Installed Apps — read-only status; manage installs/uninstalls in the App Store */}
+        <Card padding="lg" className={styles.s1}>
+          <div className="ui-flex-between">
+            <div className="ui-hstack-3">
+              <ShoppingBag size={18} className="ui-text-muted" />
+              <div>
+                <h4 className="ui-heading-md m-0">Installed Apps</h4>
+                <p className="ui-text-xs-muted m-0">
+                  {installedAppCount === null
+                    ? "Loading installed app count…"
+                    : `${installedAppCount} app${installedAppCount === 1 ? "" : "s"} installed on this workspace`}
+                </p>
+              </div>
+            </div>
+            <Link href="/apps/store" className="ui-btn ui-btn-secondary ui-text-sm">
+              Manage in App Store <ChevronRight size={14} />
+            </Link>
+          </div>
+        </Card>
 
         {/* Resource Usage Grid */}
         <h3 className={styles.s16}>Resource Usage Analysis</h3>
@@ -562,6 +711,42 @@ export default function SaasPortalPage() {
             );
           })}
         </div>
+
+        {/* Per-App Storage Breakdown */}
+        {appUsage.length > 0 && (
+          <Card padding="lg" className={styles.s1}>
+            <h4 className="ui-heading-md">Storage by App</h4>
+            <p className="ui-text-xs-muted mb-4">
+              Estimated storage per installed app. Uninstalling an app preserves
+              its data — delete or export records to free space.
+            </p>
+            <div className="ui-stack-2">
+              {appUsage.map((a) => (
+                <div
+                  key={a.appSlug}
+                  className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30"
+                >
+                  <div className="ui-hstack-2">
+                    <HardDrive size={14} className="ui-text-muted" />
+                    <span className="capitalize font-medium">
+                      {a.appSlug}
+                    </span>
+                  </div>
+                  <div className="ui-hstack-3">
+                    <span className="text-xs text-muted-foreground">
+                      {a.rowCount.toLocaleString()} rows
+                    </span>
+                    <span className="font-mono text-sm font-semibold">
+                      {a.estimatedMb >= 1024
+                        ? `${(a.estimatedMb / 1024).toFixed(1)} GB`
+                        : `${a.estimatedMb} MB`}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         <div className={styles.s18}>
           <DashboardChart

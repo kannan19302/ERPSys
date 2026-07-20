@@ -3,9 +3,11 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  Optional,
 } from "@nestjs/common";
 import * as crypto from "node:crypto";
 import { prisma } from "@unerp/database";
+import { StorageMeteringService } from "./storage-metering.service";
 import Stripe from "stripe";
 
 export interface BillingCalculation {
@@ -22,7 +24,10 @@ export class BillingService {
   private readonly usageBuffer = new Map<string, number>();
   private readonly stripe: Stripe | null = null;
 
-  constructor() {
+  constructor(
+    @Optional()
+    private readonly storageMetering?: StorageMeteringService,
+  ) {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (stripeKey) {
       // Initialize Stripe with the standard API version
@@ -256,20 +261,60 @@ export class BillingService {
 
     const userCount = await prisma.user.count({ where: { tenantId } });
 
+    // Real per-app storage data if available; fall back to UsageRecord.
+    let storageCurrent = records.find((r) => r.metric === "STORAGE_MB")
+      ?.currentValue || 0;
+    let appUsage: Array<{
+      appSlug: string;
+      rowCount: number;
+      estimatedBytes: number;
+    }> = [];
+    if (this.storageMetering) {
+      try {
+        const rows = await this.storageMetering.getTenantUsage(tenantId);
+        appUsage = rows as any;
+        const realStorageMb = Math.round(
+          rows.reduce(
+            (sum: number, r: { estimatedBytes: bigint | number }) =>
+              sum + Number(r.estimatedBytes),
+            0,
+          ) /
+            (1024 * 1024),
+        );
+        if (realStorageMb > 0) storageCurrent = realStorageMb;
+      } catch {
+        // Fall back to UsageRecord value
+      }
+    }
+
+    const storageLimit =
+      records.find((r) => r.metric === "STORAGE_MB")?.limitValue ||
+      sub?.plan?.maxStorage ||
+      1024;
+    const overStorageQuota = storageCurrent > storageLimit;
+
     return {
       plan: sub?.plan?.name || "Free",
+      overQuota: overStorageQuota,
       users: {
         current: userCount,
         limit: sub?.plan?.maxUsers || 5,
         pct: Math.round((userCount / (sub?.plan?.maxUsers || 5)) * 100),
       },
       storage: {
-        current:
-          records.find((r) => r.metric === "STORAGE_MB")?.currentValue || 0,
-        limit:
-          records.find((r) => r.metric === "STORAGE_MB")?.limitValue ||
-          sub?.plan?.maxStorage ||
-          1024,
+        current: storageCurrent,
+        limit: storageLimit,
+        pct:
+          storageLimit > 0
+            ? Math.round((storageCurrent / storageLimit) * 100)
+            : 0,
+        perApp: appUsage.map((a) => ({
+          appSlug: a.appSlug,
+          rowCount: a.rowCount,
+          estimatedMb: Math.round(
+            Number(a.estimatedBytes) / (1024 * 1024),
+          ),
+        })),
       },
       metrics: records.map((r) => ({
         metric: r.metric,

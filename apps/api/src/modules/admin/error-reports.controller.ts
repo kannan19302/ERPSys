@@ -1,6 +1,6 @@
 import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { errorReportSchema, ErrorReportInput } from '@unerp/shared';
+import { errorReportSchema, ErrorReportInput } from './error-reports.schemas';
 import { ErrorReportsService } from './error-reports.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 

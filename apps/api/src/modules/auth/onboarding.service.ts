@@ -8,6 +8,7 @@ import {
   onboardingChecklistResponseSchema,
   type OnboardingChecklistResponse,
 } from "@unerp/shared";
+import { INDUSTRY_APP_PRIORITY, DEFAULT_APP_PRIORITY } from "../../common/app-slug-map";
 
 export const ONBOARDING_CHECKLIST_KEYS = [
   "profile",
@@ -28,22 +29,6 @@ export interface OnboardingChecklistState {
   plan: boolean;
   dashboard: boolean;
 }
-
-/**
- * Industry -> app slugs to surface first on the Apps hub (apps.page.tsx sorts
- * everything else alphabetically after these). Slugs match `AppDefinition.id`
- * in apps/web/app/(dashboard)/apps/page.tsx.
- */
-const INDUSTRY_APP_PRIORITY: Record<string, string[]> = {
-  healthcare: ["healthcare", "hr", "inventory", "finance"],
-  education: ["education", "hr", "finance", "crm"],
-  "real-estate": ["real-estate", "finance", "crm", "projects"],
-  manufacturing: ["manufacturing", "inventory", "procurement", "supply-chain"],
-  services: ["projects", "crm", "finance", "hr"],
-  retail: ["pos", "inventory", "crm", "sales"],
-  "field-service": ["field-service", "projects", "inventory", "crm"],
-};
-const DEFAULT_APP_PRIORITY: string[] = ["dashboard", "finance", "crm", "hr"];
 
 /**
  * Industry -> preferred checklist step order. Any key omitted keeps its

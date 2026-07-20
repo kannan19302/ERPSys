@@ -139,20 +139,20 @@ export default function AdminDashboardPage() {
   const s = stats || FALLBACK_STATS;
 
   const quickLinks = [
-    { title: 'Users', href: '/settings/identity-access?tab=users', icon: Users, desc: 'Manage users & invitations', color: 'var(--color-primary)' },
-    { title: 'Roles & Permissions', href: '/settings/identity-access?tab=roles', icon: Shield, desc: 'Configure RBAC policies', color: 'var(--color-success)' },
-    { title: 'Security Policies', href: '/settings/security-policies', icon: Lock, desc: 'SSO, MFA, sessions, audit trail', color: 'var(--color-danger)' },
-    { title: 'Compliance & Governance', href: '/settings/compliance-governance', icon: FileText, desc: 'Compliance, retention, GDPR', color: '#f97316' },
-    { title: 'Approval Operations', href: '/settings/approval-operations', icon: CheckCircle, desc: 'Active approvals & analytics', color: '#8b5cf6' },
-    { title: 'Workflow Builder', href: '/settings/workflow-builder', icon: Workflow, desc: 'Templates, routing, simulator', color: '#a855f7' },
-    { title: 'Branding & Communication', href: '/settings/branding-communication', icon: Bell, desc: 'Login page, SMTP, announcements', color: '#ec4899' },
-    { title: 'System Operations', href: '/settings/system-operations', icon: Server, desc: 'Health, jobs, error logs', color: '#06b6d4' },
-    { title: 'General & Branding', href: '/settings/general-branding', icon: Settings, desc: 'Organization profile, feature flags', color: 'var(--color-text-secondary)' },
-    { title: 'API Platform', href: '/settings/api-platform', icon: Zap, desc: 'Keys, webhooks, OAuth', color: '#d946ef' },
-    { title: 'Import / Export', href: '/settings/import-export', icon: Import, desc: 'Bulk data & sync monitor', color: '#84cc16' },
-    { title: 'Localization', href: '/settings/localization', icon: Globe, desc: 'Languages & date formats', color: 'var(--color-info)' },
-    { title: 'Analytics', href: '/settings/tenant-analytics', icon: BarChart3, desc: 'Tenant usage analytics', color: '#14b8a6' },
-    { title: 'AI Assistant', href: '/settings/ai', icon: Bot, desc: 'Kill switch, model info & engine control', color: '#6366f1' },
+    { title: 'Users', href: '/saas/security?tab=users', icon: Users, desc: 'Manage users & invitations', color: 'var(--color-primary)' },
+    { title: 'Roles & Permissions', href: '/saas/security?tab=roles', icon: Shield, desc: 'Configure RBAC policies', color: 'var(--color-success)' },
+    { title: 'Security Policies', href: '/saas/security', icon: Lock, desc: 'SSO, MFA, sessions, audit trail', color: 'var(--color-danger)' },
+    { title: 'Compliance & Governance', href: '/saas/compliance', icon: FileText, desc: 'Compliance, retention, GDPR', color: '#f97316' },
+    { title: 'Approval Operations', href: '/workflows', icon: CheckCircle, desc: 'Active approvals & analytics', color: '#8b5cf6' },
+    { title: 'Workflow Builder', href: '/builder/erp/workflows', icon: Workflow, desc: 'Templates, routing, simulator', color: '#a855f7' },
+    { title: 'Branding & Communication', href: '/saas/settings?tab=branding', icon: Bell, desc: 'Login page, SMTP, announcements', color: '#ec4899' },
+    { title: 'System Operations', href: '/saas/admin', icon: Server, desc: 'Health, jobs, error logs', color: '#06b6d4' },
+    { title: 'General & Branding', href: '/saas/settings?tab=branding', icon: Settings, desc: 'Organization profile, feature flags', color: 'var(--color-text-secondary)' },
+    { title: 'API Platform', href: '/saas/api-keys', icon: Zap, desc: 'Keys, webhooks, OAuth', color: '#d946ef' },
+    { title: 'Import / Export', href: '/saas/exports', icon: Import, desc: 'Bulk data & sync monitor', color: '#84cc16' },
+    { title: 'Localization', href: '/saas/settings?tab=localization', icon: Globe, desc: 'Languages & date formats', color: 'var(--color-info)' },
+    { title: 'Analytics', href: '/saas/admin?tab=analytics', icon: BarChart3, desc: 'Tenant usage analytics', color: '#14b8a6' },
+    { title: 'AI Assistant', href: '/ai/settings', icon: Bot, desc: 'Kill switch, model info & engine control', color: '#6366f1' },
   ];
 
   const userSegments = [
@@ -210,9 +210,9 @@ export default function AdminDashboardPage() {
     <RouteGuard permission="settings.dashboard.read">
     <div className="ui-stack-6">
       <PageHeader
-        title="Settings"
-        description="System overview, user management, security monitoring, and configuration"
-        breadcrumbs={[{ label: 'Settings' }]}
+        title="Administration"
+        description="SaaS Portal settings — manage users, security, compliance, system health, and platform configuration"
+        breadcrumbs={[{ label: 'Apps', href: '/apps' }, { label: 'SaaS Portal', href: '/saas/portal' }, { label: 'Settings' }]}
       />
 
       {/* KPI Cards Row */}
@@ -224,14 +224,14 @@ export default function AdminDashboardPage() {
           changeLabel="vs last month"
           icon={<Users size={20} />}
           color="var(--color-primary)"
-          onClick={() => window.location.href = '/settings/identity-access?tab=users'}
+          onClick={() => window.location.href = '/saas/security?tab=users'}
         />
         <KPICard
           title="Active Sessions"
           value={s.activeSessions}
           icon={<MonitorSmartphone size={20} />}
           color="var(--color-success)"
-          onClick={() => window.location.href = '/settings/security-policies?tab=sessions'}
+          onClick={() => window.location.href = '/saas/security?tab=sessions'}
         />
         <KPICard
           title="API Requests Today"
@@ -240,14 +240,14 @@ export default function AdminDashboardPage() {
           changeLabel="vs yesterday"
           icon={<Zap size={20} />}
           color="var(--color-info)"
-          onClick={() => window.location.href = '/settings/api-platform?tab=analytics'}
+          onClick={() => window.location.href = '/saas/api-keys?tab=analytics'}
         />
         <KPICard
           title="Failed Logins (24h)"
           value={s.failedLogins24h}
           icon={<AlertTriangle size={20} />}
           color={s.failedLogins24h > 10 ? 'var(--color-danger)' : 'var(--color-warning)'}
-          onClick={() => window.location.href = '/settings/security-policies?tab=login-history'}
+          onClick={() => window.location.href = '/saas/security?tab=login-history'}
         />
       </div>
 
@@ -261,7 +261,7 @@ export default function AdminDashboardPage() {
           <Card padding="none">
             <div className={styles.s6}>
               <h3 className={styles.s7}>Recent Activity</h3>
-              <Link href="/settings/security-policies?tab=audit-trail" className={styles.s8}>
+              <Link href="/saas/security?tab=audit-trail" className={styles.s8}>
                 View all <ArrowRight size={12} />
               </Link>
             </div>
@@ -326,14 +326,14 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <Link href="/settings/system-operations?tab=system-health" className={styles.s21}>
+              <Link href="/saas/admin?tab=system-health" className={styles.s21}>
                 View details <ArrowRight size={12} />
               </Link>
             </div>
           </Card>
 
           {/* AI Assistant (link-out to dedicated admin console) */}
-          <Link href="/settings/ai" className={styles.s22}>
+          <Link href="/ai/settings" className={styles.s22}>
             <Card>
               <div className={styles.s23}>
                 <div className={styles.s24}>
@@ -397,9 +397,9 @@ export default function AdminDashboardPage() {
           <Card>
             <div className="p-4 ui-stack-3">
               <h3 className={styles.s33}>Pending Actions</h3>
-              <PendingItem label="User invitations pending" count={s.pendingInvitations} href="/settings/identity-access?tab=users" color="var(--color-warning)" />
-              <PendingItem label="Failed login attempts" count={s.failedLogins24h} href="/settings/security-policies?tab=login-history" color="var(--color-danger)" />
-              <PendingItem label="Roles configured" count={s.totalRoles} href="/settings/identity-access?tab=roles" color="var(--color-primary)" />
+              <PendingItem label="User invitations pending" count={s.pendingInvitations} href="/saas/security?tab=users" color="var(--color-warning)" />
+              <PendingItem label="Failed login attempts" count={s.failedLogins24h} href="/saas/security?tab=login-history" color="var(--color-danger)" />
+              <PendingItem label="Roles configured" count={s.totalRoles} href="/saas/security?tab=roles" color="var(--color-primary)" />
             </div>
           </Card>
         </div>

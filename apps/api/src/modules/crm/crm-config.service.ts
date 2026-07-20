@@ -38,7 +38,7 @@ export class CrmConfigService {
       data: {
         tenantId, orgId: resolvedOrgId, name: dto.name, type: dto.type,
         fileUrl: dto.fileUrl, fileSize: dto.fileSize || null, mimeType: dto.mimeType || null,
-        entityType: dto.entityType, entityId: dto.entityId, uploadedBy,
+        entityType: dto.entityType!, entityId: dto.entityId!, uploadedBy,
       },
     });
   }

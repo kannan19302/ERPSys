@@ -106,3 +106,88 @@ export const resolveExceptionSchema = z.object({
   resolutionNote: z.string().min(1),
 });
 export type ResolveExceptionDto = z.infer<typeof resolveExceptionSchema>;
+
+// ── Vendor Returns ──
+
+export const createVendorReturnSchema = z.object({
+  rmaRequestId: z.string().min(1),
+  warehouseId: z.string().min(1),
+  shipmentNumber: z.string().min(1),
+  carrier: z.string().optional().nullable(),
+  trackingNumber: z.string().optional().nullable(),
+  creditMemoRef: z.string().optional().nullable(),
+  creditAmount: z.number().positive().optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+export type CreateVendorReturnDto = z.infer<typeof createVendorReturnSchema>;
+
+export const updateVendorReturnStatusSchema = z.object({
+  status: z.enum(['PENDING', 'PACKED', 'SHIPPED', 'DELIVERED', 'LOST']),
+  trackingNumber: z.string().optional().nullable(),
+  creditMemoRef: z.string().optional().nullable(),
+  creditAmount: z.number().positive().optional().nullable(),
+});
+export type UpdateVendorReturnStatusDto = z.infer<typeof updateVendorReturnStatusSchema>;
+
+// ── Cross-Docking ──
+
+export const createCrossDockStationSchema = z.object({
+  warehouseId: z.string().min(1),
+  code: z.string().min(1),
+  name: z.string().min(1),
+  doorNumber: z.string().min(1),
+  isInbound: z.boolean().default(true),
+  isOutbound: z.boolean().default(true),
+  notes: z.string().optional().nullable(),
+});
+export type CreateCrossDockStationDto = z.infer<typeof createCrossDockStationSchema>;
+
+export const createCrossDockOrderSchema = z.object({
+  orderNumber: z.string().min(1),
+  type: z.enum(['OPPORTUNISTIC', 'PLANNED', 'FLOW_THROUGH']).default('OPPORTUNISTIC'),
+  warehouseId: z.string().min(1),
+  stationId: z.string().optional().nullable(),
+  productId: z.string().min(1),
+  expectedQty: z.number().positive(),
+  inboundRef: z.string().optional().nullable(),
+  outboundRef: z.string().optional().nullable(),
+  supplierName: z.string().optional().nullable(),
+  customerName: z.string().optional().nullable(),
+  expectedArrival: z.string().datetime().optional().nullable(),
+  expectedDispatch: z.string().datetime().optional().nullable(),
+});
+export type CreateCrossDockOrderDto = z.infer<typeof createCrossDockOrderSchema>;
+
+export const updateCrossDockOrderStatusSchema = z.object({
+  status: z.enum(['PENDING', 'RECEIVING', 'STAGING', 'DISPATCHED', 'COMPLETED', 'CANCELLED']),
+  receivedQty: z.number().nonnegative().optional().nullable(),
+  dispatchedQty: z.number().nonnegative().optional().nullable(),
+  cancelReason: z.string().optional().nullable(),
+});
+export type UpdateCrossDockOrderStatusDto = z.infer<typeof updateCrossDockOrderStatusSchema>;
+
+// ── Route Optimization ──
+
+export const routeOptimizationStopSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  lat: z.number(),
+  lng: z.number(),
+  priority: z.number().int().min(0).max(100).optional(),
+});
+export type RouteOptimizationStop = z.infer<typeof routeOptimizationStopSchema>;
+
+export const optimizeRouteSchema = z.object({
+  stops: z.array(routeOptimizationStopSchema).min(1),
+  startLat: z.number().optional(),
+  startLng: z.number().optional(),
+});
+export type OptimizeRouteDto = z.infer<typeof optimizeRouteSchema>;
+
+export const routeEstimateSchema = z.object({
+  lat1: z.number(),
+  lng1: z.number(),
+  lat2: z.number(),
+  lng2: z.number(),
+});
+export type RouteEstimateDto = z.infer<typeof routeEstimateSchema>;

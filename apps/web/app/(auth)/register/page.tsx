@@ -31,8 +31,31 @@ import {
   Check,
   Rocket,
   ArrowRight,
+  Package,
+  Users,
+  BarChart3,
+  CreditCard,
+  ShoppingCart,
+  ClipboardList,
+  Truck,
+  Briefcase,
+  Hammer,
+  PieChart,
+  MessageSquare,
+  Store,
+  DollarSign,
+  HardDrive,
+  Cpu,
+  Shield,
+  Target,
+  Factory,
+  HeartPulse,
+  GraduationCap,
+  Building2,
+  Wrench,
+  LayoutGrid,
 } from "lucide-react";
-import { apiGet, apiPost, ApiRequestError } from "../../../src/lib/api";
+import { apiGet, apiPost, apiDelete, ApiRequestError } from "../../../src/lib/api";
 import {
   COUNTRIES,
   CURRENCIES,
@@ -267,6 +290,17 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // App picker state (Phase 3 — install-on-demand)
+  const [showAppPicker, setShowAppPicker] = useState(false);
+  const [pickerApps, setPickerApps] = useState<
+    Array<{ slug: string; name: string; category: string; isKernel: boolean }>
+  >([]);
+  const [selectedPickerApps, setSelectedPickerApps] = useState<Set<string>>(
+    new Set(),
+  );
+  const [pickerInstalling, setPickerInstalling] = useState(false);
+  const [pickerDone, setPickerDone] = useState(false);
+
   // Stash login data from the registration response so we can navigate
   // to the SaaS portal after the user clicks the success-state CTA
   // (instead of auto-redirecting).
@@ -274,6 +308,39 @@ export default function RegisterPage() {
     token: string;
     user: Record<string, unknown>;
   } | null>(null);
+
+  const PICKER_APP_ICONS: Record<string, React.ReactNode> = {
+    dashboard: <LayoutGrid size={24} />,
+    finance: <DollarSign size={24} />,
+    hr: <Users size={24} />,
+    crm: <Target size={24} />,
+    inventory: <Package size={24} />,
+    procurement: <ShoppingCart size={24} />,
+    sales: <ClipboardList size={24} />,
+    "supply-chain": <Truck size={24} />,
+    projects: <Briefcase size={24} />,
+    manufacturing: <Factory size={24} />,
+    analytics: <PieChart size={24} />,
+    drive: <HardDrive size={24} />,
+    communication: <MessageSquare size={24} />,
+    pos: <Store size={24} />,
+    "api-keys": <Cpu size={24} />,
+    saas: <CreditCard size={24} />,
+    admin: <Shield size={24} />,
+    builder: <Sparkles size={24} />,
+    healthcare: <HeartPulse size={24} />,
+    education: <GraduationCap size={24} />,
+    "real-estate": <Building2 size={24} />,
+    "field-service": <Wrench size={24} />,
+  };
+
+  const KERNEL_APP_NAMES: Record<string, string> = {
+    dashboard: "Dashboard",
+    admin: "Admin",
+    builder: "Builder Studio",
+    "api-keys": "API Platform",
+    saas: "SaaS Portal",
+  };
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(password),
@@ -311,6 +378,41 @@ export default function RegisterPage() {
       );
     }
     router.push("/saas/portal?onboarding=1");
+  };
+
+  const handleSaveAppPicker = async () => {
+    setPickerInstalling(true);
+    try {
+      const token = pendingLoginRef.current?.token;
+      if (!token) return;
+      const tokenHeader = { Authorization: `Bearer ${token}` };
+      // Uninstall non-kernel apps the user deselected
+      for (const app of pickerApps) {
+        if (app.isKernel) continue;
+        const isSelected = selectedPickerApps.has(app.slug);
+        try {
+          if (!isSelected) {
+            await apiDelete(`/admin/marketplace/uninstall/${app.slug}`);
+          }
+        } catch {
+          // Best-effort — skip if already uninstalled
+        }
+      }
+      setPickerDone(true);
+    } catch {
+      // Best-effort
+    } finally {
+      setPickerInstalling(false);
+    }
+  };
+
+  const togglePickerApp = (slug: string) => {
+    setSelectedPickerApps((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -573,7 +675,74 @@ export default function RegisterPage() {
         }
       }
 
-      // 4. Show success state instead of auto-redirecting
+      // 4. Fetch slug map and show app picker
+      try {
+        const slugMap = await apiGet<{
+          kernelSlugs: string[];
+          installableSlugs: string[];
+        }>("/admin/marketplace/slug-map");
+        const kernelSet = new Set(slugMap.kernelSlugs || []);
+        const allSlugs = slugMap.installableSlugs || [];
+        // Build a map of all app names
+        const appNames: Record<string, string> = {
+          dashboard: "Dashboard",
+          finance: "Finance & Accounting",
+          hr: "Human Resources",
+          crm: "CRM",
+          inventory: "Inventory & Stock",
+          procurement: "Procurement",
+          sales: "Sales & Orders",
+          "supply-chain": "Supply Chain",
+          projects: "Project Management",
+          manufacturing: "Manufacturing",
+          analytics: "Business Intelligence",
+          drive: "Drive",
+          communication: "Connect",
+          pos: "POS & Retail",
+          "api-keys": "API Platform",
+          saas: "SaaS Portal",
+          admin: "Admin",
+          builder: "Builder Studio",
+          healthcare: "Healthcare",
+          education: "Education",
+          "real-estate": "Real Estate",
+          "field-service": "Field Service",
+        };
+        const apps = allSlugs
+          .filter((s: string) => !kernelSet.has(s))
+          .map((s: string) => ({
+            slug: s,
+            name: appNames[s] || s,
+            category: "",
+            isKernel: false,
+          }));
+        setPickerApps([
+          ...Array.from(kernelSet).map((s: string) => ({
+            slug: s,
+            name: KERNEL_APP_NAMES[s] || appNames[s] || s,
+            category: "Kernel",
+            isKernel: true,
+          })),
+          ...apps,
+        ]);
+        // Pre-select industry-recommended apps
+        const indKey = industry ? industry.toLowerCase() : "";
+        const industryPrio: Record<string, string[]> = {
+          healthcare: ["healthcare", "hr", "inventory", "finance"],
+          education: ["education", "hr", "finance", "crm"],
+          "real-estate": ["real-estate", "finance", "crm", "projects"],
+          manufacturing: ["manufacturing", "inventory", "procurement", "supply-chain"],
+          services: ["projects", "crm", "finance", "hr"],
+          retail: ["pos", "inventory", "crm", "sales"],
+          "field-service": ["field-service", "projects", "inventory", "crm"],
+        };
+        const priority = industryPrio[indKey] || ["finance", "crm", "hr"];
+        setSelectedPickerApps(new Set(priority.filter((s) => allSlugs.includes(s))));
+      } catch {
+        // Non-fatal: show success state without picker
+      }
+      setShowAppPicker(true);
+      // 5. Show success state instead of auto-redirecting
       setProvisioningComplete(true);
       setLoading(false);
     } catch (err: unknown) {
@@ -1238,36 +1407,116 @@ export default function RegisterPage() {
                   Your workspace is ready!
                 </h2>
                 <p className={styles.successDesc}>
-                  <strong>{organizationName}</strong> has been provisioned with
-                  all modules. Your 30-day free trial starts now.
+                  <strong>{organizationName}</strong> has been provisioned. Your
+                  30-day free trial starts now.
                 </p>
-                <div className={styles.successActions}>
-                  <button
-                    onClick={handleGoToWorkspace}
-                    className={`landing-btn-primary auth-btn-submit ${styles.successPrimaryBtn}`}
-                  >
-                    <Rocket size={16} />
-                    Choose a Plan & Set Up
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (pendingLoginRef.current) {
-                        localStorage.setItem(
-                          "token",
-                          pendingLoginRef.current.token,
+
+                {/* App Picker */}
+                {showAppPicker && !pickerDone && (
+                  <div className={styles.pickerSection}>
+                    <h3 className={styles.pickerTitle}>
+                      Choose your apps
+                    </h3>
+                    <p className={styles.pickerSubtitle}>
+                      Kernel apps (always on) · Recommended for your industry
+                      pre-selected · Toggle others as needed
+                    </p>
+                    <div className={styles.pickerGrid}>
+                      {pickerApps.map((app) => {
+                        const isSelected = selectedPickerApps.has(app.slug);
+                        return (
+                          <button
+                            key={app.slug}
+                            type="button"
+                            onClick={() => {
+                              if (!app.isKernel) togglePickerApp(app.slug);
+                            }}
+                            className={`${styles.pickerCard} ${app.isKernel ? styles.pickerCardKernel : ""} ${isSelected && !app.isKernel ? styles.pickerCardSelected : ""}`}
+                            style={{
+                              opacity: app.isKernel ? 0.7 : 1,
+                              cursor: app.isKernel ? "default" : "pointer",
+                            }}
+                          >
+                            <div className={styles.pickerCardIcon}>
+                              {PICKER_APP_ICONS[app.slug] || (
+                                <Package size={24} />
+                              )}
+                            </div>
+                            <span className={styles.pickerCardName}>
+                              {app.name}
+                            </span>
+                            {app.isKernel && (
+                              <span
+                                className={styles.pickerCardBadge}
+                              >
+                                Core
+                              </span>
+                            )}
+                            {!app.isKernel && isSelected && (
+                              <span className={styles.pickerCardCheck}>
+                                <Check size={14} />
+                              </span>
+                            )}
+                          </button>
                         );
-                        localStorage.setItem(
-                          "user",
-                          JSON.stringify(pendingLoginRef.current.user),
-                        );
-                      }
-                      router.push("/apps");
-                    }}
-                    className={styles.successSecondaryBtn}
-                  >
-                    Explore First <ArrowRight size={14} />
-                  </button>
-                </div>
+                      })}
+                    </div>
+                    <div className={styles.pickerActions}>
+                      <button
+                        onClick={handleSaveAppPicker}
+                        disabled={pickerInstalling}
+                        className={`landing-btn-primary auth-btn-submit ${styles.successPrimaryBtn}`}
+                      >
+                        {pickerInstalling ? (
+                          <>
+                            <Spinner size="sm" /> Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Rocket size={16} /> Continue
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setPickerDone(true)}
+                        className={styles.successSecondaryBtn}
+                        style={{ border: "none", background: "none" }}
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {pickerDone && (
+                  <div className={styles.successActions}>
+                    <button
+                      onClick={handleGoToWorkspace}
+                      className={`landing-btn-primary auth-btn-submit ${styles.successPrimaryBtn}`}
+                    >
+                      <Rocket size={16} />
+                      Choose a Plan & Set Up
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (pendingLoginRef.current) {
+                          localStorage.setItem(
+                            "token",
+                            pendingLoginRef.current.token,
+                          );
+                          localStorage.setItem(
+                            "user",
+                            JSON.stringify(pendingLoginRef.current.user),
+                          );
+                        }
+                        router.push("/apps");
+                      }}
+                      className={styles.successSecondaryBtn}
+                    >
+                      Explore First <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

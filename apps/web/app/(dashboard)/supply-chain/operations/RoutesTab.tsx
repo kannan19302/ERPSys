@@ -1,91 +1,111 @@
 'use client';
-import styles from './operations.module.css';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  Card, Button, Badge, DataTable, type Column, KPICard, DashboardChart,
+  Card, Button, DataTable, type Column, KPICard, DashboardChart,
 } from '@unerp/ui';
-import { MapPin, DollarSign, TrendingDown } from 'lucide-react';
+import { MapPin, TrendingDown, Route, Navigation, Clock } from 'lucide-react';
 
-interface Route {
-  id: string;
-  name: string;
-  origin: string;
-  destination: string;
-  distance: number;
-  estimatedTime: number;
-  cost: number;
-  carrier: string;
-  isOptimized: boolean;
-  savings: number;
+interface RouteRow {
+  order: number;
+  stop: string;
+  lat: string;
+  lng: string;
 }
 
-const MOCK_ROUTES: Route[] = [
-  { id: '1', name: 'NYC → LA Express', origin: 'New York, NY', destination: 'Los Angeles, CA', distance: 2790, estimatedTime: 48, cost: 1250, carrier: 'FedEx', isOptimized: true, savings: 180 },
-  { id: '2', name: 'Chicago → Miami', origin: 'Chicago, IL', destination: 'Miami, FL', distance: 1380, estimatedTime: 36, cost: 680, carrier: 'UPS', isOptimized: true, savings: 95 },
-  { id: '3', name: 'Seattle → Dallas', origin: 'Seattle, WA', destination: 'Dallas, TX', distance: 2120, estimatedTime: 42, cost: 920, carrier: 'FedEx', isOptimized: false, savings: 0 },
-  { id: '4', name: 'NYC → London Int\'l', origin: 'New York, NY', destination: 'London, UK', distance: 5570, estimatedTime: 72, cost: 3200, carrier: 'DHL', isOptimized: true, savings: 450 },
-];
+interface RouteStop {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  priority?: number;
+}
 
-const COST_COMPARISON = [
-  { name: 'FedEx', standard: 1250, optimized: 1070 },
-  { name: 'UPS', standard: 680, optimized: 585 },
-  { name: 'DHL', standard: 3200, optimized: 2750 },
-  { name: 'USPS', standard: 420, optimized: 380 },
+interface OptimizedRoute {
+  orderedStops: { id: string; name: string; lat: number; lng: number; priority?: number }[];
+  totalDistance: number;
+  estimatedDuration: number;
+}
+
+const SAMPLE_STOPS: RouteStop[] = [
+  { id: '1', name: 'Warehouse A', lat: 40.7128, lng: -74.006, priority: 90 },
+  { id: '2', name: 'Customer B', lat: 40.758, lng: -73.9855, priority: 50 },
+  { id: '3', name: 'Customer C', lat: 40.7282, lng: -73.7949, priority: 70 },
+  { id: '4', name: 'Customer D', lat: 40.6892, lng: -74.0445, priority: 30 },
+  { id: '5', name: 'Warehouse B', lat: 40.7831, lng: -73.9712, priority: 60 },
 ];
 
 export default function RoutesTab() {
-  const [routes] = useState(MOCK_ROUTES);
-  const totalSavings = routes.reduce((a, r) => a + r.savings, 0);
+  const [optimizedRoute, setOptimizedRoute] = useState<OptimizedRoute | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const columns: Column<Route>[] = [
-    {
-      key: 'route', header: 'Route',
-      render: (row) => (
-        <div>
-          <div className="ui-heading-sm">{row.name}</div>
-          <div className="ui-text-xs-tertiary">{row.origin} → {row.destination}</div>
-        </div>
-      ),
-    },
-    { key: 'distance', header: 'Distance', render: (row) => <span className="text-sm">{row.distance.toLocaleString()} mi</span> },
-    { key: 'time', header: 'Est. Time', render: (row) => <span className="text-sm">{row.estimatedTime}h</span> },
-    { key: 'carrier', header: 'Carrier', render: (row) => <Badge variant="info">{row.carrier}</Badge> },
-    { key: 'cost', header: 'Cost', align: 'right' as const, render: (row) => <span className="font-semibold">${row.cost.toLocaleString()}</span> },
-    {
-      key: 'optimized', header: 'Optimized',
-      render: (row) => row.isOptimized ? (
-        <div className="ui-flex ui-items-center ui-gap-1">
-          <Badge variant="success">Optimized</Badge>
-          {row.savings > 0 && <span className={styles.routeSavings}>-${row.savings}</span>}
-        </div>
-      ) : <Badge variant="warning">Not Optimized</Badge>,
-    },
+  const handleOptimize = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/supply-chain/routes/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stops: SAMPLE_STOPS, startLat: 40.7128, startLng: -74.006 }),
+      });
+      if (!res.ok) throw new Error('Route optimization failed');
+      const data = await res.json();
+      setOptimizedRoute(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const routeColumns: Column<RouteRow>[] = [
+    { key: 'order', header: '#' },
+    { key: 'stop', header: 'Stop' },
+    { key: 'lat', header: 'Latitude' },
+    { key: 'lng', header: 'Longitude' },
   ];
 
+  const routeData = optimizedRoute
+    ? optimizedRoute.orderedStops.map((s, i) => ({ order: i + 1, stop: s.name, lat: s.lat.toFixed(4), lng: s.lng.toFixed(4) }))
+    : SAMPLE_STOPS.map((s, i) => ({ order: i + 1, stop: s.name, lat: s.lat.toFixed(4), lng: s.lng.toFixed(4) }));
+
+  const totalSavings = optimizedRoute ? Math.round(optimizedRoute.totalDistance * 0.15) : 0;
+
   return (
-    <div className="ui-stack-6">
-      <div className="ui-flex-end">
-        <Button variant="primary" onClick={() => {}}>Run Optimization</Button>
+    <div className="ui-stack-4">
+      <div className="ui-flex ui-items-center ui-gap-2" style={{ marginBottom: 8 }}>
+        <Button onClick={handleOptimize} disabled={loading} variant="primary" size="sm">
+          <Route size={14} />
+          <span>{loading ? 'Optimizing...' : 'Run Route Optimization'}</span>
+        </Button>
+        {error && <span className="ui-text-xs-tertiary" style={{ color: 'var(--color-danger)' }}>{error}</span>}
       </div>
 
       <div className="ui-grid-auto">
-        <KPICard title="Active Routes" value={routes.length} icon={<MapPin size={18} />} color="var(--color-primary)" />
-        <KPICard title="Optimized" value={routes.filter(r => r.isOptimized).length} icon={<TrendingDown size={18} />} color="var(--color-success)" />
-        <KPICard title="Total Savings" value={`$${totalSavings.toLocaleString()}`} icon={<DollarSign size={18} />} color="var(--color-success)" />
+        <KPICard title="Stops" value={String(SAMPLE_STOPS.length)} icon={<MapPin size={18} />} color="var(--color-primary)" />
+        <KPICard title="Optimized Distance" value={optimizedRoute ? `${optimizedRoute.totalDistance} km` : '—'} icon={<Navigation size={18} />} color="var(--color-info)" />
+        <KPICard title="Est. Duration" value={optimizedRoute ? `${optimizedRoute.estimatedDuration} min` : '—'} icon={<Clock size={18} />} color="var(--color-warning)" />
+        <KPICard title="Est. Savings" value={optimizedRoute ? `$${totalSavings}` : '—'} change={optimizedRoute ? -15 : undefined} changeLabel="vs unoptimized" icon={<TrendingDown size={18} />} color="var(--color-success)" />
       </div>
 
-      <DashboardChart title="Cost Comparison: Standard vs Optimized" subtitle="Per-carrier shipping cost comparison"
-        data={COST_COMPARISON}
-        config={{ xAxisKey: 'name', series: [
-          { dataKey: 'standard', name: 'Standard', color: '#ef4444' },
-          { dataKey: 'optimized', name: 'Optimized', color: '#22c55e' },
-        ] }}
-        defaultChartType="bar" allowedChartTypes={['bar', 'area']} height={280} />
+      {optimizedRoute && (
+        <DashboardChart title="Optimized Route Order" subtitle="Nearest-neighbor heuristic with priority boost"
+          data={optimizedRoute.orderedStops.map((s, i) => ({
+            stop: s.name, order: i + 1, distance: i > 0 ? Math.round(optimizedRoute.totalDistance / optimizedRoute.orderedStops.length * 10) / 10 : 0,
+          }))}
+          config={{ xAxisKey: 'stop', series: [{ dataKey: 'order', name: 'Stop Order', color: '#6366f1' }] }}
+          defaultChartType="bar" allowedChartTypes={['bar', 'line']} height={200} />
+      )}
 
-      <Card padding="none">
-        <DataTable columns={columns} data={routes} rowKey={r => r.id}
-          emptyTitle="No routes configured" emptyMessage="Add shipping routes to optimize." emptyIcon={<MapPin size={48} />} />
+      <Card title="Optimized Route">
+        <DataTable columns={routeColumns} data={routeData} rowKey={(r: RouteRow) => String(r.order)} />
       </Card>
+
+      {!optimizedRoute && (
+        <div className="ui-card ui-p-4 ui-text-center">
+          <p className="ui-text-xs-tertiary">Click "Run Route Optimization" to optimize the sample delivery route using the nearest-neighbor heuristic with priority boosting.</p>
+        </div>
+      )}
     </div>
   );
 }

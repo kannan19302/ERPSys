@@ -32,7 +32,6 @@ import {
   ShieldAlert,
   Search,
   ShoppingBag,
-  // (unused imports removed)
   Cpu,
   X,
   ChevronRight,
@@ -306,54 +305,49 @@ function FolderTile({
   if (appsInFolder.length === 0) return null;
 
   return (
-    <div onClick={onClick} className={styles.s1}>
-      {/* Folder icon — 2x2 mini app grid */}
+    <div onClick={onClick} className="ui-flex-col ui-items-center ui-gap-2 cursor-pointer">
       <div className="relative">
         <div
           style={{ "--tile-color": folder.color } as React.CSSProperties}
-          className={`${styles.s2} ${styles.folderTile}`}
+          className={styles.folderTile}
         >
           {previewApps.length > 0
             ? previewApps.map((app) => (
                 <div
                   key={app.id}
                   style={{ background: `${app.color}22` }}
-                  className={styles.s3}
+                  className={styles.folderTilePreviewIcon}
                 >
                   <app.icon size={11} style={{ color: app.color }} />
                 </div>
               ))
-            : // Empty slots
-              Array.from({ length: 4 }).map((_, i) => (
+            : Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
                   style={{ background: `${folder.color}15` }}
-                  className={styles.s4}
+                  className={styles.folderTilePreviewIcon}
                 />
               ))}
         </div>
-        {/* Badge */}
-        <div style={{ background: folder.color }} className={styles.s5}>
+        <div style={{ background: folder.color }} className={styles.folderTileBadge}>
           {appsInFolder.length}
         </div>
       </div>
-      <span className={styles.s6}>{folder.name}</span>
+      <span className={styles.tileLabel}>{folder.name}</span>
     </div>
   );
 }
 
 function SingleAppTile({ app }: { app: AppDefinition }) {
   return (
-    <Link href={app.href} className={styles.s7}>
-      <div className={styles.s1}>
-        <div
-          style={{ "--tile-color": app.color } as React.CSSProperties}
-          className={`${styles.s8} ${styles.appTile}`}
-        >
-          <app.icon size={34} style={{ color: app.color }} />
-        </div>
-        <span className={styles.s6}>{app.name}</span>
+    <Link href={app.href} className={styles.appTileLink}>
+      <div
+        style={{ "--tile-color": app.color } as React.CSSProperties}
+        className={styles.appTile}
+      >
+        <app.icon size={34} style={{ color: app.color }} />
       </div>
+      <span className={styles.tileLabel}>{app.name}</span>
     </Link>
   );
 }
@@ -400,7 +394,6 @@ export default function AppsHubPage() {
 
         {
           const list = marketplace;
-          // Installed industry/marketplace apps run at /app/<slug> (the in-app shell).
           const dynamic: AppDefinition[] = list
             .filter(
               (a) =>
@@ -428,9 +421,6 @@ export default function AppsHubPage() {
     fetchInstalled();
   }, [client]);
 
-  // Kernel apps are always shown on the Desk; every other app (core business module
-  // or industry app) appears only while installed for the tenant — so uninstalling
-  // one hides its icon here.
   const KERNEL_APP_IDS = new Set([
     "dashboard",
     "api-keys",
@@ -446,8 +436,6 @@ export default function AppsHubPage() {
     ),
     ...marketplaceApps,
   ];
-  // Industry-personalized apps (from GET /auth/onboarding's priorityAppSlugs)
-  // are pinned first, in that order; everything else stays alphabetical.
   const sortedActiveApps = [...activeApps].sort((a, b) => {
     const aIdx = priorityAppSlugs.indexOf(a.id);
     const bIdx = priorityAppSlugs.indexOf(b.id);
@@ -464,7 +452,6 @@ export default function AppsHubPage() {
     ? sortedActiveApps.filter((a) => openFolderObj.appIds.includes(a.id))
     : [];
 
-  // Search across all apps
   const searchResults = searchQuery.trim()
     ? sortedActiveApps
         .filter(
@@ -489,8 +476,6 @@ export default function AppsHubPage() {
     a.name.localeCompare(b.name),
   );
 
-  // Combine folders and rootApps into a single list — priority (industry)
-  // apps first in their given order, then everything else alphabetically.
   const gridItems = [
     ...sortedSubfolders.map((folder) => ({
       type: "folder" as const,
@@ -517,37 +502,34 @@ export default function AppsHubPage() {
 
   return (
     <RouteGuard permission="apps.read">
-      <div className={styles.s9}>
+      <div className="ui-stack-6 relative ui-animate-in" style={{ minHeight: "80vh" }}>
         <OnboardingChecklist
           variant="compact"
           show={subStatus === "TRIAL"}
           autoCompleteDashboard
         />
 
-        {/* Center card */}
-        <div className={styles.s10}>
-          <div className={`ui-card ${styles.s11}`}>
-            {/* Header */}
-            <div className={styles.s12}>
+        <div className="ui-flex-center pt-8">
+          <div className="ui-card" style={{ boxShadow: "var(--shadow-xl)", maxWidth: "100%", width: 940, position: "relative" }}>
+            <div className="ui-flex-between px-6 py-5 border-b">
               <div>
-                <h2 className={styles.s13}>
+                <h2 className="ui-heading-lg m-0">
                   {openFolder ? openFolderObj?.name : "Desk"}
                 </h2>
                 {openFolder && (
                   <button
                     onClick={() => setOpenFolder(null)}
-                    className={styles.s14}
+                    className="ui-btn ui-text-primary ui-text-sm p-0 mt-1"
+                    style={{ background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
                   >
                     ← Back to All Apps
                   </button>
                 )}
               </div>
-
-              {/* Search */}
-              <div className={styles.s15}>
-                <Search size={14} className={styles.s16} />
+              <div className="ui-search-wrapper" style={{ width: 240 }}>
+                <Search size={14} className="ui-search-icon" />
                 <input
-                  className={`ui-input ${styles.s17}`}
+                  className="ui-search-input"
                   type="text"
                   placeholder={
                     openFolder
@@ -560,7 +542,7 @@ export default function AppsHubPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className={styles.s18}
+                    className={styles.searchClearBtn}
                   >
                     <X size={13} />
                   </button>
@@ -568,25 +550,25 @@ export default function AppsHubPage() {
               </div>
             </div>
 
-            {/* Content */}
-            <div className={styles.s19}>
-              {/* Search Results */}
+            <div className="p-6" style={{ minHeight: 400 }}>
               {searchQuery.trim() ? (
                 <div>
                   {searchResults.length === 0 ? (
-                    <div className={styles.s20}>
-                      <Search size={40} className={styles.s21} />
-                      <p className={styles.s22}>
-                        No apps found for "{searchQuery}"
+                    <div className="ui-empty-state">
+                      <Search size={40} className="ui-empty-state-icon" />
+                      <p className="ui-empty-state-text">
+                        No apps found for &quot;{searchQuery}&quot;
                       </p>
                     </div>
                   ) : (
-                    <div className={styles.s23}>
+                    <div className="ui-flex ui-flex-wrap ui-gap-5">
                       {searchResults.map(({ app, folderName }) => (
-                        <div key={app.id} className={styles.s24}>
+                        <div key={app.id} className="ui-flex-col ui-items-center ui-gap-1">
                           <SingleAppTile app={app} />
                           {folderName && (
-                            <span className={styles.s25}>in {folderName}</span>
+                            <span className="ui-text-xs-tertiary text-center">
+                              in {folderName}
+                            </span>
                           )}
                         </div>
                       ))}
@@ -594,17 +576,13 @@ export default function AppsHubPage() {
                   )}
                 </div>
               ) : openFolder ? (
-                /* Folder content */
-                <div>
-                  <div className={styles.s23}>
-                    {appsInOpenFolder.map((app) => (
-                      <SingleAppTile key={app.id} app={app} />
-                    ))}
-                  </div>
+                <div className="ui-flex ui-flex-wrap ui-gap-5">
+                  {appsInOpenFolder.map((app) => (
+                    <SingleAppTile key={app.id} app={app} />
+                  ))}
                 </div>
               ) : (
-                /* Root grid: subfolders + individual apps mixed alphabetically */
-                <div className={styles.s23}>
+                <div className="ui-flex ui-flex-wrap ui-gap-5">
                   {gridItems.map((item) => {
                     if (item.type === "folder") {
                       return (
@@ -623,14 +601,13 @@ export default function AppsHubPage() {
               )}
             </div>
 
-            {/* Footer */}
-            <div className={styles.s26}>
+            <div className={`ui-flex-between px-6 py-3 ${styles.pageFooter}`}>
               <span className="ui-text-xs-tertiary">
                 {sortedActiveApps.length} apps · {sortedSubfolders.length}{" "}
                 folders
               </span>
-              <div className="ui-flex ui-gap-3">
-                <Link href="/apps/store" className={styles.s27}>
+              <div className="ui-flex ui-gap-3 ui-items-center">
+                <Link href="/apps/store" className={styles.footerActionLink}>
                   <ShoppingBag size={12} />
                   App Store
                   <ChevronRight size={10} />
@@ -641,7 +618,7 @@ export default function AppsHubPage() {
                     localStorage.removeItem("user");
                     router.push("/login");
                   }}
-                  className={styles.s28}
+                  className={styles.footerActionBtn}
                 >
                   Logout
                 </button>
@@ -650,24 +627,22 @@ export default function AppsHubPage() {
           </div>
         </div>
 
-        {/* Folder Modal Overlay */}
         {openFolder && (
-          <div onClick={() => setOpenFolder(null)} className={styles.s29}>
-            <div onClick={(e) => e.stopPropagation()} className={styles.s30}>
-              {/* Modal header */}
+          <div onClick={() => setOpenFolder(null)} className={`${styles.modalOverlay} modal-overlay`}>
+            <div onClick={(e) => e.stopPropagation()} className={`${styles.modalCard} modal-card`}>
               <div
+                className="ui-flex-between px-6 py-5 border-b"
                 style={{
                   background: openFolderObj
                     ? `linear-gradient(135deg, ${openFolderObj.color}08 0%, transparent 100%)`
                     : "",
                 }}
-                className={styles.s12}
               >
                 <div className="ui-hstack-3">
                   {openFolderObj && (
                     <div
                       style={{ background: `${openFolderObj.color}18` }}
-                      className={styles.s31}
+                      className={styles.modalHeaderIconGrid}
                     >
                       {applications
                         .filter((a) => openFolderObj.appIds.includes(a.id))
@@ -676,7 +651,7 @@ export default function AppsHubPage() {
                           <div
                             key={app.id}
                             style={{ background: `${app.color}28` }}
-                            className={styles.s32}
+                            className={styles.modalIconCell}
                           >
                             <app.icon size={8} style={{ color: app.color }} />
                           </div>
@@ -684,7 +659,7 @@ export default function AppsHubPage() {
                     </div>
                   )}
                   <div>
-                    <h3 className={styles.s13}>{openFolderObj?.name}</h3>
+                    <h3 className="ui-heading-lg m-0">{openFolderObj?.name}</h3>
                     <p className="ui-text-xs-muted m-0">
                       {appsInOpenFolder.length} apps in this folder
                     </p>
@@ -692,15 +667,13 @@ export default function AppsHubPage() {
                 </div>
                 <button
                   onClick={() => setOpenFolder(null)}
-                  className={styles.s33}
+                  className={styles.modalCloseBtn}
                 >
                   <X size={16} />
                 </button>
               </div>
-
-              {/* Modal apps grid */}
-              <div className={styles.s34}>
-                <div className={styles.s23}>
+              <div className={styles.modalBody}>
+                <div className="ui-flex ui-flex-wrap ui-gap-5">
                   {appsInOpenFolder.map((app) => (
                     <SingleAppTile key={app.id} app={app} />
                   ))}
@@ -709,11 +682,6 @@ export default function AppsHubPage() {
             </div>
           </div>
         )}
-
-        <style>{`
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
-      `}</style>
       </div>
     </RouteGuard>
   );

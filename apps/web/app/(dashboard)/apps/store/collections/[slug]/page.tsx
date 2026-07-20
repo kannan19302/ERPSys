@@ -3,7 +3,7 @@ import styles from './page.module.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Card, Badge } from '@unerp/ui';
+import { Card, Badge, Button } from '@unerp/ui';
 import { ArrowLeft, Download, Star, Heart, Shield, Loader2 } from 'lucide-react';
 import { RouteGuard, useApiClient } from '@unerp/framework';
 
@@ -60,45 +60,49 @@ export default function CollectionDetailPage() {
   }, [toast]);
 
   if (loading) {
-    return <div className={styles.s1}><Loader2 size={32} className={styles.s2} /></div>;
+    return <div className={styles.loadingContainer}><Loader2 size={32} className="animate-spin ui-text-primary" /></div>;
   }
 
   if (!collection) {
-    return <div className="text-center p-12"><h3>Collection not found</h3><Link href="/apps/store/collections" className="ui-text-primary">Back to Collections</Link></div>;
+    return <div className={styles.notFound}><h3>Collection not found</h3><Link href="/apps/store/collections" className="ui-text-primary">Back to Collections</Link></div>;
   }
 
   return (
     <RouteGuard permission="apps.store.collections.read">
-    <div className="ui-stack-6 ui-animate-in">
-      {toast && <div style={{ background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }} className={styles.s3}>{toast.message}</div>}
+    <div className="ui-stack-5 ui-animate-in">
+      {toast && (
+        <div className={`ui-alert ${toast.type === 'success' ? 'ui-alert-success' : 'ui-alert-danger'}`}>
+          {toast.message}
+        </div>
+      )}
 
-      <div className={styles.s4}>
-        <Link href="/apps/store" className={styles.s5}>App Store</Link>
-        <span>/</span>
-        <Link href="/apps/store/collections" className={styles.s5}>Collections</Link>
-        <span>/</span>
-        <span className={styles.s6}>{collection.name}</span>
-      </div>
+      <nav className="ui-breadcrumb">
+        <Link href="/apps/store" className="ui-breadcrumb-link">App Store</Link>
+        <span className="ui-breadcrumb-separator">/</span>
+        <Link href="/apps/store/collections" className="ui-breadcrumb-link">Collections</Link>
+        <span className="ui-breadcrumb-separator">/</span>
+        <span className="ui-breadcrumb-active">{collection.name}</span>
+      </nav>
 
       <div className="ui-hstack-4">
-        <span className={styles.s7}>{collection.icon || '📦'}</span>
+        <span className={styles.colIconLarge}>{collection.icon || '📦'}</span>
         <div>
-          <h1 className={styles.s8}>{collection.name}</h1>
-          <p className={styles.s9}>
+          <h1 className={`ui-heading-lg ${styles.pageTitle}`}>{collection.name}</h1>
+          <p className={`ui-text-sm-muted ${styles.pageSubtitle}`}>
             {collection.description} · {collection.items.length} apps
           </p>
         </div>
       </div>
 
-      <div className={styles.s10}>
+      <div className={styles.appGrid}>
         {collection.items.map(({ app }) => {
           const isInstalled = installedSlugs.has(app.slug);
           const isBusy = installingSlug === app.slug;
           return (
-            <Card key={app.slug} padding="lg" className={`${styles.s11} ${styles.appCard}`}>
-              <Link href={`/apps/store/${app.slug}`} className={styles.s12}>
+            <Card key={app.slug} padding="lg" className={styles.appCard}>
+              <Link href={`/apps/store/${app.slug}`} className={styles.cardLink}>
                 <div className="ui-hstack-3">
-                  <div className={styles.s13}>{app.icon || '📦'}</div>
+                  <div className={styles.iconBox}>{app.icon || '📦'}</div>
                   <div>
                     <div className="ui-flex ui-items-center ui-gap-1">
                       <span className="ui-heading-sm">{app.name}</span>
@@ -107,13 +111,15 @@ export default function CollectionDetailPage() {
                     <div className="ui-text-caption ui-text-tertiary">{app.publisher} · v{app.version}</div>
                   </div>
                 </div>
-                <p className={styles.s14}>{app.description}</p>
+                <p className={styles.description}>{app.description}</p>
                 <div className="ui-hstack-2">
-                  <div className={styles.s15}>
-                    {[1,2,3,4,5].map(s => <Star key={s} size={10} style={{ color: s <= Math.floor(Number(app.rating)) ? 'var(--color-primary)' : 'var(--color-border)' }} fill={s <= Math.floor(Number(app.rating)) ? 'var(--color-primary)' : 'none'} />)}
+                  <div className={styles.starRow}>
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} size={10} className={s <= Math.floor(Number(app.rating)) ? 'ui-text-warning' : 'ui-text-muted'} fill={s <= Math.floor(Number(app.rating)) ? 'var(--color-warning)' : 'none'} />
+                    ))}
                   </div>
                   <span className="ui-text-caption">{Number(app.rating).toFixed(1)} ({app.reviewCount})</span>
-                  <span className={styles.s16}>
+                  <span className={styles.priceBadge}>
                     <Badge variant={app.pricing === 'FREE' ? 'success' : 'warning'}>
                       {app.pricing === 'FREE' ? 'Free' : `$${app.price}/mo`}
                     </Badge>
@@ -122,19 +128,17 @@ export default function CollectionDetailPage() {
               </Link>
               <div>
                 {isInstalled ? (
-                  <div className={styles.s17}>Installed</div>
+                  <div className={`ui-text-success text-xs font-semibold text-center ${styles.installedLabel}`}>Installed</div>
                 ) : (
-                  <button onClick={() => handleInstall(app.slug)} disabled={isBusy} style={{ cursor: isBusy ? 'wait' : 'pointer' }} className={styles.s18}>
-                    <Download size={13} /> {isBusy ? 'Installing...' : 'Install'}
-                  </button>
+                  <Button variant="primary" size="sm" leftIcon={<Download size={13} />} onClick={() => handleInstall(app.slug)} disabled={isBusy} className="w-full">
+                    {isBusy ? 'Installing...' : 'Install'}
+                  </Button>
                 )}
               </div>
             </Card>
           );
         })}
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </div>
     </RouteGuard>
   );

@@ -31,10 +31,17 @@ model Tenant {
   demoDataLoaded Boolean   @default(false) @map("demo_data_loaded")
   demoLoadedAt   DateTime? @map("demo_loaded_at")
 
+  installedApps      String[]   @default([])  // app slugs
+  kernelApps         String[]   @default([])  // locked apps
+  industry           String?                  // for auto-install recommendations
+  onboardingComplete Boolean    @default(false)
+
   users                User[]
   organizations        Organization[]
   subscription         TenantSubscription?
-  installedApps        InstalledApp[]
+  installedAppsRel     InstalledApp[]  @relation("TenantInstalledApps")
+  appInstallations     AppInstallation[]
+  appSettings          AppSettings[]
   demoDataRecords      DemoDataRecord[]
   accessPackages       AccessPackage[]
   ssoConfigs           SsoConfig[]
@@ -57,8 +64,68 @@ model Tenant {
   tenantAddOns            TenantAddOn[]
   paymentMethods          PaymentMethod[]
   userProfiles            UserProfile[]
+  invoices                SaaSInvoice[]
+  paymentTransactions     PaymentTransaction[]
+  usageAlertRules         UsageAlertRule[]
+  usageAlertLogs          UsageAlertLog[]
+  apiKeys                 TenantApiKey[]
+  auditLogs               TenantAuditLog[]
+  supportTickets          TenantSupportTicket[]
+  domains                 TenantDomain[]
+  ssoConfig               TenantSsoConfig?
+  branding                TenantBranding?
+  dataExportJobs          DataExportJob[]
+  webhookEndpoints        TenantWebhookEndpoint[]
+  webhookDeliveries       TenantWebhookDelivery[]
+  announcements           TenantAnnouncement[]
 
   @@map("tenants")
+}
+
+model AppInstallation {
+  id            String             @id @default(cuid())
+  tenantId      String
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appSlug       String
+  version       String
+  status        AppInstallStatus   @default(INSTALLED)
+  config        Json?              // module-specific settings
+  installedAt   DateTime           @default(now())
+  uninstalledAt DateTime?
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([tenantId, appSlug])
+  @@index([tenantId])
+  @@index([appSlug])
+}
+
+enum AppInstallStatus {
+  INSTALLED
+  UNINSTALLING
+  UNINSTALLED
+}
+
+model AppSettings {
+  id        String        @id @default(cuid())
+  tenantId  String
+  tenant    Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appSlug   String
+  key       String
+  value     Json
+  scope     SettingScope  @default(TENANT)
+  roleId    String?
+  role      Role?         @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([tenantId, appSlug, key, scope, roleId])
+  @@index([tenantId, appSlug])
+}
+
+enum SettingScope {
+  TENANT
+  USER
+  ROLE
 }
 
 model TenantLifecycleEvent {
@@ -256,6 +323,7 @@ model Role {
 
   users          UserRole[]
   accessPackages RoleAccessPackage[]
+  appSettings    AppSettings[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -5153,28 +5221,44 @@ model SaaSPlan {
   stripePriceId String   @unique @map("stripe_price_id")
   maxUsers      Int      @map("max_users")
   maxStorage    Int      @map("max_storage") // In MB
+  maxApiCalls   Int      @default(10000) @map("max_api_calls")
   features      Json // List of enabled module names
+  description   String?
+  isPublic      Boolean  @default(true) @map("is_public")
+  sortOrder     Int      @default(0) @map("sort_order")
+  status        String   @default("ACTIVE") // ACTIVE, ARCHIVED, COMING_SOON
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  subscriptions TenantSubscription[]
-  quotaRules    QuotaRule[]
+  subscriptions    TenantSubscription[]
+  quotaRules       QuotaRule[]
+  prices           SaaSPlanPrice[]
+  featureEntitlements SaaSPlanFeature[]
 
   @@map("saas_plans")
 }
 
 model TenantSubscription {
-  id        String    @id @default(cuid())
-  tenantId  String    @unique @map("tenant_id")
-  planId    String    @map("plan_id")
-  status    String    @default("ACTIVE") // ACTIVE, PAST_DUE, CANCELLED
-  startDate DateTime  @map("start_date")
-  endDate   DateTime? @map("end_date")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(cuid())
+  tenantId        String    @unique @map("tenant_id")
+  planId          String    @map("plan_id")
+  status          String    @default("ACTIVE") // ACTIVE, TRIAL, PAST_DUE, CANCELLED, EXPIRED, PAUSED, PENDING
+  billingPeriod   String    @default("MONTHLY") // MONTHLY, YEARLY
+  currency        String    @default("USD")
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime? @map("end_date")
+  trialEndsAt     DateTime? @map("trial_ends_at")
+  cancelledAt     DateTime? @map("cancelled_at")
+  pauseStart      DateTime? @map("pause_start")
+  pauseEnd        DateTime? @map("pause_end")
+  autoRenew       Boolean   @default(true) @map("auto_renew")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  tenant Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plan   SaaSPlan @relation(fields: [planId], references: [id])
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan        SaaSPlan      @relation(fields: [planId], references: [id])
+  invoices    SaaSInvoice[]
+  addOns      TenantAddOn[]
 
   @@map("tenant_subscriptions")
 }
@@ -5222,16 +5306,18 @@ model SaaSAddOn {
 }
 
 model TenantAddOn {
-  id        String    @id @default(cuid())
-  tenantId  String    @map("tenant_id")
-  addonId   String    @map("addon_id")
-  quantity  Int       @default(1)
-  status    String    @default("ACTIVE")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id             String         @id @default(cuid())
+  tenantId       String         @map("tenant_id")
+  subscriptionId String?        @map("subscription_id")
+  addonId        String         @map("addon_id")
+  quantity       Int            @default(1)
+  status         String         @default("ACTIVE")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
-  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  addon  SaaSAddOn @relation(fields: [addonId], references: [id])
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription TenantSubscription? @relation(fields: [subscriptionId], references: [id])
+  addon        SaaSAddOn          @relation(fields: [addonId], references: [id])
 
   @@unique([tenantId, addonId])
   @@map("tenant_addons")
@@ -5248,7 +5334,8 @@ model PaymentMethod {
   createdAt               DateTime @default(now()) @map("created_at")
   updatedAt               DateTime @updatedAt @map("updated_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions PaymentTransaction[]
 
   @@map("payment_methods")
 }
@@ -5290,11 +5377,417 @@ model InstalledApp {
   provisioned      Json    @default("{}") // {pageRegistryIds:[], schemaRegistryIds:[], automationRuleIds:[]} for teardown on uninstall
   serviceConfig    Json?   @map("service_config") // manifest `service` section for declarative+service apps (ext-gateway routing)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation("TenantInstalledApps", fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, appId])
   @@index([tenantId])
   @@map("installed_apps")
+}
+
+/// Real per-tenant, per-app storage measurement (Phase 5 of the install-on-demand
+/// program). Populated by StorageMeteringService from live Prisma row counts x
+/// real Postgres pg_stat_user_tables average row size — not a hardcoded estimate.
+/// One row per (tenantId, appSlug); appSlug "platform" aggregates unmapped models.
+model AppStorageUsage {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  appSlug        String   @map("app_slug")
+  rowCount       Int      @default(0) @map("row_count")
+  estimatedBytes BigInt   @default(0) @map("estimated_bytes")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, appSlug])
+  @@index([tenantId])
+  @@map("app_storage_usage")
+}
+
+// ════════════════════════════════════════════════
+// SAAS PORTAL - ADVANCED FEATURES (700+ expansion)
+// ════════════════════════════════════════════════
+
+/// Multi-currency regional pricing for SaaSPlan
+model SaaSPlanPrice {
+  id        String   @id @default(cuid())
+  planId    String   @map("plan_id")
+  currency  String   @default("USD")
+  region    String   @default("US") // US, EU, APAC, LATAM
+  monthly   Decimal  @default(0) @db.Decimal(15, 2)
+  yearly    Decimal  @default(0) @db.Decimal(15, 2)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  plan SaaSPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, currency, region])
+  @@map("saas_plan_prices")
+}
+
+/// Named feature entitlement a plan includes (e.g. "api-keys", "audit-log")
+model SaaSPlanFeature {
+  id          String    @id @default(cuid())
+  planId      String    @map("plan_id")
+  featureKey  String    @map("feature_key")
+  name        String
+  description String?
+  type        String    @default("BOOLEAN") // BOOLEAN, SEAT_LIMITED, USAGE_LIMITED
+  limitValue  Int?      @map("limit_value")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  plan SaaSPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, featureKey])
+  @@map("saas_plan_features")
+}
+
+/// Invoice generated per billing cycle
+model SaaSInvoice {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  subscriptionId  String?   @map("subscription_id")
+  invoiceNumber   String    @unique @map("invoice_number")
+  status          String    @default("DRAFT") // DRAFT, PENDING, PAID, OVERDUE, CANCELLED, REFUNDED
+  currency        String    @default("USD")
+  subtotal        Decimal   @default(0) @db.Decimal(15, 2)
+  discountAmount  Decimal   @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  taxAmount       Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount     Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
+  amountPaid      Decimal   @default(0) @map("amount_paid") @db.Decimal(15, 2)
+  amountDue       Decimal   @default(0) @map("amount_due") @db.Decimal(15, 2)
+  periodStart     DateTime? @map("period_start")
+  periodEnd       DateTime? @map("period_end")
+  dueDate         DateTime? @map("due_date")
+  paidAt          DateTime? @map("paid_at")
+  notes           String?
+  pdfUrl          String?   @map("pdf_url")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant      Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription TenantSubscription?      @relation(fields: [subscriptionId], references: [id])
+  lines       SaaSInvoiceLineItem[]
+  transactions PaymentTransaction[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("saas_invoices")
+}
+
+/// Line items on an invoice
+model SaaSInvoiceLineItem {
+  id          String   @id @default(cuid())
+  invoiceId   String   @map("invoice_id")
+  description String
+  type        String   // PLAN, ADDON, OVERAGE, CREDIT, TAX, DISCOUNT
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @default(0) @map("unit_price") @db.Decimal(15, 2)
+  totalPrice  Decimal  @default(0) @map("total_price") @db.Decimal(15, 2)
+  metadata    Json?    @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  invoice SaaSInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("saas_invoice_line_items")
+}
+
+/// Payment transactions (Stripe, Razorpay, manual, etc.)
+model PaymentTransaction {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  invoiceId       String?  @map("invoice_id")
+  paymentMethodId String?  @map("payment_method_id")
+  provider        String   // STRIPE, RAZORPAY, MANUAL
+  providerTxId    String?  @map("provider_tx_id")
+  type            String   // SUBSCRIPTION, ONE_TIME, REFUND, CREDIT
+  status          String   @default("PENDING") // PENDING, SUCCEEDED, FAILED, REFUNDED
+  amount          Decimal  @db.Decimal(15, 2)
+  currency        String   @default("USD")
+  feeAmount       Decimal? @default(0) @map("fee_amount") @db.Decimal(15, 2)
+  netAmount       Decimal? @default(0) @map("net_amount") @db.Decimal(15, 2)
+  description     String?
+  metadata        Json?    @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice      SaaSInvoice? @relation(fields: [invoiceId], references: [id])
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("payment_transactions")
+}
+
+/// Usage alert rule — triggers when a metric exceeds threshold
+model UsageAlertRule {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  metric         String    // STORAGE_MB, API_CALLS_COUNT, USERS_COUNT
+  thresholdPct   Int       @default(80) @map("threshold_pct")
+  notifyEmail    Boolean   @default(true) @map("notify_email")
+  notifyWebhook  Boolean   @default(false) @map("notify_webhook")
+  notifyInApp    Boolean   @default(true) @map("notify_in_app")
+  webhookUrl     String?   @map("webhook_url")
+  isActive       Boolean   @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  alertLogs UsageAlertLog[]
+
+  @@unique([tenantId, metric])
+  @@map("usage_alert_rules")
+}
+
+/// Alert history log
+model UsageAlertLog {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  ruleId     String?   @map("rule_id")
+  metric     String
+  level      String    @default("WARNING") // INFO, WARNING, CRITICAL
+  message    String
+  currentValue Decimal? @map("current_value") @db.Decimal(15, 2)
+  limitValue Decimal?   @map("limit_value") @db.Decimal(15, 2)
+  sentEmail  Boolean   @default(false) @map("sent_email")
+  sentWebhook Boolean  @default(false) @map("sent_webhook")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rule   UsageAlertRule? @relation(fields: [ruleId], references: [id])
+
+  @@index([tenantId])
+  @@map("usage_alert_logs")
+}
+
+/// Tenant API keys for programmatic access
+model TenantApiKey {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  keyPrefix   String    @map("key_prefix")
+  keyHash     String    @map("key_hash")
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+  permissions Json      @default("[]") // array of permission strings
+  ipWhitelist Json?     @map("ip_whitelist") // array of CIDR ranges
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([keyHash])
+  @@map("tenant_api_keys")
+}
+
+/// Immutable audit log for tenant activity
+model TenantAuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  userId     String?  @map("user_id")
+  action     String   // subscription.change, invoice.paid, api.key.created, settings.updated etc.
+  resource   String?  // e.g. "subscription", "invoice", "api-key"
+  resourceId String?  @map("resource_id")
+  details    Json?    @default("{}")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
+  @@map("tenant_audit_logs")
+}
+
+/// Support tickets for tenant self-service
+model TenantSupportTicket {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  userId      String?   @map("user_id")
+  subject     String
+  description String
+  category    String    @default("GENERAL") // BILLING, TECHNICAL, FEATURE, GENERAL
+  priority    String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  status      String    @default("OPEN") // OPEN, IN_PROGRESS, WAITING_CUSTOMER, RESOLVED, CLOSED
+  assignedTo  String?   @map("assigned_to")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  resolvedAt  DateTime? @map("resolved_at")
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages TicketMessage[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("tenant_support_tickets")
+}
+
+/// Messages within a support ticket
+model TicketMessage {
+  id         String   @id @default(cuid())
+  ticketId   String   @map("ticket_id")
+  userId     String?  @map("user_id")
+  message    String
+  attachments Json?   @default("[]")
+  isStaff    Boolean  @default(false) @map("is_staff")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ticket TenantSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_messages")
+}
+
+/// Custom domain configuration
+model TenantDomain {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  domain          String    @unique
+  isPrimary       Boolean   @default(false) @map("is_primary")
+  verificationKey String?   @map("verification_key")
+  verifiedAt      DateTime? @map("verified_at")
+  sslStatus       String    @default("PENDING") // PENDING, ISSUED, EXPIRED, FAILED
+  sslExpiresAt    DateTime? @map("ssl_expires_at")
+  status          String    @default("PENDING") // PENDING, ACTIVE, FAILED
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  brandings TenantBranding[]
+
+  @@unique([tenantId, domain])
+  @@map("tenant_domains")
+}
+
+/// SSO/OIDC configuration per tenant
+model TenantSsoConfig {
+  id                 String   @id @default(cuid())
+  tenantId           String   @unique @map("tenant_id")
+  provider           String   @default("OIDC") // OIDC, SAML, GOOGLE, MICROSOFT, GITHUB
+  issuerUrl          String?  @map("issuer_url")
+  clientId           String?  @map("client_id")
+  clientSecret       String?  @map("client_secret")
+  authorizationUrl   String?  @map("authorization_url")
+  tokenUrl           String?  @map("token_url")
+  userInfoUrl        String?  @map("user_info_url")
+  jwksUrl            String?  @map("jwks_url")
+  attributeMapping   Json?    @default("{}") // maps IdP attributes to user fields
+  isEnabled          Boolean  @default(false) @map("is_enabled")
+  requireMfa         Boolean  @default(false) @map("require_mfa")
+  domains            Json?    @default("[]") // allowed email domains
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@map("tenant_sso_configs")
+}
+
+/// Custom branding/whitelabel settings
+model TenantBranding {
+  id              String   @id @default(cuid())
+  tenantId        String   @unique @map("tenant_id")
+  logoUrl         String?  @map("logo_url")
+  faviconUrl      String?  @map("favicon_url")
+  primaryColor    String?  @default("#2563EB") @map("primary_color")
+  accentColor     String?  @default("#7C3AED") @map("accent_color")
+  companyName     String?  @map("company_name")
+  supportEmail    String?  @map("support_email")
+  supportUrl      String?  @map("support_url")
+  customCss       String?  @map("custom_css")
+  customDomainId  String?  @map("custom_domain_id")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customDomain TenantDomain? @relation(fields: [customDomainId], references: [id])
+
+  @@map("tenant_branding")
+}
+
+/// Data export/import jobs
+model DataExportJob {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  type        String    // EXPORT, IMPORT
+  format      String    // CSV, JSON, XLSX
+  scope       Json      @default("{}") // {modules: ["finance", "crm"], dateRange: {}}
+  status      String    @default("PENDING") // PENDING, PROCESSING, COMPLETE, FAILED
+  fileUrl     String?   @map("file_url")
+  fileSize    Int?      @map("file_size")
+  errorMessage String?  @map("error_message")
+  recordCount Int?      @map("record_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("data_export_jobs")
+}
+
+/// Tenant webhook endpoints for receiving events
+model TenantWebhookEndpoint {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  name            String
+  url             String
+  secret          String
+  events          Json      @default("[]") // subscribed events array
+  isActive        Boolean   @default(true) @map("is_active")
+  lastSuccessAt   DateTime? @map("last_success_at")
+  lastFailureAt   DateTime? @map("last_failure_at")
+  consecutiveFailures Int   @default(0) @map("consecutive_failures")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant     Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries TenantWebhookDelivery[]
+
+  @@index([tenantId])
+  @@map("tenant_webhook_endpoints")
+}
+
+/// Delivery log for webhook events
+model TenantWebhookDelivery {
+  id           String    @id @default(cuid())
+  endpointId   String    @map("endpoint_id")
+  tenantId     String    @map("tenant_id")
+  event        String
+  payload      Json
+  status       String    @default("PENDING") // PENDING, DELIVERED, FAILED, RETRYING
+  httpStatus   Int?      @map("http_status")
+  responseBody String?   @map("response_body")
+  durationMs   Int?      @map("duration_ms")
+  attempt      Int       @default(1)
+  maxAttempts  Int       @default(3) @map("max_attempts")
+  nextRetryAt  DateTime? @map("next_retry_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  tenant   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  endpoint TenantWebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId, createdAt])
+  @@map("tenant_webhook_deliveries")
+}
+
+/// System announcements visible in tenant portal
+model TenantAnnouncement {
+  id        String    @id @default(cuid())
+  tenantId  String?   @map("tenant_id") // null = global announcement
+  title     String
+  body      String
+  level     String    @default("INFO") // INFO, WARNING, MAINTENANCE, CRITICAL
+  isDismissible Boolean @default(true) @map("is_dismissible")
+  startsAt  DateTime  @default(now()) @map("starts_at")
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, startsAt, expiresAt])
+  @@map("tenant_announcements")
 }
 
 // ════════════════════════════════════════════════

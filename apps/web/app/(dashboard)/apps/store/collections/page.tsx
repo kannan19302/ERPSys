@@ -32,24 +32,24 @@ export default function CollectionsPage() {
 
   if (loading) {
     return (
-      <div className={styles.s1}>
-        <Loader2 size={32} className={styles.s2} />
+      <div className={styles.loadingContainer}>
+        <Loader2 size={32} className="animate-spin ui-text-primary" />
       </div>
     );
   }
 
   return (
     <RouteGuard permission="apps.store.collections.read">
-    <div className="ui-stack-6 ui-animate-in">
+    <div className="ui-stack-5 ui-animate-in">
       <div className="ui-hstack-3">
-        <Link href="/apps/store" className={styles.s3}>
+        <Link href="/apps/store" className="ui-text-muted">
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className={styles.s4}>
+          <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
             <Sparkles className="ui-text-primary" /> Collections
           </h1>
-          <p className={styles.s5}>
+          <p className="ui-text-sm-muted">
             Curated app bundles hand-picked for specific use cases
           </p>
         </div>
@@ -57,40 +57,40 @@ export default function CollectionsPage() {
 
       {collections.length === 0 ? (
         <div className="ui-empty-state">
-          <Sparkles size={48} className={styles.s6} />
-          <p className={styles.s7}>No collections yet</p>
-          <p className="text-sm">Collections will appear here once created by admins.</p>
+          <Sparkles size={48} className="ui-empty-state-icon" />
+          <h3 className="ui-empty-state-title">No collections yet</h3>
+          <p className="ui-empty-state-text">Collections will appear here once created by admins.</p>
         </div>
       ) : (
-        <div className={styles.s8}>
+        <div className={styles.colGrid}>
           {collections.map(col => (
-            <Link key={col.slug} href={`/apps/store/collections/${col.slug}`} className={styles.s9}>
-              <Card padding="lg" className={`${styles.s10} ${styles.collectionCard}`}>
-                <div className={styles.s11}>
-                  <span className={styles.s12}>{col.icon || '📦'}</span>
+            <Link key={col.slug} href={`/apps/store/collections/${col.slug}`} className={styles.collectionCardLink}>
+              <Card padding="lg" className={styles.collectionCard}>
+                <div className={styles.colHeader}>
+                  <span className={styles.colIcon}>{col.icon || '📦'}</span>
                   <div>
-                    <h3 className={styles.s13}>{col.name}</h3>
-                    <span className={styles.s14}>{col.items.length} apps</span>
+                    <h3 className={styles.colName}>{col.name}</h3>
+                    <span className={styles.colCount}>{col.items.length} apps</span>
                   </div>
-                  {col.featured && <span className={styles.s15}>Featured</span>}
+                  {col.featured && <span className={styles.featuredBadge}>Featured</span>}
                 </div>
-                <p className={styles.s16}>
+                <p className={styles.colDesc}>
                   {col.description}
                 </p>
                 <div className="ui-hstack-2">
-                  <div className={styles.s17}>
+                  <div className={styles.avatarStack}>
                     {col.items.slice(0, 4).map((item, i) => (
-                      <div key={i} style={{ marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }} className={styles.s18}>
+                      <div key={i} className={styles.appAvatar}>
                         {item.app.icon || '📦'}
                       </div>
                     ))}
                     {col.items.length > 4 && (
-                      <div className={styles.s19}>
+                      <div className={styles.appAvatarOverflow}>
                         +{col.items.length - 4}
                       </div>
                     )}
                   </div>
-                  <span className={styles.s20}>
+                  <span className={styles.viewLink}>
                     View <ChevronRight size={14} />
                   </span>
                 </div>
@@ -99,11 +99,6 @@ export default function CollectionsPage() {
           ))}
         </div>
       )}
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
     </RouteGuard>
   );
