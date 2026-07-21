@@ -2,6 +2,20 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-21] Cycle 32 (Phase M) — Finance Deepening: AR/AP Deep, Close Ops, Project Accounting
+
+**Scope**: Deepened the **Finance & Accounting** focus module by adding 4 service verticals (AR Deep, AP Deep, Close Operations, Project Accounting) spanning 44 REST endpoints with real analytics, collections management, invoice matching, payment batches, financial close workflows, and project cost/profitability tracking.
+
+**Key Changes**:
+
+- **AR Deep Service** (`apps/api/src/modules/finance/ar-deep.service.ts`): Collections queue/stats, credit management CRUD (set limit, hold/release), promises to pay lifecycle (create, fulfill), AR disputes (create, update status), AR analytics (DSO, collection rate). 7 endpoints via `ar-deep.controller.ts` at `finance/ar-deep/*`.
+- **AP Deep Service** (`apps/api/src/modules/finance/ap-deep.service.ts`): Invoice matching stats & matched list, vendor bills list, AP approval queue with approve/reject, payment schedule, payment batches (create with `$transaction` + line items, submit), vendor statement reconciliation, AP analytics. 8 endpoints via `ap-deep.controller.ts` at `finance/ap-deep/*`.
+- **Close Operations Service** (`apps/api/src/modules/finance/close-ops.service.ts`): Close tasks CRUD + status updates, close task templates with apply-templates, close status dashboard (progress %), financial periods CRUD with close/reopen. 7 endpoints via `close-ops.controller.ts` at `finance/close/*`.
+- **Project Accounting Service** (`apps/api/src/modules/finance/project-accounting.service.ts`): Project budgets list, project costs with pagination, record project cost, profitability report (revenue/cost/margin), WIP report with % completion, project analytics, resource allocation. 6 endpoints via `project-accounting.controller.ts` at `finance/project-accounting/*`.
+- **Module Registration**: Registered all 4 controllers + 4 providers in `finance.module.ts`.
+- **Tests**: 17 Vitest unit tests (17/17 passed) across all 4 services.
+- **Feature ledger**: +43 features (6404 total). Finance: 174→217. Combined finance total: 1233.
+
 ## [2026-07-21] Cycle 31 (Phase M) — Finance & Accounting Module Deepening (Market Benchmark Items 34, 35, 37)
 
 **Scope**: Deepened the **Finance & Accounting** focus module by closing top market benchmark gaps (items 34, 35, 37 in `.ai/MODULE_REGISTRY.md` § Up Next). Added 3 enterprise backend services (+13 REST endpoints), 3 interactive Next.js UI subtab components, and a Vitest unit test suite.
