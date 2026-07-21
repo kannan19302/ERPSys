@@ -32,8 +32,10 @@ import { ErrorReportsController } from "./error-reports.controller";
 import { ErrorReportsService } from "./error-reports.service";
 import { TenantLifecycleController } from "./tenant-lifecycle/tenant-lifecycle.controller";
 import { TenantLifecycleService } from "./tenant-lifecycle/tenant-lifecycle.service";
+import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
+  imports: [PlatformCredentialsModule],
   controllers: [
     AdminController,
     SuperAdminController,

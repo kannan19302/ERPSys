@@ -118,6 +118,109 @@ export const PLATFORM_CREDENTIAL_PROVIDERS: CredentialProviderSpec[] = [
       },
     ],
   },
+  {
+    provider: "web-push",
+    label: "Web Push (VAPID)",
+    fields: [
+      {
+        key: "publicKey",
+        label: "Public Key",
+        sensitive: false,
+        envFallback: "VAPID_PUBLIC_KEY",
+      },
+      {
+        key: "privateKey",
+        label: "Private Key",
+        sensitive: true,
+        envFallback: "VAPID_PRIVATE_KEY",
+      },
+      {
+        key: "subject",
+        label: "Contact Subject (mailto: or URL)",
+        sensitive: false,
+        envFallback: "VAPID_SUBJECT",
+      },
+    ],
+  },
+  {
+    provider: "object-storage",
+    label: "Object Storage (S3-compatible)",
+    fields: [
+      {
+        key: "endpoint",
+        label: "Endpoint",
+        sensitive: false,
+        envFallback: "S3_ENDPOINT",
+      },
+      {
+        key: "accessKey",
+        label: "Access Key",
+        sensitive: false,
+        envFallback: "S3_ACCESS_KEY",
+      },
+      {
+        key: "secretKey",
+        label: "Secret Key",
+        sensitive: true,
+        envFallback: "S3_SECRET_KEY",
+      },
+      {
+        key: "bucket",
+        label: "Bucket",
+        sensitive: false,
+        envFallback: "S3_BUCKET",
+      },
+    ],
+  },
+  {
+    provider: "sentry",
+    label: "Sentry",
+    fields: [
+      { key: "dsn", label: "DSN", sensitive: true, envFallback: "SENTRY_DSN" },
+    ],
+  },
+  {
+    provider: "razorpay",
+    label: "Razorpay",
+    fields: [
+      {
+        key: "webhookSecret",
+        label: "Webhook Secret",
+        sensitive: true,
+        envFallback: "RAZORPAY_WEBHOOK_SECRET",
+      },
+    ],
+  },
+  {
+    provider: "captcha",
+    label: "CAPTCHA",
+    fields: [
+      {
+        key: "provider",
+        label: "Provider (hcaptcha / recaptcha)",
+        sensitive: false,
+        envFallback: "CAPTCHA_PROVIDER",
+      },
+      {
+        key: "siteKey",
+        label: "Site Key",
+        sensitive: false,
+        envFallback: "CAPTCHA_SITE_KEY",
+      },
+      {
+        key: "secretKey",
+        label: "Secret Key",
+        sensitive: true,
+        envFallback: "CAPTCHA_SECRET_KEY",
+      },
+      {
+        key: "threshold",
+        label: "Score Threshold",
+        sensitive: false,
+        envFallback: "CAPTCHA_THRESHOLD",
+      },
+    ],
+  },
 ];
 
 export function findProviderSpec(

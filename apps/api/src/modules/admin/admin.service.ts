@@ -17,34 +17,43 @@ import {
 } from "./admin.schemas";
 import * as nodemailer from "nodemailer";
 import { Transporter } from "nodemailer";
+import { Optional } from "@nestjs/common";
+import { PlatformCredentialsService } from "../../common/platform-credentials/platform-credentials.service";
 
 @Injectable()
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
-  private transporter: Transporter | null = null;
 
-  constructor() {
-    // Initialize SMTP if configured
-    if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT, 10),
-        secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
-        auth: process.env.SMTP_USER
-          ? {
-              user: process.env.SMTP_USER,
-              pass: process.env.SMTP_PASS,
-            }
-          : undefined,
-      });
-      this.logger.log(
-        `SMTP configured for ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`,
-      );
-    } else {
-      this.logger.warn(
-        "SMTP not configured. Real invitation emails will not be sent.",
-      );
-    }
+  constructor(
+    @Optional()
+    private readonly platformCredentialsService?: PlatformCredentialsService,
+  ) {}
+
+  /**
+   * Rebuilt on every call (not cached on the instance) — same DB-first,
+   * env-fallback pattern as email.processor.ts's getTransporter(), which
+   * this previously duplicated with a divergent env var (SMTP_PASS vs
+   * SMTP_PASSWORD — the two SMTP code paths were silently reading different
+   * names for the same secret). Both now read the same "smtp" provider via
+   * PlatformCredentialsService, so a credential saved from the SaaS Portal
+   * Settings UI takes effect here too within its ~15s cache TTL.
+   */
+  private async getTransporter(): Promise<Transporter | null> {
+    const creds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("smtp")
+      : {};
+    const host = creds.host || process.env.SMTP_HOST;
+    const user = creds.user || process.env.SMTP_USER;
+    const pass = creds.password || process.env.SMTP_PASSWORD;
+    if (!host || !user || !pass) return null;
+
+    const port = Number(creds.port || process.env.SMTP_PORT) || 587;
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
   }
   /**
    * Returns all users in the tenant.
@@ -144,7 +153,8 @@ export class AdminService {
     tenantId: string,
     userId: string,
   ) {
-    if (!this.transporter) {
+    const transporter = await this.getTransporter();
+    if (!transporter) {
       this.logger.debug(
         `[Mock Email] Would send invite to ${email} for tenant ${tenantId}`,
       );
@@ -155,9 +165,14 @@ export class AdminService {
     // Generate a secure invite token in a real app, here we use a mock token just for the link
     const inviteLink = `${appUrl}/register?invite=${userId}`;
 
+    const creds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("smtp")
+      : {};
+
     try {
-      await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || '"UniERP" <noreply@unerp.dev>',
+      await transporter.sendMail({
+        from:
+          creds.from || process.env.SMTP_FROM || '"UniERP" <noreply@unerp.dev>',
         to: email,
         subject: "You have been invited to join a UniERP workspace",
         html: `

@@ -503,7 +503,10 @@ export class BillingService {
    * webhook must never process an unverified payload, configured or not.
    */
   async processStripeWebhook(payload: string, sig: string) {
-    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    const secret = this.platformCredentialsService
+      ? (await this.platformCredentialsService.get("stripe")).webhookSecret ||
+        process.env.STRIPE_WEBHOOK_SECRET
+      : process.env.STRIPE_WEBHOOK_SECRET;
     if (!secret) {
       this.logger.error(
         "STRIPE_WEBHOOK_SECRET is not configured — rejecting webhook.",
@@ -540,7 +543,10 @@ export class BillingService {
 
   /** Processes a Razorpay billing webhook. Same fail-closed policy as Stripe above. */
   async processRazorpayWebhook(payload: string, sig: string) {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const secret = this.platformCredentialsService
+      ? (await this.platformCredentialsService.get("razorpay")).webhookSecret ||
+        process.env.RAZORPAY_WEBHOOK_SECRET
+      : process.env.RAZORPAY_WEBHOOK_SECRET;
     if (!secret) {
       this.logger.error(
         "RAZORPAY_WEBHOOK_SECRET is not configured — rejecting webhook.",

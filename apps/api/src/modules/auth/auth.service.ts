@@ -41,6 +41,7 @@ import {
   decryptSecret,
 } from "./auth-crypto";
 import { ProvisioningService } from "./provisioning.service";
+import { PlatformCredentialsService } from "../../common/platform-credentials/platform-credentials.service";
 
 /** Failed logins allowed before the account is temporarily locked. */
 const MAX_FAILED_ATTEMPTS = 5;
@@ -51,17 +52,9 @@ const MFA_CHALLENGE_TTL = "5m";
 /** How long a push-approval request stays pending before the login page falls back to a manual code. */
 const MFA_PUSH_TTL_MS = 2 * 60 * 1000;
 
-if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-  webPush.setVapidDetails(
-    process.env.VAPID_SUBJECT || "mailto:admin@unerp.dev",
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY,
-  );
-}
-/** Push-approval is a no-op (silently skipped, code entry still works) until VAPID keys are configured. */
-const PUSH_CONFIGURED = Boolean(
-  process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
-);
+// VAPID details are applied lazily per-send (see AuthService.configureWebPush)
+// rather than once at module load, so a key saved from the SaaS Portal
+// Settings -> Integrations UI takes effect without an API restart.
 /** Ties a stored challenge row to its JWT without persisting the bearer token itself. */
 const hashChallengeToken = (token: string) =>
   createHash("sha256").update(token).digest("hex");
@@ -150,7 +143,30 @@ export class AuthService {
     private readonly provisioningService?: ProvisioningService,
     @Optional()
     private readonly eventEmitter?: EventEmitter2,
+    @Optional()
+    private readonly platformCredentialsService?: PlatformCredentialsService,
   ) {}
+
+  /**
+   * Applies VAPID details to the shared web-push instance from DB-first
+   * credentials (falling back to env), then reports whether push is usable.
+   * Called before every send rather than once at boot, mirroring the lazy
+   * Stripe-client/SMTP-transporter pattern elsewhere in this codebase.
+   */
+  private async configureWebPush(): Promise<boolean> {
+    const creds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("web-push")
+      : {};
+    const publicKey = creds.publicKey || process.env.VAPID_PUBLIC_KEY;
+    const privateKey = creds.privateKey || process.env.VAPID_PRIVATE_KEY;
+    if (!publicKey || !privateKey) return false;
+    webPush.setVapidDetails(
+      creds.subject || process.env.VAPID_SUBJECT || "mailto:admin@unerp.dev",
+      publicKey,
+      privateKey,
+    );
+    return true;
+  }
 
   private get isProduction() {
     return process.env.NODE_ENV === "production";
@@ -883,14 +899,23 @@ export class AuthService {
     }
 
     // Check CAPTCHA if configured and failed threshold met
-    const captchaSecret = process.env.CAPTCHA_SECRET_KEY;
-    const captchaThreshold = parseInt(process.env.CAPTCHA_THRESHOLD || "3", 10);
+    const captchaCreds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("captcha")
+      : {};
+    const captchaSecret =
+      captchaCreds.secretKey || process.env.CAPTCHA_SECRET_KEY;
+    const captchaThreshold = parseInt(
+      captchaCreds.threshold || process.env.CAPTCHA_THRESHOLD || "3",
+      10,
+    );
     if (captchaSecret && user.failedLoginAttempts >= captchaThreshold) {
       if (!dto.captchaToken) {
         throw new BadRequestException({
           captchaRequired: true,
-          provider: process.env.CAPTCHA_PROVIDER || "hcaptcha",
+          provider:
+            captchaCreds.provider || process.env.CAPTCHA_PROVIDER || "hcaptcha",
           siteKey:
+            captchaCreds.siteKey ||
             process.env.CAPTCHA_SITE_KEY ||
             "10000000-ffff-ffff-ffff-000000000001",
           message: "CAPTCHA verification is required.",
@@ -1031,10 +1056,14 @@ export class AuthService {
    * Verifies hCaptcha or Turnstile CAPTCHA token.
    */
   private async verifyCaptcha(token: string): Promise<boolean> {
-    const secret = process.env.CAPTCHA_SECRET_KEY;
+    const creds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("captcha")
+      : {};
+    const secret = creds.secretKey || process.env.CAPTCHA_SECRET_KEY;
     if (!secret) return true;
 
-    const provider = process.env.CAPTCHA_PROVIDER || "hcaptcha";
+    const provider =
+      creds.provider || process.env.CAPTCHA_PROVIDER || "hcaptcha";
     const url =
       provider === "turnstile"
         ? "https://challenges.cloudflare.com/turnstile/v0/siteverify"
@@ -1601,13 +1630,18 @@ export class AuthService {
      ───────────────────────────────────────────────────────── */
 
   /** In-memory OTP store. In production, use Redis with a TTL. */
-  private readonly otpStore = new Map<string, { code: string; expiresAt: number; attempts: number }>();
+  private readonly otpStore = new Map<
+    string,
+    { code: string; expiresAt: number; attempts: number }
+  >();
 
   private generateOtp(): string {
     return String(Math.floor(100000 + Math.random() * 900000));
   }
 
-  async sendOtp(email: string): Promise<{ message: string; cooldownSeconds: number }> {
+  async sendOtp(
+    email: string,
+  ): Promise<{ message: string; cooldownSeconds: number }> {
     const normalized = email.toLowerCase().trim();
     const existing = this.otpStore.get(normalized);
 
@@ -1616,7 +1650,10 @@ export class AuthService {
       const elapsed = Date.now() - (existing.expiresAt - 5 * 60 * 1000);
       if (elapsed < 60000 && existing.attempts > 0) {
         const remaining = Math.ceil((60000 - elapsed) / 1000);
-        return { message: `Please wait ${remaining}s before requesting a new code.`, cooldownSeconds: remaining };
+        return {
+          message: `Please wait ${remaining}s before requesting a new code.`,
+          cooldownSeconds: remaining,
+        };
       }
     }
 
@@ -1629,65 +1666,112 @@ export class AuthService {
 
     await this.dispatchAuthEmail({
       to: normalized,
-      tenantId: '',
-      subject: 'Your UniERP verification code',
+      tenantId: "",
+      subject: "Your UniERP verification code",
       body: `Your verification code is: ${code}\n\nThis code expires in 5 minutes.\n\nIf you did not request this, please ignore this email.`,
     });
 
     this.logger.log(`[OTP] Code ${code} sent to ${normalized}`);
-    return { message: 'Verification code sent to your email.', cooldownSeconds: 60 };
+    return {
+      message: "Verification code sent to your email.",
+      cooldownSeconds: 60,
+    };
   }
 
-  async verifyOtp(email: string, code: string): Promise<{ verified: boolean; message: string }> {
+  async verifyOtp(
+    email: string,
+    code: string,
+  ): Promise<{ verified: boolean; message: string }> {
     const normalized = email.toLowerCase().trim();
     const record = this.otpStore.get(normalized);
 
     if (!record) {
-      return { verified: false, message: 'No verification code found. Request a new one.' };
+      return {
+        verified: false,
+        message: "No verification code found. Request a new one.",
+      };
     }
 
     if (Date.now() > record.expiresAt) {
       this.otpStore.delete(normalized);
-      return { verified: false, message: 'Verification code has expired. Request a new one.' };
+      return {
+        verified: false,
+        message: "Verification code has expired. Request a new one.",
+      };
     }
 
     record.attempts += 1;
     if (record.attempts > 5) {
       this.otpStore.delete(normalized);
-      return { verified: false, message: 'Too many failed attempts. Request a new code.' };
+      return {
+        verified: false,
+        message: "Too many failed attempts. Request a new code.",
+      };
     }
 
     if (record.code !== code.trim()) {
-      return { verified: false, message: 'Invalid verification code. Please try again.' };
+      return {
+        verified: false,
+        message: "Invalid verification code. Please try again.",
+      };
     }
 
     this.otpStore.delete(normalized);
-    return { verified: true, message: 'Email verified successfully.' };
+    return { verified: true, message: "Email verified successfully." };
   }
 
-  async getOnboardingStatus(tenantId: string, userId: string): Promise<{ completed: boolean; steps: string[] }> {
+  async getOnboardingStatus(
+    tenantId: string,
+    userId: string,
+  ): Promise<{ completed: boolean; steps: string[] }> {
     try {
-      const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+      });
       if (!tenant) return { completed: false, steps: [] };
       const settings = (tenant.settings as Record<string, any>) || {};
-      const checklist = (settings.onboardingChecklist as Record<string, boolean>) || {};
+      const checklist =
+        (settings.onboardingChecklist as Record<string, boolean>) || {};
 
-      const user = await prisma.user.findFirst({ where: { id: userId, tenantId }, select: { avatar: true } });
+      const user = await prisma.user.findFirst({
+        where: { id: userId, tenantId },
+        select: { avatar: true },
+      });
       const logoUrl = settings.logoUrl;
-      const inviteCount = await prisma.user.count({ where: { tenantId, id: { not: userId }, status: { in: ['INVITED', 'ACTIVE'] } } });
-      const marketplaceAppCount = await prisma.installedApp.count({ where: { tenantId, source: 'MARKETPLACE' } });
-      const subscription = await prisma.tenantSubscription.findUnique({ where: { tenantId }, include: { plan: true } });
+      const inviteCount = await prisma.user.count({
+        where: {
+          tenantId,
+          id: { not: userId },
+          status: { in: ["INVITED", "ACTIVE"] },
+        },
+      });
+      const marketplaceAppCount = await prisma.installedApp.count({
+        where: { tenantId, source: "MARKETPLACE" },
+      });
+      const subscription = await prisma.tenantSubscription.findUnique({
+        where: { tenantId },
+        include: { plan: true },
+      });
 
       const profileDone = Boolean(user?.avatar);
-      const logoDone = typeof logoUrl === 'string' && logoUrl.trim().length > 0;
+      const logoDone = typeof logoUrl === "string" && logoUrl.trim().length > 0;
       const inviteDone = inviteCount > 0;
       const appDone = marketplaceAppCount > 0;
       const planName = subscription?.plan?.name?.toLowerCase();
-      const planDone = Boolean(subscription && planName && planName !== 'free' && planName !== 'trial');
+      const planDone = Boolean(
+        subscription && planName && planName !== "free" && planName !== "trial",
+      );
       const dashboardDone = Boolean(checklist.dashboard);
 
-      const mandatoryKeys = ['profile', 'logo', 'app'] as const;
-      const steps: Record<string, boolean> = { profile: profileDone, logo: logoDone, invite: inviteDone, app: appDone, plan: planDone, dashboard: dashboardDone };
+      const mandatoryKeys = ["profile", "logo", "app"] as const;
+      const steps: Record<string, boolean> = {
+        profile: profileDone,
+        logo: logoDone,
+        invite: inviteDone,
+        app: appDone,
+        plan: planDone,
+        dashboard: dashboardDone,
+      };
       const incomplete = mandatoryKeys.filter((k) => !steps[k]);
 
       return { completed: incomplete.length === 0, steps: incomplete };
@@ -1780,7 +1864,7 @@ export class AuthService {
     userId: string,
     tenantId: string,
   ): Promise<boolean> {
-    if (!PUSH_CONFIGURED) return false;
+    if (!(await this.configureWebPush())) return false;
 
     return runWithTenantSession({ tenantId, userId }, async () => {
       const subscriptions = await prisma.pushSubscription.findMany({
