@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 export interface SupplierScorecard {
   supplierId: string;
@@ -135,34 +136,37 @@ export class SupplierCollaborationService {
   }
 
   async getSupplierInvoices(tenantId: string, vendorId?: string) {
-    const bills = await prisma.vendorBill.findMany({
+    const invoices = await prisma.invoice.findMany({
       where: {
         tenantId,
-        ...(vendorId ? { vendorId } : {}),
+        type: "PURCHASE",
+        ...(vendorId ? { customerId: vendorId } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 50,
     });
 
-    const vendorIds = Array.from(new Set(bills.map((b) => b.vendorId)));
+    const vendorIds = Array.from(
+      new Set(invoices.map((inv) => inv.customerId)),
+    );
     const vendors = await prisma.vendor.findMany({
       where: { id: { in: vendorIds } },
       select: { id: true, name: true },
     });
     const vendorMap = new Map(vendors.map((v) => [v.id, v.name]));
 
-    return bills.map((b) => ({
-      id: b.id,
-      billNumber: b.billNumber,
-      vendorId: b.vendorId,
-      vendorName: vendorMap.get(b.vendorId) ?? "Unknown",
-      totalAmount: b.totalAmount,
+    return invoices.map((inv) => ({
+      id: inv.id,
+      billNumber: inv.invoiceNumber,
+      vendorId: inv.customerId,
+      vendorName: vendorMap.get(inv.customerId) ?? "Unknown",
+      totalAmount: inv.totalAmount,
       paidAmount: 0,
-      dueAmount: Number(b.totalAmount ?? 0),
-      status: b.status,
-      dueDate: b.dueDate?.toISOString() ?? null,
-      currency: b.currency ?? "USD",
-      createdAt: b.createdAt.toISOString(),
+      dueAmount: Number(inv.totalAmount ?? 0),
+      status: inv.status,
+      dueDate: inv.dueDate?.toISOString() ?? null,
+      currency: inv.currency ?? "USD",
+      createdAt: inv.createdAt.toISOString(),
     }));
   }
 
@@ -183,15 +187,19 @@ export class SupplierCollaborationService {
     if (!vendor)
       throw new NotFoundException(`Vendor not found: ${data.vendorId}`);
     const org = await prisma.organization.findFirst({ where: { tenantId } });
-    const bill = await prisma.vendorBill.create({
+    const invoice = await prisma.invoice.create({
       data: {
         tenantId,
         orgId: org?.id ?? tenantId,
-        vendorId: data.vendorId,
-        billNumber: `SINV-${Date.now()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
+        type: "PURCHASE",
+        customerId: data.vendorId,
+        invoiceNumber: `SINV-${Date.now()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
         status: "DRAFT",
-        billDate: new Date(),
-        totalAmount: data.amount,
+        issueDate: new Date(),
+        totalAmount: new Prisma.Decimal(data.amount),
+        subtotal: new Prisma.Decimal(data.amount),
+        taxAmount: new Prisma.Decimal(0),
+        paidAmount: new Prisma.Decimal(0),
         currency: data.currency ?? "USD",
         dueDate: data.dueDate
           ? new Date(data.dueDate)
@@ -200,8 +208,8 @@ export class SupplierCollaborationService {
       },
     });
     return {
-      id: bill.id,
-      billNumber: bill.billNumber,
+      id: invoice.id,
+      billNumber: invoice.invoiceNumber,
       status: "DRAFT",
       message: "Invoice submitted for review",
     };

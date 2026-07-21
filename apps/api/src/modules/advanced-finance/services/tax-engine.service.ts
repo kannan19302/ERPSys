@@ -425,7 +425,7 @@ export class TaxEngineService {
         levelName: dto.levelName,
         daysOverdue: dto.daysOverdue,
         feeAmount: new Prisma.Decimal(dto.feeAmount),
-        emailTemplateId: dto.emailTemplateId || null,
+        emailTemplate: dto.emailTemplateId || null,
       },
     });
   }

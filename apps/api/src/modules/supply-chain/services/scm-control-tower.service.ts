@@ -175,7 +175,9 @@ export class ScmControlTowerService {
       prisma.inventoryItem.count({
         where: { tenantId, reorderPoint: { gt: 0 } },
       }),
-      prisma.vendorBill.count({ where: { tenantId, status: "OVERDUE" } }),
+      prisma.invoice.count({
+        where: { tenantId, type: "PURCHASE", status: "OVERDUE" },
+      }),
       prisma.purchaseOrder.count({
         where: { tenantId, deletedAt: null, status: "SENT" },
       }),

@@ -4,6 +4,10 @@ import { ArApDeepController } from "./ar-ap-deep.controller";
 import { FinanceExpansionDeepController } from "./finance-expansion-deep.controller";
 import { FinanceMoreDeepController } from "./finance-more-deep.controller";
 import { FinanceTaxJournalDeepController } from "./finance-tax-journal-deep.controller";
+import { EInvoiceController } from "./e-invoice.controller";
+import { TreasuryDeepController } from "./treasury-deep.controller";
+import { SubscriptionBillingController } from "./subscription-billing.controller";
+import { FixedAssetDeepController } from "./fixed-asset-deep.controller";
 import { AdvancedFinanceService } from "./advanced-finance.service";
 import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
 import {
@@ -100,6 +104,10 @@ const domainServices = [
     FinanceExpansionDeepController,
     FinanceMoreDeepController,
     FinanceTaxJournalDeepController,
+    EInvoiceController,
+    TreasuryDeepController,
+    SubscriptionBillingController,
+    FixedAssetDeepController,
   ],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],

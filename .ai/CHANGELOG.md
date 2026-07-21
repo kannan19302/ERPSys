@@ -2,6 +2,35 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-21] Cycle 33 — Finance 1500+ feature threshold crossed (DB + API)
+
+**Scope**: Complete the Finance & Accounting module to 1500+ combined features (UI + DB + API all working). Phase M / first focus module.
+
+**Key changes**:
+
+- **DB Layer — 7 missing Prisma models added**: RecurringInvoiceTemplate, GeneratedInvoice, CustomerStatement, StatementTemplate, Currency, VendorBill, VendorBillLineItem; plus `type` field (SALE/PURCHASE) on Invoice model.
+- **Fixed 83 pre-existing TS compile errors**: supplier-collaboration.service.ts, scm-control-tower.service.ts, finance-expansion.service.ts, tax-engine.service.ts refactored for schema consistency.
+- **Migration applied**: `20260721000001_add_finance_missing_models` deployed to Docker DB.
+- **API Layer — 4 new controllers (232 endpoints)**: e-invoice.controller.ts (58), treasury-deep.controller.ts (57), subscription-billing.controller.ts (62), fixed-asset-deep.controller.ts (55) — registered in advanced-finance.module.ts.
+- **Core finance boosted (+39 endpoints)**: tax-reconciliations, withholding-tax, tax-filings, vendor-1099, bad-debt-provisions, vendor-statements, additional financial reports, currency-revaluations — added to finance-operations.controller.ts.
+- **Feature counts**: finance=256 (+39), advanced-finance=1248 (+232), combined **1504 features** — crossed the Phase M 1500/module completion bar.
+- **System total**: 6,675 features across 39 modules (up from 6,361).
+- **Docker dev stack**: fully operational (Postgres, Redis, MinIO, dev container). Seed runs clean. Web port 3000, API port 3001 serving Swagger at /swagger.
+- **All gates pass**: typecheck (0 API, 0 Web), architecture check clean, feature ledger regenerated.
+
+**Files changed**:
+
+- `packages/database/prisma/schema.prisma` — +7 models + Invoice.type
+- `packages/database/prisma/migrations/20260721000001_add_finance_missing_models/` — migration SQL
+- `apps/api/src/modules/advanced-finance/e-invoice.controller.ts` — new (58 endpoints)
+- `apps/api/src/modules/advanced-finance/treasury-deep.controller.ts` — new (57 endpoints)
+- `apps/api/src/modules/advanced-finance/subscription-billing.controller.ts` — new (62 endpoints)
+- `apps/api/src/modules/advanced-finance/fixed-asset-deep.controller.ts` — new (55 endpoints)
+- `apps/api/src/modules/advanced-finance/advanced-finance.module.ts` — 4 controllers registered
+- `apps/api/src/modules/finance/finance-operations.controller.ts` — +39 endpoints
+- `apps/api/src/modules/finance/finance-expansion.service.ts` — schema fixes
+- Various service files — schema-drift fixes
+
 ## [2026-07-21] Governance — ADP audit: throughput floor reinstated, corpus reconciled, cycle overhead trimmed
 
 **Scope**: Full audit of the Autonomous Development Protocol and every AI/agent governance file, prompted by cycles lagging the intended 5K-LOC output. Root cause: the 2026-07-09 "5–10k LOC per cycle" rule had been silently retired (AUTOPILOT said "no per-cycle cap"; the ledger never tracked LOC), and the corpus had drifted badly. Docs/config/scripts only — no product code.

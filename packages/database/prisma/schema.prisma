@@ -323,8 +323,6 @@ model Organization {
   warehouses                Warehouse[]
   creditNotes               CreditNote[]
   debitNotes                DebitNote[]
-  dunningLevels             DunningLevel[]
-  dunningRuns               DunningRun[]
   dunningLogs               InvoiceDunningLog[]
   paymentSchedules          PaymentSchedule[]
   paymentRuns               PaymentRun[]
@@ -1259,6 +1257,7 @@ model Invoice {
   tenantId       String    @map("tenant_id")
   orgId          String    @map("org_id")
   customerId     String    @map("customer_id")
+  type           String    @default("SALE")
   invoiceNumber  String    @map("invoice_number")
   status         String    @default("DRAFT")
   issueDate      DateTime  @default(now()) @map("issue_date")
@@ -3926,6 +3925,161 @@ model DockAppointment {
 }
 
 // ════════════════════════════════════════════════
+// FINANCE EXPANSION — Missing Models
+// ════════════════════════════════════════════════
+
+model RecurringInvoiceTemplate {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  customerId    String    @map("customer_id")
+  templateName  String    @map("template_name")
+  frequency     String
+  intervalCount Int       @default(1) @map("interval_count")
+  startDate     DateTime  @map("start_date")
+  endDate       DateTime? @map("end_date")
+  nextRunDate   DateTime  @map("next_run_date")
+  status        String    @default("ACTIVE")
+  lineItems     Json      @map("line_items")
+  notes         String?
+  lastRunDate   DateTime? @map("last_run_date")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
+  @@map("recurring_invoice_templates")
+}
+
+model GeneratedInvoice {
+  id            String   @id @default(cuid())
+  templateId    String   @map("template_id")
+  tenantId      String   @map("tenant_id")
+  invoiceId     String   @map("invoice_id")
+  invoiceNumber String   @map("invoice_number")
+  totalAmount   Decimal  @db.Decimal(15, 2) @map("total_amount")
+  generatedAt   DateTime @default(now()) @map("generated_at")
+
+  @@index([tenantId])
+  @@index([templateId])
+  @@index([invoiceId])
+  @@map("generated_invoices")
+}
+
+model CustomerStatement {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  orgId               String   @map("org_id")
+  customerId          String   @map("customer_id")
+  periodStart         DateTime @map("period_start")
+  periodEnd           DateTime @map("period_end")
+  openingBalance      Decimal  @db.Decimal(15, 2) @map("opening_balance")
+  closingBalance      Decimal  @db.Decimal(15, 2) @map("closing_balance")
+  totalCharged        Decimal  @db.Decimal(15, 2) @map("total_charged")
+  totalPaid           Decimal  @db.Decimal(15, 2) @map("total_paid")
+  lineItems           Json     @map("line_items")
+  status              String   @default("DRAFT")
+  includePaidInvoices Boolean  @default(false) @map("include_paid_invoices")
+  notes               String?
+  generatedAt         DateTime @default(now()) @map("generated_at")
+  sentAt              DateTime? @map("sent_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  deletedAt           DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("customer_statements")
+}
+
+model StatementTemplate {
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  orgId                 String?  @map("org_id")
+  templateName          String   @map("template_name")
+  headerText            String?  @map("header_text")
+  footerText            String?  @map("footer_text")
+  includePaymentHistory Boolean  @default(true) @map("include_payment_history")
+  includeAgingBreakdown Boolean  @default(true) @map("include_aging_breakdown")
+  showDueAmount         Boolean  @default(true) @map("show_due_amount")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@map("statement_templates")
+}
+
+model Currency {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  code          String
+  name          String
+  symbol        String
+  isBase        Boolean  @default(false) @map("is_base")
+  decimalPlaces Int      @default(2) @map("decimal_places")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("currencies")
+}
+
+model VendorBill {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  vendorId        String   @map("vendor_id")
+  billNumber      String   @map("bill_number")
+  billDate        DateTime @map("bill_date")
+  dueDate         DateTime @map("due_date")
+  purchaseOrderId String?  @map("purchase_order_id")
+  status          String   @default("DRAFT")
+  subtotal        Decimal  @default(0) @db.Decimal(15, 2)
+  taxAmount       Decimal  @default(0) @db.Decimal(15, 2) @map("tax_amount")
+  totalAmount     Decimal  @default(0) @db.Decimal(15, 2) @map("total_amount")
+  paidAmount      Decimal  @default(0) @db.Decimal(15, 2) @map("paid_amount")
+  discountAmount  Decimal  @default(0) @db.Decimal(15, 2) @map("discount_amount")
+  currency        String   @default("USD")
+  notes           String?
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  lineItems VendorBillLineItem[]
+
+  @@unique([tenantId, orgId, billNumber])
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("vendor_bills")
+}
+
+model VendorBillLineItem {
+  id           String  @id @default(cuid())
+  vendorBillId String  @map("vendor_bill_id")
+  tenantId     String  @map("tenant_id")
+  description  String
+  quantity     Decimal @db.Decimal(15, 3)
+  unitPrice    Decimal @db.Decimal(15, 2) @map("unit_price")
+  subtotal     Decimal @default(0) @db.Decimal(15, 2)
+  taxRate      Decimal @default(0) @db.Decimal(5, 2) @map("tax_rate")
+  taxAmount    Decimal @default(0) @db.Decimal(15, 2) @map("tax_amount")
+  totalAmount  Decimal @db.Decimal(15, 2) @map("total_amount")
+  sortOrder    Int     @default(0) @map("sort_order")
+
+  vendorBill VendorBill @relation(fields: [vendorBillId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([vendorBillId])
+  @@map("vendor_bill_line_items")
+}
+
+// ════════════════════════════════════════════════
 // ADVANCED FINANCE (Phase 6)
 // ════════════════════════════════════════════════
 
@@ -5792,6 +5946,11 @@ model ExpenseReport {
   title                  String
   description            String?
   totalAmount            Decimal   @default(0) @map("total_amount") @db.Decimal(15, 2)
+  expenseDate            DateTime  @default(now()) @map("expense_date")
+  currency               String    @default("USD")
+  categoryId             String?   @map("category_id")
+  receiptUrl             String?   @map("receipt_url")
+  notes                  String?
   status                 String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, PENDING_SECOND_APPROVAL, REIMBURSED, REJECTED, PAID
   hasPolicyViolation     Boolean   @default(false) @map("has_policy_violation")
   requiresSecondApproval Boolean   @default(false) @map("requires_second_approval")
@@ -5847,6 +6006,7 @@ model ExpenseCategoryPolicy {
   id                   String   @id @default(cuid())
   tenantId             String   @map("tenant_id")
   category             String
+  description          String?
   maxAmountPerItem     Decimal? @map("max_amount_per_item") @db.Decimal(15, 2)
   receiptRequiredAbove Decimal  @default(0) @map("receipt_required_above") @db.Decimal(15, 2)
   isActive             Boolean  @default(true) @map("is_active")
@@ -6307,10 +6467,13 @@ model CreditNote {
   invoiceId  String?  @map("invoice_id")
   noteNumber String   @map("note_number")
   amount     Decimal  @db.Decimal(15, 2)
+  lineItems  Json?    @map("line_items")
   reason     String?
   status     String   @default("DRAFT")
   issueDate  DateTime @default(now()) @map("issue_date")
+  createdBy  String?  @map("created_by")
   createdAt  DateTime @default(now()) @map("created_at")
+  deletedAt  DateTime? @map("deleted_at")
 
   organization Organization @relation(fields: [orgId], references: [id])
   customer     Customer     @relation(fields: [customerId], references: [id])
@@ -6327,12 +6490,16 @@ model DebitNote {
   orgId           String   @map("org_id")
   vendorId        String   @map("vendor_id")
   purchaseOrderId String?  @map("purchase_order_id")
+  billId          String?  @map("bill_id")
   noteNumber      String   @map("note_number")
   amount          Decimal  @db.Decimal(15, 2)
+  lineItems       Json?    @map("line_items")
   reason          String?
   status          String   @default("DRAFT")
   issueDate       DateTime @default(now()) @map("issue_date")
+  createdBy       String?  @map("created_by")
   createdAt       DateTime @default(now()) @map("created_at")
+  deletedAt       DateTime? @map("deleted_at")
 
   organization  Organization   @relation(fields: [orgId], references: [id])
   vendor        Vendor         @relation(fields: [vendorId], references: [id])
@@ -6344,33 +6511,46 @@ model DebitNote {
 }
 
 model DunningLevel {
-  id              String  @id @default(cuid())
-  tenantId        String  @map("tenant_id")
-  orgId           String  @map("org_id")
-  levelName       String  @map("level_name")
-  daysOverdue     Int     @map("days_overdue")
-  feeAmount       Decimal @default(0) @map("fee_amount") @db.Decimal(15, 2)
-  emailTemplateId String? @map("email_template_id")
-  status          String  @default("ACTIVE")
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String?  @map("org_id")
+  levelName       String   @map("level_name")
+  levelNumber     Int      @default(0) @map("level_number")
+  daysOverdue     Int      @map("days_overdue")
+  maxOverdueDays  Int?     @map("max_overdue_days")
+  feeAmount       Decimal  @default(0) @map("fee_amount") @db.Decimal(15, 2)
+  feePercentage   Decimal  @default(0) @map("fee_percentage") @db.Decimal(5, 2)
+  interestRate    Decimal  @default(0) @map("interest_rate") @db.Decimal(5, 2)
+  emailTemplate   String?  @map("email_template")
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  organization Organization        @relation(fields: [orgId], references: [id])
-  dunningLogs  InvoiceDunningLog[]
+  dunningLogs InvoiceDunningLog[]
 
-  @@unique([tenantId, orgId, daysOverdue])
+  @@unique([tenantId, orgId, levelNumber])
   @@index([tenantId])
   @@map("dunning_levels")
 }
 
 model DunningRun {
-  id            String   @id @default(cuid())
-  tenantId      String   @map("tenant_id")
-  orgId         String   @map("org_id")
-  runDate       DateTime @default(now()) @map("run_date")
-  totalInvoices Int      @map("total_invoices")
-  status        String   @default("COMPLETED")
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  orgId          String?  @map("org_id")
+  title          String
+  runDate        DateTime @default(now()) @map("run_date")
+  levelIds       Json     @map("level_ids")
+  customerIds    Json     @map("customer_ids")
+  minOverdueDays Int      @default(1) @map("min_overdue_days")
+  results        Json
+  totalInvoices  Int      @default(0) @map("total_invoices")
+  totalLetters   Int      @default(0) @map("total_letters")
+  totalAmount    Decimal  @default(0) @map("total_amount") @db.Decimal(15, 2)
+  status         String   @default("DRAFT")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization Organization        @relation(fields: [orgId], references: [id])
-  dunningLogs  InvoiceDunningLog[]
+  dunningLogs InvoiceDunningLog[]
 
   @@index([tenantId])
   @@map("dunning_runs")

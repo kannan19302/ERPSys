@@ -1903,9 +1903,11 @@ export class FinanceExpansionService {
   ): Promise<DunningLevel[]> {
     const skip = (page - 1) * limit;
     const take = limit;
-    const orderBy = sortBy
-      ? { [sortBy]: sortOrder ?? "asc" }
-      : { levelNumber: "asc" as const };
+    const orderBy = (
+      sortBy
+        ? { [sortBy]: sortOrder ?? "asc" }
+        : { levelNumber: "asc" as const }
+    ) as any;
     const rows = await prisma.dunningLevel.findMany({
       where: { tenantId },
       skip,
@@ -2095,9 +2097,9 @@ export class FinanceExpansionService {
   ): Promise<DunningRun[]> {
     const skip = (page - 1) * limit;
     const take = limit;
-    const orderBy = sortBy
-      ? { [sortBy]: sortOrder ?? "asc" }
-      : { createdAt: "desc" as const };
+    const orderBy = (
+      sortBy ? { [sortBy]: sortOrder ?? "asc" } : { createdAt: "desc" as const }
+    ) as any;
     const rows = await prisma.dunningRun.findMany({
       where: { tenantId },
       skip,
