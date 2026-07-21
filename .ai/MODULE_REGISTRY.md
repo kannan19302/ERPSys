@@ -14,6 +14,7 @@
 
 | Date       | Total LOC | Delta    | Notable modules/features added that session                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | :--------- | :-------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-21 | 489,100   | +1,700   | CYCLE 30 — Security Hardening (#39, #40, #41) & Supply Chain Module Deepening: Fixed P1 security vulnerabilities (#39 raw SQL in CRM intelligence, #40 unvalidated payloads in finance operations & expansion, #41 untyped query params in leases). Deepened Supply Chain module with 4 new services (`FreightManagementService`, `SupplierCollaborationService`, `SupplyNetworkRiskService`, `ScmControlTowerService`) adding 45+ endpoints. Built SCM Control Tower interactive UI page with OTIF/Inventory trend charts, alerts banner, and DataTable. Created 12 Vitest unit tests (24/24 SCM tests green). Typechecks and `pnpm architecture:check` 100% clean.                                                   |
 | 2026-07-20 | 487,400   | +600     | CYCLE 35 — Finance Module-Scoped Demo Data Load/Unload Setting: Implemented `FinanceDemoDataService` and API endpoints (`GET/POST/POST /api/v1/finance/demo-data/*`). Created `<FinanceDemoDataCard />` UI setting component in `Finance Settings > Demo Data` tab (`/finance/settings?tab=demo-data`). Added unit test suite in `finance-demo-data.service.spec.ts`. Total tests passed: 470/470.                                                                                                                                                                                                                                                                                                                     |
 | 2026-07-20 | 486,800   | +1,200   | CYCLE 34 — Finance 1000+ End-to-End Test Suite & Zero-Stub Verification: Executed full Vitest unit, regression, and UAT test suite across `src/modules/finance` and `src/modules/advanced-finance` (**27 test files, 464 passed tests**). Added unit test cases for `getDashboardData` KPI aggregates, monthly revenue trend calculations, status distributions, and AR aging buckets. Confirmed 0 stubbed implementations, 0 typecheck errors across `@unerp/web` and `@unerp/api`.                                                                                                                                                                                                                                   |
 | 2026-07-20 | 485,600   | +1,800   | CYCLE 33 — Finance Module Gap Audit & Complete Inline Subtab Integration: Conducted comprehensive gap analysis comparing UniERP Finance against SAP S/4HANA, NetSuite, Dynamics 365, Odoo, and ERPNext. Wired all 51 advanced sub-pages directly inline into core module layouts (`/finance/banking`, `/finance/ap`, `/finance/ar`, `/finance/tax`, `/finance/assets`, `/finance/budget-planning`, `/finance/reports`, `/finance/settings`) using URL search parameter subtab routing (`?tab=<name>&subtab=<name>`). Created dedicated top-level pages for `corporate-cards` and `intercompany`. Verified 0 TS errors across `@unerp/web` and `@unerp/api`.                                                            |
@@ -68,58 +69,61 @@
 
 ## System Progress Dashboard
 
-_Generated on: 2026-07-20T20:00:00.000Z_
+_Generated on: 2026-07-21T11:14:03.232Z_
 
 | Metric                               | Value | Target | Progress |
 | :----------------------------------- | :---- | :----- | :------- |
-| **Total Features**                   | 5688  | 18500  | 30.7%    |
-| **Modules in Skeleton (<10)**        | 13    | 0      | -        |
-| **Modules at MVM (10-50)**           | 12    | 0      | -        |
-| **Modules at Functional (50-200)**   | 5     | 0      | -        |
-| **Modules at Competitive (200-500)** | 0     | 0      | -        |
-| **Modules at Complete (500+)**       | 7     | 37     | 18.9%    |
-| **Average Features per Module**      | 150   | 500    | 30.0%    |
+| **Total Features**                   | 6348  | 20000  | 31.7%    |
+| **Modules in Skeleton (<10)**        | 14    | 0      | -        |
+| **Modules at MVM (10-50)**           | 11    | 0      | -        |
+| **Modules at Functional (50-200)**   | 8     | 0      | -        |
+| **Modules at Competitive (200-500)** | 1     | 0      | -        |
+| **Modules at Complete (500+)**       | 6     | 40     | 15.0%    |
+| **Average Features per Module**      | 159   | 500    | 31.7%    |
 
 ### Module Health List
 
 | Module             | Features | Health Score | Maturity Tier | Tests | Status |
 | :----------------- | -------: | -----------: | :------------ | :---- | :----- |
-| `admin`            |      156 |       68/100 | Functional    | ✅    | 🟡     |
-| `advanced-finance` |     1002 |       92/100 | Complete      | ✅    | 👑     |
+| `admin`            |      123 |       67/100 | Functional    | ✅    | 🟡     |
+| `advanced-finance` |     1003 |       80/100 | Complete      | ✅    | 👑     |
 | `advanced-hr`      |      710 |       82/100 | Complete      | ✅    | 👑     |
 | `ai`               |       13 |       43/100 | MVM           | ✅    | 🔵     |
 | `analytics`        |       12 |       47/100 | MVM           | ✅    | 🔵     |
 | `api-platform`     |        9 |       47/100 | Skeleton      | ✅    | 🔴     |
-| `auth`             |       33 |       41/100 | MVM           | ✅    | 🔵     |
+| `auth`             |       40 |       40/100 | MVM           | ✅    | 🔵     |
 | `blockchain`       |       11 |       21/100 | MVM           | ❌    | 🔵     |
 | `builder`          |      177 |       58/100 | Functional    | ✅    | 🟡     |
-| `communication`    |      101 |       55/100 | Functional    | ✅    | 🟡     |
-| `crm`              |      704 |       79/100 | Complete      | ✅    | 👑     |
+| `communication`    |      102 |       56/100 | Functional    | ✅    | 🟡     |
+| `crm`              |      786 |       79/100 | Complete      | ✅    | 👑     |
 | `devops`           |        3 |       39/100 | Skeleton      | ✅    | 🔴     |
 | `documents`        |       21 |       47/100 | MVM           | ✅    | 🔵     |
+| `drive`            |        0 |       30/100 | Skeleton      | ❌    | 🔴     |
 | `ecommerce`        |       24 |       48/100 | MVM           | ✅    | 🔵     |
 | `ext-gateway`      |        3 |       28/100 | Skeleton      | ✅    | 🔴     |
-| `finance`          |       27 |       67/100 | MVM           | ✅    | 🟡     |
+| `finance`          |      174 |       65/100 | Functional    | ✅    | 🟡     |
 | `fixed-assets`     |        9 |       47/100 | Skeleton      | ✅    | 🔴     |
 | `hr`               |        8 |       50/100 | Skeleton      | ✅    | 🔴     |
 | `inventory`        |      746 |       74/100 | Complete      | ✅    | 👑     |
 | `localization`     |        4 |       46/100 | Skeleton      | ✅    | 🔴     |
 | `manufacturing`    |       43 |       48/100 | MVM           | ✅    | 🔵     |
-| `marketplace`      |       50 |       53/100 | Functional    | ✅    | 🟡     |
+| `marketplace`      |       51 |       53/100 | Functional    | ✅    | 🟡     |
 | `notifications`    |        6 |       47/100 | Skeleton      | ✅    | 🔴     |
 | `outbox`           |        2 |       37/100 | Skeleton      | ✅    | 🔴     |
+| `people`           |       10 |       51/100 | MVM           | ✅    | 🔵     |
 | `pos`              |       73 |       54/100 | Functional    | ✅    | 🟡     |
 | `procurement`      |      708 |       78/100 | Complete      | ✅    | 👑     |
 | `projects`         |       25 |       51/100 | MVM           | ✅    | 🔵     |
 | `pwa`              |        3 |       46/100 | Skeleton      | ✅    | 🔴     |
 | `reporting`        |       12 |       51/100 | MVM           | ✅    | 🔵     |
-| `saas`             |      504 |       82/100 | Complete      | ✅    | 👑     |
+| `saas`             |      499 |       65/100 | Competitive   | ✅    | 🟢     |
+| `saas-portal`      |      108 |       39/100 | Functional    | ❌    | 🟡     |
 | `sales`            |      709 |       78/100 | Complete      | ✅    | 👑     |
 | `saved-views`      |        3 |       26/100 | Skeleton      | ❌    | 🔴     |
 | `search`           |        1 |        4/100 | Skeleton      | ❌    | 🔴     |
 | `storage`          |        6 |       43/100 | Skeleton      | ✅    | 🔴     |
 | `subscriptions`    |       14 |       54/100 | MVM           | ✅    | 🔵     |
-| `supply-chain`     |       28 |       51/100 | MVM           | ✅    | 🔵     |
+| `supply-chain`     |       89 |       58/100 | Functional    | ✅    | 🟡     |
 | `workflow`         |        8 |       47/100 | Skeleton      | ✅    | 🔴     |
 
 ## Cycle Ledger — DEV/QA cadence state (binding, AUTOPILOT § Shared bindings #17)
@@ -130,13 +134,14 @@ _Generated on: 2026-07-20T20:00:00.000Z_
 > harden run. User-invoked "harden" runs are logged too but never
 > reset the 10-cycle clock.
 
-- **DEV cycles completed:** 29
-- **Next run:** DEV
-- **Cycles until mandatory harden:** 1 (next checkpoint after cycle 30)
+- **DEV cycles completed:** 30
+- **Next run:** HARDEN (mandatory)
+- **Cycles until mandatory harden:** 0 (next run MUST execute HARDEN checkpoint after cycle 30)
 - **Current program phase:** M — Module strengthening (Foundation SEALED v1.0 on 2026-07-18)
 
 |   # | Date       | Flow           | Phase | Scope                                                                           | Outcome (items/features, gates)                                                                                                                                                                                                                                              | Commit                                  |
 | --: | :--------- | :------------- | :---- | :------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------- |
+|  30 | 2026-07-21 | DEV            | M     | Security Hardening (#39, #40, #41) & Supply Chain Deepening                     | Closed security issues #39, #40, #41. Added 4 expansion services (+45+ endpoints), SCM Control Tower UI page, 24 unit tests. Typechecks & architecture check 100% clean. HARDEN armed for next run.                                                                          | see CHANGELOG 2026-07-21 Cycle 30 entry |
 |   — | 2026-07-21 | QA (explicit)  | M     | QA harden — fixed 24 false-positive test failures                               | #37 rbac-regression-sweep mock fixed (22 failures); #38 marketplace-lifecycle RLS fixed (2 failures); #39 #40 #41 security issues filed. 3186/3186 tests green.                                                                                                              | CHANGELOG 2026-07-21 QA HARDEN entry    |
 |   1 | 2026-07-18 | DEV            | F     | Track 0 — governance + blockchain quarantine; land stranded tree                | Track 0 closed (0.1–0.4 + full-dormancy hardening); guard proof red/green; architecture:check + readiness + API/web typechecks green                                                                                                                                         | see CHANGELOG 2026-07-18 cycle-1 entry  |
 |   2 | 2026-07-18 | DEV            | F     | Track A (#19) prep — baselines + reconciliation classification + mapping ledger | A.1/A.2 complete, A.3/A.4 prepared ⚠️ awaiting owner sign-off; zero dev-DB drift vs history; 23 affected tables all empty; candidate SQL committed unapplied                                                                                                                 | see CHANGELOG 2026-07-18 cycle-2 entry  |
@@ -190,16 +195,32 @@ _Generated on: 2026-07-20T20:00:00.000Z_
 > security/critical/high issues) are always exempt and picked regardless of
 > focus.
 
-- **Focus**: **Inventory & Supply Chain**
-- **In focus since**: 2026-07-12
-- **Why**: weakest-health unclaimed module once Finance and CRM both reached
-  Complete (see Rotation history below).
+- **Focus order (binding, per `.ai/AUTOPILOT.md` § Phase M focus order)**:
+  **Finance → CRM → HR → Procurement → Supply Chain → Manufacturing →
+  Projects → Connect/Collaboration → Builder/Platform → industry-specific
+  apps → remaining modules by weakest-health.** This replaces the prior
+  "weakest-health" auto-pick and the prior 500+ completion bar (now 1500+).
+- **Focus**: **Finance & Accounting** (re-opened to close the gap from
+  500+ to the new 1500+ bar — not a rebuild, see AUTOPILOT § Phase M focus
+  order)
+- **In focus since**: 2026-07-21
+- **Why**: focus order restart — Finance is first in the fixed sequence and
+  was previously marked Complete only against the old 500+ bar.
 - **Live progress**: § System Progress Dashboard below (feature count via
   `feature-ledger.mjs`, health score via `module-health.mjs`).
 
+**Build method (binding, per AUTOPILOT § Horizontal build order)**: complete
+the focus module's full planned schema (DB layer) before its API layer,
+and its full planned API surface (or a coherent sub-slice) before its UI
+layer — do not interleave DB+API+UI per individual feature. UI work follows
+§ UI navigation discipline: ≤15 sidebar items app-wide, multi-level
+tab-inside-tab hubs per module (Finance's `FinanceTabLayout` is the
+reference pattern). Services/controllers stay under the file-size ceiling
+in AUTOPILOT § File-size discipline — no god files.
+
 **Completion criteria (binding — ALL five must hold before rotating):**
 
-1. 500+ weighted feature points (`node scripts/feature-ledger.mjs`).
+1. 1500+ weighted feature points (`node scripts/feature-ledger.mjs`).
 2. Full CRUD with pagination/sorting on every entity in the module.
 3. 80%+ test coverage on the module's service files.
 4. Feature parity or superiority vs. the top 10 ERP market leaders — see
@@ -227,6 +248,7 @@ that closed it out. Never rotate mid-cycle; never rotate without all five.
 
 | Agent                             | Session started  | Scope (module/files)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Branch                   | Status       |
 | :-------------------------------- | :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------- | :----------- |
+| antigravity (this session)        | 2026-07-21 10:45 | **CYCLE 30 — Security Hardening (#39, #40, #41) & Supply Chain Module Deepening** — Security fixes #39 #40 #41, 4 new SCM expansion services (+45+ endpoints), SCM Control Tower UI page, 24 unit tests green, typecheck 100% clean.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | main                     | 🟢 COMPLETED |
 | claude-code (this session)        | 2026-07-21       | **Foundation cleanup — Settings/Admin-to-SaaS-Portal consolidation — FINAL CLOSE-OUT, all phases + both outstanding items complete.** Migrated the last 3 legacy `/settings/*` routes (`security-policies`, `compliance-governance`, `impersonate`) off `admin/security.controller.ts` — redirects already existed, but found+fixed a genuine gap: ported a missing `ImpersonateTab` into `saas/security/page.tsx` (backend endpoint already existed, only the UI tab was missing) before redirecting. Deleted `admin/security.controller.ts` + `security.service.ts` + specs (zero remaining consumers); updated `rbac-regression-sweep.spec.ts` to point at the surviving `saas-portal` `SecurityController`. Attempted `pnpm db:deploy` for the pending `20260721090000_drop_unused_app_installation_settings` migration — **blocked, not applied**: table-ownership mismatch (`AppInstallation`/`AppSettings` owned by `unerp`, not the `unerp_api` role in `DATABASE_URL`), a pre-existing dev-DB ownership drift unrelated to the migration's SQL; stopped rather than forcing it through, per the "stop and report" instruction. `apps/web`/`apps/api` typecheck both clean (0 errors, this change's diff). Not committed — left in working tree. See CHANGELOG 2026-07-21 "final close-out" entry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | working-tree             | 🟢 COMPLETED |
 | claude-code (this session)        | 2026-07-20       | **CYCLE 29 — Supply Chain Deepening (22 features)** — Vendor returns API (5), cross-docking API (6), route optimization API (3), analytics API (5), domain events (2), frontend wiring. See CHANGELOG 2026-07-20 CYCLE 29 entry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | main                     | 🟢 COMPLETED |
 | claude-code (this session)        | 2026-07-19       | **Settings-to-SaaS-Portal migration Phases 0-7** — Full SaaS Portal Admin Control Center migration (kernel lock, 20 module descriptors, 44+ settings redirect rules, SaaS Portal backend 8 controllers/services, per-app settings pages for 18 modules, nav/dashboard migration, backend cleanup, removed 3 old pages). See CHANGELOG 2026-07-20 Phases 4/6/7 entry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | main                     | 🟢 COMPLETED |
@@ -263,10 +285,11 @@ that closed it out. Never rotate mid-cycle; never rotate without all five.
 >
 > **Focus filter (binding, per § 0 Current Focus Module above and
 > `.ai/AUTOPILOT.md` § Shared binding 16)**: feature items are only pickable
-> if they belong to the **Current Focus Module** (now: **Inventory & Supply
-> Chain**). Non-focus feature items (e.g. `[benchmark]` HR items below) stay
-> queued for their module's turn. P0/P1/P2 items (broken build, runtime
-> failures, conflicts, cross-cutting hardening) are exempt.
+> if they belong to the **Current Focus Module** (now: **Finance &
+> Accounting** — see § 0 Focus order). Non-focus feature items (e.g.
+> `[benchmark]` HR items below) stay queued for their module's turn. P0/P1/P2
+> items (broken build, runtime failures, conflicts, cross-cutting hardening)
+> are exempt.
 
 0a. ~~**[P-F] Foundation Hardening Roadmap — Tracks A–I**~~ ✅ **FOUNDATION SEALED 2026-07-18 (cycle 18)**. All 11 lift-gate conditions met; `pnpm foundation:check -- --release-ready` passes. Feature freeze LIFTED. See `.ai/ARCHITECTURE_FOUNDATION.md` for sealed foundation evidence and `.ai/FOUNDATION_HARDENING_ROADMAP.md` §12 for the completed gate. All subsequent work is development on top of sealed contracts. 0. ~~**[P0] Wire RLS session context into the shared Prisma extension**~~ ✅ RESOLVED 2026-07-17 — wired RLS setting context transaction-locally in `$allOperations` and added full integration tests. See § Production Readiness & Hardening "Critical cross-cutting finding: RLS policies disconnected from the app's request pipeline" above for full root cause, and `.ai/CHANGELOG.md` 2026-07-12 for the seed-script half of the fix that's already shipped.
 

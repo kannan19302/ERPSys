@@ -2,6 +2,31 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-21] Cycle 30 (Phase M) — Security Hardening (#39, #40, #41) & Supply Chain Module Deepening
+
+**Scope**: Closed security issues #39, #40, #41. Deepened Supply Chain module (+45+ endpoints across 4 expansion services, SCM Control Tower UI, and 12 unit tests).
+
+**Key Changes**:
+
+- **Security Hardening**:
+  - **#39**: Replaced raw SQL queries in `crm-intelligence.service.ts` with typed Prisma ORM queries; exported `MlModelRecord`.
+  - **#40**: Added inline Zod schemas for all POST/PATCH/DELETE endpoints in `finance-operations.controller.ts` and `finance-expansion.controller.ts`.
+  - **#41**: Fixed untyped `@Query()` parameters in `leases.controller.ts` using Zod validation.
+- **Backend (Supply Chain)** (`apps/api/src/modules/supply-chain/`):
+  - `freight-management.service.ts` — Freight orders CRUD, carrier assignment, freight rate calculation engine, shipment tracking history.
+  - `supplier-collaboration.service.ts` — Supplier PO acknowledgement, Advance Shipping Notices (ASN), supplier invoice submission, scorecard evaluation, collaboration threads & messaging.
+  - `supply-network-risk.service.ts` — Risk event tracking, disruption alerts, network topology mapping, supply resilience scoring, alternative source recommendations.
+  - `scm-control-tower.service.ts` — Unified SCM dashboard KPI aggregation, OTIF metrics, inventory turns, cross-module alert queue.
+  - Registered all new services and controllers (`DemandPlanningController`, `FreightManagementController`, `SupplierCollaborationController`, `SupplyNetworkRiskController`, `ScmControlTowerController`) in `supply-chain.module.ts`.
+- **Frontend** (`apps/web/app/(dashboard)/supply-chain/control-tower/`):
+  - Built interactive SCM Control Tower dashboard (`page.tsx`) with real-time KPIs, Recharts OTIF/Inventory trend charts, cross-module alerts DataTable, and refresh actions.
+- **Testing & Verification**:
+  - Added unit tests in `apps/api/src/modules/supply-chain/tests/supply-chain-expansion.service.spec.ts` (**24/24 supply chain tests passed**).
+  - `@unerp/api typecheck` clean (0 errors).
+  - `pnpm architecture:check` clean (0 violations).
+
+---
+
 ## [2026-07-21] Cycle 37 — CRM expansion: Sales Automation, Customer Success, Marketing Automation (Phase M)
 
 **Scope**: CRM module deep expansion (+84 endpoints across 3 new services + 2 frontend pages). Also refactored CRM dashboard to use `CrmTabLayout`/`ModuleTabLayout` pattern matching Finance.

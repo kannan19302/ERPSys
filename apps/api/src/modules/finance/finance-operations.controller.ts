@@ -8,11 +8,11 @@ import {
   UseGuards,
   Req,
   Query,
-  Body,
   UseInterceptors,
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
+import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -20,24 +20,180 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ChangeHistoryInterceptor } from "../../common/interceptors/change-history.interceptor";
 import { TrackChanges } from "../../common/decorators/track-changes.decorator";
-import {
-  createPaymentTermSchema,
-  updatePaymentTermSchema,
-  createPaymentMethodSchema,
-  updatePaymentMethodSchema,
-  createTaxRateSchema,
-  updateTaxRateSchema,
-  createCurrencySchema,
-  createExchangeRateSchema,
-  createBankAccountSchema,
-  updateBankAccountSchema,
-  createBudgetSchema,
-  updateBudgetSchema,
-  createVendorBillSchema,
-  updateVendorBillSchema,
-} from "@unerp/shared";
+const createPaymentTermSchema = z.object({
+  code: z.string().min(1),
+  name: z.string().min(1),
+  days: z.number().int().nonnegative(),
+});
+const updatePaymentTermSchema = z.object({
+  code: z.string().optional(),
+  name: z.string().optional(),
+  days: z.number().int().nonnegative().optional(),
+});
+const createPaymentMethodSchema = z.object({
+  code: z.string().min(1),
+  name: z.string().min(1),
+  type: z.string().optional(),
+});
+const updatePaymentMethodSchema = z.object({
+  code: z.string().optional(),
+  name: z.string().optional(),
+  type: z.string().optional(),
+});
+const createTaxRateSchema = z.object({
+  name: z.string().min(1),
+  rate: z.number().min(0).max(100),
+  code: z.string().optional(),
+});
+const updateTaxRateSchema = z.object({
+  name: z.string().optional(),
+  rate: z.number().min(0).max(100).optional(),
+  code: z.string().optional(),
+});
+const createCurrencySchema = z.object({
+  code: z.string().length(3),
+  name: z.string().min(1),
+  symbol: z.string().optional(),
+});
+const createExchangeRateSchema = z.object({
+  fromCurrency: z.string(),
+  toCurrency: z.string(),
+  rate: z.number().positive(),
+  effectiveDate: z.string(),
+});
+const createBankAccountSchema = z.object({
+  accountNumber: z.string().min(1),
+  bankName: z.string().min(1),
+  currency: z.string().optional(),
+});
+const updateBankAccountSchema = z.object({
+  accountNumber: z.string().optional(),
+  bankName: z.string().optional(),
+  currency: z.string().optional(),
+});
+const createBudgetSchema = z.object({
+  name: z.string().min(1),
+  fiscalYear: z.number().int(),
+  totalAmount: z.number().positive(),
+});
+const updateBudgetSchema = z.object({
+  name: z.string().optional(),
+  totalAmount: z.number().positive().optional(),
+});
+const createVendorBillSchema = z.object({
+  vendorId: z.string(),
+  totalAmount: z.number().positive(),
+  dueDate: z.string().optional(),
+});
+const updateVendorBillSchema = z.object({
+  totalAmount: z.number().positive().optional(),
+  dueDate: z.string().optional(),
+});
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { FinanceOperationsService } from "./finance-operations.service";
+
+// ─── Inline Zod schemas for endpoints not covered by @unerp/shared schemas ─────
+// Fix for security issue #40: every POST/PATCH body must pass through Zod validation
+
+const createTaxJurisdictionSchema = z.object({
+  name: z.string().min(1),
+  code: z.string().min(1),
+  country: z.string().min(1),
+  state: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const updateTaxJurisdictionSchema = z.object({
+  name: z.string().min(1).optional(),
+  code: z.string().min(1).optional(),
+  country: z.string().min(1).optional(),
+  state: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const updateCurrencySchema = z.object({
+  name: z.string().optional(),
+  symbol: z.string().optional(),
+  isBase: z.boolean().optional(),
+  decimalPlaces: z.number().int().min(0).max(6).optional(),
+});
+
+const updateExchangeRateSchema = z.object({
+  rate: z.number().positive().optional(),
+  validFrom: z.string().optional(),
+  validTo: z.string().optional(),
+});
+
+const syncExchangeRatesSchema = z.object({
+  rates: z.array(
+    z.object({
+      fromCurrency: z.string().min(1),
+      toCurrency: z.string().min(1),
+      rate: z.number().positive(),
+      validFrom: z.string(),
+      validTo: z.string().optional(),
+    }),
+  ),
+});
+
+const reconcileBankTransactionSchema = z.object({
+  transactionId: z.string().min(1),
+});
+
+const bulkVerifyBankAccountsSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1),
+});
+
+const copyBudgetSchema = z.object({
+  fiscalYear: z.number().int().min(2000).max(2100).optional(),
+  name: z.string().optional(),
+});
+
+const bulkCreateBudgetsSchema = z.object({
+  budgets: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        fiscalYear: z.number().int(),
+        accountId: z.string().min(1),
+        amount: z.number().positive(),
+        periodAmounts: z
+          .array(z.object({ period: z.string(), amount: z.number() }))
+          .optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .min(1),
+});
+
+const payVendorBillSchema = z.object({
+  amount: z.number().positive(),
+  method: z.string().min(1),
+  reference: z.string().optional(),
+});
+
+const bulkApproveVendorBillsSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1),
+});
+
+const bulkPayVendorBillsSchema = z.object({
+  payments: z
+    .array(
+      z.object({
+        billId: z.string().min(1),
+        amount: z.number().positive(),
+        method: z.string().min(1),
+        reference: z.string().optional(),
+      }),
+    )
+    .min(1),
+});
+
+const saveReportConfigSchema = z.object({
+  name: z.string().min(1),
+  type: z.string().min(1),
+  config: z.record(z.unknown()),
+});
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -390,14 +546,8 @@ export class FinanceOperationsController {
   @TrackChanges("TaxJurisdiction")
   async createTaxJurisdiction(
     @Req() req: AuthenticatedRequest,
-    @Body()
-    dto: {
-      name: string;
-      code: string;
-      country: string;
-      state?: string;
-      description?: string;
-    },
+    @ZodBody(createTaxJurisdictionSchema)
+    dto: z.infer<typeof createTaxJurisdictionSchema>,
   ) {
     return this.opsService.createTaxJurisdiction(req.user.tenantId, dto);
   }
@@ -411,14 +561,8 @@ export class FinanceOperationsController {
   async updateTaxJurisdiction(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @Body()
-    dto: {
-      name?: string;
-      code?: string;
-      country?: string;
-      state?: string;
-      description?: string;
-    },
+    @ZodBody(updateTaxJurisdictionSchema)
+    dto: z.infer<typeof updateTaxJurisdictionSchema>,
   ) {
     return this.opsService.updateTaxJurisdiction(req.user.tenantId, id, dto);
   }
@@ -483,13 +627,7 @@ export class FinanceOperationsController {
   async updateCurrency(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @Body()
-    dto: {
-      name?: string;
-      symbol?: string;
-      isBase?: boolean;
-      decimalPlaces?: number;
-    },
+    @ZodBody(updateCurrencySchema) dto: z.infer<typeof updateCurrencySchema>,
   ) {
     return this.opsService.updateCurrency(req.user.tenantId, id, dto);
   }
@@ -554,7 +692,8 @@ export class FinanceOperationsController {
   async updateExchangeRate(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @Body() dto: { rate?: number; validFrom?: string; validTo?: string },
+    @ZodBody(updateExchangeRateSchema)
+    dto: z.infer<typeof updateExchangeRateSchema>,
   ) {
     return this.opsService.updateExchangeRate(req.user.tenantId, id, dto);
   }
@@ -588,16 +727,8 @@ export class FinanceOperationsController {
   @TrackChanges("ExchangeRate")
   async syncExchangeRates(
     @Req() req: AuthenticatedRequest,
-    @Body()
-    dto: {
-      rates: Array<{
-        fromCurrency: string;
-        toCurrency: string;
-        rate: number;
-        validFrom: string;
-        validTo?: string;
-      }>;
-    },
+    @ZodBody(syncExchangeRatesSchema)
+    dto: z.infer<typeof syncExchangeRatesSchema>,
   ) {
     return this.opsService.syncRates(req.user.tenantId, dto.rates);
   }
@@ -734,7 +865,8 @@ export class FinanceOperationsController {
   async reconcileBankTransaction(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @Body() dto: { transactionId: string },
+    @ZodBody(reconcileBankTransactionSchema)
+    dto: z.infer<typeof reconcileBankTransactionSchema>,
   ) {
     void id;
     return this.opsService.reconcileBankTransaction(
@@ -760,7 +892,8 @@ export class FinanceOperationsController {
   @TrackChanges("BankAccount")
   async bulkVerifyBankAccounts(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { ids: string[] },
+    @ZodBody(bulkVerifyBankAccountsSchema)
+    dto: z.infer<typeof bulkVerifyBankAccountsSchema>,
   ) {
     return this.opsService.bulkVerifyBankAccounts(req.user.tenantId, dto.ids);
   }
@@ -883,7 +1016,7 @@ export class FinanceOperationsController {
   async copyBudget(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @Body() dto: { fiscalYear?: number; name?: string },
+    @ZodBody(copyBudgetSchema) dto: z.infer<typeof copyBudgetSchema>,
   ) {
     return this.opsService.copyBudget(req.user.tenantId, id, dto);
   }
@@ -895,17 +1028,8 @@ export class FinanceOperationsController {
   @TrackChanges("Budget")
   async bulkCreateBudgets(
     @Req() req: AuthenticatedRequest,
-    @Body()
-    dto: {
-      budgets: Array<{
-        name: string;
-        fiscalYear: number;
-        accountId: string;
-        amount: number;
-        periodAmounts?: Array<{ period: string; amount: number }>;
-        notes?: string;
-      }>;
-    },
+    @ZodBody(bulkCreateBudgetsSchema)
+    dto: z.infer<typeof bulkCreateBudgetsSchema>,
   ) {
     const orgId = req.user.orgId || "org-system-default";
     return this.opsService.bulkCreateBudgets(
@@ -1065,7 +1189,7 @@ export class FinanceOperationsController {
   async payVendorBill(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @Body() dto: { amount: number; method: string; reference?: string },
+    @ZodBody(payVendorBillSchema) dto: z.infer<typeof payVendorBillSchema>,
   ) {
     return this.opsService.payVendorBill(req.user.tenantId, id, {
       amount: dto.amount,
@@ -1104,7 +1228,8 @@ export class FinanceOperationsController {
   @TrackChanges("VendorBill")
   async bulkApproveVendorBills(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: { ids: string[] },
+    @ZodBody(bulkApproveVendorBillsSchema)
+    dto: z.infer<typeof bulkApproveVendorBillsSchema>,
   ) {
     return this.opsService.bulkApproveVendorBills(req.user.tenantId, dto.ids);
   }
@@ -1116,15 +1241,8 @@ export class FinanceOperationsController {
   @TrackChanges("VendorBill")
   async bulkPayVendorBills(
     @Req() req: AuthenticatedRequest,
-    @Body()
-    dto: {
-      payments: Array<{
-        billId: string;
-        amount: number;
-        method: string;
-        reference?: string;
-      }>;
-    },
+    @ZodBody(bulkPayVendorBillsSchema)
+    dto: z.infer<typeof bulkPayVendorBillsSchema>,
   ) {
     const payments = dto.payments.map((p) => ({
       ...p,
@@ -1321,8 +1439,8 @@ export class FinanceOperationsController {
   @TrackChanges("SavedReport")
   async saveReportConfig(
     @Req() req: AuthenticatedRequest,
-    @Body()
-    dto: { name: string; type: string; config: Record<string, unknown> },
+    @ZodBody(saveReportConfigSchema)
+    dto: z.infer<typeof saveReportConfigSchema>,
   ) {
     return this.opsService.saveReportConfig(
       req.user.tenantId,

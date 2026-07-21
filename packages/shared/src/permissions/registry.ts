@@ -1089,6 +1089,106 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     "Manage/resolve shipment exceptions",
   ),
 
+  // Supply Chain — Freight Management (Cycle 30)
+  p(
+    "supply-chain",
+    "freight",
+    "read",
+    "endpoint",
+    "View freight orders and rates",
+  ),
+  p("supply-chain", "freight", "create", "endpoint", "Create freight orders"),
+  p(
+    "supply-chain",
+    "freight",
+    "update",
+    "endpoint",
+    "Update freight orders and status",
+  ),
+  p(
+    "supply-chain",
+    "freight",
+    "manage",
+    "endpoint",
+    "Manage freight rates and carrier assignments",
+  ),
+
+  // Supply Chain — Supplier Collaboration Portal (Cycle 30)
+  p(
+    "supply-chain",
+    "supplier",
+    "read",
+    "endpoint",
+    "View supplier portal data",
+  ),
+  p(
+    "supply-chain",
+    "supplier",
+    "create",
+    "endpoint",
+    "Submit supplier invoices and threads",
+  ),
+  p(
+    "supply-chain",
+    "supplier",
+    "update",
+    "endpoint",
+    "Acknowledge POs and update supplier data",
+  ),
+  p(
+    "supply-chain",
+    "supplier",
+    "manage",
+    "endpoint",
+    "Manage supplier scorecards",
+  ),
+
+  // Supply Chain — Network & Risk Management (Cycle 30)
+  p(
+    "supply-chain",
+    "risk",
+    "read",
+    "endpoint",
+    "View supply chain risk events and alerts",
+  ),
+  p(
+    "supply-chain",
+    "risk",
+    "create",
+    "endpoint",
+    "Report supply chain risk events",
+  ),
+  p(
+    "supply-chain",
+    "risk",
+    "update",
+    "endpoint",
+    "Update risk event status and acknowledge alerts",
+  ),
+  p(
+    "supply-chain",
+    "network",
+    "read",
+    "endpoint",
+    "View supply network map and resilience data",
+  ),
+  p(
+    "supply-chain",
+    "network",
+    "manage",
+    "endpoint",
+    "Manage supply network nodes",
+  ),
+
+  // Supply Chain — Control Tower Dashboard (Cycle 30)
+  p(
+    "supply-chain",
+    "dashboard",
+    "read",
+    "endpoint",
+    "View SCM control tower dashboard, KPIs, and alerts",
+  ),
+
   // Manufacturing (extended)
   p(
     "manufacturing",

@@ -13,10 +13,10 @@
 > the separate INTEGRATION flow was folded into the DEV flow on 2026-07-18
 > (cross-module workflow batches are now ordinary DEV work — see § DEV flow).
 >
-> | Trigger                                  | Flow                 | Purpose                                                      | Velocity Target                                   |
-> | :--------------------------------------- | :------------------- | :----------------------------------------------------------- | :------------------------------------------------ |
-> | "Start" / "/start" / "continue" / "next" | **DEV flow**         | Phase-gated: foundation first, then features end-to-end      | **40+ features per cycle** (Phase M/X; Phase F = track items) |
-> | "harden" / "/harden" / "find and fix"    | **QA flow**          | Find flaws, file as issues, fix at root cause, verify, close | **10+ fixes + 10+ feature suggestions per cycle** |
+> | Trigger                                  | Flow         | Purpose                                                      | Velocity Target                                                                                                                          |
+> | :--------------------------------------- | :----------- | :----------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+> | "Start" / "/start" / "continue" / "next" | **DEV flow** | Phase-gated: foundation first, then features end-to-end      | **No per-cycle cap — keep building until the session/vendor credit budget for this run is exhausted** (Phase M/X; Phase F = track items) |
+> | "harden" / "/harden" / "find and fix"    | **QA flow**  | Find flaws, file as issues, fix at root cause, verify, close | **10+ fixes + 10+ feature suggestions per cycle**                                                                                        |
 >
 > The QA flow runs two ways: **explicitly** (user types "harden") or
 > **automatically** — after every **10 completed DEV cycles**, the next "Start"
@@ -31,11 +31,11 @@ phases are strictly ordered; a later phase is unreachable while an earlier one
 is incomplete. This is the very first check of every DEV cycle, before the
 priority ladder, before the focus question, before anything.
 
-| Phase | Name | Entry condition | What DEV cycles do | Exit condition |
-| :---- | :--- | :-------------- | :----------------- | :------------- |
-| **F** | Foundation | `.ai/FOUNDATION_HARDENING_ROADMAP.md` lift gate (§ 12) NOT met | Work foundation tracks in dependency order: 0 → A (#19) → B (#17) ∥ C (#21) → D (#22) → E (blockchain re-platform) → F/G/H/I. Velocity = **track items closed with their exit-gate proofs**, not feature count. The 40-feature target does NOT apply; the feature freeze DOES. | All roadmap tracks closed, lift gate green, foundation **SEALED v1.0** (§ 12b) |
-| **M** | Module strengthening | Foundation SEALED | Drive **every module to Complete (500+ weighted features)**, in order: **core → enterprise → platform → cross-cutting → industry-specific** (per MODULE_REGISTRY sections). 500 is the *minimum*, not the cap — keep deepening vs market leaders while gaps exist. Cross-module workflow batches (the old INTEGRATION flow) count as feature work here. 40+ features per cycle. | Every registered module at 500+ with completion criteria met |
-| **X** | Expansion | All modules Complete | Plan and build **new apps/modules** (PM-scoped, market-benchmarked, through the sealed kernel contracts only). | Open-ended |
+| Phase | Name                 | Entry condition                                                | What DEV cycles do                                                                                                                                                                                                                                                                                                                                                                                                                                         | Exit condition                                                                 |
+| :---- | :------------------- | :------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| **F** | Foundation           | `.ai/FOUNDATION_HARDENING_ROADMAP.md` lift gate (§ 12) NOT met | Work foundation tracks in dependency order: 0 → A (#19) → B (#17) ∥ C (#21) → D (#22) → E (blockchain re-platform) → F/G/H/I. Velocity = **track items closed with their exit-gate proofs**, not feature count. The 40-feature target does NOT apply; the feature freeze DOES.                                                                                                                                                                             | All roadmap tracks closed, lift gate green, foundation **SEALED v1.0** (§ 12b) |
+| **M** | Module strengthening | Foundation SEALED                                              | Drive **every module to Complete (1500+ weighted features)**, in the fixed **focus order** below (not the old core→industry sort). Each module is built **horizontally** (§ Horizontal build order), not as independent vertical slices. Cross-module workflow batches (the old INTEGRATION flow) count as feature work here. No per-cycle feature cap — a cycle runs until the session's credit budget is exhausted, not until an arbitrary count is hit. | Every registered module at 1500+ with completion criteria met                  |
+| **X** | Expansion            | All modules Complete                                           | Plan and build **new apps/modules** (PM-scoped, market-benchmarked, through the sealed kernel contracts only).                                                                                                                                                                                                                                                                                                                                             | Open-ended                                                                     |
 
 Phase determination is mechanical, not judgment: read
 `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 (lift gate) — if any bullet is
@@ -43,15 +43,95 @@ unmet, the phase is **F**. In Phase F the DEV flow's P2.5/P3/P4 rungs are
 suspended (they are feature work); the cycle's "batch" is the next unblocked
 roadmap track item(s). P0 (broken build) and P1 (security issues) remain
 first in every phase.
->
-> **Module Completion Goal**: A module is COMPLETE when it has **500+ weighted
-> feature points** (verified by `node scripts/feature-ledger.mjs`), full CRUD
-> with pagination/sorting, 80%+ test coverage, and feature parity or superiority
-> vs. top 10 ERP market leaders.
+
+> **Module Completion Goal**: A module is COMPLETE when it has **1500+
+> weighted feature points** (verified by `node scripts/feature-ledger.mjs`),
+> full CRUD with pagination/sorting, 80%+ test coverage, and feature parity
+> or superiority vs. top 10 ERP market leaders.
 >
 > **Module Maturity Tiers**: Skeleton (< 10) → MVM (10–50) → Functional (50–200)
-> → Competitive (200–500) → Complete (500+). All modules MUST reach MVM (50)
-> before any module above 200 gets more features. See [instructions.md § 8](instructions.md#8-adp-performance-targets).
+> → Competitive (200–500) → Advanced (500–1000) → Complete (1000–1500) →
+> Deep (1500+). All modules MUST reach MVM (50) before any module above 200
+> gets more features. See [instructions.md § 8](instructions.md#8-adp-performance-targets).
+
+### Phase M focus order (binding — supersedes "core → industry")
+
+Phase M drives modules to Complete in this fixed sequence. A module only
+rotates to the next once ALL five completion criteria (§ 0 in
+MODULE_REGISTRY.md) hold, per binding #18:
+
+**Finance → CRM → HR → Procurement → Supply Chain → Manufacturing →
+Projects → Connect/Collaboration → Builder/Platform → industry-specific
+apps (healthcare, etc.) → remaining modules by weakest-health.**
+
+If Finance or CRM already carries feature count from before this policy
+(pre-1500 completion bar), it is NOT re-opened as a full rebuild — its gap to
+1500 is closed with the same horizontal method (§ below) before rotating to
+the next module in the order.
+
+### Horizontal build order (binding, replaces per-feature vertical slicing)
+
+Prior cycles built **vertically**: pick a feature, ship its DB+API+UI+tests
+together, repeat 40 times. This is now **retired for Phase M**. Instead,
+each focus module is driven to 1500+ by building **horizontally, in three
+layers, in this order**:
+
+1. **DB layer first.** For the module's full target feature set (planned up
+   front in `.ai/IMPLEMENTATION_PLAN.md`, not discovered feature-by-feature),
+   design and land ALL required Prisma models/fields/relations/indexes/RLS
+   policies as one coherent set of migrations before writing any service
+   code. Batch related entities into the same migration where they belong
+   together; never one migration per tiny field.
+2. **API layer second.** Once the module's schema is in place, build out
+   services + controllers + guards + Zod validation + domain events for the
+   planned feature set, module-wide, before starting UI work. Services stay
+   under the file-size ceiling (§ File-size discipline) — decompose by
+   sub-domain as you go, never accumulate a god-service and split it later.
+3. **UI layer third.** Once the API surface for the module (or a coherent
+   sub-slice of it) exists, wire the frontend: tab-based pages per
+   § UI navigation discipline, calling the already-built endpoints.
+
+This still happens across multiple cycles — a single cycle does not have to
+finish an entire layer for the whole module. But **within a cycle, do not
+mix layers for the same not-yet-built feature**: don't hand-roll one
+feature's DB+API+UI together while its siblings sit undesigned. Plan the
+module's schema breadth first, then work layer by layer. Small, immediately-
+needed UI fixes to already-shipped API surface are not "mixing layers" — this
+rule targets net-new feature work.
+
+### File-size discipline (binding — no god files)
+
+Do NOT let any file grow into a god-file. Guidelines, not hard blockers, but
+must be actively watched every cycle:
+
+- **Services**: target under ~400 LOC; split past ~600 LOC by sub-domain
+  (e.g. `inventory-warehouses.service.ts`, `inventory-catalog.service.ts`)
+  rather than one `inventory.service.ts` mega-file. Prior god-services
+  (`advanced-finance`/`procurement`/`manufacturing`, >1,200 LOC) are the
+  cautionary example — see MODULE_REGISTRY §2 item 1, still owed cleanup.
+- **Controllers**: split by resource/sub-domain, not by module; a controller
+  with 20+ endpoints across unrelated resources is a smell.
+- **UI pages**: a tab's content component should be self-contained; shared
+  logic goes into hooks/utilities, not copy-pasted per tab.
+- New code must not add to an existing god-file — extend by creating the
+  right sub-domain file, or decompose the file you're touching if it's
+  already over the ceiling.
+
+### UI navigation discipline (binding — tab-based, ≤15 sidebar items)
+
+- **Sidebar**: keep top-level sidebar entries at **15 or fewer** across the
+  whole app. New modules/sub-areas do NOT get their own sidebar row — they
+  become tabs.
+- **Multi-level tabs (ServiceNow-style)**: each module lands on a hub page
+  with a top tab bar (module's major areas) and, where a tab itself has
+  breadth, a **nested second-level tab bar inside that tab** (tab-inside-tab)
+  rather than spawning new sidebar items or new routes. Follow the pattern
+  already built for Finance (`FinanceTabLayout`, `ModuleTabLayout`/
+  `SubTabBar` in `@unerp/ui-layout` — see MODULE_REGISTRY Collab Board
+  2026-07-20 "Finance Tab-Based Navigation Redesign" entry) for every module.
+- 1500+ features per module MUST fit under this tab hierarchy — plan the
+  tab/sub-tab taxonomy as part of the module's UI-layer work (§ Horizontal
+  build order step 3), not ad hoc per feature.
 
 ---
 
@@ -136,7 +216,8 @@ first in every phase.
     before any code), **overwrite** `.ai/IMPLEMENTATION_PLAN.md` with this
     cycle's plan: cycle number + phase (F/M/X), selected scope + why (priority-
     ladder rung), the ordered slice list (Phase F: track items + exit-gate
-    proofs; Phase M/X: 40+ features as DB→API→UI→test slices), duplicate-check
+    proofs; Phase M/X: as many features as the layer's scope covers, run
+    uncapped as DB→API→UI→test slices), duplicate-check
     result, acceptance criteria, gate tier, and rollback note. Rules:
     **exactly one overwrite per cycle** — never overwrite mid-cycle (the plan
     is the cycle's contract; scope changes are appended as dated addendum
@@ -183,14 +264,26 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
 
 ## DEV flow — "Start" (one full cycle)
 
-> **Velocity target**: Ship **40+ distinct business features** per cycle.
-> Each feature = DB schema + API endpoint + UI page + tests.
+> **Velocity target**: No per-cycle feature cap. A cycle runs continuously —
+> keep shipping features until the session's/vendor's credit budget for this
+> run is exhausted, not until an arbitrary count is hit. In Phase M each
+> feature still ends up as DB schema + API endpoint + UI page + tests, but a
+> given cycle builds one horizontal layer (§ Horizontal build order) across as
+> many features as the remaining budget allows, rather than one feature's
+> full vertical slice at a time.
 >
-> **Parallel DEV cycles**: When bringing Skeleton modules (< 10 features) to MVM,
-> you may claim **up to 3 modules** in a single cycle. Each gets 15+ features
-> (basic CRUD + list + detail + tests). Combined target remains 40+ features.
-> Use `node scripts/scaffold-entity.mjs` for boilerplate. Deep modules (200+)
-> remain single-focus.
+> **System-wide QA phase**: once every module in the § Phase M focus order
+> has reached 1500+ features, Phase M's remaining cycles pivot from feature
+> building to systematic testing and bug identification/fixing across the
+> whole platform (still executed through the QA flow's find→file→fix→close
+> loop — see § QA flow — just run continuously instead of only at the
+> 10-cycle checkpoint) before Phase X (new apps) opens up.
+>
+> **Parallel DEV cycles**: When bringing Skeleton modules (< 10 features) to
+> MVM, you may claim **up to 3 modules** in a single cycle. Each gets 15+
+> features (basic CRUD + list + detail + tests) — uncapped beyond that if
+> budget remains. Use `node scripts/scaffold-entity.mjs` for boilerplate.
+> Deep modules (200+) remain single-focus.
 
 0. **Bootstrap**: read [instructions.md](instructions.md) + `AGENTS.md` Critical
    Rules + this file; `git pull`; `claim.mjs gc` (prune stale claims); read
@@ -199,10 +292,10 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    (see weakest modules); start the dev stack if needed. Leave any work you
    didn't create alone (uncommitted files, other branches) — log it on the
    Collab Board, never commit over it.
-0a. **Harden checkpoint (mandatory, binding #17)**: if MODULE_REGISTRY § Cycle
+   0a. **Harden checkpoint (mandatory, binding #17)**: if MODULE_REGISTRY § Cycle
    Ledger says `Next run: HARDEN (mandatory)`, execute one full QA-flow cycle
    now instead of DEV work, log it, reset `Next run: DEV`, and end the run.
-0b. **Phase gate (mandatory — § The Program Ladder)**: read
+   0b. **Phase gate (mandatory — § The Program Ladder)**: read
    `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12. Lift gate unmet → **Phase F**:
    this cycle's scope is the next unblocked foundation track item(s) in
    dependency order (0 → A → B∥C → D → E → F/G/H/I); the feature freeze holds
@@ -225,7 +318,7 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    binding #18):
    - **P0**: Broken build/tests
    - **P1**: Open `security`/critical/high issues (incl. #17/#19/#21)
-   - **P-F** *(Phase F only, replaces all lower rungs)*: next unblocked
+   - **P-F** _(Phase F only, replaces all lower rungs)_: next unblocked
      foundation roadmap track item(s) in dependency order
    - **P2**: Unfinished shipped work / Collab Board Up Next
    - **P2.5**: Focus module below MVM threshold (50 features) — MUST be
@@ -241,16 +334,22 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    no approval needed, then execute)**: check `.ai/MARKET_BENCHMARK.md` for
    cached research (Phase M/X); deep-research top 10 competitors if cache
    > 7 days old; duplicate-check; user stories; acceptance criteria;
-   Definition of Done; ordered slice list (Phase F: track items + exit-gate
-   proofs; Phase M/X: DB→API→UI slices targeting 40+ features). Score
-   candidates with RICE. **Overwrite `.ai/IMPLEMENTATION_PLAN.md` with this
-   plan — once, now, and not again until the next cycle** (mid-cycle scope
-   changes = dated addendum lines). Commit it with the cycle's first commit.
-   Append new findings to `.ai/MARKET_BENCHMARK.md`.
-5. **Build the batch end-to-end**: all schema changes → one migration → services/
-   controllers (guards + validation + tests) → UI pages via `@unerp/framework` →
-   one test pass. Spend the cycle writing code; use scoped checks while building.
-   Target 40+ distinct features — each with full vertical slice.
+   > Definition of Done; ordered slice list (Phase F: track items + exit-gate
+   > proofs; Phase M/X: DB→API→UI slices, uncapped — plan as much as the
+   > session's credit budget will support). Score
+   > candidates with RICE. **Overwrite `.ai/IMPLEMENTATION_PLAN.md` with this
+   > plan — once, now, and not again until the next cycle** (mid-cycle scope
+   > changes = dated addendum lines). Commit it with the cycle's first commit.
+   > Append new findings to `.ai/MARKET_BENCHMARK.md`.
+5. **Build the batch, horizontally (§ Horizontal build order)**: within the
+   focus module, work the layer that's next for this cycle's planned slice —
+   DB (schema + migrations for the planned feature set) OR API (services/
+   controllers/guards/validation/events for schema already landed) OR UI
+   (tab-based pages for API surface already built) — not a scramble of all
+   three per feature. Respect § File-size discipline as you go; respect
+   § UI navigation discipline when in the UI layer. Use scoped checks while
+   building. No feature cap — keep building in whichever layer(s) this cycle
+   covers until the session's/vendor's credit budget runs out.
    **Micro-harden checkpoint**: At every 10th feature (10, 20, 30), run scoped
    typecheck + vitest on the touched module. Fix any failures inline before
    continuing. This is NOT a full QA cycle — just a 2-minute sanity check.

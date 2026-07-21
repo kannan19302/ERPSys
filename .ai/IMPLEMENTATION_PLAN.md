@@ -1,85 +1,41 @@
-# Cycle 30 — CRM Module: 1000+ Features + Finance-Style Tab UI
+# IMPLEMENTATION_PLAN.md — Cycle 30 (Phase M)
 
-**Cycle**: 30 of 29 (DEV)
-**Phase**: M — Module strengthening (Foundation SEALED)
-**Focus**: CRM module deepening (704 → 1000+ features) + UI redesign (FinanceTabLayout pattern)
-**Scope**: Add 300+ production endpoints, create CrmTabLayout, refactor CRM UI to follow Finance tab pattern
+**Date**: 2026-07-21 | **Agent**: Antigravity | **Cycle**: 30 | **Phase**: M
 
-## Why
+## Scope
 
-CRM (704 features, Complete/👑) is one of UniERP's flagship modules but lacks the modern tab-based navigation and executive dashboard that Finance users enjoy. Competitors (Salesforce, HubSpot, Dynamics 365 Sales, Zoho CRM, Pipedrive) each have >1500 CRM features with polished dashboards and pipeline analytics. Bringing CRM to 1000+ features closes the gap.
+**P1 Security fixes** (#39 CRM raw SQL, #41 leases `any` type) + **Supply Chain deepening** (46→120+ features, Functional tier).
 
-## Ordered Slice List
+## Priority Ladder
 
-### Slice A: CrmTabLayout & Architecture (platform)
+- P1: #39 (crm-intelligence.service.ts `$queryRawUnsafe`), #40 (finance-operations verify), #41 (leases @Query() q:any)
+- P3: Supply Chain deepening — 40+ new features across 5 batches
 
-- Create `/crm` layout.tsx using ModuleTabLayout from @unerp/ui-layout (CrmTabLayout)
-- Create tab constants for each sub-module group (Pipeline, Accounts, Marketing, Service, Enablement, Intelligence, Settings)
-- Register new navigation descriptor segments
+## Feature Batches
 
-### Slice B: Executive CRM Dashboard (frontend + backend)
+### Batch 1: Demand Planning & Forecasting (10 endpoints)
 
-- Create GET /crm/dashboard — aggregated KPIs, pipeline health, lead velocity, win rate, forecast
-- Build MultiPageDashboard CRM dashboard (5 pages: Executive Overview, Pipeline Analytics, Customer Health, Forecast & Revenue, Activity Stream)
-- Wire KPI cards, charts, ListViews to real data
+GET/POST/PATCH/DELETE demand-plans, run forecast, get results, approve, accuracy KPI, consensus demand
 
-### Slice C: CRM Deepening — Sales Automation (120+ endpoints)
+### Batch 2: Freight & Transportation Management (10 endpoints)
 
-- `CrmSalesAutomationController` — lead scoring automation, auto-assignment rules, round-robin, escalation triggers
-- `CrmForecastDeepController` — multi-scenario forecasting, AI predictions, quota attainment rollups
-- Services: `crm-sales-automation.service`, `crm-forecast-deep.service`
-- Tests for both services
+CRUD freight-orders, assign-carrier, freight-rates, freight-analytics, tracking events/timeline
 
-### Slice D: CRM Deepening — Customer Success (80+ endpoints)
+### Batch 3: Supplier Collaboration Portal (10 endpoints)
 
-- `CrmCustomerSuccessController` — health scoring, NPS surveys, retention analysis, onboarding checklists
-- `CrmChurnPreventionController` — at-risk detection, churn prediction, save campaigns, win-back flows
-- Services: `crm-customer-success.service`, `crm-churn-prevention.service`
-- Tests for both services
+Supplier PO acknowledge/ship, invoice submit, scorecards, evaluate, collaboration threads/messages
 
-### Slice E: CRM Deepening — Marketing Automation (70+ endpoints)
+### Batch 4: Supply Network & Risk Management (10 endpoints)
 
-- `CrmMarketingAutomationController` — campaign automation, drip sequences, email analytics (open/click/bounce), A/B testing, landing pages
-- `CrmLeadGenController` — lead enrichment, intent signals, webhook ingestion, social listening feeds
-- Services: `crm-marketing-automation.service`, `crm-lead-gen.service`
-- Tests for both services
+Risk events CRUD + impact calc, network map nodes, disruption alerts + ack, supply resilience, alternative sources
 
-### Slice F: Frontend Tab Refactoring (all pages)
+### Batch 5: SCM Control Tower + Frontend (5+ features)
 
-- Convert `/crm/page.tsx` to MultiPageDashboard
-- Convert `/crm/leads/page.tsx` to CrmTabLayout with tabs (Overview, All Leads, Kanban, Analytics, Settings)
-- Convert `/crm/opportunities/page.tsx` to CrmTabLayout (Pipeline, Forecast, Deal Rooms, Coaching)
-- Convert `/crm/customers/page.tsx` to CrmTabLayout (Customers, Vendors, Contacts, Contracts)
-- Convert `/crm/cases/page.tsx` to CrmTabLayout (Cases, SLA, Ticket Analytics)
-- Create new pages for Sales Automation, Customer Success, Churn Prevention, Marketing Automation, Lead Gen
+Dashboard KPI endpoint, KPIs endpoint, alerts endpoint, 2 frontend pages (Control Tower + Demand Planning)
 
-### Slice G: Tests & Verification
+## Gate: FAST (scoped typecheck + vitest on touched modules)
 
-- Unit tests for all new services (target 80% coverage)
-- Full typecheck (api + web + shared)
-- Full test suite (vitest)
+## Cycle End
 
-**Total new features: ~300+ endpoints**
-
-## Duplicate Check
-
-None of these new endpoint prefixes (`crm/dashboard`, `crm/sales-automation`, `crm/forecast-deep`, `crm/customer-success`, `crm/churn-prevention`, `crm/marketing-automation`, `crm/lead-gen`) exist in the current CRM module. Generated feature ledger will confirm.
-
-## Acceptance Criteria
-
-1. All 300+ new endpoints return correct tenant-scoped data with proper error handling
-2. All endpoints have Zod validation and proper RBAC permissions
-3. `pnpm typecheck` clean (api + web + shared)
-4. CRM feature count jumps from 704 to 1000+ in FEATURE_LEDGER
-5. CrmTabLayout working with tab-based navigation (like Finance)
-6. Executive dashboard with real data KPIs and charts
-7. 80%+ coverage on new services
-8. All 3000+ existing tests still passing
-
-## Gate Tier
-
-MILESTONE (risky — large module refactoring with cross-cutting impact)
-
-## Rollback Note
-
-All changes are additive (new services, new controllers, new frontend tabs + layout). Rollback by reverting the commit. CrmTabLayout import errors would break CRM pages — rollback immediately if typecheck fails.
+- DEV cycles: 29 → 30 → set Next run: HARDEN (mandatory)
+- CHANGELOG + REGISTRY update in same commit

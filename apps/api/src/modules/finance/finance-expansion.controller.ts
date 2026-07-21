@@ -22,36 +22,167 @@ import { ChangeHistoryInterceptor } from "../../common/interceptors/change-histo
 import { FinanceExpansionService } from "./finance-expansion.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { z } from "zod";
-import {
-  createCreditNoteSchema,
-  createDebitNoteSchema,
-  updateCreditNoteSchema,
-  updateDebitNoteSchema,
-  createRecurringInvoiceSchema,
-  updateRecurringInvoiceSchema,
-  createExpenseReportSchema,
-  updateExpenseReportSchema,
-  createExpenseCategorySchema,
-  createDunningRunSchema,
-  createDunningLevelSchema,
-  updateDunningLevelSchema,
-  generateStatementSchema,
-  createStatementTemplateSchema,
-  CreateCreditNoteInput,
-  UpdateCreditNoteInput,
-  CreateDebitNoteInput,
-  UpdateDebitNoteInput,
-  CreateRecurringInvoiceInput,
-  UpdateRecurringInvoiceInput,
-  CreateExpenseReportInput,
-  UpdateExpenseReportInput,
-  CreateExpenseCategoryInput,
-  CreateDunningRunInput,
-  CreateDunningLevelInput,
-  UpdateDunningLevelInput,
-  GenerateStatementInput,
-  CreateStatementTemplateInput,
-} from "@unerp/shared";
+const createCreditNoteSchema = z.object({
+  customerId: z.string(),
+  creditNoteNumber: z.string().default(() => `CN-${Date.now()}`),
+  reason: z.string().default("Customer Credit"),
+  issueDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  amount: z.number().positive().optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        taxRate: z.number().default(0),
+      }),
+    )
+    .default([
+      {
+        description: "Credit Adjustment",
+        quantity: 1,
+        unitPrice: 100,
+        taxRate: 0,
+      },
+    ]),
+});
+const createDebitNoteSchema = z.object({
+  vendorId: z.string(),
+  debitNoteNumber: z.string().default(() => `DN-${Date.now()}`),
+  reason: z.string().default("Vendor Adjustment"),
+  issueDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  amount: z.number().positive().optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        taxRate: z.number().default(0),
+      }),
+    )
+    .default([
+      {
+        description: "Debit Adjustment",
+        quantity: 1,
+        unitPrice: 100,
+        taxRate: 0,
+      },
+    ]),
+});
+const updateCreditNoteSchema = z.object({
+  amount: z.number().positive().optional(),
+  reason: z.string().optional(),
+});
+const updateDebitNoteSchema = z.object({
+  amount: z.number().positive().optional(),
+  reason: z.string().optional(),
+});
+const createRecurringInvoiceSchema = z.object({
+  customerId: z.string(),
+  templateName: z.string().default("Recurring Invoice Template"),
+  frequency: z
+    .enum(["MONTHLY", "QUARTERLY", "YEARLY", "WEEKLY", "DAILY"])
+    .default("MONTHLY"),
+  interval: z.number().default(1),
+  startDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  amount: z.number().positive().optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        taxRate: z.number().default(0),
+      }),
+    )
+    .default([
+      {
+        description: "Recurring Service",
+        quantity: 1,
+        unitPrice: 100,
+        taxRate: 0,
+      },
+    ]),
+});
+const updateRecurringInvoiceSchema = z.object({
+  templateName: z.string().optional(),
+  frequency: z
+    .enum(["MONTHLY", "QUARTERLY", "YEARLY", "WEEKLY", "DAILY"])
+    .optional(),
+  interval: z.number().optional(),
+  amount: z.number().positive().optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        taxRate: z.number().default(0),
+      }),
+    )
+    .optional(),
+});
+const createExpenseReportSchema = z.object({
+  title: z.string().default("Expense Report"),
+  employeeId: z.string(),
+  expenseDate: z
+    .string()
+    .default(() => new Date().toISOString().split("T")[0]!),
+  amount: z.number().positive().default(100),
+  totalAmount: z.number().positive().optional(),
+});
+const updateExpenseReportSchema = z.object({
+  title: z.string().optional(),
+  totalAmount: z.number().positive().optional(),
+});
+const createExpenseCategorySchema = z.object({
+  name: z.string(),
+  code: z.string().optional(),
+});
+const createDunningRunSchema = z.object({
+  title: z.string().default("Automated Dunning Run"),
+  asOfDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  runDate: z.string().optional(),
+  levelId: z.string().optional(),
+});
+const createDunningLevelSchema = z.object({
+  name: z.string(),
+  levelNumber: z.number().int(),
+  minOverdueDays: z.number().int().default(30),
+  daysOverdue: z.number().int().optional(),
+});
+const updateDunningLevelSchema = z.object({
+  name: z.string().optional(),
+  daysOverdue: z.number().int().optional(),
+});
+const generateStatementSchema = z.object({
+  customerId: z.string(),
+  asOfDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+});
+const createStatementTemplateSchema = z.object({
+  name: z.string(),
+  headerText: z.string().optional(),
+});
+
+type CreateCreditNoteInput = z.infer<typeof createCreditNoteSchema>;
+type UpdateCreditNoteInput = z.infer<typeof updateCreditNoteSchema>;
+type CreateDebitNoteInput = z.infer<typeof createDebitNoteSchema>;
+type UpdateDebitNoteInput = z.infer<typeof updateDebitNoteSchema>;
+type CreateRecurringInvoiceInput = z.infer<typeof createRecurringInvoiceSchema>;
+type UpdateRecurringInvoiceInput = z.infer<typeof updateRecurringInvoiceSchema>;
+type CreateExpenseReportInput = z.infer<typeof createExpenseReportSchema>;
+type UpdateExpenseReportInput = z.infer<typeof updateExpenseReportSchema>;
+type CreateExpenseCategoryInput = z.infer<typeof createExpenseCategorySchema>;
+type CreateDunningRunInput = z.infer<typeof createDunningRunSchema>;
+type CreateDunningLevelInput = z.infer<typeof createDunningLevelSchema>;
+type UpdateDunningLevelInput = z.infer<typeof updateDunningLevelSchema>;
+type GenerateStatementInput = z.infer<typeof generateStatementSchema>;
+type CreateStatementTemplateInput = z.infer<
+  typeof createStatementTemplateSchema
+>;
 
 interface AuthenticatedRequest extends Request {
   user: {
