@@ -6,7 +6,6 @@ import { AuditInterceptor } from "./common/interceptors/audit.interceptor";
 import { TenantInterceptor } from "./common/guards/tenant.interceptor";
 import { TenantThrottlerGuard } from "./common/guards/tenant-throttler.guard";
 import { TenantWriteGuard } from "./common/guards/tenant-write.guard";
-import { AppInstalledGuard } from "./common/guards/app-installed.guard";
 import {
   RedisThrottlerStorage,
   InMemoryThrottlerStorage,
@@ -31,6 +30,7 @@ import { AdminModule } from "./modules/admin/admin.module";
 // SaasPortalModule. Kept for legacy API backward compatibility only.
 // ═══════════════════════════════════════════════════════════════════════════
 import { SaasModule } from "./modules/saas/saas.module";
+import { PlatformCredentialsModule } from "./common/platform-credentials/platform-credentials.module";
 import { FinanceModule } from "./modules/finance/finance.module";
 import { HrModule } from "./modules/hr/hr.module";
 import { CrmModule } from "./modules/crm/crm.module";
@@ -230,6 +230,7 @@ import {
 
     // Phase 20 — SaaS Platform & Billing
     SaasModule,
+    PlatformCredentialsModule,
     SaasPortalModule,
 
     // Builder Studio
@@ -280,10 +281,12 @@ import {
     // authenticated requests, falls back to IP for unauthenticated. Limits vary
     // by subscription plan (free/starter/business/enterprise).
     { provide: APP_GUARD, useClass: TenantThrottlerGuard },
-    // Phase 1 (install-on-demand): blocks access to installed-app-gated API routes
-    // when the tenant hasn't installed the corresponding app. Runs after the guard
-    // chain has populated request.user. Kernel routes always pass.
-    { provide: APP_INTERCEPTOR, useClass: AppInstalledGuard },
+    // NOTE: installed-app gating is already enforced by entitlementMiddleware
+    // (apps/api/src/common/middleware/entitlement.middleware.ts, registered as
+    // plain Express middleware in main.ts) — real, working, and uses the same
+    // module-tiers.ts slug map. AppInstalledGuard was a dead-code duplicate of
+    // this (confirmed zero references anywhere) and was removed; do not
+    // re-add it as a second, differently-behaved enforcement layer.
     // Trial/subscription write-lock. Must be an APP_INTERCEPTOR, not an
     // APP_GUARD: all guards (global + per-route) run before any interceptor,
     // so a guard here would run before JwtAuthGuard populates request.user

@@ -1392,6 +1392,26 @@ model AppSettings {
   @@map("app_settings")
 }
 
+/// Platform-wide (no tenantId — deliberately excluded from the dynamic
+/// per-tenant RLS migration loop) admin-editable integration credentials and
+/// tunables. See apps/api/src/modules/platform-credentials — one row per
+/// field, sensitive values encrypted via encryptField before storage. Reads
+/// fall back to process.env[envFallback] (see provider-registry.ts) when no
+/// row exists, so existing .env-based deployments keep working unchanged.
+model PlatformCredential {
+  id          String   @id @default(cuid())
+  provider    String
+  key         String
+  value       String   @db.Text
+  isSensitive Boolean  @default(false) @map("is_sensitive")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([provider, key])
+  @@map("platform_credentials")
+}
+
 // ════════════════════════════════════════════════
 // PROCUREMENT MODULE (Phase 2)
 // ════════════════════════════════════════════════

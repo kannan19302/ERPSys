@@ -9,8 +9,10 @@ import { ProvisioningService } from "./provisioning.service";
 import { OnboardingController } from "./onboarding.controller";
 import { OnboardingService } from "./onboarding.service";
 import { DemoDataService } from "./demo-data.service";
+import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
+  imports: [PlatformCredentialsModule],
   controllers: [
     AuthController,
     OAuthController,

@@ -60,8 +60,10 @@ import { ActivityFeedController } from "./activity-feed.controller";
 import { HealthController } from "./health.controller";
 import { SaasGateway } from "./saas.gateway";
 import { RealtimeEmitterService } from "./realtime-emitter.service";
+import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
+  imports: [PlatformCredentialsModule],
   controllers: [
     SaasController,
     BillingController,

@@ -8,6 +8,7 @@ import {
 import * as crypto from "node:crypto";
 import { prisma } from "@unerp/database";
 import { StorageMeteringService } from "./storage-metering.service";
+import { PlatformCredentialsService } from "../../common/platform-credentials/platform-credentials.service";
 import Stripe from "stripe";
 
 export interface BillingCalculation {
@@ -22,17 +23,26 @@ export interface BillingCalculation {
 export class BillingService {
   private readonly logger = new Logger(BillingService.name);
   private readonly usageBuffer = new Map<string, number>();
-  private readonly stripe: Stripe | null = null;
 
   constructor(
     @Optional()
     private readonly storageMetering?: StorageMeteringService,
-  ) {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (stripeKey) {
-      // Initialize Stripe with the standard API version
-      this.stripe = new Stripe(stripeKey, { apiVersion: "2024-04-10" as any });
-    }
+    @Optional()
+    private readonly platformCredentialsService?: PlatformCredentialsService,
+  ) {}
+
+  /**
+   * Builds the Stripe client per-use rather than once in the constructor, so
+   * a credential saved from the SaaS Portal Settings UI (PlatformCredentialsService,
+   * DB-first with env fallback) takes effect within its cache TTL without an
+   * API restart.
+   */
+  private async getStripeClient(): Promise<Stripe | null> {
+    const stripeKey = this.platformCredentialsService
+      ? (await this.platformCredentialsService.get("stripe")).secretKey
+      : process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) return null;
+    return new Stripe(stripeKey, { apiVersion: "2024-04-10" as any });
   }
 
   async createCheckoutSession(
@@ -48,9 +58,10 @@ export class BillingService {
 
     const joiner = successUrl.includes("?") ? "&" : "?";
 
-    if (this.stripe && plan.stripePriceId) {
+    const stripe = await this.getStripeClient();
+    if (stripe && plan.stripePriceId) {
       try {
-        const session = await this.stripe.checkout.sessions.create({
+        const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           mode: "subscription",
           client_reference_id: tenantId,
@@ -262,8 +273,8 @@ export class BillingService {
     const userCount = await prisma.user.count({ where: { tenantId } });
 
     // Real per-app storage data if available; fall back to UsageRecord.
-    let storageCurrent = records.find((r) => r.metric === "STORAGE_MB")
-      ?.currentValue || 0;
+    let storageCurrent =
+      records.find((r) => r.metric === "STORAGE_MB")?.currentValue || 0;
     let appUsage: Array<{
       appSlug: string;
       rowCount: number;
@@ -311,9 +322,7 @@ export class BillingService {
         perApp: appUsage.map((a) => ({
           appSlug: a.appSlug,
           rowCount: a.rowCount,
-          estimatedMb: Math.round(
-            Number(a.estimatedBytes) / (1024 * 1024),
-          ),
+          estimatedMb: Math.round(Number(a.estimatedBytes) / (1024 * 1024)),
         })),
       },
       metrics: records.map((r) => ({

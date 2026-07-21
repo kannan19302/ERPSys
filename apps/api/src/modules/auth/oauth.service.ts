@@ -8,6 +8,7 @@ import { randomBytes } from "node:crypto";
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { signTypedToken, verifyTypedToken, TOKEN_TYPE } from "@unerp/auth";
 import { AuthService, SessionContext } from "./auth.service";
+import { PlatformCredentialsService } from "../../common/platform-credentials/platform-credentials.service";
 
 /**
  * Real OAuth 2.0 / OIDC sign-in (AUTH_BILLING_PROGRAM Phase 1.3/1.4).
@@ -44,7 +45,10 @@ const STATE_TTL = "10m";
 export class OAuthService {
   private readonly logger = new Logger(OAuthService.name);
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly platformCredentialsService: PlatformCredentialsService,
+  ) {}
 
   private get apiUrl() {
     return process.env.API_PUBLIC_URL || "http://localhost:3001";
@@ -54,10 +58,13 @@ export class OAuthService {
     return `${this.apiUrl}/api/v1/auth/oauth/${provider}/callback`;
   }
 
-  private providerConfig(provider: OAuthProviderName): ProviderConfig | null {
+  private async providerConfig(
+    provider: OAuthProviderName,
+  ): Promise<ProviderConfig | null> {
     if (provider === "google") {
-      const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-      const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+      const creds = await this.platformCredentialsService.get("google-oauth");
+      const clientId = creds.clientId;
+      const clientSecret = creds.clientSecret;
       if (!clientId || !clientSecret) return null;
       return {
         authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
@@ -67,10 +74,11 @@ export class OAuthService {
         scope: "openid email profile",
       };
     }
-    const clientId = process.env.MICROSOFT_OAUTH_CLIENT_ID;
-    const clientSecret = process.env.MICROSOFT_OAUTH_CLIENT_SECRET;
+    const creds = await this.platformCredentialsService.get("microsoft-oauth");
+    const clientId = creds.clientId;
+    const clientSecret = creds.clientSecret;
     if (!clientId || !clientSecret) return null;
-    const entraTenant = process.env.MICROSOFT_OAUTH_TENANT || "common";
+    const entraTenant = creds.tenantId || "common";
     return {
       authorizeUrl: `https://login.microsoftonline.com/${entraTenant}/oauth2/v2.0/authorize`,
       tokenUrl: `https://login.microsoftonline.com/${entraTenant}/oauth2/v2.0/token`,
@@ -81,11 +89,15 @@ export class OAuthService {
   }
 
   /** Providers that are fully configured — drives the login page buttons. */
-  listProviders() {
+  async listProviders() {
+    const results = await Promise.all(
+      (["google", "microsoft"] as const).map(async (p) => ({
+        p,
+        configured: Boolean(await this.providerConfig(p)),
+      })),
+    );
     return {
-      providers: (["google", "microsoft"] as const).filter((p) =>
-        Boolean(this.providerConfig(p)),
-      ),
+      providers: results.filter((r) => r.configured).map((r) => r.p),
     };
   }
 
@@ -93,8 +105,11 @@ export class OAuthService {
    * Builds the provider authorization URL with a signed, single-round-trip
    * `state` (CSRF guard + carries the optional tenant slug).
    */
-  buildAuthorizationUrl(provider: OAuthProviderName, tenantSlug?: string) {
-    const config = this.providerConfig(provider);
+  async buildAuthorizationUrl(
+    provider: OAuthProviderName,
+    tenantSlug?: string,
+  ) {
+    const config = await this.providerConfig(provider);
     if (!config) {
       throw new BadRequestException(
         `${provider} sign-in is not configured on this server.`,
@@ -164,7 +179,7 @@ export class OAuthService {
     provider: OAuthProviderName,
     code: string,
   ): Promise<OAuthProfile> {
-    const config = this.providerConfig(provider);
+    const config = await this.providerConfig(provider);
     if (!config) {
       throw new BadRequestException(
         `${provider} sign-in is not configured on this server.`,

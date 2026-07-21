@@ -39,20 +39,23 @@ export class OAuthController {
 
   @ApiOperation({ summary: "List configured OAuth providers" })
   @Get("providers")
-  listProviders() {
+  async listProviders() {
     return this.oauthService.listProviders();
   }
 
   @ApiOperation({ summary: "Start OAuth sign-in (302 to the provider)" })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Get(":provider/start")
-  start(
+  async start(
     @Param("provider") providerParam: string,
     @Query("tenantSlug") tenantSlug: string | undefined,
     @Res() res: Response,
   ) {
     const provider = assertProvider(providerParam);
-    const url = this.oauthService.buildAuthorizationUrl(provider, tenantSlug);
+    const url = await this.oauthService.buildAuthorizationUrl(
+      provider,
+      tenantSlug,
+    );
     res.redirect(url);
   }
 

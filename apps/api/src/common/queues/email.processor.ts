@@ -3,6 +3,7 @@ import { Job } from "bullmq";
 import nodemailer, { type Transporter } from "nodemailer";
 import { pinoLogger } from "../services/logger.service";
 import { syncBackgroundJobStatus } from "./job-tracking.util";
+import { PlatformCredentialsService } from "../platform-credentials/platform-credentials.service";
 
 interface EmailJobData {
   to: string;
@@ -15,29 +16,34 @@ interface EmailJobData {
 
 @Processor("email")
 export class EmailProcessor extends WorkerHost {
-  // Built lazily (and reused across jobs) so a missing/changed SMTP config is
-  // picked up without restarting the worker, and so unit tests never pay for
-  // a real connection unless SMTP_HOST/SMTP_USER are actually set.
-  private transporter: Transporter | null | undefined;
+  constructor(
+    private readonly platformCredentialsService?: PlatformCredentialsService,
+  ) {
+    super();
+  }
 
-  private getTransporter(): Transporter | null {
-    if (this.transporter !== undefined) return this.transporter;
+  // Rebuilt on every call (not cached on the instance) — PlatformCredentialsService
+  // has its own ~15s cache, so this stays cheap while letting an SMTP credential
+  // saved from the SaaS Portal Settings UI take effect without a worker restart.
+  private async getTransporter(): Promise<Transporter | null> {
+    const creds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("smtp")
+      : {};
 
-    const host = process.env.SMTP_HOST;
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASSWORD;
+    const host = creds.host || process.env.SMTP_HOST;
+    const user = creds.user || process.env.SMTP_USER;
+    const pass = creds.password || process.env.SMTP_PASSWORD;
     if (!host || !user || !pass) {
-      this.transporter = null;
       return null;
     }
 
-    this.transporter = nodemailer.createTransport({
+    const port = Number(creds.port || process.env.SMTP_PORT) || 587;
+    return nodemailer.createTransport({
       host,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: Number(process.env.SMTP_PORT) === 465,
+      port,
+      secure: port === 465,
       auth: { user, pass },
     });
-    return this.transporter;
   }
 
   async process(job: Job<EmailJobData>): Promise<void> {
@@ -48,7 +54,7 @@ export class EmailProcessor extends WorkerHost {
       "Processing email job",
     );
 
-    const transporter = this.getTransporter();
+    const transporter = await this.getTransporter();
     if (!transporter) {
       pinoLogger.warn(
         { jobId: job.id },
@@ -57,8 +63,16 @@ export class EmailProcessor extends WorkerHost {
       return;
     }
 
+    const creds = this.platformCredentialsService
+      ? await this.platformCredentialsService.get("smtp")
+      : {};
+
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      from:
+        creds.from ||
+        process.env.SMTP_FROM ||
+        creds.user ||
+        process.env.SMTP_USER,
       to,
       subject,
       html: body,

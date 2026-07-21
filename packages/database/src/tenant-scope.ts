@@ -8,11 +8,19 @@
 // UserRole is a pure join table (userId + roleId) — tenant scoping is
 // enforced transitively through the related, tenant-scoped Role row.
 export const MODELS_WITHOUT_TENANT = new Set([
-  'Tenant', 'SaaSPlan', 'LanguageOverride', 'UserRole',
+  "Tenant",
+  "SaaSPlan",
+  "LanguageOverride",
+  "UserRole",
   // Global marketplace catalog — vendor/package/bundle/listing rows are
   // platform-wide, not per-tenant (AppVendor scopes by ownerTenantId instead).
-  'AppVendor', 'AppPackage', 'AppBundle', 'MarketplaceApp',
-  'AppChangelog', 'AppCollection', 'AppCollectionItem',
+  "AppVendor",
+  "AppPackage",
+  "AppBundle",
+  "MarketplaceApp",
+  "AppChangelog",
+  "AppCollection",
+  "AppCollectionItem",
   // EmailSequenceStep has no tenantId column of its own — it is scoped
   // transitively through its parent (tenant-scoped) EmailSequence via
   // sequenceId, the same pattern as UserRole above. Without this entry the
@@ -20,20 +28,30 @@ export const MODELS_WITHOUT_TENANT = new Set([
   // `emailSequenceStep` query/create and Prisma throws a validation error
   // (only surfaces under a real request-scoped tenant session, so unit
   // tests — which never set one — never caught it).
-  'EmailSequenceStep',
+  "EmailSequenceStep",
+  // Platform-wide admin-editable integration credentials/tunables (SaaS
+  // Portal Settings -> Integrations). Deliberately has no tenantId column —
+  // see PlatformCredential in schema.prisma and
+  // apps/api/src/common/platform-credentials.
+  "PlatformCredential",
 ]);
 
 const READ_OPS = new Set([
-  'findFirst',
-  'findMany',
-  'findUnique',
-  'findFirstOrThrow',
-  'findUniqueOrThrow',
-  'count',
-  'aggregate',
-  'groupBy',
+  "findFirst",
+  "findMany",
+  "findUnique",
+  "findFirstOrThrow",
+  "findUniqueOrThrow",
+  "count",
+  "aggregate",
+  "groupBy",
 ]);
-const WHERE_MUTATION_OPS = new Set(['update', 'updateMany', 'delete', 'deleteMany']);
+const WHERE_MUTATION_OPS = new Set([
+  "update",
+  "updateMany",
+  "delete",
+  "deleteMany",
+]);
 
 /**
  * Given a Prisma operation's original args, returns new args with `tenantId`
@@ -50,25 +68,45 @@ export function applyTenantScope(
   args: unknown,
   tenantId: string,
 ): Record<string, unknown> {
-  const typedArgs: Record<string, unknown> = { ...((args || {}) as Record<string, unknown>) };
+  const typedArgs: Record<string, unknown> = {
+    ...((args || {}) as Record<string, unknown>),
+  };
 
   if (READ_OPS.has(operation) || WHERE_MUTATION_OPS.has(operation)) {
-    typedArgs.where = { ...((typedArgs.where as Record<string, unknown>) || {}), tenantId };
-  } else if (operation === 'create') {
-    typedArgs.data = { ...((typedArgs.data as Record<string, unknown>) || {}), tenantId };
-  } else if (operation === 'createMany') {
+    typedArgs.where = {
+      ...((typedArgs.where as Record<string, unknown>) || {}),
+      tenantId,
+    };
+  } else if (operation === "create") {
+    typedArgs.data = {
+      ...((typedArgs.data as Record<string, unknown>) || {}),
+      tenantId,
+    };
+  } else if (operation === "createMany") {
     if (Array.isArray(typedArgs.data)) {
       typedArgs.data = typedArgs.data.map((item: unknown) => ({
         ...(item as Record<string, unknown>),
         tenantId,
       }));
     } else {
-      typedArgs.data = { ...((typedArgs.data as Record<string, unknown>) || {}), tenantId };
+      typedArgs.data = {
+        ...((typedArgs.data as Record<string, unknown>) || {}),
+        tenantId,
+      };
     }
-  } else if (operation === 'upsert') {
-    typedArgs.create = { ...((typedArgs.create as Record<string, unknown>) || {}), tenantId };
-    typedArgs.update = { ...((typedArgs.update as Record<string, unknown>) || {}), tenantId };
-    typedArgs.where = { ...((typedArgs.where as Record<string, unknown>) || {}), tenantId };
+  } else if (operation === "upsert") {
+    typedArgs.create = {
+      ...((typedArgs.create as Record<string, unknown>) || {}),
+      tenantId,
+    };
+    typedArgs.update = {
+      ...((typedArgs.update as Record<string, unknown>) || {}),
+      tenantId,
+    };
+    typedArgs.where = {
+      ...((typedArgs.where as Record<string, unknown>) || {}),
+      tenantId,
+    };
   }
 
   return typedArgs;

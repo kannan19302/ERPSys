@@ -1,29 +1,50 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { AppLogger } from '../../../common/services/logger.service';
-import type { PaymentGatewayAdapter, PaymentIntentResult } from './payment-gateway.interface';
+import { Injectable, BadRequestException, Optional } from "@nestjs/common";
+import { AppLogger } from "../../../common/services/logger.service";
+import type {
+  PaymentGatewayAdapter,
+  PaymentIntentResult,
+} from "./payment-gateway.interface";
+import { PlatformCredentialsService } from "../../../common/platform-credentials/platform-credentials.service";
 
 @Injectable()
 export class StripePaymentGatewayService implements PaymentGatewayAdapter {
   private readonly logger = new AppLogger();
-  private readonly apiKey: string;
 
-  constructor() {
-    this.logger.setContext('StripePaymentGatewayService');
-    this.apiKey = process.env.STRIPE_SECRET_KEY || '';
+  constructor(
+    @Optional()
+    private readonly platformCredentialsService?: PlatformCredentialsService,
+  ) {
+    this.logger.setContext("StripePaymentGatewayService");
   }
 
-  private getHeaders() {
+  /**
+   * Resolved per-call (not cached on the instance) so a credential saved from
+   * the SaaS Portal Settings UI takes effect within PlatformCredentialsService's
+   * own cache TTL, without an API restart.
+   */
+  private async getApiKey(): Promise<string> {
+    if (this.platformCredentialsService) {
+      const creds = await this.platformCredentialsService.get("stripe");
+      if (creds.secretKey) return creds.secretKey;
+    }
+    return process.env.STRIPE_SECRET_KEY || "";
+  }
+
+  private async getHeaders() {
     return {
-      'Authorization': `Bearer ${this.apiKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `Bearer ${await this.getApiKey()}`,
+      "Content-Type": "application/x-www-form-urlencoded",
     };
   }
 
-  private buildFormBody(data: Record<string, any>, prefix = ''): URLSearchParams {
+  private buildFormBody(
+    data: Record<string, any>,
+    prefix = "",
+  ): URLSearchParams {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(data)) {
       const paramKey = prefix ? `${prefix}[${key}]` : key;
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
         const nested = this.buildFormBody(value, paramKey);
         for (const [k, v] of nested.entries()) {
           params.append(k, v);
@@ -40,12 +61,15 @@ export class StripePaymentGatewayService implements PaymentGatewayAdapter {
     currency: string,
     metadata: Record<string, unknown>,
   ): Promise<PaymentIntentResult> {
-    if (!this.apiKey) {
-      throw new BadRequestException('Stripe API Key is not configured.');
+    const apiKey = await this.getApiKey();
+    if (!apiKey) {
+      throw new BadRequestException("Stripe API Key is not configured.");
     }
 
     try {
-      this.logger.log(`Creating Stripe PaymentIntent for amount=${amount} currency=${currency}`);
+      this.logger.log(
+        `Creating Stripe PaymentIntent for amount=${amount} currency=${currency}`,
+      );
 
       const body = this.buildFormBody({
         amount: Math.round(amount * 100), // Stripe expects cents
@@ -53,17 +77,21 @@ export class StripePaymentGatewayService implements PaymentGatewayAdapter {
         metadata,
       });
 
-      const res = await fetch('https://api.stripe.com/v1/payment_intents', {
-        method: 'POST',
-        headers: this.getHeaders(),
+      const res = await fetch("https://api.stripe.com/v1/payment_intents", {
+        method: "POST",
+        headers: await this.getHeaders(),
         body: body.toString(),
       });
 
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
 
       if (!res.ok) {
-        this.logger.error(`Stripe createIntent failed: ${JSON.stringify(data.error)}`);
-        throw new BadRequestException(data.error?.message || 'Stripe payment intent creation failed.');
+        this.logger.error(
+          `Stripe createIntent failed: ${JSON.stringify(data.error)}`,
+        );
+        throw new BadRequestException(
+          data.error?.message || "Stripe payment intent creation failed.",
+        );
       }
 
       this.logger.log(`Stripe PaymentIntent created id=${data.id}`);
@@ -75,38 +103,48 @@ export class StripePaymentGatewayService implements PaymentGatewayAdapter {
       };
     } catch (err: any) {
       this.logger.error(`Stripe createIntent exception: ${err.message}`);
-      throw new BadRequestException(err.message || 'Payment intent creation failed.');
+      throw new BadRequestException(
+        err.message || "Payment intent creation failed.",
+      );
     }
   }
 
-  async confirmIntent(intentId: string, simulateDecline = false): Promise<PaymentIntentResult> {
-    if (!this.apiKey) {
-      throw new BadRequestException('Stripe API Key is not configured.');
+  async confirmIntent(
+    intentId: string,
+    simulateDecline = false,
+  ): Promise<PaymentIntentResult> {
+    const apiKey = await this.getApiKey();
+    if (!apiKey) {
+      throw new BadRequestException("Stripe API Key is not configured.");
     }
 
     try {
       this.logger.log(`Confirming Stripe PaymentIntent id=${intentId}`);
 
       // Stripe test card token to simulate decline if requested, else use tok_visa
-      const token = simulateDecline ? 'tok_chargeDeclined' : 'tok_visa';
+      const token = simulateDecline ? "tok_chargeDeclined" : "tok_visa";
 
       // 1. Create a PaymentMethod from the token
       const pmBody = this.buildFormBody({
-        type: 'card',
+        type: "card",
         card: { token },
       });
 
-      const pmRes = await fetch('https://api.stripe.com/v1/payment_methods', {
-        method: 'POST',
-        headers: this.getHeaders(),
+      const pmRes = await fetch("https://api.stripe.com/v1/payment_methods", {
+        method: "POST",
+        headers: await this.getHeaders(),
         body: pmBody.toString(),
       });
 
-      const pmData = await pmRes.json() as any;
+      const pmData = (await pmRes.json()) as any;
 
       if (!pmRes.ok) {
-        this.logger.error(`Stripe PaymentMethod creation failed: ${JSON.stringify(pmData.error)}`);
-        throw new BadRequestException(pmData.error?.message || 'Payment method creation failed.');
+        this.logger.error(
+          `Stripe PaymentMethod creation failed: ${JSON.stringify(pmData.error)}`,
+        );
+        throw new BadRequestException(
+          pmData.error?.message || "Payment method creation failed.",
+        );
       }
 
       // 2. Confirm the PaymentIntent with the new PaymentMethod
@@ -114,23 +152,30 @@ export class StripePaymentGatewayService implements PaymentGatewayAdapter {
         payment_method: pmData.id,
       });
 
-      const res = await fetch(`https://api.stripe.com/v1/payment_intents/${intentId}/confirm`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: confirmBody.toString(),
-      });
+      const res = await fetch(
+        `https://api.stripe.com/v1/payment_intents/${intentId}/confirm`,
+        {
+          method: "POST",
+          headers: await this.getHeaders(),
+          body: confirmBody.toString(),
+        },
+      );
 
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
 
       if (!res.ok) {
-        this.logger.error(`Stripe confirmIntent failed: ${JSON.stringify(data.error)}`);
+        this.logger.error(
+          `Stripe confirmIntent failed: ${JSON.stringify(data.error)}`,
+        );
         return {
           id: intentId,
-          status: 'failed',
+          status: "failed",
         };
       }
 
-      this.logger.log(`Stripe PaymentIntent confirmed id=${intentId} status=${data.status}`);
+      this.logger.log(
+        `Stripe PaymentIntent confirmed id=${intentId} status=${data.status}`,
+      );
 
       return {
         id: intentId,
@@ -140,60 +185,69 @@ export class StripePaymentGatewayService implements PaymentGatewayAdapter {
       this.logger.error(`Stripe confirmIntent exception: ${err.message}`);
       return {
         id: intentId,
-        status: 'failed',
+        status: "failed",
       };
     }
   }
 
   async refund(intentId: string, amount: number): Promise<PaymentIntentResult> {
-    if (!this.apiKey) {
-      throw new BadRequestException('Stripe API Key is not configured.');
+    const apiKey = await this.getApiKey();
+    if (!apiKey) {
+      throw new BadRequestException("Stripe API Key is not configured.");
     }
 
     try {
-      this.logger.log(`Refunding Stripe PaymentIntent id=${intentId} amount=${amount}`);
+      this.logger.log(
+        `Refunding Stripe PaymentIntent id=${intentId} amount=${amount}`,
+      );
 
       const body = this.buildFormBody({
         payment_intent: intentId,
         amount: Math.round(amount * 100),
       });
 
-      const res = await fetch('https://api.stripe.com/v1/refunds', {
-        method: 'POST',
-        headers: this.getHeaders(),
+      const res = await fetch("https://api.stripe.com/v1/refunds", {
+        method: "POST",
+        headers: await this.getHeaders(),
         body: body.toString(),
       });
 
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
 
       if (!res.ok) {
-        this.logger.error(`Stripe refund failed: ${JSON.stringify(data.error)}`);
-        throw new BadRequestException(data.error?.message || 'Stripe refund failed.');
+        this.logger.error(
+          `Stripe refund failed: ${JSON.stringify(data.error)}`,
+        );
+        throw new BadRequestException(
+          data.error?.message || "Stripe refund failed.",
+        );
       }
 
       return {
         id: intentId,
-        status: 'refunded',
+        status: "refunded",
       };
     } catch (err: any) {
       this.logger.error(`Stripe refund exception: ${err.message}`);
-      throw new BadRequestException(err.message || 'Refund processing failed.');
+      throw new BadRequestException(err.message || "Refund processing failed.");
     }
   }
 
-  private mapStripeStatus(status: string): 'requires_confirmation' | 'succeeded' | 'failed' | 'refunded' {
+  private mapStripeStatus(
+    status: string,
+  ): "requires_confirmation" | "succeeded" | "failed" | "refunded" {
     switch (status) {
-      case 'requires_confirmation':
-      case 'requires_action':
-      case 'requires_payment_method':
-        return 'requires_confirmation';
-      case 'succeeded':
-        return 'succeeded';
-      case 'canceled':
-      case 'failed':
-        return 'failed';
+      case "requires_confirmation":
+      case "requires_action":
+      case "requires_payment_method":
+        return "requires_confirmation";
+      case "succeeded":
+        return "succeeded";
+      case "canceled":
+      case "failed":
+        return "failed";
       default:
-        return 'requires_confirmation';
+        return "requires_confirmation";
     }
   }
 }
