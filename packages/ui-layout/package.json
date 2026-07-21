@@ -25,9 +25,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@unerp/ui-components": "workspace:*"
+    "@unerp/ui-components": "workspace:*",
+    "@unerp/ui-hooks": "workspace:*"
   },
   "peerDependencies": {
+    "next": ">=14.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

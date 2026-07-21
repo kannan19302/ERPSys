@@ -883,6 +883,42 @@ Always use the design system tokens defined in `@unerp/ui-tokens` (`packages/ui-
 - **Never hardcode pixel padding** (e.g., `padding: 16px`). Use `padding: var(--space-4)`.
 - Keep button hover states clean and subtle: `background: transparent` transitioning to `var(--color-bg-hover)` is preferred over hard boxed borders.
 
+##### 8.3 Module Page Layout Convention (mandatory)
+
+Every module sub-page with **2+ content sections** MUST use `ModuleTabLayout` from
+`@unerp/ui-layout` for primary navigation. Second-level groupings use `SubTabBar`
+(also from `@unerp/ui-layout`). Paginated dashboards use `MultiPageDashboard`
+from `@unerp/ui-dashboard`.
+
+**Rules:**
+
+- **Tab state is URL-driven** (`?tab=`, `?subtab=`, `?dashPage=`). Never use
+  `useState` for page-level tab selection — tabs must be bookmarkable and
+  shareable.
+- Tab definitions use the `ModuleTab` interface:
+  `{ id, label, href, icon?, description?, advanced?, group? }`.
+- `ModuleTabLayout` provides: module header with icon/title/description,
+  tab pinning (star), drag-and-drop tab reordering, recent-tab tracking,
+  and an "Advanced" dropdown for overflow tabs — all persisted to localStorage
+  via the `useTabPersistence` hook from `@unerp/ui-hooks`.
+- For **master-detail layouts** (e.g. project selector + detail panel), use
+  `SubTabBar` for the embedded tab bar instead of `ModuleTabLayout`.
+- Simple dashboards (single-view pages with no sub-sections) are exempt.
+- The `Tabs` primitive from `@unerp/ui-components` is for **in-page detail
+  panels** (e.g. inside a record detail view). `ModuleTabLayout` is for
+  page-level section navigation.
+- **Hand-rolled tab buttons (`<button>` with `useState`) are rejected** in code
+  review. All agents must use the design system tab components.
+
+**Component hierarchy:**
+
+| Level                 | Component            | Package                | State param    |
+| --------------------- | -------------------- | ---------------------- | -------------- |
+| Module page tabs      | `ModuleTabLayout`    | `@unerp/ui-layout`     | `?tab=`        |
+| Sub-tabs within a tab | `SubTabBar`          | `@unerp/ui-layout`     | `?subtab=`     |
+| Paginated dashboard   | `MultiPageDashboard` | `@unerp/ui-dashboard`  | `?dashPage=`   |
+| Record detail tabs    | `Tabs`               | `@unerp/ui-components` | local state OK |
+
 ### 9. Script & Temporary File Cleanup
 
 > AI agents and developers MUST NOT leave one-off scripts in the repository.

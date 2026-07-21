@@ -343,6 +343,19 @@ Every UI page, component, and layout MUST use the UniERP Design System. No excep
 - Action handlers MUST use `e.stopPropagation()` to prevent row-click interference
 - Sort indicators render via `.dt-sort-th` / `.dt-sort-arrow` classes — no per-page sort CSS
 
+### 2.5 Module Tab Layout Convention (Mandatory)
+
+All module pages with **multiple sections** MUST use `ModuleTabLayout` from
+`@unerp/ui-layout`. Hand-rolled tab buttons (`<button>` with `useState` for tab
+selection) are **rejected** — tab state must be URL-driven (`?tab=`, `?subtab=`).
+
+| Component            | Use case                                  | Package                |
+| :------------------- | :---------------------------------------- | :--------------------- |
+| `ModuleTabLayout`    | Page-level section navigation             | `@unerp/ui-layout`     |
+| `SubTabBar`          | Second-level or embedded tabs             | `@unerp/ui-layout`     |
+| `MultiPageDashboard` | Paginated dashboard pages                 | `@unerp/ui-dashboard`  |
+| `Tabs`               | Record detail panel tabs (local state OK) | `@unerp/ui-components` |
+
 ### 2.5 Page Structure Template
 
 Every module page follows this pattern:

@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useId, useState, type FC, type ReactNode, type CSSProperties } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
-import styles from './navigation.module.css';
+import {
+  useEffect,
+  useId,
+  useState,
+  type FC,
+  type ReactNode,
+  type CSSProperties,
+} from "react";
+import { ChevronLeft, ChevronRight, ChevronDown, X } from "lucide-react";
+import styles from "./navigation.module.css";
 
 // ── Tabs ──────────────────────────────────────────────
 export interface TabItem {
@@ -11,42 +18,82 @@ export interface TabItem {
   icon?: ReactNode;
   /** Short "what does this tab show?" hint, surfaced as a hover tooltip. */
   description?: string;
+  /** Optional badge rendered after the label (e.g. count pill). */
+  badge?: ReactNode;
+  /** Disabled tabs are visible but not clickable. */
+  disabled?: boolean;
 }
 export interface TabsProps {
   tabs: TabItem[];
   value: string;
   onChange: (key: string) => void;
+  /** Visual variant. 'underline' (default) shows a bottom border indicator;
+   *  'pills' renders tabs as pill-shaped toggles. */
+  variant?: "underline" | "pills";
 }
 
-const TabButton: FC<{ tab: TabItem; active: boolean; onClick: () => void }> = ({ tab, active, onClick }) => {
+const TabButton: FC<{
+  tab: TabItem;
+  active: boolean;
+  onClick: () => void;
+  variant: "underline" | "pills";
+}> = ({ tab, active, onClick, variant }) => {
   const btnClass = [
-    styles.tab_btn,
-    active && styles.tab_btn_active,
-  ].filter(Boolean).join(' ');
+    variant === "pills" ? styles.tab_btn_pill : styles.tab_btn,
+    active &&
+      (variant === "pills"
+        ? styles.tab_btn_pill_active
+        : styles.tab_btn_active),
+    tab.disabled && styles.tab_btn_disabled,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <button
       role="tab"
       aria-selected={active}
-      onClick={onClick}
+      aria-disabled={tab.disabled || undefined}
+      onClick={tab.disabled ? undefined : onClick}
       className={btnClass}
       title={tab.description}
     >
-      {tab.icon}{tab.label}
+      {tab.icon}
+      {tab.label}
+      {tab.badge != null && (
+        <span className={styles.tab_badge}>{tab.badge}</span>
+      )}
     </button>
   );
 };
 
-export const Tabs: FC<TabsProps> = ({ tabs, value, onChange }) => (
-  <div role="tablist" className={styles.tablist}>
+export const Tabs: FC<TabsProps> = ({
+  tabs,
+  value,
+  onChange,
+  variant = "underline",
+}) => (
+  <div
+    role="tablist"
+    className={variant === "pills" ? styles.tablist_pills : styles.tablist}
+  >
     {tabs.map((t) => (
-      <TabButton key={t.key} tab={t} active={t.key === value} onClick={() => onChange(t.key)} />
+      <TabButton
+        key={t.key}
+        tab={t}
+        active={t.key === value}
+        onClick={() => onChange(t.key)}
+        variant={variant}
+      />
     ))}
   </div>
 );
 
 // ── Tooltip ───────────────────────────────────────────
-export interface TooltipProps { content: ReactNode; children: ReactNode; }
+export interface TooltipProps {
+  content: ReactNode;
+  children: ReactNode;
+}
 export const Tooltip: FC<TooltipProps> = ({ content, children }) => {
   return (
     <span className={styles.tooltip_container}>
@@ -65,11 +112,16 @@ export interface PaginationProps {
   onChange: (page: number) => void;
 }
 
-const PageBtn: FC<{ label: ReactNode; target: number; disabled: boolean; active?: boolean; onClick: (target: number) => void }> = ({ label, target, disabled, active = false, onClick }) => {
-  const btnClass = [
-    styles.page_btn,
-    active && styles.page_btn_active,
-  ].filter(Boolean).join(' ');
+const PageBtn: FC<{
+  label: ReactNode;
+  target: number;
+  disabled: boolean;
+  active?: boolean;
+  onClick: (target: number) => void;
+}> = ({ label, target, disabled, active = false, onClick }) => {
+  const btnClass = [styles.page_btn, active && styles.page_btn_active]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <button
@@ -83,7 +135,11 @@ const PageBtn: FC<{ label: ReactNode; target: number; disabled: boolean; active?
   );
 };
 
-export const Pagination: FC<PaginationProps> = ({ page, pageCount, onChange }) => {
+export const Pagination: FC<PaginationProps> = ({
+  page,
+  pageCount,
+  onChange,
+}) => {
   if (pageCount <= 1) return null;
   const pages: number[] = [];
   const from = Math.max(1, page - 2);
@@ -91,15 +147,41 @@ export const Pagination: FC<PaginationProps> = ({ page, pageCount, onChange }) =
   for (let p = from; p <= to; p++) pages.push(p);
   return (
     <div className={styles.pagination_container}>
-      <PageBtn label={<ChevronLeft size={15} />} target={page - 1} disabled={page <= 1} onClick={onChange} />
-      {from > 1 && <PageBtn label={1} target={1} disabled={false} onClick={onChange} />}
+      <PageBtn
+        label={<ChevronLeft size={15} />}
+        target={page - 1}
+        disabled={page <= 1}
+        onClick={onChange}
+      />
+      {from > 1 && (
+        <PageBtn label={1} target={1} disabled={false} onClick={onChange} />
+      )}
       {from > 2 && <span className={styles.ellipsis}>…</span>}
       {pages.map((p) => (
-        <PageBtn key={p} label={p} target={p} disabled={false} active={p === page} onClick={onChange} />
+        <PageBtn
+          key={p}
+          label={p}
+          target={p}
+          disabled={false}
+          active={p === page}
+          onClick={onChange}
+        />
       ))}
       {to < pageCount - 1 && <span className={styles.ellipsis}>…</span>}
-      {to < pageCount && <PageBtn label={pageCount} target={pageCount} disabled={false} onClick={onChange} />}
-      <PageBtn label={<ChevronRight size={15} />} target={page + 1} disabled={page >= pageCount} onClick={onChange} />
+      {to < pageCount && (
+        <PageBtn
+          label={pageCount}
+          target={pageCount}
+          disabled={false}
+          onClick={onChange}
+        />
+      )}
+      <PageBtn
+        label={<ChevronRight size={15} />}
+        target={page + 1}
+        disabled={page >= pageCount}
+        onClick={onChange}
+      />
     </div>
   );
 };
@@ -109,23 +191,35 @@ export interface DrawerProps {
   open: boolean;
   onClose: () => void;
   title?: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   /** Legacy numeric width — prefer `size`. */
   width?: number;
   children?: ReactNode;
   footer?: ReactNode;
 }
 
-const DRAWER_WIDTH: Record<NonNullable<DrawerProps['size']>, number> = {
-  sm: 360, md: 480, lg: 640,
+const DRAWER_WIDTH: Record<NonNullable<DrawerProps["size"]>, number> = {
+  sm: 360,
+  md: 480,
+  lg: 640,
 };
 
-export const Drawer: FC<DrawerProps> = ({ open, onClose, title, size = 'md', width, children, footer }) => {
+export const Drawer: FC<DrawerProps> = ({
+  open,
+  onClose,
+  title,
+  size = "md",
+  width,
+  children,
+  footer,
+}) => {
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
   if (!open) return null;
@@ -137,7 +231,9 @@ export const Drawer: FC<DrawerProps> = ({ open, onClose, title, size = 'md', wid
   return (
     <div
       className={styles.drawer_overlay}
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
         role="dialog"
@@ -156,11 +252,7 @@ export const Drawer: FC<DrawerProps> = ({ open, onClose, title, size = 'md', wid
           </button>
         </div>
         <div className={styles.drawer_body}>{children}</div>
-        {footer && (
-          <div className={styles.drawer_footer}>
-            {footer}
-          </div>
-        )}
+        {footer && <div className={styles.drawer_footer}>{footer}</div>}
       </div>
     </div>
   );
@@ -175,7 +267,11 @@ export interface DisclosureProps {
   onToggle?: (open: boolean) => void;
 }
 export const Disclosure: FC<DisclosureProps> = ({
-  summary, children, defaultOpen = false, open: openProp, onToggle,
+  summary,
+  children,
+  defaultOpen = false,
+  open: openProp,
+  onToggle,
 }) => {
   const [openState, setOpenState] = useState(defaultOpen);
   const open = openProp !== undefined ? openProp : openState;
@@ -188,7 +284,7 @@ export const Disclosure: FC<DisclosureProps> = ({
   };
 
   const chevronStyle: CSSProperties = {
-    transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+    transform: open ? "rotate(0deg)" : "rotate(-90deg)",
   };
 
   return (
@@ -200,9 +296,7 @@ export const Disclosure: FC<DisclosureProps> = ({
         aria-controls={panelId}
         className={styles.disclosure_trigger}
       >
-        <span className={styles.summary_content}>
-          {summary}
-        </span>
+        <span className={styles.summary_content}>{summary}</span>
         <ChevronDown
           size={14}
           className={styles.chevron_down}
@@ -213,4 +307,3 @@ export const Disclosure: FC<DisclosureProps> = ({
     </div>
   );
 };
-
