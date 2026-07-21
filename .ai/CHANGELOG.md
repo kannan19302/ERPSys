@@ -2,6 +2,29 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-21] Cycle 37 — CRM expansion: Sales Automation, Customer Success, Marketing Automation (Phase M)
+
+**Scope**: CRM module deep expansion (+84 endpoints across 3 new services + 2 frontend pages). Also refactored CRM dashboard to use `CrmTabLayout`/`ModuleTabLayout` pattern matching Finance.
+
+**Key Changes**:
+
+- **Backend** (`apps/api/src/modules/crm/`):
+  - `crm-sales-automation.service.ts` — 33 methods: auto-assignment rules, round-robin, escalation rules, lead scoring models, sales sequences
+  - `crm-customer-success.service.ts` — 28 methods: health score configs, NPS surveys, onboarding checklists, retention campaigns
+  - `crm-marketing-automation.service.ts` — 23 methods: drip campaigns, landing pages, A/B testing
+  - `crm-expansion-deep.controller.ts` — 65+ endpoints across all 3 domains + `/crm/dashboard` aggregate endpoint
+  - Registered all 3 services + controller in `crm.module.ts`
+- **Frontend** (`apps/web/app/(dashboard)/crm/`):
+  - Refactored `page.tsx` to use `CrmTabLayout` with MultiPageDashboard pattern (KPI cards, nav arrows, sub-pages)
+  - New `automation/page.tsx` — Sales Automation UI with KPI cards and sub-tab bar
+  - New `customer-success/page.tsx` — Customer Success UI with health/NPS/onboarding/retention tabs
+  - Added segment names for `automation` and `customer-success` routes in navigation registry
+  - `CrmTabLayout` re-exports `ModuleTabLayout` with localStorage key migration
+- **Bug fixes**: 35 TS errors fixed across CRM services (Zod enum flattening, Prisma field name corrections, unused params) and pre-existing `tax-engine.service.ts` DunningRun type mismatch
+- **Verification**: API build clean, web lint 0 errors (285 pre-existing warnings)
+
+**Feature count**: CRM module gains ~84 new feature endpoints → tracking ~788/1000 target
+
 ## [2026-07-21] QA Harden — Fixed 24 test failures, 5 GitHub issues filed
 
 **Scope**: Mandatory QA checkpoint (24 failing tests → 0). Found and fixed 2 root causes in test infrastructure, filed 3 new security findings.

@@ -1,9 +1,13 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { createHash } from 'crypto';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { GlAccountingService } from './gl-accounting.service';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { createHash } from "crypto";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { GlAccountingService } from "./gl-accounting.service";
 
 @Injectable()
 export class TaxEngineService {
@@ -21,7 +25,11 @@ export class TaxEngineService {
     });
   }
 
-  async createTaxRule(tenantId: string, orgId: string, dto: { name: string; type: string; rate?: number }) {
+  async createTaxRule(
+    tenantId: string,
+    orgId: string,
+    dto: { name: string; type: string; rate?: number },
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.taxRule.create({
       data: { ...dto, tenantId, orgId: resolvedOrgId } as never,
@@ -37,7 +45,11 @@ export class TaxEngineService {
     });
   }
 
-  async createWithholdingTax(tenantId: string, orgId: string, dto: { name: string; rate: number; accountId: string }) {
+  async createWithholdingTax(
+    tenantId: string,
+    orgId: string,
+    dto: { name: string; rate: number; accountId: string },
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.withholdingTax.create({
       data: { ...dto, tenantId, orgId: resolvedOrgId } as never,
@@ -49,11 +61,15 @@ export class TaxEngineService {
   async getTaxFilings(tenantId: string) {
     return prisma.taxFiling.findMany({
       where: { tenantId },
-      orderBy: { periodStart: 'desc' },
+      orderBy: { periodStart: "desc" },
     });
   }
 
-  async createTaxFiling(tenantId: string, orgId: string, dto: { filingType: string; periodStart: string; periodEnd: string }) {
+  async createTaxFiling(
+    tenantId: string,
+    orgId: string,
+    dto: { filingType: string; periodStart: string; periodEnd: string },
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.taxFiling.create({
       data: {
@@ -62,7 +78,7 @@ export class TaxEngineService {
         filingType: dto.filingType,
         periodStart: new Date(dto.periodStart),
         periodEnd: new Date(dto.periodEnd),
-        status: 'DRAFT',
+        status: "DRAFT",
         payload: {} as never,
       },
     });
@@ -71,7 +87,13 @@ export class TaxEngineService {
   /**
    * Auto-compute a VAT/GST return from invoices and purchase orders in a period.
    */
-  async computeTaxReturn(tenantId: string, orgId: string, filingType: string, periodStart: string, periodEnd: string) {
+  async computeTaxReturn(
+    tenantId: string,
+    orgId: string,
+    filingType: string,
+    periodStart: string,
+    periodEnd: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const start = new Date(periodStart);
     const end = new Date(periodEnd);
@@ -81,7 +103,7 @@ export class TaxEngineService {
         tenantId,
         orgId: resolvedOrgId,
         issueDate: { gte: start, lte: end },
-        status: { notIn: ['DRAFT', 'VOID'] },
+        status: { notIn: ["DRAFT", "VOID"] },
       },
     });
 
@@ -90,12 +112,15 @@ export class TaxEngineService {
         tenantId,
         orgId: resolvedOrgId,
         orderDate: { gte: start, lte: end },
-        status: { notIn: ['DRAFT', 'CANCELLED'] },
+        status: { notIn: ["DRAFT", "CANCELLED"] },
       },
     });
 
     const outputTax = invoices.reduce((s, inv) => s + Number(inv.taxAmount), 0);
-    const inputTax = purchaseOrders.reduce((s, po) => s + Number(po.taxAmount), 0);
+    const inputTax = purchaseOrders.reduce(
+      (s, po) => s + Number(po.taxAmount),
+      0,
+    );
     const netTaxPayable = outputTax - inputTax;
 
     const filing = await prisma.taxFiling.create({
@@ -105,7 +130,7 @@ export class TaxEngineService {
         filingType,
         periodStart: start,
         periodEnd: end,
-        status: 'DRAFT',
+        status: "DRAFT",
         payload: {
           outputTax,
           inputTax,
@@ -135,33 +160,38 @@ export class TaxEngineService {
   async getEInvoices(tenantId: string, invoiceId?: string) {
     return prisma.eInvoice.findMany({
       where: { tenantId, ...(invoiceId ? { invoiceId } : {}) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 200,
     });
   }
 
   async getEInvoiceById(tenantId: string, id: string) {
     const doc = await prisma.eInvoice.findFirst({ where: { id, tenantId } });
-    if (!doc) throw new NotFoundException('E-invoice not found');
+    if (!doc) throw new NotFoundException("E-invoice not found");
     return doc;
   }
 
   private escapeXml(value: unknown): string {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
   }
 
   /**
    * Generate a structured legal e-invoice from a sales Invoice.
    * Supports UBL 2.1 / PEPPOL BIS XML and India GST (IRN + signed QR payload).
    */
-  async generateEInvoice(tenantId: string, _orgId: string, invoiceId: string, format = 'UBL') {
-    const fmt = (format || 'UBL').toUpperCase();
-    if (!['UBL', 'PEPPOL', 'GST_IRN'].includes(fmt)) {
+  async generateEInvoice(
+    tenantId: string,
+    _orgId: string,
+    invoiceId: string,
+    format = "UBL",
+  ) {
+    const fmt = (format || "UBL").toUpperCase();
+    if (!["UBL", "PEPPOL", "GST_IRN"].includes(fmt)) {
       throw new BadRequestException(`Unsupported e-invoice format: ${fmt}`);
     }
 
@@ -169,63 +199,67 @@ export class TaxEngineService {
       where: { id: invoiceId, tenantId },
       include: { customer: true, lineItems: true },
     });
-    if (!invoice) throw new NotFoundException('Invoice not found');
-    if (invoice.status === 'DRAFT') {
-      throw new BadRequestException('Cannot issue an e-invoice for a draft invoice.');
+    if (!invoice) throw new NotFoundException("Invoice not found");
+    if (invoice.status === "DRAFT") {
+      throw new BadRequestException(
+        "Cannot issue an e-invoice for a draft invoice.",
+      );
     }
 
     const supplier =
-      (await prisma.organization.findFirst({ where: { id: invoice.orgId, tenantId } })) ??
-      (await prisma.organization.findFirst({ where: { tenantId } }));
+      (await prisma.organization.findFirst({
+        where: { id: invoice.orgId, tenantId },
+      })) ?? (await prisma.organization.findFirst({ where: { tenantId } }));
     const e = (v: unknown) => this.escapeXml(v);
-    const taxableValue = Number(invoice.subtotal) - Number(invoice.discountAmount);
+    const taxableValue =
+      Number(invoice.subtotal) - Number(invoice.discountAmount);
 
     let documentXml: string;
     let irn: string | null = null;
     let qrPayload: string | null = null;
 
-    if (fmt === 'GST_IRN') {
+    if (fmt === "GST_IRN") {
       const fy = (() => {
         const d = new Date(invoice.issueDate);
         const y = d.getFullYear();
         const m = d.getMonth() + 1;
         return m >= 4
-          ? `${y}-${String((y + 1) % 100).padStart(2, '0')}`
-          : `${y - 1}-${String(y % 100).padStart(2, '0')}`;
+          ? `${y}-${String((y + 1) % 100).padStart(2, "0")}`
+          : `${y - 1}-${String(y % 100).padStart(2, "0")}`;
       })();
-      const gstin = supplier?.taxId || 'URP';
-      irn = createHash('sha256')
+      const gstin = supplier?.taxId || "URP";
+      irn = createHash("sha256")
         .update(`${gstin}${invoice.invoiceNumber}${fy}`)
-        .digest('hex');
+        .digest("hex");
       qrPayload = [
         `SellerGstin:${gstin}`,
-        `BuyerGstin:${invoice.customer?.taxId || 'URP'}`,
+        `BuyerGstin:${invoice.customer?.taxId || "URP"}`,
         `DocNo:${invoice.invoiceNumber}`,
         `DocDt:${new Date(invoice.issueDate).toISOString().slice(0, 10)}`,
         `TotInvVal:${Number(invoice.totalAmount).toFixed(2)}`,
         `Irn:${irn}`,
-      ].join(';');
+      ].join(";");
       documentXml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<GstInvoice version="1.1">',
         `  <Irn>${e(irn)}</Irn>`,
         `  <DocDtls><Typ>INV</Typ><No>${e(invoice.invoiceNumber)}</No><Dt>${e(new Date(invoice.issueDate).toISOString().slice(0, 10))}</Dt></DocDtls>`,
         `  <SellerDtls><Gstin>${e(gstin)}</Gstin><LglNm>${e(supplier?.legalName || supplier?.name)}</LglNm></SellerDtls>`,
-        `  <BuyerDtls><Gstin>${e(invoice.customer?.taxId || 'URP')}</Gstin><LglNm>${e(invoice.customer?.name)}</LglNm></BuyerDtls>`,
+        `  <BuyerDtls><Gstin>${e(invoice.customer?.taxId || "URP")}</Gstin><LglNm>${e(invoice.customer?.name)}</LglNm></BuyerDtls>`,
         `  <ValDtls><AssVal>${taxableValue.toFixed(2)}</AssVal><TotInvVal>${Number(invoice.totalAmount).toFixed(2)}</TotInvVal></ValDtls>`,
-        '  <ItemList>',
+        "  <ItemList>",
         ...invoice.lineItems.map(
           (li, i) =>
             `    <Item><SlNo>${i + 1}</SlNo><PrdDesc>${e(li.description)}</PrdDesc><Qty>${Number(li.quantity)}</Qty><UnitPrice>${Number(li.unitPrice).toFixed(2)}</UnitPrice><TotAmt>${Number(li.totalAmount).toFixed(2)}</TotAmt><GstRt>${Number(li.taxRate)}</GstRt></Item>`,
         ),
-        '  </ItemList>',
-        '</GstInvoice>',
-      ].join('\n');
+        "  </ItemList>",
+        "</GstInvoice>",
+      ].join("\n");
     } else {
       const profile =
-        fmt === 'PEPPOL'
-          ? 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0'
-          : 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2';
+        fmt === "PEPPOL"
+          ? "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
+          : "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2";
       documentXml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">',
@@ -233,26 +267,25 @@ export class TaxEngineService {
         `  <cbc:ID>${e(invoice.invoiceNumber)}</cbc:ID>`,
         `  <cbc:IssueDate>${e(new Date(invoice.issueDate).toISOString().slice(0, 10))}</cbc:IssueDate>`,
         `  <cbc:DueDate>${e(new Date(invoice.dueDate).toISOString().slice(0, 10))}</cbc:DueDate>`,
-        '  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>',
+        "  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>",
         `  <cbc:DocumentCurrencyCode>${e(invoice.currency)}</cbc:DocumentCurrencyCode>`,
-        `  <cac:AccountingSupplierParty><cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>${e(supplier?.legalName || supplier?.name)}</cbc:RegistrationName>${supplier?.taxId ? `<cbc:CompanyID>${e(supplier.taxId)}</cbc:CompanyID>` : ''}</cac:PartyLegalEntity></cac:Party></cac:AccountingSupplierParty>`,
-        `  <cac:AccountingCustomerParty><cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>${e(invoice.customer?.name)}</cbc:RegistrationName>${invoice.customer?.taxId ? `<cbc:CompanyID>${e(invoice.customer.taxId)}</cbc:CompanyID>` : ''}</cac:PartyLegalEntity></cac:Party></cac:AccountingCustomerParty>`,
+        `  <cac:AccountingSupplierParty><cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>${e(supplier?.legalName || supplier?.name)}</cbc:RegistrationName>${supplier?.taxId ? `<cbc:CompanyID>${e(supplier.taxId)}</cbc:CompanyID>` : ""}</cac:PartyLegalEntity></cac:Party></cac:AccountingSupplierParty>`,
+        `  <cac:AccountingCustomerParty><cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>${e(invoice.customer?.name)}</cbc:RegistrationName>${invoice.customer?.taxId ? `<cbc:CompanyID>${e(invoice.customer.taxId)}</cbc:CompanyID>` : ""}</cac:PartyLegalEntity></cac:Party></cac:AccountingCustomerParty>`,
         `  <cac:TaxTotal><cbc:TaxAmount currencyID="${e(invoice.currency)}">${Number(invoice.taxAmount).toFixed(2)}</cbc:TaxAmount></cac:TaxTotal>`,
         `  <cac:LegalMonetaryTotal><cbc:LineExtensionAmount currencyID="${e(invoice.currency)}">${taxableValue.toFixed(2)}</cbc:LineExtensionAmount><cbc:TaxInclusiveAmount currencyID="${e(invoice.currency)}">${Number(invoice.totalAmount).toFixed(2)}</cbc:TaxInclusiveAmount><cbc:PayableAmount currencyID="${e(invoice.currency)}">${Number(invoice.totalAmount).toFixed(2)}</cbc:PayableAmount></cac:LegalMonetaryTotal>`,
-        ...invoice.lineItems.map(
-          (li, i) =>
-            [
-              '  <cac:InvoiceLine>',
-              `    <cbc:ID>${i + 1}</cbc:ID>`,
-              `    <cbc:InvoicedQuantity>${Number(li.quantity)}</cbc:InvoicedQuantity>`,
-              `    <cbc:LineExtensionAmount currencyID="${e(invoice.currency)}">${Number(li.totalAmount).toFixed(2)}</cbc:LineExtensionAmount>`,
-              `    <cac:Item><cbc:Name>${e(li.description)}</cbc:Name></cac:Item>`,
-              `    <cac:Price><cbc:PriceAmount currencyID="${e(invoice.currency)}">${Number(li.unitPrice).toFixed(2)}</cbc:PriceAmount></cac:Price>`,
-              '  </cac:InvoiceLine>',
-            ].join('\n'),
+        ...invoice.lineItems.map((li, i) =>
+          [
+            "  <cac:InvoiceLine>",
+            `    <cbc:ID>${i + 1}</cbc:ID>`,
+            `    <cbc:InvoicedQuantity>${Number(li.quantity)}</cbc:InvoicedQuantity>`,
+            `    <cbc:LineExtensionAmount currencyID="${e(invoice.currency)}">${Number(li.totalAmount).toFixed(2)}</cbc:LineExtensionAmount>`,
+            `    <cac:Item><cbc:Name>${e(li.description)}</cbc:Name></cac:Item>`,
+            `    <cac:Price><cbc:PriceAmount currencyID="${e(invoice.currency)}">${Number(li.unitPrice).toFixed(2)}</cbc:PriceAmount></cac:Price>`,
+            "  </cac:InvoiceLine>",
+          ].join("\n"),
         ),
-        '</Invoice>',
-      ].join('\n');
+        "</Invoice>",
+      ].join("\n");
     }
 
     const data = {
@@ -260,27 +293,31 @@ export class TaxEngineService {
       orgId: invoice.orgId,
       invoiceId: invoice.id,
       format: fmt,
-      status: 'GENERATED',
+      status: "GENERATED",
       irn,
       qrPayload,
       documentXml,
-      createdBy: 'system',
+      createdBy: "system",
     };
     const doc = await prisma.eInvoice.upsert({
       where: {
-        tenantId_invoiceId_format: { tenantId, invoiceId: invoice.id, format: fmt },
+        tenantId_invoiceId_format: {
+          tenantId,
+          invoiceId: invoice.id,
+          format: fmt,
+        },
       },
       create: data,
-      update: { documentXml, irn, qrPayload, status: 'GENERATED' },
+      update: { documentXml, irn, qrPayload, status: "GENERATED" },
     });
     await this.glService.logAudit(
       prisma,
       tenantId,
-      'EInvoice',
+      "EInvoice",
       doc.id,
-      'GENERATE',
+      "GENERATE",
       { format: fmt, invoiceNumber: invoice.invoiceNumber },
-      'system',
+      "system",
     );
     return doc;
   }
@@ -294,7 +331,17 @@ export class TaxEngineService {
     });
   }
 
-  async createCreditNote(tenantId: string, orgId: string, dto: { customerId: string; noteNumber: string; amount: number; invoiceId?: string; reason?: string }) {
+  async createCreditNote(
+    tenantId: string,
+    orgId: string,
+    dto: {
+      customerId: string;
+      noteNumber: string;
+      amount: number;
+      invoiceId?: string;
+      reason?: string;
+    },
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.creditNote.create({
       data: {
@@ -305,7 +352,7 @@ export class TaxEngineService {
         noteNumber: dto.noteNumber,
         amount: new Prisma.Decimal(dto.amount),
         reason: dto.reason || null,
-        status: 'DRAFT',
+        status: "DRAFT",
       },
     });
   }
@@ -317,7 +364,17 @@ export class TaxEngineService {
     });
   }
 
-  async createDebitNote(tenantId: string, orgId: string, dto: { vendorId: string; noteNumber: string; amount: number; purchaseOrderId?: string; reason?: string }) {
+  async createDebitNote(
+    tenantId: string,
+    orgId: string,
+    dto: {
+      vendorId: string;
+      noteNumber: string;
+      amount: number;
+      purchaseOrderId?: string;
+      reason?: string;
+    },
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.debitNote.create({
       data: {
@@ -328,7 +385,7 @@ export class TaxEngineService {
         noteNumber: dto.noteNumber,
         amount: new Prisma.Decimal(dto.amount),
         reason: dto.reason || null,
-        status: 'DRAFT',
+        status: "DRAFT",
       },
     });
   }
@@ -338,17 +395,28 @@ export class TaxEngineService {
   async getDunningLevels(tenantId: string) {
     return prisma.dunningLevel.findMany({
       where: { tenantId },
-      orderBy: { daysOverdue: 'asc' },
+      orderBy: { daysOverdue: "asc" },
     });
   }
 
   async getDunningLevelById(tenantId: string, id: string) {
-    const level = await prisma.dunningLevel.findFirst({ where: { id, tenantId } });
-    if (!level) throw new NotFoundException('Dunning level not found');
+    const level = await prisma.dunningLevel.findFirst({
+      where: { id, tenantId },
+    });
+    if (!level) throw new NotFoundException("Dunning level not found");
     return level;
   }
 
-  async createDunningLevel(tenantId: string, orgId: string, dto: { levelName: string; daysOverdue: number; feeAmount: number; emailTemplateId?: string }) {
+  async createDunningLevel(
+    tenantId: string,
+    orgId: string,
+    dto: {
+      levelName: string;
+      daysOverdue: number;
+      feeAmount: number;
+      emailTemplateId?: string;
+    },
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.dunningLevel.create({
       data: {
@@ -362,14 +430,25 @@ export class TaxEngineService {
     });
   }
 
-  async updateDunningLevel(tenantId: string, id: string, dto: { levelName?: string; daysOverdue?: number; feeAmount?: number; status?: string }) {
+  async updateDunningLevel(
+    tenantId: string,
+    id: string,
+    dto: {
+      levelName?: string;
+      daysOverdue?: number;
+      feeAmount?: number;
+      status?: string;
+    },
+  ) {
     await this.getDunningLevelById(tenantId, id);
     return prisma.dunningLevel.update({
       where: { id },
       data: {
         ...(dto.levelName !== undefined && { levelName: dto.levelName }),
         ...(dto.daysOverdue !== undefined && { daysOverdue: dto.daysOverdue }),
-        ...(dto.feeAmount !== undefined && { feeAmount: new Prisma.Decimal(dto.feeAmount) }),
+        ...(dto.feeAmount !== undefined && {
+          feeAmount: new Prisma.Decimal(dto.feeAmount),
+        }),
         ...(dto.status !== undefined && { status: dto.status }),
       },
     });
@@ -384,22 +463,29 @@ export class TaxEngineService {
   async getDunningRuns(tenantId: string) {
     return prisma.dunningRun.findMany({
       where: { tenantId },
-      orderBy: { runDate: 'desc' },
+      orderBy: { runDate: "desc" },
     });
   }
 
-  async getDunningLevelLogs(tenantId: string, levelId: string, page = 1, limit = 20) {
+  async getDunningLevelLogs(
+    tenantId: string,
+    levelId: string,
+    page = 1,
+    limit = 20,
+  ) {
     await this.getDunningLevelById(tenantId, levelId);
     const skip = (page - 1) * limit;
     const [logs, total] = await Promise.all([
       prisma.invoiceDunningLog.findMany({
         where: { tenantId, dunningLevelId: levelId },
-        orderBy: { sentAt: 'desc' },
+        orderBy: { sentAt: "desc" },
         skip,
         take: limit,
         include: { invoice: { include: { customer: true } } },
       }),
-      prisma.invoiceDunningLog.count({ where: { tenantId, dunningLevelId: levelId } }),
+      prisma.invoiceDunningLog.count({
+        where: { tenantId, dunningLevelId: levelId },
+      }),
     ]);
     return { data: logs, total, page, limit };
   }
@@ -412,8 +498,11 @@ export class TaxEngineService {
     });
 
     const totalRuns = runs.length;
-    const completedRuns = runs.filter((r) => r.status === 'COMPLETED').length;
-    const totalFeeCollected = logs.reduce((s, l) => s + Number(l.feeApplied), 0);
+    const completedRuns = runs.filter((r) => r.status === "COMPLETED").length;
+    const totalFeeCollected = logs.reduce(
+      (s, l) => s + Number(l.feeApplied),
+      0,
+    );
     const totalEmailsSent = logs.filter((l) => l.emailSentTo).length;
     const successRate = totalRuns > 0 ? (completedRuns / totalRuns) * 100 : 0;
 
@@ -431,16 +520,21 @@ export class TaxEngineService {
       successRate: Math.round(successRate * 10) / 10,
       totalFeeCollected,
       totalEmailsSent,
-      byLevel: Object.entries(byLevel).map(([level, stats]) => ({ level, ...stats })),
+      byLevel: Object.entries(byLevel).map(([level, stats]) => ({
+        level,
+        ...stats,
+      })),
     };
   }
 
   async pauseDunningForInvoice(tenantId: string, invoiceId: string) {
-    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId } });
-    if (!invoice) throw new NotFoundException('Invoice not found');
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId },
+    });
+    if (!invoice) throw new NotFoundException("Invoice not found");
     // Store pause status as a metadata tag in the invoice's notes (lightweight pattern — no schema change needed)
-    const notes = ((invoice as any).notes || '') as string;
-    const pauseTag = '[dunning:paused]';
+    const notes = ((invoice as any).notes || "") as string;
+    const pauseTag = "[dunning:paused]";
     if (notes.includes(pauseTag)) return { paused: true, invoiceId };
     await prisma.invoice.update({
       where: { id: invoiceId },
@@ -450,10 +544,12 @@ export class TaxEngineService {
   }
 
   async resumeDunningForInvoice(tenantId: string, invoiceId: string) {
-    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId } });
-    if (!invoice) throw new NotFoundException('Invoice not found');
-    const notes = ((invoice as any).notes || '') as string;
-    const updatedNotes = notes.replace('[dunning:paused]', '').trim();
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId },
+    });
+    if (!invoice) throw new NotFoundException("Invoice not found");
+    const notes = ((invoice as any).notes || "") as string;
+    const updatedNotes = notes.replace("[dunning:paused]", "").trim();
     await prisma.invoice.update({
       where: { id: invoiceId },
       data: { notes: updatedNotes } as never,
@@ -466,50 +562,59 @@ export class TaxEngineService {
   async getArAgingReport(tenantId: string, orgId?: string) {
     const where: Record<string, unknown> = {
       tenantId,
-      status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+      status: { notIn: ["PAID", "VOID", "DRAFT"] },
     };
-    if (orgId) where['orgId'] = orgId;
+    if (orgId) where["orgId"] = orgId;
 
     const invoices = await prisma.invoice.findMany({
       where,
       include: { customer: true },
-      orderBy: { dueDate: 'asc' },
+      orderBy: { dueDate: "asc" },
     });
 
     const now = Date.now();
     const buckets = {
       current: { total: 0, count: 0, invoices: [] as unknown[] },
-      '1-30': { total: 0, count: 0, invoices: [] as unknown[] },
-      '31-60': { total: 0, count: 0, invoices: [] as unknown[] },
-      '61-90': { total: 0, count: 0, invoices: [] as unknown[] },
-      '90+': { total: 0, count: 0, invoices: [] as unknown[] },
+      "1-30": { total: 0, count: 0, invoices: [] as unknown[] },
+      "31-60": { total: 0, count: 0, invoices: [] as unknown[] },
+      "61-90": { total: 0, count: 0, invoices: [] as unknown[] },
+      "90+": { total: 0, count: 0, invoices: [] as unknown[] },
     };
 
     for (const inv of invoices) {
-      const daysOverdue = Math.floor((now - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysOverdue = Math.floor(
+        (now - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
       const amount = Number(inv.totalAmount);
-      const entry = { id: inv.id, invoiceNumber: inv.invoiceNumber, customer: inv.customer?.name, dueDate: inv.dueDate, amount, daysOverdue };
+      const entry = {
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        customer: inv.customer?.name,
+        dueDate: inv.dueDate,
+        amount,
+        daysOverdue,
+      };
 
       if (daysOverdue <= 0) {
-        buckets['current'].total += amount;
-        buckets['current'].count++;
-        buckets['current'].invoices.push(entry);
+        buckets["current"].total += amount;
+        buckets["current"].count++;
+        buckets["current"].invoices.push(entry);
       } else if (daysOverdue <= 30) {
-        buckets['1-30'].total += amount;
-        buckets['1-30'].count++;
-        buckets['1-30'].invoices.push(entry);
+        buckets["1-30"].total += amount;
+        buckets["1-30"].count++;
+        buckets["1-30"].invoices.push(entry);
       } else if (daysOverdue <= 60) {
-        buckets['31-60'].total += amount;
-        buckets['31-60'].count++;
-        buckets['31-60'].invoices.push(entry);
+        buckets["31-60"].total += amount;
+        buckets["31-60"].count++;
+        buckets["31-60"].invoices.push(entry);
       } else if (daysOverdue <= 90) {
-        buckets['61-90'].total += amount;
-        buckets['61-90'].count++;
-        buckets['61-90'].invoices.push(entry);
+        buckets["61-90"].total += amount;
+        buckets["61-90"].count++;
+        buckets["61-90"].invoices.push(entry);
       } else {
-        buckets['90+'].total += amount;
-        buckets['90+'].count++;
-        buckets['90+'].invoices.push(entry);
+        buckets["90+"].total += amount;
+        buckets["90+"].count++;
+        buckets["90+"].invoices.push(entry);
       }
     }
 
@@ -519,13 +624,20 @@ export class TaxEngineService {
 
   // ── CUSTOMER STATEMENT ──────────────────────────────────
 
-  async getCustomerStatement(tenantId: string, customerId: string, periodStart?: string, periodEnd?: string) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+  async getCustomerStatement(
+    tenantId: string,
+    customerId: string,
+    periodStart?: string,
+    periodEnd?: string,
+  ) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const dateFilter: Record<string, unknown> = {};
-    if (periodStart) dateFilter['gte'] = new Date(periodStart);
-    if (periodEnd) dateFilter['lte'] = new Date(periodEnd);
+    if (periodStart) dateFilter["gte"] = new Date(periodStart);
+    if (periodEnd) dateFilter["lte"] = new Date(periodEnd);
 
     const invoices = await prisma.invoice.findMany({
       where: {
@@ -534,7 +646,7 @@ export class TaxEngineService {
         ...(Object.keys(dateFilter).length ? { issueDate: dateFilter } : {}),
       },
       include: { payments: true },
-      orderBy: { issueDate: 'asc' },
+      orderBy: { issueDate: "asc" },
     });
 
     let openingBalance = 0;
@@ -581,18 +693,26 @@ export class TaxEngineService {
     const invoices = await prisma.invoice.findMany({
       where: {
         tenantId,
-        status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+        status: { notIn: ["PAID", "VOID", "DRAFT"] },
         dueDate: { lt: now },
       },
       include: { customer: true },
     });
 
     const total = invoices.reduce((s, inv) => s + Number(inv.totalAmount), 0);
-    const byCustomer: Record<string, { name: string; count: number; total: number }> = {};
+    const byCustomer: Record<
+      string,
+      { name: string; count: number; total: number }
+    > = {};
 
     for (const inv of invoices) {
-      const custId = inv.customerId || 'unknown';
-      if (!byCustomer[custId]) byCustomer[custId] = { name: inv.customer?.name ?? 'Unknown', count: 0, total: 0 };
+      const custId = inv.customerId || "unknown";
+      if (!byCustomer[custId])
+        byCustomer[custId] = {
+          name: inv.customer?.name ?? "Unknown",
+          count: 0,
+          total: 0,
+        };
       byCustomer[custId].count++;
       byCustomer[custId].total += Number(inv.totalAmount);
     }
@@ -611,18 +731,37 @@ export class TaxEngineService {
 
   // ── CASH APPLICATION ──────────────────────────────────
 
-  async applyCashToInvoice(tenantId: string, orgId: string, dto: { invoiceId: string; amount: number; paymentDate: string; paymentMethod: string; reference?: string }) {
+  async applyCashToInvoice(
+    tenantId: string,
+    orgId: string,
+    dto: {
+      invoiceId: string;
+      amount: number;
+      paymentDate: string;
+      paymentMethod: string;
+      reference?: string;
+    },
+  ) {
     await this.glService.resolveOrgId(tenantId, orgId);
-    const invoice = await prisma.invoice.findFirst({ where: { id: dto.invoiceId, tenantId } });
-    if (!invoice) throw new NotFoundException('Invoice not found');
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: dto.invoiceId, tenantId },
+    });
+    if (!invoice) throw new NotFoundException("Invoice not found");
 
     // Fetch existing payments to compute outstanding balance
-    const existingPayments = await prisma.payment.findMany({ where: { tenantId, invoiceId: dto.invoiceId } });
-    const totalPaid = existingPayments.reduce((s, p) => s + Number(p.amount), 0);
+    const existingPayments = await prisma.payment.findMany({
+      where: { tenantId, invoiceId: dto.invoiceId },
+    });
+    const totalPaid = existingPayments.reduce(
+      (s, p) => s + Number(p.amount),
+      0,
+    );
     const outstanding = Number(invoice.totalAmount) - totalPaid;
 
     if (dto.amount > outstanding + 0.01) {
-      throw new BadRequestException(`Payment amount $${dto.amount} exceeds outstanding balance $${outstanding.toFixed(2)}`);
+      throw new BadRequestException(
+        `Payment amount $${dto.amount} exceeds outstanding balance $${outstanding.toFixed(2)}`,
+      );
     }
 
     const payment = await prisma.payment.create({
@@ -636,17 +775,17 @@ export class TaxEngineService {
       },
     });
 
-
     // Update invoice status
     const newTotalPaid = totalPaid + dto.amount;
-    const newStatus = newTotalPaid >= Number(invoice.totalAmount) - 0.01 ? 'PAID' : 'PARTIAL';
+    const newStatus =
+      newTotalPaid >= Number(invoice.totalAmount) - 0.01 ? "PAID" : "PARTIAL";
     await prisma.invoice.update({
       where: { id: dto.invoiceId },
       data: { status: newStatus } as never,
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('finance.payment.received', {
+      this.eventEmitter.emit("finance.payment.received", {
         tenantId,
         paymentId: payment.id,
         invoiceId: dto.invoiceId,
@@ -655,17 +794,23 @@ export class TaxEngineService {
       });
     }
 
-    return { payment, invoiceStatus: newStatus, remainingBalance: Math.max(0, Number(invoice.totalAmount) - newTotalPaid) };
+    return {
+      payment,
+      invoiceStatus: newStatus,
+      remainingBalance: Math.max(0, Number(invoice.totalAmount) - newTotalPaid),
+    };
   }
 
   // ── CUSTOMER CREDIT MANAGEMENT ──────────────────────────────────
 
   async getCustomerCreditSummary(tenantId: string, customerId: string) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const invoices = await prisma.invoice.findMany({
-      where: { tenantId, customerId, status: { notIn: ['VOID', 'DRAFT'] } },
+      where: { tenantId, customerId, status: { notIn: ["VOID", "DRAFT"] } },
       include: { payments: true },
     });
 
@@ -682,7 +827,9 @@ export class TaxEngineService {
       }
     }
 
-    const creditAvailable = customer.creditLimit ? Number(customer.creditLimit) - totalOutstanding : null;
+    const creditAvailable = customer.creditLimit
+      ? Number(customer.creditLimit) - totalOutstanding
+      : null;
 
     return {
       customerId,
@@ -699,17 +846,35 @@ export class TaxEngineService {
     };
   }
 
-  async updateCustomerCredit(tenantId: string, customerId: string, dto: { creditLimit?: number; paymentTerms?: number; creditHold?: boolean; creditHoldReason?: string; riskRating?: string }) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+  async updateCustomerCredit(
+    tenantId: string,
+    customerId: string,
+    dto: {
+      creditLimit?: number;
+      paymentTerms?: number;
+      creditHold?: boolean;
+      creditHoldReason?: string;
+      riskRating?: string;
+    },
+  ) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     return prisma.customer.update({
       where: { id: customerId },
       data: {
-        ...(dto.creditLimit !== undefined && { creditLimit: new Prisma.Decimal(dto.creditLimit) }),
-        ...(dto.paymentTerms !== undefined && { paymentTerms: dto.paymentTerms }),
+        ...(dto.creditLimit !== undefined && {
+          creditLimit: new Prisma.Decimal(dto.creditLimit),
+        }),
+        ...(dto.paymentTerms !== undefined && {
+          paymentTerms: dto.paymentTerms,
+        }),
         ...(dto.creditHold !== undefined && { creditHold: dto.creditHold }),
-        ...(dto.creditHoldReason !== undefined && { creditHoldReason: dto.creditHoldReason }),
+        ...(dto.creditHoldReason !== undefined && {
+          creditHoldReason: dto.creditHoldReason,
+        }),
         ...(dto.riskRating !== undefined && { riskRating: dto.riskRating }),
       } as never,
     });
@@ -717,22 +882,31 @@ export class TaxEngineService {
 
   async getCustomersCreditRisk(tenantId: string) {
     const customers = await prisma.customer.findMany({
-      where: { tenantId, status: 'ACTIVE' },
-      orderBy: { name: 'asc' },
+      where: { tenantId, status: "ACTIVE" },
+      orderBy: { name: "asc" },
     });
 
     const result = [];
     for (const c of customers) {
       const invoices = await prisma.invoice.findMany({
-        where: { tenantId, customerId: c.id, status: { notIn: ['VOID', 'DRAFT', 'PAID'] } },
+        where: {
+          tenantId,
+          customerId: c.id,
+          status: { notIn: ["VOID", "DRAFT", "PAID"] },
+        },
       });
-      const outstanding = invoices.reduce((s, inv) => s + Number(inv.totalAmount), 0);
+      const outstanding = invoices.reduce(
+        (s, inv) => s + Number(inv.totalAmount),
+        0,
+      );
       result.push({
         customerId: c.id,
         name: c.name,
         creditLimit: c.creditLimit ? Number(c.creditLimit) : null,
         outstanding,
-        creditUtilization: c.creditLimit ? (outstanding / Number(c.creditLimit)) * 100 : null,
+        creditUtilization: c.creditLimit
+          ? (outstanding / Number(c.creditLimit)) * 100
+          : null,
         creditHold: c.creditHold,
         riskRating: c.riskRating,
       });
@@ -741,14 +915,13 @@ export class TaxEngineService {
     return result.sort((a, b) => (b.outstanding || 0) - (a.outstanding || 0));
   }
 
-
   async createDunningRun(tenantId: string, orgId: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
 
     // 1. Fetch active dunning levels sorted by daysOverdue asc
     const activeLevels = await prisma.dunningLevel.findMany({
-      where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' },
-      orderBy: { daysOverdue: 'asc' },
+      where: { tenantId, orgId: resolvedOrgId, status: "ACTIVE" },
+      orderBy: { daysOverdue: "asc" },
     });
 
     if (activeLevels.length === 0) {
@@ -757,8 +930,8 @@ export class TaxEngineService {
           tenantId,
           orgId: resolvedOrgId,
           totalInvoices: 0,
-          status: 'COMPLETED',
-        },
+          status: "COMPLETED",
+        } as any,
       });
     }
 
@@ -767,7 +940,7 @@ export class TaxEngineService {
       where: {
         tenantId,
         orgId: resolvedOrgId,
-        status: { notIn: ['PAID', 'DRAFT', 'VOID'] },
+        status: { notIn: ["PAID", "DRAFT", "VOID"] },
         dueDate: { lt: new Date() },
       },
       include: {
@@ -781,15 +954,17 @@ export class TaxEngineService {
         tenantId,
         orgId: resolvedOrgId,
         totalInvoices: 0,
-        status: 'IN_PROGRESS',
-      },
+        status: "IN_PROGRESS",
+      } as any,
     });
 
     let processedCount = 0;
 
     // 4. Process each invoice
     for (const invoice of overdueInvoices) {
-      const daysOverdue = Math.floor((Date.now() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysOverdue = Math.floor(
+        (Date.now() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
       if (daysOverdue < 0) continue;
 
       let matchingLevel: (typeof activeLevels)[number] | null = null;
@@ -818,7 +993,7 @@ export class TaxEngineService {
           if (fee.gt(0)) {
             const lineItems = await tx.invoiceLineItem.findMany({
               where: { invoiceId: invoice.id },
-              orderBy: { sortOrder: 'desc' },
+              orderBy: { sortOrder: "desc" },
               take: 1,
             });
             const firstItem = lineItems[0];
@@ -856,14 +1031,14 @@ export class TaxEngineService {
               dunningLevelId: matchingLevel.id,
               dunningRunId: dunningRun.id,
               feeApplied: fee,
-              status: 'SENT',
+              status: "SENT",
               emailSentTo: invoice.customer?.email || null,
             },
           });
         });
 
         if (this.eventEmitter) {
-          this.eventEmitter.emit('finance.invoice.overdue', {
+          this.eventEmitter.emit("finance.invoice.overdue", {
             tenantId,
             invoiceId: invoice.id,
             customerId: invoice.customerId,
@@ -873,21 +1048,25 @@ export class TaxEngineService {
           });
 
           if (invoice.customer?.email) {
-            this.eventEmitter.emit('notification.send', {
+            this.eventEmitter.emit("notification.send", {
               tenantId,
               userId: invoice.customer.id,
-              type: 'DUNNING_REMINDER',
+              type: "DUNNING_REMINDER",
               title: `Overdue Invoice Payment Reminder: Invoice #${invoice.invoiceNumber}`,
               body: `Hello ${invoice.customer.name},\n\nYour payment for invoice #${invoice.invoiceNumber} is overdue by ${daysOverdue} days. A late payment fee of $${fee.toFixed(2)} has been applied (${matchingLevel.levelName}). Please complete your payment as soon as possible.\n\nThank you.`,
-              channel: 'EMAIL',
+              channel: "EMAIL",
             });
           }
         }
 
         processedCount++;
       } catch (err) {
-        const { pinoLogger } = await import('../../../common/services/logger.service');
-        pinoLogger.error({ invoiceId: invoice.id, err }, 'Failed to process dunning for invoice');
+        const { pinoLogger } =
+          await import("../../../common/services/logger.service");
+        pinoLogger.error(
+          { invoiceId: invoice.id, err },
+          "Failed to process dunning for invoice",
+        );
       }
     }
 
@@ -895,12 +1074,17 @@ export class TaxEngineService {
       where: { id: dunningRun.id },
       data: {
         totalInvoices: processedCount,
-        status: 'COMPLETED',
+        status: "COMPLETED",
       },
     });
   }
 
-  async computeTax(tenantId: string, orgId: string, amount: number, taxRuleId?: string) {
+  async computeTax(
+    tenantId: string,
+    orgId: string,
+    amount: number,
+    taxRuleId?: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     let rule;
     if (taxRuleId) {
@@ -910,16 +1094,32 @@ export class TaxEngineService {
       });
     } else {
       rule = await prisma.taxRule.findFirst({
-        where: { tenantId, orgId: resolvedOrgId, isDefault: true, status: 'ACTIVE' },
+        where: {
+          tenantId,
+          orgId: resolvedOrgId,
+          isDefault: true,
+          status: "ACTIVE",
+        },
         include: { components: true },
       });
     }
-    if (!rule) throw new BadRequestException('No tax rule found');
+    if (!rule) throw new BadRequestException("No tax rule found");
     const components = rule.components.map((c) => {
       const taxAmount = amount * (Number(c.rate) / 100);
-      return { name: c.name, rate: Number(c.rate), taxAmount, accountId: c.accountId };
+      return {
+        name: c.name,
+        rate: Number(c.rate),
+        taxAmount,
+        accountId: c.accountId,
+      };
     });
     const totalTax = components.reduce((s, c) => s + c.taxAmount, 0);
-    return { taxRule: rule.name, taxableAmount: amount, totalTax, components, grandTotal: amount + totalTax };
+    return {
+      taxRule: rule.name,
+      taxableAmount: amount,
+      totalTax,
+      components,
+      grandTotal: amount + totalTax,
+    };
   }
 }

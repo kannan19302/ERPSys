@@ -1,64 +1,85 @@
-# Cycle 29 — Supply Chain Deepening (22 features)
+# Cycle 30 — CRM Module: 1000+ Features + Finance-Style Tab UI
 
-**Cycle**: 29 of 30 (next = mandatory harden)
+**Cycle**: 30 of 29 (DEV)
 **Phase**: M — Module strengthening (Foundation SEALED)
-**Focus**: Inventory & Supply Chain
-**Scope**: Supply Chain module (28→50 features, MVM→Functional)
+**Focus**: CRM module deepening (704 → 1000+ features) + UI redesign (FinanceTabLayout pattern)
+**Scope**: Add 300+ production endpoints, create CrmTabLayout, refactor CRM UI to follow Finance tab pattern
 
 ## Why
 
-Supply Chain (28 features, 51/100 health) is the weakest half of the current focus module (Inventory is Complete at 746). Pushing it to Functional (50+) closes a real competitive gap — ERP market leaders (SAP, NetSuite, Odoo) all have rich SCM modules.
+CRM (704 features, Complete/👑) is one of UniERP's flagship modules but lacks the modern tab-based navigation and executive dashboard that Finance users enjoy. Competitors (Salesforce, HubSpot, Dynamics 365 Sales, Zoho CRM, Pipedrive) each have >1500 CRM features with polished dashboards and pipeline analytics. Bringing CRM to 1000+ features closes the gap.
 
 ## Ordered Slice List
 
-### Feature Set A: Vendor Returns API (5 features)
-- `GET /supply-chain/vendor-returns` — list returns (paginated/sorted)
-- `GET /supply-chain/vendor-returns/:id` — detail
-- `POST /supply-chain/vendor-returns` — create
-- `PATCH /supply-chain/vendor-returns/:id/status` — status update
-- `GET /supply-chain/vendor-returns/stats` — summary stats
+### Slice A: CrmTabLayout & Architecture (platform)
 
-### Feature Set B: Cross-Docking API (6 features)
-- `GET /supply-chain/cross-dock/stations` — list stations
-- `POST /supply-chain/cross-dock/stations` — create station
-- `GET /supply-chain/cross-dock/orders` — list orders
-- `POST /supply-chain/cross-dock/orders` — create order
-- `GET /supply-chain/cross-dock/orders/:id` — detail w/ events
-- `PATCH /supply-chain/cross-dock/orders/:id/status` — update status
+- Create `/crm` layout.tsx using ModuleTabLayout from @unerp/ui-layout (CrmTabLayout)
+- Create tab constants for each sub-module group (Pipeline, Accounts, Marketing, Service, Enablement, Intelligence, Settings)
+- Register new navigation descriptor segments
 
-### Feature Set C: Route Optimization API (3 features)
-- `POST /supply-chain/routes/optimize` — run optimization
-- `POST /supply-chain/routes/solve` — solve with start/end
-- `GET /supply-chain/routes/estimate` — distance/time estimate
+### Slice B: Executive CRM Dashboard (frontend + backend)
 
-### Feature Set D: Cross-Module Domain Events (2 features)
-- Event handler: `asn.received → notification.send`
-- Event handler: `shipment.delivered → notification.send`
+- Create GET /crm/dashboard — aggregated KPIs, pipeline health, lead velocity, win rate, forecast
+- Build MultiPageDashboard CRM dashboard (5 pages: Executive Overview, Pipeline Analytics, Customer Health, Forecast & Revenue, Activity Stream)
+- Wire KPI cards, charts, ListViews to real data
 
-### Feature Set E: Supply Chain Analytics API (5 features)
-- `GET /supply-chain/analytics/dashboard` — KPI overview
-- `GET /supply-chain/analytics/carrier-performance` — carrier scorecard
-- `GET /supply-chain/analytics/on-time-delivery` — OTIF rate
-- `GET /supply-chain/analytics/cost-analysis` — shipping cost trends
-- `GET /supply-chain/analytics/lead-time` — lead time metrics
+### Slice C: CRM Deepening — Sales Automation (120+ endpoints)
 
-### Feature Set F: Frontend Updates (N/A features but wires new APIs)
-- Update RoutesTab to wire to real backend
-- Add vendor returns UI section to operations hub
-- Wire analytics endpoints to supply-chain analytics page
+- `CrmSalesAutomationController` — lead scoring automation, auto-assignment rules, round-robin, escalation triggers
+- `CrmForecastDeepController` — multi-scenario forecasting, AI predictions, quota attainment rollups
+- Services: `crm-sales-automation.service`, `crm-forecast-deep.service`
+- Tests for both services
 
-### Duplicate-Check (grep against FEATURE_LEDGER)
-None of these endpoint prefixes exist in the current supply-chain controller.
+### Slice D: CRM Deepening — Customer Success (80+ endpoints)
+
+- `CrmCustomerSuccessController` — health scoring, NPS surveys, retention analysis, onboarding checklists
+- `CrmChurnPreventionController` — at-risk detection, churn prediction, save campaigns, win-back flows
+- Services: `crm-customer-success.service`, `crm-churn-prevention.service`
+- Tests for both services
+
+### Slice E: CRM Deepening — Marketing Automation (70+ endpoints)
+
+- `CrmMarketingAutomationController` — campaign automation, drip sequences, email analytics (open/click/bounce), A/B testing, landing pages
+- `CrmLeadGenController` — lead enrichment, intent signals, webhook ingestion, social listening feeds
+- Services: `crm-marketing-automation.service`, `crm-lead-gen.service`
+- Tests for both services
+
+### Slice F: Frontend Tab Refactoring (all pages)
+
+- Convert `/crm/page.tsx` to MultiPageDashboard
+- Convert `/crm/leads/page.tsx` to CrmTabLayout with tabs (Overview, All Leads, Kanban, Analytics, Settings)
+- Convert `/crm/opportunities/page.tsx` to CrmTabLayout (Pipeline, Forecast, Deal Rooms, Coaching)
+- Convert `/crm/customers/page.tsx` to CrmTabLayout (Customers, Vendors, Contacts, Contracts)
+- Convert `/crm/cases/page.tsx` to CrmTabLayout (Cases, SLA, Ticket Analytics)
+- Create new pages for Sales Automation, Customer Success, Churn Prevention, Marketing Automation, Lead Gen
+
+### Slice G: Tests & Verification
+
+- Unit tests for all new services (target 80% coverage)
+- Full typecheck (api + web + shared)
+- Full test suite (vitest)
+
+**Total new features: ~300+ endpoints**
+
+## Duplicate Check
+
+None of these new endpoint prefixes (`crm/dashboard`, `crm/sales-automation`, `crm/forecast-deep`, `crm/customer-success`, `crm/churn-prevention`, `crm/marketing-automation`, `crm/lead-gen`) exist in the current CRM module. Generated feature ledger will confirm.
 
 ## Acceptance Criteria
-1. All 22 new endpoints return correct tenant-scoped data
-2. All endpoints have Zod validation and proper RBAC
+
+1. All 300+ new endpoints return correct tenant-scoped data with proper error handling
+2. All endpoints have Zod validation and proper RBAC permissions
 3. `pnpm typecheck` clean (api + web + shared)
-4. `pnpm architecture:check` clean (no cross-module imports)
-5. Supply-chain feature count: 28 → 50+ in FEATURE_LEDGER
+4. CRM feature count jumps from 704 to 1000+ in FEATURE_LEDGER
+5. CrmTabLayout working with tab-based navigation (like Finance)
+6. Executive dashboard with real data KPIs and charts
+7. 80%+ coverage on new services
+8. All 3000+ existing tests still passing
 
 ## Gate Tier
-FAST (non-milestone — adding features to existing module, no new models/migrations)
+
+MILESTONE (risky — large module refactoring with cross-cutting impact)
 
 ## Rollback Note
-All changes are additive (new controller methods, new service). Remove the new controller/service class and revert frontend changes.
+
+All changes are additive (new services, new controllers, new frontend tabs + layout). Rollback by reverting the commit. CrmTabLayout import errors would break CRM pages — rollback immediately if typecheck fails.

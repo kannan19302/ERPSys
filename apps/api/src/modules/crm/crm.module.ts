@@ -1,74 +1,84 @@
-import { Module } from '@nestjs/common';
-import { CrmController } from './crm.controller';
-import { CrmService } from './crm.service';
-import { CrmIntegrationsService } from './crm-integrations.service';
-import { CrmCustomersService } from './crm-customers.service';
-import { CrmContactsService } from './crm-contacts.service';
-import { CrmLeadsService } from './crm-leads.service';
-import { CrmDealsService } from './crm-deals.service';
-import { CrmActivitiesService } from './crm-activities.service';
-import { CrmMarketingService } from './crm-marketing.service';
-import { CrmSalesOpsService } from './crm-salesops.service';
-import { CrmConfigService } from './crm-config.service';
-import { CrmCollaborationService } from './crm-collaboration.service';
-import { CrmDashboardsService } from './crm-dashboards.service';
-import { CrmCasesService } from './crm-cases.service';
-import { CrmLeadScoringService } from './crm-lead-scoring.service';
-import { CrmLeadScoringController } from './crm-lead-scoring.controller';
-import { CrmDuplicatesService } from './crm-duplicates.service';
-import { CrmDuplicatesController } from './crm-duplicates.controller';
-import { CrmPipelineStagesService } from './crm-pipeline-stages.service';
-import { CrmPipelineStagesController } from './crm-pipeline-stages.controller';
-import { CrmSegmentsService } from './crm-segments.service';
-import { CrmSegmentsController } from './crm-segments.controller';
-import { CrmSlaService } from './crm-sla.service';
-import { CrmSlaController } from './crm-sla.controller';
-import { CrmIntelligenceService } from './crm-intelligence.service';
-import { CrmIntelligenceController } from './crm-intelligence.controller';
-import { CrmContractsService } from './crm-contracts.service';
-import { CrmContractsController } from './crm-contracts.controller';
-import { CrmMailboxService } from './crm-mailbox.service';
-import { CrmMailboxController } from './crm-mailbox.controller';
-import { CrmExpansionController } from './crm-expansion.controller';
-import { CustomerPortalService } from './customer-portal.service';
-import { CustomerPortalAdminController } from './customer-portal-admin.controller';
-import { CustomerPortalController } from './customer-portal.controller';
+import { Module } from "@nestjs/common";
+import { CrmController } from "./crm.controller";
+import { CrmService } from "./crm.service";
+import { CrmIntegrationsService } from "./crm-integrations.service";
+import { CrmCustomersService } from "./crm-customers.service";
+import { CrmContactsService } from "./crm-contacts.service";
+import { CrmLeadsService } from "./crm-leads.service";
+import { CrmDealsService } from "./crm-deals.service";
+import { CrmActivitiesService } from "./crm-activities.service";
+import { CrmMarketingService } from "./crm-marketing.service";
+import { CrmSalesOpsService } from "./crm-salesops.service";
+import { CrmConfigService } from "./crm-config.service";
+import { CrmCollaborationService } from "./crm-collaboration.service";
+import { CrmDashboardsService } from "./crm-dashboards.service";
+import { CrmCasesService } from "./crm-cases.service";
+import { CrmLeadScoringService } from "./crm-lead-scoring.service";
+import { CrmLeadScoringController } from "./crm-lead-scoring.controller";
+import { CrmDuplicatesService } from "./crm-duplicates.service";
+import { CrmDuplicatesController } from "./crm-duplicates.controller";
+import { CrmPipelineStagesService } from "./crm-pipeline-stages.service";
+import { CrmPipelineStagesController } from "./crm-pipeline-stages.controller";
+import { CrmSegmentsService } from "./crm-segments.service";
+import { CrmSegmentsController } from "./crm-segments.controller";
+import { CrmSlaService } from "./crm-sla.service";
+import { CrmSlaController } from "./crm-sla.controller";
+import { CrmIntelligenceService } from "./crm-intelligence.service";
+import { CrmIntelligenceController } from "./crm-intelligence.controller";
+import { CrmContractsService } from "./crm-contracts.service";
+import { CrmContractsController } from "./crm-contracts.controller";
+import { CrmMailboxService } from "./crm-mailbox.service";
+import { CrmMailboxController } from "./crm-mailbox.controller";
+import { CrmExpansionController } from "./crm-expansion.controller";
+import { CustomerPortalService } from "./customer-portal.service";
+import { CustomerPortalAdminController } from "./customer-portal-admin.controller";
+import { CustomerPortalController } from "./customer-portal.controller";
 
 // New expansion services
-import { CrmForecastingService } from './crm-forecasting.service';
-import { CrmAccountManagementService } from './crm-account-management.service';
-import { CrmCampaignManagementService } from './crm-campaign-management.service';
-import { CrmSupportService } from './crm-support.service';
-import { CrmEnablementService } from './crm-enablement.service';
-import { CrmRevOpsService } from './crm-revops.service';
-import { CrmPartnersService } from './crm-partners.service';
-import { CrmAutomationService } from './crm-automation.service';
-import { CrmTerritoryRulesService } from './crm-territory-rules.service';
-import { CrmTerritoryRulesController } from './crm-territory-rules.controller';
-import { CrmCadencesService } from './crm-cadences.service';
-import { CrmCadencesController } from './crm-cadences.controller';
-import { CrmQuoteSignatureService } from './crm-quote-signature.service';
-import { CrmQuoteSignatureController, CrmQuoteSignaturePublicController } from './crm-quote-signature.controller';
-import { CrmPipelineRiskService } from './crm-pipeline-risk.service';
-import { CrmPipelineRiskController } from './crm-pipeline-risk.controller';
-import { CrmPortalPaymentGatewayService } from './crm-portal-payment-gateway.service';
-import { CrmPortalDocumentsService } from './crm-portal-documents.service';
-import { CrmRevenueIntelligenceService } from './crm-revenue-intelligence.service';
-import { CrmRevenueIntelligenceController } from './crm-revenue-intelligence.controller';
-import { CrmConversationIntelligenceService } from './crm-conversation-intelligence.service';
-import { CrmConversationIntelligenceController } from './crm-conversation-intelligence.controller';
-import { CrmConversionAnalyticsService } from './crm-conversion-analytics.service';
-import { CrmConversionAnalyticsController } from './crm-conversion-analytics.controller';
-import { CrmAiDraftingService } from './crm-ai-drafting.service';
-import { CrmAiDraftingController } from './crm-ai-drafting.controller';
-import { CrmGamificationService } from './crm-gamification.service';
-import { CrmGamificationController } from './crm-gamification.controller';
-import { CrmCommissionAutomationService } from './crm-commission-automation.service';
-import { CrmCommissionAutomationController } from './crm-commission-automation.controller';
-import { CrmCoachingService } from './crm-coaching.service';
-import { CrmCoachingController } from './crm-coaching.controller';
-import { CrmDealRoomService } from './crm-deal-room.service';
-import { CrmDealRoomController, CrmDealRoomPublicController } from './crm-deal-room.controller';
+import { CrmForecastingService } from "./crm-forecasting.service";
+import { CrmAccountManagementService } from "./crm-account-management.service";
+import { CrmCampaignManagementService } from "./crm-campaign-management.service";
+import { CrmSupportService } from "./crm-support.service";
+import { CrmEnablementService } from "./crm-enablement.service";
+import { CrmRevOpsService } from "./crm-revops.service";
+import { CrmPartnersService } from "./crm-partners.service";
+import { CrmAutomationService } from "./crm-automation.service";
+import { CrmTerritoryRulesService } from "./crm-territory-rules.service";
+import { CrmTerritoryRulesController } from "./crm-territory-rules.controller";
+import { CrmCadencesService } from "./crm-cadences.service";
+import { CrmCadencesController } from "./crm-cadences.controller";
+import { CrmQuoteSignatureService } from "./crm-quote-signature.service";
+import {
+  CrmQuoteSignatureController,
+  CrmQuoteSignaturePublicController,
+} from "./crm-quote-signature.controller";
+import { CrmPipelineRiskService } from "./crm-pipeline-risk.service";
+import { CrmPipelineRiskController } from "./crm-pipeline-risk.controller";
+import { CrmPortalPaymentGatewayService } from "./crm-portal-payment-gateway.service";
+import { CrmPortalDocumentsService } from "./crm-portal-documents.service";
+import { CrmRevenueIntelligenceService } from "./crm-revenue-intelligence.service";
+import { CrmRevenueIntelligenceController } from "./crm-revenue-intelligence.controller";
+import { CrmConversationIntelligenceService } from "./crm-conversation-intelligence.service";
+import { CrmConversationIntelligenceController } from "./crm-conversation-intelligence.controller";
+import { CrmConversionAnalyticsService } from "./crm-conversion-analytics.service";
+import { CrmConversionAnalyticsController } from "./crm-conversion-analytics.controller";
+import { CrmAiDraftingService } from "./crm-ai-drafting.service";
+import { CrmAiDraftingController } from "./crm-ai-drafting.controller";
+import { CrmGamificationService } from "./crm-gamification.service";
+import { CrmGamificationController } from "./crm-gamification.controller";
+import { CrmCommissionAutomationService } from "./crm-commission-automation.service";
+import { CrmCommissionAutomationController } from "./crm-commission-automation.controller";
+import { CrmCoachingService } from "./crm-coaching.service";
+import { CrmCoachingController } from "./crm-coaching.controller";
+import { CrmDealRoomService } from "./crm-deal-room.service";
+import {
+  CrmDealRoomController,
+  CrmDealRoomPublicController,
+} from "./crm-deal-room.controller";
+import { CrmSalesAutomationService } from "./crm-sales-automation.service";
+import { CrmCustomerSuccessService } from "./crm-customer-success.service";
+import { CrmMarketingAutomationService } from "./crm-marketing-automation.service";
+import { CrmExpansionDeepController } from "./crm-expansion-deep.controller";
 
 const CRM_SERVICES = [
   CrmService,
@@ -92,7 +102,7 @@ const CRM_SERVICES = [
   CrmSlaService,
   CrmContractsService,
   CrmMailboxService,
-  
+
   CrmForecastingService,
   CrmAccountManagementService,
   CrmCampaignManagementService,
@@ -116,9 +126,12 @@ const CRM_SERVICES = [
   CrmCommissionAutomationService,
   CrmCoachingService,
   CrmDealRoomService,
+  CrmSalesAutomationService,
+  CrmCustomerSuccessService,
+  CrmMarketingAutomationService,
 ];
 
-import { CrmDeepController } from './crm-deep.controller';
+import { CrmDeepController } from "./crm-deep.controller";
 
 @Module({
   controllers: [
@@ -149,10 +162,9 @@ import { CrmDeepController } from './crm-deep.controller';
     CrmDealRoomController,
     CrmDealRoomPublicController,
     CrmDeepController,
+    CrmExpansionDeepController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,
 })
-export class CrmModule { }
-
-
+export class CrmModule {}

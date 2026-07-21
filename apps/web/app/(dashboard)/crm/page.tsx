@@ -1,578 +1,345 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import styles from "./page.module.css";
-import {
-  PageHeader,
-  Button,
-  StatusBadge,
-  DashboardChart,
-  ViewSwitcher,
-  KanbanBoard,
-  StatCardRow,
-  ListPageTemplate,
-  type ListColumn,
-  type ViewMode,
-  type KanbanColumn,
-  type KanbanItem,
-  Spinner,
-} from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
-import {
-  useCustomers,
-  useVendors,
-  useContacts,
-  useLeads,
-  useOpportunities,
-} from "../../../src/lib/hooks/useModuleData";
-import { apiPost, apiPatch } from "../../../src/lib/api";
+import Link from "next/link";
 import {
   Users,
   UserPlus,
   Target,
   Handshake,
-  AlertCircle,
-  CheckCircle,
-  X,
   TrendingUp,
+  BarChart3,
+  PieChart,
+  Activity,
+  Clock,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Building2,
+  DollarSign,
+  RefreshCw,
 } from "lucide-react";
+import {
+  PageHeader,
+  Button,
+  Card,
+  DashboardChart,
+  ListView,
+  StatCard,
+  Spinner,
+  KpiCard,
+} from "@unerp/ui";
+import { RouteGuard } from "@unerp/framework";
+import {
+  CrmTabLayout,
+  useCrmKeyMigration,
+  type CrmTab,
+} from "@/components/crm/CrmTabLayout";
 
-interface LeadItem extends KanbanItem {
-  name: string;
-  company: string;
-  status: string;
-  email: string;
-  source?: string;
+interface DashboardData {
+  kpis: {
+    totalLeads: number;
+    totalOpportunities: number;
+    totalCustomers: number;
+    pipelineValue: number;
+  };
+}
+
+const PAGES = [
+  { id: "executive-overview", label: "Executive Overview", icon: BarChart3 },
+  { id: "pipeline-analytics", label: "Pipeline Analytics", icon: TrendingUp },
+  { id: "customer-health", label: "Customer Health", icon: Users },
+  { id: "forecast", label: "Forecast & Revenue", icon: DollarSign },
+  { id: "activity-stream", label: "Activity Stream", icon: Activity },
+];
+
+const TAB_DEFINITIONS: CrmTab[] = [
+  {
+    id: "overview",
+    label: "Dashboard",
+    href: "/crm",
+    icon: BarChart3,
+    description: "CRM executive dashboard",
+  },
+  {
+    id: "leads",
+    label: "Leads",
+    href: "/crm/leads",
+    icon: UserPlus,
+    description: "Lead management",
+  },
+  {
+    id: "opportunities",
+    label: "Opportunities",
+    href: "/crm/opportunities",
+    icon: Target,
+    description: "Sales pipeline",
+  },
+  {
+    id: "customers",
+    label: "Customers",
+    href: "/crm/customers",
+    icon: Building2,
+    description: "Customer management",
+  },
+  {
+    id: "contacts",
+    label: "Contacts",
+    href: "/crm/contacts",
+    icon: Users,
+    description: "Contact directory",
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    href: "/crm/marketing-outreach",
+    icon: PieChart,
+    description: "Campaigns & outreach",
+    advanced: true,
+    group: "Advanced",
+  },
+  {
+    id: "automation",
+    label: "Automation",
+    href: "/crm/automation",
+    icon: Activity,
+    description: "Sales automation",
+    advanced: true,
+    group: "Advanced",
+  },
+  {
+    id: "customer-success",
+    label: "Customer Success",
+    href: "/crm/customer-success",
+    icon: Handshake,
+    description: "Health & retention",
+    advanced: true,
+    group: "Advanced",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/crm/settings",
+    icon: Activity,
+    description: "CRM configuration",
+    advanced: true,
+    group: "Settings",
+  },
+];
+
+function KpiCardGroup({ data }: { data: DashboardData }) {
+  const kpis = data?.kpis;
+  return (
+    <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
+      <KpiCard
+        icon={UserPlus}
+        value={kpis?.totalLeads ?? 0}
+        label="Total Leads"
+      />
+      <KpiCard
+        icon={Target}
+        value={kpis?.totalOpportunities ?? 0}
+        label="Opportunities"
+      />
+      <KpiCard
+        icon={Building2}
+        value={kpis?.totalCustomers ?? 0}
+        label="Customers"
+      />
+      <KpiCard
+        icon={DollarSign}
+        value={`$${(kpis?.pipelineValue ?? 0).toLocaleString()}`}
+        label="Pipeline Value"
+      />
+    </div>
+  );
+}
+
+function NavCard({
+  label,
+  href,
+  icon: Icon,
+}: {
+  label: string;
+  href: string;
+  icon: any;
+}) {
+  return (
+    <Link
+      href={href}
+      className="ui-card"
+      style={{
+        padding: "var(--space-4)",
+        display: "flex",
+        alignItems: "center",
+        gap: "var(--space-3)",
+        textDecoration: "none",
+        color: "inherit",
+      }}
+    >
+      <Icon size={24} />
+      <span className="ui-heading-sm">{label}</span>
+    </Link>
+  );
 }
 
 export default function CrmPage() {
-  const { data: customers = [], isLoading: loadingCustomers } = useCustomers();
-  const { data: vendors = [], isLoading: loadingVendors } = useVendors();
-  const { data: contacts = [], isLoading: loadingContacts } = useContacts();
-  const {
-    data: leads = [],
-    isLoading: loadingLeads,
-    refetch: refetchLeads,
-  } = useLeads();
-  const { data: opportunities = [], isLoading: loadingOpps } =
-    useOpportunities();
-  const loading =
-    loadingCustomers ||
-    loadingVendors ||
-    loadingContacts ||
-    loadingLeads ||
-    loadingOpps;
-  const [activeView, setActiveView] = useState<ViewMode>("chart");
+  useCrmKeyMigration();
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") || "leads") as
-    | "customers"
-    | "vendors"
-    | "contacts"
-    | "leads"
-    | "opportunities";
+  const activePage = searchParams.get("page") || "executive-overview";
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Create Lead Modal
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [leadFirstName, setLeadFirstName] = useState("");
-  const [leadLastName, setLeadLastName] = useState("");
-  const [leadEmail, setLeadEmail] = useState("");
-  const [leadCompany, setLeadCompany] = useState("");
-  const [leadSource, setLeadSource] = useState("WEBSITE");
-  const [submitting, setSubmitting] = useState(false);
-  const [modalSuccess, setModalSuccess] = useState(false);
-  const [modalError, setModalError] = useState<string | null>(null);
-
-  const safeCustomers = Array.isArray(customers) ? customers : [];
-  const safeVendors = Array.isArray(vendors) ? vendors : [];
-  const safeContacts = Array.isArray(contacts) ? contacts : [];
-  const safeLeads = Array.isArray(leads) ? leads : [];
-  const safeOpps = Array.isArray(opportunities) ? opportunities : [];
-
-  // ── KPI metrics ──
-  const qualifiedLeads = safeLeads.filter(
-    (l: Record<string, unknown>) =>
-      l.status === "QUALIFIED" || l.status === "CONVERTED",
-  ).length;
-  const activeOpps = safeOpps.filter(
-    (o: Record<string, unknown>) =>
-      o.stage !== "CLOSED_WON" && o.stage !== "CLOSED_LOST",
-  ).length;
-  const totalPipelineValue = safeOpps.reduce(
-    (s: number, o: Record<string, unknown>) =>
-      s + (Number(o.estimatedValue) || 0),
-    0,
-  );
-
-  // ── Chart data ──
-  const leadStatusData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    safeLeads.forEach((l: Record<string, unknown>) => {
-      const st = String(l.status || "Unknown");
-      counts[st] = (counts[st] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [safeLeads]);
-
-  const pipelineStageData = useMemo(() => {
-    const stages: Record<string, number> = {};
-    safeOpps.forEach((o: Record<string, unknown>) => {
-      const st = String(o.stage || "Unknown").replace("_", " ");
-      stages[st] = (stages[st] || 0) + 1;
-    });
-    return Object.entries(stages).map(([name, value]) => ({ name, value }));
-  }, [safeOpps]);
-
-  const revenueByOppData = useMemo(() => {
-    return safeOpps
-      .filter((o: Record<string, unknown>) => o.estimatedValue)
-      .slice(0, 10)
-      .map((o: Record<string, unknown>) => ({
-        name: String(o.title || "Untitled").substring(0, 20),
-        value: Number(o.estimatedValue) || 0,
-      }));
-  }, [safeOpps]);
-
-  // ── Kanban data (leads by status) ──
-  const LEAD_STATUS_COLUMNS: KanbanColumn[] = [
-    { key: "NEW", title: "New", color: "var(--chart-1)" },
-    { key: "CONTACTED", title: "Contacted", color: "var(--color-warning)" },
-    { key: "QUALIFIED", title: "Qualified", color: "var(--color-success)" },
-    { key: "CONVERTED", title: "Converted", color: "var(--chart-2)" },
-    { key: "LOST", title: "Lost", color: "var(--color-danger)" },
-  ];
-
-  const kanbanLeads: LeadItem[] = useMemo(() => {
-    return safeLeads.map((l: Record<string, unknown>) => ({
-      id: String(l.id),
-      columnKey: String(l.status || "NEW"),
-      name: `${l.firstName || ""} ${l.lastName || ""}`.trim(),
-      company: String(l.company || "—"),
-      status: String(l.status || "NEW"),
-      email: String(l.email || ""),
-      source: String(l.source || ""),
-    }));
-  }, [safeLeads]);
-
-  const handleKanbanMove = async (
-    itemId: string,
-    _from: string,
-    toColumn: string,
-  ) => {
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
     try {
-      await apiPatch(`/crm/leads/${itemId}`, { status: toColumn });
-      refetchLeads();
-    } catch {
-      // Silently fail - user will see item snap back
-    }
-  };
-
-  // ── Handlers ──
-  const handleCreateLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!leadFirstName || !leadLastName || !leadEmail) {
-      setModalError("Please fill in all required fields");
-      return;
-    }
-
-    setSubmitting(true);
-    setModalError(null);
-
-    try {
-      await apiPost("/crm/leads", {
-        firstName: leadFirstName,
-        lastName: leadLastName,
-        email: leadEmail,
-        company: leadCompany || undefined,
-        source: leadSource,
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+      const res = await fetch(`${baseUrl}/crm/dashboard`, {
+        credentials: "include",
       });
-      setModalSuccess(true);
-      setTimeout(() => {
-        setIsCreateModalOpen(false);
-        setLeadFirstName("");
-        setLeadLastName("");
-        setLeadEmail("");
-        setLeadCompany("");
-        setModalSuccess(false);
-        refetchLeads();
-      }, 1500);
+      if (res.ok) setData(await res.json());
     } catch {
-      setModalError("Failed to create lead. Please try again.");
-      setSubmitting(false);
-    } finally {
-      setSubmitting(false);
+      /* ignore */
     }
-  };
+    setLoading(false);
+  }, []);
 
-  const leadColumns: ListColumn[] = [
-    {
-      key: "name",
-      header: "Name",
-      render: (_, row) =>
-        `${String(row.firstName || "")} ${String(row.lastName || "")}`.trim(),
-    },
-    { key: "email", header: "Email" },
-    { key: "company", header: "Company", render: (v) => String(v || "—") },
-    {
-      key: "status",
-      header: "Status",
-      render: (v) => <StatusBadge status={String(v || "")} />,
-    },
-  ];
-  const oppColumns: ListColumn[] = [
-    { key: "title", header: "Title" },
-    {
-      key: "stage",
-      header: "Stage",
-      render: (v) => <StatusBadge status={String(v || "")} />,
-    },
-    {
-      key: "estimatedValue",
-      header: "Value",
-      render: (v) => `$${Number(v || 0).toLocaleString()}`,
-    },
-  ];
-  const entityColumns: ListColumn[] = [
-    { key: "name", header: "Name" },
-    { key: "email", header: "Email" },
-    { key: "phone", header: "Phone", render: (v) => String(v || "—") },
-  ];
-  const contactColumns: ListColumn[] = [
-    {
-      key: "name",
-      header: "Name",
-      render: (_, row) =>
-        `${String(row.firstName || "")} ${String(row.lastName || "")}`.trim(),
-    },
-    { key: "email", header: "Email" },
-    { key: "title", header: "Title", render: (v) => String(v || "—") },
-  ];
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
 
-  const CRM_LIST_TABS: SubTab[] = [
-    {
-      id: "leads",
-      label: `Leads (${safeLeads.length})`,
-      href: "/crm?tab=leads",
-    },
-    {
-      id: "opportunities",
-      label: `Opportunities (${safeOpps.length})`,
-      href: "/crm?tab=opportunities",
-    },
-    {
-      id: "customers",
-      label: `Customers (${safeCustomers.length})`,
-      href: "/crm?tab=customers",
-    },
-    {
-      id: "vendors",
-      label: `Vendors (${safeVendors.length})`,
-      href: "/crm?tab=vendors",
-    },
-    {
-      id: "contacts",
-      label: `Contacts (${safeContacts.length})`,
-      href: "/crm?tab=contacts",
-    },
-  ];
+  const currentPageIdx = PAGES.findIndex((p) => p.id === activePage);
+  const prevPage = currentPageIdx > 0 ? PAGES[currentPageIdx - 1] : null;
+  const nextPage =
+    currentPageIdx < PAGES.length - 1 ? PAGES[currentPageIdx + 1] : null;
 
   return (
-    <div className="ui-stack-6 ui-animate-in">
-      <PageHeader
-        title="Customer Relationship Management"
-        description="Oversee and manage all customer, vendor, and lead relationships."
-        breadcrumbs={[{ label: "Home", href: "/dashboard" }, { label: "CRM" }]}
-        actions={
-          <div className="ui-hstack-3">
-            <ViewSwitcher
-              activeView={activeView}
-              onViewChange={setActiveView}
-              availableViews={["list", "chart", "kanban"]}
-            />
-            <Button
-              variant="primary"
-              onClick={() => setIsCreateModalOpen(true)}
-              className="ui-hstack-2"
+    <RouteGuard permission="crm.read">
+      <CrmTabLayout
+        tabs={TAB_DEFINITIONS}
+        moduleId="crm"
+        moduleLabel="CRM & Sales"
+        moduleIcon={BarChart3}
+        moduleDescription="Customer relationship management and sales pipeline"
+      >
+        <div style={{ position: "relative" }}>
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "var(--space-8)",
+              }}
             >
-              <UserPlus size={16} /> New Lead
-            </Button>
-          </div>
-        }
-      />
-
-      {/* KPI stat cards */}
-      <StatCardRow
-        stats={[
-          {
-            label: "Total Leads",
-            value: safeLeads.length,
-            icon: <Users size={16} />,
-            color: "var(--chart-1)",
-            loading,
-          },
-          {
-            label: "Qualified",
-            value: qualifiedLeads,
-            icon: <Target size={16} />,
-            color: "var(--chart-2)",
-            loading,
-          },
-          {
-            label: "Active Opportunities",
-            value: activeOpps,
-            icon: <Handshake size={16} />,
-            color: "var(--chart-3)",
-            loading,
-          },
-          {
-            label: "Pipeline Value",
-            value: `$${totalPipelineValue.toLocaleString()}`,
-            icon: <TrendingUp size={16} />,
-            color: "var(--chart-5)",
-            loading,
-          },
-        ]}
-      />
-
-      {/* Chart View */}
-      {activeView === "chart" && (
-        <div className={styles.p20}>
-          <DashboardChart
-            title="Lead Status Distribution"
-            subtitle="Leads grouped by current status"
-            data={leadStatusData}
-            config={{
-              xAxisKey: "name",
-              series: [{ dataKey: "value", name: "Leads" }],
-              valueKey: "value",
-              nameKey: "name",
-            }}
-            defaultChartType="donut"
-            allowedChartTypes={["donut", "pie", "bar"]}
-            height={280}
-            loading={loading}
-          />
-          <DashboardChart
-            title="Pipeline Funnel"
-            subtitle="Opportunities by pipeline stage"
-            data={pipelineStageData}
-            config={{
-              xAxisKey: "name",
-              series: [{ dataKey: "value", name: "Count" }],
-              valueKey: "value",
-              nameKey: "name",
-            }}
-            defaultChartType="funnel"
-            allowedChartTypes={["funnel", "bar", "pie"]}
-            height={280}
-            loading={loading}
-          />
-          <DashboardChart
-            title="Revenue Forecast"
-            subtitle="Estimated value by opportunity (top 10)"
-            data={revenueByOppData}
-            config={{
-              xAxisKey: "name",
-              series: [
-                {
-                  dataKey: "value",
-                  name: "Estimated Value",
-                  color: "var(--chart-4)",
-                },
-              ],
-            }}
-            defaultChartType="bar"
-            allowedChartTypes={["bar", "line", "area"]}
-            height={280}
-            loading={loading}
-          />
-        </div>
-      )}
-
-      {/* Kanban View */}
-      {activeView === "kanban" && (
-        <KanbanBoard<LeadItem>
-          columns={LEAD_STATUS_COLUMNS}
-          items={kanbanLeads}
-          onCardMove={handleKanbanMove}
-          renderCard={(item) => (
-            <div>
-              <div className={styles.p21}>{item.name}</div>
-              <div className={styles.p22}>{item.company}</div>
-              <div className="ui-text-micro">{item.email}</div>
-              {item.source && (
-                <div className={styles.p23}>Source: {item.source}</div>
-              )}
+              <Spinner />
             </div>
-          )}
-        />
-      )}
-
-      {/* List View */}
-      {activeView === "list" && (
-        <>
-          <SubTabBar tabs={CRM_LIST_TABS} />
-          {activeTab === "leads" && (
-            <ListPageTemplate
-              title=""
-              columns={leadColumns}
-              data={safeLeads as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-              searchPlaceholder="Search leads…"
-            />
-          )}
-          {activeTab === "opportunities" && (
-            <ListPageTemplate
-              title=""
-              columns={oppColumns}
-              data={safeOpps as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-              searchPlaceholder="Search opportunities…"
-            />
-          )}
-          {activeTab === "customers" && (
-            <ListPageTemplate
-              title=""
-              columns={entityColumns}
-              data={safeCustomers as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-              searchPlaceholder="Search customers…"
-            />
-          )}
-          {activeTab === "vendors" && (
-            <ListPageTemplate
-              title=""
-              columns={entityColumns}
-              data={safeVendors as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-              searchPlaceholder="Search vendors…"
-            />
-          )}
-          {activeTab === "contacts" && (
-            <ListPageTemplate
-              title=""
-              columns={contactColumns}
-              data={safeContacts as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-              searchPlaceholder="Search contacts…"
-            />
-          )}
-        </>
-      )}
-
-      {/* Create Lead Modal */}
-      {isCreateModalOpen && (
-        <div className={styles.p25}>
-          <div className={styles.p26}>
-            <div className={styles.p27}>
-              <h3 className={styles.p28}>New Lead</h3>
-              <button
-                onClick={() => {
-                  setIsCreateModalOpen(false);
-                  setModalSuccess(false);
-                  setModalError(null);
+          ) : (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "var(--space-4)",
                 }}
-                className="ui-btn-icon ui-text-muted"
               >
-                <X size={18} />
-              </button>
-            </div>
-            <form onSubmit={handleCreateLead} className="p-5 ui-stack-4">
-              {modalSuccess ? (
-                <div className={styles.p29}>
-                  <CheckCircle size={40} className={styles.p210} />
-                  <p className={styles.p211}>Lead Created!</p>
+                <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                  {PAGES.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={
+                        p.id === "executive-overview"
+                          ? "/crm"
+                          : `/crm?page=${p.id}`
+                      }
+                      className="ui-btn"
+                      style={{
+                        background:
+                          activePage === p.id
+                            ? "var(--color-primary)"
+                            : "transparent",
+                        color: activePage === p.id ? "#fff" : "inherit",
+                        border: "1px solid var(--color-border)",
+                        padding: "var(--space-1) var(--space-3)",
+                        borderRadius: "var(--radius-md)",
+                        fontSize: "var(--text-sm)",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <p.icon size={14} style={{ marginRight: 4 }} />
+                      {p.label}
+                    </Link>
+                  ))}
                 </div>
-              ) : (
-                <>
-                  {modalError && (
-                    <div className={styles.p212}>
-                      <AlertCircle size={15} />
-                      <span>{modalError}</span>
-                    </div>
-                  )}
-                  <div className={`ui-grid-2 ${styles.p213}`}>
-                    <div className="ui-form-group">
-                      <label className="ui-label">First Name *</label>
-                      <input
-                        type="text"
-                        required
-                        className="ui-input"
-                        value={leadFirstName}
-                        onChange={(e) => setLeadFirstName(e.target.value)}
-                      />
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Last Name *</label>
-                      <input
-                        type="text"
-                        required
-                        className="ui-input"
-                        value={leadLastName}
-                        onChange={(e) => setLeadLastName(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="ui-form-group">
-                    <label className="ui-label">Email *</label>
-                    <input
-                      type="email"
-                      required
-                      className="ui-input"
-                      value={leadEmail}
-                      onChange={(e) => setLeadEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="ui-form-group">
-                    <label className="ui-label">Company</label>
-                    <input
-                      type="text"
-                      className="ui-input"
-                      value={leadCompany}
-                      onChange={(e) => setLeadCompany(e.target.value)}
-                    />
-                  </div>
-                  <div className="ui-form-group">
-                    <label className="ui-label">Lead Source</label>
-                    <select
-                      className="ui-input"
-                      value={leadSource}
-                      onChange={(e) => setLeadSource(e.target.value)}
-                    >
-                      <option value="WEBSITE">Website</option>
-                      <option value="REFERRAL">Referral</option>
-                      <option value="SOCIAL_MEDIA">Social Media</option>
-                      <option value="COLD_CALL">Cold Call</option>
-                      <option value="EVENT">Event</option>
-                    </select>
-                  </div>
-                  <div className={styles.p214}>
-                    <Button
-                      variant="outline"
-                      type="button"
-                      onClick={() => setIsCreateModalOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      disabled={submitting}
-                    >
-                      {submitting ? <Spinner size="sm" /> : "Create Lead"}
-                    </Button>
-                  </div>
-                </>
+                <button
+                  onClick={fetchDashboard}
+                  className="ui-btn"
+                  style={{ padding: "var(--space-1) var(--space-3)" }}
+                >
+                  <RefreshCw size={14} style={{ marginRight: 4 }} />
+                  Refresh
+                </button>
+              </div>
+
+              {data && <KpiCardGroup data={data} />}
+
+              {/* Page Navigation Arrows */}
+              {prevPage && (
+                <Link
+                  href={
+                    prevPage.id === "executive-overview"
+                      ? "/crm"
+                      : `/crm?page=${prevPage.id}`
+                  }
+                  style={{
+                    position: "absolute",
+                    left: -48,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "var(--color-warning)",
+                    color: "#000",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textDecoration: "none",
+                    zIndex: 10,
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                </Link>
               )}
-            </form>
-          </div>
+              {nextPage && (
+                <Link
+                  href={`/crm?page=${nextPage.id}`}
+                  style={{
+                    position: "absolute",
+                    right: -48,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "var(--color-warning)",
+                    color: "#000",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textDecoration: "none",
+                    zIndex: 10,
+                  }}
+                >
+                  <ChevronRight size={20} />
+                </Link>
+              )}
+            </>
+          )}
         </div>
-      )}
-    </div>
+      </CrmTabLayout>
+    </RouteGuard>
   );
 }

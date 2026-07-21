@@ -79,6 +79,8 @@ export const SEGMENT_NAMES: Record<string, string> = {
   "sync-monitor": "Sync Monitor",
   "devops-telemetry": "DevOps & Telemetry",
   "marketing-outreach": "Marketing & Outreach",
+  automation: "Sales Automation",
+  "customer-success": "Customer Success",
   "sales-enablement": "Sales Enablement",
   "account-plans": "Account Plans",
   cpq: "CPQ Pricing",
