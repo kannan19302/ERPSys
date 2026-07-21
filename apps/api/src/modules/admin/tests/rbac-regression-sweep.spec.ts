@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { ForbiddenException } from "@nestjs/common";
 import { RbacGuard } from "../../../common/guards/rbac.guard";
 import { PERMISSIONS_KEY } from "../../../common/decorators/permissions.decorator";
-import { SecurityController } from "../../saas-portal/controllers/security.controller";
+import { SaasPortalSecurityController as SecurityController } from "../../saas-portal/controllers/security.controller";
 import { AdminController } from "../admin.controller";
 import { AutomationRulesController } from "../automation-rules.controller";
 import { SuperAdminController } from "../super-admin.controller";
@@ -34,6 +34,9 @@ vi.mock("@unerp/database", () => ({
   prisma: {
     userRole: { findMany: vi.fn() },
   },
+  runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) =>
+    Promise.resolve(fn()),
+  ),
 }));
 
 import { prisma } from "@unerp/database";

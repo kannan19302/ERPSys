@@ -2,6 +2,23 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-21] QA Harden — Fixed 24 test failures, 5 GitHub issues filed
+
+**Scope**: Mandatory QA checkpoint (24 failing tests → 0). Found and fixed 2 root causes in test infrastructure, filed 3 new security findings.
+
+**Issues fixed**:
+
+- **#37** (filed + fixed): `rbac-regression-sweep.spec.ts` mock missing `runWithTenantSession` export — 22 false-positive failures resolved by adding the mock.
+- **#38** (filed + fixed): `marketplace-lifecycle.spec.ts` RLS violation on `schema_registries` upsert — 2 failures resolved by wrapping all test DB operations in `runWithTenantSession()`.
+
+**Issues filed but unfixed (security) at root cause — tracked for next cycle**:
+
+- **#39**: `crm-intelligence.service.ts` uses `$queryRawUnsafe<any[]>` instead of Prisma typed queries.
+- **#40**: `finance-operations.controller.ts` has 13 POST/PATCH/DELETE endpoints with no runtime input validation.
+- **#41**: `leases.controller.ts` uses `@Query() q: any` bypassing validation.
+
+**Verification**: 237/237 test files passing, 3186/3186 tests passing, 0 failures. Typecheck: 0 new errors (2 pre-existing in stashed Cycle 36 work).
+
 ## [2026-07-21] Foundation cleanup — Settings/Admin-to-SaaS-Portal consolidation (Phase 7 + final close-out)
 
 **Scope**: Closes the two outstanding items left by the Phase 7 pass below — migrates the last 3

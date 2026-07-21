@@ -1,0 +1,1344 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  UseGuards,
+  Req,
+  Query,
+  Body,
+  UseInterceptors,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { ChangeHistoryInterceptor } from "../../common/interceptors/change-history.interceptor";
+import { TrackChanges } from "../../common/decorators/track-changes.decorator";
+import {
+  createPaymentTermSchema,
+  updatePaymentTermSchema,
+  createPaymentMethodSchema,
+  updatePaymentMethodSchema,
+  createTaxRateSchema,
+  updateTaxRateSchema,
+  createCurrencySchema,
+  createExchangeRateSchema,
+  createBankAccountSchema,
+  updateBankAccountSchema,
+  createBudgetSchema,
+  updateBudgetSchema,
+  createVendorBillSchema,
+  updateVendorBillSchema,
+} from "@unerp/shared";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
+import { FinanceOperationsService } from "./finance-operations.service";
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
+}
+
+@ApiTags("finance-operations")
+@ApiBearerAuth()
+@Controller("finance")
+@UseGuards(JwtAuthGuard, RbacGuard)
+export class FinanceOperationsController {
+  constructor(private readonly opsService: FinanceOperationsService) {}
+
+  // --- Payment Terms ---
+
+  @ApiOperation({ summary: "List payment terms" })
+  @Get("payment-terms")
+  @Permissions("finance.settings.read")
+  async listPaymentTerms(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listPaymentTerms(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get payment term by id" })
+  @Get("payment-terms/:id")
+  @Permissions("finance.settings.read")
+  async getPaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getPaymentTerm(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Create payment term" })
+  @Post("payment-terms")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("PaymentTerm")
+  async createPaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createPaymentTermSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.createPaymentTerm(req.user.tenantId, {
+      name: dto.name as string,
+      dueDays: dto.dueDays as number,
+      discountDays: dto.discountDays as number | undefined,
+      discountPercentage: dto.discountPercentage as number | undefined,
+      description: dto.description as string | undefined,
+      isDefault: dto.isDefault as boolean | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update payment term" })
+  @Patch("payment-terms/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("PaymentTerm", "id")
+  async updatePaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updatePaymentTermSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.updatePaymentTerm(req.user.tenantId, id, {
+      name: dto.name as string | undefined,
+      dueDays: dto.dueDays as number | undefined,
+      discountDays: dto.discountDays as number | undefined,
+      discountPercentage: dto.discountPercentage as number | undefined,
+      description: dto.description as string | undefined,
+      isDefault: dto.isDefault as boolean | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Delete payment term" })
+  @Delete("payment-terms/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.settings.write")
+  async deletePaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deletePaymentTerm(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get default payment term" })
+  @Get("payment-terms/default/get")
+  @Permissions("finance.settings.read")
+  async getDefaultPaymentTerm(@Req() req: AuthenticatedRequest) {
+    return this.opsService.getDefaultPaymentTerm(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: "Set payment term as default" })
+  @Patch("payment-terms/:id/default")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("PaymentTerm", "id")
+  async setDefaultPaymentTerm(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.setDefaultPaymentTerm(req.user.tenantId, id);
+  }
+
+  // --- Payment Methods ---
+
+  @ApiOperation({ summary: "List payment methods" })
+  @Get("payment-methods")
+  @Permissions("finance.settings.read")
+  async listPaymentMethods(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listPaymentMethods(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get payment method by id" })
+  @Get("payment-methods/:id")
+  @Permissions("finance.settings.read")
+  async getPaymentMethod(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getPaymentMethod(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Create payment method" })
+  @Post("payment-methods")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("PaymentMethod")
+  async createPaymentMethod(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createPaymentMethodSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.createPaymentMethod(req.user.tenantId, {
+      name: dto.name as string,
+      code: dto.code as string,
+      isActive: dto.isActive as boolean | undefined,
+      description: dto.description as string | undefined,
+      processingFee: dto.processingFee as number | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update payment method" })
+  @Patch("payment-methods/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("PaymentMethod", "id")
+  async updatePaymentMethod(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updatePaymentMethodSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.updatePaymentMethod(req.user.tenantId, id, {
+      name: dto.name as string | undefined,
+      isActive: dto.isActive as boolean | undefined,
+      description: dto.description as string | undefined,
+      processingFee: dto.processingFee as number | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Delete payment method" })
+  @Delete("payment-methods/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.settings.write")
+  async deletePaymentMethod(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deletePaymentMethod(req.user.tenantId, id);
+  }
+
+  // --- Tax Rates ---
+
+  @ApiOperation({ summary: "List tax rates" })
+  @Get("tax-rates")
+  @Permissions("finance.tax.read")
+  async listTaxRates(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listTaxRates(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get tax rate by id" })
+  @Get("tax-rates/:id")
+  @Permissions("finance.tax.read")
+  async getTaxRate(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+    return this.opsService.getTaxRate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Create tax rate" })
+  @Post("tax-rates")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.tax.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("TaxRate")
+  async createTaxRate(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createTaxRateSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.createTaxRate(req.user.tenantId, {
+      name: dto.name as string,
+      rate: dto.rate as number,
+      type: dto.type as "SALES" | "PURCHASE" | "WITHHOLDING" | "VAT" | "GST",
+      jurisdiction: dto.jurisdiction as string | undefined,
+      isDefault: dto.isDefault as boolean | undefined,
+      isCompound: dto.isCompound as boolean | undefined,
+      description: dto.description as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update tax rate" })
+  @Patch("tax-rates/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.tax.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("TaxRate", "id")
+  async updateTaxRate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updateTaxRateSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.updateTaxRate(req.user.tenantId, id, {
+      name: dto.name as string | undefined,
+      rate: dto.rate as number | undefined,
+      type: dto.type as
+        | "SALES"
+        | "PURCHASE"
+        | "WITHHOLDING"
+        | "VAT"
+        | "GST"
+        | undefined,
+      isDefault: dto.isDefault as boolean | undefined,
+      isCompound: dto.isCompound as boolean | undefined,
+      description: dto.description as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Delete tax rate" })
+  @Delete("tax-rates/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.tax.delete")
+  async deleteTaxRate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteTaxRate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get default tax rate" })
+  @Get("tax-rates/default/get")
+  @Permissions("finance.tax.read")
+  async getDefaultTaxRate(@Req() req: AuthenticatedRequest) {
+    return this.opsService.getDefaultTaxRate(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: "Set tax rate as default" })
+  @Patch("tax-rates/:id/default")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.tax.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("TaxRate", "id")
+  async setDefaultTaxRate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.setDefaultTaxRate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Compute tax amount" })
+  @Get("tax-rates/compute")
+  @Permissions("finance.tax.compute")
+  async computeTax(
+    @Req() req: AuthenticatedRequest,
+    @Query("subtotal") subtotal: string,
+    @Query("taxRateId") taxRateId: string,
+  ) {
+    return this.opsService.computeTax(
+      parseFloat(subtotal),
+      taxRateId,
+      req.user.tenantId,
+    );
+  }
+
+  // --- Tax Jurisdictions ---
+
+  @ApiOperation({ summary: "List tax jurisdictions" })
+  @Get("tax-jurisdictions")
+  @Permissions("finance.tax.read")
+  async listTaxJurisdictions(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listTaxJurisdictions(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Create tax jurisdiction" })
+  @Post("tax-jurisdictions")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.tax.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("TaxJurisdiction")
+  async createTaxJurisdiction(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: {
+      name: string;
+      code: string;
+      country: string;
+      state?: string;
+      description?: string;
+    },
+  ) {
+    return this.opsService.createTaxJurisdiction(req.user.tenantId, dto);
+  }
+
+  @ApiOperation({ summary: "Update tax jurisdiction" })
+  @Patch("tax-jurisdictions/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.tax.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("TaxJurisdiction", "id")
+  async updateTaxJurisdiction(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body()
+    dto: {
+      name?: string;
+      code?: string;
+      country?: string;
+      state?: string;
+      description?: string;
+    },
+  ) {
+    return this.opsService.updateTaxJurisdiction(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: "Delete tax jurisdiction" })
+  @Delete("tax-jurisdictions/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.tax.delete")
+  async deleteTaxJurisdiction(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteTaxJurisdiction(req.user.tenantId, id);
+  }
+
+  // --- Currencies ---
+
+  @ApiOperation({ summary: "List currencies" })
+  @Get("currencies")
+  @Permissions("finance.settings.read")
+  async listCurrencies(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listCurrencies(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Create currency" })
+  @Post("currencies")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("Currency")
+  async createCurrency(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createCurrencySchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.createCurrency(req.user.tenantId, {
+      code: dto.code as string,
+      name: dto.name as string,
+      symbol: dto.symbol as string,
+      isBase: dto.isBase as boolean | undefined,
+      decimalPlaces: dto.decimalPlaces as number | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update currency" })
+  @Patch("currencies/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("Currency", "id")
+  async updateCurrency(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body()
+    dto: {
+      name?: string;
+      symbol?: string;
+      isBase?: boolean;
+      decimalPlaces?: number;
+    },
+  ) {
+    return this.opsService.updateCurrency(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: "Delete currency" })
+  @Delete("currencies/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.settings.write")
+  async deleteCurrency(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteCurrency(req.user.tenantId, id);
+  }
+
+  // --- Exchange Rates ---
+
+  @ApiOperation({ summary: "List exchange rates" })
+  @Get("exchange-rates")
+  @Permissions("finance.settings.read")
+  async listExchangeRates(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listExchangeRates(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Create exchange rate" })
+  @Post("exchange-rates")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("ExchangeRate")
+  async createExchangeRate(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createExchangeRateSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.createExchangeRate(req.user.tenantId, {
+      fromCurrency: dto.fromCurrency as string,
+      toCurrency: dto.toCurrency as string,
+      rate: dto.rate as number,
+      validFrom: dto.validFrom as string,
+      validTo: dto.validTo as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update exchange rate" })
+  @Patch("exchange-rates/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("ExchangeRate", "id")
+  async updateExchangeRate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() dto: { rate?: number; validFrom?: string; validTo?: string },
+  ) {
+    return this.opsService.updateExchangeRate(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: "Delete exchange rate" })
+  @Delete("exchange-rates/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.settings.write")
+  async deleteExchangeRate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteExchangeRate(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get latest exchange rate" })
+  @Get("exchange-rates/latest")
+  @Permissions("finance.settings.read")
+  async getLatestExchangeRate(
+    @Req() req: AuthenticatedRequest,
+    @Query("from") from: string,
+    @Query("to") to: string,
+  ) {
+    return this.opsService.getLatestExchangeRate(req.user.tenantId, from, to);
+  }
+
+  @ApiOperation({ summary: "Sync exchange rates from external source" })
+  @Post("exchange-rates/sync")
+  @Permissions("finance.settings.write")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("ExchangeRate")
+  async syncExchangeRates(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: {
+      rates: Array<{
+        fromCurrency: string;
+        toCurrency: string;
+        rate: number;
+        validFrom: string;
+        validTo?: string;
+      }>;
+    },
+  ) {
+    return this.opsService.syncRates(req.user.tenantId, dto.rates);
+  }
+
+  // --- Bank Accounts ---
+
+  @ApiOperation({ summary: "List bank accounts" })
+  @Get("bank-accounts")
+  @Permissions("finance.bank-account.read")
+  async listBankAccounts(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listBankAccounts(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get bank account stats" })
+  @Get("bank-accounts/stats")
+  @Permissions("finance.bank-account.read")
+  async getBankAccountStats(@Req() req: AuthenticatedRequest) {
+    return this.opsService.getBankAccountStats(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: "Get bank account by id" })
+  @Get("bank-accounts/:id")
+  @Permissions("finance.bank-account.read")
+  async getBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getBankAccount(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Create bank account" })
+  @Post("bank-accounts")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.bank-account.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("BankAccount")
+  async createBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createBankAccountSchema) dto: Record<string, unknown>,
+  ) {
+    const orgId = req.user.orgId || "org-system-default";
+    return this.opsService.createBankAccount(req.user.tenantId, orgId, {
+      accountName: dto.accountName as string,
+      bankName: dto.bankName as string,
+      accountNumber: dto.accountNumber as string,
+      accountType: dto.accountType as
+        | "CHECKING"
+        | "SAVINGS"
+        | "CREDIT_CARD"
+        | "CASH"
+        | undefined,
+      currency: dto.currency as string | undefined,
+      openingBalance: dto.openingBalance as number | undefined,
+      isActive: dto.isActive as boolean | undefined,
+      notes: dto.notes as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update bank account" })
+  @Patch("bank-accounts/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.bank-account.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("BankAccount", "id")
+  async updateBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updateBankAccountSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.updateBankAccount(req.user.tenantId, id, {
+      accountName: dto.accountName as string | undefined,
+      bankName: dto.bankName as string | undefined,
+      accountType: dto.accountType as
+        | "CHECKING"
+        | "SAVINGS"
+        | "CREDIT_CARD"
+        | "CASH"
+        | undefined,
+      isActive: dto.isActive as boolean | undefined,
+      notes: dto.notes as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Delete bank account" })
+  @Delete("bank-accounts/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.bank-account.delete")
+  async deleteBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteBankAccount(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Verify bank account" })
+  @Post("bank-accounts/:id/verify")
+  @Permissions("finance.bank-account.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("BankAccount", "id")
+  async verifyBankAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.verifyBankAccount(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get bank account transactions" })
+  @Get("bank-accounts/:id/transactions")
+  @Permissions("finance.bank-account.read")
+  async getBankAccountTransactions(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getBankAccountTransactions(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Reconcile a bank transaction" })
+  @Post("bank-accounts/:id/reconcile")
+  @Permissions("finance.bank-account.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("BankTransaction")
+  async reconcileBankTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() dto: { transactionId: string },
+  ) {
+    void id;
+    return this.opsService.reconcileBankTransaction(
+      req.user.tenantId,
+      dto.transactionId,
+    );
+  }
+
+  @ApiOperation({ summary: "Get reconciliation history for bank account" })
+  @Get("bank-accounts/:id/reconciliations")
+  @Permissions("finance.bank-account.read")
+  async getReconciliationHistory(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getReconciliationHistory(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Bulk verify bank accounts" })
+  @Post("bank-accounts/bulk-verify")
+  @Permissions("finance.bank-account.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("BankAccount")
+  async bulkVerifyBankAccounts(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { ids: string[] },
+  ) {
+    return this.opsService.bulkVerifyBankAccounts(req.user.tenantId, dto.ids);
+  }
+
+  // --- Budgets ---
+
+  @ApiOperation({ summary: "List budgets" })
+  @Get("budgets")
+  @Permissions("finance.budget.read")
+  async listBudgets(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listBudgets(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get budget stats" })
+  @Get("budgets/stats")
+  @Permissions("finance.budget.read")
+  async getBudgetStats(@Req() req: AuthenticatedRequest) {
+    const budgets = await this.opsService.listBudgets(req.user.tenantId);
+    const totalBudgeted = budgets.reduce((s, b) => s + b.amount, 0);
+    const totalSpent = budgets.reduce((s, b) => s + b.spentAmount, 0);
+    return {
+      total: budgets.length,
+      active: budgets.filter((b) => b.status === "ACTIVE").length,
+      closed: budgets.filter((b) => b.status === "CLOSED").length,
+      totalBudgeted,
+      totalSpent,
+      remaining: totalBudgeted - totalSpent,
+    };
+  }
+
+  @ApiOperation({ summary: "Get budget by id" })
+  @Get("budgets/:id")
+  @Permissions("finance.budget.read")
+  async getBudget(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+    return this.opsService.getBudget(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Create budget" })
+  @Post("budgets")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.budget.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("Budget")
+  async createBudget(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createBudgetSchema) dto: Record<string, unknown>,
+  ) {
+    const orgId = req.user.orgId || "org-system-default";
+    return this.opsService.createBudget(req.user.tenantId, orgId, {
+      name: dto.name as string,
+      fiscalYear: dto.fiscalYear as number,
+      accountId: dto.accountId as string,
+      amount: dto.amount as number,
+      periodAmounts: dto.periodAmounts as
+        | Array<{ period: string; amount: number }>
+        | undefined,
+      notes: dto.notes as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Update budget" })
+  @Patch("budgets/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.budget.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("Budget", "id")
+  async updateBudget(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updateBudgetSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.updateBudget(req.user.tenantId, id, {
+      name: dto.name as string | undefined,
+      amount: dto.amount as number | undefined,
+      notes: dto.notes as string | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Delete budget" })
+  @Delete("budgets/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.budget.delete")
+  async deleteBudget(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteBudget(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get budget vs actual by fiscal year" })
+  @Get("budgets/:id/vs-actual")
+  @Permissions("finance.budget.read")
+  async getBudgetVsActual(
+    @Req() req: AuthenticatedRequest,
+    @Query("fiscalYear") fiscalYear: string,
+  ) {
+    return this.opsService.getBudgetVsActual(
+      req.user.tenantId,
+      parseInt(fiscalYear),
+    );
+  }
+
+  @ApiOperation({ summary: "Copy budget to new fiscal year" })
+  @Post("budgets/:id/copy")
+  @Permissions("finance.budget.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("Budget")
+  async copyBudget(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() dto: { fiscalYear?: number; name?: string },
+  ) {
+    return this.opsService.copyBudget(req.user.tenantId, id, dto);
+  }
+
+  @ApiOperation({ summary: "Bulk create budgets" })
+  @Post("budgets/bulk-create")
+  @Permissions("finance.budget.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("Budget")
+  async bulkCreateBudgets(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: {
+      budgets: Array<{
+        name: string;
+        fiscalYear: number;
+        accountId: string;
+        amount: number;
+        periodAmounts?: Array<{ period: string; amount: number }>;
+        notes?: string;
+      }>;
+    },
+  ) {
+    const orgId = req.user.orgId || "org-system-default";
+    return this.opsService.bulkCreateBudgets(
+      req.user.tenantId,
+      orgId,
+      dto.budgets,
+    );
+  }
+
+  @ApiOperation({ summary: "Get period summary for a fiscal year" })
+  @Get("budgets/period-summary")
+  @Permissions("finance.budget.read")
+  async getPeriodSummary(
+    @Req() req: AuthenticatedRequest,
+    @Query("fiscalYear") fiscalYear: string,
+  ) {
+    return this.opsService.getPeriodSummary(
+      req.user.tenantId,
+      parseInt(fiscalYear),
+    );
+  }
+
+  // --- Vendor Bills ---
+
+  @ApiOperation({ summary: "List vendor bills" })
+  @Get("vendor-bills")
+  @Permissions("finance.payables.read")
+  async listVendorBills(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listVendorBills(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get vendor bill stats" })
+  @Get("vendor-bills/stats")
+  @Permissions("finance.payables.read")
+  async getVendorBillStats(@Req() req: AuthenticatedRequest) {
+    const bills = await this.opsService.listVendorBills(req.user.tenantId);
+    const totalOutstanding = bills
+      .filter((b) => b.status !== "PAID" && b.status !== "VOID")
+      .reduce((s, b) => s + (b.totalAmount - b.paidAmount), 0);
+    return {
+      total: bills.length,
+      draft: bills.filter((b) => b.status === "DRAFT").length,
+      approved: bills.filter((b) => b.status === "APPROVED").length,
+      paid: bills.filter((b) => b.status === "PAID").length,
+      void: bills.filter((b) => b.status === "VOID").length,
+      totalOutstanding,
+    };
+  }
+
+  @ApiOperation({ summary: "Get vendor bill by id" })
+  @Get("vendor-bills/:id")
+  @Permissions("finance.payables.read")
+  async getVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getVendorBill(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Create vendor bill" })
+  @Post("vendor-bills")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.payables.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill")
+  async createVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createVendorBillSchema) dto: Record<string, unknown>,
+  ) {
+    const orgId = req.user.orgId || "org-system-default";
+    return this.opsService.createVendorBill(
+      req.user.tenantId,
+      orgId,
+      req.user.userId || "system",
+      {
+        vendorId: dto.vendorId as string,
+        billNumber: dto.billNumber as string,
+        billDate: dto.billDate as string,
+        dueDate: dto.dueDate as string,
+        purchaseOrderId: dto.purchaseOrderId as string | undefined,
+        lineItems: dto.lineItems as Array<{
+          description: string;
+          quantity: number;
+          unitPrice: number;
+          taxRate: number;
+        }>,
+        notes: dto.notes as string | undefined,
+      },
+    );
+  }
+
+  @ApiOperation({ summary: "Update vendor bill" })
+  @Patch("vendor-bills/:id")
+  @HttpCode(HttpStatus.OK)
+  @Permissions("finance.payables.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill", "id")
+  async updateVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updateVendorBillSchema) dto: Record<string, unknown>,
+  ) {
+    return this.opsService.updateVendorBill(req.user.tenantId, id, {
+      dueDate: dto.dueDate as string | undefined,
+      notes: dto.notes as string | undefined,
+      lineItems: dto.lineItems as
+        | Array<{
+            description: string;
+            quantity: number;
+            unitPrice: number;
+            taxRate: number;
+          }>
+        | undefined,
+    });
+  }
+
+  @ApiOperation({ summary: "Delete vendor bill" })
+  @Delete("vendor-bills/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.payables.delete")
+  async deleteVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteVendorBill(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Approve vendor bill" })
+  @Post("vendor-bills/:id/approve")
+  @Permissions("finance.payables.manage")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill", "id")
+  async approveVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.approveVendorBill(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Pay vendor bill" })
+  @Post("vendor-bills/:id/pay")
+  @Permissions("finance.payables.manage")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill", "id")
+  async payVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() dto: { amount: number; method: string; reference?: string },
+  ) {
+    return this.opsService.payVendorBill(req.user.tenantId, id, {
+      amount: dto.amount,
+      method: dto.method,
+      reference: dto.reference,
+      createdBy: req.user.userId || "system",
+    });
+  }
+
+  @ApiOperation({ summary: "Void vendor bill" })
+  @Post("vendor-bills/:id/void")
+  @Permissions("finance.payables.manage")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill", "id")
+  async voidVendorBill(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.voidVendorBill(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get vendor bill payment history" })
+  @Get("vendor-bills/:id/payments")
+  @Permissions("finance.payables.read")
+  async getVendorBillPayments(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.getVendorBillPaymentHistory(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Bulk approve vendor bills" })
+  @Post("vendor-bills/bulk-approve")
+  @Permissions("finance.payables.manage")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill")
+  async bulkApproveVendorBills(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: { ids: string[] },
+  ) {
+    return this.opsService.bulkApproveVendorBills(req.user.tenantId, dto.ids);
+  }
+
+  @ApiOperation({ summary: "Bulk pay vendor bills" })
+  @Post("vendor-bills/bulk-pay")
+  @Permissions("finance.payables.manage")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("VendorBill")
+  async bulkPayVendorBills(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: {
+      payments: Array<{
+        billId: string;
+        amount: number;
+        method: string;
+        reference?: string;
+      }>;
+    },
+  ) {
+    const payments = dto.payments.map((p) => ({
+      ...p,
+      createdBy: req.user.userId || "system",
+    }));
+    return this.opsService.bulkPayVendorBills(req.user.tenantId, payments);
+  }
+
+  @ApiOperation({ summary: "Get pending approval vendor bills" })
+  @Get("vendor-bills/pending-approval")
+  @Permissions("finance.payables.read")
+  async getPendingApprovalVendorBills(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.getPendingApprovalVendorBills(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Get vendor bill aging report" })
+  @Get("vendor-bills/aging")
+  @Permissions("finance.payables.read")
+  async getVendorBillAging(@Req() req: AuthenticatedRequest) {
+    return this.opsService.getVendorBillAging(req.user.tenantId);
+  }
+
+  // --- Financial Reports ---
+
+  @ApiOperation({ summary: "Get profit and loss report" })
+  @Get("reports/profit-loss")
+  @Permissions("finance.report.read")
+  async getProfitLoss(
+    @Req() req: AuthenticatedRequest,
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+  ) {
+    return this.opsService.getProfitLoss(req.user.tenantId, startDate, endDate);
+  }
+
+  @ApiOperation({ summary: "Get balance sheet report" })
+  @Get("reports/balance-sheet")
+  @Permissions("finance.report.read")
+  async getBalanceSheet(
+    @Req() req: AuthenticatedRequest,
+    @Query("asOfDate") asOfDate: string,
+  ) {
+    return this.opsService.getBalanceSheet(req.user.tenantId, asOfDate);
+  }
+
+  @ApiOperation({ summary: "Get cash flow report" })
+  @Get("reports/cash-flow")
+  @Permissions("finance.report.read")
+  async getCashFlow(
+    @Req() req: AuthenticatedRequest,
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+  ) {
+    return this.opsService.getCashFlow(req.user.tenantId, startDate, endDate);
+  }
+
+  @ApiOperation({ summary: "Get trial balance report" })
+  @Get("reports/trial-balance")
+  @Permissions("finance.report.read")
+  async getTrialBalance(
+    @Req() req: AuthenticatedRequest,
+    @Query("asOfDate") asOfDate: string,
+  ) {
+    return this.opsService.getTrialBalance(req.user.tenantId, asOfDate);
+  }
+
+  @ApiOperation({ summary: "Get AR aging report" })
+  @Get("reports/ar-aging")
+  @Permissions("finance.report.read")
+  async getArAging(
+    @Req() req: AuthenticatedRequest,
+    @Query("asOfDate") asOfDate: string,
+  ) {
+    return this.opsService.getArAging(req.user.tenantId, asOfDate);
+  }
+
+  @ApiOperation({ summary: "Get AP aging report" })
+  @Get("reports/ap-aging")
+  @Permissions("finance.report.read")
+  async getApAging(
+    @Req() req: AuthenticatedRequest,
+    @Query("asOfDate") asOfDate: string,
+  ) {
+    return this.opsService.getApAging(req.user.tenantId, asOfDate);
+  }
+
+  @ApiOperation({ summary: "Get general ledger report" })
+  @Get("reports/general-ledger")
+  @Permissions("finance.report.read")
+  async getGeneralLedger(
+    @Req() req: AuthenticatedRequest,
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+  ) {
+    return this.opsService.getGeneralLedger(
+      req.user.tenantId,
+      startDate,
+      endDate,
+    );
+  }
+
+  @ApiOperation({ summary: "Get tax summary report" })
+  @Get("reports/tax-summary")
+  @Permissions("finance.report.read")
+  async getTaxSummary(
+    @Req() req: AuthenticatedRequest,
+    @Query("fiscalYear") fiscalYear: string,
+  ) {
+    return this.opsService.getTaxSummary(
+      req.user.tenantId,
+      parseInt(fiscalYear),
+    );
+  }
+
+  @ApiOperation({ summary: "Get revenue by customer report" })
+  @Get("reports/revenue-by-customer")
+  @Permissions("finance.report.read")
+  async getRevenueByCustomer(
+    @Req() req: AuthenticatedRequest,
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+  ) {
+    return this.opsService.getRevenueByCustomer(
+      req.user.tenantId,
+      startDate,
+      endDate,
+    );
+  }
+
+  @ApiOperation({ summary: "Get expense by category report" })
+  @Get("reports/expense-by-category")
+  @Permissions("finance.report.read")
+  async getExpenseByCategory(
+    @Req() req: AuthenticatedRequest,
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+  ) {
+    return this.opsService.getExpenseByCategory(
+      req.user.tenantId,
+      startDate,
+      endDate,
+    );
+  }
+
+  @ApiOperation({ summary: "Get budget vs actual report" })
+  @Get("reports/budget-vs-actual")
+  @Permissions("finance.report.read")
+  async getBudgetVsActualReport(
+    @Req() req: AuthenticatedRequest,
+    @Query("fiscalYear") fiscalYear: string,
+  ) {
+    return this.opsService.getBudgetVsActualReport(
+      req.user.tenantId,
+      parseInt(fiscalYear),
+    );
+  }
+
+  @ApiOperation({ summary: "List saved custom report configs" })
+  @Get("reports/custom")
+  @Permissions("finance.report.read")
+  async listSavedReports(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: "asc" | "desc",
+  ) {
+    return this.opsService.listSavedReportConfigs(
+      req.user.tenantId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  @ApiOperation({ summary: "Save custom report config" })
+  @Post("reports/custom")
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions("finance.report.create")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("SavedReport")
+  async saveReportConfig(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: { name: string; type: string; config: Record<string, unknown> },
+  ) {
+    return this.opsService.saveReportConfig(
+      req.user.tenantId,
+      req.user.userId || "system",
+      dto,
+    );
+  }
+
+  @ApiOperation({ summary: "Delete saved custom report config" })
+  @Delete("reports/custom/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions("finance.report.delete")
+  async deleteSavedReportConfig(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.opsService.deleteSavedReportConfig(req.user.tenantId, id);
+  }
+}
