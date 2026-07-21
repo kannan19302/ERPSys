@@ -16,7 +16,6 @@ import { UsageAlertsController } from "./usage-alerts.controller";
 import { ApiKeysService } from "./api-keys.service";
 import { ApiKeysController } from "./api-keys.controller";
 import { AuditLogService } from "./audit-log.service";
-import { AuditLogController } from "./audit-log.controller";
 import { SupportTicketsService } from "./support-tickets.service";
 import { SupportTicketsController } from "./support-tickets.controller";
 import { DomainService } from "./domain-service";
@@ -72,7 +71,6 @@ import { RealtimeEmitterService } from "./realtime-emitter.service";
     PaymentMethodsController,
     UsageAlertsController,
     ApiKeysController,
-    AuditLogController,
     SupportTicketsController,
     DomainsController,
     SsoConfigController,

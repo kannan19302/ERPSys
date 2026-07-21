@@ -1,34 +1,23 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Card, Badge, Button, ConfirmDialog } from "@unerp/ui";
+import styles from "./page.module.css";
 import {
   Search,
-  ArrowLeft,
-  Download,
   Star,
-  TrendingUp,
   Heart,
-  ChevronRight,
-  SlidersHorizontal,
-  LayoutGrid,
-  List,
   Loader2,
   Sparkles,
   Package,
   BarChart3,
   Cpu,
   Users,
-  Settings,
   Zap,
   DollarSign,
   ShoppingBag,
   Factory,
   Shield,
-  ChevronLeft,
   HeartPulse,
-  Code2,
   Briefcase,
   ShoppingCart,
   Receipt,
@@ -38,6 +27,10 @@ import {
   CreditCard,
   Cloud,
   Target,
+  ChevronDown,
+  X,
+  SlidersHorizontal,
+  LayoutGrid as LayoutGridIcon,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
@@ -77,20 +70,6 @@ interface InstalledAppRow {
   source?: string;
 }
 
-interface AppCollection {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  featured: boolean;
-  items: { app: MarketplaceApp }[];
-}
-
-// Kernel apps are locked (never uninstallable) so an admin surface is always available.
-// Every other app — gated core business modules and industry bundles — is install/uninstall-able.
-// Fallback used only until GET /admin/marketplace/slug-map resolves; source of truth lives in
-// apps/api/src/common/app-slug-map.ts.
 const DEFAULT_KERNEL_SLUGS = new Set([
   "dashboard",
   "admin",
@@ -102,81 +81,87 @@ const DEFAULT_KERNEL_SLUGS = new Set([
 const getAppIcon = (slug: string, fallback?: string | null) => {
   switch (slug) {
     case "finance":
-      return <DollarSign size={40} strokeWidth={1.5} />;
+      return <DollarSign size={36} strokeWidth={1.5} />;
     case "hr":
-      return <Users size={40} strokeWidth={1.5} />;
+      return <Users size={36} strokeWidth={1.5} />;
     case "crm":
-      return <Target size={40} strokeWidth={1.5} />;
+      return <Target size={36} strokeWidth={1.5} />;
     case "inventory":
-      return <Package size={40} strokeWidth={1.5} />;
+      return <Package size={36} strokeWidth={1.5} />;
     case "procurement":
-      return <ShoppingCart size={40} strokeWidth={1.5} />;
+      return <ShoppingCart size={36} strokeWidth={1.5} />;
     case "sales":
-      return <Receipt size={40} strokeWidth={1.5} />;
+      return <Receipt size={36} strokeWidth={1.5} />;
     case "supply-chain":
-      return <Truck size={40} strokeWidth={1.5} />;
+      return <Truck size={36} strokeWidth={1.5} />;
     case "projects":
-      return <Briefcase size={40} strokeWidth={1.5} />;
+      return <Briefcase size={36} strokeWidth={1.5} />;
     case "manufacturing":
-      return <Factory size={40} strokeWidth={1.5} />;
+      return <Factory size={36} strokeWidth={1.5} />;
     case "bi":
-      return <BarChart3 size={40} strokeWidth={1.5} />;
+      return <BarChart3 size={36} strokeWidth={1.5} />;
     case "dashboard":
-      return <LayoutGrid size={40} strokeWidth={1.5} />;
+      return <LayoutGridIcon size={36} strokeWidth={1.5} />;
     case "drive":
-      return <HardDrive size={40} strokeWidth={1.5} />;
+      return <HardDrive size={36} strokeWidth={1.5} />;
     case "connect":
-      return <MessageSquare size={40} strokeWidth={1.5} />;
+      return <MessageSquare size={36} strokeWidth={1.5} />;
     case "pos":
-      return <CreditCard size={40} strokeWidth={1.5} />;
+      return <CreditCard size={36} strokeWidth={1.5} />;
     case "api-keys":
-      return <Cpu size={40} strokeWidth={1.5} />;
+      return <Cpu size={36} strokeWidth={1.5} />;
     case "saas":
-      return <Cloud size={40} strokeWidth={1.5} />;
+      return <Cloud size={36} strokeWidth={1.5} />;
     case "admin":
-      return <Shield size={40} strokeWidth={1.5} />;
+      return <Shield size={36} strokeWidth={1.5} />;
     case "builder":
-      return <Sparkles size={40} strokeWidth={1.5} />;
+      return <Sparkles size={36} strokeWidth={1.5} />;
     case "healthcare":
-      return <HeartPulse size={40} strokeWidth={1.5} />;
+      return <HeartPulse size={36} strokeWidth={1.5} />;
     default:
       return fallback ? (
         <span className="text-4xl">{fallback}</span>
       ) : (
-        <Package size={40} strokeWidth={1.5} />
+        <Package size={36} strokeWidth={1.5} />
       );
   }
 };
 
-const categoryMeta: Record<string, { icon: React.ReactNode; color: string }> = {
-  Analytics: { icon: <BarChart3 size={20} />, color: "var(--color-primary)" },
-  "AI & Automation": { icon: <Cpu size={20} />, color: "var(--color-primary)" },
-  HR: { icon: <Users size={20} />, color: "var(--color-primary)" },
-  Integrations: { icon: <Zap size={20} />, color: "var(--color-primary)" },
-  Operations: { icon: <Settings size={20} />, color: "var(--color-primary)" },
-  Manufacturing: { icon: <Factory size={20} />, color: "var(--color-primary)" },
-  Finance: { icon: <DollarSign size={20} />, color: "var(--color-primary)" },
-  Sales: { icon: <ShoppingBag size={20} />, color: "var(--color-primary)" },
-  Healthcare: { icon: <HeartPulse size={20} />, color: "var(--color-primary)" },
-};
+const allCategories = [
+  "Analytics",
+  "AI & Automation",
+  "HR",
+  "Integrations",
+  "Operations",
+  "Manufacturing",
+  "Finance",
+  "Sales",
+  "Healthcare",
+];
+
+const pricingOptions = [
+  { value: "", label: "All" },
+  { value: "FREE", label: "Free" },
+  { value: "FREEMIUM", label: "Freemium" },
+  { value: "PAID", label: "Paid" },
+];
 
 export default function AppStorePage() {
-  const router = useRouter();
   const client = useApiClient();
   const [apps, setApps] = useState<MarketplaceApp[]>([]);
-  const [collections, setCollections] = useState<AppCollection[]>([]);
   const [installedSlugs, setInstalledSlugs] = useState<Set<string>>(new Set());
   const [installedInfo, setInstalledInfo] = useState<
     Map<string, InstalledAppRow>
   >(new Map());
   const [favoriteSlugs, setFavoriteSlugs] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    new Set(),
+  );
   const [activePricing, setActivePricing] = useState("");
   const [sortBy, setSortBy] = useState<
     "popular" | "rating" | "newest" | "price_asc" | "price_desc"
   >("popular");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -186,35 +171,39 @@ export default function AppStorePage() {
     message: string;
     type: "success" | "error";
   } | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [categoryStats, setCategoryStats] = useState<
-    { category: string; count: number }[]
-  >([]);
   const [uninstallTarget, setUninstallTarget] = useState<MarketplaceApp | null>(
     null,
   );
   const [installTarget, setInstallTarget] = useState<MarketplaceApp | null>(
     null,
   );
-  const [kernelSlugs, setKernelSlugs] = useState<Set<string>>(DEFAULT_KERNEL_SLUGS);
-  const [appStorage, setAppStorage] = useState<
-    Map<string, { estimatedMb: number; rowCount: number }>
-  >(new Map());
+  const [kernelSlugs, setKernelSlugs] =
+    useState<Set<string>>(DEFAULT_KERNEL_SLUGS);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
     client
       .get<{ kernelSlugs: string[] }>("/admin/marketplace/slug-map")
       .then((data) => {
-        if (mounted && Array.isArray(data?.kernelSlugs)) {
+        if (mounted && Array.isArray(data?.kernelSlugs))
           setKernelSlugs(new Set(data.kernelSlugs));
-        }
       })
       .catch(() => {});
     return () => {
       mounted = false;
     };
   }, [client]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node))
+        setFilterOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const showToast = (
     message: string,
@@ -227,7 +216,8 @@ export default function AppStorePage() {
   const loadApps = useCallback(async () => {
     try {
       const params = new URLSearchParams();
-      if (activeCategory) params.set("category", activeCategory);
+      if (selectedCategories.size > 0)
+        params.set("category", [...selectedCategories].join(","));
       if (searchQuery) params.set("search", searchQuery);
       if (activePricing) params.set("pricing", activePricing);
       params.set("sort", sortBy);
@@ -242,15 +232,7 @@ export default function AppStorePage() {
       setTotalPages(data.totalPages);
       setTotal(data.total);
     } catch {}
-  }, [activeCategory, searchQuery, activePricing, sortBy, page, client]);
-
-  const loadCollections = useCallback(async () => {
-    try {
-      setCollections(
-        await client.get<AppCollection[]>("/admin/marketplace/collections"),
-      );
-    } catch {}
-  }, [client]);
+  }, [selectedCategories, searchQuery, activePricing, sortBy, page, client]);
 
   const loadInstalled = useCallback(async () => {
     try {
@@ -269,73 +251,53 @@ export default function AppStorePage() {
       );
       setFavoriteSlugs(
         new Set(
-          list
-            .map((f) => f.app?.slug)
-            .filter((slug): slug is string => Boolean(slug)),
+          list.map((f) => f.app?.slug).filter((s): s is string => Boolean(s)),
         ),
       );
     } catch {}
   }, [client]);
 
-  const loadStats = useCallback(async () => {
-    try {
-      const data = await client.get<{
-        categories?: { category: string; count: number }[];
-      }>("/admin/marketplace/stats");
-      setCategoryStats(data.categories || []);
-    } catch {}
-  }, [client]);
-
   useEffect(() => {
-    Promise.all([
-      loadApps(),
-      loadCollections(),
-      loadInstalled(),
-      loadFavorites(),
-      loadStats(),
-      client
-        .get<
-          Array<{ appSlug: string; rowCount: number; estimatedBytes: string }>
-        >("/saas/storage-usage")
-        .then((data) => {
-          const map = new Map<
-            string,
-            { estimatedMb: number; rowCount: number }
-          >();
-          for (const a of data || []) {
-            map.set(a.appSlug, {
-              estimatedMb: Math.round(
-                Number(a.estimatedBytes) / (1024 * 1024),
-              ),
-              rowCount: a.rowCount,
-            });
-          }
-          setAppStorage(map);
-        })
-        .catch(() => {}),
-    ]).finally(() => setLoading(false));
+    Promise.all([loadApps(), loadInstalled(), loadFavorites()]).finally(() =>
+      setLoading(false),
+    );
   }, [client]);
 
   useEffect(() => {
     loadApps();
   }, [loadApps]);
 
+  const toggleCategory = (cat: string) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories(new Set());
+    setActivePricing("");
+    setSearchQuery("");
+    setPage(1);
+  };
+
   const handleInstall = async (slug: string) => {
     setInstallingSlug(slug);
     try {
       await client.post(`/admin/marketplace/install/${slug}`);
       setInstalledSlugs((prev) => new Set([...prev, slug]));
-      showToast("App installed successfully!");
+      showToast("Installed");
       loadInstalled();
     } catch {
-      showToast("Failed to install app", "error");
+      showToast("Install failed", "error");
     } finally {
       setInstallingSlug(null);
     }
   };
 
-  // Opens the pre-install disclosure step instead of installing immediately —
-  // surfaces what the app adds (features + config) before committing.
   const requestInstall = (app: MarketplaceApp) => {
     if (app.pricing === "FREE" && !app.configSchema) {
       handleInstall(app.slug);
@@ -351,9 +313,7 @@ export default function AppStorePage() {
     await handleInstall(slug);
   };
 
-  const requestUninstall = (app: MarketplaceApp) => {
-    setUninstallTarget(app);
-  };
+  const requestUninstall = (app: MarketplaceApp) => setUninstallTarget(app);
 
   const handleUninstall = async (slug: string) => {
     setUninstallTarget(null);
@@ -365,10 +325,10 @@ export default function AppStorePage() {
         s.delete(slug);
         return s;
       });
-      showToast("App uninstalled");
+      showToast("Uninstalled");
       loadInstalled();
     } catch {
-      showToast("Failed to uninstall", "error");
+      showToast("Uninstall failed", "error");
     } finally {
       setInstallingSlug(null);
     }
@@ -391,505 +351,65 @@ export default function AppStorePage() {
     } catch {}
   };
 
-  const seedApps = async () => {
-    try {
-      await client.post("/admin/marketplace/seed");
-      showToast("Marketplace seeded with apps, collections & changelogs!");
-      setLoading(true);
-      await Promise.all([loadApps(), loadCollections(), loadStats()]);
-      setLoading(false);
-    } catch {}
-  };
+  const isInst = (slug: string) => installedSlugs.has(slug);
+  const isFav = (slug: string) => favoriteSlugs.has(slug);
+  const isBusy = (slug: string) => installingSlug === slug;
+  const isSystem = (slug: string) => kernelSlugs.has(slug);
 
-  const featuredApps = apps.filter((a) => a.featured).slice(0, 4);
-  const allCategories = Object.keys(categoryMeta);
-
-  const renderStars = (rating: number) => {
+  const renderStars = (rating: number, size = 11) => {
     const r = Number(rating) || 0;
     return (
-      <div className="ui-flex ui-gap-1">
+      <div className="ui-hstack-1">
         {[1, 2, 3, 4, 5].map((s) => (
           <Star
             key={s}
-            size={11}
-            className={
-              s <= Math.floor(r) ? "ui-text-primary" : "ui-text-tertiary"
+            size={size}
+            color={
+              s <= Math.floor(r)
+                ? "var(--color-warning)"
+                : "var(--color-border)"
             }
-            fill={s <= Math.floor(r) ? "var(--color-primary)" : "none"}
+            fill={s <= Math.floor(r) ? "var(--color-warning)" : "none"}
           />
         ))}
       </div>
     );
   };
 
-  const renderAppCard = (app: MarketplaceApp) => {
-    const isInstalled = installedSlugs.has(app.slug);
-    const isFav = favoriteSlugs.has(app.slug);
-    const isBusy = installingSlug === app.slug;
-    // Locked = kernel app (non-uninstallable). Gated business modules are now uninstallable.
-    const isSystem = kernelSlugs.has(app.slug);
-    // CATALOG = code-resident in-house module (isCore or no bundle, uninstall just
-    // drops the gating row and preserves data); MARKETPLACE = bundle-backed extension
-    // (uninstall really tears down provisioned rows + extracted files). Mirrors
-    // MarketplaceService.installApp()'s `app.isCore || !app.bundleId` branch.
-    const isBundleBacked = !app.isCore && !!app.bundleId;
-    const updateAvailable = !!installedInfo.get(app.slug)?.updateAvailable;
-
-    if (viewMode === "list") {
-      return (
-        <div
-          key={app.slug}
-          className="ui-flex ui-items-center ui-gap-4 p-4 border-b border-border/40 hover:bg-muted/20 transition-colors group"
-        >
-          <Link href={`/apps/store/${app.slug}`} className="flex-shrink-0">
-            <div
-              style={{
-                background:
-                  categoryMeta[app.category]?.color
-                    ? `${categoryMeta[app.category]!.color}15`
-                    : "var(--color-primary)15",
-                color:
-                  categoryMeta[app.category]?.color || "var(--color-primary)",
-              }}
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-border/50 group-hover:scale-105 transition-transform"
-            >
-              {getAppIcon(app.slug, app.icon)}
-            </div>
-          </Link>
-          <div className="flex-1 min-w-0">
-            <Link href={`/apps/store/${app.slug}`} className="block">
-              <div className="ui-flex ui-items-center ui-gap-2 mb-0.5">
-                <span className="font-semibold text-foreground ui-truncate">
-                  {app.name}
-                </span>
-                {app.verified && (
-                  <Shield size={12} className="text-primary fill-primary/20" />
-                )}
-                {!isSystem && (
-                  <Badge
-                    variant={isBundleBacked ? "info" : "default"}
-                    className="text-[9px] px-1 py-0"
-                  >
-                    {isBundleBacked ? "Extension" : "System"}
-                  </Badge>
-                )}
-                {isInstalled && updateAvailable && (
-                  <Badge variant="warning" className="text-[9px] px-1 py-0">
-                    Update available
-                  </Badge>
-                )}
-              </div>
-              <p className="ui-text-xs-muted ui-truncate">
-                {app.description}
-              </p>
-              {isInstalled && appStorage.has(app.slug) && (
-                <div className="text-[9px] text-muted-foreground/60 mt-0.5">
-                  ~{(() => {
-                    const s = appStorage.get(app.slug)!;
-                    return s.estimatedMb >= 1024
-                      ? `${(s.estimatedMb / 1024).toFixed(1)} GB`
-                      : `${s.estimatedMb} MB`;
-                  })()}
-                  {" · "}
-                  {appStorage.get(app.slug)!.rowCount.toLocaleString()} records
-                </div>
-              )}
-            </Link>
-          </div>
-
-          <div className="ui-flex ui-items-center ui-gap-4">
-            <div className="hidden sm:flex flex-col items-end gap-1">
-              <div className="ui-flex ui-items-center ui-gap-1 ui-text-xs-muted">
-                <Star size={10} className="fill-amber-400 text-amber-400" />
-                {Number(app.rating).toFixed(1)}
-                <span className="text-muted-foreground/70">
-                  · {app.installs.toLocaleString()} installs
-                </span>
-              </div>
-              <Badge
-                variant={
-                  app.pricing === "FREE"
-                    ? "success"
-                    : app.pricing === "FREEMIUM"
-                      ? "info"
-                      : "warning"
-                }
-                className="text-[10px] px-1.5 py-0"
-              >
-                {app.pricing === "FREE"
-                  ? "Free"
-                  : app.pricing === "FREEMIUM"
-                    ? "Freemium"
-                    : `$${app.price}/mo`}
-              </Badge>
-            </div>
-
-            <div className="ui-flex ui-items-center ui-gap-2">
-              {!isSystem && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleFavorite(app.slug);
-                  }}
-                  className={`p-2 rounded-full transition-colors ${isFav ? "ui-text-danger hover:bg-danger/10" : "ui-text-muted hover:bg-muted"}`}
-                >
-                  <Heart size={16} fill={isFav ? "currentColor" : "none"} />
-                </button>
-              )}
-              {isSystem ? (
-                <button
-                  disabled
-                  className="ui-btn ui-btn-secondary rounded-full text-xs font-semibold uppercase tracking-wider"
-                >
-                  Core
-                </button>
-              ) : isInstalled ? (
-                <button
-                  onClick={() => requestUninstall(app)}
-                  disabled={isBusy}
-                  className="ui-btn ui-btn-secondary rounded-full text-xs font-semibold hover:bg-muted/80 transition-colors cursor-pointer w-[72px]"
-                >
-                  {isBusy ? (
-                    <Loader2 size={12} className="animate-spin mx-auto" />
-                  ) : (
-                    "Uninstall"
-                  )}
-                </button>
-              ) : (
-                <button
-                  onClick={() => requestInstall(app)}
-                  disabled={isBusy}
-                  className="ui-btn ui-btn-primary rounded-full text-xs font-semibold transition-colors cursor-pointer w-[72px]"
-                >
-                  {isBusy ? (
-                    <Loader2 size={12} className="animate-spin mx-auto" />
-                  ) : (
-                    "Get"
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div key={app.slug} className="flex flex-col items-center group">
-        <Link
-          href={`/apps/store/${app.slug}`}
-          className="flex flex-col items-center gap-3 w-full"
-        >
-          <div className="relative">
-            <div
-              style={{
-                background: `${categoryMeta[app.category]?.color || "var(--color-primary)"}15`,
-                color:
-                  categoryMeta[app.category]?.color || "var(--color-primary)",
-              }}
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-[22px] flex items-center justify-center text-4xl shadow-sm border border-border/50 group-hover:shadow-md group-hover:scale-[1.02] transition-all duration-300"
-            >
-              {getAppIcon(app.slug, app.icon)}
-            </div>
-            {!isSystem && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleFavorite(app.slug);
-                }}
-                className={`absolute -top-2 -right-2 p-1.5 rounded-full bg-background border border-border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity ${isFav ? "ui-text-danger opacity-100" : "ui-text-muted"}`}
-              >
-                <Heart size={12} fill={isFav ? "currentColor" : "none"} />
-              </button>
-            )}
-            {isInstalled && updateAvailable && (
-              <span
-                title="Update available"
-                className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-warning border-2 border-background"
-              />
-            )}
-          </div>
-
-          <div className="text-center w-full px-2 space-y-0.5">
-            <div className="flex items-center justify-center gap-1">
-              <h3 className="font-semibold text-sm ui-truncate max-w-full text-foreground group-hover:text-primary transition-colors">
-                {app.name}
-              </h3>
-            </div>
-            <p className="ui-text-xs-muted ui-truncate w-full">
-              {app.category}
-            </p>
-            <div className="ui-flex ui-items-center ui-gap-1 ui-text-xs-muted">
-              <Star size={9} className="fill-amber-400 text-amber-400" />
-              {Number(app.rating).toFixed(1)}
-              <span>· {app.installs.toLocaleString()} installs</span>
-            </div>
-            {isInstalled && appStorage.has(app.slug) && (
-              <div className="text-[9px] text-muted-foreground/60">
-                ~{(() => {
-                  const s = appStorage.get(app.slug)!;
-                  return s.estimatedMb >= 1024
-                    ? `${(s.estimatedMb / 1024).toFixed(1)} GB`
-                    : `${s.estimatedMb} MB`;
-                })()}{" "}
-                · {appStorage.get(app.slug)!.rowCount.toLocaleString()} records
-              </div>
-            )}
-            <div className="ui-flex ui-items-center ui-gap-1">
-              {!isSystem && (
-                <Badge
-                  variant={isBundleBacked ? "info" : "default"}
-                  className="text-[9px] px-1 py-0"
-                >
-                  {isBundleBacked ? "Extension" : "System"}
-                </Badge>
-              )}
-              {isInstalled && updateAvailable && (
-                <Badge variant="warning" className="text-[9px] px-1 py-0">
-                  Update
-                </Badge>
-              )}
-            </div>
-          </div>
-        </Link>
-
-        <div className="mt-3">
-          {isSystem ? (
-            <button
-              disabled
-              className="ui-btn ui-btn-secondary rounded-full text-xs font-semibold uppercase tracking-wider"
-            >
-              Core
-            </button>
-          ) : isInstalled ? (
-            <button
-              onClick={() => requestUninstall(app)}
-              disabled={isBusy}
-              className="ui-btn ui-btn-secondary rounded-full text-xs font-bold uppercase tracking-wider transition-colors w-[76px]"
-            >
-              {isBusy ? (
-                <Loader2 size={12} className="animate-spin mx-auto" />
-              ) : (
-                "Uninstall"
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={() => requestInstall(app)}
-              disabled={isBusy}
-              className="ui-btn ui-btn-primary rounded-full text-xs font-bold uppercase tracking-wider transition-colors w-[76px]"
-            >
-              {isBusy ? (
-                <Loader2 size={12} className="animate-spin mx-auto" />
-              ) : (
-                "Get"
-              )}
-            </button>
-          )}
-        </div>
-        {!isSystem && (
-          <div className="mt-1.5 text-[10px] text-muted-foreground">
-            {app.pricing === "FREE"
-              ? "In-App Purchases"
-              : app.pricing === "FREEMIUM"
-                ? "In-App Purchases"
-                : "Subscription"}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const activeFilterCount =
+    (selectedCategories.size > 0 ? 1 : 0) + (activePricing ? 1 : 0);
 
   if (loading) {
     return (
-      <div className="ui-flex-center min-h-[500px]">
-        <Loader2 size={32} className="animate-spin ui-text-primary" />
-      </div>
+      <RouteGuard permission="apps.store.read">
+        <div className={styles.loadingWrap}>
+          <Loader2
+            size={28}
+            className="animate-spin"
+            color="var(--color-primary)"
+          />
+        </div>
+      </RouteGuard>
     );
   }
 
   return (
     <RouteGuard permission="apps.store.read">
-      <div className="ui-stack-6 ui-animate-in">
+      <div className={styles.container}>
         {toast && (
           <div
-            className={`toastItem ${toast.type === "success" ? "toastSuccess" : "toastError"}`}
+            className={`${styles.toast} ${toast.type === "success" ? styles.toastSuccess : styles.toastError}`}
           >
             {toast.message}
           </div>
         )}
 
-        {/* Header */}
-        <div className="ui-page-header">
-          <div>
-            <div className="ui-breadcrumb">
-              <Link href="/apps" className="ui-breadcrumb-link">
-                <ArrowLeft size={18} />
-              </Link>
-              <h1 className="ui-page-header-title">
-                <Package className="ui-text-primary" /> App Store
-              </h1>
-            </div>
-            <p className="ui-page-header-subtitle">
-              {total} apps available · Discover, install, and manage extensions
-            </p>
-          </div>
-          <div className="ui-page-header-actions">
-            <Button variant="secondary" size="sm" onClick={() => router.push("/apps/store/favorites")}>
-              <Heart size={14} /> Favorites
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => router.push("/apps/store/collections")}>
-              <Sparkles size={14} /> Collections
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => router.push("/apps/developer")}>
-              <Code2 size={14} /> Developer
-            </Button>
-            {apps.length === 0 && (
-              <Button variant="primary" size="sm" onClick={seedApps}>
-                Seed Core + Healthcare
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Hero Banner */}
-        {featuredApps.length > 0 && !activeCategory && !searchQuery && (
-          <div className="heroBanner">
-            <div className="heroContent">
-              <div className="ui-flex ui-items-center ui-gap-2 mb-2">
-                <TrendingUp size={16} />
-                <span className="ui-text-xs-label tracking-wider uppercase opacity-80">
-                  Featured & Trending
-                </span>
-              </div>
-              <h2 className="text-xl font-bold m-0 mb-2">
-                Extend Your ERP with Powerful Modules
-              </h2>
-              <p className="text-sm m-0 mb-4 max-w-[600px] opacity-80">
-                Browse {total}+ apps across {categoryStats.length} categories.
-                Install with one click and start using immediately.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {featuredApps.map((app) => (
-                  <Link
-                    key={app.slug}
-                    href={`/apps/store/${app.slug}`}
-                    style={{ color: "inherit", textDecoration: "none" }}
-                  >
-                    <div className="featuredApp">
-                      <span className="text-[22px]">{app.icon || "📦"}</span>
-                      <div>
-                        <div className="ui-heading-sm">{app.name}</div>
-                        <span className="text-[10px] opacity-70">
-                          {Number(app.rating).toFixed(1)} ★ ·{" "}
-                          {app.installs.toLocaleString()} installs
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Collections Row */}
-        {collections.filter((c) => c.featured).length > 0 &&
-          !activeCategory &&
-          !searchQuery && (
-            <div className="mb-8">
-              <div className="ui-flex-between mb-4">
-                <h2 className="text-xl font-bold tracking-tight ui-flex ui-items-center ui-gap-2">
-                  <Sparkles size={20} className="ui-text-primary" />
-                  Must-Have Apps
-                </h2>
-                <Link
-                  href="/apps/store/collections"
-                  className="text-sm text-primary hover:underline ui-flex ui-items-center ui-gap-1 font-medium"
-                >
-                  See All <ChevronRight size={14} />
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {collections
-                  .filter((c) => c.featured)
-                  .slice(0, 3)
-                  .map((col) => (
-                    <Link
-                      key={col.slug}
-                      href={`/apps/store/collections/${col.slug}`}
-                      className="featuredCollection group relative block overflow-hidden rounded-2xl border border-border/50 bg-card hover:shadow-md transition-all duration-300"
-                    >
-                      <div className="h-24 bg-gradient-to-br from-primary/10 to-transparent"></div>
-                      <div className="px-5 pb-5 -mt-8 relative">
-                        <div className="w-16 h-16 rounded-2xl bg-background border border-border shadow-sm flex items-center justify-center text-2xl mb-3">
-                          {col.icon || "💎"}
-                        </div>
-                        <h3 className="font-bold text-lg text-foreground mb-1 group-hover:text-primary transition-colors">
-                          {col.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {col.description}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-              </div>
-            </div>
-          )}
-
-        {/* Category Grid */}
-        {!activeCategory && !searchQuery && (
-          <div className="mb-8">
-            <div className="ui-flex-between mb-4">
-              <h2 className="text-xl font-bold tracking-tight">
-                Browse Categories
-              </h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {allCategories.map((cat) => {
-                const meta = categoryMeta[cat] || {
-                  icon: "📦",
-                  color: "var(--color-primary)",
-                  description: "",
-                };
-                const stat = categoryStats.find((s) => s.category === cat);
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setActiveCategory(cat);
-                      setPage(1);
-                    }}
-                    className="categoryCard flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card hover:bg-muted/30 transition-all text-left group"
-                    style={
-                      { "--category-color": meta.color } as React.CSSProperties
-                    }
-                  >
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{
-                        background: `${meta.color}15`,
-                        color: meta.color,
-                      }}
-                    >
-                      {meta.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-foreground ui-truncate group-hover:text-primary transition-colors">
-                        {cat}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Search, Filter & Sort Bar */}
-        <Card padding="md" className="ui-flex ui-flex-wrap ui-items-center ui-gap-3">
-          <div className="ui-search-wrapper ui-flex-1" style={{ minWidth: "200px", flexBasis: "300px" }}>
+        {/* Search bar */}
+        <div className={styles.searchRow}>
+          <div
+            className="ui-search-wrapper"
+            style={{ flex: 1, maxWidth: "none" }}
+          >
             <Search size={16} className="ui-search-icon" />
             <input
               type="text"
@@ -900,286 +420,330 @@ export default function AppStorePage() {
                 setPage(1);
               }}
               className="ui-search-input"
+              style={{ maxWidth: "none" }}
+              autoFocus
             />
-          </div>
-
-          {activeCategory && (
-            <div
-              className="ui-chip rounded-full"
-              style={{
-                background: `${categoryMeta[activeCategory]?.color || "var(--color-primary)"}15`,
-                color:
-                  categoryMeta[activeCategory]?.color || "var(--color-primary)",
-              }}
-            >
-              {activeCategory}
+            {searchQuery && (
               <button
                 onClick={() => {
-                  setActiveCategory("");
+                  setSearchQuery("");
                   setPage(1);
                 }}
                 style={{
-                  all: "unset",
+                  background: "none",
+                  border: "none",
                   cursor: "pointer",
-                  fontSize: 14,
-                  lineHeight: 1,
-                  marginLeft: 4,
+                  color: "var(--color-text-tertiary)",
+                  padding: 0,
+                  display: "flex",
                 }}
               >
-                ×
+                <X size={16} />
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
-          <Button
-            variant={showFilters ? "primary" : "outline"}
-            size="sm"
-            leftIcon={<SlidersHorizontal size={14} />}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            Filters
-          </Button>
+          {/* Filter dropdown */}
+          <div className={styles.filterWrap} ref={filterRef}>
+            <button
+              onClick={() => setFilterOpen(!filterOpen)}
+              className={`${styles.filterBtn} ${activeFilterCount > 0 ? styles.filterBtnActive : ""}`}
+            >
+              <SlidersHorizontal size={16} />
+              <span>
+                Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+              </span>
+              <ChevronDown
+                size={14}
+                className={filterOpen ? styles.chevUp : ""}
+              />
+            </button>
+            {filterOpen && (
+              <div className={styles.filterDropdown}>
+                <div className={styles.filterSection}>
+                  <div className={styles.filterLabel}>Category</div>
+                  {allCategories.map((cat) => (
+                    <label key={cat} className={styles.filterCheckItem}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.has(cat)}
+                        onChange={() => toggleCategory(cat)}
+                      />
+                      <span>{cat}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className={styles.filterDivider} />
+                <div className={styles.filterSection}>
+                  <div className={styles.filterLabel}>Pricing</div>
+                  {pricingOptions.map((opt) => (
+                    <label key={opt.value} className={styles.filterCheckItem}>
+                      <input
+                        type="radio"
+                        name="pricing"
+                        checked={activePricing === opt.value}
+                        onChange={() => {
+                          setActivePricing(opt.value);
+                          setPage(1);
+                        }}
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+                {activeFilterCount > 0 && (
+                  <button onClick={clearFilters} className={styles.clearBtn}>
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
+          {/* Sort */}
           <select
             value={sortBy}
             onChange={(e) => {
               setSortBy(e.target.value as any);
               setPage(1);
             }}
-            className="ui-select"
-            style={{ width: "auto", minWidth: "140px" }}
+            className={styles.sortSelect}
           >
-            <option value="popular">Most Popular</option>
+            <option value="popular">Popular</option>
             <option value="rating">Top Rated</option>
             <option value="newest">Newest</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
+            <option value="price_asc">Price: Low</option>
+            <option value="price_desc">Price: High</option>
           </select>
+        </div>
 
-          <div className="flex border rounded-md overflow-hidden">
-            <Button
-              variant={viewMode === "grid" ? "primary" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="rounded-none border-0"
-            >
-              <LayoutGrid size={14} />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "primary" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="rounded-none border-0"
-            >
-              <List size={14} />
-            </Button>
-          </div>
-        </Card>
+        {/* App count */}
+        <div className={styles.resultInfo}>
+          <span>
+            {total} app{total !== 1 ? "s" : ""}
+          </span>
+          {(searchQuery || activeFilterCount > 0) && (
+            <button onClick={clearFilters} className={styles.clearLink}>
+              Clear all
+            </button>
+          )}
+        </div>
 
-        {/* Filter Panel */}
-        {showFilters && (
-          <Card padding="md" className="ui-flex ui-flex-wrap ui-gap-4">
-            <div>
-              <label className="ui-text-xs-label block mb-1">Pricing</label>
-              <div className="ui-flex ui-gap-1">
-                {["", "FREE", "PAID", "FREEMIUM"].map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => {
-                      setActivePricing(p);
-                      setPage(1);
-                    }}
-                    className={`ui-pill ${activePricing === p ? "ui-pill-active" : ""}`}
-                  >
-                    {p || "All"}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="ui-text-xs-label block mb-1">Category</label>
-              <div className="ui-flex ui-flex-wrap ui-gap-1">
-                <button
-                  onClick={() => {
-                    setActiveCategory("");
-                    setPage(1);
-                  }}
-                  className={`ui-pill ${!activeCategory ? "ui-pill-active" : ""}`}
+        {/* App Grid */}
+        {apps.length > 0 ? (
+          <div className={styles.appGrid}>
+            {apps.map((app) => {
+              const slug = app.slug;
+              const installed = isInst(slug);
+              const busy = isBusy(slug);
+              const sys = isSystem(slug);
+              const updateAvail = !!installedInfo.get(slug)?.updateAvailable;
+              const fav = isFav(slug);
+              return (
+                <Link
+                  key={slug}
+                  href={`/apps/store/${slug}`}
+                  className={styles.gridCard}
                 >
-                  All
-                </button>
-                {allCategories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setActiveCategory(cat);
-                      setPage(1);
-                    }}
-                    className={`ui-pill ${activeCategory === cat ? "ui-pill-active" : ""}`}
+                  <div className={styles.cardTop}>
+                    <div
+                      className={styles.gridIcon}
+                      style={{
+                        background: "var(--color-primary-light)",
+                        color: "var(--color-primary)",
+                      }}
+                    >
+                      {getAppIcon(slug, app.icon)}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleFavorite(slug);
+                      }}
+                      className={styles.heartBtn}
+                    >
+                      <Heart
+                        size={14}
+                        fill={fav ? "var(--color-danger)" : "none"}
+                        color={
+                          fav ? "var(--color-danger)" : "var(--color-border)"
+                        }
+                      />
+                    </button>
+                  </div>
+                  <div className={styles.cardName}>{app.name}</div>
+                  <div className={styles.cardCat}>{app.category}</div>
+                  <div
+                    className="ui-hstack-1"
+                    style={{ justifyContent: "center" }}
                   >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* App Grid/List */}
-        {viewMode === "grid" ? (
-          <div>
-            <div className="ui-flex-between mb-6">
-              <h2 className="text-2xl font-bold tracking-tight">
-                {activeCategory
-                  ? `${activeCategory} Apps`
-                  : searchQuery
-                    ? "Search Results"
-                    : "All Apps"}
-              </h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
-              {apps.map(renderAppCard)}
-            </div>
+                    {renderStars(app.rating, 9)}
+                    <span className={styles.ratingNum}>
+                      {Number(app.rating).toFixed(1)}
+                    </span>
+                  </div>
+                  <div className={styles.cardActions}>
+                    {sys ? (
+                      <button
+                        className={`${styles.getBtn} ${styles.getBtnCore}`}
+                        disabled
+                      >
+                        Core
+                      </button>
+                    ) : installed ? (
+                      <button
+                        className={`${styles.getBtn} ${styles.getBtnInstalled}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          updateAvail && requestInstall(app);
+                        }}
+                      >
+                        {updateAvail ? "Update" : "Open"}
+                      </button>
+                    ) : busy ? (
+                      <button className={styles.getBtn} disabled>
+                        <Loader2 size={12} className="animate-spin" />
+                      </button>
+                    ) : (
+                      <button
+                        className={styles.getBtn}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          requestInstall(app);
+                        }}
+                      >
+                        Get
+                      </button>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         ) : (
-          <div className="flex flex-col border border-border/50 rounded-xl overflow-hidden bg-card">
-            {apps.map(renderAppCard)}
-          </div>
-        )}
-
-        {apps.length === 0 && !loading && (
-          <div className="ui-empty-state">
-            <Search size={48} className="ui-empty-state-icon" />
-            <h4 className="ui-empty-state-title">No Apps Found</h4>
-            <p className="ui-empty-state-text">Try adjusting your search or filters.</p>
+          <div className={styles.emptyState}>
+            <Search size={36} style={{ color: "var(--color-text-tertiary)" }} />
+            <div className={styles.emptyTitle}>No Apps Found</div>
+            <div className={styles.emptyDesc}>
+              Try adjusting your search or filters.
+            </div>
           </div>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="ui-flex-center ui-gap-2">
+          <div className={styles.pageNav}>
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className={`ui-btn ui-btn-icon border bg-card ${page === 1 ? "opacity-40 cursor-default" : "cursor-pointer"}`}
+              disabled={page <= 1}
+              className={styles.pageBtn}
             >
-              <ChevronLeft size={14} /> Previous
+              Previous
             </button>
-            <span className="ui-text-sm-muted">
+            <span className={styles.pageInfo}>
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className={`ui-btn ui-btn-icon border bg-card ${page === totalPages ? "opacity-40 cursor-default" : "cursor-pointer"}`}
+              disabled={page >= totalPages}
+              className={styles.pageBtn}
             >
-              Next <ChevronRight size={14} />
+              Next
             </button>
           </div>
         )}
 
-        {/* Uninstall confirmation — data-preservation copy differs by source (#1) */}
-        <ConfirmDialog
-          open={!!uninstallTarget}
-          onClose={() => setUninstallTarget(null)}
-          onConfirm={() => uninstallTarget && handleUninstall(uninstallTarget.slug)}
-          title={`Uninstall ${uninstallTarget?.name || "app"}?`}
-          confirmLabel="Uninstall"
-          cancelLabel="Cancel"
-          variant="danger"
-          loading={
-            !!uninstallTarget && installingSlug === uninstallTarget.slug
-          }
-          message={
-            uninstallTarget && (
-              <div className="ui-stack-2 text-sm">
-                {!uninstallTarget.isCore && uninstallTarget.bundleId ? (
-                  <p>
-                    This removes the extracted files and provisioned pages
-                    for <strong>{uninstallTarget.name}</strong> from this
-                    workspace. Data stored in the app's own tables will be
-                    deleted along with it — reinstalling starts fresh.
-                  </p>
-                ) : (
-                  <>
-                    <p>
-                      Your data is preserved and you can reinstall{" "}
-                      <strong>{uninstallTarget.name}</strong> later without
-                      losing anything — uninstalling only removes it from your
-                      app list.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Note: Uninstalling alone does not reduce your storage
-                      usage. To free space, delete or export the app's records
-                      before uninstalling, or manage data from the SaaS Portal.
-                    </p>
-                  </>
-                )}
-              </div>
-            )
-          }
-        />
-
-        {/* Pre-install disclosure — what the app adds, before committing (#3) */}
-        <ConfirmDialog
-          open={!!installTarget}
-          onClose={() => setInstallTarget(null)}
-          onConfirm={confirmInstall}
-          title={`Install ${installTarget?.name || "app"}`}
-          confirmLabel="Install"
-          cancelLabel="Cancel"
-          loading={
-            !!installTarget && installingSlug === installTarget.slug
-          }
-          message={
-            installTarget && (
-              <div className="ui-stack-3 text-sm text-left">
-                <p className="text-muted-foreground">
-                  {installTarget.description}
-                </p>
-                {installTarget.features?.length > 0 && (
-                  <div>
-                    <div className="font-semibold text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                      This app adds
-                    </div>
-                    <ul className="ui-stack-1 list-disc list-inside">
-                      {installTarget.features.slice(0, 8).map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {installTarget.configSchema &&
-                  Object.keys(
-                    (installTarget.configSchema as any)?.properties || {},
-                  ).length > 0 && (
-                    <div>
-                      <div className="font-semibold text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                        Configuration you'll be able to set
-                      </div>
-                      <ul className="ui-stack-1 list-disc list-inside">
-                        {Object.entries(
-                          (installTarget.configSchema as any).properties as Record<
-                            string,
-                            { title?: string; description?: string }
-                          >,
-                        ).map(([key, def]) => (
-                          <li key={key}>{def?.title || def?.description || key}</li>
-                        ))}
-                      </ul>
-                    </div>
+        {/* Dialogs */}
+        {uninstallTarget && (
+          <div
+            className={styles.dialogOverlay}
+            onClick={() => setUninstallTarget(null)}
+          >
+            <div
+              className={styles.dialogCard}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className={styles.dialogTitle}>
+                Uninstall {uninstallTarget.name}?
+              </h3>
+              <p className={styles.dialogDesc}>
+                {!uninstallTarget.isCore && uninstallTarget.bundleId
+                  ? `This removes extracted files and provisioned pages for ${uninstallTarget.name}. Data in the app's own tables will be deleted.`
+                  : `Your data is preserved and you can reinstall ${uninstallTarget.name} later without losing anything.`}
+              </p>
+              <div className={styles.dialogBtnRow}>
+                <button
+                  onClick={() => setUninstallTarget(null)}
+                  className={`${styles.dialogBtn} ${styles.dialogBtnSecondary}`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUninstall(uninstallTarget.slug)}
+                  className={`${styles.dialogBtn} ${styles.dialogBtnDanger}`}
+                >
+                  {isBusy(uninstallTarget.slug) ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    "Uninstall"
                   )}
-                <p className="text-xs text-muted-foreground">
-                  {installTarget.pricing === "FREE"
-                    ? "Free to install."
-                    : installTarget.pricing === "FREEMIUM"
-                      ? "Free to install with optional in-app purchases."
-                      : `Subscription: $${installTarget.price}/mo.`}
-                </p>
+                </button>
               </div>
-            )
-          }
-        />
+            </div>
+          </div>
+        )}
+
+        {installTarget && (
+          <div
+            className={styles.dialogOverlay}
+            onClick={() => setInstallTarget(null)}
+          >
+            <div
+              className={styles.dialogCard}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className={styles.dialogTitle}>
+                Install {installTarget.name}
+              </h3>
+              <p className={styles.dialogDesc}>{installTarget.description}</p>
+              {installTarget.features?.length > 0 && (
+                <div style={{ marginBottom: "var(--space-3)" }}>
+                  <div className={styles.dialogSectionLabel}>Features</div>
+                  <ul className={styles.dialogList}>
+                    {installTarget.features.slice(0, 6).map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className={styles.dialogPrice}>
+                {installTarget.pricing === "FREE"
+                  ? "Free"
+                  : installTarget.pricing === "FREEMIUM"
+                    ? "Free with in-app purchases"
+                    : `$${installTarget.price}/mo`}
+              </div>
+              <div className={styles.dialogBtnRow}>
+                <button
+                  onClick={() => setInstallTarget(null)}
+                  className={`${styles.dialogBtn} ${styles.dialogBtnSecondary}`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmInstall}
+                  className={`${styles.dialogBtn} ${styles.dialogBtnPrimary}`}
+                >
+                  {isBusy(installTarget.slug) ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    "Install"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </RouteGuard>
   );

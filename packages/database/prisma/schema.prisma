@@ -40,8 +40,6 @@ model Tenant {
   organizations        Organization[]
   subscription         TenantSubscription?
   installedAppsRel     InstalledApp[]  @relation("TenantInstalledApps")
-  appInstallations     AppInstallation[]
-  appSettings          AppSettings[]
   demoDataRecords      DemoDataRecord[]
   accessPackages       AccessPackage[]
   ssoConfigs           SsoConfig[]
@@ -80,52 +78,6 @@ model Tenant {
   announcements           TenantAnnouncement[]
 
   @@map("tenants")
-}
-
-model AppInstallation {
-  id            String             @id @default(cuid())
-  tenantId      String
-  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  appSlug       String
-  version       String
-  status        AppInstallStatus   @default(INSTALLED)
-  config        Json?              // module-specific settings
-  installedAt   DateTime           @default(now())
-  uninstalledAt DateTime?
-  updatedAt     DateTime           @updatedAt
-
-  @@unique([tenantId, appSlug])
-  @@index([tenantId])
-  @@index([appSlug])
-}
-
-enum AppInstallStatus {
-  INSTALLED
-  UNINSTALLING
-  UNINSTALLED
-}
-
-model AppSettings {
-  id        String        @id @default(cuid())
-  tenantId  String
-  tenant    Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  appSlug   String
-  key       String
-  value     Json
-  scope     SettingScope  @default(TENANT)
-  roleId    String?
-  role      Role?         @relation(fields: [roleId], references: [id], onDelete: SetNull)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  @@unique([tenantId, appSlug, key, scope, roleId])
-  @@index([tenantId, appSlug])
-}
-
-enum SettingScope {
-  TENANT
-  USER
-  ROLE
 }
 
 model TenantLifecycleEvent {
@@ -323,7 +275,6 @@ model Role {
 
   users          UserRole[]
   accessPackages RoleAccessPackage[]
-  appSettings    AppSettings[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -1421,6 +1372,24 @@ model Setting {
   @@unique([tenantId, key])
   @@index([tenantId, category])
   @@map("settings")
+}
+
+/// Per-app configurable settings (tenant/user/role-scoped), consumed by
+/// AppSettingsService for module settings schemas (e.g. finance settings tab).
+model AppSettings {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  appSlug   String   @map("app_slug")
+  key       String
+  value     Json
+  scope     String   @default("TENANT") // TENANT | USER | ROLE
+  roleId    String   @default("") @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, appSlug, key, scope, roleId])
+  @@index([tenantId, appSlug])
+  @@map("app_settings")
 }
 
 // ════════════════════════════════════════════════

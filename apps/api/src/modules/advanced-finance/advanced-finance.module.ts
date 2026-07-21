@@ -1,7 +1,10 @@
-import { Module } from '@nestjs/common';
-import { AdvancedFinanceController } from './advanced-finance.controller';
-import { ArApDeepController } from './ar-ap-deep.controller';
-import { AdvancedFinanceService } from './advanced-finance.service';
+import { Module } from "@nestjs/common";
+import { AdvancedFinanceController } from "./advanced-finance.controller";
+import { ArApDeepController } from "./ar-ap-deep.controller";
+import { FinanceExpansionDeepController } from "./finance-expansion-deep.controller";
+import { FinanceMoreDeepController } from "./finance-more-deep.controller";
+import { AdvancedFinanceService } from "./advanced-finance.service";
+import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
 import {
   GlAccountingService,
   BudgetingService,
@@ -30,16 +33,16 @@ import {
   CashPoolingService,
   ConsolidationDeepService,
   Form1099Service,
-} from './services';
-import { TaxEngineDeepService } from './services/tax-engine-deep.service';
-import { TreasuryDeepService } from './services/treasury-deep.service';
-import { ApIntelligenceService } from './services/ap-intelligence.service';
-import { ArCollectionsService } from './services/ar-collections.service';
-import { FixedAssetDeepService } from './services/fixed-asset-deep.service';
-import { FpaDeepService } from './services/fpa-deep.service';
-import { RevenueBillingService } from './services/revenue-billing.service';
-import { ComplianceControlsService } from './services/compliance-controls.service';
-import { EconomicNexusService } from './services/economic-nexus.service';
+} from "./services";
+import { TaxEngineDeepService } from "./services/tax-engine-deep.service";
+import { TreasuryDeepService } from "./services/treasury-deep.service";
+import { ApIntelligenceService } from "./services/ap-intelligence.service";
+import { ArCollectionsService } from "./services/ar-collections.service";
+import { FixedAssetDeepService } from "./services/fixed-asset-deep.service";
+import { FpaDeepService } from "./services/fpa-deep.service";
+import { RevenueBillingService } from "./services/revenue-billing.service";
+import { ComplianceControlsService } from "./services/compliance-controls.service";
+import { EconomicNexusService } from "./services/economic-nexus.service";
 
 const domainServices = [
   GlAccountingService,
@@ -80,12 +83,17 @@ const domainServices = [
   ConsolidationDeepService,
   Form1099Service,
   EconomicNexusService,
+  FinanceExpansionDeepService,
 ];
 
 @Module({
-  controllers: [AdvancedFinanceController, ArApDeepController],
+  controllers: [
+    AdvancedFinanceController,
+    ArApDeepController,
+    FinanceExpansionDeepController,
+    FinanceMoreDeepController,
+  ],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],
 })
 export class AdvancedFinanceModule {}
-

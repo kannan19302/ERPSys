@@ -1,4 +1,4 @@
-import { type FC, type ReactNode } from 'react';
+import { type FC, type ReactNode } from "react";
 
 export interface PageHeaderProps {
   title: string;
@@ -15,29 +15,28 @@ export const PageHeader: FC<PageHeaderProps> = ({
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--space-4)',
-        marginBottom: 'var(--space-6)',
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-1)",
+        marginBottom: "var(--space-3)",
       }}
     >
-
-
       <div
         style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 'var(--space-4)',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "var(--space-3)",
         }}
       >
         <div>
           <h1
             style={{
-              fontSize: 'var(--text-2xl)',
-              fontWeight: 'var(--weight-bold)' as unknown as number,
-              color: 'var(--color-text)',
-              lineHeight: 'var(--leading-tight)',
+              fontSize: "var(--text-xl)",
+              fontWeight: "var(--weight-bold)" as unknown as number,
+              color: "var(--color-text)",
+              lineHeight: "var(--leading-tight)",
+              margin: 0,
             }}
           >
             {title}
@@ -45,9 +44,10 @@ export const PageHeader: FC<PageHeaderProps> = ({
           {description && (
             <p
               style={{
-                marginTop: 'var(--space-1)',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-text-secondary)',
+                marginTop: "2px",
+                marginBottom: 0,
+                fontSize: "var(--text-xs)",
+                color: "var(--color-text-secondary)",
               }}
             >
               {description}
@@ -58,9 +58,9 @@ export const PageHeader: FC<PageHeaderProps> = ({
         {actions && (
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-3)',
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-3)",
               flexShrink: 0,
             }}
           >

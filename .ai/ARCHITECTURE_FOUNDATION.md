@@ -10,17 +10,17 @@ This deliberately follows durable patterns visible across leading ERP platforms:
 
 ## Current foundation scorecard
 
-| Concern | Current control | Status |
-|---|---:|---:|
-| Module boundaries | `architecture:check` rejects new direct relative imports across API modules; dependency-cruiser rejects cycles. Explicit common integration ports carry approved read-only and shared-infrastructure capabilities. Zero remaining cross-module write imports. | ✅ SEALED |
-| Core/extension separation | `ExtGatewayModule`, marketplace packages, and public API surfaces exist; manifests are normalized and checked against the explicit service-kit API compatibility range. | ✅ ACTIVE |
+| Concern                   |                                                                                                                                                                                                                                                                                                   Current control |    Status |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | --------: |
+| Module boundaries         |                                                     `architecture:check` rejects new direct relative imports across API modules; dependency-cruiser rejects cycles. Explicit common integration ports carry approved read-only and shared-infrastructure capabilities. Zero remaining cross-module write imports. | ✅ SEALED |
+| Core/extension separation |                                                                                                                                           `ExtGatewayModule`, marketplace packages, and public API surfaces exist; manifests are normalized and checked against the explicit service-kit API compatibility range. | ✅ ACTIVE |
 | Transactional consistency | Transactional outbox (#17) delivers critical cross-module effects atomically in the same Prisma transaction as the aggregate mutation. OutboxEvent + OutboxDelivery rows written inside producer transaction; dispatcher claims with `FOR UPDATE SKIP LOCKED`; consumer effect + receipt written transactionally. | ✅ SEALED |
-| Event delivery | Legacy `EventEmitter2` deprecated for critical effects. Outbox is the only path for critical cross-module and external events. | ✅ SEALED |
-| Tenant isolation | `NOBYPASSRLS` application role with `FORCE ROW LEVEL SECURITY` on every protected table. Tenant unit-of-work via `set_config(app.current_tenant_id)`. Two-tenant CI integration tests prove tenant A cannot read/write tenant B. | ✅ SEALED |
-| Database evolution | All 125+ migrations replay clean on fresh PostgreSQL; schema diff gate in CI. Track A reconciliation (#19) resolved migration drift with data-preserving rename/backfill. | ✅ SEALED |
-| Async work | Transactional outbox provides durable at-least-once delivery with retry, DLQ, idempotent consumer receipts. BullMQ is transport optimization. | ✅ SEALED |
-| Observability | OpenTelemetry, Sentry, Prometheus metrics, health/readiness endpoints, outbox metrics (pending-age, retry, DLQ depth). | ✅ ACTIVE |
-| Security | JWT/RBAC, CSRF, headers, rate limits, audit/change history, database-enforced RLS (#21), PII registry/GDPR erasure workflow (H.1). | ✅ SEALED |
+| Event delivery            |                                                                                                                                                                                    Legacy `EventEmitter2` deprecated for critical effects. Outbox is the only path for critical cross-module and external events. | ✅ SEALED |
+| Tenant isolation          |                                                                                  `NOBYPASSRLS` application role with `FORCE ROW LEVEL SECURITY` on every protected table. Tenant unit-of-work via `set_config(app.current_tenant_id)`. Two-tenant CI integration tests prove tenant A cannot read/write tenant B. | ✅ SEALED |
+| Database evolution        |                                                                                                                                         All 125+ migrations replay clean on fresh PostgreSQL; schema diff gate in CI. Track A reconciliation (#19) resolved migration drift with data-preserving rename/backfill. | ✅ SEALED |
+| Async work                |                                                                                                                                                                     Transactional outbox provides durable at-least-once delivery with retry, DLQ, idempotent consumer receipts. BullMQ is transport optimization. | ✅ SEALED |
+| Observability             |                                                                                                                                                                                            OpenTelemetry, Sentry, Prometheus metrics, health/readiness endpoints, outbox metrics (pending-age, retry, DLQ depth). | ✅ ACTIVE |
+| Security                  |                                                                                                                                                                                JWT/RBAC, CSRF, headers, rate limits, audit/change history, database-enforced RLS (#21), PII registry/GDPR erasure workflow (H.1). | ✅ SEALED |
 
 ## Non-negotiable rules
 
@@ -37,13 +37,13 @@ This deliberately follows durable patterns visible across leading ERP platforms:
 
 Architecture remains stable when change is explicit and reversible. Before implementation, an owner classifies every cross-boundary change and records its contract, compatibility, validation, and rollback in the owning module documentation and release notes.
 
-| Change | Required discipline |
-|---|---|
-| Internal implementation refactor | Preserve the owning module's public behavior; run unit tests and `pnpm architecture:check`. |
-| Additive public API or event field | Make the field optional for existing consumers, version the published contract, add consumer/contract tests, and document observability and ownership. |
-| Breaking public API, event, or extension change | Publish a new version; retain the prior documented version through its compatibility window; provide a migration guide and a measurable retirement date. Never silently repurpose a field. |
-| Database representation change | Use expand, backfill, observe, and contract. Rollback means returning application reads/writes to the compatible shape, not deleting customer data. |
-| Cross-domain business effect | Keep the original command inside one transactional owner and deliver the fact through the transactional outbox once #17 is complete. Consumers must be idempotent and independently deployable. |
+| Change                                          | Required discipline                                                                                                                                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Internal implementation refactor                | Preserve the owning module's public behavior; run unit tests and `pnpm architecture:check`.                                                                                                     |
+| Additive public API or event field              | Make the field optional for existing consumers, version the published contract, add consumer/contract tests, and document observability and ownership.                                          |
+| Breaking public API, event, or extension change | Publish a new version; retain the prior documented version through its compatibility window; provide a migration guide and a measurable retirement date. Never silently repurpose a field.      |
+| Database representation change                  | Use expand, backfill, observe, and contract. Rollback means returning application reads/writes to the compatible shape, not deleting customer data.                                             |
+| Cross-domain business effect                    | Keep the original command inside one transactional owner and deliver the fact through the transactional outbox once #17 is complete. Consumers must be idempotent and independently deployable. |
 
 ### Service extraction is earned, not assumed
 
@@ -59,12 +59,12 @@ All foundation blockers are resolved. The freeze is lifted per the seal gate in 
 
 ### Sealed foundation evidence
 
-| Blocker | Resolution | Evidence |
-|---|---|---|
-| **#19** — migration drift | Reconciliation migration `20260718093000_track_a_reconciliation` — data-preserving rename/backfill, zero destructive ops. Verified fresh replay + empty schema diff in CI. | Track A: cycles 2, 13. `pnpm migration:reconciliation:report` gate. |
-| **#21** — RLS tenant isolation | `NOBYPASSRLS` `unerp_api` role; `FORCE ROW LEVEL SECURITY` on all protected tables; tenant unit-of-work via `set_config(app.current_tenant_id, ..., true)` inside interactive Prisma tx; two-tenant CI tests. | Track C: cycle 14. `20260718101000_rls_all_tables` migration. |
+| Blocker                        | Resolution                                                                                                                                                                                                                                                                  | Evidence                                                                               |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **#19** — migration drift      | Reconciliation migration `20260718093000_track_a_reconciliation` — data-preserving rename/backfill, zero destructive ops. Verified fresh replay + empty schema diff in CI.                                                                                                  | Track A: cycles 2, 13. `pnpm migration:reconciliation:report` gate.                    |
+| **#21** — RLS tenant isolation | `NOBYPASSRLS` `unerp_api` role; `FORCE ROW LEVEL SECURITY` on all protected tables; tenant unit-of-work via `set_config(app.current_tenant_id, ..., true)` inside interactive Prisma tx; two-tenant CI tests.                                                               | Track C: cycle 14. `20260718101000_rls_all_tables` migration.                          |
 | **#17** — transactional outbox | `OutboxEvent` + `OutboxDelivery` + consumer receipt tables; `OutboxService.writeEvent()` inside producer transactions; dispatcher polls `FOR UPDATE SKIP LOCKED`; BullMQ worker writes receipt + effect transactionally; bounded retry with jitter, DLQ, re-drive endpoint. | Track B: cycle 18. Outbox module in `apps/api/src/modules/outbox/` with 13 unit tests. |
-| **#22** — cross-module imports | Zero remaining cross-module write imports. E-Commerce checkout → Sales converted to outbox event (`ecommerce.checkout.completed` → Sales consumer). | Track D: cycle 18. `architecture:check` baseline: 0 violations. |
+| **#22** — cross-module imports | Zero remaining cross-module write imports. E-Commerce checkout → Sales converted to outbox event (`ecommerce.checkout.completed` → Sales consumer).                                                                                                                         | Track D: cycle 18. `architecture:check` baseline: 0 violations.                        |
 
 ### Earlier resolved evidence
 
@@ -81,23 +81,24 @@ The normal "never hand-edit a migration" rule remains the default. The sole exce
 
 Implemented in Track B (cycle 18). The outbox is the only path for critical cross-module and external events.
 
-| Record | Implementation |
-|---|---|
-| `OutboxEvent` | `packages/shared/src/outbox/outbox.service.ts` — `writeEvent()` creates immutable event + deliveries inside an existing Prisma transaction. Unique `(tenantId, eventKey)` enforces idempotent producer retries. |
-| `OutboxDelivery` | One row per resolved destination with unique `(outboxEventId, destination)`, status, attempts, lease/lock, `availableAt`, `lastError`, terminal timestamps. |
-| Consumer receipt | Every state-changing consumer writes `OutboxConsumerReceipt` with unique `(consumer, outboxEventId)` in the same transaction as its business effect. Duplicate = no-op. |
-| Dispatcher | Polls every 2s using `FOR UPDATE SKIP LOCKED`, claims up to 100 PENDING deliveries with 30s lease, enqueues to BullMQ. |
-| Worker (processor) | Loads immutable event → verifies tenant/destination scope → writes receipt + handler effect transactionally → marks delivery COMPLETED. Bounded exponential backoff + jitter; DEAD after 10 attempts. |
-| Handler registry | `OutboxHandlerRegistry` — consumers register per destination string. |
-| Observability | REST: `POST /outbox/replay-dead-letter` + `POST /outbox/metrics`. In-memory counters: pending-age, retry, terminal-failure, DLQ depth. |
-| Health/SLO | Included in API health check; runbook covers lag, retry storms, DLQ re-drive. |
-| Tests | 8 unit tests for `OutboxService`, 5 for dispatcher, 3 for processor. 13 total. |
+| Record             | Implementation                                                                                                                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OutboxEvent`      | `packages/shared/src/outbox/outbox.service.ts` — `writeEvent()` creates immutable event + deliveries inside an existing Prisma transaction. Unique `(tenantId, eventKey)` enforces idempotent producer retries. |
+| `OutboxDelivery`   | One row per resolved destination with unique `(outboxEventId, destination)`, status, attempts, lease/lock, `availableAt`, `lastError`, terminal timestamps.                                                     |
+| Consumer receipt   | Every state-changing consumer writes `OutboxConsumerReceipt` with unique `(consumer, outboxEventId)` in the same transaction as its business effect. Duplicate = no-op.                                         |
+| Dispatcher         | Polls every 2s using `FOR UPDATE SKIP LOCKED`, claims up to 100 PENDING deliveries with 30s lease, enqueues to BullMQ.                                                                                          |
+| Worker (processor) | Loads immutable event → verifies tenant/destination scope → writes receipt + handler effect transactionally → marks delivery COMPLETED. Bounded exponential backoff + jitter; DEAD after 10 attempts.           |
+| Handler registry   | `OutboxHandlerRegistry` — consumers register per destination string.                                                                                                                                            |
+| Observability      | REST: `POST /outbox/replay-dead-letter` + `POST /outbox/metrics`. In-memory counters: pending-age, retry, terminal-failure, DLQ depth.                                                                          |
+| Health/SLO         | Included in API health check; runbook covers lag, retry storms, DLQ re-drive.                                                                                                                                   |
+| Tests              | 8 unit tests for `OutboxService`, 5 for dispatcher, 3 for processor. 13 total.                                                                                                                                  |
 
 ### Design contract (historical — preserved for reference)
 
 `EventEmitter2` remains legacy best-effort transport. All critical cross-module effects must use the outbox.
 
 **Dispatcher rules (as implemented):**
+
 1. Poller claims due deliveries with short lease using `FOR UPDATE SKIP LOCKED`; BullMQ is transport optimization, not source of truth.
 2. Worker reloads immutable event, verifies tenant/destination scope, writes receipt + business effect transactionally, marks delivery complete. Crashes at any boundary are safe — retries are idempotent via consumer receipt dedup.
 3. Retries: bounded exponential backoff with jitter. Exhaustion → DEAD. Re-drive via audited operator action (same event id).
@@ -105,6 +106,7 @@ Implemented in Track B (cycle 18). The outbox is the only path for critical cros
 5. Payloads minimize PII, respect tenant boundaries, carry correlation id. Retention is operational, never permission to delete an undelivered event.
 
 **Key consumers built on the outbox:**
+
 - `ecommerce.checkout.completed` → Sales consumer (Track D, #22) — replaces synchronous cross-module import
 - `blockchain-anchor` destination (Track E) — BlockchainAnchorService computes hash + submits to Fabric
 
@@ -112,14 +114,14 @@ Implemented in Track B (cycle 18). The outbox is the only path for critical cros
 
 Implemented in Track C (cycle 14). Database-enforced tenant isolation is proven (original heading: `## #21 transaction-scoped RLS design`).
 
-| Requirement | Implementation |
-|---|---|
-| Separate DB identities | `unerp_api` = `NOSUPERUSER NOBYPASSRLS NOINHERIT`, used by all API/worker connections. `unerp` (SUPERUSER) reserved for schema deploy only. |
-| `FORCE ROW LEVEL SECURITY` | Migration `20260718101000_rls_all_tables` — every protected table has RLS enabled + forced with `tenant_isolation` policy. |
-| Tenant unit-of-work | `set_config('app.current_tenant_id', tenantId, true)` inside interactive Prisma tx. Transaction-local — cleared on commit/rollback, no pool bleed. |
-| `@TenantInterceptor` | Prisma request scoping + RLS session binding. Does not rely on AsyncLocalStorage alone. |
-| Jobs/webhooks | Same unit-of-work per tenant; `@SkipTenantScope` never authorizes RLS-protected models. |
-| CI proof | Two-tenant integration tests: A cannot read/write B across direct IDs, lists, updates, deletes, relations, raw SQL. Spoofed-tenant inserts fail policy. No-context returns zero rows. Sequential + concurrent A/B prove no pool bleed. |
+| Requirement                | Implementation                                                                                                                                                                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Separate DB identities     | `unerp_api` = `NOSUPERUSER NOBYPASSRLS NOINHERIT`, used by all API/worker connections. `unerp` (SUPERUSER) reserved for schema deploy only.                                                                                            |
+| `FORCE ROW LEVEL SECURITY` | Migration `20260718101000_rls_all_tables` — every protected table has RLS enabled + forced with `tenant_isolation` policy.                                                                                                             |
+| Tenant unit-of-work        | `set_config('app.current_tenant_id', tenantId, true)` inside interactive Prisma tx. Transaction-local — cleared on commit/rollback, no pool bleed.                                                                                     |
+| `@TenantInterceptor`       | Prisma request scoping + RLS session binding. Does not rely on AsyncLocalStorage alone.                                                                                                                                                |
+| Jobs/webhooks              | Same unit-of-work per tenant; `@SkipTenantScope` never authorizes RLS-protected models.                                                                                                                                                |
+| CI proof                   | Two-tenant integration tests: A cannot read/write B across direct IDs, lists, updates, deletes, relations, raw SQL. Spoofed-tenant inserts fail policy. No-context returns zero rows. Sequential + concurrent A/B prove no pool bleed. |
 
 ### Design contract (historical — preserved for reference)
 
@@ -127,22 +129,77 @@ The implementation introduces separate database identities: migration/owner iden
 
 ## Competitor benchmark → UniERP response
 
-| Platform | Architectural lesson | UniERP response |
-|---|---|---|
-| SAP S/4HANA | Upgrade-stable clean core and side-by-side extensions. | Protect the core/extension gateway boundary and publish contracts. |
-| Oracle Fusion ERP | REST business resources plus event subscriptions. | Version public APIs and make business events durable. |
-| Microsoft Dynamics 365 | Cataloged business/data events with endpoint subscriptions. | Maintain an event catalog, schema versions, delivery status, and replay rules. |
-| Oracle NetSuite | SuiteCloud packages, controlled customization, REST integration. | Treat installed apps as versioned packages and integrations as least-privilege clients. |
-| Workday | Governed API gateway, versioned APIs, and event-driven orchestration. | Centralize API policy, correlation, rate control, and integration workflow ownership. |
-| Salesforce | Event bus and change-data capture decouple producers from consumers. | Replace point-to-point effects with idempotent, durable facts. |
-| Odoo | Module system and single-transaction business actions. | Keep business invariants within one aggregate transaction. |
-| ERPNext/Frappe | Hookable documents and background jobs. | Allow extensions through contracts/jobs, never implementation imports. |
-| Infor | API gateway plus publisher/subscriber Event Hub. | Separate API ingress, event delivery, and extension runtime concerns. |
-| Acumatica | API-first extension points and strongly governed customizations. | Make extension interfaces explicit, permissioned, and upgrade-compatible. |
+| Platform               | Architectural lesson                                                  | UniERP response                                                                         |
+| ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| SAP S/4HANA            | Upgrade-stable clean core and side-by-side extensions.                | Protect the core/extension gateway boundary and publish contracts.                      |
+| Oracle Fusion ERP      | REST business resources plus event subscriptions.                     | Version public APIs and make business events durable.                                   |
+| Microsoft Dynamics 365 | Cataloged business/data events with endpoint subscriptions.           | Maintain an event catalog, schema versions, delivery status, and replay rules.          |
+| Oracle NetSuite        | SuiteCloud packages, controlled customization, REST integration.      | Treat installed apps as versioned packages and integrations as least-privilege clients. |
+| Workday                | Governed API gateway, versioned APIs, and event-driven orchestration. | Centralize API policy, correlation, rate control, and integration workflow ownership.   |
+| Salesforce             | Event bus and change-data capture decouple producers from consumers.  | Replace point-to-point effects with idempotent, durable facts.                          |
+| Odoo                   | Module system and single-transaction business actions.                | Keep business invariants within one aggregate transaction.                              |
+| ERPNext/Frappe         | Hookable documents and background jobs.                               | Allow extensions through contracts/jobs, never implementation imports.                  |
+| Infor                  | API gateway plus publisher/subscriber Event Hub.                      | Separate API ingress, event delivery, and extension runtime concerns.                   |
+| Acumatica              | API-first extension points and strongly governed customizations.      | Make extension interfaces explicit, permissioned, and upgrade-compatible.               |
+
+## Kernel modules and module-tier gating
+
+Only two modules are kernel (always-on, never uninstallable): **App Store** (`app-store`,
+marketplace core) and **SaaS Portal** (`saas-portal`, which merged the former saas + admin +
+api-keys + dashboard surfaces). They exist so a tenant admin can always reach an install/uninstall
+surface even with every business module removed. See `KERNEL_SLUGS` in
+`apps/api/src/common/module-tiers.ts`.
+
+Every other module — Finance, HR, CRM, Inventory, Procurement, Sales, Supply Chain, Projects,
+Manufacturing, Analytics, Drive, Connect, POS, **Builder/Studio**, Ecommerce, AI, and all
+bundle-backed industry apps — is install/uninstall-gated. Uninstalling one is an entitlement
+toggle: code and data stay resident, but the module is hidden from nav and its API routes are
+gated off until re-installed. `GATED_MODULES` in the same file maps each module slug to the URL
+segment(s) it's served under; both the frontend route guard and the API entitlement middleware
+read this one map so they agree on what "installed" means.
+
+Modules register their nav/settings/dashboard/visibility contract through the descriptor system
+in `packages/shared/src/module-registry/` instead of hardcoded branches in shell components —
+that's the contract new and existing modules implement to appear (or not) in the kernel shell.
+
+### Settings/admin-to-SaaS-Portal consolidation — partial by design (2026-07-21)
+
+A subset of legacy `admin`/`saas` module surfaces has been consolidated into `saas-portal` so
+the kernel keeps one admin home. This pass is **intentionally partial**, not a full migration:
+
+- **Consolidated (5 domains):** org-hierarchy, GDPR compliance, audit-log, delegation, and the
+  `admin/security` surface (route `admin/security`) were removed in favor of their `saas-portal`
+  equivalents. The three legacy Next.js pages that had become pure redirects
+  (`/settings/org-hierarchy`, `/settings/delegations`, `/settings/subscription`) were deleted;
+  `apps/web/next.config.mjs` already redirects those routes to their `saas/*` destinations.
+- **~20 other admin/saas areas remain unmigrated** as a deliberately separate future effort:
+  plan-engine, invoice-engine, payment-methods, usage-alerts, api-keys, support-tickets, domains,
+  sso-config, branding, data-export, webhooks, tenant-admin, announcements, activity-feed,
+  custom-fields, automation-rules, import-export, super-admin, tenant-lifecycle, platform-config,
+  system-health, notification-prefs.
+- **Billing was intentionally NOT consolidated.** `saas/billing.controller.ts` (`/billing`,
+  customer Stripe checkout) and `saas-portal/controllers/billing.controller.ts`
+  (`/saas-portal/billing`, admin plan/price CRUD) are two different features that happen to
+  share a name. Both stay.
+- **`admin/security.controller.ts` (route `admin/security`) was deliberately left in place**,
+  unlike the other four. Its `saas-portal/controllers/security.controller.ts` counterpart is a
+  confirmed superset of its endpoints, but `apps/web/app/(dashboard)/settings/security-policies/*`,
+  `settings/compliance-governance/*`, and `settings/impersonate/page.tsx` still call
+  `/admin/security/*` directly with no redirect equivalent — deleting the controller would have
+  silently broken those pages at runtime. Repointing those web callers to `saas-portal/security`
+  and then removing `admin/security.controller.ts` is the correct follow-up, tracked as
+  unfinished work, not done here.
+- **`admin/subscription.controller.ts` vs `saas-portal/controllers/subscription.controller.ts`
+  parity is unverified.** Both are left in place until someone diffs them.
+- The unused `AppInstallation`/`AppSettings` Prisma models (added by migration
+  `20260720160000_add_installed_apps`, never wired to any controller/service) were dropped from
+  `packages/database/prisma/schema.prisma`; see migration
+  `20260721090000_drop_unused_app_installation_settings`.
 
 ## Evidence and review cadence
 
 **Foundation is SEALED as of 2026-07-18.** All freeze-lift conditions are met:
+
 - ✅ Outbox (#17), reconciliation (#19), RLS (#21), boundaries (#22) — all closed
 - ✅ Clean migration replay in CI; schema diff gate
 - ✅ Real two-tenant RLS proof; `NOBYPASSRLS` role
@@ -158,6 +215,7 @@ Run `pnpm foundation:check` after any foundation-policy, architecture-gate, or a
 ### Historical heading references (transition markers — DO NOT REMOVE)
 
 These exact heading strings are required by the foundation check script to verify the original design sections exist:
+
 - `## #21 transaction-scoped RLS design`
 - `### #19 reconciliation plan and controlled exception`
 - `## #17 transactional outbox design`

@@ -1,12 +1,24 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 import {
   ModuleSettingsSchema,
   AppSettingResponse,
   SettingsSchemaResponse,
   SetSettingInput,
   GetSettingsQuery,
-} from './settings.interface';
+  SettingScope,
+} from "./settings.interface";
+
+// The "app_settings" column is a plain string (no DB enum) — narrow it back
+// to the app-level union at the API boundary.
+const asScope = (scope: string): SettingScope => scope as SettingScope;
+// Column is non-null with a "" default standing for "no role" — normalize
+// that back to `undefined` for API responses.
+const asRoleId = (roleId: string): string | undefined => roleId || undefined;
 
 @Injectable()
 export class AppSettingsService {
@@ -22,16 +34,18 @@ export class AppSettingsService {
         ...(query.scope ? { scope: query.scope } : {}),
         ...(query.roleId ? { roleId: query.roleId } : {}),
       },
-      orderBy: { key: 'asc' },
+      orderBy: { key: "asc" },
     });
 
-    return settings.map((s: { key: string; value: unknown; scope: 'TENANT' | 'USER' | 'ROLE'; roleId: string | null; updatedAt: Date }): AppSettingResponse => ({
-      key: s.key,
-      value: s.value,
-      scope: s.scope,
-      roleId: s.roleId ?? undefined,
-      updatedAt: s.updatedAt,
-    }));
+    return settings.map(
+      (s): AppSettingResponse => ({
+        key: s.key,
+        value: s.value,
+        scope: asScope(s.scope),
+        roleId: asRoleId(s.roleId),
+        updatedAt: s.updatedAt,
+      }),
+    );
   }
 
   async getSetting(
@@ -51,14 +65,16 @@ export class AppSettingsService {
     });
 
     if (!setting) {
-      throw new NotFoundException(`Setting ${key} not found for module ${appSlug}`);
+      throw new NotFoundException(
+        `Setting ${key} not found for module ${appSlug}`,
+      );
     }
 
     return {
       key: setting.key,
       value: setting.value,
-      scope: setting.scope,
-      roleId: setting.roleId ?? undefined,
+      scope: asScope(setting.scope),
+      roleId: asRoleId(setting.roleId),
       updatedAt: setting.updatedAt,
     };
   }
@@ -72,21 +88,25 @@ export class AppSettingsService {
   ): Promise<AppSettingResponse> {
     const config = schema[key];
     if (!config) {
-      throw new NotFoundException(`Setting ${key} is not defined in ${appSlug} schema`);
+      throw new NotFoundException(
+        `Setting ${key} is not defined in ${appSlug} schema`,
+      );
     }
 
     if (config.validation) {
       const result = config.validation.safeParse(input.value);
       if (!result.success) {
-        throw new ForbiddenException(`Invalid value for ${key}: ${result.error.message}`);
+        throw new ForbiddenException(
+          `Invalid value for ${key}: ${result.error.message}`,
+        );
       }
     }
 
-    const scope = input.scope ?? 'TENANT';
-    const roleId = input.roleId ?? null;
+    const scope = input.scope ?? "TENANT";
+    const roleId = input.roleId ?? "";
 
-    if (scope === 'ROLE' && !roleId) {
-      throw new ForbiddenException('roleId is required when scope is ROLE');
+    if (scope === "ROLE" && !roleId) {
+      throw new ForbiddenException("roleId is required when scope is ROLE");
     }
 
     const setting = await prisma.appSettings.upsert({
@@ -96,7 +116,7 @@ export class AppSettingsService {
           appSlug,
           key,
           scope,
-          roleId: roleId ?? '',
+          roleId,
         },
       },
       create: {
@@ -117,8 +137,8 @@ export class AppSettingsService {
     return {
       key: setting.key,
       value: setting.value,
-      scope: setting.scope,
-      roleId: setting.roleId ?? undefined,
+      scope: asScope(setting.scope),
+      roleId: asRoleId(setting.roleId),
       updatedAt: setting.updatedAt,
     };
   }
@@ -140,11 +160,16 @@ export class AppSettingsService {
     });
 
     if (deleted.count === 0) {
-      throw new NotFoundException(`Setting ${key} not found for module ${appSlug}`);
+      throw new NotFoundException(
+        `Setting ${key} not found for module ${appSlug}`,
+      );
     }
   }
 
-  getSchema(moduleSlug: string, schema: ModuleSettingsSchema): SettingsSchemaResponse {
+  getSchema(
+    moduleSlug: string,
+    schema: ModuleSettingsSchema,
+  ): SettingsSchemaResponse {
     const sanitizedSchema: ModuleSettingsSchema = {};
     for (const [key, config] of Object.entries(schema)) {
       sanitizedSchema[key] = {
@@ -163,7 +188,7 @@ export class AppSettingsService {
     moduleSchemas: Record<string, ModuleSettingsSchema>,
   ): Promise<Record<string, SettingsSchemaResponse>> {
     const installedApps = await prisma.installedApp.findMany({
-      where: { tenantId, status: 'INSTALLED' },
+      where: { tenantId, status: "INSTALLED" },
       select: { appSlug: true },
     });
 

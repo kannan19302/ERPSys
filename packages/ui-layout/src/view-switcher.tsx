@@ -20,17 +20,23 @@ export interface ViewSwitcherProps {
   availableViews?: ViewMode[];
 }
 
+const iconStyle: React.CSSProperties = {
+  flexShrink: 0,
+  display: "block",
+};
+
 /* Inline SVG icons to avoid extra dependencies */
 const ListIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    style={iconStyle}
   >
     <line x1="8" y1="6" x2="21" y2="6" />
     <line x1="8" y1="12" x2="21" y2="12" />
@@ -43,14 +49,15 @@ const ListIcon = () => (
 
 const BarChartIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    style={iconStyle}
   >
     <line x1="12" y1="20" x2="12" y2="10" />
     <line x1="18" y1="20" x2="18" y2="4" />
@@ -60,14 +67,15 @@ const BarChartIcon = () => (
 
 const KanbanIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    style={iconStyle}
   >
     <rect x="3" y="3" width="5" height="18" rx="1" />
     <rect x="10" y="3" width="5" height="12" rx="1" />
@@ -77,14 +85,15 @@ const KanbanIcon = () => (
 
 const GridIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    style={iconStyle}
   >
     <rect x="3" y="3" width="7" height="7" />
     <rect x="14" y="3" width="7" height="7" />
@@ -115,9 +124,11 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   <div
     style={{
       display: "inline-flex",
+      alignItems: "center",
+      gap: "3px",
+      padding: "3px",
       border: "1px solid var(--color-border)",
       borderRadius: "var(--radius-lg)",
-      overflow: "hidden",
       background: "var(--color-bg-sunken)",
     }}
   >
@@ -130,10 +141,10 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
           onClick={() => onViewChange(mode)}
           title={VIEW_LABELS[mode]}
           style={{
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
-            gap: "var(--space-1)",
-            padding: "var(--space-1-5) var(--space-3)",
+            gap: "6px",
+            padding: "4px 10px",
             border: "none",
             background: isActive ? "var(--color-bg-elevated)" : "transparent",
             color: isActive
@@ -144,13 +155,16 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
             cursor: "pointer",
             transition: "all var(--duration-fast)",
             boxShadow: isActive ? "var(--shadow-sm)" : "none",
-            borderRadius: isActive ? "var(--radius-md)" : "0",
+            borderRadius: "var(--radius-md)",
             flexShrink: 0,
             whiteSpace: "nowrap",
+            lineHeight: 1,
           }}
         >
           {VIEW_ICONS[mode]}
-          <span>{VIEW_LABELS[mode]}</span>
+          <span style={{ whiteSpace: "nowrap", lineHeight: 1 }}>
+            {VIEW_LABELS[mode]}
+          </span>
         </button>
       );
     })}

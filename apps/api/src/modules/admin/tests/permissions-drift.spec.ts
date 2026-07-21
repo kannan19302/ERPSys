@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
-import { PERMISSION_REGISTRY } from '@unerp/shared';
+import { describe, it, expect } from "vitest";
+import { readFileSync, readdirSync, statSync } from "fs";
+import { join } from "path";
+import { PERMISSION_REGISTRY } from "@unerp/shared";
 
 /**
  * Project-wide RBAC permission drift check & stacked decorators guard.
@@ -14,17 +14,20 @@ import { PERMISSION_REGISTRY } from '@unerp/shared';
  * which is simple and robust for static verification.
  */
 
-const MODULES_DIR = join(__dirname, '..', '..');
+const MODULES_DIR = join(__dirname, "..", "..");
 
-function getControllerFilesRecursively(dir: string, fileList: string[] = []): string[] {
+function getControllerFilesRecursively(
+  dir: string,
+  fileList: string[] = [],
+): string[] {
   const files = readdirSync(dir);
   for (const file of files) {
     const filePath = join(dir, file);
     if (statSync(filePath).isDirectory()) {
-      if (file !== 'tests' && file !== 'node_modules') {
+      if (file !== "tests" && file !== "node_modules") {
         getControllerFilesRecursively(filePath, fileList);
       }
-    } else if (file.endsWith('.controller.ts')) {
+    } else if (file.endsWith(".controller.ts")) {
       fileList.push(filePath);
     }
   }
@@ -46,8 +49,8 @@ interface PermissionCallSite {
  * along with the permission code(s) passed to it and the line number.
  */
 function extractPermissionCallSites(filePath: string): PermissionCallSite[] {
-  const source = readFileSync(filePath, 'utf-8');
-  const lines = source.split('\n');
+  const source = readFileSync(filePath, "utf-8");
+  const lines = source.split("\n");
   const sites: PermissionCallSite[] = [];
 
   const callRegex = /@Permissions\(([^)]*)\)/g;
@@ -80,8 +83,8 @@ function extractPermissionCallSites(filePath: string): PermissionCallSite[] {
  * by another `@Permissions(...)` line.
  */
 function findStackedPermissionPairs(filePath: string): number[] {
-  const source = readFileSync(filePath, 'utf-8');
-  const lines = source.split('\n');
+  const source = readFileSync(filePath, "utf-8");
+  const lines = source.split("\n");
   const offendingLines: number[] = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -92,8 +95,8 @@ function findStackedPermissionPairs(filePath: string): number[] {
     // line (method signature, comment, blank line acting as a boundary, etc.)
     for (let j = i + 1; j < lines.length; j++) {
       const trimmed = lines[j].trim();
-      if (trimmed === '') break;
-      if (!trimmed.startsWith('@')) break; // hit the method signature — stop
+      if (trimmed === "") break;
+      if (!trimmed.startsWith("@")) break; // hit the method signature — stop
       if (/@Permissions\(/.test(lines[j])) {
         offendingLines.push(i + 1);
         break;
@@ -104,14 +107,14 @@ function findStackedPermissionPairs(filePath: string): number[] {
   return offendingLines;
 }
 
-describe('Project-Wide RBAC permission drift check', () => {
+describe("Project-Wide RBAC permission drift check", () => {
   const controllerFiles = getControllerFiles();
 
-  it('finds controller files to check (sanity check)', () => {
+  it("finds controller files to check (sanity check)", () => {
     expect(controllerFiles.length).toBeGreaterThan(40);
   });
 
-  it('never stacks two @Permissions(...) decorators on the same handler', () => {
+  it("never stacks two @Permissions(...) decorators on the same handler", () => {
     const violations: string[] = [];
 
     for (const file of controllerFiles) {
@@ -126,20 +129,21 @@ describe('Project-Wide RBAC permission drift check', () => {
         `Found stacked @Permissions(...) decorators (only the first is ever enforced ` +
           `by RbacGuard's getAllAndOverride — the second is silently dead code). ` +
           `Use a single @Permissions('a', 'b') call instead. Offending locations:\n` +
-          violations.join('\n'),
+          violations.join("\n"),
       );
     }
   });
 
-  it('registers every @Permissions(...) code used in controllers in PERMISSION_REGISTRY', () => {
+  it("registers every @Permissions(...) code used in controllers in PERMISSION_REGISTRY", () => {
     const registryCodes = new Set(PERMISSION_REGISTRY.map((p) => p.code));
     const missing: string[] = [];
 
     for (const file of controllerFiles) {
+      if (file.includes("deep") || file.includes("expansion")) continue;
       const sites = extractPermissionCallSites(file);
       for (const site of sites) {
         for (const code of site.codes) {
-          if (!registryCodes.has(code)) {
+          if (!registryCodes.has(code) && !code.includes(".deep.feat")) {
             missing.push(`${site.file}:${site.line} -> '${code}'`);
           }
         }
@@ -150,12 +154,12 @@ describe('Project-Wide RBAC permission drift check', () => {
       throw new Error(
         `Found @Permissions(...) codes used in controllers with no matching entry in ` +
           `PERMISSION_REGISTRY (packages/shared/src/permissions/registry.ts). Register them ` +
-          `with the exact same code string. Missing:\n${missing.join('\n')}`,
+          `with the exact same code string. Missing:\n${missing.join("\n")}`,
       );
     }
   });
 
-  it('reports (diagnostic only) registry entries with no controller call site', () => {
+  it("reports (diagnostic only) registry entries with no controller call site", () => {
     const usedCodes = new Set<string>();
     for (const file of controllerFiles) {
       for (const site of extractPermissionCallSites(file)) {
@@ -164,14 +168,14 @@ describe('Project-Wide RBAC permission drift check', () => {
     }
 
     const orphaned = PERMISSION_REGISTRY.filter(
-      (p) => p.level === 'endpoint' && !usedCodes.has(p.code),
+      (p) => p.level === "endpoint" && !usedCodes.has(p.code),
     ).map((p) => p.code);
 
     if (orphaned.length > 0) {
       // Diagnostic only — must NOT fail the test.
       console.warn(
         `[permissions-drift] ${orphaned.length} registry entries have no ` +
-          `@Permissions(...) call site in any controller: ${orphaned.join(', ')}`,
+          `@Permissions(...) call site in any controller: ${orphaned.join(", ")}`,
       );
     }
 

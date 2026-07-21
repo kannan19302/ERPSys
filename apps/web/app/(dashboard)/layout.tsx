@@ -90,6 +90,7 @@ const GLOBAL_SEARCH_ITEMS = [
   { name: "Connect", href: "/connect", icon: MessageSquare, type: "App" },
   { name: "POS & Retail", href: "/pos", icon: Store, type: "App" },
   { name: "E-Commerce", href: "/ecommerce", icon: Globe, type: "App" },
+  { name: "App Store", href: "/apps/store", icon: Store, type: "App" },
   { name: "Settings", href: "/settings", icon: Settings, type: "App" },
   { name: "Studio", href: "/builder", icon: Cpu, type: "App" },
 ];
@@ -507,7 +508,7 @@ export default function DashboardLayout({
     }
   };
 
-  const isAppsLanding = pathname === "/apps" || pathname === "/apps/store";
+  const isAppsLanding = pathname === "/apps";
   const hideSidebar =
     isAppsLanding ||
     pathname === "/profile" ||
@@ -641,7 +642,7 @@ export default function DashboardLayout({
             style={{
               padding: pathname.startsWith("/builder")
                 ? "0"
-                : "var(--space-6) var(--space-8)",
+                : "var(--space-2) var(--space-6)",
             }}
             className={styles.s4}
           >

@@ -1,84 +1,232 @@
-'use client';
+"use client";
 
-import styles from './page.module.css';
-import { PageHeader, Card } from '@unerp/ui';
-import Link from 'next/link';
-import { ArrowRight, DollarSign, Calendar, Calculator, CreditCard, Shield, Users } from 'lucide-react';
+import { useSearchParams } from "next/navigation";
+import {
+  Settings,
+  DollarSign,
+  Calendar,
+  ShieldCheck,
+  Zap,
+  Link2,
+  Database,
+} from "lucide-react";
+import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
+import { SubTabBar } from "@/components/finance/SubTabBar";
+import { FinanceDemoDataCard } from "@/components/finance/FinanceDemoDataCard";
+import { Card } from "@unerp/ui";
+
+import FinancialPeriodsPage from "../advanced/financial-periods/page";
+import ExchangeRatesPage from "../advanced/exchange-rates/page";
+import FxRevaluationPage from "../advanced/fx-revaluation/page";
+import CurrencyRevaluationPage from "../advanced/currency-revaluation/page";
+import CloseTasksPage from "../advanced/close-tasks/page";
+import ConsolidationPage from "../advanced/consolidation/page";
+
+const SETTINGS_TABS = [
+  {
+    id: "overview",
+    label: "Overview",
+    href: "/finance/settings",
+    icon: Settings,
+    description: "Finance settings overview",
+  },
+  {
+    id: "demo-data",
+    label: "Demo Data",
+    href: "/finance/settings?tab=demo-data",
+    icon: Database,
+    description: "Load or unload Finance module sample data",
+  },
+  {
+    id: "accounting",
+    label: "Accounting Settings",
+    href: "/finance/settings?tab=accounting",
+    icon: Settings,
+    description: "General accounting configuration",
+  },
+  {
+    id: "currencies",
+    label: "Currencies",
+    href: "/finance/settings?tab=currencies",
+    icon: DollarSign,
+    description: "Currency and exchange rate settings",
+  },
+  {
+    id: "fiscal-years",
+    label: "Fiscal Years",
+    href: "/finance/settings?tab=fiscal-years",
+    icon: Calendar,
+    description: "Fiscal year and period settings",
+  },
+  {
+    id: "approval-rules",
+    label: "Approval Rules",
+    href: "/finance/settings?tab=approval-rules",
+    icon: ShieldCheck,
+    description: "Finance approval workflows",
+  },
+  {
+    id: "automation",
+    label: "Automation",
+    href: "/finance/settings?tab=automation",
+    icon: Zap,
+    description: "Finance automation rules",
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    href: "/finance/settings?tab=integrations",
+    icon: Link2,
+    description: "External integrations",
+  },
+];
 
 export default function FinanceSettingsPage() {
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") || "overview";
+  const subTab = searchParams.get("subtab");
+
   return (
-    <div className="ui-stack-6">
-      <PageHeader
-        title="Finance"
-        description="Configure tax rates, fiscal years, currency, accounting periods, and chart of accounts."
-        breadcrumbs={[{ label: 'Apps', href: '/apps' }, { label: 'Finance', href: '/finance' }, { label: 'Settings' }]}
-      />
-      <div className={styles.grid}>
-        <Link href="/advanced-finance/tax-rates" className={styles.card}>
-          <div className={styles.iconWrap}><DollarSign size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Tax Rates</p>
-            <p className={styles.cardDesc}>Manage VAT, GST, and other tax rates</p>
+    <FinanceTabLayout
+      tabs={SETTINGS_TABS}
+      moduleId="settings"
+      moduleLabel="Settings"
+      moduleIcon={Settings}
+      moduleDescription="Finance module configuration and preferences"
+    >
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <div className="ui-grid-3" style={{ marginTop: 0 }}>
+            <Card
+              padding="lg"
+              className="ui-hstack-3"
+              style={{ cursor: "pointer" }}
+            >
+              <Settings size={24} className="ui-text-primary" />
+              <div>
+                <h3 className="ui-heading-sm">Accounting Settings</h3>
+                <p className="ui-text-xs-muted">
+                  Default currency, numbering, GL config
+                </p>
+              </div>
+            </Card>
+            <Card
+              padding="lg"
+              className="ui-hstack-3"
+              style={{ cursor: "pointer" }}
+            >
+              <DollarSign size={24} className="ui-text-success" />
+              <div>
+                <h3 className="ui-heading-sm">Currencies</h3>
+                <p className="ui-text-xs-muted">
+                  Base currency, exchange rates
+                </p>
+              </div>
+            </Card>
+            <Card
+              padding="lg"
+              className="ui-hstack-3"
+              style={{ cursor: "pointer" }}
+            >
+              <Calendar size={24} className="ui-text-warning" />
+              <div>
+                <h3 className="ui-heading-sm">Fiscal Years</h3>
+                <p className="ui-text-xs-muted">Periods, close dates</p>
+              </div>
+            </Card>
           </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/advanced-finance/fiscal-years" className={styles.card}>
-          <div className={styles.iconWrap}><Calendar size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Fiscal Years</p>
-            <p className={styles.cardDesc}>Define financial year periods</p>
+          <FinanceDemoDataCard />
+        </div>
+      )}
+      {activeTab === "demo-data" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FinanceDemoDataCard />
+        </div>
+      )}
+      {activeTab === "accounting" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FinancialPeriodsPage />
+        </div>
+      )}
+      {activeTab === "currencies" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "rates",
+                label: "Multi-Currency",
+                href: "/finance/settings?tab=currencies&subtab=rates",
+              },
+              {
+                id: "fx",
+                label: "FX Revaluation",
+                href: "/finance/settings?tab=currencies&subtab=fx",
+              },
+              {
+                id: "reval",
+                label: "Currency Revaluation",
+                href: "/finance/settings?tab=currencies&subtab=reval",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "fx" ? (
+              <FxRevaluationPage />
+            ) : subTab === "reval" ? (
+              <CurrencyRevaluationPage />
+            ) : (
+              <ExchangeRatesPage />
+            )}
           </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/advanced-finance/currency" className={styles.card}>
-          <div className={styles.iconWrap}><DollarSign size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Currency</p>
-            <p className={styles.cardDesc}>Configure base and foreign currencies</p>
+        </div>
+      )}
+      {activeTab === "fiscal-years" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "periods",
+                label: "Financial Periods",
+                href: "/finance/settings?tab=fiscal-years&subtab=periods",
+              },
+              {
+                id: "close",
+                label: "Close Tasks",
+                href: "/finance/settings?tab=fiscal-years&subtab=close",
+              },
+              {
+                id: "consolidation",
+                label: "Consolidation",
+                href: "/finance/settings?tab=fiscal-years&subtab=consolidation",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "close" ? (
+              <CloseTasksPage />
+            ) : subTab === "consolidation" ? (
+              <ConsolidationPage />
+            ) : (
+              <FinancialPeriodsPage />
+            )}
           </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/advanced-finance/accounting-periods" className={styles.card}>
-          <div className={styles.iconWrap}><Calendar size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Accounting Periods</p>
-            <p className={styles.cardDesc}>Set up monthly, quarterly, or custom periods</p>
-          </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/advanced-finance/coa" className={styles.card}>
-          <div className={styles.iconWrap}><Calculator size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Chart of Accounts</p>
-            <p className={styles.cardDesc}>Manage your full chart of accounts</p>
-          </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/saas/billing" className={styles.card}>
-          <div className={styles.iconWrap}><CreditCard size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Billing & Subscription</p>
-            <p className={styles.cardDesc}>Manage your plan and invoices</p>
-          </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/saas/security" className={styles.card}>
-          <div className={styles.iconWrap}><Shield size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Security</p>
-            <p className={styles.cardDesc}>Manage roles and permissions</p>
-          </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-        <Link href="/saas/team" className={styles.card}>
-          <div className={styles.iconWrap}><Users size={20} /></div>
-          <div className={styles.cardContent}>
-            <p className={styles.cardTitle}>Team</p>
-            <p className={styles.cardDesc}>Manage your organization team</p>
-          </div>
-          <ArrowRight size={16} className={styles.arrow} />
-        </Link>
-      </div>
-    </div>
+        </div>
+      )}
+      {activeTab === "approval-rules" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <CloseTasksPage />
+        </div>
+      )}
+      {activeTab === "automation" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FinancialPeriodsPage />
+        </div>
+      )}
+      {activeTab === "integrations" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ExchangeRatesPage />
+        </div>
+      )}
+    </FinanceTabLayout>
   );
 }

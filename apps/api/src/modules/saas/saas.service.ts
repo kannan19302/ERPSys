@@ -5,36 +5,134 @@ import {
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
+/**
+ * Stable catalog keys for the paid tiers self-healed by `ensurePlanCatalog()`
+ * below — mirrors the marketplace catalog self-heal pattern in
+ * marketplace.service.ts (seedDefaultApps / ALL_SEED_SLUGS), so the public
+ * plan list is never empty for a tenant that hasn't run the demo seed.
+ */
+const PAID_PLAN_CATALOG = [
+  {
+    stripePriceId: "starter-monthly",
+    name: "Starter",
+    description: "For small teams getting started.",
+    maxUsers: 10,
+    maxStorage: 5 * 1024,
+    maxApiCalls: 25000,
+    monthly: 29,
+    sortOrder: 1,
+  },
+  {
+    stripePriceId: "growth-monthly",
+    name: "Growth",
+    description: "For growing businesses that need more room.",
+    maxUsers: 50,
+    maxStorage: 25 * 1024,
+    maxApiCalls: 100000,
+    monthly: 99,
+    sortOrder: 2,
+  },
+  {
+    stripePriceId: "enterprise-monthly",
+    name: "Enterprise",
+    description: "For large organizations with advanced needs.",
+    maxUsers: 500,
+    maxStorage: 200 * 1024,
+    maxApiCalls: 1000000,
+    monthly: 299,
+    sortOrder: 3,
+  },
+] as const;
+
 @Injectable()
 export class SaasService {
   /**
-   * Shapes raw SaaSPlan rows into what the portal UI expects. SaaSPlan has
-   * no price/currency/interval/maxApiCalls columns today — real per-plan
-   * pricing (and the proration/regional-pricing engine that would consume
-   * it) is tracked as still-open in AUTH_BILLING_PROGRAM.md, not modeled
-   * yet — so these are safe placeholder defaults, not billed amounts.
+   * Self-heals the public paid-plan catalog (Starter/Growth/Enterprise) if
+   * it's missing, same pattern as marketplace.service.ts's app-catalog
+   * self-heal. The "Free Trial" plan is seeded separately at registration
+   * time (see AuthService.register — FREE_TRIAL_PLAN_KEY) since it must
+   * exist before any tenant can register, not lazily on first plan list.
+   */
+  private async ensurePlanCatalog() {
+    const existing = await prisma.saaSPlan.count({
+      where: {
+        stripePriceId: { in: PAID_PLAN_CATALOG.map((p) => p.stripePriceId) },
+      },
+    });
+    if (existing >= PAID_PLAN_CATALOG.length) return;
+
+    for (const tier of PAID_PLAN_CATALOG) {
+      const plan = await prisma.saaSPlan.upsert({
+        where: { stripePriceId: tier.stripePriceId },
+        update: {},
+        create: {
+          name: tier.name,
+          description: tier.description,
+          stripePriceId: tier.stripePriceId,
+          maxUsers: tier.maxUsers,
+          maxStorage: tier.maxStorage,
+          maxApiCalls: tier.maxApiCalls,
+          sortOrder: tier.sortOrder,
+          features: [],
+        },
+      });
+      await prisma.saaSPlanPrice.upsert({
+        where: {
+          planId_currency_region: {
+            planId: plan.id,
+            currency: "USD",
+            region: "US",
+          },
+        },
+        update: {},
+        create: {
+          planId: plan.id,
+          currency: "USD",
+          region: "US",
+          monthly: tier.monthly,
+          yearly: tier.monthly * 12,
+        },
+      });
+    }
+  }
+
+  /**
+   * Shapes raw SaaSPlan rows into what the portal UI expects, joining the
+   * real SaaSPlanPrice row (USD/US) instead of hardcoding price 0 for every
+   * plan — self-heals the paid-tier catalog first so this is never empty.
    */
   async getPlans(tenantId?: string) {
+    await this.ensurePlanCatalog();
+
     const [plans, currentSub] = await Promise.all([
-      prisma.saaSPlan.findMany({ orderBy: { maxUsers: "asc" } }),
+      prisma.saaSPlan.findMany({
+        where: { status: { not: "ARCHIVED" } },
+        orderBy: [{ sortOrder: "asc" }, { maxUsers: "asc" }],
+        include: {
+          prices: { where: { currency: "USD", region: "US", isActive: true } },
+        },
+      }),
       tenantId
         ? prisma.tenantSubscription.findFirst({ where: { tenantId } })
         : Promise.resolve(null),
     ]);
 
-    return plans.map((plan) => ({
-      id: plan.id,
-      name: plan.name,
-      price: 0,
-      currency: "USD",
-      interval: "month",
-      maxUsers: plan.maxUsers,
-      maxStorageMb: plan.maxStorage,
-      maxApiCalls: 10000,
-      features: Array.isArray(plan.features) ? plan.features : [],
-      isCurrent: currentSub?.planId === plan.id,
-      recommended: false,
-    }));
+    return plans.map((plan) => {
+      const price = plan.prices[0];
+      return {
+        id: plan.id,
+        name: plan.name,
+        price: price ? Number(price.monthly) : 0,
+        currency: price?.currency ?? "USD",
+        interval: "month",
+        maxUsers: plan.maxUsers,
+        maxStorageMb: plan.maxStorage,
+        maxApiCalls: plan.maxApiCalls,
+        features: Array.isArray(plan.features) ? plan.features : [],
+        isCurrent: currentSub?.planId === plan.id,
+        recommended: plan.name === "Growth",
+      };
+    });
   }
 
   /**

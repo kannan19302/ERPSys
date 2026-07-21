@@ -1,7 +1,8 @@
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { pinoLogger } from '../services/logger.service';
-import { syncBackgroundJobStatus } from './job-tracking.util';
+import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
+import { Job } from "bullmq";
+import nodemailer, { type Transporter } from "nodemailer";
+import { pinoLogger } from "../services/logger.service";
+import { syncBackgroundJobStatus } from "./job-tracking.util";
 
 interface EmailJobData {
   to: string;
@@ -12,24 +13,58 @@ interface EmailJobData {
   variables?: Record<string, string>;
 }
 
-@Processor('email')
+@Processor("email")
 export class EmailProcessor extends WorkerHost {
+  // Built lazily (and reused across jobs) so a missing/changed SMTP config is
+  // picked up without restarting the worker, and so unit tests never pay for
+  // a real connection unless SMTP_HOST/SMTP_USER are actually set.
+  private transporter: Transporter | null | undefined;
+
+  private getTransporter(): Transporter | null {
+    if (this.transporter !== undefined) return this.transporter;
+
+    const host = process.env.SMTP_HOST;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASSWORD;
+    if (!host || !user || !pass) {
+      this.transporter = null;
+      return null;
+    }
+
+    this.transporter = nodemailer.createTransport({
+      host,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: { user, pass },
+    });
+    return this.transporter;
+  }
+
   async process(job: Job<EmailJobData>): Promise<void> {
-    const { to, subject, tenantId } = job.data;
+    const { to, subject, body, tenantId } = job.data;
 
-    pinoLogger.info({ jobId: job.id, to, subject, tenantId, queue: 'email' }, 'Processing email job');
+    pinoLogger.info(
+      { jobId: job.id, to, subject, tenantId, queue: "email" },
+      "Processing email job",
+    );
 
-    // In production: wire to nodemailer/SES/SendGrid using SMTP config from env
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpUser = process.env.SMTP_USER;
-
-    if (!smtpHost || !smtpUser) {
-      pinoLogger.warn({ jobId: job.id }, 'SMTP not configured — email job skipped');
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      pinoLogger.warn(
+        { jobId: job.id },
+        "SMTP not configured — email job skipped",
+      );
       return;
     }
 
-    // Simulate sending — in production, use nodemailer.createTransport().sendMail()
-    pinoLogger.info({ jobId: job.id, to, subject }, 'Email sent successfully');
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      subject,
+      html: body,
+    });
+
+    pinoLogger.info({ jobId: job.id, to, subject }, "Email sent successfully");
   }
 
   /**
@@ -37,22 +72,26 @@ export class EmailProcessor extends WorkerHost {
    * with real BullMQ lifecycle events, correlated by `bullJobId`. See P1-1 in
    * .ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md — previously these were unconnected systems.
    */
-  @OnWorkerEvent('active')
+  @OnWorkerEvent("active")
   async onActive(job: Job<EmailJobData>) {
-    await syncBackgroundJobStatus('email', String(job.id), { status: 'ACTIVE' });
+    await syncBackgroundJobStatus("email", String(job.id), {
+      status: "ACTIVE",
+    });
   }
 
-  @OnWorkerEvent('completed')
+  @OnWorkerEvent("completed")
   async onCompleted(job: Job<EmailJobData>) {
-    await syncBackgroundJobStatus('email', String(job.id), { status: 'COMPLETED' });
+    await syncBackgroundJobStatus("email", String(job.id), {
+      status: "COMPLETED",
+    });
   }
 
-  @OnWorkerEvent('failed')
+  @OnWorkerEvent("failed")
   async onFailed(job: Job<EmailJobData> | undefined, error: Error) {
     if (!job) return;
-    await syncBackgroundJobStatus('email', String(job.id), {
-      status: 'FAILED',
-      error: error?.message ?? 'Unknown error',
+    await syncBackgroundJobStatus("email", String(job.id), {
+      status: "FAILED",
+      error: error?.message ?? "Unknown error",
     });
   }
 }

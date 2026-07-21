@@ -4,6 +4,18 @@ import path from 'path';
 const apiBaseUrl = process.env.API_URL || 'http://localhost:3001';
 
 const nextConfig = {
+  // Force webpack to poll for file changes instead of relying on inotify,
+  // which doesn't fire reliably on Docker Desktop bind mounts (Windows).
+  // Polling is already set via WATCHPACK_POLLING=1000 in the Docker env,
+  // but this explicit config ensures it works even if that env var is absent.
+  webpack: (config, { isServer }) => ({
+    ...config,
+    watchOptions: {
+      ...(config.watchOptions || {}),
+      poll: 1000,
+      aggregateTimeout: 300,
+    },
+  }),
   reactStrictMode: true,
   transpilePackages: [
     '@unerp/ui',

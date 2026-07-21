@@ -1,15 +1,24 @@
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { Card, Badge, Button } from '@unerp/ui';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
-  ArrowLeft, Download, Star, Heart, Shield, Clock, ExternalLink,
-  FileText, MessageSquare, History, Loader2, ThumbsUp, ChevronLeft,
-  ChevronRight, X,
-} from 'lucide-react';
-import { RouteGuard, useApiClient } from '@unerp/framework';
+  ArrowLeft,
+  Star,
+  Heart,
+  Shield,
+  Clock,
+  Download,
+  FileText,
+  MessageSquare,
+  History,
+  Loader2,
+  ThumbsUp,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
+import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface AppDetail {
   id: string;
@@ -72,17 +81,22 @@ export default function AppDetailPage() {
 
   const [app, setApp] = useState<AppDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'changelog' | 'support'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "reviews" | "changelog" | "support"
+  >("overview");
   const [isInstalled, setIsInstalled] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [installing, setInstalling] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   // Review form
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
-  const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewBody, setReviewBody] = useState('');
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewBody, setReviewBody] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
 
   // All reviews
@@ -93,17 +107,19 @@ export default function AppDetailPage() {
   // All changelogs
   const [allChangelogs, setAllChangelogs] = useState<Changelog[]>([]);
 
-  // Screenshot lightbox
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
   const loadApp = useCallback(async () => {
     try {
-      const data = await client.get<AppDetail>(`/admin/marketplace/apps/${slug}`);
+      const data = await client.get<AppDetail>(
+        `/admin/marketplace/apps/${slug}`,
+      );
       setApp(data);
       setAllReviews(data.reviews || []);
       setAllChangelogs(data.changelogs || []);
@@ -112,58 +128,85 @@ export default function AppDetailPage() {
 
   const loadInstallStatus = useCallback(async () => {
     try {
-      const list = await client.get<Array<{ appSlug: string }>>('/admin/marketplace/installed');
-      setIsInstalled(list.some(a => a.appSlug === slug));
+      const list = await client.get<Array<{ appSlug: string }>>(
+        "/admin/marketplace/installed",
+      );
+      setIsInstalled(list.some((a) => a.appSlug === slug));
     } catch {}
   }, [slug, client]);
 
   const loadFavStatus = useCallback(async () => {
     try {
-      const list = await client.get<Array<{ app?: { slug?: string } }>>('/admin/marketplace/favorites');
-      setIsFavorite(list.some(f => f.app?.slug === slug));
+      const list = await client.get<Array<{ app?: { slug?: string } }>>(
+        "/admin/marketplace/favorites",
+      );
+      setIsFavorite(list.some((f) => f.app?.slug === slug));
     } catch {}
   }, [slug, client]);
 
   useEffect(() => {
-    Promise.all([loadApp(), loadInstallStatus(), loadFavStatus()]).finally(() => setLoading(false));
+    Promise.all([loadApp(), loadInstallStatus(), loadFavStatus()]).finally(() =>
+      setLoading(false),
+    );
   }, [loadApp, loadInstallStatus, loadFavStatus]);
 
-  const loadReviews = useCallback(async (p: number) => {
-    try {
-      const data = await client.get<{ reviews: Review[]; total: number }>(`/admin/marketplace/apps/${slug}/reviews?page=${p}&limit=10`);
-      setAllReviews(data.reviews);
-      setReviewTotal(data.total);
-      setReviewPage(p);
-    } catch {}
-  }, [slug, client]);
+  const loadReviews = useCallback(
+    async (p: number) => {
+      try {
+        const data = await client.get<{ reviews: Review[]; total: number }>(
+          `/admin/marketplace/apps/${slug}/reviews?page=${p}&limit=10`,
+        );
+        setAllReviews(data.reviews);
+        setReviewTotal(data.total);
+        setReviewPage(p);
+      } catch {}
+    },
+    [slug, client],
+  );
 
   const loadChangelogs = useCallback(async () => {
     try {
-      setAllChangelogs(await client.get<Changelog[]>(`/admin/marketplace/apps/${slug}/changelog`));
+      setAllChangelogs(
+        await client.get<Changelog[]>(
+          `/admin/marketplace/apps/${slug}/changelog`,
+        ),
+      );
     } catch {}
   }, [slug, client]);
 
   useEffect(() => {
-    if (activeTab === 'reviews') loadReviews(1);
-    if (activeTab === 'changelog') loadChangelogs();
+    if (activeTab === "reviews") loadReviews(1);
+    if (activeTab === "changelog") loadChangelogs();
   }, [activeTab, loadReviews, loadChangelogs]);
 
   const handleInstall = async () => {
     setInstalling(true);
     try {
       await client.post(`/admin/marketplace/install/${slug}`);
-      setIsInstalled(true); showToast('App installed successfully!');
-    } catch { showToast('Failed to install', 'error'); }
-    finally { setInstalling(false); }
+      setIsInstalled(true);
+      showToast("Installed");
+    } catch {
+      showToast("Install failed", "error");
+    } finally {
+      setInstalling(false);
+    }
   };
 
   const handleUninstall = async () => {
+    const confirmed = window.confirm(
+      `Uninstall ${app?.name ?? "this app"}? Your data is preserved and you can reinstall it later without losing anything.`,
+    );
+    if (!confirmed) return;
     setInstalling(true);
     try {
       await client.delete(`/admin/marketplace/uninstall/${slug}`);
-      setIsInstalled(false); showToast('App uninstalled');
-    } catch { showToast('Failed to uninstall', 'error'); }
-    finally { setInstalling(false); }
+      setIsInstalled(false);
+      showToast("Uninstalled");
+    } catch {
+      showToast("Uninstall failed", "error");
+    } finally {
+      setInstalling(false);
+    }
   };
 
   const toggleFavorite = async () => {
@@ -181,24 +224,33 @@ export default function AppDetailPage() {
   const submitReview = async () => {
     setSubmittingReview(true);
     try {
-      await client.post(`/admin/marketplace/apps/${slug}/reviews`, { rating: reviewRating, title: reviewTitle || undefined, body: reviewBody || undefined });
-      {
-        showToast('Review submitted!');
-        setShowReviewForm(false);
-        setReviewTitle('');
-        setReviewBody('');
-        setReviewRating(5);
-        loadReviews(1);
-        loadApp();
-      }
-    } catch { showToast('Failed to submit review', 'error'); }
-    finally { setSubmittingReview(false); }
+      await client.post(`/admin/marketplace/apps/${slug}/reviews`, {
+        rating: reviewRating,
+        title: reviewTitle || undefined,
+        body: reviewBody || undefined,
+      });
+      showToast("Review submitted");
+      setShowReviewForm(false);
+      setReviewTitle("");
+      setReviewBody("");
+      setReviewRating(5);
+      loadReviews(1);
+      loadApp();
+    } catch {
+      showToast("Failed to submit", "error");
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   const markHelpful = async (reviewId: string) => {
     try {
       await client.post(`/admin/marketplace/reviews/${reviewId}/helpful`);
-      setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r));
+      setAllReviews((prev) =>
+        prev.map((r) =>
+          r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r,
+        ),
+      );
     } catch {}
   };
 
@@ -206,8 +258,17 @@ export default function AppDetailPage() {
     const r = Number(rating) || 0;
     return (
       <div className="ui-hstack-1">
-        {[1, 2, 3, 4, 5].map(s => (
-          <Star key={s} size={size} className={s <= Math.floor(r) ? 'ui-text-warning' : 'ui-text-tertiary'} fill={s <= Math.floor(r) ? 'var(--color-warning)' : 'none'} />
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star
+            key={s}
+            size={size}
+            color={
+              s <= Math.floor(r)
+                ? "var(--color-warning)"
+                : "var(--color-border)"
+            }
+            fill={s <= Math.floor(r) ? "var(--color-warning)" : "none"}
+          />
         ))}
       </div>
     );
@@ -215,452 +276,736 @@ export default function AppDetailPage() {
 
   if (loading) {
     return (
-      <div className="ui-flex-center" style={{ height: 400 }}>
-        <Loader2 size={32} className="animate-spin ui-text-primary" />
+      <div className={styles.loadingWrap}>
+        <Loader2
+          size={28}
+          className="animate-spin"
+          color="var(--color-primary)"
+        />
       </div>
     );
   }
 
   if (!app) {
     return (
-      <div className="text-center p-12">
-        <h3>App not found</h3>
-        <Link href="/apps/store" className="ui-text-primary">Back to App Store</Link>
+      <div className={styles.detailPage}>
+        <div className={styles.navBar}>
+          <Link href="/apps/store" className={styles.backBtn}>
+            <ArrowLeft size={20} /> App Store
+          </Link>
+        </div>
+        <div
+          style={{
+            textAlign: "center",
+            padding: 60,
+            color: "var(--color-text-secondary)",
+          }}
+        >
+          <h3
+            style={{ margin: "0 0 var(--space-2)", color: "var(--color-text)" }}
+          >
+            App not found
+          </h3>
+          <Link href="/apps/store" style={{ color: "var(--color-text-link)" }}>
+            Back to App Store
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const screenshots = (app.screenshots || []) as { url: string; caption: string }[];
+  const screenshots = (app.screenshots || []) as {
+    url: string;
+    caption: string;
+  }[];
 
-  const ratingDistItems = [5, 4, 3, 2, 1].map(star => {
-    const dist = (app.ratingDistribution || []).find(d => d.rating === star);
+  const ratingDistItems = [5, 4, 3, 2, 1].map((star) => {
+    const dist = (app.ratingDistribution || []).find((d) => d.rating === star);
     const count = dist?.count || 0;
     const pct = app.reviewCount > 0 ? (count / app.reviewCount) * 100 : 0;
     return (
-      <div key={star} className="ui-hstack-2 mb-1">
-        <span className="ui-text-xs-muted text-right" style={{ width: 16 }}>{star}</span>
-        <Star size={10} className="ui-text-warning" fill='var(--color-warning)' />
-        <div className="ui-progress">
-          <div className="ui-progress-bar ui-progress-bar-warning" style={{ width: `${pct}%` }} />
+      <div key={star} className={styles.ratingBarRow}>
+        <span className={styles.ratingBarLabel}>{star}</span>
+        <Star
+          size={9}
+          color="var(--color-warning)"
+          fill="var(--color-warning)"
+        />
+        <div className={styles.ratingBar}>
+          <div className={styles.ratingBarFill} style={{ width: `${pct}%` }} />
         </div>
-        <span className="ui-text-xs-tertiary text-right" style={{ width: 28 }}>{count}</span>
+        <span className={styles.ratingBarCount}>{count}</span>
       </div>
     );
   });
 
   return (
     <RouteGuard permission="apps.store.detail.read">
-    <div className="ui-animate-in ui-stack-6 mx-auto" style={{ maxWidth: 1100, width: '100%' }}>
-      {toast && (
-        <div className="fixed top-6 right-6 z-1000 px-5 py-3 rounded-md shadow-lg text-sm font-semibold" style={{ background: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)', color: 'var(--color-bg-elevated)' }}>
-          {toast.message}
-        </div>
-      )}
-
-      {/* Lightbox */}
-      {lightboxIndex !== null && screenshots.length > 0 && (
-        <div className="ui-modal-overlay" onClick={() => setLightboxIndex(null)}>
-          <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }} className="absolute top-5 right-5 flex-center w-10 h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-bg-elevated)', border: 'none', cursor: 'pointer' }}>
-            <X size={20} />
-          </button>
-          {lightboxIndex > 0 && (
-            <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }} className="absolute left-5 flex-center w-10 h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-bg-elevated)', border: 'none', cursor: 'pointer' }}>
-              <ChevronLeft size={20} />
-            </button>
-          )}
-          {lightboxIndex < screenshots.length - 1 && (
-            <button onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }} className="absolute right-5 flex-center w-10 h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-bg-elevated)', border: 'none', cursor: 'pointer' }}>
-              <ChevronRight size={20} />
-            </button>
-          )}
-          <div onClick={e => e.stopPropagation()} className="flex-center" style={{ maxHeight: '80vh', maxWidth: '80vw', textAlign: 'center' }}>
-            <div className="ui-stack-3 flex-center p-6 rounded-xl" style={{ background: 'var(--color-bg-elevated)', minHeight: 250, minWidth: 400 }}>
-              {screenshots[lightboxIndex]?.url ? (
-                <img src={screenshots[lightboxIndex].url} alt={screenshots[lightboxIndex]?.caption || ''} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '8px' }} />
-              ) : (
-                <div style={{ fontSize: 48, marginBottom: 'var(--space-2)' }}>🖼️</div>
-              )}
-              <p className="ui-text-sm-muted m-0">{screenshots[lightboxIndex]?.caption}</p>
-            </div>
+      <div className={styles.detailPage}>
+        {toast && (
+          <div
+            className={`${styles.toast} ${toast.type === "success" ? styles.toastSuccess : styles.toastError}`}
+          >
+            {toast.message}
           </div>
+        )}
+
+        {/* Nav Bar */}
+        <div className={styles.navBar}>
+          <Link href="/apps/store" className={styles.backBtn}>
+            <ArrowLeft size={20} /> App Store
+          </Link>
         </div>
-      )}
 
-      {/* Breadcrumb */}
-      <div className="ui-breadcrumb">
-        <Link href="/apps/store" className="ui-breadcrumb-link ui-hstack-2">
-          <ArrowLeft size={14} /> App Store
-        </Link>
-        <span className="ui-breadcrumb-separator">/</span>
-        <span className="ui-breadcrumb-active">{app.name}</span>
-      </div>
-
-      {/* App Header + Sidebar */}
-      <div className="ui-detail-layout">
-        <div>
-          <div className="ui-hstack-4">
-            <div className="ui-flex-center flex-shrink-0 w-[72px] h-[72px] text-[36px] rounded-xl border" style={{ background: 'var(--color-bg-sunken)' }}>
-              {app.icon || '📦'}
-            </div>
-            <div className="flex-1">
-              <div className="ui-hstack-2 mb-1">
-                <h1 className="m-0">{app.name}</h1>
-                {app.verified && <Shield size={18} className="ui-text-success" />}
-                {app.featured && <Badge variant="warning">Featured</Badge>}
-              </div>
-              <div className="ui-text-sm-muted mb-2">
-                by <span className="ui-text-primary">{app.publisher}</span> · v{app.version}
-              </div>
-              <div className="ui-hstack-3 ui-flex-wrap">
-                <div className="ui-flex ui-items-center ui-gap-1">
-                  {renderStars(app.rating, 16)}
-                  <span className="text-sm font-semibold ml-1">
-                    {Number(app.rating).toFixed(1)}
-                  </span>
-                  <span className="ui-text-sm-muted">
-                    ({app.reviewCount} reviews)
-                  </span>
-                </div>
-                <span className="ui-hstack-1 ui-text-sm-muted">
-                  <Download size={14} /> {app.installs.toLocaleString()} installs
+        {/* Hero */}
+        <div className={styles.heroSection}>
+          <div
+            className={styles.heroIcon}
+            style={{
+              background: "var(--color-primary-light)",
+              borderRadius: "var(--radius-xl)",
+            }}
+          >
+            {app.icon || "📦"}
+          </div>
+          <div className={styles.heroInfo}>
+            <h1 className={styles.heroTitle}>{app.name}</h1>
+            <p className={styles.heroSub}>
+              {app.publisher} · v{app.version}
+            </p>
+            <div className="ui-hstack-3 ui-flex-wrap">
+              <div className="ui-hstack-1">
+                {renderStars(app.rating, 12)}
+                <span
+                  style={{
+                    fontSize: "var(--text-sm)",
+                    color: "var(--color-text-secondary)",
+                    fontWeight: "var(--weight-medium)",
+                  }}
+                >
+                  {Number(app.rating).toFixed(1)}
                 </span>
-                <Badge variant="default">{app.category}</Badge>
               </div>
+              <span className="ui-text-xs-muted ui-hstack-1">
+                <Download size={12} /> {app.installs.toLocaleString()}
+              </span>
+            </div>
+            <div
+              className="ui-hstack-2"
+              style={{ marginTop: "var(--space-3)" }}
+            >
+              {app.metadata?.isSystem ? (
+                <button
+                  className={`${styles.getBtnLarge} ${styles.getBtnLargeCore}`}
+                >
+                  System App
+                </button>
+              ) : isInstalled ? (
+                <button
+                  onClick={handleUninstall}
+                  className={`${styles.getBtnLarge} ${styles.getBtnLargeOpen}`}
+                >
+                  {installing ? (
+                    <Loader2
+                      size={15}
+                      className="animate-spin"
+                      color="var(--color-primary)"
+                    />
+                  ) : (
+                    "Uninstall"
+                  )}
+                </button>
+              ) : (
+                <button onClick={handleInstall} className={styles.getBtnLarge}>
+                  {installing ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    "Get"
+                  )}
+                </button>
+              )}
+              {!app.metadata?.isSystem && (
+                <button
+                  onClick={toggleFavorite}
+                  style={{
+                    background: "none",
+                    border: "1px solid var(--color-border)",
+                    cursor: "pointer",
+                    padding: "var(--space-2)",
+                    color: isFavorite
+                      ? "var(--color-danger)"
+                      : "var(--color-text-tertiary)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Heart
+                    size={18}
+                    fill={isFavorite ? "var(--color-danger)" : "none"}
+                  />
+                </button>
+              )}
             </div>
           </div>
+        </div>
 
-          <p className="ui-text-sm-muted mt-4" style={{ lineHeight: 1.6 }}>
-            {app.description}
+        {/* Meta row */}
+        <div className={styles.metaRow}>
+          <span
+            className={styles.metaBadge}
+            style={{
+              background: "var(--color-primary-light)",
+              color: "var(--color-primary)",
+            }}
+          >
+            {app.pricing === "FREE"
+              ? "Free"
+              : app.pricing === "FREEMIUM"
+                ? "Freemium"
+                : `$${app.price}/mo`}
+          </span>
+          <span
+            className={styles.metaBadge}
+            style={{
+              background: "var(--color-bg-sunken)",
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            {app.category}
+          </span>
+          {app.verified && (
+            <span className={styles.verifyBadge}>
+              <Shield size={11} /> Verified
+            </span>
+          )}
+        </div>
+
+        {/* Screenshots */}
+        {screenshots.length > 0 && (
+          <div className={styles.screenshotRow}>
+            <div
+              className={styles.sectionLabel}
+              style={{
+                padding: "0 var(--space-4)",
+                marginBottom: "var(--space-3)",
+              }}
+            >
+              Screenshots
+            </div>
+            <div className={styles.screenshotScroll}>
+              {screenshots.map((ss, i) => (
+                <div
+                  key={i}
+                  className={styles.screenshotFrame}
+                  style={{
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--color-border)",
+                    background: "var(--color-bg-sunken)",
+                  }}
+                >
+                  {ss.url ? (
+                    <img
+                      src={ss.url}
+                      alt={ss.caption || ""}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    "🖼️"
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        <div className={styles.infoSection}>
+          <div className={styles.sectionLabel}>Description</div>
+          <p className={styles.description}>
+            {app.longDescription || app.description}
           </p>
         </div>
 
-        {/* Sidebar */}
-        <div className="ui-stack-3">
-          <Card padding="lg">
-            <div className="text-xl font-bold text-center mb-3" style={{ color: app.pricing === 'FREE' ? 'var(--color-success)' : 'var(--color-text)' }}>
-              {app.pricing === 'FREE' ? 'Free' : app.pricing === 'FREEMIUM' ? 'Freemium' : `$${app.price}/mo`}
-            </div>
-
-            <div className="ui-hstack-2 mb-3">
-              {app.metadata?.isSystem ? (
-                <Button variant="outline" disabled className="flex-1">
-                  System App
-                </Button>
-              ) : isInstalled ? (
-                <Button variant="danger" onClick={handleUninstall} isLoading={installing} className="flex-1">
-                  {installing ? 'Uninstalling...' : 'Uninstall'}
-                </Button>
-              ) : (
-                <Button variant="primary" onClick={handleInstall} isLoading={installing} className="flex-1">
-                  {installing ? 'Installing...' : 'Install App'}
-                </Button>
-              )}
-              {!app.metadata?.isSystem && (
-                <Button variant="ghost" onClick={toggleFavorite} className="px-[10px] py-[10px]">
-                  <Heart size={18} fill={isFavorite ? 'var(--color-primary)' : 'none'} className={isFavorite ? 'ui-text-primary' : 'ui-text-muted'} />
-                </Button>
-              )}
-            </div>
-
-            {app.metadata?.isSystem && (
-              <div className="ui-alert ui-alert-info mb-3">
-                <Shield size={14} className="ui-text-primary flex-shrink-0" style={{ marginTop: 1 }} />
-                <div>
-                  This is a core system application. It is pre-installed and cannot be uninstalled.
-                </div>
-              </div>
-            )}
-
-            <div className="ui-stack-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              <div className="ui-flex-between">
-                <span>Version</span><span className="ui-text-primary">{app.version}</span>
-              </div>
-              <div className="ui-flex-between">
-                <span>Category</span><span className="ui-text-primary">{app.category}</span>
-              </div>
-              <div className="ui-flex-between">
-                <span>Publisher</span><span className="ui-text-primary">{app.publisher}</span>
-              </div>
-              <div className="ui-flex-between">
-                <span>Last Updated</span>
-                <span className="ui-text-primary">
-                  {new Date(app.updatedAt).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="ui-flex-between">
-                <span>Installs</span><span className="ui-text-primary">{app.installs.toLocaleString()}</span>
-              </div>
-            </div>
-          </Card>
-
-          {(app.tags as string[])?.length > 0 && (
-            <div className="ui-chip-group">
-              {(app.tags as string[]).map((tag: string) => (
-                <span key={tag} className="ui-chip">
-                  {tag}
-                </span>
+        {/* Features */}
+        {(app.features as string[])?.length > 0 && (
+          <div
+            className={styles.infoSection}
+            style={{ borderTop: "1px solid var(--color-border)" }}
+          >
+            <div className={styles.sectionLabel}>Features</div>
+            <ul className={styles.featuresList}>
+              {(app.features as string[]).map((f: string) => (
+                <li key={f} className={styles.featureItem}>
+                  <span
+                    className={styles.featureDot}
+                    style={{
+                      background: "var(--color-primary)",
+                      borderRadius: "50%",
+                    }}
+                  />
+                  {f}
+                </li>
               ))}
-            </div>
-          )}
-        </div>
-      </div>
+            </ul>
+          </div>
+        )}
 
-      {/* Screenshots */}
-      {screenshots.length > 0 && (
-        <div>
-          <h3 className="ui-heading-base mb-3">Screenshots</h3>
-          <div className="ui-hstack-3 overflow-x-auto pb-2">
-            {screenshots.map((ss, i) => (
-              <div key={i} onClick={() => setLightboxIndex(i)} className={`${styles.screenshotCard}`}>
-                <div className="ui-flex-center" style={{ background: 'var(--color-bg-sunken)', height: 140, fontSize: 32 }}>
-                  {ss.url ? (
-                    <img src={ss.url} alt={ss.caption} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-                  ) : '🖼️'}
-                </div>
-                <div className="p-2" style={{ color: 'var(--color-text-secondary)', fontSize: 11 }}>
-                  {ss.caption}
-                </div>
-              </div>
-            ))}
+        {/* Info Metadata */}
+        <div
+          className={styles.infoSection}
+          style={{ borderTop: "1px solid var(--color-border)" }}
+        >
+          <div className={styles.sectionLabel}>Information</div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Version</span>
+            <span className={styles.infoValue}>{app.version}</span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Category</span>
+            <span className={styles.infoValue}>{app.category}</span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Publisher</span>
+            <span className={styles.infoValue}>{app.publisher}</span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Updated</span>
+            <span className={styles.infoValue}>
+              {new Date(app.updatedAt).toLocaleDateString()}
+            </span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Installs</span>
+            <span className={styles.infoValue}>
+              {app.installs.toLocaleString()}
+            </span>
           </div>
         </div>
-      )}
 
-      {/* Tabs */}
-      <div className="ui-tabs">
-        {([
-          { key: 'overview' as const, label: 'Overview', icon: <FileText size={14} /> },
-          { key: 'reviews' as const, label: `Reviews (${app.reviewCount})`, icon: <MessageSquare size={14} /> },
-          { key: 'changelog' as const, label: 'Changelog', icon: <History size={14} /> },
-          { key: 'support' as const, label: 'Support', icon: <ExternalLink size={14} /> },
-        ]).map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`ui-tab ${activeTab === tab.key ? 'ui-tab-active' : ''}`}>
-            {tab.icon} {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <div className="ui-stack-5">
-          {app.longDescription && (
-            <div>
-              <h3 className="ui-heading-base mb-3">About</h3>
-              <div className="ui-text-sm-muted" style={{ lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                {app.longDescription}
-              </div>
-            </div>
-          )}
-
-          {(app.features as string[])?.length > 0 && (
-            <div>
-              <h3 className="ui-heading-base mb-3">Features</h3>
-              <div className="ui-grid-auto">
-                {(app.features as string[]).map((f: string) => (
-                  <div key={f} className="ui-hstack-2 ui-card-flat p-2 px-3 text-sm">
-                    <div className="flex-shrink-0 w-[6px] h-[6px] rounded-full" style={{ background: 'var(--color-primary)' }} />
-                    {f}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {(app.requiresApps as string[])?.length > 0 && (
-            <div>
-              <h3 className="ui-heading-sm mb-2">Requirements</h3>
-              <p className="ui-text-sm-muted">
-                This app requires: {(app.requiresApps as string[]).join(', ')}
-              </p>
-            </div>
-          )}
+        {/* Tabs */}
+        <div className={styles.tabRow}>
+          {[
+            { key: "overview" as const, label: "Overview" },
+            { key: "reviews" as const, label: `Reviews (${app.reviewCount})` },
+            { key: "changelog" as const, label: "Changelog" },
+            { key: "support" as const, label: "Support" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`${styles.tabItem} ${activeTab === tab.key ? styles.tabItemActive : ""}`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      )}
 
-      {activeTab === 'reviews' && (
-        <div className="ui-stack-5">
-          {/* Rating Summary */}
-          <Card padding="lg">
-            <div className="ui-hstack-6 ui-flex-wrap">
-              <div className="text-center">
-                <div className="text-3xl font-bold" style={{ lineHeight: 1 }}>{Number(app.rating).toFixed(1)}</div>
-                <div className="mt-1 mb-1">{renderStars(app.rating, 18)}</div>
-                <div className="ui-text-xs-muted">{app.reviewCount} reviews</div>
-              </div>
-              <div className="ui-flex-1" style={{ minWidth: 200 }}>
-                {ratingDistItems}
+        {/* Tab Content */}
+        <div className={styles.tabContent}>
+          {activeTab === "overview" && (
+            <div>
+              {(app.requiresApps as string[])?.length > 0 && (
+                <div className="ui-card" style={{ padding: "var(--space-4)" }}>
+                  <div className={styles.sectionLabel}>Requirements</div>
+                  <p
+                    style={{
+                      fontSize: "var(--text-sm)",
+                      color: "var(--color-text)",
+                      margin: 0,
+                    }}
+                  >
+                    Requires: {(app.requiresApps as string[]).join(", ")}
+                  </p>
                 </div>
-                <Button variant="primary" size="sm" onClick={() => setShowReviewForm(!showReviewForm)}>
-                  Write a Review
-                </Button>
-              </div>
-            </Card>
+              )}
+            </div>
+          )}
 
-            {/* Review Form */}
-            {showReviewForm && (
-              <Card padding="lg" style={{ borderColor: 'var(--color-primary)' }}>
-                <h4 className="ui-heading-sm mb-3">Write Your Review</h4>
-                <div className="ui-form-group">
-                  <label className="ui-label">Rating</label>
-                  <div className="ui-hstack-1">
-                    {[1, 2, 3, 4, 5].map(s => (
-                      <button key={s} onClick={() => setReviewRating(s)} className="bg-none border-none cursor-pointer p-[2px]">
-                        <Star size={24} className={s <= reviewRating ? 'ui-text-warning' : 'ui-text-tertiary'} fill={s <= reviewRating ? 'var(--color-warning)' : 'none'} />
-                      </button>
-                    ))}
+          {activeTab === "reviews" && (
+            <div>
+              {/* Rating Summary */}
+              <div className={`ui-card ${styles.ratingCard}`}>
+                <div className={styles.ratingBig}>
+                  <div className={styles.ratingNum}>
+                    {Number(app.rating).toFixed(1)}
+                  </div>
+                  <div style={{ marginTop: "var(--space-1)" }}>
+                    {renderStars(app.rating, 14)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "var(--text-xs)",
+                      color: "var(--color-text-secondary)",
+                      marginTop: "var(--space-1)",
+                    }}
+                  >
+                    {app.reviewCount} reviews
                   </div>
                 </div>
-                <div className="ui-form-group">
-                  <label className="ui-label">Title (optional)</label>
-                  <input value={reviewTitle} onChange={e => setReviewTitle(e.target.value)} placeholder="Summary of your review"
-                    className="ui-input" />
-                </div>
-                <div className="ui-form-group">
-                  <label className="ui-label">Review</label>
-                  <textarea value={reviewBody} onChange={e => setReviewBody(e.target.value)} placeholder="Share your experience..."
-                    rows={4} className="ui-textarea" />
-                </div>
-                <div className="ui-flex ui-gap-2">
-                  <Button variant="primary" onClick={submitReview} isLoading={submittingReview}>
-                    {submittingReview ? 'Submitting...' : 'Submit Review'}
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowReviewForm(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {/* Review List */}
-            {allReviews.length === 0 ? (
-              <div className="ui-empty-state">
-                <MessageSquare size={32} className="ui-empty-state-icon" />
-                <p className="ui-empty-state-text">No reviews yet. Be the first to review this app!</p>
+                <div className={styles.ratingBars}>{ratingDistItems}</div>
               </div>
-            ) : (
-              <div className="ui-stack-3">
-                {allReviews.map(review => (
-                  <Card key={review.id} padding="md">
-                    <div className="ui-flex-between mb-2">
-                      <div>
-                        <div className="ui-hstack-2">
-                          <span className="ui-heading-sm">{review.userName}</span>
-                          {review.verifiedPurchase && <span style={{ fontSize: 9 }}><Badge variant="success">Verified</Badge></span>}
+
+              {/* Write Review Button */}
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="ui-btn ui-btn-secondary"
+                style={{
+                  width: "100%",
+                  marginTop: "var(--space-3)",
+                  marginBottom: "var(--space-3)",
+                }}
+              >
+                <MessageSquare size={14} />
+                {showReviewForm ? "Cancel" : "Write a Review"}
+              </button>
+
+              {/* Review Form */}
+              {showReviewForm && (
+                <div className={`ui-card ${styles.reviewForm}`}>
+                  <h4 className={styles.reviewFormTitle}>Write Your Review</h4>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Rating</label>
+                    <div className="ui-hstack-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setReviewRating(s)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 2,
+                          }}
+                        >
+                          <Star
+                            size={22}
+                            color={
+                              s <= reviewRating
+                                ? "var(--color-warning)"
+                                : "var(--color-border)"
+                            }
+                            fill={
+                              s <= reviewRating
+                                ? "var(--color-warning)"
+                                : "none"
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Title (optional)</label>
+                    <input
+                      value={reviewTitle}
+                      onChange={(e) => setReviewTitle(e.target.value)}
+                      placeholder="Summary of your review"
+                      className="ui-input"
+                    />
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Review</label>
+                    <textarea
+                      value={reviewBody}
+                      onChange={(e) => setReviewBody(e.target.value)}
+                      placeholder="Share your experience..."
+                      rows={4}
+                      className="ui-textarea"
+                    />
+                  </div>
+                  <button
+                    onClick={submitReview}
+                    disabled={submittingReview}
+                    className="ui-btn ui-btn-primary"
+                  >
+                    {submittingReview ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      "Submit Review"
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Reviews */}
+              {allReviews.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <MessageSquare
+                    size={28}
+                    style={{ marginBottom: "var(--space-2)" }}
+                  />
+                  <p style={{ margin: 0 }}>
+                    No reviews yet. Be the first to review this app!
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  {allReviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className={`ui-card ${styles.reviewCard}`}
+                    >
+                      <div className={styles.reviewHeader}>
+                        <div>
+                          <span className={styles.reviewName}>
+                            {review.userName}
+                          </span>
+                          {review.verifiedPurchase && (
+                            <span className={styles.verifyBadge}>
+                              {" "}
+                              · Verified
+                            </span>
+                          )}
                         </div>
-                        {renderStars(review.rating, 12)}
-                      </div>
-                      <div className="ui-hstack-2">
-                        <span className="ui-text-xs-tertiary ui-hstack-1">
-                          <Clock size={10} /> {new Date(review.createdAt).toLocaleDateString()}
+                        <span className={styles.reviewDate}>
+                          <Clock
+                            size={10}
+                            style={{ verticalAlign: "middle", marginRight: 2 }}
+                          />
+                          {new Date(review.createdAt).toLocaleDateString()}
                         </span>
                       </div>
+                      {renderStars(review.rating, 11)}
+                      {review.title && (
+                        <div className={styles.reviewTitle}>{review.title}</div>
+                      )}
+                      {review.body && (
+                        <p className={styles.reviewBody}>{review.body}</p>
+                      )}
+                      <button
+                        onClick={() => markHelpful(review.id)}
+                        className={styles.helpfulBtn}
+                      >
+                        <ThumbsUp size={10} /> Helpful ({review.helpfulCount})
+                      </button>
                     </div>
-                    {review.title && <h4 className="ui-heading-sm mb-1">{review.title}</h4>}
-                    {review.body && <p className="ui-text-sm-muted mb-2" style={{ lineHeight: 1.5 }}>{review.body}</p>}
-                    <button onClick={() => markHelpful(review.id)} className="ui-hstack-1 rounded-full border px-[10px] py-[2px] text-11px" style={{ background: 'none', color: 'var(--color-text-secondary)', borderColor: 'var(--color-border)', cursor: 'pointer' }}>
-                      <ThumbsUp size={10} /> Helpful ({review.helpfulCount})
-                    </button>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {activeTab === 'changelog' && (
-          <div>
-            {allChangelogs.length === 0 ? (
-              <div className="ui-empty-state">
-                <History size={32} className="ui-empty-state-icon" />
-                <p className="ui-empty-state-text">No changelog available yet.</p>
-              </div>
-            ) : (
-              <div className="pl-6 relative">
-                <div className="absolute left-[9px] top-0 bottom-0 w-[2px]" style={{ background: 'var(--color-border)' }} />
-                {allChangelogs.map((cl, i) => (
-                  <div key={cl.id} className="mb-5 relative">
-                    <div className="absolute w-3 h-3 rounded-full border-2" style={{ left: -19, top: 4, background: i === 0 ? 'var(--color-primary)' : 'var(--color-border)', borderColor: 'var(--color-bg)' }} />
-                    <div className="ui-hstack-2 mb-2">
-                      <Badge variant={i === 0 ? 'info' : 'default'}>v{cl.version}</Badge>
-                      <span className="ui-text-xs-tertiary">
+          {activeTab === "changelog" && (
+            <div>
+              {allChangelogs.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <History
+                    size={28}
+                    style={{ marginBottom: "var(--space-2)" }}
+                  />
+                  <p style={{ margin: 0 }}>No changelog available.</p>
+                </div>
+              ) : (
+                <div
+                  className="ui-card"
+                  style={{ padding: "4px var(--space-4)" }}
+                >
+                  {allChangelogs.map((cl) => (
+                    <div key={cl.id} className={styles.changelogItem}>
+                      <span className={styles.changelogVersion}>
+                        v{cl.version}
+                      </span>
+                      <span className={styles.changelogDate}>
                         {new Date(cl.publishedAt).toLocaleDateString()}
                       </span>
+                      <div className={styles.changelogBody}>{cl.changes}</div>
                     </div>
-                    <div className="ui-text-sm-muted" style={{ lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                      {cl.changes}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {activeTab === 'support' && (
-          <Card padding="lg">
-            <div className="ui-grid-auto">
+          {activeTab === "support" && (
+            <div>
               {app.documentationUrl && (
-                <a href={app.documentationUrl} target="_blank" rel="noopener noreferrer" className="ui-card-clickable ui-hstack-3 p-4 rounded-lg border text-decoration-none" style={{ color: 'var(--color-text)' }}>
-                  <FileText size={20} className="ui-text-primary" />
+                <a
+                  href={app.documentationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`ui-card ${styles.supportLink}`}
+                >
+                  <FileText size={18} color="var(--color-primary)" />
                   <div>
-                    <div className="ui-heading-sm">Documentation</div>
-                    <div className="ui-text-xs-muted">Read the docs</div>
+                    <div
+                      style={{
+                        fontSize: "var(--text-sm)",
+                        fontWeight: "var(--weight-semibold)",
+                      }}
+                    >
+                      Documentation
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "var(--text-xs)",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
+                      Read the docs
+                    </div>
                   </div>
+                  <ChevronRight
+                    size={16}
+                    color="var(--color-border)"
+                    style={{ marginLeft: "auto" }}
+                  />
                 </a>
               )}
               {app.supportUrl && (
-                <a href={app.supportUrl} target="_blank" rel="noopener noreferrer" className="ui-card-clickable ui-hstack-3 p-4 rounded-lg border text-decoration-none" style={{ color: 'var(--color-text)' }}>
-                  <MessageSquare size={20} className="ui-text-success" />
+                <a
+                  href={app.supportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`ui-card ${styles.supportLink}`}
+                >
+                  <MessageSquare size={18} color="var(--color-success)" />
                   <div>
-                    <div className="ui-heading-sm">Support</div>
-                    <div className="ui-text-xs-muted">Get help</div>
+                    <div
+                      style={{
+                        fontSize: "var(--text-sm)",
+                        fontWeight: "var(--weight-semibold)",
+                      }}
+                    >
+                      Support
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "var(--text-xs)",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
+                      Get help
+                    </div>
                   </div>
+                  <ChevronRight
+                    size={16}
+                    color="var(--color-border)"
+                    style={{ marginLeft: "auto" }}
+                  />
                 </a>
               )}
               {app.privacyPolicyUrl && (
-                <a href={app.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="ui-card-clickable ui-hstack-3 p-4 rounded-lg border text-decoration-none" style={{ color: 'var(--color-text)' }}>
-                  <Shield size={20} className="ui-text-muted" />
+                <a
+                  href={app.privacyPolicyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`ui-card ${styles.supportLink}`}
+                >
+                  <Shield size={18} color="var(--color-text-tertiary)" />
                   <div>
-                    <div className="ui-heading-sm">Privacy Policy</div>
-                    <div className="ui-text-xs-muted">Data handling</div>
-                  </div>
-                </a>
-              )}
-              {!app.documentationUrl && !app.supportUrl && !app.privacyPolicyUrl && (
-                <div className="ui-empty-state" style={{ gridColumn: '1 / -1' }}>
-                  <p className="ui-empty-state-text">No support links provided for this app. Contact the publisher ({app.publisher}) for assistance.</p>
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-
-      {/* Related Apps */}
-      {(app.relatedApps || []).length > 0 && (
-        <div>
-          <h3 className="ui-heading-base mb-3">Related Apps</h3>
-          <div className="ui-grid-auto">
-            {(app.relatedApps || []).map((rel: any) => (
-              <Link key={rel.slug} href={`/apps/store/${rel.slug}`} className="text-decoration-none" style={{ color: 'inherit' }}>
-                <Card padding="md" className={`${styles.relatedCard} ui-card-clickable ui-hstack-3`}>
-                  <div className="ui-flex-center flex-shrink-0 w-10 h-10 rounded-md text-[20px]" style={{ background: 'var(--color-bg-sunken)' }}>
-                    {rel.icon || '📦'}
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div className="ui-heading-sm">{rel.name}</div>
-                    <div className="ui-hstack-1 ui-text-xs-muted">
-                      {renderStars(rel.rating, 10)}
-                      <span>{Number(rel.rating).toFixed(1)}</span>
+                    <div
+                      style={{
+                        fontSize: "var(--text-sm)",
+                        fontWeight: "var(--weight-semibold)",
+                      }}
+                    >
+                      Privacy Policy
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "var(--text-xs)",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
+                      Data handling
                     </div>
                   </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                  <ChevronRight
+                    size={16}
+                    color="var(--color-border)"
+                    style={{ marginLeft: "auto" }}
+                  />
+                </a>
+              )}
+              {!app.documentationUrl &&
+                !app.supportUrl &&
+                !app.privacyPolicyUrl && (
+                  <div className={styles.emptyState}>
+                    <ExternalLink
+                      size={28}
+                      style={{ marginBottom: "var(--space-2)" }}
+                    />
+                    <p style={{ margin: 0 }}>No support links available.</p>
+                  </div>
+                )}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Related Apps */}
+        {(app.relatedApps || []).length > 0 && (
+          <div>
+            <div
+              className={styles.sectionLabel}
+              style={{
+                padding: "var(--space-5) var(--space-4) var(--space-3)",
+              }}
+            >
+              Related Apps
+            </div>
+            <div className={styles.relatedScroll}>
+              {(app.relatedApps || []).map((rel: any) => (
+                <Link
+                  key={rel.slug}
+                  href={`/apps/store/${rel.slug}`}
+                  className={`ui-card ${styles.relatedCard}`}
+                >
+                  <div
+                    className={styles.relatedIcon}
+                    style={{
+                      background: "var(--color-primary-light)",
+                      borderRadius: "var(--radius-md)",
+                    }}
+                  >
+                    {rel.icon || "📦"}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: "var(--weight-semibold)",
+                      color: "var(--color-text)",
+                      textAlign: "center",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {rel.name}
+                  </div>
+                  <div className="ui-hstack-1">
+                    {renderStars(rel.rating, 8)}
+                    <span
+                      style={{
+                        fontSize: "0.625rem",
+                        color: "var(--color-text-tertiary)",
+                      }}
+                    >
+                      {Number(rel.rating).toFixed(1)}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div
+          style={{
+            textAlign: "center",
+            padding: "var(--space-5) var(--space-4)",
+            fontSize: "var(--text-xs)",
+            color: "var(--color-text-tertiary)",
+          }}
+        >
+          UniERP App Store
+        </div>
+      </div>
     </RouteGuard>
   );
 }
