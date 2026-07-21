@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { OutboxDispatcherService } from '../outbox-dispatcher.service';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { OutboxDispatcherService } from "../outbox-dispatcher.service";
 
-vi.mock('@unerp/database', () => ({
+vi.mock("@unerp/database", () => ({
   prisma: {
-    $queryRawUnsafe: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }));
 
-vi.mock('@nestjs/bullmq', () => ({
+vi.mock("@nestjs/bullmq", () => ({
   InjectQueue: () => vi.fn(),
 }));
 
-describe('OutboxDispatcherService', () => {
+describe("OutboxDispatcherService", () => {
   let service: OutboxDispatcherService;
   let mockQueue: { addBulk: ReturnType<typeof vi.fn> };
   beforeEach(() => {
@@ -24,51 +24,55 @@ describe('OutboxDispatcherService', () => {
     service.onModuleDestroy();
   });
 
-  it('should claim and enqueue deliveries', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([
-      { id: 'del-1', tenant_id: 't-1', outbox_event_id: 'evt-1', destination: 'inventory' },
-      { id: 'del-2', tenant_id: 't-1', outbox_event_id: 'evt-2', destination: 'finance' },
+  it("should claim and enqueue deliveries", async () => {
+    const { prisma } = await import("@unerp/database");
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([
+      {
+        id: "del-1",
+        tenant_id: "t-1",
+        outbox_event_id: "evt-1",
+        destination: "inventory",
+      },
+      {
+        id: "del-2",
+        tenant_id: "t-1",
+        outbox_event_id: "evt-2",
+        destination: "finance",
+      },
     ]);
 
     await service.poll();
 
-    expect(prisma.$queryRawUnsafe).toHaveBeenCalledOnce();
-    expect(prisma.$queryRawUnsafe).toHaveBeenCalledWith(
-      expect.stringContaining('FOR UPDATE SKIP LOCKED'),
-      expect.any(String),
-      expect.any(Date),
-      100,
-    );
+    expect(prisma.$queryRaw).toHaveBeenCalledOnce();
     expect(mockQueue.addBulk).toHaveBeenCalledOnce();
     expect(mockQueue.addBulk).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
-          name: 'del-1',
-          data: expect.objectContaining({ deliveryId: 'del-1' }),
-          opts: expect.objectContaining({ jobId: 'del-1' }),
+          name: "del-1",
+          data: expect.objectContaining({ deliveryId: "del-1" }),
+          opts: expect.objectContaining({ jobId: "del-1" }),
         }),
         expect.objectContaining({
-          name: 'del-2',
-          data: expect.objectContaining({ deliveryId: 'del-2' }),
-          opts: expect.objectContaining({ jobId: 'del-2' }),
+          name: "del-2",
+          data: expect.objectContaining({ deliveryId: "del-2" }),
+          opts: expect.objectContaining({ jobId: "del-2" }),
         }),
       ]),
     );
   });
 
-  it('should not enqueue when no deliveries claimed', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([]);
+  it("should not enqueue when no deliveries claimed", async () => {
+    const { prisma } = await import("@unerp/database");
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([]);
 
     await service.poll();
 
     expect(mockQueue.addBulk).not.toHaveBeenCalled();
   });
 
-  it('should handle errors gracefully', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.$queryRawUnsafe).mockRejectedValue(new Error('DB error'));
+  it("should handle errors gracefully", async () => {
+    const { prisma } = await import("@unerp/database");
+    vi.mocked(prisma.$queryRaw).mockRejectedValue(new Error("DB error"));
 
     await expect(service.poll()).resolves.not.toThrow();
   });

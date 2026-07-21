@@ -34,10 +34,8 @@ export class StorageMeteringService {
     // pg_stat_user_tables sees the physical table name (= @@map).
     const tableStats = await this.getTableStats();
 
-    const perApp: Record<
-      string,
-      { rowCount: number; estimatedBytes: number }
-    > = {};
+    const perApp: Record<string, { rowCount: number; estimatedBytes: number }> =
+      {};
 
     for (const stat of tableStats) {
       const modelName = this.tableNameToModelName(stat.relname);
@@ -49,10 +47,7 @@ export class StorageMeteringService {
       // Row-per-tenant approximation: if the table has N total rows and
       // total_bytes / MAX(N, 1) avg bytes per row, multiply by the counts.
       // We get the tenant-specific row count separately.
-      const tenantRowCount = await this.getTenantRowCount(
-        modelName,
-        tenantId,
-      );
+      const tenantRowCount = await this.getTenantRowCount(modelName, tenantId);
       if (tenantRowCount === 0) continue;
 
       const avgRowSize =
@@ -137,13 +132,13 @@ export class StorageMeteringService {
   // ── Private helpers ──
 
   private async getTableStats(): Promise<TableStat[]> {
-    const rows = await prisma.$queryRawUnsafe<
+    const rows = await prisma.$queryRaw<
       Array<{
         relname: string;
         n_live_tup: bigint;
         total_bytes: bigint;
       }>
-    >(`
+    >`
       SELECT
         relname,
         n_live_tup,
@@ -152,7 +147,7 @@ export class StorageMeteringService {
       WHERE schemaname = 'public'
         AND n_live_tup > 0
       ORDER BY total_bytes DESC
-    `);
+    `;
     return rows;
   }
 
@@ -161,11 +156,12 @@ export class StorageMeteringService {
     tenantId: string,
   ): Promise<number> {
     try {
-      // Build a raw count query scoped by tenant_id column.
+      // Build a raw count query scoped by tenant_id column with strict identifier validation
       const tableName = this.modelNameToTableName(modelName);
-      const rows = await prisma.$queryRawUnsafe<
-        Array<{ count: bigint }>
-      >(
+      if (!/^[a-z0-9_]+$/i.test(tableName)) {
+        return 0;
+      }
+      const rows = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
         `SELECT COUNT(*)::bigint AS count FROM "${tableName}" WHERE tenant_id = $1`,
         tenantId,
       );

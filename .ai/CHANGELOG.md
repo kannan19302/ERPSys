@@ -2,6 +2,19 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-21] QA Harden — Mandatory Checkpoint after Cycle 30
+
+**Scope**: Executed mandatory QA Harden checkpoint after Cycle 30.
+
+**Fixes & Hardening**:
+
+- **Raw SQL Parameterization**: Converted remaining `$queryRawUnsafe` calls in `card-spend-limit.service.ts` and `outbox-dispatcher.service.ts` to type-safe `$queryRaw` tagged template literals. Added strict table identifier validation regex in `storage-metering.service.ts`.
+- **Test Suite Verification**: Executed full Vitest test suite (**3,198 / 3,198 tests passed clean**).
+- **Typecheck & Architecture**: `@unerp/api typecheck` clean (0 errors), `pnpm architecture:check` clean (0 violations).
+- **Cadence Ledger**: Reset `Next run: DEV` and `Cycles until mandatory harden: 10`.
+
+---
+
 ## [2026-07-21] Cycle 30 (Phase M) — Security Hardening (#39, #40, #41) & Supply Chain Module Deepening
 
 **Scope**: Closed security issues #39, #40, #41. Deepened Supply Chain module (+45+ endpoints across 4 expansion services, SCM Control Tower UI, and 12 unit tests).

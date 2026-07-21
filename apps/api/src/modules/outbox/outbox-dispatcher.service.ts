@@ -1,12 +1,17 @@
-import { Injectable, OnModuleDestroy, OnModuleInit, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+  Logger,
+} from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { prisma } from "@unerp/database";
 
 const CLAIM_LIMIT = 100;
 const LEASE_SECONDS = 30;
 const POLL_INTERVAL_MS = 2000;
-const LEASE_OWNER_PREFIX = 'dispatcher-';
+const LEASE_OWNER_PREFIX = "dispatcher-";
 
 @Injectable()
 export class OutboxDispatcherService implements OnModuleInit, OnModuleDestroy {
@@ -14,9 +19,7 @@ export class OutboxDispatcherService implements OnModuleInit, OnModuleDestroy {
   private readonly leaseOwner: string;
   private intervalHandle: ReturnType<typeof setInterval> | null = null;
 
-  constructor(
-    @InjectQueue('outbox') private readonly queue: Queue,
-  ) {
+  constructor(@InjectQueue("outbox") private readonly queue: Queue) {
     this.leaseOwner = `${LEASE_OWNER_PREFIX}${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
@@ -38,22 +41,26 @@ export class OutboxDispatcherService implements OnModuleInit, OnModuleDestroy {
       if (deliveries.length === 0) return;
       await this.enqueueDeliveries(deliveries);
     } catch (err) {
-      this.logger.error({ err }, 'Outbox dispatch poll failed');
+      this.logger.error({ err }, "Outbox dispatch poll failed");
     }
   }
 
   private async claimDeliveries(): Promise<
-    Array<{ id: string; tenantId: string; outboxEventId: string; destination: string }>
+    Array<{
+      id: string;
+      tenantId: string;
+      outboxEventId: string;
+      destination: string;
+    }>
   > {
     const now = new Date();
     const leaseExpiresAt = new Date(now.getTime() + LEASE_SECONDS * 1000);
 
-    const rows = await prisma.$queryRawUnsafe<Array<Record<string, unknown>>>(
-      `
+    const rows = await prisma.$queryRaw<Array<Record<string, unknown>>>`
       UPDATE outbox_deliveries
       SET status = 'LEASED',
-          lease_owner = $1,
-          lease_expires_at = $2,
+          lease_owner = ${this.leaseOwner},
+          lease_expires_at = ${leaseExpiresAt},
           attempts = attempts + 1,
           updated_at = NOW()
       WHERE id IN (
@@ -62,15 +69,11 @@ export class OutboxDispatcherService implements OnModuleInit, OnModuleDestroy {
         WHERE status = 'PENDING'
           AND available_at <= NOW()
         ORDER BY available_at ASC
-        LIMIT $3
+        LIMIT ${CLAIM_LIMIT}
         FOR UPDATE SKIP LOCKED
       )
       RETURNING id, tenant_id, outbox_event_id, destination
-      `,
-      this.leaseOwner,
-      leaseExpiresAt,
-      CLAIM_LIMIT,
-    );
+      `;
 
     const deliveries = rows.map((r) => ({
       id: String(r.id),
@@ -87,7 +90,12 @@ export class OutboxDispatcherService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async enqueueDeliveries(
-    deliveries: Array<{ id: string; tenantId: string; outboxEventId: string; destination: string }>,
+    deliveries: Array<{
+      id: string;
+      tenantId: string;
+      outboxEventId: string;
+      destination: string;
+    }>,
   ): Promise<void> {
     const jobs = deliveries.map((d) => ({
       name: d.id,
